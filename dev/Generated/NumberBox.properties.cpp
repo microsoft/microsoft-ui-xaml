@@ -9,10 +9,16 @@
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
 GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_FractionDigitsProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IntegerDigitsProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IsDecimalPointAlwaysDisplayedProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IsZeroSignedProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaxValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinMaxModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinValueProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
@@ -36,6 +42,28 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnBasicValidationModePropertyChanged));
     }
+    if (!s_FractionDigitsProperty)
+    {
+        s_FractionDigitsProperty =
+            InitializeDependencyProperty(
+                L"FractionDigits",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(0),
+                winrt::PropertyChangedCallback(&OnFractionDigitsPropertyChanged));
+    }
+    if (!s_HeaderProperty)
+    {
+        s_HeaderProperty =
+            InitializeDependencyProperty(
+                L"Header",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
+    }
     if (!s_HyperScrollEnabledProperty)
     {
         s_HyperScrollEnabledProperty =
@@ -46,6 +74,39 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnHyperScrollEnabledPropertyChanged));
+    }
+    if (!s_IntegerDigitsProperty)
+    {
+        s_IntegerDigitsProperty =
+            InitializeDependencyProperty(
+                L"IntegerDigits",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(1),
+                winrt::PropertyChangedCallback(&OnIntegerDigitsPropertyChanged));
+    }
+    if (!s_IsDecimalPointAlwaysDisplayedProperty)
+    {
+        s_IsDecimalPointAlwaysDisplayedProperty =
+            InitializeDependencyProperty(
+                L"IsDecimalPointAlwaysDisplayed",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnIsDecimalPointAlwaysDisplayedPropertyChanged));
+    }
+    if (!s_IsZeroSignedProperty)
+    {
+        s_IsZeroSignedProperty =
+            InitializeDependencyProperty(
+                L"IsZeroSigned",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnIsZeroSignedPropertyChanged));
     }
     if (!s_MaxValueProperty)
     {
@@ -66,7 +127,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBoxMinMaxMode>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(winrt::NumberBoxMinMaxMode::NoBounds),
+                ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(winrt::NumberBoxMinMaxMode::None),
                 winrt::PropertyChangedCallback(&OnMinMaxModePropertyChanged));
     }
     if (!s_MinValueProperty)
@@ -79,6 +140,17 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
+    }
+    if (!s_SignificantDigitsProperty)
+    {
+        s_SignificantDigitsProperty =
+            InitializeDependencyProperty(
+                L"SignificantDigits",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(0),
+                winrt::PropertyChangedCallback(&OnSignificantDigitsPropertyChanged));
     }
     if (!s_SpinButtonPlacementModeProperty)
     {
@@ -118,10 +190,16 @@ void NumberBoxProperties::EnsureProperties()
 void NumberBoxProperties::ClearProperties()
 {
     s_BasicValidationModeProperty = nullptr;
+    s_FractionDigitsProperty = nullptr;
+    s_HeaderProperty = nullptr;
     s_HyperScrollEnabledProperty = nullptr;
+    s_IntegerDigitsProperty = nullptr;
+    s_IsDecimalPointAlwaysDisplayedProperty = nullptr;
+    s_IsZeroSignedProperty = nullptr;
     s_MaxValueProperty = nullptr;
     s_MinMaxModeProperty = nullptr;
     s_MinValueProperty = nullptr;
+    s_SignificantDigitsProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_StepFrequencyProperty = nullptr;
     s_ValueProperty = nullptr;
@@ -135,7 +213,47 @@ void NumberBoxProperties::OnBasicValidationModePropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
 }
 
+void NumberBoxProperties::OnFractionDigitsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
 void NumberBoxProperties::OnHyperScrollEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnIntegerDigitsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnIsDecimalPointAlwaysDisplayedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnIsZeroSignedPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -160,6 +278,14 @@ void NumberBoxProperties::OnMinMaxModePropertyChanged(
 }
 
 void NumberBoxProperties::OnMinValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnSignificantDigitsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -201,6 +327,26 @@ winrt::NumberBoxBasicValidationMode NumberBoxProperties::BasicValidationMode()
     return ValueHelper<winrt::NumberBoxBasicValidationMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_BasicValidationModeProperty));
 }
 
+void NumberBoxProperties::FractionDigits(int value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_FractionDigitsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int NumberBoxProperties::FractionDigits()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_FractionDigitsProperty));
+}
+
+void NumberBoxProperties::Header(winrt::hstring const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+}
+
+winrt::hstring NumberBoxProperties::Header()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
+}
+
 void NumberBoxProperties::HyperScrollEnabled(bool value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_HyperScrollEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
@@ -209,6 +355,36 @@ void NumberBoxProperties::HyperScrollEnabled(bool value)
 bool NumberBoxProperties::HyperScrollEnabled()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
+}
+
+void NumberBoxProperties::IntegerDigits(int value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IntegerDigitsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int NumberBoxProperties::IntegerDigits()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IntegerDigitsProperty));
+}
+
+void NumberBoxProperties::IsDecimalPointAlwaysDisplayed(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IsDecimalPointAlwaysDisplayedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::IsDecimalPointAlwaysDisplayed()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsDecimalPointAlwaysDisplayedProperty));
+}
+
+void NumberBoxProperties::IsZeroSigned(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IsZeroSignedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::IsZeroSigned()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsZeroSignedProperty));
 }
 
 void NumberBoxProperties::MaxValue(double value)
@@ -239,6 +415,16 @@ void NumberBoxProperties::MinValue(double value)
 double NumberBoxProperties::MinValue()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinValueProperty));
+}
+
+void NumberBoxProperties::SignificantDigits(int value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SignificantDigitsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int NumberBoxProperties::SignificantDigits()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SignificantDigitsProperty));
 }
 
 void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)

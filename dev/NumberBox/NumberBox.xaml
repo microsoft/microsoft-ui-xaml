@@ -15,7 +15,7 @@
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
                                         <Setter Target="InputBox.BorderBrush" Value="#C50500" />
-                                    </VisualState.Setters>
+                                    </VisualState.Setters> 
                                 </VisualState>
                                 <VisualState x:Name="Valid" />
                             </VisualStateGroup>

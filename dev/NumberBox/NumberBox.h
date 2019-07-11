@@ -43,6 +43,8 @@ private:
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
     bool IsInBounds(double val);
+    void UpdateFormatter();
+    void SetHeader();
     winrt::DecimalFormatter Formatter;
     winrt::TextBox m_TextBox{ nullptr };
     winrt::Button m_SpinDown{ nullptr };

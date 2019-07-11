@@ -4,7 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
-
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries> 
 
 </ResourceDictionary>

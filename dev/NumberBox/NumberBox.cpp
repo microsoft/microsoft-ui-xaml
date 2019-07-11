@@ -26,6 +26,7 @@ void NumberBox::OnApplyTemplate()
 
     // Initializations - Visual States
     SetSpinButtonVisualState();
+    SetHeader();
 
     // Initializations - Interactions
     m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
@@ -35,6 +36,7 @@ void NumberBox::OnApplyTemplate()
 
     // Initializations - Tools, etc.
     Formatter = winrt::DecimalFormatter();
+    UpdateFormatter();
 
     // Set Text to reflect preset Value
     if (s_ValueProperty != DEFAULTVALUE && m_TextBox) {
@@ -56,7 +58,15 @@ void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         SetSpinButtonVisualState();
     }
-        
+    else if (property == s_IntegerDigitsProperty || property == s_FractionDigitsProperty || property == s_SignificantDigitsProperty || property == s_IsDecimalPointAlwaysDisplayedProperty || property == s_IsZeroSignedProperty)
+    {
+        UpdateFormatter();
+    }
+    else if (property == s_HeaderProperty)
+    {
+        SetHeader();
+    }
+
 }
 
 // Trigger any validation, rounding, and processing done onLostFocus
@@ -77,6 +87,7 @@ void NumberBox::ValidateInput()
     }
 
     winrt::IReference<double> parsedNum = Formatter.ParseDouble(m_TextBox.Text());
+    // TODO: Formatter.Format(value)
 
     if (parsedNum && IsInBounds(parsedNum.Value()) )
     {
@@ -172,11 +183,6 @@ void NumberBox::StepValue(bool sign)
 
 
 
-
-
-
-
-
 // Updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
@@ -218,10 +224,9 @@ bool NumberBox::IsInBounds(double val)
 {
     double min = MinValue();
     double max = MaxValue();
-    
     switch (  MinMaxMode() )
     {
-        case winrt::NumberBoxMinMaxMode::NoBounds:
+        case winrt::NumberBoxMinMaxMode::None:
             return true;
         case winrt::NumberBoxMinMaxMode::WrapEnabled:
         case winrt::NumberBoxMinMaxMode::MinAndMaxEnabled:
@@ -244,6 +249,26 @@ bool NumberBox::IsInBounds(double val)
             break;
     }
     return true;
+}
+
+void NumberBox::UpdateFormatter()
+{
+    Formatter.IntegerDigits(IntegerDigits());
+    Formatter.FractionDigits(FractionDigits());
+    Formatter.SignificantDigits(SignificantDigits());
+    Formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
+    Formatter.IsZeroSigned(IsZeroSigned());
+  
+
+}
+
+void::NumberBox::SetHeader()
+{
+    /* TODO: Header Code
+    winrt::TextBox headerbox;
+    headerbox.Text(Header());
+    m_TextBox.Header(headerbox);
+    */
 }
 
 

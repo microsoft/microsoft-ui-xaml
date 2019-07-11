@@ -72,9 +72,9 @@ namespace MUXControlsTestApp
             {
                 return;
             }
-            if ((string)boundmode.SelectedValue == "NoBounds")
+            if ((string)boundmode.SelectedValue == "None")
             {
-                box.MinMaxMode = NumberBoxMinMaxMode.NoBounds;
+                box.MinMaxMode = NumberBoxMinMaxMode.None;
             }
             else if ((string)boundmode.SelectedValue == "MinEnabled")
             {
@@ -93,6 +93,24 @@ namespace MUXControlsTestApp
                 box.MinMaxMode = NumberBoxMinMaxMode.WrapEnabled;
             }
         }
+
+
+        private void fraction_changed(object sender, RoutedEventArgs e)
+        {
+
+            box = FindVisualChildByName(this, "numBox") as NumberBox;
+            TextBox fracbox = (TextBox)sender;
+
+          //  Int32 fractiondig;
+
+            
+        }
+
+
+
+
+
+
 
     }
 }

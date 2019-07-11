@@ -12,8 +12,23 @@ public:
     void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
     winrt::NumberBoxBasicValidationMode BasicValidationMode();
 
+    void FractionDigits(int value);
+    int FractionDigits();
+
+    void Header(winrt::hstring const& value);
+    winrt::hstring Header();
+
     void HyperScrollEnabled(bool value);
     bool HyperScrollEnabled();
+
+    void IntegerDigits(int value);
+    int IntegerDigits();
+
+    void IsDecimalPointAlwaysDisplayed(bool value);
+    bool IsDecimalPointAlwaysDisplayed();
+
+    void IsZeroSigned(bool value);
+    bool IsZeroSigned();
 
     void MaxValue(double value);
     double MaxValue();
@@ -23,6 +38,9 @@ public:
 
     void MinValue(double value);
     double MinValue();
+
+    void SignificantDigits(int value);
+    int SignificantDigits();
 
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
@@ -34,19 +52,31 @@ public:
     double Value();
 
     static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
+    static winrt::DependencyProperty FractionDigitsProperty() { return s_FractionDigitsProperty; }
+    static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
+    static winrt::DependencyProperty IntegerDigitsProperty() { return s_IntegerDigitsProperty; }
+    static winrt::DependencyProperty IsDecimalPointAlwaysDisplayedProperty() { return s_IsDecimalPointAlwaysDisplayedProperty; }
+    static winrt::DependencyProperty IsZeroSignedProperty() { return s_IsZeroSignedProperty; }
     static winrt::DependencyProperty MaxValueProperty() { return s_MaxValueProperty; }
     static winrt::DependencyProperty MinMaxModeProperty() { return s_MinMaxModeProperty; }
     static winrt::DependencyProperty MinValueProperty() { return s_MinValueProperty; }
+    static winrt::DependencyProperty SignificantDigitsProperty() { return s_SignificantDigitsProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
     static GlobalDependencyProperty s_BasicValidationModeProperty;
+    static GlobalDependencyProperty s_FractionDigitsProperty;
+    static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HyperScrollEnabledProperty;
+    static GlobalDependencyProperty s_IntegerDigitsProperty;
+    static GlobalDependencyProperty s_IsDecimalPointAlwaysDisplayedProperty;
+    static GlobalDependencyProperty s_IsZeroSignedProperty;
     static GlobalDependencyProperty s_MaxValueProperty;
     static GlobalDependencyProperty s_MinMaxModeProperty;
     static GlobalDependencyProperty s_MinValueProperty;
+    static GlobalDependencyProperty s_SignificantDigitsProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_ValueProperty;
@@ -63,7 +93,27 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnFractionDigitsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnHyperScrollEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIntegerDigitsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsDecimalPointAlwaysDisplayedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsZeroSignedPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -76,6 +126,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnMinValuePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSignificantDigitsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

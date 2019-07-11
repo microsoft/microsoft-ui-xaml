@@ -26,7 +26,7 @@ enum NumberBoxBasicValidationMode
 [webhosthidden]
 enum NumberBoxMinMaxMode
 {
-    NoBounds,
+    None,
     MinEnabled,
     MaxEnabled,
     MinAndMaxEnabled,
@@ -37,7 +37,7 @@ enum NumberBoxMinMaxMode
 [webhosthidden]
 enum NumberBoxNumberRounder
 {
-    RounderDisabled,
+    NoRounding,
     IncrementNumberRounder,
     SignificantDigitsNumberRounder
 };
@@ -54,8 +54,10 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 {
     NumberBox();
     
+    
     [MUX_DEFAULT_VALUE("0")]
     Double Value{ get; set; };
+    String Header;
     NumberBoxBasicValidationMode BasicValidationMode;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
@@ -66,7 +68,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("1")]
     Double StepFrequency;
 
-    [MUX_DEFAULT_VALUE("winrt::NumberBoxMinMaxMode::NoBounds")]
+    [MUX_DEFAULT_VALUE("winrt::NumberBoxMinMaxMode::None")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxMinMaxMode MinMaxMode{ get; set; };
     [MUX_DEFAULT_VALUE("0")]
@@ -74,10 +76,24 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("0")]
     Double MaxValue;
 
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 IntegerDigits;
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 FractionDigits;
+    [MUX_DEFAULT_VALUE("0")]
+    Int32 SignificantDigits;
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsDecimalPointAlwaysDisplayed;
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean IsZeroSigned;
+
+
+
 
     event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
     //Object Placeholder{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
@@ -86,6 +102,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MinValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaxValueProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IntegerDigitsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty FractionDigitsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SignificantDigitsProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsDecimalPointAlwaysDisplayedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsZeroSignedProperty{ get; };
+
 
 }
 
