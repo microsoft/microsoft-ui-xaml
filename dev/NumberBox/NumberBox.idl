@@ -37,7 +37,7 @@ enum NumberBoxMinMaxMode
 [webhosthidden]
 enum NumberBoxNumberRounder
 {
-    NoRounding,
+    None,
     IncrementNumberRounder,
     SignificantDigitsNumberRounder
 };
@@ -87,6 +87,16 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean IsZeroSigned;
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::RoundingAlgorithm::RoundAwayFromZero")]
+    Windows.Globalization.NumberFormatting.RoundingAlgorithm RoundingAlgorithm{ get; set; };
+    [MUX_DEFAULT_VALUE("winrt::NumberBoxNumberRounder::None")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    NumberBoxNumberRounder NumberRounder{ get; set; };
+    [MUX_DEFAULT_VALUE("1")]
+    Int32 IncrementPrecision;
+    [MUX_DEFAULT_VALUE("1")]
+    Double SignificantDigitPrecision;
 
 
 
@@ -107,6 +117,12 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SignificantDigitsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsDecimalPointAlwaysDisplayedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsZeroSignedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty RoundingAlgorithmProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NumberRounderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IncrementPrecisionProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SignificantDigitPrecisionProperty{ get; };
+
+
 
 
 }

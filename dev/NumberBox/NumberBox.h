@@ -44,11 +44,15 @@ private:
     void StepValue(bool sign);
     bool IsInBounds(double val);
     void UpdateFormatter();
+    void UpdateRounder();
     void SetHeader();
     winrt::DecimalFormatter Formatter;
+    winrt::IncrementNumberRounder IRounder;
+    winrt::SignificantDigitsNumberRounder SRounder;
     winrt::TextBox m_TextBox{ nullptr };
     winrt::Button m_SpinDown{ nullptr };
     winrt::Button m_SpinUp{ nullptr };
+    bool HasError{ false };
 
 
 };

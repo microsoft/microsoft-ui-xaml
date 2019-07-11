@@ -21,6 +21,9 @@ public:
     void HyperScrollEnabled(bool value);
     bool HyperScrollEnabled();
 
+    void IncrementPrecision(int value);
+    int IncrementPrecision();
+
     void IntegerDigits(int value);
     int IntegerDigits();
 
@@ -39,6 +42,15 @@ public:
     void MinValue(double value);
     double MinValue();
 
+    void NumberRounder(winrt::NumberBoxNumberRounder const& value);
+    winrt::NumberBoxNumberRounder NumberRounder();
+
+    void RoundingAlgorithm(winrt::RoundingAlgorithm const& value);
+    winrt::RoundingAlgorithm RoundingAlgorithm();
+
+    void SignificantDigitPrecision(double value);
+    double SignificantDigitPrecision();
+
     void SignificantDigits(int value);
     int SignificantDigits();
 
@@ -55,12 +67,16 @@ public:
     static winrt::DependencyProperty FractionDigitsProperty() { return s_FractionDigitsProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
+    static winrt::DependencyProperty IncrementPrecisionProperty() { return s_IncrementPrecisionProperty; }
     static winrt::DependencyProperty IntegerDigitsProperty() { return s_IntegerDigitsProperty; }
     static winrt::DependencyProperty IsDecimalPointAlwaysDisplayedProperty() { return s_IsDecimalPointAlwaysDisplayedProperty; }
     static winrt::DependencyProperty IsZeroSignedProperty() { return s_IsZeroSignedProperty; }
     static winrt::DependencyProperty MaxValueProperty() { return s_MaxValueProperty; }
     static winrt::DependencyProperty MinMaxModeProperty() { return s_MinMaxModeProperty; }
     static winrt::DependencyProperty MinValueProperty() { return s_MinValueProperty; }
+    static winrt::DependencyProperty NumberRounderProperty() { return s_NumberRounderProperty; }
+    static winrt::DependencyProperty RoundingAlgorithmProperty() { return s_RoundingAlgorithmProperty; }
+    static winrt::DependencyProperty SignificantDigitPrecisionProperty() { return s_SignificantDigitPrecisionProperty; }
     static winrt::DependencyProperty SignificantDigitsProperty() { return s_SignificantDigitsProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
@@ -70,12 +86,16 @@ public:
     static GlobalDependencyProperty s_FractionDigitsProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HyperScrollEnabledProperty;
+    static GlobalDependencyProperty s_IncrementPrecisionProperty;
     static GlobalDependencyProperty s_IntegerDigitsProperty;
     static GlobalDependencyProperty s_IsDecimalPointAlwaysDisplayedProperty;
     static GlobalDependencyProperty s_IsZeroSignedProperty;
     static GlobalDependencyProperty s_MaxValueProperty;
     static GlobalDependencyProperty s_MinMaxModeProperty;
     static GlobalDependencyProperty s_MinValueProperty;
+    static GlobalDependencyProperty s_NumberRounderProperty;
+    static GlobalDependencyProperty s_RoundingAlgorithmProperty;
+    static GlobalDependencyProperty s_SignificantDigitPrecisionProperty;
     static GlobalDependencyProperty s_SignificantDigitsProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_StepFrequencyProperty;
@@ -105,6 +125,10 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnIncrementPrecisionPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIntegerDigitsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
@@ -126,6 +150,18 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnMinValuePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnNumberRounderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnRoundingAlgorithmPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSignificantDigitPrecisionPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

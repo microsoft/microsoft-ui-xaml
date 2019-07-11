@@ -36,8 +36,10 @@ void NumberBox::OnApplyTemplate()
 
     // Initializations - Tools, etc.
     Formatter = winrt::DecimalFormatter();
+    IRounder = winrt::IncrementNumberRounder();
+    SRounder = winrt::SignificantDigitsNumberRounder();
     UpdateFormatter();
-
+    UpdateRounder();
     // Set Text to reflect preset Value
     if (s_ValueProperty != DEFAULTVALUE && m_TextBox) {
         UpdateTextToValue();
@@ -62,6 +64,10 @@ void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         UpdateFormatter();
     }
+    else if (property == s_RoundingAlgorithmProperty || property == s_NumberRounderProperty || property == s_SignificantDigitPrecisionProperty || property == s_IncrementPrecisionProperty)
+    {
+        UpdateRounder();
+    }
     else if (property == s_HeaderProperty)
     {
         SetHeader();
@@ -83,6 +89,7 @@ void NumberBox::ValidateInput()
     if (InputAsString == "")
     {
         this->Value(0);
+        HasError = false;
         return;
     }
 
@@ -183,10 +190,16 @@ void NumberBox::StepValue(bool sign)
 
 
 
-// Updates TextBox to it's value property, run on construction if Value != 0
+// Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
-    m_TextBox.Text( winrt::to_hstring( NumberBoxProperties::Value() ));
+    if (!HasError)
+    {
+        winrt::hstring formattedValue(Formatter.Format(Value()));
+        Value( (Formatter.ParseDouble(formattedValue)).Value() );
+        m_TextBox.Text(formattedValue);
+    }
+
 }
 
 // Handlder for swapping visual states of textbox
@@ -195,10 +208,12 @@ void NumberBox::SetErrorState(bool state)
 {
     if (state)
     {
+        HasError = true;
         winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
     }
     else
     {
+        HasError = false;
         winrt::VisualStateManager::GoToState(*this, L"Valid", false);
     }
 
@@ -259,6 +274,28 @@ void NumberBox::UpdateFormatter()
     Formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
     Formatter.IsZeroSigned(IsZeroSigned());
   
+}
+
+void NumberBox::UpdateRounder()
+{
+    // Setting a number rounder's RoundingAlgorithm to None can cause a crash because it's not a true value - safer to set Rounder to a null pointer instead
+    if ( NumberRounder() == winrt::NumberBoxNumberRounder::None || RoundingAlgorithm() == winrt::RoundingAlgorithm::None)
+    {
+        Formatter.NumberRounder(nullptr);
+        return;
+    }
+
+    if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder) {
+        IRounder.Increment(IncrementPrecision());
+        IRounder.RoundingAlgorithm(RoundingAlgorithm());
+        Formatter.NumberRounder(IRounder);
+    }
+    else
+    {
+        SRounder.SignificantDigits( (uint32_t) abs(SignificantDigitPrecision()));
+        SRounder.RoundingAlgorithm(RoundingAlgorithm());
+        Formatter.NumberRounder(SRounder);
+    }
 
 }
 

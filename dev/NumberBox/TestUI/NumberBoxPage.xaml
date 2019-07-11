@@ -10,7 +10,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Page.Resources>
+        <local:NullableBooleanToBooleanConverter x:Key="BooleanConverter" />
+        <local:DoubleToIntConverter x:Key="intconverter" />
+        <local:StringToRoundingAlgConverter x:Key="RoundingConverter" />
+        <local:DoubleToUIntConverter x:Key="UintConverter" />
+        <local:StringToRounderConverter x:Key="RounderConverter"/>
+
+    </Page.Resources>
+
+
+<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
 
         <RelativePanel x:Name="ParentPanel">
 
@@ -61,10 +71,10 @@
                 RelativePanel.Below="min"/>
 
             <TextBlock Text="Fraction Digits" RelativePanel.RightOf="frac" RelativePanel.Below="max" />
-            <TextBox x:Name="frac" RelativePanel.Below="max" TextChanged="fraction_changed" />
+            <controls:NumberBox x:Name="frac" RelativePanel.Below="max" Value="0"/>
 
             <TextBlock Text="Integer Digits" RelativePanel.RightOf="intdig" RelativePanel.Below="frac" />
-            <controls:NumberBox x:Name="intdig" RelativePanel.Below="frac" />
+            <controls:NumberBox x:Name="intdig" RelativePanel.Below="frac" Value="1" />
 
             <TextBlock Text="Significant Digits" RelativePanel.RightOf="sigdig" RelativePanel.Below="intdig" />
             <controls:NumberBox x:Name="sigdig" RelativePanel.Below="intdig" />
@@ -72,14 +82,54 @@
             <CheckBox x:Name="dec" RelativePanel.Below="sigdig" Content="IsDecimalPointAlwaysDisplayed" />
             <CheckBox x:Name="zerosign" RelativePanel.Below="dec" Content="IsZeroSigned" />
 
+            <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="IncrementNumberRounder" >
+                <x:String>IncrementNumberRounder</x:String>
+                <x:String>SignificantDigitsNumberRounder</x:String>
+                <x:String>None</x:String>
+
+            </ComboBox>
+
+            
+            <ComboBox x:Name="algo" Header="Rounding Algorithm" RelativePanel.Below="rounder" SelectedValue="RoundAwayFromZero" >
+                <x:String>None</x:String>
+                <x:String>RoundAwayFromZero</x:String>
+                <x:String>RoundDown</x:String>
+                <x:String>RoundHalfAwayFromZero</x:String>
+                <x:String>RoundHalfDown</x:String>
+                <x:String>RoundHalfToEven</x:String>
+                <x:String>RoundHalfToOdd</x:String>
+                <x:String>RoundHalfTowardsZero</x:String>
+                <x:String>RoundHalfUp</x:String>
+                <x:String>RoundTowardsZero</x:String>
+                <x:String>RoundUp</x:String>
+            </ComboBox>
+
+
+
+            <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="algo" RelativePanel.Below="algo" />
+            <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
+
+            <TextBlock Text="SignificantDigitPrecision (For sig rounder)" RelativePanel.RightOf="sigprec" RelativePanel.Below="increment" />
+            <controls:NumberBox x:Name="sigprec" RelativePanel.Below="increment" Value="1"/>
 
             <controls:NumberBox
                 x:Name="numBox"
                 Margin="0,50,0,0"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
+                
                 MinValue="{x:Bind min.Value, Mode=OneWay}"
                 MaxValue="{x:Bind max.Value, Mode=OneWay}"
-                IntegerDigits="8"
+                
+                FractionDigits="{x:Bind frac.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                IntegerDigits="{x:Bind intdig.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                SignificantDigits="{x:Bind sigdig.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                IsDecimalPointAlwaysDisplayed="{x:Bind dec.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                IsZeroSigned="{x:Bind zerosign.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                
+                NumberRounder="{x:Bind rounder.SelectedValue, Converter={StaticResource RounderConverter}, Mode=OneWay}"
+                RoundingAlgorithm="{x:Bind algo.SelectedValue, Converter={StaticResource RoundingConverter}, Mode=OneWay}"
+                IncrementPrecision="{x:Bind increment.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+
                 />
 
         </RelativePanel>

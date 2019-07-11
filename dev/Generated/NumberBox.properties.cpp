@@ -12,12 +12,16 @@ GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nul
 GlobalDependencyProperty NumberBoxProperties::s_FractionDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IncrementPrecisionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IntegerDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsDecimalPointAlwaysDisplayedProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsZeroSignedProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaxValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinMaxModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinValueProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_NumberRounderProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_RoundingAlgorithmProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitPrecisionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
@@ -74,6 +78,17 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnHyperScrollEnabledPropertyChanged));
+    }
+    if (!s_IncrementPrecisionProperty)
+    {
+        s_IncrementPrecisionProperty =
+            InitializeDependencyProperty(
+                L"IncrementPrecision",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(1),
+                winrt::PropertyChangedCallback(&OnIncrementPrecisionPropertyChanged));
     }
     if (!s_IntegerDigitsProperty)
     {
@@ -141,6 +156,39 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
     }
+    if (!s_NumberRounderProperty)
+    {
+        s_NumberRounderProperty =
+            InitializeDependencyProperty(
+                L"NumberRounder",
+                winrt::name_of<winrt::NumberBoxNumberRounder>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NumberBoxNumberRounder>::BoxValueIfNecessary(winrt::NumberBoxNumberRounder::None),
+                winrt::PropertyChangedCallback(&OnNumberRounderPropertyChanged));
+    }
+    if (!s_RoundingAlgorithmProperty)
+    {
+        s_RoundingAlgorithmProperty =
+            InitializeDependencyProperty(
+                L"RoundingAlgorithm",
+                winrt::name_of<winrt::RoundingAlgorithm>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::RoundingAlgorithm>::BoxValueIfNecessary(winrt::RoundingAlgorithm::RoundAwayFromZero),
+                winrt::PropertyChangedCallback(&OnRoundingAlgorithmPropertyChanged));
+    }
+    if (!s_SignificantDigitPrecisionProperty)
+    {
+        s_SignificantDigitPrecisionProperty =
+            InitializeDependencyProperty(
+                L"SignificantDigitPrecision",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(1),
+                winrt::PropertyChangedCallback(&OnSignificantDigitPrecisionPropertyChanged));
+    }
     if (!s_SignificantDigitsProperty)
     {
         s_SignificantDigitsProperty =
@@ -193,12 +241,16 @@ void NumberBoxProperties::ClearProperties()
     s_FractionDigitsProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HyperScrollEnabledProperty = nullptr;
+    s_IncrementPrecisionProperty = nullptr;
     s_IntegerDigitsProperty = nullptr;
     s_IsDecimalPointAlwaysDisplayedProperty = nullptr;
     s_IsZeroSignedProperty = nullptr;
     s_MaxValueProperty = nullptr;
     s_MinMaxModeProperty = nullptr;
     s_MinValueProperty = nullptr;
+    s_NumberRounderProperty = nullptr;
+    s_RoundingAlgorithmProperty = nullptr;
+    s_SignificantDigitPrecisionProperty = nullptr;
     s_SignificantDigitsProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_StepFrequencyProperty = nullptr;
@@ -230,6 +282,14 @@ void NumberBoxProperties::OnHeaderPropertyChanged(
 }
 
 void NumberBoxProperties::OnHyperScrollEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnIncrementPrecisionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -278,6 +338,30 @@ void NumberBoxProperties::OnMinMaxModePropertyChanged(
 }
 
 void NumberBoxProperties::OnMinValuePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnNumberRounderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnRoundingAlgorithmPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnSignificantDigitPrecisionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -357,6 +441,16 @@ bool NumberBoxProperties::HyperScrollEnabled()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
 }
 
+void NumberBoxProperties::IncrementPrecision(int value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IncrementPrecisionProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int NumberBoxProperties::IncrementPrecision()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IncrementPrecisionProperty));
+}
+
 void NumberBoxProperties::IntegerDigits(int value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_IntegerDigitsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
@@ -415,6 +509,36 @@ void NumberBoxProperties::MinValue(double value)
 double NumberBoxProperties::MinValue()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinValueProperty));
+}
+
+void NumberBoxProperties::NumberRounder(winrt::NumberBoxNumberRounder const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_NumberRounderProperty, ValueHelper<winrt::NumberBoxNumberRounder>::BoxValueIfNecessary(value));
+}
+
+winrt::NumberBoxNumberRounder NumberBoxProperties::NumberRounder()
+{
+    return ValueHelper<winrt::NumberBoxNumberRounder>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_NumberRounderProperty));
+}
+
+void NumberBoxProperties::RoundingAlgorithm(winrt::RoundingAlgorithm const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_RoundingAlgorithmProperty, ValueHelper<winrt::RoundingAlgorithm>::BoxValueIfNecessary(value));
+}
+
+winrt::RoundingAlgorithm NumberBoxProperties::RoundingAlgorithm()
+{
+    return ValueHelper<winrt::RoundingAlgorithm>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_RoundingAlgorithmProperty));
+}
+
+void NumberBoxProperties::SignificantDigitPrecision(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SignificantDigitPrecisionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::SignificantDigitPrecision()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SignificantDigitPrecisionProperty));
 }
 
 void NumberBoxProperties::SignificantDigits(int value)

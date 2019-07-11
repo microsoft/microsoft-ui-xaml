@@ -21,6 +21,7 @@ namespace MUXControlsTestApp
     public sealed partial class NumberBoxPage : TestPage
     {
         NumberBox box;
+        
 
         public NumberBoxPage()
         {
@@ -98,9 +99,9 @@ namespace MUXControlsTestApp
         private void fraction_changed(object sender, RoutedEventArgs e)
         {
 
-            box = FindVisualChildByName(this, "numBox") as NumberBox;
-            TextBox fracbox = (TextBox)sender;
-
+           // box = FindVisualChildByName(this, "numBox") as NumberBox;
+           // TextBox fracbox = (TextBox)sender;
+           // box.FractionDigits = fracbox
           //  Int32 fractiondig;
 
             
