@@ -2935,11 +2935,7 @@ void NavigationView::SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> ne
             oldParent.ClearValue(winrt::ContentControl::ContentProperty());
         }
 
-        auto binding = winrt::Binding();
-        auto propertyPath = winrt::PropertyPath(propertyPathName);
-        binding.Path(propertyPath);
-        binding.Source(*this);
-        winrt::BindingOperations::SetBinding(newParent, winrt::ContentControl::ContentProperty(), binding);
+        SharedHelpers::SetBinding(propertyPathName, newParent, winrt::ContentControl::ContentProperty());
     }
 }
 
@@ -2965,11 +2961,7 @@ void NavigationView::UpdateContentBindingsForPaneDisplayMode()
             notControl.ClearValue(winrt::ContentControl::ContentProperty());
         }
 
-        auto binding = winrt::Binding();
-        auto propertyPath = winrt::PropertyPath(L"AutoSuggestBox");
-        binding.Path(propertyPath);
-        binding.Source(*this);
-        winrt::BindingOperations::SetBinding(autoSuggestBoxContentControl, winrt::ContentControl::ContentProperty(), binding);
+        SharedHelpers::SetBinding(L"AutoSuggestBox", autoSuggestBoxContentControl, winrt::ContentControl::ContentProperty());
     }
 }
 

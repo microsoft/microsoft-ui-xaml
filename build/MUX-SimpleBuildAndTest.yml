@@ -39,3 +39,4 @@ jobs:
   parameters:
     dependsOn: RunTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: 1

@@ -32,6 +32,7 @@ namespace MUXControls.ReleaseTest
         [TestCleanup]
         public void TestCleanup()
         {
+            PGOManager.PGOSweepIfInstrumented(TestEnvironment.TestContext.TestName);
             TestEnvironment.AssemblyCleanupWorker(TestType.Nuget);
         }
 
