@@ -31,7 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooks.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewerTestHooksFactory.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewer.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS1</Version>

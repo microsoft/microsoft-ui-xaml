@@ -30,7 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemFlyout.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)MenuBar.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

@@ -134,9 +134,6 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);0105;8305</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants> 
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <Page>
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
@@ -189,7 +186,7 @@
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs"  Condition="$(SolutionName) != 'MUXControlsInnerLoop'"  />
-    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs"  />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlGeneratedEventArgs.cs" />

@@ -19,10 +19,8 @@ using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
 
 #if !BUILD_WINDOWS
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
-#endif
 using AcrylicBackgroundSource = Microsoft.UI.Xaml.Media.AcrylicBackgroundSource;
 using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
 using AcrylicTestApi = Microsoft.UI.Private.Media.AcrylicTestApi;
@@ -97,12 +95,10 @@ namespace MUXControlsTestApp
 
         private void TintColorButton_Checked(object sender, RoutedEventArgs e)
         {
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             var colorPicker = new ColorPicker();
             colorPicker.ColorChanged += ColorPicker_ColorChanged;
             colorPicker.Color = _acrylicBrush.TintColor;
             Viewbox.Child = colorPicker;
-#endif
         }
 
         private void TintColorButton_Unchecked(object sender, RoutedEventArgs e)
@@ -175,13 +171,10 @@ namespace MUXControlsTestApp
             visual.Offset = new System.Numerics.Vector3(0, 0, 0);
         }
 
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
         private void ColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
         {
             _acrylicBrush.TintColor = args.NewColor;
         }
-#endif
-
 
         private void RunTestButton_Clicked(object sender, RoutedEventArgs e)
         {

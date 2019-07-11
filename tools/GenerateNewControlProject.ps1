@@ -63,8 +63,7 @@ foreach ($group in $xml.Project.ImportGroup)
         $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
         AddAttribute $xml $import "Project" "..\$controlName\$controlName.vcxitems"
         AddAttribute $xml $import "Label" "Shared"
-        AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
-        $group.AppendChild($import);        
+        $group.AppendChild($import);
     }
 }
 $xml.Save($muxProject)
@@ -75,7 +74,6 @@ $testProject = $muxControlsDir + "\test\MUXControls.Test\MUXControls.Test.Shared
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
 AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\InteractionTests\$($controlName)_InteractionTests.projitems"
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testProject)
 
@@ -85,7 +83,6 @@ $testAppProject = $muxControlsDir + "\test\MUXControlsTestApp\MUXControlsTestApp
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
 AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\TestUI\$($controlName)_TestUI.projitems"
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testAppProject)
 

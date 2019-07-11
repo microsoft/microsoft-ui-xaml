@@ -37,7 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RevealPage.xaml.cs">
       <DependentUpon>RevealPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml.cs">
       <DependentUpon>RevealScenarioColors.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioGrid.xaml.cs">
@@ -92,7 +92,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

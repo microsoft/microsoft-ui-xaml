@@ -132,12 +132,10 @@ namespace MUXControlsTestApp
                     {
                         AppendResourceToMergedDictionaries("DisableAnimationsStyles.xaml", StyleOverridesPlaceholder);
 
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                         if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                         {
                             AppendResourceToMergedDictionaries("DisableAnimationsStylesOutsideStore_rs2.xaml", StyleOverridesPlaceholder);
                         }
-#endif
                     }
                     else
                     {

@@ -25,7 +25,7 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RefreshContainer.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RefreshContainer.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

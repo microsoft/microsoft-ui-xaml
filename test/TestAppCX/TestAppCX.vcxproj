@@ -181,7 +181,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="MenuBarTestPage.xaml.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <ClInclude Include="MenuBarTestPage.xaml.h" >
       <DependentUpon>MenuBarTestPage.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="pch.h" />
@@ -191,7 +191,7 @@
     <ClInclude Include="MainPage.xaml.h">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="LeakCycleTestCX.xaml.h" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <ClInclude Include="LeakCycleTestCX.xaml.h" >
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
@@ -202,10 +202,10 @@
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="LeakCycleTestCX.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="LeakCycleTestCX.xaml" >
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MenuBarTestPage.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="MenuBarTestPage.xaml" >
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -231,7 +231,7 @@
     <ClCompile Include="MainPage.xaml.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="MenuBarTestPage.xaml.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <ClCompile Include="MenuBarTestPage.xaml.cpp" >
       <DependentUpon>MenuBarTestPage.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -244,7 +244,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="LeakCycleTestCX.xaml.cpp" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <ClCompile Include="LeakCycleTestCX.xaml.cpp" >
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
