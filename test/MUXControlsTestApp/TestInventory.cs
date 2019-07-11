@@ -136,7 +136,7 @@ namespace MUXControlsTestApp
                 {"ScrollViewer", typeof(ScrollViewerPage), "ScrollViewer.png"},
 #endif
 
-#if FEATURE_INTERACTIONS_ENABLED
+#if FEATURE_INTERACTIONS_ENABLED && USE_INTERNAL_SDK
                 {"ButtonInteraction", typeof(ButtonInteractionPage), "Button.png"},
                 {"SliderInteraction", typeof(SliderInteractionPage), "Slider.png"},
 #endif

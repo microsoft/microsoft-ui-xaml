@@ -125,6 +125,7 @@ namespace MUXControlsTestApp
             }
             set
             {
+#if !INNERLOOP_BUILD
                 if (value != DisableLongAnimations)
                 {
                     if (value)
@@ -143,6 +144,7 @@ namespace MUXControlsTestApp
                         StyleOverridesPlaceholder.MergedDictionaries.Clear();
                     }
                 }
+#endif
             }
         }
 

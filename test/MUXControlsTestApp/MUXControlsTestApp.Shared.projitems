@@ -137,11 +137,6 @@
   <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
     <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants> 
   </PropertyGroup>
-  <PropertyGroup>
-    <DefineConstants Condition="$(AnimatedVisualPlayerExcluded) != 'true'">$(DefineConstants);ANIMATED_VISUAL_PLAYER_INCLUDED</DefineConstants>
-    <DefineConstants Condition="$(RepeaterExcluded) != 'true'">$(DefineConstants);REPEATER_INCLUDED</DefineConstants>
-    <DefineConstants Condition="$(LayoutPanelExcluded) != 'true'">$(DefineConstants);LAYOUT_PANEL_INCLUDED</DefineConstants>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <Page>
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
@@ -164,8 +159,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
-    
-    
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
     </Compile>
