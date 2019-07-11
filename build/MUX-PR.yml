@@ -1,4 +1,6 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
 jobs:
 - job: Setup
   steps:
@@ -80,3 +82,4 @@ jobs:
   parameters:
     dependsOn: RunTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)

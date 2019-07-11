@@ -117,7 +117,11 @@ winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(
         const double realizationWindowOffsetInExtent = realizationRect.*MajorStart() - lastExtent.*MajorStart();
         const double majorSize = lastExtent.*MajorSize() == 0 ? std::max(0.0, averageElementSize * itemsCount - m_itemSpacing) : lastExtent.*MajorSize();
         if (itemsCount > 0 &&
-            realizationRect.*MajorSize() > 0 &&
+            realizationRect.*MajorSize() >= 0 &&
+            // MajorSize = 0 will account for when a nested repeater is outside the realization rect but still being measured. Also,
+            // note that if we are measuring this repeater, then we are already realizing an element to figure out the size, so we could
+            // just keep that element alive. It also helps in XYFocus scenarios to have an element realized for XYFocus to find a candidate
+            // in the navigating direction.
             realizationWindowOffsetInExtent + realizationRect.*MajorSize() >= 0 && realizationWindowOffsetInExtent <= majorSize)
         {
             anchorIndex = (int)(realizationWindowOffsetInExtent / averageElementSize);

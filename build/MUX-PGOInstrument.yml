@@ -1,0 +1,64 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+jobs:
+- job: Build
+  pool:
+    vmImage: 'windows-2019'
+  timeoutInMinutes: 120
+  strategy:
+    maxParallel: 10
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+      Release_Arm:
+        buildPlatform: 'arm'
+        buildConfiguration: 'Release'
+      Release_Arm64:
+        buildPlatform: 'arm64'
+        buildConfiguration: 'Release'
+
+  variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
+
+  steps:
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+ 
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+   
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
