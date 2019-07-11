@@ -66,6 +66,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             IdleSynchronizer.Wait();
             loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
@@ -89,7 +90,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     var child = popup.Child;
                     var grandChild = VisualTreeHelper.GetChild(child, 0);
                     var actualBrush = ((Grid)grandChild).Background;
-                    Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                    Log.Comment("Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                    if (lightDismissBackgroundBrush != actualBrush)
+                    {
+                        if (actualBrush is SolidColorBrush actualSolidBrush)
+                        {
+                            string teachingTipMessage = $"LightDismiss TeachingTip Background is SolidColorBrush with color {actualSolidBrush.Color}";
+                            Log.Comment(teachingTipMessage);
+                            Verify.Fail(teachingTipMessage);
+                        }
+                        else
+                        {
+                            Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                        }
+                    }
                 }
 
                 teachingTip.IsLightDismissEnabled = true;
