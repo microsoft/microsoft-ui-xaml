@@ -3632,6 +3632,69 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
+        public void VerifyHeaderContentMarginOnMinimalNav()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Change display mode to left minimal");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                Log.Comment("Get HeaderContent Margin");
+                var getHeaderContentMarginButton = new Button(FindElement.ByName("GetHeaderContentMargin"));
+                getHeaderContentMarginButton.Invoke();
+                Wait.ForIdle();
+
+                var result = new TextBlock(FindElement.ByName("HeaderContentMarginResult"));
+                Verify.AreEqual(result.GetText(), "8,5,0,0");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCustomHeaderContentMarginOnTopNav()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView custom ThemeResources Test" }))
+            {
+                Log.Comment("Flipping orientation: Left -> Top.");
+                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Get HeaderContent Margin");
+                var getHeaderContentMarginButton = new Button(FindElement.ByName("GetHeaderContentMargin"));
+                getHeaderContentMarginButton.Invoke();
+                Wait.ForIdle();
+
+                var result = new TextBlock(FindElement.ByName("HeaderContentMarginResult"));
+                Verify.AreEqual(result.GetText(), "16,3,0,7");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCustomHeaderContentMarginOnMinimalNav()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView custom ThemeResources Test" }))
+            {
+                Log.Comment("Change display mode to left minimal");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                Log.Comment("Get HeaderContent Margin");
+                var getHeaderContentMarginButton = new Button(FindElement.ByName("GetHeaderContentMargin"));
+                getHeaderContentMarginButton.Invoke();
+                Wait.ForIdle();
+
+                var result = new TextBlock(FindElement.ByName("HeaderContentMarginResult"));
+                Verify.AreEqual(result.GetText(), "18,1,0,0");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
         public void VerifyTopNavigationMinimalVisualStateOnTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

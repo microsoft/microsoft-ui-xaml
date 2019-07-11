@@ -135,6 +135,7 @@ private:
     void UpdateTopNavigationWidthCache();
 
     int GetSelectedItemIndex();
+    double GetPaneToggleButtonWidth();
 
     bool BumperNavigation(int offset);
 
@@ -240,7 +241,6 @@ private:
     void OpenPane();
     void ClosePane();
     bool AttemptClosePaneLightly();
-    void ClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
@@ -288,8 +288,7 @@ private:
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
     tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_topPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_headerContent{ this };
+    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{ this };
 
     tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
 
