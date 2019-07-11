@@ -199,7 +199,10 @@ namespace MUXControlsTestApp
 #if BUILD_WINDOWS
             AppendResourceToMergedDictionaries("DEPControls.xaml");
 #endif
+
+#if FEATURE_SCROLLER_ENABLED
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
 
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;

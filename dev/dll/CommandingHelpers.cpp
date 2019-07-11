@@ -8,9 +8,8 @@
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
-#ifndef BUILD_WINDOWS
+#ifdef ICONSOURCE_INCLUDED
 #include "IconSource.h"
-#endif
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::Convert(
     winrt::IInspectable const& value,
@@ -110,16 +109,16 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
     winrt::throw_hresult(E_NOTIMPL);
 }
 
-void CommandingHelpers::BindToLabelPropertyIfUnset(
+void CommandingHelpers::BindToIconSourcePropertyIfUnset(
     winrt::XamlUICommand const& uiCommand,
     winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& labelProperty)
+    winrt::DependencyProperty const& iconSourceProperty)
 {
-    auto labelReference = safe_try_cast<winrt::IReference<winrt::hstring>>(target.ReadLocalValue(labelProperty));
+    winrt::IconSource localIconSource = safe_try_cast<winrt::IconSource>(target.ReadLocalValue(iconSourceProperty));
 
-    if (!labelReference || labelReference.Value().empty())
+    if (!localIconSource)
     {
-        SharedHelpers::SetBinding(uiCommand, L"Label", target, labelProperty);
+        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, WUXIconSourceToMUXIconSourceConverter());
     }
 }
 
@@ -134,18 +133,22 @@ void CommandingHelpers::BindToIconPropertyIfUnset(
     }
 }
 
-void CommandingHelpers::BindToIconSourcePropertyIfUnset(
+#endif
+
+void CommandingHelpers::BindToLabelPropertyIfUnset(
     winrt::XamlUICommand const& uiCommand,
     winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& iconSourceProperty)
+    winrt::DependencyProperty const& labelProperty)
 {
-    winrt::IconSource localIconSource = safe_try_cast<winrt::IconSource>(target.ReadLocalValue(iconSourceProperty));
+    auto labelReference = safe_try_cast<winrt::IReference<winrt::hstring>>(target.ReadLocalValue(labelProperty));
 
-    if (!localIconSource)
+    if (!labelReference || labelReference.Value().empty())
     {
-        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, WUXIconSourceToMUXIconSourceConverter());
+        SharedHelpers::SetBinding(uiCommand, L"Label", target, labelProperty);
     }
 }
+
+
 
 void CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     winrt::XamlUICommand const& uiCommand,

@@ -165,10 +165,10 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
     
-    <!-- Need to make this more modular. It is kind of mixing different features together in one page -->
-    <!--Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
-    </Compile-->
+    </Compile>
 
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
@@ -190,12 +190,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\VisualTreeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\WaitForDebugger.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs"  Condition="$(SolutionName) != 'MUXControlsInnerLoop'"  />
     <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
@@ -303,7 +303,7 @@
     <Content Include="@(PageToTest)" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -311,11 +311,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

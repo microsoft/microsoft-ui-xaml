@@ -5,24 +5,28 @@
     <!-- Feature to include for inner loop build -->
     <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
 		<FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
+		<FeatureLightsEnabled>true</FeatureLightsEnabled>
+		<FeatureEffectsEnabled>true</FeatureEffectsEnabled>
+		<FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
+		<FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
+		<FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
 
 		<FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
 		<FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
 		<FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
 		<FeatureCheckBoxEnabled>false</FeatureCheckBoxEnabled>
-		<FeatureCollectionsEnabled>false</FeatureCollectionsEnabled>
-		<FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
+	
+		
 		<FeatureComboBoxEnabled>false</FeatureComboBoxEnabled>
 		<FeatureCommandBarFlyoutEnabled>false</FeatureCommandBarFlyoutEnabled>
 		<FeatureDatePickerEnabled>false</FeatureDatePickerEnabled>
 		<FeatureDropDownButtonEnabled>false</FeatureDropDownButtonEnabled>
-		<FeatureEffectsEnabled>false</FeatureEffectsEnabled>
+		
 		<FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
 		<FeatureIconSourceEnabled>false</FeatureIconSourceEnabled>
 		<FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>		
 		<FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
 		<FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
-		<FeatureLightsEnabled>false</FeatureLightsEnabled>
 		<FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
 		<FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
 		<FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
@@ -33,7 +37,7 @@
 		<FeatureRadioButtonsEnabled>false</FeatureRadioButtonsEnabled>
 		<FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
 		<FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>		
-		<FeatureResourceHelperEnabled>false</FeatureResourceHelperEnabled>
+		
 		<FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
 		<FeatureScrollerEnabled>false</FeatureScrollerEnabled>
 		<FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
