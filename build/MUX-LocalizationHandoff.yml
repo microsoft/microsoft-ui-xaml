@@ -21,7 +21,7 @@ jobs:
 
   - powershell: |
       $changes = & git ls-files -m
-      if ($changes)
+      if ($changes -imatch "\.resw")
       {
         Write-Host "##vso[task.complete result=SucceededWithIssues;]"
         Write-Host "##vso[task.logissue type=warning;]Localization updates needed"

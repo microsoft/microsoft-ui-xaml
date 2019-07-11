@@ -3,7 +3,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
-    xmlns:localPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives">
+    xmlns:localPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:ScrollViewer">
         <Setter Property="Background" Value="Transparent"/>
@@ -217,12 +218,14 @@
                             Grid.Row="1"
                             Orientation="Horizontal"
                             HorizontalAlignment="Stretch"
-                            Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                            Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
                         <ScrollBar x:Name="PART_VerticalScrollBar"
                             Grid.Column="1"
                             Orientation="Vertical"
                             VerticalAlignment="Stretch"
-                            Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                            Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
                         <Border x:Name="PART_ScrollBarsSeparator"
                             Grid.Row="1"
                             Grid.Column="1"

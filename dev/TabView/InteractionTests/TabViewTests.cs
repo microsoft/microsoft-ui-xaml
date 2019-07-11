@@ -49,8 +49,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void SelectionTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -67,11 +66,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify content is displayed for newly selected tab.");
                 tabContent = FindElement.ByName("LastTabContent");
                 Verify.IsNotNull(tabContent);
+
+                Log.Comment("Verify that setting SelectedItem changes selection.");
+                Button selectItemButton = FindElement.ByName<Button>("SelectItemButton");
+                selectItemButton.InvokeAndWait();
+
+                TextBlock selectedIndexTextBlock = FindElement.ByName<TextBlock>("SelectedIndexTextBlock");
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "1");
+
+                Log.Comment("Verify that setting SelectedIndex changes selection.");
+                Button selectIndexButton = FindElement.ByName<Button>("SelectIndexButton");
+                selectIndexButton.InvokeAndWait();
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
             }
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void AddRemoveTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -102,7 +112,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject smallerTab = FindElement.ByName("FirstTab");
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
 
-                Log.Comment("Fixed size tabs should all be the same size.");
+                Log.Comment("Equal size tabs should all be the same size.");
                 Verify.AreEqual(smallerTab.BoundingRectangle.Width, largerTab.BoundingRectangle.Width);
 
                 Log.Comment("Changing tab width mode to SizeToContent.");
@@ -214,8 +224,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: This test doesn't pass because it can't find the tab content -- this is an acc bug.
-        //[TestMethod]
+        [TestMethod]
         public void AddButtonTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))

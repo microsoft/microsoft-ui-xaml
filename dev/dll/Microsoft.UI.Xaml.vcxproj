@@ -21,7 +21,7 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -291,11 +291,6 @@
     <ResourceCompile Include="Microsoft.UI.Xaml.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(OutDir)Generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-    </Page>
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
@@ -305,16 +300,6 @@
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>DensityStyles\%(Filename)%(Extension)</Link>
-    </Page>
-    <Page Include="$(OutDir)rs1_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-    </Page>
-    <Page Include="$(OutDir)rs1_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
     </Page>
     <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
     <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic.xaml">
@@ -485,7 +470,7 @@
   <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
     <Message Text="Generating generic resources XAML file " />
     <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" />
-    <Copy SourceFiles="$(OutDir)rs1_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
+    <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	

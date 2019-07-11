@@ -117,4 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="TabViewAddButtonName" xml:space="preserve">
+    <value>Adăugați o nouă filă</value>
+    <comment>Automation name for the add new tab button.</comment>
+  </data>
+  <data name="TabViewAddButtonTooltip" xml:space="preserve">
+    <value>Adăugați o nouă filă</value>
+    <comment>Tooltip for the add new tab button.</comment>
+  </data>
 </root>
