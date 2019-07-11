@@ -194,6 +194,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="IsTitleBarAutoPaddingEnabledCheckbox" AutomationProperties.Name="IsTitleBarAutoPaddingEnabledCheckbox" Content="Title Bar Auto-Padding Enabled" Checked="IsTitleBarAutoPaddingEnabledCheckbox_Checked" Unchecked="IsTitleBarAutoPaddingEnabledCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <CheckBox x:Name="TitleBarCheckbox" AutomationProperties.Name="TitleBarCheckbox" Content="Show Title Bar" Checked="TitleBarCheckbox_Checked" Unchecked="TitleBarCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <CheckBox x:Name="TestFrameCheckbox" AutomationProperties.Name="TestFrameCheckbox" Content="Show Test Frame" Checked="TestFrameCheckbox_Checked" Unchecked="TestFrameCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <Button x:Name="ReverseButton" AutomationProperties.Name="ReverseButton" Content="Reverse Titles" Click="ScrambleButton_Click"/>

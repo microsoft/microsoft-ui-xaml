@@ -1,4 +1,0 @@
-DIRS = \
-    MUXControls.Test \
-    MUXControlsTestApp \
-    MUXControlsTestApp.ApiTests \
