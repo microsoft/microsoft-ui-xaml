@@ -2569,14 +2569,7 @@ int NavigationView::GetSelectedItemIndex()
 
 double NavigationView::GetPaneToggleButtonWidth()
 {
-    double paneToggleButtonWidth = c_paneToggleButtonWidth; // in case the resource lookup fails
-
-    if (auto lookupResult = winrt::Application::Current().Resources().Lookup(box_value(L"PaneToggleButtonWidth")))
-    {
-        paneToggleButtonWidth = unbox_value<double>(lookupResult);
-    }
-
-    return paneToggleButtonWidth;
+    return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonWidth", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonWidth)));
 }
 
 void NavigationView::UpdateTopNavigationWidthCache()
