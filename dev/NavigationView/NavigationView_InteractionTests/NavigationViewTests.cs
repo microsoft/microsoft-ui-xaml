@@ -1,15 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using System;
-using System.Linq;
-
 using Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Text;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -20,19 +18,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -356,29 +345,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         }
                     }
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     Button navButton = new Button(FindElement.ById("TogglePaneButton"));
 
                     Log.Comment("Verify that clicking the navigation button closes the nav pane");
                     navButton.Invoke();
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after clicking the navigation button");
 
                     Log.Comment("Verify that clicking the navigation button opens the nav pane");
                     navButton.Invoke();
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True after clicking the navigation button");
 
                     Log.Comment("Verify that decreasing the width of the control from expanded to compact closes the pane");
                     SetNavViewWidth(ControlWidth.Medium);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after decreasing the width of the control from expanded to compact");
 
                     Log.Comment("Verify that increasing the width of the control from compact to expanded opens the pane");
                     SetNavViewWidth(ControlWidth.Wide);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True after increasing the width of the control from compact to expanded");
                 }
             }
         }
@@ -394,40 +383,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
-                    //mobile test is tracked by Task 16603328.
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on phone.");
-                        return;
-                    }
-
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     Button navButton = new Button(FindElement.ById("TogglePaneButton"));
 
                     Log.Comment("Verify that clicking the navigation button closes the nav pane");
                     navButton.Invoke();
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after clicking the navigation button");
 
                     TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
 
                     Log.Comment("Verify that decreasing the width of the control from expanded to Narrow and force closed pane");
                     SetNavViewWidth(ControlWidth.Narrow);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after decreasing the width of the control from expanded to Narrow");
                     Verify.AreEqual(minimal, displayModeTextBox.DocumentText);
 
                     Log.Comment("Verify that decreasing the width of the control from Narrow to compact and force closed pane");
                     SetNavViewWidth(ControlWidth.Medium);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after decreasing the width of the control from Narrow to compact");
                     Verify.AreEqual(compact, displayModeTextBox.DocumentText);
 
                     Log.Comment("Verify that increasing the width of the control from compact to expanded and force closed pane");
                     SetNavViewWidth(ControlWidth.Wide);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after increasing the width of the control from compact to expanded");
                     Verify.AreEqual(expanded, displayModeTextBox.DocumentText);
                 }
             }
@@ -455,34 +437,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         }
                     }
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     Button navButton = new Button(FindElement.ById("TogglePaneButton"));
 
                     Log.Comment("Verify that after explicitly closing the nav pane, changing display mode doesn't reopen it");
                     navButton.Invoke();
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after explicitly closing the nav pane & changing display mode");
                     SetNavViewWidth(ControlWidth.Medium);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
                     SetNavViewWidth(ControlWidth.Wide);
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
-                    Log.Comment("Verify that selecting a menu item in minimal display mode closes the pane");
+                    Log.Comment("Verify that selecting a menu item in minimal display mode opens the pane");
                     SetNavViewWidth(ControlWidth.Narrow);
                     Wait.ForIdle();
                     navButton.Invoke();
                     Wait.ForIdle();
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True after selecting a menu item in minimal display mode");
 
                     Log.Comment("Invoke Music item to close the pane");
                     var music = new Button(FindElement.ByName("Music"));
                     music.Invoke();
                     Wait.ForIdle();
 
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after invoking Music item");
                 }
             }
         }
@@ -734,14 +716,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Verify IsPaneOpen=False would not open the pane by default");
                 CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
                 Button navButton = new Button(FindElement.ById("TogglePaneButton"));
 
-                Log.Comment("Verify that clicking the navigation button open the nav pane");
+                Log.Comment("Verify that clicking the navigation button opens the nav pane");
                 navButton.Invoke();
                 Wait.ForIdle();
-                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True after clicking the navigation button");
             }
         }
 
@@ -826,12 +808,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Log.Comment("Verify that invoking the search button opens the pane and put focus in the AutoSuggestBox");
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
                     searchButton.Invoke();
                     Wait.ForIdle();
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     // AutoSuggestBox never gets keyboard focus itself; focus goes to the edit box inside it
                     UIObject autoSuggestEditBox = FindElement.ByNameAndClassName("PaneAutoSuggestBox", "TextBox");
@@ -975,14 +957,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             foreach (var testScenario in testScenarios)
             {
                 using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                    page2 = new TestSetupHelper(testScenario.TestPageName))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Comment("Test does not run on phone because there is no title bar.");
-                        return;
-                    }
-
                     CheckBox titleBarCheckbox = new CheckBox(FindElement.ByName("TitleBarCheckbox"));
                     CheckBox testFrameCheckbox = new CheckBox(FindElement.ByName("TestFrameCheckbox"));
                     Button navButton = new Button(FindElement.ById("TogglePaneButton"));
@@ -1494,28 +1470,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))
             {
                 var moveContentUnderTitleBarButton = new Button(FindElement.ById("MoveContentUnderTopnavTitleBar"));
+                var flipIsTitleBarAutoPaddingEnabledButton = new Button(FindElement.ById("FlipIsTitleBarAutoPaddingEnabledButton"));
                 var getTopPaddingHeightButton = new Button(FindElement.ById("GetTopPaddingHeightButton"));
                 var fullScreenButton = new Button(FindElement.ById("FullScreenInvokerButton"));
+                var navViewIsTitleBarAutoPaddingEnabledId = "NavViewIsTitleBarAutoPaddingEnabled";
                 var topPaddingRenderedValueId = "TopPaddingRenderedValue";
+                UIObject navViewIsTitleBarAutoPaddingEnabled = null;
                 UIObject topNavTopPadding = null;
 
-                // Checking top padding is added for regular Desktop                
+                // Checking top padding is added for regular Desktop
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to True");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Accessing TopPadding Height");
                 getTopPaddingHeightButton.Click();
                 Wait.ForIdle();
-                topNavTopPadding = TryFindElement.ById(topPaddingRenderedValueId);
 
-                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    // For phone we only check once to make sure the padding is 0
-                    Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
-                    return;
-                }
+                navViewIsTitleBarAutoPaddingEnabled = TryFindElement.ById(navViewIsTitleBarAutoPaddingEnabledId);
+                Verify.IsNotNull(navViewIsTitleBarAutoPaddingEnabled);
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("True", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
+                topNavTopPadding = TryFindElement.ById(topPaddingRenderedValueId);
+                Verify.IsNotNull(topNavTopPadding);
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
 
                 if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    Verify.AreEqual(32, Int32.Parse(topNavTopPadding.GetText()));
+                    Verify.AreEqual("32", topNavTopPadding.GetText());
                 }
                 else
                 {
@@ -1528,24 +1511,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     else
                     {
-                        Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
+                        Verify.AreEqual("0", topNavTopPadding.GetText());
                     }
                 }
 
+                Log.Comment("Setting IsTitleBarAutoPaddingEnabled to False");
+                flipIsTitleBarAutoPaddingEnabledButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("False", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
+                Log.Comment("Accessing TopPadding Height");
+                getTopPaddingHeightButton.Click();
+                Wait.ForIdle();
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
+                Verify.AreEqual("0", topNavTopPadding.GetText());
+
+                Log.Comment("Setting IsTitleBarAutoPaddingEnabled to True");
+                flipIsTitleBarAutoPaddingEnabledButton.Click();
+                Wait.ForIdle();
+
+                Log.Comment($"NavView.IsTitleBarAutoPaddingEnabled: {navViewIsTitleBarAutoPaddingEnabled.GetText()}");
+                Verify.AreEqual("True", navViewIsTitleBarAutoPaddingEnabled.GetText());
+
                 // Checking top padding is NOT added for fullscreen Desktop
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to False");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
                 fullScreenButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to True");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
+
+                Log.Comment("Accessing TopPadding Height");
                 getTopPaddingHeightButton.Click();
                 Wait.ForIdle();
-
-                topNavTopPadding = TryFindElement.ById(topPaddingRenderedValueId);
-                Verify.AreEqual(0, Int32.Parse(topNavTopPadding.GetText()));
+                Log.Comment($"TopPadding Height: {topNavTopPadding.GetText()}");
+                Verify.AreEqual("0", topNavTopPadding.GetText());
 
                 // Reverting changes to leave app in original state
+                Log.Comment("Setting TitleBar.ExtendViewIntoTitleBar to False");
                 moveContentUnderTitleBarButton.Click();
                 Wait.ForIdle();
                 fullScreenButton.Click();
@@ -1735,7 +1743,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     InvokeNavigationViewAccessKeyAndVerifyKeyTipPlacement("TogglePaneButton");
 
                     Log.Comment("Verify that the pane is open");
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
                 }
             }
         }
@@ -2247,13 +2255,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
             {
-                //mobile test is tracked by Task 16603328.
-                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on phone.");
-                    return;
-                }
-
                 Log.Comment("Setting focus to Home");
                 UIObject home = FindElement.ByName("Home");
                 home.SetFocus();
@@ -2597,12 +2598,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Comment("Test does not run on phone because back button cannot be clicked on phone.");
-                        return;
-                    }
-
                     Log.Comment("Set control to compact");
                     SetNavViewWidth(ControlWidth.Medium);
                     Wait.ForIdle();
@@ -2634,7 +2629,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Wait.ForIdle();
 
                     Log.Comment("Verify that the pane is open");
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
                 }
             }
         }
@@ -2662,14 +2657,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             foreach (var testScenario in testScenarios)
             {
                 using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                 page2 = new TestSetupHelper(testScenario.TestPageName))
+                    page2 = new TestSetupHelper(testScenario.TestPageName))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on mobile due to lack of tooltips.");
-                        return;
-                    }
-
                     // Close the pane
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
                     togglePaneButton.Invoke();
@@ -2730,14 +2719,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void KeyboardFocusToolTipTest() // Verify tooltips appear when Keyboard focused
         {
             using (IDisposable page1 = new TestSetupHelper("NavigationView Tests"),
-                             page2 = new TestSetupHelper("NavigationView Test"))
+                page2 = new TestSetupHelper("NavigationView Test"))
             {
-                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on mobile due to lack of tooltips.");
-                    return;
-                }
-
                 if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                 {
                     Log.Warning("Test is disabled on RS1 and earlier because XYFocusKeyboardNavigation is not supported.");
@@ -2808,12 +2791,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             // Since RS5, ToolTip is removed from ControlTemplate. and this test case can't be run on "NavigationView Tests" page 
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Regression Test" }))
             {
-                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    Log.Warning("Test is disabled on mobile due to lack of tooltips.");
-                    return;
-                }
-
                 // Close the pane
                 Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
                 Verify.IsNotNull(togglePaneButton, "Finding TogglePaneButton");
@@ -2942,12 +2919,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void BackToolTipTest()
         {
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-            {
-                Log.Warning("Test is disabled on mobile due to lack of tooltips.");
-                return;
-            }
-
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
                 Button button = new Button(FindElement.ByName("NavigationViewBackButton"));
@@ -2964,6 +2935,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     button.MovePointer(offsetX: 1, offsetY: 1);
                     Wait.ForIdle();
                     button.MovePointer(offsetX: -1, offsetY: -1);
+                    Wait.ForIdle();
+
+                    Log.Comment("Waiting for tooltip to open");
+                    waiter.Wait(TimeSpan.FromSeconds(5));
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CloseToolTipTest()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+
+                Log.Comment("Set PaneDisplayMode to LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                Log.Comment("Open the pane");
+                isPaneOpenCheckBox.Check();
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
+
+                Button closeButton = new Button(FindElement.ById("NavigationViewCloseButton"));
+                Verify.IsNotNull(closeButton);
+
+                using (var waiter = new ToolTipOpenedWaiter())
+                {
+                    Log.Comment("Moving pointer around, over close button");
+                    closeButton.MovePointer();
+                    Wait.ForIdle();
+                    closeButton.MovePointer(offsetX: 1, offsetY: 1);
+                    Wait.ForIdle();
+                    closeButton.MovePointer(offsetX: -1, offsetY: -1);
                     Wait.ForIdle();
 
                     Log.Comment("Waiting for tooltip to open");
@@ -3008,12 +3018,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on mobile");
-                        return;
-                    }
-
                     if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
                     {
                         Log.Warning("Test is disabled on RS1 and older");
@@ -3022,7 +3026,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "Pane should be open by default since test is disabled on mobile");
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     SetNavViewWidth(ControlWidth.Medium);
                     WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
@@ -3034,7 +3038,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     PaneOpenCloseTestCaseRetry(3, () =>
                     {
@@ -3047,7 +3051,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     isPaneOpenCheckBox.Toggle();
                     Wait.ForIdle();
                     WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     PaneOpenCloseTestCaseRetry(3, () =>
                     {
@@ -3060,7 +3064,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     isPaneOpenCheckBox.Toggle();
                     Wait.ForIdle();
                     WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
                 }
             }
         }
@@ -3089,12 +3093,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on mobile");
-                        return;
-                    }
-
                     if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
                     {
                         Log.Warning("Test is disabled on RS2 and older due to lack of SplitView events");
@@ -3109,7 +3107,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(ToggleState.On, cancelClosingCheckbox.ToggleState);
 
                     var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
                     Log.Comment("Reset the event count");
                     new Button(FindElement.ById("ClosingEventCountResetButton")).Invoke();
@@ -3123,7 +3121,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
 
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     var closingCounts = new Edit(FindElement.ByName("ClosingEventCountTextBlock"));
                     var expectedString = "1-0";
@@ -3180,12 +3178,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                    {
-                        Log.Warning("Test is disabled on mobile");
-                        return;
-                    }
-
                     if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
                     {
                         Log.Warning("Test is disabled on RS2 and older due to lack of SplitView events");
@@ -3193,7 +3185,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                     
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "Pane should be open by default since test is disabled on mobile");
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     SetNavViewWidth(ControlWidth.Medium);
                     WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
@@ -3211,7 +3203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                                 WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
                             }
 
-                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
                             Log.Comment("Reset the event count");
                             new Button(FindElement.ById("ClosingEventCountResetButton")).Invoke();
@@ -3225,7 +3217,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                             }
                             WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
 
-                            Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                            Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                             var closingCounts = new Edit(FindElement.ByName("ClosingEventCountTextBlock"));
                             var expectedString = "1-1";
@@ -3235,7 +3227,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                             Wait.ForIdle();
 
                             WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
-                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                            Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
                             Verify.AreEqual(expectedString, closingCounts.GetText());
                         });
                 }
@@ -3457,8 +3449,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     waiter.Wait();
                 }
                 Verify.IsTrue(invokeResult.Value.Contains("Minimal"));
-                Log.Comment("Verify Pane is closed automatically in PaneDisplayMode is Minimal");
-                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                Log.Comment("Verify Pane is closed automatically when PaneDisplayMode is Minimal");
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False when PaneDisplayMode is Minimal");
 
                 Log.Comment("Set DisplayMode to Left");
                 panelDisplayModeComboBox.SelectItemByName("Left");
@@ -3468,8 +3460,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     waiter.Wait();
                 }
                 Verify.IsTrue(invokeResult.Value.Contains("Expanded"));
-                Log.Comment("Verify Pane is opened automatically in PaneDisplayMode is changed from Minimal to Left");
-                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState);
+                Log.Comment("Verify Pane is opened automatically when PaneDisplayMode is changed from Minimal to Left");
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True when PaneDisplayMode is changed from Minimal to Left");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        [TestProperty("Description", "Verifies the back button is visible when the pane is closed and the close button is visible when the pane is open, in LeftMinimal display mode")]
+        public void VerifyBackAndCloseButtonsVisibility()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                Log.Comment("Set PaneDisplayMode to LeftMinimal");
+                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                Wait.ForIdle();
+
+                Log.Comment("Verify Pane is closed automatically when PaneDisplayMode becomes LeftMinimal");
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False when PaneDisplayMode becomes LeftMinimal");
+
+                Log.Comment("Verify toggle-pane button is visible when pane is closed");
+                VerifyElement.Found("TogglePaneButton", FindBy.Id);
+
+                Log.Comment("Verify back button is visible when pane is closed");
+                VerifyElement.Found("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is not visible when pane is closed");
+                VerifyElement.NotFound("NavigationViewCloseButton", FindBy.Id);
+
+                Log.Comment("Open the pane");
+                isPaneOpenCheckBox.Check();
+                Wait.ForIdle();
+
+                Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
+
+                Log.Comment("Verify toggle-pane button is visible when pane is open");
+                VerifyElement.Found("TogglePaneButton", FindBy.Id);
+
+                Log.Comment("Verify back button is not visible when pane is open");
+                VerifyElement.NotFound("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is visible when pane is open");
+                VerifyElement.Found("NavigationViewCloseButton", FindBy.Id);
+
+                Button closeButton = new Button(FindElement.ById("NavigationViewCloseButton"));
+                Verify.IsNotNull(closeButton);
+                Verify.IsTrue(closeButton.IsEnabled, "Close button is expected to be enabled");
+
+                CheckBox backButtonVisibilityCheckbox = new CheckBox(FindElement.ByName("BackButtonVisibilityCheckbox"));
+
+                backButtonVisibilityCheckbox.Uncheck();
+                Wait.ForIdle();
+
+                Log.Comment("Verify back button is not visible when pane is open");
+                VerifyElement.NotFound("NavigationViewBackButton", FindBy.Id);
+
+                Log.Comment("Verify close button is no longer visible when pane is open");
+                VerifyElement.NotFound("NavigationViewCloseButton", FindBy.Id);
             }
         }
 
@@ -3514,13 +3564,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Stretch Test" }))
             {
-                if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-                {
-                    // ContentAlignment Stretch is implemented by XAML, and there is not need to verify on phone
-                    Log.Warning("Test is disabled on phone.");
-                    return;
-                }
-
                 Button navButton = new Button(FindElement.ById("TogglePaneButton"));
 
                 // NavigationViewCompactPaneLength is 40 or 48 in different release. This test case doesn't need an exactly number of width, so just choose 48 as the boundary
@@ -3844,7 +3887,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState);
+                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
                 // Maximize the window
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Windows, 1);

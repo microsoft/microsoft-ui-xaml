@@ -123,14 +123,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.TryWait();
         }
 
-        // These files only apply to MUX, so there's no need to run these tests for WUXC.
-#if !BUILD_WINDOWS
-        //[TestMethod] TODO: Re-enable after fixing bug 17186090.
-        public void VerifyRS1DefaultStyleDictionariesWereMergedCorrectly()
-        {
-            VerifyDictionariesWereMergedCorrectly(GetRS1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/Generic.xaml");
-        }
-
         [TestMethod]
         public void VerifyRS2DefaultStyleDictionariesWereMergedCorrectly()
         {
@@ -174,12 +166,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyDictionariesWereMergedCorrectly(Get19H1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/19h1_generic.xaml");
             }
-        }
-
-        [TestMethod]
-        public void VerifyRS1ThemeResourceDictionariesWereMergedCorrectly()
-        {
-            VerifyDictionariesWereMergedCorrectly(GetRS1ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs1_themeresources.xaml");
         }
 
         [TestMethod]
@@ -521,6 +507,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
-#endif
     }
 }

@@ -55,6 +55,7 @@ public:
 #define SR_NavigationViewItemDefaultControlName L"NavigationViewItemDefaultControlName"
 #define SR_NavigationBackButtonName L"NavigationBackButtonName"
 #define SR_NavigationBackButtonToolTip L"NavigationBackButtonToolTip"
+#define SR_NavigationCloseButtonName L"NavigationCloseButtonName"
 #define SR_NavigationOverflowButtonName L"NavigationOverflowButtonName"
 #define SR_NavigationOverflowButtonText L"NavigationOverflowButtonText"
 #define SR_SettingsButtonName L"SettingsButtonName"

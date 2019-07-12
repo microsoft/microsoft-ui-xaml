@@ -698,21 +698,37 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
-        if (contentAsFE)
+        const winrt::Thickness contentMargin = [contentAsFE]()
         {
-            if (contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
-                isnan(contentAsFE.Width()) &&
-                contentArrangeSize.Width < viewport.Width)
-            {
-                contentArrangeSize.Width = viewport.Width;
-            }
+            return contentAsFE ? contentAsFE.Margin() : winrt::Thickness{0};
+        }();
 
-            if (contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
+        const bool wasContentArrangeWidthStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
+                isnan(contentAsFE.Width()) &&
+                contentArrangeSize.Width < viewport.Width;
+        }();
+
+        const bool wasContentArrangeHeightStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
                 isnan(contentAsFE.Height()) &&
-                contentArrangeSize.Height < viewport.Height)
-            {
-                contentArrangeSize.Height = viewport.Height;
-            }
+                contentArrangeSize.Height < viewport.Height;
+        }();
+
+        if (wasContentArrangeWidthStretched)
+        {
+            // Allow the content to stretch up to the larger viewport width.
+            contentArrangeSize.Width = viewport.Width;
+        }
+
+        if (wasContentArrangeHeightStretched)
+        {
+            // Allow the content to stretch up to the larger viewport height.
+            contentArrangeSize.Height = viewport.Height;
         }
 
         finalContentRect =
@@ -722,9 +738,6 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
             contentArrangeSize.Width,
             contentArrangeSize.Height
         };
-
-        newUnzoomedExtentWidth = contentArrangeSize.Width;
-        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
         IsAnchoring(&isAnchoringElementHorizontally, &isAnchoringElementVertically, &isAnchoringFarEdgeHorizontally, &isAnchoringFarEdgeVertically);
 
@@ -750,8 +763,12 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
                 ResetAnchorElement();
             }
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
 
             if (!isnan(preArrangeViewportToElementAnchorPointsDistance.Width) || !isnan(preArrangeViewportToElementAnchorPointsDistance.Height))
             {
@@ -788,20 +805,22 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             ResetAnchorElement();
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
         }
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+        newUnzoomedExtentWidth = contentArrangeSize.Width;
+        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
-        winrt::Thickness contentMargin{};
         double maxUnzoomedExtentWidth = std::numeric_limits<double>::infinity();
         double maxUnzoomedExtentHeight = std::numeric_limits<double>::infinity();
 
         if (contentAsFE)
         {
-            contentMargin = contentAsFE.Margin();
-
             // Determine the maximum size directly set on the content, if any.
             maxUnzoomedExtentWidth = GetComputedMaxWidth(maxUnzoomedExtentWidth, contentAsFE);
             maxUnzoomedExtentHeight = GetComputedMaxHeight(maxUnzoomedExtentHeight, contentAsFE);
@@ -1192,6 +1211,65 @@ void Scroller::ValuesChanged(
 }
 
 #pragma endregion
+
+// Returns the size used to arrange the provided Scroller content.
+winrt::Size Scroller::ArrangeContent(
+    const winrt::UIElement& content,
+    const winrt::Thickness& contentMargin,
+    winrt::Rect& finalContentRect,
+    bool wasContentArrangeWidthStretched,
+    bool wasContentArrangeHeightStretched)
+{
+    MUX_ASSERT(content);
+
+    winrt::Size contentArrangeSize =
+    {
+        finalContentRect.Width,
+        finalContentRect.Height
+    };
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, wasContentArrangeWidthStretched, wasContentArrangeHeightStretched);
+    content.Arrange(finalContentRect);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+
+    if (wasContentArrangeWidthStretched || wasContentArrangeHeightStretched)
+    {
+        bool reArrangeNeeded = false;
+        const auto renderWidth = content.RenderSize().Width;
+        const auto renderHeight = content.RenderSize().Height;
+        const auto marginWidth = static_cast<float>(contentMargin.Left + contentMargin.Right);
+        const auto marginHeight = static_cast<float>(contentMargin.Top + contentMargin.Bottom);
+        const auto scaleFactorRounding = 0.5f / static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
+
+        if (wasContentArrangeWidthStretched &&
+            renderWidth > 0.0f &&
+            renderWidth + marginWidth < finalContentRect.Width * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially horizontally.
+            contentArrangeSize.Width = finalContentRect.Width = renderWidth + marginWidth;
+            reArrangeNeeded = true;
+        }
+
+        if (wasContentArrangeHeightStretched &&
+            renderHeight > 0.0f &&
+            renderHeight + marginHeight < finalContentRect.Height * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially vertically.
+            contentArrangeSize.Height = finalContentRect.Height = renderHeight + marginHeight;
+            reArrangeNeeded = true;
+        }
+
+        if (reArrangeNeeded)
+        {
+            // Re-arrange the content using the partially stretched size.
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content re-Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+            content.Arrange(finalContentRect);
+        }
+    }
+
+    return contentArrangeSize;
+}
 
 // Used to perform a flickerless change to the Content's XAML Layout Offset. The InteractionTracker's Position is unaffected, but its Min/MaxPosition expressions
 // and the Scroller HorizontalOffset/VerticalOffset property are updated accordingly once the change is incorporated into the XAML layout engine.
@@ -4008,6 +4086,8 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 
     if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
+        bool delayProcessingViewChanges = false;
+
         for (auto operationsIter = m_interactionTrackerAsyncOperations.begin(); operationsIter != m_interactionTrackerAsyncOperations.end();)
         {
             auto& interactionTrackerAsyncOperation = *operationsIter;
@@ -4022,10 +4102,42 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (interactionTrackerAsyncOperation->IsQueued())
             {
-                bool needsProcessing = false;
+                if (!delayProcessingViewChanges && interactionTrackerAsyncOperation->GetTicksCountdown() == 1)
+                {
+                    // Evaluate whether all remaining queued operations need to be delayed until the completion of a prior required operation.
+                    std::shared_ptr<InteractionTrackerAsyncOperation> requiredInteractionTrackerAsyncOperation = interactionTrackerAsyncOperation->GetRequiredOperation();
 
-                interactionTrackerAsyncOperation->TickQueuedOperation(&needsProcessing);
-                if (needsProcessing)
+                    if (requiredInteractionTrackerAsyncOperation)
+                    {
+                        if (!requiredInteractionTrackerAsyncOperation->IsCanceled() && !requiredInteractionTrackerAsyncOperation->IsCompleted())
+                        {
+                            // Prior required operation is not canceled or completed yet. All subsequent operations need to be delayed.
+                            delayProcessingViewChanges = true;
+                        }
+                        else
+                        {
+                            // Previously set required operation is now canceled or completed. Check if it needs to be replaced with an older one.
+                            requiredInteractionTrackerAsyncOperation = GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation);
+                            interactionTrackerAsyncOperation->SetRequiredOperation(requiredInteractionTrackerAsyncOperation);
+                            if (requiredInteractionTrackerAsyncOperation)
+                            {
+                                // An older operation is now required. All subsequent operations need to be delayed.
+                                delayProcessingViewChanges = true;
+                            }
+                        }
+                    }
+                }
+
+                if (delayProcessingViewChanges)
+                {
+                    if (interactionTrackerAsyncOperation->GetTicksCountdown() > 1)
+                    {
+                        // Ticking the queued operation without processing it.
+                        interactionTrackerAsyncOperation->TickQueuedOperation();
+                    }
+                    unhookCompositionTargetRendering = false;
+                }                    
+                else if (interactionTrackerAsyncOperation->TickQueuedOperation())
                 {
                     // InteractionTracker is ready for the operation's processing.
                     ProcessDequeuedViewChange(interactionTrackerAsyncOperation);
@@ -4041,10 +4153,7 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (!interactionTrackerAsyncOperation->IsAnimated())
             {
-                bool needsCompletion = false;
-
-                interactionTrackerAsyncOperation->TickNonAnimatedOperation(&needsCompletion);
-                if (needsCompletion)
+                if (interactionTrackerAsyncOperation->TickNonAnimatedOperation())
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
                     CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
@@ -6017,6 +6126,10 @@ void Scroller::ChangeZoomFactorPrivate(
 
     m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
 
+    // Workaround for InteractionTracker bug 22414894 - calling TryUpdateScale after a non-animated view change during the same tick results in an incorrect position.
+    // That non-animated view change needs to complete before this TryUpdateScale gets invoked.
+    interactionTrackerAsyncOperation->SetRequiredOperation(GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation));
+
     if (viewChangeId)
     {
         m_latestViewChangeId = GetNextViewChangeId();
@@ -6864,6 +6977,8 @@ void Scroller::CompleteViewChange(
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         interactionTrackerAsyncOperation.get(), TypeLogging::ScrollerViewChangeResultToString(result).c_str());
 
+    interactionTrackerAsyncOperation->SetIsCompleted(true);
+
     bool onHorizontalOffsetChangeCompleted = false;
     bool onVerticalOffsetChangeCompleted = false;
 
@@ -7079,6 +7194,34 @@ int Scroller::GetInteractionTrackerOperationsCount(bool includeAnimatedOperation
     }
 
     return operationsCount;
+}
+
+std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetLastNonAnimatedInteractionTrackerOperation(
+    std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const
+{
+    bool priorInteractionTrackerOperationSeen = false;
+
+    for (auto operationsIter = m_interactionTrackerAsyncOperations.end(); operationsIter != m_interactionTrackerAsyncOperations.begin();)
+    {
+        operationsIter--;
+
+        auto& interactionTrackerAsyncOperation = *operationsIter;
+
+        if (!priorInteractionTrackerOperationSeen && priorToInteractionTrackerOperation == interactionTrackerAsyncOperation)
+        {
+            priorInteractionTrackerOperationSeen = true;
+        }
+        else if (priorInteractionTrackerOperationSeen &&
+            !interactionTrackerAsyncOperation->IsAnimated() &&
+            !interactionTrackerAsyncOperation->IsCompleted() &&
+            !interactionTrackerAsyncOperation->IsCanceled())
+        {
+            MUX_ASSERT(interactionTrackerAsyncOperation->IsDelayed() || interactionTrackerAsyncOperation->IsQueued());
+            return interactionTrackerAsyncOperation;
+        }
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromRequestId(int requestId) const

@@ -220,21 +220,6 @@ if ($Configuration -ilike "debug")
     #$PackageName += ".Debug"
 }
 
-# On RS1 we do not have support for DefaultStyleResourceUri which enables our controls to point the XAML framework to load 
-# their  default style out of the framework package's versioned generic.xaml. The support exists on RS2 and greater so for 
-# RS1 we include a generic.xaml in the default app location that the framework looks for component styles and have that 
-# file just be a pointer to the framework package rs1 generic.xaml.
-$rs1_genericxaml = 
-@"
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-    <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="ms-appx://$PackageName/Microsoft.UI.Xaml/Themes/generic.xaml"/>
-    </ResourceDictionary.MergedDictionaries>
-</ResourceDictionary>
-"@
-
-Set-Content -Value $rs1_genericxaml $fullOutputPath\rs1_themes_generic.xaml
-
 # Allow single URI to access Compact.xaml from both framework package and nuget package
 $compactxaml = 
 @"

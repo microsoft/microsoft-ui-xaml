@@ -69,6 +69,23 @@ namespace MUXControlsTestApp
             }
         }
 
+
+        public void SelectItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Tabs != null)
+            {
+                Tabs.SelectedItem = Tabs.Items[1];
+            }
+        }
+
+        public void SelectIndexButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Tabs != null)
+            {
+                Tabs.SelectedIndex = 2;
+            }
+        }
+
         private void TabWidthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (Tabs != null)
@@ -76,7 +93,7 @@ namespace MUXControlsTestApp
                 switch (TabWidthComboBox.SelectedIndex)
                 {
                     case 0: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.SizeToContent; break;
-                    case 1: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.Fixed; break;
+                    case 1: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.Equal; break;
                 }
             }
         }
