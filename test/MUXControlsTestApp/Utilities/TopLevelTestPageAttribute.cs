@@ -8,6 +8,6 @@ namespace MUXControlsTestApp
     {
         public string Name { get; set; } = "NoName";
 
-        public string Icon { get; set; } = String.Empty;
+        public string Icon { get; set; } = "DefaultIcon.png";
     }
 }
