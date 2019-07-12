@@ -562,6 +562,7 @@ void CommandBarFlyoutCommandBar::UpdateVisualState(
     }
     else
     {
+        winrt::VisualStateManager::GoToState(*this, L"Default", useTransitions);
         winrt::VisualStateManager::GoToState(*this, L"Collapsed", useTransitions);
     }
 }

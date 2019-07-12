@@ -37,7 +37,6 @@ NuGet package version:
 | April 2018 Update (17134)          | <!-- Yes/No? -->   |
 | Fall Creators Update (16299)       | <!-- Yes/No? -->   |
 | Creators Update (15063)            | <!-- Yes/No? -->   |
-| Anniversary Update (14393)         | <!-- Yes/No? -->   |
 
 <!-- Which device form factors did you see the issue on? Leave blank if you didn't try that device. -->
 | Device form factor | Saw the problem? |

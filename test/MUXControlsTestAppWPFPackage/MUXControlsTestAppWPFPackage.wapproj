@@ -58,7 +58,7 @@
   <PropertyGroup>
     <ProjectGuid>03f7f4f7-0250-435e-a730-ed82f6a08652</ProjectGuid>
     <TargetPlatformVersion>$(MuxSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <EntryPointProjectUniqueName>..\MUXControlsTestAppWPF\MUXControlsTestAppWPF.csproj</EntryPointProjectUniqueName>
   </PropertyGroup>
