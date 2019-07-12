@@ -125,7 +125,7 @@ namespace MUXControlsTestApp
             }
             set
             {
-#if !INNERLOOP_BUILD
+#if !INNERLOOP_BUILD // The xaml files below need to be factored better into appropriate feature area projects - Tracked by Issue: 1044 
                 if (value != DisableLongAnimations)
                 {
                     if (value)
@@ -200,7 +200,7 @@ namespace MUXControlsTestApp
             AppendResourceToMergedDictionaries("DEPControls.xaml");
 #endif
 
-#if FEATURE_SCROLLER_ENABLED
+#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
 #endif
 
