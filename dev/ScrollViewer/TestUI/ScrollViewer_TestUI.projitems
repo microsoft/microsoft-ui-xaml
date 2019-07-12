@@ -10,6 +10,9 @@
     <Import_RootNamespace>ScrollViewer_Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerBlankPage.xaml.cs">
+      <DependentUpon>ScrollViewerBlankPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml.cs">
       <DependentUpon>ScrollViewerDynamicPage.xaml</DependentUpon>
     </Compile>
@@ -31,6 +34,11 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollViewerBlankPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollViewerDynamicPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
