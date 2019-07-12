@@ -103,7 +103,7 @@ elseif ($failingTests.Count -gt 0)
 elseif ($unreliableTests.Count -gt 0)
 {
     Write-Host "All tests eventually passed, but some initially failed."
-    Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+    Write-Host "##vso[task.complete result=Succeeded;]"
 }
 else
 {
