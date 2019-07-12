@@ -21,7 +21,7 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ScrollViewer", Icon = "ScrollViewer.png")]
+    [TopLevelTestPage(Name = "ScrollViewer", Icon = "ScrollViewer.png")]
     public sealed partial class ScrollViewerPage : TestPage
     {
         public ScrollViewerPage()

@@ -27,7 +27,7 @@ using ScrollViewerIRefreshInfoProviderAdapter = Microsoft.UI.Private.Controls.Sc
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ScrollViewerAdapter", Icon = "ScrollViewer.png")]
+    [TopLevelTestPage(Name = "ScrollViewerAdapter", Icon = "ScrollViewer.png")]
     public sealed partial class ScrollViewerAdapterPage : TestPage
     {
         Dictionary<string, WeakReference> objects = new Dictionary<string, WeakReference>();

@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "FlipView", Icon = "FlipView.png")]
+    [TopLevelTestPage(Name = "FlipView", Icon = "FlipView.png")]
     public sealed partial class FlipViewPage : TestPage
     {
         public FlipViewPage()

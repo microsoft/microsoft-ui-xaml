@@ -13,7 +13,7 @@ using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ItemsRepeater", Icon = "ListView.png")]
+    [TopLevelTestPage(Name = "ItemsRepeater", Icon = "ListView.png")]
     public sealed partial class RepeaterTestUIPage : Page
     {
         private VirtualizingLayout _stackLayout;

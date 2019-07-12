@@ -19,7 +19,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "Acrylic", Icon = "AcrylicBrush.png")]
+    [TopLevelTestPage(Name = "Acrylic", Icon = "AcrylicBrush.png")]
     public sealed partial class AcrylicPage : TestPage
     {
         public AcrylicPage()

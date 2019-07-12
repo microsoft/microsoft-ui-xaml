@@ -36,7 +36,7 @@ namespace MUXControlsTestApp
             Tests = new List<TestDeclaration>();
             foreach(Type type in typeof(TestInventory).GetTypeInfo().Assembly.GetTypes())
             {
-                var attribute = type.GetTypeInfo().GetCustomAttribute<AddToTestInventoryAttribute>();
+                var attribute = type.GetTypeInfo().GetCustomAttribute<TopLevelTestPageAttribute>();
                 if(attribute != null)
                 {
                     Tests.Add(new TestDeclaration() 

@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ToolTip", Icon = "ToolTip.png")]
+    [TopLevelTestPage(Name = "ToolTip", Icon = "ToolTip.png")]
     public sealed partial class ToolTipPage : TestPage
     {
         public ToolTipPage()

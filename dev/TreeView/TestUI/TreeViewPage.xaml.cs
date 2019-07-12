@@ -29,7 +29,7 @@ using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "TreeView", Icon = "TreeView.png")]
+    [TopLevelTestPage(Name = "TreeView", Icon = "TreeView.png")]
     public sealed partial class TreeViewPage : TestPage
     {
         bool _disableClickToExpand;

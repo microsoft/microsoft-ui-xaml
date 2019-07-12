@@ -89,7 +89,7 @@ namespace MUXControlsTestApp
         }
     }
 
-    [AddToTestInventory(Name="Leak")]
+    [TopLevelTestPage(Name="Leak")]
     public sealed partial class LeakTestPage : TestPage
     {
         public LeakTestPage()

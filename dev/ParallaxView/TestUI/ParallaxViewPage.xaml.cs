@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ParallaxView", Icon = "ParallaxView.png")]
+    [TopLevelTestPage(Name = "ParallaxView", Icon = "ParallaxView.png")]
     public sealed partial class ParallaxViewPage : TestPage
     {
         public ParallaxViewPage()

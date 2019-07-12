@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "CornerRadius")]
+    [TopLevelTestPage(Name = "CornerRadius")]
     public sealed partial class CornerRadiusPage : TestPage
     {
         public ObservableCollection<string> AutoSuggestSource { get; private set; } = new ObservableCollection<string>();

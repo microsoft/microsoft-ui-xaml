@@ -19,7 +19,7 @@ using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingE
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "TabView")]
+    [TopLevelTestPage(Name = "TabView")]
     public sealed partial class TabViewPage : TestPage
     {
         int _newTabNumber = 1;

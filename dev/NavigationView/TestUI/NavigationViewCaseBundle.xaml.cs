@@ -14,7 +14,7 @@ using NavigationViewDisplayModeChangedEventArgs = Microsoft.UI.Xaml.Controls.Nav
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "NavigationView", Icon = "NavigationView.png")]
+    [TopLevelTestPage(Name = "NavigationView", Icon = "NavigationView.png")]
     public sealed partial class NavigationViewCaseBundle : TestPage
     {
         public NavigationViewCaseBundle()

@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "ComboBox", Icon = "ComboBox.png")]
+    [TopLevelTestPage(Name = "ComboBox", Icon = "ComboBox.png")]
     public sealed partial class ComboBoxPage : TestPage
     {
         public ComboBoxPage()

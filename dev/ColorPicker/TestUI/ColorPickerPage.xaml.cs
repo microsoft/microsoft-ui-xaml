@@ -20,7 +20,7 @@ using ColorSpectrum = Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name="ColorPicker", Icon="ColorPicker.png")]
+    [TopLevelTestPage(Name="ColorPicker", Icon="ColorPicker.png")]
     public sealed partial class ColorPickerPage : TestPage
     {
         ToolTip colorNameToolTip;

@@ -27,7 +27,7 @@ using RatingItemFontInfo = Microsoft.UI.Xaml.Controls.RatingItemFontInfo;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name= "RatingControl", Icon= "RatingControl.png")]
+    [TopLevelTestPage(Name= "RatingControl", Icon= "RatingControl.png")]
     public sealed partial class RatingControlPage : TestPage
     {
         UIElement _secondTextBlockUI;

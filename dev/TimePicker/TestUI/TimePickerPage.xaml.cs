@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "TimePicker", Icon = "TimePicker.png")]
+    [TopLevelTestPage(Name = "TimePicker", Icon = "TimePicker.png")]
     public sealed partial class TimePickerPage : TestPage
     {
         public TimePickerPage()

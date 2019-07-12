@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "Slider", Icon = "Slider.png")]
+    [TopLevelTestPage(Name = "Slider", Icon = "Slider.png")]
     public sealed partial class SliderPage : TestPage
     {
         public SliderPage()

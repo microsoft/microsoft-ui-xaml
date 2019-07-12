@@ -1,14 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ScrollBar")]
-    public sealed partial class ScrollBarPage : TestPage
+    public class TopLevelTestPageAttribute: Attribute
     {
-        public ScrollBarPage()
-        {
-            this.InitializeComponent();
-        }
+        public string Name { get; set; } = "NoName";
+
+        public string Icon { get; set; } = String.Empty;
     }
 }

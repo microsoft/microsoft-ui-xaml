@@ -38,7 +38,7 @@ namespace MUXControlsTestApp
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    [AddToTestInventory(Name = "AnimatedVisualPlayer", Icon = "Animations.png")]
+    [TopLevelTestPage(Name = "AnimatedVisualPlayer", Icon = "Animations.png")]
     public sealed partial class AnimatedVisualPlayerPage : TestPage
     {
         private Visual _visual;

@@ -13,7 +13,7 @@ using Windows.UI;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "SliderInteraction", Icon = "Slider.png")]
+    [TopLevelTestPage(Name = "SliderInteraction", Icon = "Slider.png")]
     public sealed partial class SliderInteractionPage : TestPage
     {
         public SliderInteractionPage()

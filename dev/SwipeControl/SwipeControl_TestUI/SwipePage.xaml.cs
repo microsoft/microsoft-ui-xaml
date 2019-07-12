@@ -21,7 +21,7 @@ using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "SwipeControl", Icon = "Swipe.png")]
+    [TopLevelTestPage(Name = "SwipeControl", Icon = "Swipe.png")]
     public sealed partial class SwipePage : TestPage
     {
         public SwipePage()

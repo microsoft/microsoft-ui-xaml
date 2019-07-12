@@ -20,7 +20,7 @@ using ToggleSplitButtonIsCheckedChangedEventArgs = Microsoft.UI.Xaml.Controls.To
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "SplitButton", Icon = "SplitButton.png")]
+    [TopLevelTestPage(Name = "SplitButton", Icon = "SplitButton.png")]
     public sealed partial class SplitButtonPage : TestPage
     {
         private int _clickCount = 0;

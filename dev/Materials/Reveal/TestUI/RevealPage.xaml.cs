@@ -5,7 +5,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "Reveal", Icon = "Reveal.png")]
+    [TopLevelTestPage(Name = "Reveal", Icon = "Reveal.png")]
     public sealed partial class RevealPage : TestPage
     {
         public RevealPage()

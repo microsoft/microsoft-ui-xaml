@@ -3,7 +3,7 @@
 
 namespace MUXControlsTestApp
 {
-    [AddToTestInventory(Name = "AutoSuggestBox", Icon = "AutoSuggestBox.png")]
+    [TopLevelTestPage(Name = "AutoSuggestBox", Icon = "AutoSuggestBox.png")]
     public sealed partial class AutoSuggestBoxPage : TestPage
     {
         public AutoSuggestBoxPage()
