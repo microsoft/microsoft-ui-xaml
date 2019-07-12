@@ -15,7 +15,7 @@ namespace MUXControlsTestApp
 
         public string AutomationName { get; set; }
 
-        public string Icon { get; set; }
+        public string Icon { get; set; } = "DefaultIcon.png";
 
         public Type PageType { get; set; }
     }
