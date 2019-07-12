@@ -1,11 +1,22 @@
 function GetAzureDevOpsBaseUri
 {
-    return $env:SYSTEM_COLLECTIONURI + $env:SYSTEM_TEAMPROJECT
+    Param(
+        [string]$CollectionUri,
+        [string]$TeamProject
+    )
+
+    return $CollectionUri + $TeamProject
 }
 
 function GetQueryTestRunsUri
 {
-    $baseUri = GetAzureDevOpsBaseUri
-    $queryUri = "$baseUri/_apis/test/runs?buildUri=$($env:BUILD_BUILDURI)"
+    Param(
+        [string]$CollectionUri,
+        [string]$TeamProject,
+        [string]$BuildUri
+    )
+
+    $baseUri = GetAzureDevOpsBaseUri -CollectionUri $CollectionUri -TeamProject $TeamProject
+    $queryUri = "$baseUri/_apis/test/runs?buildUri=$BuildUri"
     return $queryUri
 }
