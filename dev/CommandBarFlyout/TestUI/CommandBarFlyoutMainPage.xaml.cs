@@ -8,6 +8,7 @@ using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "CommandBarFlyout", Icon = "CommandBarFlyout.png")]
     public sealed partial class CommandBarFlyoutMainPage : TestPage
     {
         public CommandBarFlyoutMainPage()

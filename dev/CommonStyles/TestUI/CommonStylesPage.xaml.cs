@@ -41,6 +41,7 @@ namespace MUXControlsTestApp
         }
     }
 
+    [AddToTestInventory(Name = "CommonStyles")]
     public sealed partial class CommonStylesPage : TestPage
     {
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();

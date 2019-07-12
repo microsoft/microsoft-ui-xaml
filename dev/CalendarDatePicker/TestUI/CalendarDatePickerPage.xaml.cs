@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "CalendarDatePicker", Icon = "CalendarDatePicker.png")]
     public sealed partial class CalendarDatePickerPage : TestPage
     {
         public CalendarDatePickerPage()

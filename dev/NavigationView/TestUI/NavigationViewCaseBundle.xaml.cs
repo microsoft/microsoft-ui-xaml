@@ -14,6 +14,7 @@ using NavigationViewDisplayModeChangedEventArgs = Microsoft.UI.Xaml.Controls.Nav
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "NavigationView", Icon = "NavigationView.png")]
     public sealed partial class NavigationViewCaseBundle : TestPage
     {
         public NavigationViewCaseBundle()
@@ -34,6 +35,5 @@ namespace MUXControlsTestApp
             NavigateToIsPaneOpenPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewIsPaneOpenPage), 0); };
             NavigateToMinimalPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewMinimalPage), 0); };
         }
-
     }
 }

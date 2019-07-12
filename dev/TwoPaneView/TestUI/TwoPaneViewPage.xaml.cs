@@ -20,6 +20,7 @@ using DisplayRegionHelperTestApi = Microsoft.UI.Private.Controls.DisplayRegionHe
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "TwoPaneView")]
     public sealed partial class TwoPaneViewPage : TestPage
     {
         // Need to be the same as c_defaultMinWideModeWidth/c_defaultMinTallModeHeight in TwoPaneViewFactory.cpp

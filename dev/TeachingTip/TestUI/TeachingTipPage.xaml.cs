@@ -37,6 +37,8 @@ namespace MUXControlsTestApp
         VisualTree = 0,
         Resources = 1
     }
+
+    [AddToTestInventory(Name = "TeachingTip", Icon = "TeachingTip.png")]
     public sealed partial class TeachingTipPage : TestPage, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;

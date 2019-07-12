@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "ScrollBar")]
     public sealed partial class ScrollBarPage : TestPage
     {
         public ScrollBarPage()

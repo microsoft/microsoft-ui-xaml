@@ -22,14 +22,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using RefreshPullDirection = Microsoft.UI.Xaml.Controls.RefreshPullDirection;
 using ScrollViewerIRefreshInfoProviderAdapter = Microsoft.UI.Private.Controls.ScrollViewerIRefreshInfoProviderAdapter;
 
-#endif
-
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "ScrollViewerAdapter", Icon = "ScrollViewer.png")]
     public sealed partial class ScrollViewerAdapterPage : TestPage
     {
         Dictionary<string, WeakReference> objects = new Dictionary<string, WeakReference>();
@@ -41,10 +39,7 @@ namespace MUXControlsTestApp
             this.RemoveButton.Click += Remove_Click;
             this.GCButton.Click += GC_Click;
             this.CheckLeaksButton.Click += CheckLeaks_Click;
-
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
         }
 
         private void AdaptOnSVWithoutWaitingForLoaded_Click(object sender, RoutedEventArgs e)

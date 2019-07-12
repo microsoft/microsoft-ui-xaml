@@ -19,6 +19,7 @@ using RadioMenuFlyoutItem = Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem;
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "RadioMenuFlyoutItem")]
     public sealed partial class RadioMenuFlyoutItemPage : TestPage
     {
         Dictionary<string, TextBlock> itemStates;

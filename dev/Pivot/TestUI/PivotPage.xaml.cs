@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "Pivot", Icon = "Pivot.png")]
     public sealed partial class PivotPage : TestPage
     {
         public PivotPage()

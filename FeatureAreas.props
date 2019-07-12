@@ -98,48 +98,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <DefineConstants Condition="$(FeatureAnimatedVisualPlayerEnabled) =='true'">$(DefineConstants);FEATURE_ANIMATED_VISUAL_PLAYER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureAutoSuggestBoxEnabled) =='true'">$(DefineConstants);FEATURE_AUTOSUGGESTBOX_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureCalendarDatePickerEnabled) =='true'">$(DefineConstants);FEATURE_CALENDAR_DATE_PICKER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureCheckBoxEnabled) =='true'">$(DefineConstants);FEATURE_CHECKBOX_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureCollectionsEnabled) =='true'">$(DefineConstants);FEATURE_COLLECTIONS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureColorPickerEnabled) =='true'">$(DefineConstants);FEATURE_COLOR_PICKER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureComboBoxEnabled) =='true'">$(DefineConstants);FEATURE_COMBOBOX_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureCommandBarFlyoutEnabled) =='true'">$(DefineConstants);FEATURE_COMMANDBAR_FLYOUT_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureDatePickerEnabled) =='true'">$(DefineConstants);FEATURE_DATE_PICKER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureDropDownButtonEnabled) =='true'">$(DefineConstants);FEATURE_DROPDOWN_BUTTON_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureEffectsEnabled) =='true'">$(DefineConstants);FEATURE_EFFECTS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureFlipViewEnabled) =='true'">$(DefineConstants);FEATURE_FILPVIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureIconSourceEnabled) =='true'">$(DefineConstants);FEATURE_ICONSOURCE_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureInteractionsEnabled) =='true'">$(DefineConstants);FEATURE_INTERACTIONS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureLayoutPanelEnabled) =='true'">$(DefineConstants);FEATURE_LAYOUT_PANEL_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureRepeaterEnabled) =='true'">$(DefineConstants);FEATURE_REPEATER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureLightsEnabled) =='true'">$(DefineConstants);FEATURE_LIGHTS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureMaterialsEnabled) =='true'">$(DefineConstants);FEATURE_MATERIALS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureMenuBarEnabled) =='true'">$(DefineConstants);FEATURE_MENUBAR_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureMenuFlyoutEnabled) =='true'">$(DefineConstants);FEATURE_MENU_FLYOUT_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATION_VIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureParallaxViewEnabled) =='true'">$(DefineConstants);FEATURE_PARALLAX_VIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeaturePersonPictureEnabled) =='true'">$(DefineConstants);FEATURE_PERSON_PICTURE_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeaturePivotEnabled) =='true'">$(DefineConstants);FEATURE_PIVOT_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeaturePullToRefreshEnabled) =='true'">$(DefineConstants);FEATURE_PULL_TO_REFRESH_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureRadioButtonsEnabled) =='true'">$(DefineConstants);FEATURE_RADIOBUTTONS_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureRadioMenuFlyoutItemEnabled) =='true'">$(DefineConstants);FEATURE_RADIO_MENU_FLYOUT_ITEM_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureRatingControlEnabled) =='true'">$(DefineConstants);FEATURE_RATING_CONTROL_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureResourceHelperEnabled) =='true'">$(DefineConstants);FEATURE_RESOURCE_HELPER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureScrollBarEnabled) =='true'">$(DefineConstants);FEATURE_SCROLL_BAR_ENABLED</DefineConstants>
         <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureScrollViewerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLVIEWER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureSliderEnabled) =='true'">$(DefineConstants);FEATURE_SLIDER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureSplitButtonEnabled) =='true'">$(DefineConstants);FEATURE_SPLIT_BUTTON_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureSwipeControlEnabled) =='true'">$(DefineConstants);FEATURE_SWIPE_CONTROL_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureTabViewEnabled) =='true'">$(DefineConstants);FEATURE_TABVIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureTeachingTipEnabled) =='true'">$(DefineConstants);FEATURE_TEACHING_TIP_ENABLED</DefineConstants>		
-        <DefineConstants Condition="$(FeatureTimePickerEnabled) =='true'">$(DefineConstants);FEATURE_TIME_PICKER_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureToolTipEnabled) =='true'">$(DefineConstants);FEATURE_TOOL_TIP_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureTreeViewEnabled) =='true'">$(DefineConstants);FEATURE_TREEVIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureTwoPaneViewEnabled) =='true'">$(DefineConstants);FEATURE_TWO_PANE_VIEW_ENABLED</DefineConstants>
-        <DefineConstants Condition="$(FeatureCommonStylesEnabled) =='true'">$(DefineConstants);FEATURE_COMMON_STYLES_ENABLED</DefineConstants>
         <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>
 </Project>

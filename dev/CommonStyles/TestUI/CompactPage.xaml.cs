@@ -16,6 +16,7 @@ using System;
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "Compact", Icon = "CompactSizing.png")]
     public sealed partial class CompactPage : TestPage
     {
         public CompactPage()

@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name = "CheckBox", Icon = "CheckBox.png")]
     public sealed partial class CheckBoxPage : TestPage
     {
         public CheckBoxPage()

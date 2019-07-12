@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Shapes;
 
 namespace MUXControlsTestApp
 {
+    [AddToTestInventory(Name="PersonPicture", Icon="PersonPicture.png")]
     public sealed partial class PersonPicturePage : TestPage
     {
         private Uri imageUri = new Uri("ms-appx:///Assets/ingredient2.png");
