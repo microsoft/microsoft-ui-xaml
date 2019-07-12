@@ -21,13 +21,13 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ComboBoxAttachedProperties.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ComboBoxHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ComboBoxHelper.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ComboBoxHelper.h" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)ComboBoxAttachedProperties.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ComboBoxHelper.idl" />
   </ItemGroup>
 </Project>

@@ -383,7 +383,7 @@
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
-        <contract7Present:Setter Property="primitives:ComboBoxAttachedProperties.ApplyDynamicCornerRadius" Value="true"/>
+        <Setter Property="primitives:ComboBoxHelper.ApplyDynamicCornerRadius" Value="true"/>
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>

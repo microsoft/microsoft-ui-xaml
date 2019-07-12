@@ -4,7 +4,7 @@
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [default_interface]
-runtimeclass ComboBoxAttachedProperties
+runtimeclass ComboBoxHelper
 {
     [MUX_DEFAULT_VALUE("false")]
     [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyDynamicCornerRadiusPropertyChanged")]
