@@ -84,10 +84,10 @@ void NumberBoxProperties::EnsureProperties()
         s_IncrementPrecisionProperty =
             InitializeDependencyProperty(
                 L"IncrementPrecision",
-                winrt::name_of<int>(),
+                winrt::name_of<double>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<int>::BoxValueIfNecessary(1),
+                ValueHelper<double>::BoxValueIfNecessary(1),
                 winrt::PropertyChangedCallback(&OnIncrementPrecisionPropertyChanged));
     }
     if (!s_IntegerDigitsProperty)
@@ -183,10 +183,10 @@ void NumberBoxProperties::EnsureProperties()
         s_SignificantDigitPrecisionProperty =
             InitializeDependencyProperty(
                 L"SignificantDigitPrecision",
-                winrt::name_of<double>(),
+                winrt::name_of<int>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(1),
+                ValueHelper<int>::BoxValueIfNecessary(1),
                 winrt::PropertyChangedCallback(&OnSignificantDigitPrecisionPropertyChanged));
     }
     if (!s_SignificantDigitsProperty)
@@ -441,14 +441,14 @@ bool NumberBoxProperties::HyperScrollEnabled()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
 }
 
-void NumberBoxProperties::IncrementPrecision(int value)
+void NumberBoxProperties::IncrementPrecision(double value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_IncrementPrecisionProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_IncrementPrecisionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
 }
 
-int NumberBoxProperties::IncrementPrecision()
+double NumberBoxProperties::IncrementPrecision()
 {
-    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IncrementPrecisionProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IncrementPrecisionProperty));
 }
 
 void NumberBoxProperties::IntegerDigits(int value)
@@ -531,14 +531,14 @@ winrt::RoundingAlgorithm NumberBoxProperties::RoundingAlgorithm()
     return ValueHelper<winrt::RoundingAlgorithm>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_RoundingAlgorithmProperty));
 }
 
-void NumberBoxProperties::SignificantDigitPrecision(double value)
+void NumberBoxProperties::SignificantDigitPrecision(int value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_SignificantDigitPrecisionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_SignificantDigitPrecisionProperty, ValueHelper<int>::BoxValueIfNecessary(value));
 }
 
-double NumberBoxProperties::SignificantDigitPrecision()
+int NumberBoxProperties::SignificantDigitPrecision()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SignificantDigitPrecisionProperty));
+    return ValueHelper<int>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SignificantDigitPrecisionProperty));
 }
 
 void NumberBoxProperties::SignificantDigits(int value)

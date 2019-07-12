@@ -94,9 +94,9 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxNumberRounder NumberRounder{ get; set; };
     [MUX_DEFAULT_VALUE("1")]
-    Int32 IncrementPrecision;
+    Double IncrementPrecision;
     [MUX_DEFAULT_VALUE("1")]
-    Double SignificantDigitPrecision;
+    Int32 SignificantDigitPrecision;
 
 
 

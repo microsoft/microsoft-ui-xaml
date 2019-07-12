@@ -21,8 +21,8 @@ public:
     void HyperScrollEnabled(bool value);
     bool HyperScrollEnabled();
 
-    void IncrementPrecision(int value);
-    int IncrementPrecision();
+    void IncrementPrecision(double value);
+    double IncrementPrecision();
 
     void IntegerDigits(int value);
     int IntegerDigits();
@@ -48,8 +48,8 @@ public:
     void RoundingAlgorithm(winrt::RoundingAlgorithm const& value);
     winrt::RoundingAlgorithm RoundingAlgorithm();
 
-    void SignificantDigitPrecision(double value);
-    double SignificantDigitPrecision();
+    void SignificantDigitPrecision(int value);
+    int SignificantDigitPrecision();
 
     void SignificantDigits(int value);
     int SignificantDigits();

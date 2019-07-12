@@ -128,7 +128,8 @@
                 
                 NumberRounder="{x:Bind rounder.SelectedValue, Converter={StaticResource RounderConverter}, Mode=OneWay}"
                 RoundingAlgorithm="{x:Bind algo.SelectedValue, Converter={StaticResource RoundingConverter}, Mode=OneWay}"
-                IncrementPrecision="{x:Bind increment.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                IncrementPrecision="{x:Bind increment.Value, Mode=OneWay}"
+                SignificantDigitPrecision="{x:Bind sigprec.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
 
                 />
 
