@@ -438,17 +438,25 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
 
 void TabView::OnTabViewKeyUp(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
 {
-    winrt::VirtualKey key = args.Key();
+    winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
 
-    if (key == winrt::VirtualKey::F4 && IsEnabled() && SelectedItem())
+    if (IsEnabled()
+        && SelectedItem()
+        && (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down)
     {
-        winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
+        winrt::VirtualKey key = args.Key();
 
-        if ((ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down)
+        if (key == winrt::VirtualKey::F4)
         {
-            // Close the tab on ctrl + F4
-            CloseTab(SelectedItem().as<winrt::TabViewItem>());
-            args.Handled(true);
+            if (auto selectedTab = SelectedItem().as<winrt::TabViewItem>())
+            {
+                if (selectedTab.IsCloseable())
+                {
+                    // Close the tab on ctrl + F4
+                    CloseTab(selectedTab);
+                    args.Handled(true);
+                }
+            }
         }
     }
 }
