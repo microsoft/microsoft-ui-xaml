@@ -189,15 +189,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Stretch/Strech alignments");
-                Verify.AreEqual(rectangleScrollerContent.HorizontalAlignment, HorizontalAlignment.Stretch);
-                Verify.AreEqual(rectangleScrollerContent.VerticalAlignment, VerticalAlignment.Stretch);
+                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollerContent.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollerContent.VerticalAlignment);
             });
 
             SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -208,9 +208,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
-            Verify.AreEqual(horizontalOffset, 0.0f);
-            Verify.AreEqual(verticalOffset, 0.0f);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(0.0f, horizontalOffset);
+            Verify.AreEqual(0.0f, verticalOffset);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -223,7 +223,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -236,7 +236,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
         }
 
         [TestMethod]
@@ -381,7 +381,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scroller.ViewportWidth, scroller.ActualWidth);
 
                 Log.Comment($"Checking ViewportHeight - expectedViewportHeight: {expectedViewportHeight}, scroller.ViewportHeight: {scroller.ViewportHeight}, scroller.ActualHeight: {scroller.ActualHeight}");
-                Verify.AreEqual(scroller.ViewportHeight, expectedViewportHeight);
+                Verify.AreEqual(expectedViewportHeight, scroller.ViewportHeight);
                 Verify.AreEqual(scroller.ViewportHeight, scroller.ActualHeight);
             });
         }
@@ -421,12 +421,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Checking Stretch/Strech alignments");
-                Verify.AreEqual(stackPanel.HorizontalAlignment, HorizontalAlignment.Stretch);
-                Verify.AreEqual(stackPanel.VerticalAlignment, VerticalAlignment.Stretch);
+                Verify.AreEqual(HorizontalAlignment.Stretch, stackPanel.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, stackPanel.VerticalAlignment);
 
                 Log.Comment("Checking StackPanel size");
-                Verify.AreEqual(stackPanel.ActualWidth, c_defaultUIScrollerWidth);
-                Verify.AreEqual(stackPanel.ActualHeight, c_defaultUIScrollerContentHeight);
+                Verify.AreEqual(c_defaultUIScrollerWidth, stackPanel.ActualWidth);
+                Verify.AreEqual(c_defaultUIScrollerContentHeight, stackPanel.ActualHeight);
             });
         }
 
@@ -470,8 +470,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Stretch/Strech alignments");
-                Verify.AreEqual(rectangleScrollerContent.HorizontalAlignment, HorizontalAlignment.Stretch);
-                Verify.AreEqual(rectangleScrollerContent.VerticalAlignment, VerticalAlignment.Stretch);
+                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollerContent.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollerContent.VerticalAlignment);
 
             });
 
@@ -479,7 +479,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 20.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 15.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -492,7 +492,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset + 34.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset + 34.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -505,7 +505,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 74.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 64.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -518,7 +518,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 20.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 15.0f) < c_defaultOffsetResultTolerance);
-            Verify.AreEqual(zoomFactor, c_smallZoomFactor);
+            Verify.AreEqual(c_smallZoomFactor, zoomFactor);
         }
 
         [TestMethod]
@@ -939,16 +939,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(content.HorizontalAlignment, horizontalAlignment);
-                Verify.AreEqual(content.DesiredSize.Width, c_scrollerWidth); // 200
-                Verify.AreEqual(content.RenderSize.Width, c_scrollerWidth - c_leftMargin - c_rightMargin); // 200 - 20 - 30 = 150
+                Verify.AreEqual(horizontalAlignment, content.HorizontalAlignment);
+                Verify.AreEqual(c_scrollerWidth, content.DesiredSize.Width); // 200
+                Verify.AreEqual(c_scrollerWidth - c_leftMargin - c_rightMargin, content.RenderSize.Width); // 200 - 20 - 30 = 150
                 arrangeRenderSizesDelta = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromHorizontalAlignment(horizontalAlignment),
                     extentSize: c_scrollerWidth,
                     renderSize: c_scrollerWidth - c_leftMargin - c_rightMargin,
                     nearMargin: c_leftMargin,
                     farMargin: c_rightMargin);
-                Verify.AreEqual(arrangeRenderSizesDelta, 20.0);
+                Verify.AreEqual(20.0, arrangeRenderSizesDelta);
                 expectedHorizontalOffset = -expectedMinPosition + (expectedZoomFactor - 1.0f) * arrangeRenderSizesDelta;
             });
 
@@ -958,9 +958,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 horizontalOffset, verticalOffset, zoomFactor);
             Log.Comment("expectedHorizontalOffset={0}, expectedVerticalOffset={1}, expectedZoomFactor={2}",
                 expectedHorizontalOffset, expectedVerticalOffset, expectedZoomFactor);
-            Verify.AreEqual(horizontalOffset, expectedHorizontalOffset);
-            Verify.AreEqual(verticalOffset, expectedVerticalOffset);
-            Verify.AreEqual(zoomFactor, expectedZoomFactor);
+            Verify.AreEqual(expectedHorizontalOffset, horizontalOffset);
+            Verify.AreEqual(expectedVerticalOffset, verticalOffset);
+            Verify.AreEqual(expectedZoomFactor, zoomFactor);
         }
 
         private void ValidateContentWithConstrainedHeight(
@@ -991,16 +991,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(content.VerticalAlignment, verticalAlignment);
-                Verify.AreEqual(content.DesiredSize.Height, c_defaultUIScrollerHeight); // 200
-                Verify.AreEqual(content.RenderSize.Height, c_defaultUIScrollerHeight - c_topMargin - c_bottomMargin); // 200 - 40 - 10 = 150
+                Verify.AreEqual(verticalAlignment, content.VerticalAlignment);
+                Verify.AreEqual(c_defaultUIScrollerHeight, content.DesiredSize.Height); // 200
+                Verify.AreEqual(c_defaultUIScrollerHeight - c_topMargin - c_bottomMargin, content.RenderSize.Height); // 200 - 40 - 10 = 150
                 arrangeRenderSizesDelta = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromVerticalAlignment(verticalAlignment),
                     extentSize: c_defaultUIScrollerHeight,
                     renderSize: c_defaultUIScrollerHeight - c_topMargin - c_bottomMargin,
                     nearMargin: c_topMargin,
                     farMargin: c_bottomMargin);
-                Verify.AreEqual(arrangeRenderSizesDelta, 40.0);
+                Verify.AreEqual(40.0, arrangeRenderSizesDelta);
                 expectedVerticalOffset = -expectedMinPosition + (expectedZoomFactor - 1.0f) * arrangeRenderSizesDelta;
             });
 
@@ -1010,9 +1010,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 horizontalOffset, verticalOffset, zoomFactor);
             Log.Comment("expectedHorizontalOffset={0}, expectedVerticalOffset={1}, expectedZoomFactor={2}",
                 expectedHorizontalOffset, expectedVerticalOffset, expectedZoomFactor);
-            Verify.AreEqual(horizontalOffset, expectedHorizontalOffset);
-            Verify.AreEqual(verticalOffset, expectedVerticalOffset);
-            Verify.AreEqual(zoomFactor, expectedZoomFactor);
+            Verify.AreEqual(expectedHorizontalOffset, horizontalOffset);
+            Verify.AreEqual(expectedVerticalOffset, verticalOffset);
+            Verify.AreEqual(expectedZoomFactor, zoomFactor);
         }
 
         private double GetArrangeRenderSizesDelta(

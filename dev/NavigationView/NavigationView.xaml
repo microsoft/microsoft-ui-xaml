@@ -172,6 +172,14 @@
                                         <ToolTip x:Name="NavigationViewBackButtonToolTip"/>
                                     </ToolTipService.ToolTip>
                                 </Button>
+                                <Button 
+                                    x:Name="NavigationViewCloseButton"
+                                    Style="{StaticResource NavigationBackButtonNormalStyle}"
+                                    VerticalAlignment="Top">
+                                    <ToolTipService.ToolTip>
+                                        <ToolTip x:Name="NavigationViewCloseButtonToolTip"/>
+                                    </ToolTipService.ToolTip>
+                                </Button>
                                 <Button
                                     x:Name="TogglePaneButton"
                                     Style="{TemplateBinding PaneToggleButtonStyle}"

@@ -54,6 +54,9 @@ public:
     void IsSettingsVisible(bool value);
     bool IsSettingsVisible();
 
+    void IsTitleBarAutoPaddingEnabled(bool value);
+    bool IsTitleBarAutoPaddingEnabled();
+
     void MenuItemContainerStyle(winrt::Style const& value);
     winrt::Style MenuItemContainerStyle();
 
@@ -126,6 +129,7 @@ public:
     static winrt::DependencyProperty IsPaneToggleButtonVisibleProperty() { return s_IsPaneToggleButtonVisibleProperty; }
     static winrt::DependencyProperty IsPaneVisibleProperty() { return s_IsPaneVisibleProperty; }
     static winrt::DependencyProperty IsSettingsVisibleProperty() { return s_IsSettingsVisibleProperty; }
+    static winrt::DependencyProperty IsTitleBarAutoPaddingEnabledProperty() { return s_IsTitleBarAutoPaddingEnabledProperty; }
     static winrt::DependencyProperty MenuItemContainerStyleProperty() { return s_MenuItemContainerStyleProperty; }
     static winrt::DependencyProperty MenuItemContainerStyleSelectorProperty() { return s_MenuItemContainerStyleSelectorProperty; }
     static winrt::DependencyProperty MenuItemsProperty() { return s_MenuItemsProperty; }
@@ -161,6 +165,7 @@ public:
     static GlobalDependencyProperty s_IsPaneToggleButtonVisibleProperty;
     static GlobalDependencyProperty s_IsPaneVisibleProperty;
     static GlobalDependencyProperty s_IsSettingsVisibleProperty;
+    static GlobalDependencyProperty s_IsTitleBarAutoPaddingEnabledProperty;
     static GlobalDependencyProperty s_MenuItemContainerStyleProperty;
     static GlobalDependencyProperty s_MenuItemContainerStyleSelectorProperty;
     static GlobalDependencyProperty s_MenuItemsProperty;
@@ -263,6 +268,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsSettingsVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsTitleBarAutoPaddingEnabledPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

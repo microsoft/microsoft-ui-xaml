@@ -1,4 +1,7 @@
 Param(
+    [Parameter(Mandatory = $true)] 
+    [int]$MinimumExpectedTestsExecutedCount
+
     [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
@@ -23,6 +26,7 @@ $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRe
 [System.Collections.Generic.List[string]]$unreliableTests = @()
 
 $timesSeenByRunName = @{}
+$totalTestsExecutedCount = 0
 
 foreach ($testRun in $testRuns.value)
 {
@@ -40,6 +44,8 @@ foreach ($testRun in $testRuns.value)
     {
         continue
     }
+
+    $totalTestsExecutedCount += $testRun.totalTests
 
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
     $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
@@ -83,7 +89,13 @@ if ($failingTests.Count -gt 0)
 "@
 }
 
-if ($failingTests.Count -gt 0)
+if($totalTestsExecutedCount -lt $MinimumExpectedTestsExecutedCount)
+{
+    Write-Host "Expected at least $MinimumExpectedTestsExecutedCount tests to be executed."
+    Write-Host "Actual executed test count is: $totalTestsExecutedCount"
+    Write-Host "##vso[task.complete result=Failed;]"
+}
+elseif ($failingTests.Count -gt 0)
 {
     Write-Host "At least one test failed."
     Write-Host "##vso[task.complete result=Failed;]"

@@ -93,11 +93,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("No Scroller offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, 0);
+                        Verify.AreEqual(0, scroller.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, 0);
+                        Verify.AreEqual(0, scroller.HorizontalOffset);
                     }
                 });
             }
@@ -407,11 +407,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("Scroller offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, 127.0);
+                        Verify.AreEqual(127.0, scroller.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, 127.0);
+                        Verify.AreEqual(127.0, scroller.HorizontalOffset);
                     }
                 });
             }
@@ -646,7 +646,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Scroller.AnchorRequested event handler");
 
                 Verify.IsNull(args.AnchorElement);
-                Verify.AreEqual(args.AnchorCandidates.Count, 0);
+                Verify.AreEqual(0, args.AnchorCandidates.Count);
 
                 StackPanel sp = (sender.Content as Border).Child as StackPanel;
                 foreach (Border b in sp.Children)
@@ -854,7 +854,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     RunOnUIThread.Execute(() =>
                     {
                         Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(scroller.VerticalOffset, 520.0);
+                        Verify.AreEqual(520.0, scroller.VerticalOffset);
                     });
 
                     RunOnUIThread.Execute(() =>
@@ -870,7 +870,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     RunOnUIThread.Execute(() =>
                     {
                         Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(scroller.VerticalOffset, 250.0);
+                        Verify.AreEqual(250.0, scroller.VerticalOffset);
                     });
                 }
             }

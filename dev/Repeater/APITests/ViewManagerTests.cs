@@ -87,7 +87,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue #1018
         public void CanPinFocusedElements()
         {
             // Setup a grouped repeater scenario with two groups each containing two items.
@@ -188,7 +188,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void CanReuseElementsDuringUniqueIdReset()
         {
             var data = new WinRTCollection(Enumerable.Range(0, 2).Select(i => string.Format("Item #{0}", i)));
@@ -588,7 +588,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -632,7 +632,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
             ItemsRepeater repeater = null;

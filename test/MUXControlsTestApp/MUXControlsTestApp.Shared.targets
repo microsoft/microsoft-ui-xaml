@@ -72,4 +72,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" />
 </Project>
