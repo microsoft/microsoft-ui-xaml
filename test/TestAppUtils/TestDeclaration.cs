@@ -11,13 +11,6 @@ namespace MUXControlsTestApp
         {
         }
 
-        public TestDeclaration(string name, Type pageType)
-        {
-            Name = name;
-            AutomationName = name;
-            PageType = pageType;
-        }
-
         public string Name { get; set; }
 
         public string AutomationName { get; set; }

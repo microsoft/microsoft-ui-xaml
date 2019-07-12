@@ -9,6 +9,9 @@
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
+
+    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
+
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -38,7 +41,6 @@
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>false</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
-    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureTeachingTipEnabled>false</FeatureTeachingTipEnabled>
     <FeatureTimePickerEnabled>false</FeatureTimePickerEnabled>
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
