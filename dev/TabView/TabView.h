@@ -80,6 +80,7 @@ private:
 
     tracker_ref<winrt::ListView> m_listView{ this };
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
+    tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::Button> m_addButton{ this };

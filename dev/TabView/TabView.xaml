@@ -26,8 +26,7 @@
                                 <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="AddButtonColumn"/>
-                                <ColumnDefinition Width="*"/> <!-- Padding -->
-                                <ColumnDefinition Width="Auto" x:Name="RightContentColumn"/>
+                                <ColumnDefinition Width="*" x:Name="RightContentColumn"/>
                             </Grid.ColumnDefinitions>
 
                             <ContentPresenter
@@ -55,8 +54,9 @@
                                 Style="{StaticResource TabViewButtonStyle}"/>
 
                             <ContentPresenter
-                                Grid.Column="4"
+                                Grid.Column="3"
                                 x:Name="RightContentPresenter"
+                                HorizontalAlignment="Stretch"
                                 Content="{TemplateBinding RightCustomContent}"
                                 ContentTemplate="{TemplateBinding RightCustomContentTemplate}"/>
 
@@ -89,6 +89,16 @@
         <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
         <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
         <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
+        <Setter Property="ItemContainerTransitions">
+            <Setter.Value>
+                <TransitionCollection>
+                    <AddDeleteThemeTransition />
+                    <ContentThemeTransition />
+                    <ReorderThemeTransition />
+                    <EntranceThemeTransition IsStaggeringEnabled="False" />
+                </TransitionCollection>
+            </Setter.Value>
+        </Setter>
 
         <Setter Property="ItemsPanel">
             <Setter.Value>
@@ -100,7 +110,7 @@
 
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="ListView">
+                <ControlTemplate TargetType="primitives:TabViewListView">
 
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
                         <ScrollViewer x:Name="ScrollViewer"

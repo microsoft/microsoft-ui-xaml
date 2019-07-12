@@ -39,6 +39,7 @@ void TabView::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
+    m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
     
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
@@ -323,7 +324,12 @@ void TabView::UpdateTabWidths()
         }
         if (auto rightContentColumn = m_rightContentColumn.get())
         {
-            widthTaken += rightContentColumn.ActualWidth();
+            if (auto rightContentPresenter = m_rightContentPresenter.get())
+            {
+                winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
+                rightContentColumn.MinWidth(rightContentSize.Width);
+                widthTaken += rightContentSize.Width;
+            }
         }
 
         if (auto tabColumn = m_tabColumn.get())
