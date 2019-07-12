@@ -7,6 +7,7 @@ using Common;
 using System;
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
@@ -71,7 +72,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
             });
             IdleSynchronizer.Wait();
-            
+
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Expanded, "Left Expanded");
@@ -84,7 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Compact, "LeftCompact Compact");
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
             });
-            IdleSynchronizer.Wait();           
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
@@ -371,6 +372,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // But adding a WUX item should generate an exception (as soon as the new item gets processed)
                 Verify.Throws<Exception>(() => { navView.UpdateLayout(); });
             });
+        }
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnTopNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.Top, "VerifyVerifyHeaderContentMarginOnTopNav");
+        }
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnMinimalNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
+        }
+
+        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
+        {
+            NavigationView navView = null;
+            UIElement headerContent = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView() { Header = "HEADER", PaneDisplayMode = paneDisplayMode, Width = 400.0 };
+                MUXControlsTestApp.App.TestContentRoot = navView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                if (rootGrid != null)
+                {
+                    headerContent = rootGrid.FindName("HeaderContent") as UIElement;
+                }
+            });
+
+            VisualTreeTestHelper.VerifyVisualTree(
+                root: headerContent,
+                masterFilePrefix: masterFilePrefix);
         }
     }
 }

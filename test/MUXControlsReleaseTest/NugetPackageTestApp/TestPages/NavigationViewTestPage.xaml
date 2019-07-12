@@ -1,0 +1,38 @@
+﻿<utils:TestPage
+    x:Class="NugetPackageTestApp.NavigationViewTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:utils="using:MUXControlsTestApp"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    mc:Ignorable="d">
+
+    <utils:TestPage.Resources>
+        <Thickness x:Key="NavigationViewHeaderMargin">16,3,0,7</Thickness>
+        <Thickness x:Key="NavigationViewMinimalHeaderMargin">18,1,0,0</Thickness>
+    </utils:TestPage.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="2" Grid.ColumnSpan="2">
+            <Button x:Name="btnGetHeaderContentMargins" AutomationProperties.Name="btnGetHeaderContentMargins" Margin="2" Content="Get HeaderContent Margins" Click="BtnGetHeaderContentMargins_Click"/>
+            <TextBlock Margin="2" VerticalAlignment="Center">Top HeaderContent.Margin:</TextBlock>
+            <TextBlock x:Name="tblTopHeaderContentMarginResult" AutomationProperties.Name="tblTopHeaderContentMarginResult" Margin="2" VerticalAlignment="Center"/>
+            <TextBlock Margin="2" VerticalAlignment="Center">LeftMinimal HeaderContent.Margin:</TextBlock>
+            <TextBlock x:Name="tblLeftMinimalHeaderContentMarginResult" AutomationProperties.Name="tblLeftMinimalHeaderContentMarginResult" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <controls:NavigationView x:Name="navViewTop" PaneDisplayMode="Top" Header="Header Top" Grid.Row="1"/>
+        <controls:NavigationView x:Name="navViewLeftMinimal" PaneDisplayMode="LeftMinimal" Header="Header LeftMinimal" Grid.Column="1" Grid.Row="1"/>
+    </Grid>
+</utils:TestPage>

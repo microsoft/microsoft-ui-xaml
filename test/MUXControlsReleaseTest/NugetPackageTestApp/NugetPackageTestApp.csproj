@@ -102,6 +102,9 @@
     <Compile Include="TestPages\CompactDictionaryTestPage.xaml.cs">
       <DependentUpon>CompactDictionaryTestPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TestPages\NavigationViewTestPage.xaml.cs">
+      <DependentUpon>NavigationViewTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TestPages\PullToRefreshTestPage.xaml.cs">
       <DependentUpon>PullToRefreshTestPage.xaml</DependentUpon>
     </Compile>
@@ -136,6 +139,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="TestPages\CompactDictionaryTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TestPages\NavigationViewTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
