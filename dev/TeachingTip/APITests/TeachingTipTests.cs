@@ -131,6 +131,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
+        public void TeachingTipBackgroundTestLightDismiss()
+        {
+            TeachingTip teachingTipLightDismiss = null;
+            SolidColorBrush blueBrush = null;
+            Brush lightDismissBackgroundBrush = null;
+            var loadedEvent = new AutoResetEvent(false);
+            RunOnUIThread.Execute(() =>
+            {
+                Grid root = new Grid();
+
+                teachingTipLightDismiss = new TeachingTip();
+                teachingTipLightDismiss.IsLightDismissEnabled = true;
+                teachingTipLightDismiss.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
+
+                // Set LightDismiss background before show... it shouldn't take effect in the tree
+                blueBrush = new SolidColorBrush(Colors.Blue);
+                teachingTipLightDismiss.Background = blueBrush;
+
+                root.Resources.Add("TeachingTipLightDismiss", teachingTipLightDismiss);
+
+                lightDismissBackgroundBrush = MUXControlsTestApp.App.Current.Resources["TeachingTipTransientBackground"] as Brush;
+                Verify.IsNotNull(lightDismissBackgroundBrush, "lightDismissBackgroundBrush");
+
+                teachingTipLightDismiss.IsOpen = true;
+
+                MUXControlsTestApp.App.TestContentRoot = root;
+            });
+
+            IdleSynchronizer.Wait();
+            loadedEvent.WaitOne();
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                var redBrush = new SolidColorBrush(Colors.Red);
+
+                {
+                    var popup = TeachingTipTestHooks.GetPopup(teachingTipLightDismiss);
+                    var child = popup.Child;
+                    var grandChild = VisualTreeHelper.GetChild(child, 0);
+                    var actualBrush = ((Grid)grandChild).Background;
+                    Log.Comment("Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                    if (lightDismissBackgroundBrush != actualBrush)
+                    {
+                        if (actualBrush is SolidColorBrush actualSolidBrush)
+                        {
+                            string teachingTipMessage = $"LightDismiss TeachingTip Background is SolidColorBrush with color {actualSolidBrush.Color}";
+                            Log.Comment(teachingTipMessage);
+                            Verify.Fail(teachingTipMessage);
+                        }
+                        else
+                        {
+                            Verify.AreSame(lightDismissBackgroundBrush, actualBrush, "Checking LightDismiss TeachingTip Background is using resource for first invocation");
+                        }
+                    }
+                }
+            });
+        }
+
+        [TestMethod]
         public void TeachingTipWithContentAndWithoutHeroContentDoesNotCrash()
         {
             var loadedEvent = new AutoResetEvent(false);
