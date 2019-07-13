@@ -21,7 +21,7 @@ namespace MUXControlsTestApp
             navigateToRevealStates.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealStatesPage), 0); };
             navigateToRevealRegressionTests.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealRegressionTestsPage), 0); };
             navigateToCoreWindowEventsTests.Click += delegate { Frame.NavigateWithoutAnimation(typeof(CoreWindowEventsPage), 0); };
-#if FeatureNavigationViewEnabled
+#if FEATURE_NAVIGATIONVIEW_ENABLED
             navigateToRevealMarkup.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealMarkupPage), 0); };
 #endif
         }

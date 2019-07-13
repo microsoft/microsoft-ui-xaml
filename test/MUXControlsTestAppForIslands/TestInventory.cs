@@ -19,7 +19,6 @@ namespace MUXControlsTestAppForIslands
             Tests.Add(new TestDeclaration() {
                 Name = "NavigationViewTests",
                 PageType = typeof(NavigationViewTestPage),
-                AutomationName = "NavigationViewTests"
             });
         }
 

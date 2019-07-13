@@ -13,7 +13,26 @@ namespace MUXControlsTestApp
 
         public string Name { get; set; }
 
-        public string AutomationName { get; set; }
+        private string automationName = string.Empty;
+        public string AutomationName
+        {
+            get
+            {
+                if(string.IsNullOrWhiteSpace(automationName))
+                {
+                    return Name + " Tests";
+                }
+                else
+                {
+                    return automationName;
+                }
+            }
+
+            set
+            {
+                automationName = value;
+            }
+        }
 
         public string Icon { get; set; } = "DefaultIcon.png";
 

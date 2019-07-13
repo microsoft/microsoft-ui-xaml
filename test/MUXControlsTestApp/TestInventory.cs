@@ -21,7 +21,6 @@ namespace MUXControlsTestApp
                     {
                         PageType = type,
                         Name = attribute.Name,
-                        AutomationName = attribute.Name + " Tests",
                         Icon = "ms-appx:///Assets/" + attribute.Icon,
                     });
                 }
