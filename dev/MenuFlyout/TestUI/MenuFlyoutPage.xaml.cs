@@ -8,6 +8,8 @@ using Windows.UI.Xaml.Input;
 
 namespace MUXControlsTestApp
 {
+
+    [TopLevelTestPage(Name = "MenuFlyout", Icon = "MenuFlyout.png")]
     public sealed partial class MenuFlyoutPage : TestPage
     {
         public MenuFlyoutPage()

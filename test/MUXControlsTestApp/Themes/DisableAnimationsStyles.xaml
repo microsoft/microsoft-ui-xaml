@@ -8,8 +8,7 @@
     <Style TargetType="ListView" x:Key="ListViewCommon">
         <Setter Property="ItemContainerTransitions">
             <Setter.Value>
-                <TransitionCollection>                        
-                </TransitionCollection>
+                <TransitionCollection />
             </Setter.Value>
         </Setter>
     </Style>

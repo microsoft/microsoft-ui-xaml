@@ -34,7 +34,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooks.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SwipeTestHooksFactory.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)SwipeControl.xaml">
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>

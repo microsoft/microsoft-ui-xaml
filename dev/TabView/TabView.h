@@ -88,7 +88,7 @@ private:
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
 
-    winrt::ScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
+    winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
 
     winrt::Button::Click_revoker m_addButtonClickRevoker{};
 

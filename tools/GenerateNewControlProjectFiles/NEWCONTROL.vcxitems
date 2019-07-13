@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NEWCONTROL_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -20,7 +21,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NEWCONTROL.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NEWCONTROL.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)NEWCONTROL.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

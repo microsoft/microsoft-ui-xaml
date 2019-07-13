@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Feature to include for inner loop build -->
+  <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
+    <FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
+    <FeatureLightsEnabled>true</FeatureLightsEnabled>
+    <FeatureEffectsEnabled>true</FeatureEffectsEnabled>
+    <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
+    <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
+    <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
+
+    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
+
+    <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
+    <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
+    <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
+    <FeatureCheckBoxEnabled>false</FeatureCheckBoxEnabled>
+    <FeatureComboBoxEnabled>false</FeatureComboBoxEnabled>
+    <FeatureCommandBarFlyoutEnabled>false</FeatureCommandBarFlyoutEnabled>
+    <FeatureDatePickerEnabled>false</FeatureDatePickerEnabled>
+    <FeatureDropDownButtonEnabled>false</FeatureDropDownButtonEnabled>
+    <FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
+    <FeatureIconSourceEnabled>false</FeatureIconSourceEnabled>
+    <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
+    <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
+    <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
+    <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
+    <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
+    <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
+    <FeatureParallaxViewEnabled>false</FeatureParallaxViewEnabled>
+    <FeaturePersonPictureEnabled>false</FeaturePersonPictureEnabled>
+    <FeaturePivotEnabled>false</FeaturePivotEnabled>
+    <FeaturePullToRefreshEnabled>false</FeaturePullToRefreshEnabled>
+    <FeatureRadioButtonsEnabled>false</FeatureRadioButtonsEnabled>
+    <FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
+    <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
+    <FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
+    <FeatureScrollerEnabled>false</FeatureScrollerEnabled>
+    <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
+    <FeatureSliderEnabled>false</FeatureSliderEnabled>
+    <FeatureSplitButtonEnabled>false</FeatureSplitButtonEnabled>
+    <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
+    <FeatureTeachingTipEnabled>false</FeatureTeachingTipEnabled>
+    <FeatureTimePickerEnabled>false</FeatureTimePickerEnabled>
+    <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
+    <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
+    <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>false</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
+  </PropertyGroup>
+  <!-- Features to include for official build (should be all features) -->
+  <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
+    <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
+    <FeatureAutoSuggestBoxEnabled>true</FeatureAutoSuggestBoxEnabled>
+    <FeatureCalendarDatePickerEnabled>true</FeatureCalendarDatePickerEnabled>
+    <FeatureCheckBoxEnabled>true</FeatureCheckBoxEnabled>
+    <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
+    <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
+    <FeatureComboBoxEnabled>true</FeatureComboBoxEnabled>
+    <FeatureCommandBarFlyoutEnabled>true</FeatureCommandBarFlyoutEnabled>
+    <FeatureDatePickerEnabled>true</FeatureDatePickerEnabled>
+    <FeatureDropDownButtonEnabled>true</FeatureDropDownButtonEnabled>
+    <FeatureEffectsEnabled>true</FeatureEffectsEnabled>
+    <FeatureFlipViewEnabled>true</FeatureFlipViewEnabled>
+    <FeatureIconSourceEnabled>true</FeatureIconSourceEnabled>
+    <FeatureInteractionsEnabled>true</FeatureInteractionsEnabled>
+    <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
+    <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
+    <FeatureLightsEnabled>true</FeatureLightsEnabled>
+    <FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
+    <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
+    <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
+    <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
+    <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
+    <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
+    <FeaturePivotEnabled>true</FeaturePivotEnabled>
+    <FeaturePullToRefreshEnabled>true</FeaturePullToRefreshEnabled>
+    <FeatureRadioButtonsEnabled>true</FeatureRadioButtonsEnabled>
+    <FeatureRadioMenuFlyoutItemEnabled>true</FeatureRadioMenuFlyoutItemEnabled>
+    <FeatureRatingControlEnabled>true</FeatureRatingControlEnabled>
+    <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
+    <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
+    <FeatureScrollerEnabled>true</FeatureScrollerEnabled>
+    <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
+    <FeatureSliderEnabled>true</FeatureSliderEnabled>
+    <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
+    <FeatureSwipeControlEnabled>true</FeatureSwipeControlEnabled>
+    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
+    <FeatureTeachingTipEnabled>true</FeatureTeachingTipEnabled>
+    <FeatureTimePickerEnabled>true</FeatureTimePickerEnabled>
+    <FeatureToolTipEnabled>true</FeatureToolTipEnabled>
+    <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
+    <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
+  </PropertyGroup>
+  <PropertyGroup>
+    <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
+  </PropertyGroup>
+</Project>
