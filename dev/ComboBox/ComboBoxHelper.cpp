@@ -10,7 +10,6 @@
 
 using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
 
-static constexpr auto c_popupName = L"Popup"sv;
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
 GlobalDependencyProperty ComboBoxHelper::s_DropDownEventRevokersProperty{ nullptr };

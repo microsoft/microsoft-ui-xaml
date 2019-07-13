@@ -11,6 +11,7 @@ class ComboBoxHelper
 {
 public:
     ComboBoxHelper();
+
     static void OnApplyDynamicCornerRadiusPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
     static void SetDropDownEventRevokers(winrt::UIElement const& target, winrt::IInspectable const& value);
@@ -21,17 +22,19 @@ public:
     static void ClearProperties();
 
     static GlobalDependencyProperty s_DropDownEventRevokersProperty;
+
 private:
     static void OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     static void OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);
+
     static void UpdateCornerRadius(const winrt::ComboBox& comboBox, bool isDropDownOpen);
     static bool IsPopupOpenDown(const winrt::ComboBox& comboBox);
 };
 
-class ComboBoxDropDownEventRevokers : public winrt::implements<ComboBoxDropDownEventRevokers, winrt::Windows::Foundation::IInspectable>
+class ComboBoxDropDownEventRevokers
+    : public winrt::implements<ComboBoxDropDownEventRevokers, winrt::Windows::Foundation::IInspectable>
 {
 public:
-
     void RevokeAll()
     {
         m_dropDownOpenedRevoker.revoke();
