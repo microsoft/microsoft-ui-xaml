@@ -1,6 +1,6 @@
 Param(
     [Parameter(Mandatory = $true)] 
-    [int]$MinimumExpectedTestsExecutedCount
+    [int]$MinimumExpectedTestsExecutedCount,
 
     [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
@@ -18,7 +18,7 @@ $azureDevOpsRestApiHeaders = @{
 
 Write-Host "Checking test results..."
 
-$queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $TeamProject -BuildUri $BuildUri
+$queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $TeamProject -BuildUri $BuildUri -IncludeRunDetails
 Write-Host "queryUri = $queryUri"
 
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
@@ -28,7 +28,7 @@ $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRe
 $timesSeenByRunName = @{}
 $totalTestsExecutedCount = 0
 
-foreach ($testRun in $testRuns.value)
+foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
 {
     if (-not $timesSeenByRunName.ContainsKey($testRun.name))
     {

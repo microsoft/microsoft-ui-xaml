@@ -265,4 +265,4 @@ artifacts/
 HelixPayload/
 /test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
 /test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
-*.csv
+UnreliableTestReport.csv
