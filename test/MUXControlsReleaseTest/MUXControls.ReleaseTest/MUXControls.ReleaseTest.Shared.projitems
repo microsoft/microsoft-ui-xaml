@@ -3,10 +3,12 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props" Condition="Exists('$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props" Condition="Exists('$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\mux.PGO.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>c86d3f1a-cd11-406d-abee-ae4c9f23b8fe</SharedGUID>
+    <DefineConstants Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">$(DefineConstants);PGO_INSTRUMENT</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>MUXControls.ReleaseTest</Import_RootNamespace>
@@ -114,6 +116,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTestsCX.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ReleaseTestEnvironment.cs" />

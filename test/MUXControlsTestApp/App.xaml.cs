@@ -125,24 +125,24 @@ namespace MUXControlsTestApp
             }
             set
             {
+#if !INNERLOOP_BUILD // The xaml files below need to be factored better into appropriate feature area projects - Tracked by Issue: 1044 
                 if (value != DisableLongAnimations)
                 {
                     if (value)
                     {
                         AppendResourceToMergedDictionaries("DisableAnimationsStyles.xaml", StyleOverridesPlaceholder);
 
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                         if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                         {
                             AppendResourceToMergedDictionaries("DisableAnimationsStylesOutsideStore_rs2.xaml", StyleOverridesPlaceholder);
                         }
-#endif
                     }
                     else
                     {
                         StyleOverridesPlaceholder.MergedDictionaries.Clear();
                     }
                 }
+#endif
             }
         }
 
@@ -199,7 +199,10 @@ namespace MUXControlsTestApp
 #if BUILD_WINDOWS
             AppendResourceToMergedDictionaries("DEPControls.xaml");
 #endif
+
+#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
 
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;

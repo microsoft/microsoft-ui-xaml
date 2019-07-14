@@ -26,7 +26,6 @@ function AddAttribute
     $element.Attributes.Append($attribute)
 }
 
-
 $toolsDir = Split-Path -Path $MyInvocation.MyCommand.Path;
 $muxControlsDir = Split-Path $toolsDir -Parent
 $controlDir = $muxControlsDir + "\dev\$controlName"
@@ -53,6 +52,21 @@ foreach ($file in $files)
     Set-Content $file.PSPath
 }
 
+# Add project to FeatureAreas.props
+$featureAreasProps = $muxControlsDir + "\FeatureAreas.props";
+[xml]$xml = Get-Content $featureAreasProps
+foreach ($group in $xml.Project.PropertyGroup)
+{
+    if ($group.Attributes['Condition'].Value.Contains("SolutionName"))
+    {
+        $featureEnabledName = "Feature" + $controlName + "Enabled"
+        $enabled = $xml.CreateElement($featureEnabledName, $xml.Project.NamespaceURI);
+        $enabled.AppendChild($xml.CreateTextNode("true"))
+        $group.AppendChild($enabled);
+    }
+}
+$xml.Save($featureAreasProps)
+
 # Add project to MUX.vcxproj
 $muxProject = $muxControlsDir + "\dev\dll\Microsoft.UI.Xaml.vcxproj";
 [xml]$xml = Get-Content $muxProject
@@ -63,8 +77,7 @@ foreach ($group in $xml.Project.ImportGroup)
         $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
         AddAttribute $xml $import "Project" "..\$controlName\$controlName.vcxitems"
         AddAttribute $xml $import "Label" "Shared"
-        AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
-        $group.AppendChild($import);        
+        $group.AppendChild($import);
     }
 }
 $xml.Save($muxProject)
@@ -73,9 +86,9 @@ $xml.Save($muxProject)
 $testProject = $muxControlsDir + "\test\MUXControls.Test\MUXControls.Test.Shared.targets";
 [xml]$xml = Get-Content $testProject
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
-AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\InteractionTests\$($controlName)_InteractionTests.projitems"
+AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\InteractionTests\$($controlName)_InteractionTests.projitems" 
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
+AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testProject)
 
@@ -85,7 +98,7 @@ $testAppProject = $muxControlsDir + "\test\MUXControlsTestApp\MUXControlsTestApp
 $import = $xml.CreateElement("Import", $xml.Project.NamespaceURI);
 AddAttribute $xml $import "Project" "`$(MSBuildThisFileDirectory)\..\..\dev\$controlName\TestUI\$($controlName)_TestUI.projitems"
 AddAttribute $xml $import "Label" "Shared"
-AddAttribute $xml $import "Condition" "`$(BuildLeanMuxForTheStoreApp) != 'true'"
+AddAttribute $xml $import "Condition" "`$(Feature$($controlName)Enabled) == 'true'"
 $xml.Project.AppendChild($import);
 $xml.Save($testAppProject)
 
@@ -93,10 +106,4 @@ $xml.Save($testAppProject)
 FindAndReplaceInFile ($muxControlsDir + "\dev\Telemetry\RuntimeProfiler.h") "(\s*ProfId_Size.*\s*})" @"
 
         ProfId_$controlName,`$1
-"@
-
-# Add page to TestInventory.cs
-FindAndReplaceInFile ($muxControlsDir + "\test\MUXControlsTestApp\TestInventory.cs") "#endif" @"
-                {"$controlName", typeof($($controlName)Page)},
-#endif
 "@

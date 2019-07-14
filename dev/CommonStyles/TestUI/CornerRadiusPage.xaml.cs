@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "CornerRadius")]
     public sealed partial class CornerRadiusPage : TestPage
     {
         public double ControlCornerRadiusSize

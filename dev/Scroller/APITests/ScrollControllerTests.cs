@@ -139,9 +139,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
-                isAnimationsEnabledOverride: null,
-                (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
-                (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
+                isAnimationsEnabledOverride: null, 
+                expectedFinalHorizontalOffset: (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0, 
+                expectedFinalVerticalOffset: (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
             ScrollTo(
@@ -152,8 +152,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
-                (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
             ZoomTo(
@@ -274,8 +274,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.HorizontalOffset, (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0);
-                Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0);
+                Verify.AreEqual((c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0, scroller.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0, scroller.VerticalOffset);
 
                 Log.Comment("Animating to horizontal offset");
                 hOffsetChangeId = horizontalScrollController.ScrollTo(
@@ -296,8 +296,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.HorizontalOffset, (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0);
-                Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0);
+                Verify.AreEqual((c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0, scroller.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0, scroller.VerticalOffset);
             });
         }
 
@@ -441,8 +441,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("scroller.HorizontalOffset={0}", scroller.HorizontalOffset);
                 Log.Comment("scroller.VerticalOffset={0}", scroller.VerticalOffset);
 
-                Verify.AreEqual(scroller.HorizontalOffset, 600.0);
-                Verify.AreEqual(scroller.VerticalOffset, 250.0);
+                Verify.AreEqual(600.0, scroller.HorizontalOffset);
+                Verify.AreEqual(250.0, scroller.VerticalOffset);
             });
         }
 
@@ -500,8 +500,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
-                (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 2.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
             ScrollTo(
@@ -512,8 +512,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
-                (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth) / 4.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
             ZoomTo(
@@ -610,8 +610,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.HorizontalOffset, (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0);
-                Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0);
+                Verify.AreEqual((c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 4.0, scroller.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 4.0, scroller.VerticalOffset);
 
                 Log.Comment("Animating to offsets");
                 biDirectionalScrollController.ScrollTo(
@@ -626,8 +626,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.HorizontalOffset, (c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0);
-                Verify.AreEqual(scroller.VerticalOffset, (c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0);
+                Verify.AreEqual((c_defaultUIScrollerContentWidth * 0.75 - c_defaultUIScrollerWidth) / 2.0, scroller.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollerContentHeight * 0.75 - c_defaultUIScrollerHeight) / 2.0, scroller.VerticalOffset);
             });
         }
 
@@ -740,8 +740,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("scroller.HorizontalOffset={0}", scroller.HorizontalOffset);
                 Log.Comment("scroller.VerticalOffset={0}", scroller.VerticalOffset);
 
-                Verify.AreEqual(scroller.HorizontalOffset, 600.0);
-                Verify.AreEqual(scroller.VerticalOffset, 250.0);
+                Verify.AreEqual(600.0, scroller.HorizontalOffset);
+                Verify.AreEqual(250.0, scroller.VerticalOffset);
             });
         }
 

@@ -493,6 +493,8 @@ private:
     int GetInteractionTrackerOperationsCount(
         bool includeAnimatedOperations,
         bool includeNonAnimatedOperations) const;
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
+        std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(

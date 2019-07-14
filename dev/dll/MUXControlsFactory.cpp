@@ -5,7 +5,10 @@
 #include "common.h"
 #include "XamlMetadataProvider.h"
 #include "MUXControlsFactory.h"
+
+#ifdef MATERIALS_INCLUDED
 #include "RevealBrush.h"
+#endif
 
 bool MUXControlsFactory::s_initialized{ false };
 
@@ -14,11 +17,13 @@ void MUXControlsFactory::EnsureInitialized()
     if (!s_initialized)
     {
         // Need to register here the DPs of types which are not referenced in our XAML but whose attached properties are.
+#ifdef MATERIALS_INCLUDED
         if (SharedHelpers::IsXamlCompositionBrushBaseAvailable())
         {
             // These are only needed on RS2+.
             RevealBrush::EnsureProperties();
         }
+#endif
         s_initialized = true;
     }
 }

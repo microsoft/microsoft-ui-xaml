@@ -12,6 +12,7 @@ using MenuBarItem = Microsoft.UI.Xaml.Controls.MenuBarItem;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "MenuBar", Icon = "MenuBar.png")]
     public sealed partial class MenuBarPage : TestPage
     {
         public MenuBarPage()

@@ -1747,7 +1747,7 @@ namespace MUXControlsTestApp
                 {
                     lastZoomFactorChangeId = scroller.ZoomBy(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
-                        ConvertFromStringToVector2(txtZoomCenterPoint.Text),
+                        (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
                     relativeChangeIds.Add(lastZoomFactorChangeId);
                     AppendAsyncEventMessage("Invoked ZoomBy Id=" + lastZoomFactorChangeId);
@@ -1756,7 +1756,7 @@ namespace MUXControlsTestApp
                 {
                     lastZoomFactorChangeId = scroller.ZoomTo(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
-                        ConvertFromStringToVector2(txtZoomCenterPoint.Text),
+                        (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
                     AppendAsyncEventMessage("Invoked ZoomTo Id=" + lastZoomFactorChangeId);
                 }
@@ -1881,7 +1881,7 @@ namespace MUXControlsTestApp
 
                 lastZoomFactorChangeWithAdditionalVelocityId = scroller.ZoomFrom(
                     Convert.ToSingle(txtZoomFromVelocity.Text),
-                    ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
+                    (txtZoomFromCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
                     (txtZoomFromInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtZoomFromInertiaDecayRate.Text)).ZoomFactorChangeId;
                 AppendAsyncEventMessage("Invoked ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
             }
@@ -2080,9 +2080,46 @@ namespace MUXControlsTestApp
             }
             else
             {
+                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                HorizontalAlignment contentHorizontalAlignment = contentAsFE == null ? HorizontalAlignment.Stretch : contentAsFE.HorizontalAlignment;
+                VerticalAlignment contentVerticalAlignment = contentAsFE == null ? VerticalAlignment.Stretch : contentAsFE.VerticalAlignment;
+                double currentPositionX = scroller.HorizontalOffset;
+                double currentPositionY = scroller.VerticalOffset;
+                double currentViewportExcessX = scroller.ViewportWidth - scroller.ExtentWidth * scroller.ZoomFactor;
+                double targetViewportExcessX = scroller.ViewportWidth - scroller.ExtentWidth * targetZoomFactor;
+                double currentViewportExcessY = scroller.ViewportHeight - scroller.ExtentHeight * scroller.ZoomFactor;
+                double targetViewportExcessY = scroller.ViewportHeight - scroller.ExtentHeight * targetZoomFactor;
+
+                switch (contentHorizontalAlignment)
+                {
+                    case HorizontalAlignment.Center:
+                    case HorizontalAlignment.Stretch:
+                        if (currentViewportExcessX > 0) currentPositionX -= currentViewportExcessX / 2.0;
+                        if (targetViewportExcessX > 0) targetHorizontalOffset -= targetViewportExcessX / 2.0;
+                        break;
+                    case HorizontalAlignment.Right:
+                        if (currentViewportExcessX > 0) currentPositionX -= currentViewportExcessX;
+                        if (targetViewportExcessX > 0) targetHorizontalOffset -= targetViewportExcessX;
+                        break;
+                }
+
+                switch (contentVerticalAlignment)
+                {
+                    case VerticalAlignment.Center:
+                    case VerticalAlignment.Stretch:
+                        if (currentViewportExcessY > 0) currentPositionY -= currentViewportExcessY / 2.0;
+                        if (targetViewportExcessY > 0) targetVerticalOffset -= targetViewportExcessY / 2.0;
+                        break;
+                    case VerticalAlignment.Bottom:
+                        if (currentViewportExcessY > 0) currentPositionY -= currentViewportExcessY;
+                        if (targetViewportExcessY > 0) targetVerticalOffset -= targetViewportExcessY;
+                        break;
+                }
+
                 Vector2 centerPoint = new Vector2(
-                    (float)(targetHorizontalOffset * scroller.ZoomFactor - scroller.HorizontalOffset * targetZoomFactor) / deltaZoomFactor,
-                    (float)(targetVerticalOffset * scroller.ZoomFactor - scroller.VerticalOffset * targetZoomFactor) / deltaZoomFactor);
+                    (float)(targetHorizontalOffset * scroller.ZoomFactor - currentPositionX * targetZoomFactor) / deltaZoomFactor,
+                    (float)(targetVerticalOffset * scroller.ZoomFactor - currentPositionY * targetZoomFactor) / deltaZoomFactor);
+
 
                 lastZoomFactorChangeId = scroller.ZoomTo(
                     targetZoomFactor,
