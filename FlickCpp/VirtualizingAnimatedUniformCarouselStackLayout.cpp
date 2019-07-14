@@ -126,17 +126,17 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::MeasureOverride(Virtualizin
     else if (itemCount < maxNumberOfItemsThatCanFitInViewport)
     {
         double scrollViewerExtentWidthWithoutMargin = (((ItemWidth + Spacing) * itemCount) - Spacing);
-        double differenceBetweenExtentWidthWithoutMarginAndViewportWidth = ViewportRect.Width - scrollViewerExtentWidthWithoutMargin;
+        double differenceBetweenViewportWidthAndExtentWidthWithoutMargin = ViewportRect.Width - scrollViewerExtentWidthWithoutMargin;
         double marginLeftRight;
         double marginTopBottom = 0.0;
 
         if ((itemCount % 2) == 0)
         {
-            marginLeftRight = ((((ItemWidth + Spacing) / 2.0) + (((itemCount / 2) - 1) * (ItemWidth + Spacing))) + (differenceBetweenExtentWidthWithoutMarginAndViewportWidth / 2.0));
+            marginLeftRight = ((((ItemWidth + Spacing) / 2.0) + (((itemCount / 2) - 1) * (ItemWidth + Spacing))) + (differenceBetweenViewportWidthAndExtentWidthWithoutMargin / 2.0));
         }
         else
         {
-            marginLeftRight = (((itemCount / 2) * (ItemWidth + Spacing)) + (differenceBetweenExtentWidthWithoutMarginAndViewportWidth / 2.0));
+            marginLeftRight = (((itemCount / 2) * (ItemWidth + Spacing)) + (differenceBetweenViewportWidthAndExtentWidthWithoutMargin / 2.0));
         }
 
         if (Margin.Left != marginLeftRight
@@ -206,7 +206,11 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::ArrangeOverride(Virtualizin
         MaxNumberOfItemsThatCanFitInViewport = maxNumberOfItemsThatCanFitInViewport;
     }
 
-    if (itemCount == 1)
+    if (itemCount == 0)
+    {
+        // do nothing
+    }
+    else if (itemCount == 1)
     {
         double marginLeftRight = (ViewportRect.Width - ItemWidth) / 2.0;
         double marginTopBottom = 0.0;
@@ -235,17 +239,17 @@ Size VirtualizingAnimatedUniformCarouselStackLayout::ArrangeOverride(Virtualizin
     else if (itemCount < maxNumberOfItemsThatCanFitInViewport)
     {
         double scrollViewerExtentWidthWithoutMargin = (((ItemWidth + Spacing) * itemCount) - Spacing);
-        double differenceBetweenExtentWidthWithoutMarginAndViewportWidth = ViewportRect.Width - scrollViewerExtentWidthWithoutMargin;
+        double differenceBetweenViewportWidthAndExtentWidthWithoutMargin = ViewportRect.Width - scrollViewerExtentWidthWithoutMargin;
         double marginLeftRight;
         double marginTopBottom = 0.0;
 
         if ((itemCount % 2) == 0)
         {
-            marginLeftRight = ((((ItemWidth + Spacing) / 2.0) + (((itemCount / 2) - 1) * (ItemWidth + Spacing))) + (differenceBetweenExtentWidthWithoutMarginAndViewportWidth / 2.0));
+            marginLeftRight = ((((ItemWidth + Spacing) / 2.0) + (((itemCount / 2) - 1) * (ItemWidth + Spacing))) + (differenceBetweenViewportWidthAndExtentWidthWithoutMargin / 2.0));
         }
         else
         {
-            marginLeftRight = (((itemCount / 2) * (ItemWidth + Spacing)) + (differenceBetweenExtentWidthWithoutMarginAndViewportWidth / 2.0));
+            marginLeftRight = (((itemCount / 2) * (ItemWidth + Spacing)) + (differenceBetweenViewportWidthAndExtentWidthWithoutMargin / 2.0));
         }
 
         if (Margin.Left != marginLeftRight

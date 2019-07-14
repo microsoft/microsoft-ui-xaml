@@ -60,7 +60,7 @@ namespace FlickCpp
                     throw ref new Platform::InvalidArgumentException("ItemScaleRatio must be a number, x, where 0 < x <= 1");
                 }
 
-                Windows::UI::Xaml::DependencyObject::SetValue(RepeatCountProperty, value);
+                Windows::UI::Xaml::DependencyObject::SetValue(ItemScaleRatioProperty, value);
             }
         }
 

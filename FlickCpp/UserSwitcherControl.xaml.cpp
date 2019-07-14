@@ -15,6 +15,7 @@ using namespace Windows::UI::Composition;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml;
 using namespace Windows::UI::Xaml::Controls;
+using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Hosting;
 using namespace Windows::UI::Xaml::Input;
 
@@ -40,6 +41,8 @@ UserSwitcherControl::UserSwitcherControl()
 	InitializeComponent();
 
     m_dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
+    m_viewModel = ref new UserSwitcherViewModel();
+    PropertyChanged(this, ref new PropertyChangedEventArgs(L"ViewModel"));
     m_carouselPrevButton = UserCarouselPrevButton;
     m_carouselNextButton = UserCarouselNextButton;
     m_scrollViewer = UserCarouselScrollViewer;
@@ -60,6 +63,11 @@ UserSwitcherControl::UserSwitcherControl()
     m_carouselNextButton->AddHandler(UIElement::PointerReleasedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerReleased), true);
     m_carouselNextButton->AddHandler(UIElement::PointerExitedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerExited), true);
     m_carouselNextButton->AddHandler(UIElement::PointerCaptureLostEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerCaptureLost), true);
+}
+
+UserSwitcherViewModel^ UserSwitcherControl::ViewModel::get()
+{
+    return m_viewModel;
 }
 
 ThreadPoolTimer^ UserSwitcherControl::PrevButtonContinuousScrollingPeriodicTimer::get()
@@ -177,7 +185,7 @@ double UserSwitcherControl::CenterPointOfViewportInExtent()
 
 int UserSwitcherControl::GetSelectedIndexFromViewport()
 {
-    if (m_repeater->ItemsSourceView->Count == 0)
+    if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
         return SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected;
     }
@@ -189,7 +197,7 @@ int UserSwitcherControl::GetSelectedIndexFromViewport()
 
 Object^ UserSwitcherControl::GetSelectedItemFromViewport()
 {
-    if (m_repeater->ItemsSourceView->Count)
+    if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
         return nullptr;
     }
@@ -276,7 +284,6 @@ void UserSwitcherControl::ScrollViewer_ViewChanged(Object^ /*sender*/, ScrollVie
     {
         m_repeater->SelectedIndex = GetSelectedIndexFromViewport();
         m_repeater->SelectedItem = GetSelectedItemFromViewport();
-        textBlock->Text = ("Selected Item: " + m_repeater->SelectedIndex.ToString());
     }
 
     DetermineIfCarouselNextPrevButtonsShouldBeHidden();
@@ -294,7 +301,7 @@ void UserSwitcherControl::ScrollViewer_LayoutUpdated(Object^ sender, Object^ e)
 
 void UserSwitcherControl::ResetCarouselWithDefaultSelectionForCurrentItemCount()
 {
-    if (m_repeater->ItemsSourceView->Count == 0)
+    if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
         HideCarouselNextPrevButtons();
         return;
@@ -371,8 +378,8 @@ void UserSwitcherControl::ResetCarouselWithDefaultSelectionForCurrentItemCount()
     }
 
     m_repeater->SelectedIndex = GetSelectedIndexFromViewport();
-    m_repeater->SelectedItem = GetSelectedItemFromViewport();
-    textBlock->Text = ("Selected Item: " + m_repeater->SelectedIndex.ToString());
+    Object^ selectedItem = GetSelectedItemFromViewport();
+    m_repeater->SelectedItem = selectedItem;
 }
 
 void UserSwitcherControl::Repeater_Loaded(Object^ /*sender*/, RoutedEventArgs^ /*e*/)

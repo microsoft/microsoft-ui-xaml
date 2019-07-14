@@ -19,6 +19,7 @@
     <ClCompile Include="UserSwitcherControl.xaml.cpp" />
     <ClCompile Include="SelectableSnapPointForwardingRepeater.cpp" />
     <ClCompile Include="VirtualizingAnimatedUniformCarouselStackLayout.cpp" />
+    <ClCompile Include="UserSwitcherViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -27,6 +28,7 @@
     <ClInclude Include="UserSwitcherControl.xaml.h" />
     <ClInclude Include="SelectableSnapPointForwardingRepeater.h" />
     <ClInclude Include="VirtualizingAnimatedUniformCarouselStackLayout.h" />
+    <ClInclude Include="UserSwitcherViewModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png">

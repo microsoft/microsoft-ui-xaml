@@ -203,7 +203,11 @@ namespace Flick
                 MaxNumberOfItemsThatCanFitInViewport = maxNumberOfItemsThatCanFitInViewport;
             }
 
-            if (itemCount == 1)
+            if (itemCount == 0)
+            {
+                // do nothing
+            }
+            else if (itemCount == 1)
             {
                 var marginLeftRight = (ViewportRect.Width - ItemWidth) / 2;
                 var marginTopBottom = 0;

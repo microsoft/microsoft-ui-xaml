@@ -25,14 +25,14 @@
                                         <VisualTransition To="Disabled">
                                             <VisualTransition.Storyboard>
                                                 <Storyboard TargetName="UserCarouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
-                                                    <DoubleAnimation From="1" To="0" Duration="0:0:0.125" EnableDependentAnimation="True"/>
+                                                    <DoubleAnimation From="1" To="0" Duration="0:0:0.100" EnableDependentAnimation="True"/>
                                                 </Storyboard>
                                             </VisualTransition.Storyboard>
                                         </VisualTransition>
                                         <VisualTransition From="Disabled">
                                             <VisualTransition.Storyboard>
                                                 <Storyboard TargetName="UserCarouselNextPrevButtonTemplateContentPresenter" TargetProperty="FontIcon.Opacity">
-                                                    <DoubleAnimation From="0" To="1" Duration="0:0:0.125" EnableDependentAnimation="True"/>
+                                                    <DoubleAnimation From="0" To="1" Duration="0:0:0.100" EnableDependentAnimation="True"/>
                                                 </Storyboard>
                                             </VisualTransition.Storyboard>
                                         </VisualTransition>
@@ -79,7 +79,7 @@
                 x:Name="UserCarouselPrevButton"
                 Grid.Column="0"
                 Style="{StaticResource UserCarouselNextPrevButtonStyle}">
-                <FontIcon Style="{StaticResource UserCarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--ChevronLeft-->
+                <FontIcon Style="{StaticResource UserCarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76B;"/><!--Chevron Left-->
             </Button>
             <ScrollViewer
                 x:Name="UserCarouselScrollViewer"
@@ -101,7 +101,9 @@
                     VerticalCacheLength="0"
                     RepeatCount="500"
                     Loaded="Repeater_Loaded"
-                    ElementPrepared="Repeater_ElementPrepared">
+                    ElementPrepared="Repeater_ElementPrepared"
+                    ItemsSource="{x:Bind ViewModel.Users, Mode=TwoWay}"
+                    SelectedItem="{x:Bind ViewModel.SelectedUser, Mode=TwoWay}">
                     <local:SelectableSnapPointForwardingRepeater.Layout>
                         <local:VirtualizingAnimatedUniformCarouselStackLayout
                             x:Name="UserCarouselRepeaterLayout"
@@ -122,8 +124,8 @@
                                 HorizontalContentAlignment="Center"
                                 VerticalContentAlignment="Center">
                                 <StackPanel>
-                                    <Image Source="{Binding UrlMedium}" Stretch="UniformToFill" Height="375"  />
-                                    <TextBlock Text="{Binding Description}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
+                                    <Rectangle Fill="Blue" Stretch="UniformToFill" Height="375"/>
+                                    <TextBlock Text="{Binding}"  HorizontalAlignment="Center" FontSize="32" Foreground="Gray"/>
                                 </StackPanel>
                             </UserControl>
                         </DataTemplate>
@@ -133,9 +135,18 @@
             <Button x:Name="UserCarouselNextButton"
                     Grid.Column="2"
                     Style="{StaticResource UserCarouselNextPrevButtonStyle}">
-                <FontIcon Style="{StaticResource UserCarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--ChevronRight-->
+                <FontIcon Style="{StaticResource UserCarouselNextPrevButtonFontIconStyle}" Glyph="&#xE76C;"/><!--Chevron Right-->
             </Button>
         </Grid>
-        <TextBlock x:Name="textBlock" Grid.Row="2">Dummy text</TextBlock>
+        <!-- The following Grid is just for demo purposes. Remove it before control migration. -->
+        <Grid Grid.Row="2" Margin="20,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="SelectedItemTextBlockPrefix" Grid.Column="0" Grid.Row="0" Text="Selected:"></TextBlock>
+            <TextBlock x:Name="SelectedItemTextBlock" Grid.Column="2" Grid.Row="0" Text="{x:Bind ViewModel.SelectedUser, Mode=TwoWay}"></TextBlock>
+        </Grid>
     </Grid>
 </UserControl>

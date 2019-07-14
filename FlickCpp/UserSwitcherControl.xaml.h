@@ -8,15 +8,25 @@
 #include "UserSwitcherControl.g.h"
 #include "VirtualizingAnimatedUniformCarouselStackLayout.h"
 #include "SelectableSnapPointForwardingRepeater.h"
+#include "UserSwitcherViewModel.h"
 
 namespace FlickCpp
 {
 	[Windows::Foundation::Metadata::WebHostHidden]
 	public ref class UserSwitcherControl sealed
+        : public Windows::UI::Xaml::Data::INotifyPropertyChanged
 	{
 
 	public:
 		UserSwitcherControl();
+
+        // INotifyPropertyChanged
+        virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;
+
+        property FlickCpp::UserSwitcherViewModel^ ViewModel
+        {
+            FlickCpp::UserSwitcherViewModel^ get();
+        }
 
     private:
         enum class ScrollDirection
@@ -118,5 +128,6 @@ namespace FlickCpp
         Windows::System::Threading::ThreadPoolTimer^ m_scrollViewerChangeViewTimer = nullptr;
         Windows::System::Threading::ThreadPoolTimer^ m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = nullptr;
         int m_selectedItemIndexPriorToUserSwitcherControlSizeChange = FlickCpp::SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected;
+        FlickCpp::UserSwitcherViewModel^ m_viewModel;
 	};
 }

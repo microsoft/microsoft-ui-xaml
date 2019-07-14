@@ -16,7 +16,6 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Flick
 {
-
     public class SnappPointForwardingRepeater : ItemsRepeater, IScrollSnapPointsInfo
     {
         public SnappPointForwardingRepeater()

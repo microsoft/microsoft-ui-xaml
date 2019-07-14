@@ -180,6 +180,7 @@
     <ClInclude Include="UserSwitcherControl.xaml.h">
       <DependentUpon>UserSwitcherControl.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="UserSwitcherViewModel.h" />
     <ClInclude Include="VirtualizingAnimatedUniformCarouselStackLayout.h" />
   </ItemGroup>
   <ItemGroup>
@@ -230,6 +231,7 @@
     <ClCompile Include="UserSwitcherControl.xaml.cpp">
       <DependentUpon>UserSwitcherControl.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="UserSwitcherViewModel.cpp" />
     <ClCompile Include="VirtualizingAnimatedUniformCarouselStackLayout.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
