@@ -198,8 +198,9 @@ winrt::Color AcrylicBrushProperties::TintColor()
 
 void AcrylicBrushProperties::TintLuminosityOpacity(winrt::IReference<double> const& value)
 {
-    static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange_Nullable(value);
-    static_cast<AcrylicBrush*>(this)->SetValue(s_TintLuminosityOpacityProperty, ValueHelper<winrt::IReference<double>>::BoxValueIfNecessary(value));
+    winrt::IReference<double> coercedValue = value;
+    static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange_Nullable(coercedValue);
+    static_cast<AcrylicBrush*>(this)->SetValue(s_TintLuminosityOpacityProperty, ValueHelper<winrt::IReference<double>>::BoxValueIfNecessary(coercedValue));
 }
 
 winrt::IReference<double> AcrylicBrushProperties::TintLuminosityOpacity()
@@ -209,8 +210,9 @@ winrt::IReference<double> AcrylicBrushProperties::TintLuminosityOpacity()
 
 void AcrylicBrushProperties::TintOpacity(double value)
 {
-    static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange(value);
-    static_cast<AcrylicBrush*>(this)->SetValue(s_TintOpacityProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<AcrylicBrush*>(this)->CoerceToZeroOneRange(coercedValue);
+    static_cast<AcrylicBrush*>(this)->SetValue(s_TintOpacityProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double AcrylicBrushProperties::TintOpacity()

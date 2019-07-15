@@ -1127,15 +1127,11 @@ void AcrylicBrush::CoerceToZeroOneRange(double& value)
     }
 }
 
-void AcrylicBrush::CoerceToZeroOneRange_Nullable(winrt::IReference<double> const& value)
+void AcrylicBrush::CoerceToZeroOneRange_Nullable(winrt::IReference<double>& value)
 {
-    // TODO: Get rid of const_cast<> when following bug is fixed:
-    // Bug 19638177: MUX CodeGen for winrt::IReferenence<Double> setter w/ MUX_PROPERTY_VALIDATION_CALLBACK marks arg const& preventing validation callback from modifying the value
-    winrt::IReference<double>& modifiedValue = const_cast<winrt::IReference<double>&>(value);
-
-    if (modifiedValue && !isnan(modifiedValue.GetDouble()))
+    if (value && !isnan(value.Value()))
     {
-        modifiedValue = std::clamp(modifiedValue.GetDouble(), 0.0, 1.0);
+        value = std::clamp(value.Value(), 0.0, 1.0);
     }
 }
 
