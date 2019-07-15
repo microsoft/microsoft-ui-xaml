@@ -617,7 +617,6 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="ButtonPadding">8,4,8,5</Thickness>
     <Thickness x:Key="CommandBarMoreButtonMargin">14,19,14,0</Thickness>
     <x:Double x:Key="AppBarButtonContentHeight">16</x:Double>
     <x:Double x:Key="AppBarThemeMinHeight">56</x:Double>
