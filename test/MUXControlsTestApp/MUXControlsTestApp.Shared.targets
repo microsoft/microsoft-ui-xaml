@@ -4,7 +4,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
-
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonStyles\TestUI\CommonStyles_TestUI.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />

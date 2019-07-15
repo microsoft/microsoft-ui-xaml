@@ -235,6 +235,7 @@ namespace winrt
     using IconSourceElement = winrt::Windows::UI::Xaml::Controls::IconSourceElement;
     using IContentControlFactory = winrt::Windows::UI::Xaml::Controls::IContentControlFactory;
     using IControl5 = ::winrt::Windows::UI::Xaml::Controls::IControl5;
+    using IControl7 = ::winrt::Windows::UI::Xaml::Controls::IControl7;
     using IControlFactory = winrt::Windows::UI::Xaml::Controls::IControlFactory;
     using IControlProtected = ::winrt::Windows::UI::Xaml::Controls::IControlProtected;
     using IDataTemplateSelectorFactory = winrt::Windows::UI::Xaml::Controls::IDataTemplateSelectorFactory;
