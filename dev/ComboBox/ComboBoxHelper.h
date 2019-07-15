@@ -12,17 +12,13 @@ class ComboBoxHelper
 public:
     ComboBoxHelper();
 
-    static void OnApplyDynamicCornerRadiusPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
-
-    static void SetDropDownEventRevokers(winrt::UIElement const& target, winrt::IInspectable const& value);
-    static winrt::IInspectable GetDropDownEventRevokers(winrt::UIElement const& target);
-    static winrt::DependencyProperty DropDownEventRevokersProperty() { return s_DropDownEventRevokersProperty; }
-
     static void EnsureProperties();
     static void ClearProperties();
 
-    static GlobalDependencyProperty s_DropDownEventRevokersProperty;
+    static winrt::DependencyProperty DropDownEventRevokersProperty() { return s_DropDownEventRevokersProperty; }
+    static void OnApplyDynamicCornerRadiusPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
+    static GlobalDependencyProperty s_DropDownEventRevokersProperty;
 private:
     static void OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     static void OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args);

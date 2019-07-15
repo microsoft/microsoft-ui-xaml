@@ -39,6 +39,7 @@ void ComboBoxHelper::EnsureProperties()
 void ComboBoxHelper::ClearProperties()
 {
     s_DropDownEventRevokersProperty = nullptr;
+    ComboBoxHelperProperties::ClearProperties();
 }
 
 
@@ -71,16 +72,6 @@ void ComboBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
             comboBox.SetValue(DropDownEventRevokersProperty(), revokersInspectable);
         }
     }
-}
-
-void ComboBoxHelper::SetDropDownEventRevokers(winrt::UIElement const& target, winrt::IInspectable const& value)
-{
-    target.SetValue(s_DropDownEventRevokersProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable ComboBoxHelper::GetDropDownEventRevokers(winrt::UIElement const& target)
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(target.GetValue(s_DropDownEventRevokersProperty));
 }
 
 void ComboBoxHelper::OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
