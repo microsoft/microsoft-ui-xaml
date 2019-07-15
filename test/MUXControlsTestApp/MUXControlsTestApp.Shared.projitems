@@ -199,6 +199,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\AutoSuggestBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Button.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarDatePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CheckBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ComboBox.png" />

@@ -125,6 +125,7 @@
     <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
     <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
     <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
+    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   </ImportGroup>
 
   <ItemGroup>
