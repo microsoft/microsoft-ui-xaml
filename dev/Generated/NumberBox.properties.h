@@ -114,19 +114,11 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnBasicValidationModePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
     static void OnFractionDigitsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnHeaderPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnHyperScrollEnabledPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -143,18 +135,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsZeroSignedPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnMaxValuePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnMinMaxModePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnMinValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -179,10 +159,6 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSpinButtonPlacementModePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnStepFrequencyPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

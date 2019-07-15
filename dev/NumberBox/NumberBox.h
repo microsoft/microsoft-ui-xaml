@@ -22,7 +22,26 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnRoundingAlgorithmPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnNumberRounderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSignificantDigitPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMaxValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMinMaxModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMinValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 
 

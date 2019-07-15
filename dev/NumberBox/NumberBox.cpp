@@ -51,33 +51,68 @@ void NumberBox::OnApplyTemplate()
     }
 }
 
-void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    winrt::IDependencyProperty property = args.Property();
-    
-    // Update visual state for spin buttons if placement mode changed
-    if (property == s_SpinButtonPlacementModeProperty)
-    {
-        SetSpinButtonVisualState();
-    }
-    else if (property == s_IntegerDigitsProperty || property == s_FractionDigitsProperty || property == s_SignificantDigitsProperty || property == s_IsDecimalPointAlwaysDisplayedProperty || property == s_IsZeroSignedProperty)
-    {
-        UpdateFormatter();
-    }
-    else if (property == s_RoundingAlgorithmProperty || property == s_NumberRounderProperty || property == s_SignificantDigitPrecisionProperty || property == s_IncrementPrecisionProperty)
-    {
-        UpdateRounder();
-    }
-    else if (property == s_HeaderProperty)
-    {
-        SetHeader();
-    }
-    else if (property == s_PlaceholderTextProperty)
-    {
-        SetPlaceHolderText();
-    }
 
+void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    SetHeader();
 }
+void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    SetSpinButtonVisualState();
+}
+void NumberBox::OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    SetPlaceHolderText();
+}
+
+void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateFormatter();
+}
+void NumberBox::OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateFormatter();
+}
+void NumberBox::OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateFormatter();
+}
+void NumberBox::OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateFormatter();
+}
+void NumberBox::OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateFormatter();
+}
+
+
+void NumberBox::OnRoundingAlgorithmPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateRounder();
+}
+void NumberBox::OnNumberRounderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateRounder();
+}
+void NumberBox::OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateRounder();
+}
+void NumberBox::OnSignificantDigitPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateRounder();
+}
+
+void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (m_TextBox)
+    {
+       // UpdateTextToValue();
+    }
+}
+
+
 
 // Trigger any validation, rounding, and processing done onLostFocus
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -197,13 +232,9 @@ void NumberBox::StepValue(bool sign)
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
-    if (!m_hasError)
-    {
         winrt::hstring formattedValue(m_formatter.Format(Value()));
         Value( (m_formatter.ParseDouble(formattedValue)).Value() );
         m_TextBox.Text(formattedValue);
-    }
-
 }
 
 // Handlder for swapping visual states of textbox

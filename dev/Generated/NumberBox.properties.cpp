@@ -45,7 +45,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnBasicValidationModePropertyChanged));
+                nullptr);
     }
     if (!s_FractionDigitsProperty)
     {
@@ -78,7 +78,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnHyperScrollEnabledPropertyChanged));
+                nullptr);
     }
     if (!s_IncrementPrecisionProperty)
     {
@@ -133,7 +133,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0),
-                winrt::PropertyChangedCallback(&OnMaxValuePropertyChanged));
+                nullptr);
     }
     if (!s_MinMaxModeProperty)
     {
@@ -144,7 +144,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(winrt::NumberBoxMinMaxMode::None),
-                winrt::PropertyChangedCallback(&OnMinMaxModePropertyChanged));
+                nullptr);
     }
     if (!s_MinValueProperty)
     {
@@ -155,7 +155,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(0),
-                winrt::PropertyChangedCallback(&OnMinValuePropertyChanged));
+                nullptr);
     }
     if (!s_NumberRounderProperty)
     {
@@ -232,7 +232,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1),
-                winrt::PropertyChangedCallback(&OnStepFrequencyPropertyChanged));
+                nullptr);
     }
     if (!s_ValueProperty)
     {
@@ -270,20 +270,12 @@ void NumberBoxProperties::ClearProperties()
     s_ValueProperty = nullptr;
 }
 
-void NumberBoxProperties::OnBasicValidationModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
 void NumberBoxProperties::OnFractionDigitsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnFractionDigitsPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnHeaderPropertyChanged(
@@ -291,15 +283,7 @@ void NumberBoxProperties::OnHeaderPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnHyperScrollEnabledPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnHeaderPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIncrementPrecisionPropertyChanged(
@@ -307,7 +291,7 @@ void NumberBoxProperties::OnIncrementPrecisionPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnIncrementPrecisionPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIntegerDigitsPropertyChanged(
@@ -315,7 +299,7 @@ void NumberBoxProperties::OnIntegerDigitsPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnIntegerDigitsPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIsDecimalPointAlwaysDisplayedPropertyChanged(
@@ -323,7 +307,7 @@ void NumberBoxProperties::OnIsDecimalPointAlwaysDisplayedPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnIsDecimalPointAlwaysDisplayedPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIsZeroSignedPropertyChanged(
@@ -331,31 +315,7 @@ void NumberBoxProperties::OnIsZeroSignedPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnMaxValuePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnMinMaxModePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnMinValuePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnIsZeroSignedPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnNumberRounderPropertyChanged(
@@ -363,7 +323,7 @@ void NumberBoxProperties::OnNumberRounderPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnNumberRounderPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnPlaceholderTextPropertyChanged(
@@ -371,7 +331,7 @@ void NumberBoxProperties::OnPlaceholderTextPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnPlaceholderTextPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnRoundingAlgorithmPropertyChanged(
@@ -379,7 +339,7 @@ void NumberBoxProperties::OnRoundingAlgorithmPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnRoundingAlgorithmPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnSignificantDigitPrecisionPropertyChanged(
@@ -387,7 +347,7 @@ void NumberBoxProperties::OnSignificantDigitPrecisionPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnSignificantDigitPrecisionPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnSignificantDigitsPropertyChanged(
@@ -395,7 +355,7 @@ void NumberBoxProperties::OnSignificantDigitsPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnSignificantDigitsPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
@@ -403,15 +363,7 @@ void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnStepFrequencyPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnSpinButtonPlacementModePropertyChanged(args);
 }
 
 void NumberBoxProperties::OnValuePropertyChanged(
@@ -419,7 +371,7 @@ void NumberBoxProperties::OnValuePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnValuePropertyChanged(args);
 }
 
 void NumberBoxProperties::BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value)

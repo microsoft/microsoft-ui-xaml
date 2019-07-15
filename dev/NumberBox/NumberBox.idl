@@ -53,16 +53,17 @@ runtimeclass NumberBoxValueChangingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 {
     NumberBox();
     
     
     [MUX_DEFAULT_VALUE("0")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double Value{ get; set; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Header;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String PlaceholderText; 
     NumberBoxBasicValidationMode BasicValidationMode;
 
@@ -75,7 +76,6 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Double StepFrequency;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxMinMaxMode::None")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxMinMaxMode MinMaxMode{ get; set; };
     [MUX_DEFAULT_VALUE("0")]
     Double MinValue;
@@ -83,14 +83,19 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Double MaxValue;
 
     [MUX_DEFAULT_VALUE("1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 IntegerDigits;
     [MUX_DEFAULT_VALUE("0")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 FractionDigits;
     [MUX_DEFAULT_VALUE("0")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SignificantDigits;
     [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsDecimalPointAlwaysDisplayed;
     [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsZeroSigned;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -100,8 +105,10 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxNumberRounder NumberRounder{ get; set; };
     [MUX_DEFAULT_VALUE("1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double IncrementPrecision;
     [MUX_DEFAULT_VALUE("1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SignificantDigitPrecision;
 
 
