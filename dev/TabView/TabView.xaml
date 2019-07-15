@@ -210,7 +210,7 @@
 
     <Style TargetType="local:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        <Setter Property="UseSystemFocusVisuals" Value="True"/>
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">

@@ -31,7 +31,7 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
-    KeyUp({ this, &TabView::OnTabViewKeyUp });
+    KeyDown({ this, &TabView::OnTabViewKeyDown });
 }
 
 void TabView::OnApplyTemplate()
@@ -322,7 +322,7 @@ void TabView::UpdateTabWidths()
         {
             widthTaken += addButtonColumn.ActualWidth();
         }
-        if (auto rightContentColumn = m_rightContentColumn.get())
+        if (auto&& rightContentColumn = m_rightContentColumn.get())
         {
             if (auto rightContentPresenter = m_rightContentPresenter.get())
             {
@@ -436,7 +436,7 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
     return nullptr;
 }
 
-void TabView::OnTabViewKeyUp(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+void TabView::OnTabViewKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
 {
     winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
 

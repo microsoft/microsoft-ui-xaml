@@ -64,7 +64,7 @@ private:
     void OnScrollDecreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollIncreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
-    void OnTabViewKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnTabViewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
