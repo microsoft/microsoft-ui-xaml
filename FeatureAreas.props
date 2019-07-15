@@ -9,9 +9,7 @@
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
-
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
-
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -48,8 +46,8 @@
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
     <FeatureCommonStylesEnabled>false</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
-    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
-    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
+    <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
