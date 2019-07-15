@@ -20,6 +20,7 @@ GlobalDependencyProperty NumberBoxProperties::s_MaxValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinMaxModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_NumberRounderProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_PlaceholderTextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_RoundingAlgorithmProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitPrecisionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitsProperty{ nullptr };
@@ -167,6 +168,17 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::NumberBoxNumberRounder>::BoxValueIfNecessary(winrt::NumberBoxNumberRounder::None),
                 winrt::PropertyChangedCallback(&OnNumberRounderPropertyChanged));
     }
+    if (!s_PlaceholderTextProperty)
+    {
+        s_PlaceholderTextProperty =
+            InitializeDependencyProperty(
+                L"PlaceholderText",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnPlaceholderTextPropertyChanged));
+    }
     if (!s_RoundingAlgorithmProperty)
     {
         s_RoundingAlgorithmProperty =
@@ -249,6 +261,7 @@ void NumberBoxProperties::ClearProperties()
     s_MinMaxModeProperty = nullptr;
     s_MinValueProperty = nullptr;
     s_NumberRounderProperty = nullptr;
+    s_PlaceholderTextProperty = nullptr;
     s_RoundingAlgorithmProperty = nullptr;
     s_SignificantDigitPrecisionProperty = nullptr;
     s_SignificantDigitsProperty = nullptr;
@@ -346,6 +359,14 @@ void NumberBoxProperties::OnMinValuePropertyChanged(
 }
 
 void NumberBoxProperties::OnNumberRounderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnPlaceholderTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -519,6 +540,16 @@ void NumberBoxProperties::NumberRounder(winrt::NumberBoxNumberRounder const& val
 winrt::NumberBoxNumberRounder NumberBoxProperties::NumberRounder()
 {
     return ValueHelper<winrt::NumberBoxNumberRounder>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_NumberRounderProperty));
+}
+
+void NumberBoxProperties::PlaceholderText(winrt::hstring const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_PlaceholderTextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+}
+
+winrt::hstring NumberBoxProperties::PlaceholderText()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_PlaceholderTextProperty));
 }
 
 void NumberBoxProperties::RoundingAlgorithm(winrt::RoundingAlgorithm const& value)

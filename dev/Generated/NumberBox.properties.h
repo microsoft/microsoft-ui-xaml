@@ -45,6 +45,9 @@ public:
     void NumberRounder(winrt::NumberBoxNumberRounder const& value);
     winrt::NumberBoxNumberRounder NumberRounder();
 
+    void PlaceholderText(winrt::hstring const& value);
+    winrt::hstring PlaceholderText();
+
     void RoundingAlgorithm(winrt::RoundingAlgorithm const& value);
     winrt::RoundingAlgorithm RoundingAlgorithm();
 
@@ -75,6 +78,7 @@ public:
     static winrt::DependencyProperty MinMaxModeProperty() { return s_MinMaxModeProperty; }
     static winrt::DependencyProperty MinValueProperty() { return s_MinValueProperty; }
     static winrt::DependencyProperty NumberRounderProperty() { return s_NumberRounderProperty; }
+    static winrt::DependencyProperty PlaceholderTextProperty() { return s_PlaceholderTextProperty; }
     static winrt::DependencyProperty RoundingAlgorithmProperty() { return s_RoundingAlgorithmProperty; }
     static winrt::DependencyProperty SignificantDigitPrecisionProperty() { return s_SignificantDigitPrecisionProperty; }
     static winrt::DependencyProperty SignificantDigitsProperty() { return s_SignificantDigitsProperty; }
@@ -94,6 +98,7 @@ public:
     static GlobalDependencyProperty s_MinMaxModeProperty;
     static GlobalDependencyProperty s_MinValueProperty;
     static GlobalDependencyProperty s_NumberRounderProperty;
+    static GlobalDependencyProperty s_PlaceholderTextProperty;
     static GlobalDependencyProperty s_RoundingAlgorithmProperty;
     static GlobalDependencyProperty s_SignificantDigitPrecisionProperty;
     static GlobalDependencyProperty s_SignificantDigitsProperty;
@@ -154,6 +159,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnNumberRounderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPlaceholderTextPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

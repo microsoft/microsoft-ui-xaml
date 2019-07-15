@@ -7,14 +7,12 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
-using namespace std;
 
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
     SetDefaultStyleKey(this);
 }
-
 
 void NumberBox::OnApplyTemplate()
 {
@@ -27,26 +25,28 @@ void NumberBox::OnApplyTemplate()
     // Initializations - Visual States
     SetSpinButtonVisualState();
     SetHeader();
+    SetPlaceHolderText();
 
     // Initializations - Interactions
     m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
     m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
     m_TextBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
-    this->PointerWheelChanged({ this, &NumberBox::OnScroll });
+    PointerWheelChanged({ this, &NumberBox::OnScroll });
 
     // Initializations - Tools, etc.
-    Formatter = winrt::DecimalFormatter();
-    IRounder = winrt::IncrementNumberRounder();
-    SRounder = winrt::SignificantDigitsNumberRounder();
+    m_formatter = winrt::DecimalFormatter();
+    m_iRounder = winrt::IncrementNumberRounder();
+    m_sRounder = winrt::SignificantDigitsNumberRounder();
     UpdateFormatter();
     UpdateRounder();
     // Set Text to reflect preset Value
-    if (s_ValueProperty != DEFAULTVALUE && m_TextBox) {
+    if (s_ValueProperty != 0.0 && m_TextBox) {
         UpdateTextToValue();
     }
 
     // Register LostFocus Event
-    if ( m_TextBox ) {
+    if (m_TextBox)
+    {
         m_TextBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
     }
 }
@@ -72,6 +72,10 @@ void  NumberBox::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
     {
         SetHeader();
     }
+    else if (property == s_PlaceholderTextProperty)
+    {
+        SetPlaceHolderText();
+    }
 
 }
 
@@ -84,16 +88,16 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 // Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
 void NumberBox::ValidateInput()
 {
-    string InputAsString = winrt::to_string(m_TextBox.Text());
+    std::string InputAsString = winrt::to_string(m_TextBox.Text());
     // Handles Empty TextBox Case, current behavior is to set Value to default (0)
     if (InputAsString == "")
     {
-        this->Value(0);
-        HasError = false;
+        Value(0);
+        m_hasError = false;
         return;
     }
 
-    winrt::IReference<double> parsedNum = Formatter.ParseDouble(m_TextBox.Text());
+    winrt::IReference<double> parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
     // TODO: Formatter.Format(value)
 
     if (parsedNum && IsInBounds(parsedNum.Value()) )
@@ -155,7 +159,7 @@ void NumberBox::StepValue(bool sign)
     ValidateInput();
     double newVal = Value();
 
-    if ( sign )
+    if (sign)
     {
         newVal = newVal + StepFrequency();
     }
@@ -165,7 +169,7 @@ void NumberBox::StepValue(bool sign)
     }
 
     // MinMaxMode Wrapping
-    if ( MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && !IsInBounds(newVal) )
+    if (MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && !IsInBounds(newVal))
     {
         while ( newVal > MaxValue() )
         {
@@ -193,10 +197,10 @@ void NumberBox::StepValue(bool sign)
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
-    if (!HasError)
+    if (!m_hasError)
     {
-        winrt::hstring formattedValue(Formatter.Format(Value()));
-        Value( (Formatter.ParseDouble(formattedValue)).Value() );
+        winrt::hstring formattedValue(m_formatter.Format(Value()));
+        Value( (m_formatter.ParseDouble(formattedValue)).Value() );
         m_TextBox.Text(formattedValue);
     }
 
@@ -208,12 +212,12 @@ void NumberBox::SetErrorState(bool state)
 {
     if (state)
     {
-        HasError = true;
+        m_hasError = true;
         winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
     }
     else
     {
-        HasError = false;
+        m_hasError = false;
         winrt::VisualStateManager::GoToState(*this, L"Valid", false);
     }
 
@@ -268,11 +272,11 @@ bool NumberBox::IsInBounds(double val)
 
 void NumberBox::UpdateFormatter()
 {
-    Formatter.IntegerDigits(IntegerDigits());
-    Formatter.FractionDigits(FractionDigits());
-    Formatter.SignificantDigits(SignificantDigits());
-    Formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
-    Formatter.IsZeroSigned(IsZeroSigned());
+    m_formatter.IntegerDigits(IntegerDigits());
+    m_formatter.FractionDigits(FractionDigits());
+    m_formatter.SignificantDigits(SignificantDigits());
+    m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
+    m_formatter.IsZeroSigned(IsZeroSigned());
   
 }
 
@@ -281,31 +285,35 @@ void NumberBox::UpdateRounder()
     // Setting a number rounder's RoundingAlgorithm to None can cause a crash because it's not a true value - safer to set Rounder to a null pointer instead
     if ( NumberRounder() == winrt::NumberBoxNumberRounder::None || RoundingAlgorithm() == winrt::RoundingAlgorithm::None)
     {
-        Formatter.NumberRounder(nullptr);
+        m_formatter.NumberRounder(nullptr);
         return;
     }
 
     if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder) {
-        IRounder.Increment(IncrementPrecision());
-        IRounder.RoundingAlgorithm(RoundingAlgorithm());
-        Formatter.NumberRounder(IRounder);
+        m_iRounder.Increment(IncrementPrecision());
+        m_iRounder.RoundingAlgorithm(RoundingAlgorithm());
+        m_formatter.NumberRounder(m_iRounder);
     }
     else
     {
-        SRounder.SignificantDigits( (uint32_t) abs(SignificantDigitPrecision()));
-        SRounder.RoundingAlgorithm(RoundingAlgorithm());
-        Formatter.NumberRounder(SRounder);
+        m_sRounder.SignificantDigits( (uint32_t) abs(SignificantDigitPrecision()));
+        m_sRounder.RoundingAlgorithm(RoundingAlgorithm());
+        m_formatter.NumberRounder(m_sRounder);
     }
 
 }
 
-void::NumberBox::SetHeader()
+void NumberBox::SetHeader()
 {
     /* TODO: Header Code
     winrt::TextBox headerbox;
     headerbox.Text(Header());
     m_TextBox.Header(headerbox);
     */
+}
+void NumberBox::SetPlaceHolderText()
+{
+    m_TextBox.PlaceholderText(PlaceholderText());
 }
 
 

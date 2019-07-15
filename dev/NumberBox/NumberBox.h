@@ -10,9 +10,6 @@
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
 
-#define DEFAULTVALUE 0.0
-
-
 class NumberBox :
     public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
     public NumberBoxProperties
@@ -46,13 +43,14 @@ private:
     void UpdateFormatter();
     void UpdateRounder();
     void SetHeader();
-    winrt::DecimalFormatter Formatter;
-    winrt::IncrementNumberRounder IRounder;
-    winrt::SignificantDigitsNumberRounder SRounder;
+    void SetPlaceHolderText();
+    winrt::DecimalFormatter m_formatter;
+    winrt::IncrementNumberRounder m_iRounder;
+    winrt::SignificantDigitsNumberRounder m_sRounder;
     winrt::TextBox m_TextBox{ nullptr };
     winrt::Button m_SpinDown{ nullptr };
     winrt::Button m_SpinUp{ nullptr };
-    bool HasError{ false };
+    bool m_hasError{ false };
 
 
 };

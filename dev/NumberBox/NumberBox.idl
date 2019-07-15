@@ -43,7 +43,12 @@ enum NumberBoxNumberRounder
 };
 
 
-
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+runtimeclass NumberBoxValueChangingEventArgs
+{
+    Boolean IsContentChanging;
+};
 
 
 [WUXC_VERSION_PREVIEW]
@@ -58,6 +63,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("0")]
     Double Value{ get; set; };
     String Header;
+    String PlaceholderText; 
     NumberBoxBasicValidationMode BasicValidationMode;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
@@ -102,8 +108,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
-    //Object Placeholder{ get; set; };
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
