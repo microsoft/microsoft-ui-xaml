@@ -49,6 +49,7 @@
     <FeatureCommonStylesEnabled>false</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
     <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
@@ -96,6 +97,7 @@
     <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
     <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
