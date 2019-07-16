@@ -49,6 +49,9 @@ public:
     static void SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY);
+    static winrt::float2 GetArrangeRenderSizesDelta(const winrt::Scroller& scroller);
+    static winrt::float2 GetMinPosition(const winrt::Scroller& scroller);
+    static winrt::float2 GetMaxPosition(const winrt::Scroller& scroller);
     static winrt::ScrollerViewChangeResult GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs);
     static winrt::ScrollerViewChangeResult GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs);
 
