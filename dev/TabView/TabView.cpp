@@ -31,7 +31,6 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
-    KeyDown({ this, &TabView::OnTabViewKeyDown });
 }
 
 void TabView::OnApplyTemplate()
@@ -81,6 +80,16 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
+
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        winrt::KeyboardAccelerator keyboardAccelerator;
+        keyboardAccelerator.Key(winrt::VirtualKey::F4);
+        keyboardAccelerator.Modifiers(winrt::VirtualKeyModifiers::Control);
+        keyboardAccelerator.Invoked({ this, &TabView::OnCtrlF4Invoked });
+        keyboardAccelerator.ScopeOwner(*this);
+        KeyboardAccelerators().Append(keyboardAccelerator);
+    }
 
     UpdateItemsSource();
 }
@@ -436,26 +445,17 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
     return nullptr;
 }
 
-void TabView::OnTabViewKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
+void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    winrt::CoreVirtualKeyStates ctrlState = winrt::CoreWindow::GetForCurrentThread().GetKeyState(winrt::VirtualKey::Control);
-
-    if (IsEnabled()
-        && SelectedItem()
-        && (ctrlState & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down)
+    if (IsEnabled())
     {
-        winrt::VirtualKey key = args.Key();
-
-        if (key == winrt::VirtualKey::F4)
+        if (auto selectedTab = SelectedItem().try_as<winrt::TabViewItem>())
         {
-            if (auto selectedTab = SelectedItem().as<winrt::TabViewItem>())
+            if (selectedTab.IsCloseable())
             {
-                if (selectedTab.IsCloseable())
-                {
-                    // Close the tab on ctrl + F4
-                    CloseTab(selectedTab);
-                    args.Handled(true);
-                }
+                // Close the tab on ctrl + F4
+                CloseTab(selectedTab);
+                args.Handled(true);
             }
         }
     }
