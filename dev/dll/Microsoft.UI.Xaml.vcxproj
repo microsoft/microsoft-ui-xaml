@@ -635,10 +635,9 @@
     <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(CppWinRTPlatformWinMDReferences)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
     <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
   </Target>
-  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
+  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
     <Touch Files="$(OutDir)$(TargetName).dll" />
-    <Touch Files="$(OutDir)Microsoft.winmd" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
