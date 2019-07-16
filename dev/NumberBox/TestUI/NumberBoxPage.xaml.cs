@@ -18,6 +18,7 @@ using NumberBox = Microsoft.UI.Xaml.Controls.NumberBox;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "NumberBox")]
     public sealed partial class NumberBoxPage : TestPage
     {
         NumberBox box;

@@ -16,103 +16,102 @@
         <local:StringToRoundingAlgConverter x:Key="RoundingConverter" />
         <local:DoubleToUIntConverter x:Key="UintConverter" />
         <local:StringToRounderConverter x:Key="RounderConverter"/>
-
     </Page.Resources>
 
 
-<Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
 
-        <RelativePanel x:Name="ParentPanel">
-
-
-            <ComboBox x:Name="validationmode" Header="Validation Mode (WIP)" IsEnabled="False">
-                <x:String> </x:String>
-            </ComboBox>
+            <RelativePanel x:Name="ParentPanel">
 
 
-            <ComboBox x:Name="Spinmode"
+                <ComboBox x:Name="validationmode" Header="Validation Mode (WIP)" IsEnabled="False">
+                    <x:String></x:String>
+                </ComboBox>
+
+
+                <ComboBox x:Name="Spinmode"
                 SelectedValue="Hidden"
                       SelectionChanged="SpinMode_Changed"
                 Header="SpinButtonMode"
                 RelativePanel.Below="validationmode">
-                <x:String>Hidden</x:String>
-                <x:String>Inline</x:String>
-            </ComboBox>
-            
-            <CheckBox x:Name="hyperscroll"
+                    <x:String>Hidden</x:String>
+                    <x:String>Inline</x:String>
+                </ComboBox>
+
+                <CheckBox x:Name="hyperscroll"
                 IsChecked="False"
                 Content="HyperScroll Enabled"
                 RelativePanel.Below="Spinmode"
                 Checked="Hyperscroll_Checked"
                 Unchecked="Hyperscroll_Checked"/>
 
-            <ComboBox x:Name="boundbox"
+                <ComboBox x:Name="boundbox"
                 RelativePanel.Below="hyperscroll"
                 Header="MinMaxMode"
                       SelectedValue="None"
                       SelectionChanged="Bounds_Changed">
-                <x:String>None</x:String>
-                <x:String>MinEnabled</x:String>
-                <x:String>MaxEnabled</x:String>
-                <x:String>MinAndMaxEnabled</x:String>
-                <x:String>WrapEnabled</x:String>
-            </ComboBox>
+                    <x:String>None</x:String>
+                    <x:String>MinEnabled</x:String>
+                    <x:String>MaxEnabled</x:String>
+                    <x:String>MinAndMaxEnabled</x:String>
+                    <x:String>WrapEnabled</x:String>
+                </ComboBox>
 
 
 
 
 
-            <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="boundbox" />
-            <controls:NumberBox x:Name="min"
+                <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="boundbox" />
+                <controls:NumberBox x:Name="min"
                 RelativePanel.Below="boundbox"/>
-            <TextBlock Text="Max" RelativePanel.RightOf="max" RelativePanel.Below="min" />
+                <TextBlock Text="Max" RelativePanel.RightOf="max" RelativePanel.Below="min" />
 
-            <controls:NumberBox x:Name="max"
+                <controls:NumberBox x:Name="max"
                 RelativePanel.Below="min"/>
 
-            <TextBlock Text="Fraction Digits" RelativePanel.RightOf="frac" RelativePanel.Below="max" />
-            <controls:NumberBox x:Name="frac" RelativePanel.Below="max" Value="0"/>
+                <TextBlock Text="Fraction Digits" RelativePanel.RightOf="frac" RelativePanel.Below="max" />
+                <controls:NumberBox x:Name="frac" RelativePanel.Below="max" Value="0"/>
 
-            <TextBlock Text="Integer Digits" RelativePanel.RightOf="intdig" RelativePanel.Below="frac" />
-            <controls:NumberBox x:Name="intdig" RelativePanel.Below="frac" Value="1" />
+                <TextBlock Text="Integer Digits" RelativePanel.RightOf="intdig" RelativePanel.Below="frac" />
+                <controls:NumberBox x:Name="intdig" RelativePanel.Below="frac" Value="1" />
 
-            <TextBlock Text="Significant Digits" RelativePanel.RightOf="sigdig" RelativePanel.Below="intdig" />
-            <controls:NumberBox x:Name="sigdig" RelativePanel.Below="intdig" />
+                <TextBlock Text="Significant Digits" RelativePanel.RightOf="sigdig" RelativePanel.Below="intdig" />
+                <controls:NumberBox x:Name="sigdig" RelativePanel.Below="intdig" />
 
-            <CheckBox x:Name="dec" RelativePanel.Below="sigdig" Content="IsDecimalPointAlwaysDisplayed" />
-            <CheckBox x:Name="zerosign" RelativePanel.Below="dec" Content="IsZeroSigned" />
+                <CheckBox x:Name="dec" RelativePanel.Below="sigdig" Content="IsDecimalPointAlwaysDisplayed" />
+                <CheckBox x:Name="zerosign" RelativePanel.Below="dec" Content="IsZeroSigned" />
 
-            <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="IncrementNumberRounder" >
-                <x:String>IncrementNumberRounder</x:String>
-                <x:String>SignificantDigitsNumberRounder</x:String>
-                <x:String>None</x:String>
+                <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="IncrementNumberRounder" >
+                    <x:String>IncrementNumberRounder</x:String>
+                    <x:String>SignificantDigitsNumberRounder</x:String>
+                    <x:String>None</x:String>
 
-            </ComboBox>
-
-            
-            <ComboBox x:Name="algo" Header="Rounding Algorithm" RelativePanel.Below="rounder" SelectedValue="RoundAwayFromZero" >
-                <x:String>None</x:String>
-                <x:String>RoundAwayFromZero</x:String>
-                <x:String>RoundDown</x:String>
-                <x:String>RoundHalfAwayFromZero</x:String>
-                <x:String>RoundHalfDown</x:String>
-                <x:String>RoundHalfToEven</x:String>
-                <x:String>RoundHalfToOdd</x:String>
-                <x:String>RoundHalfTowardsZero</x:String>
-                <x:String>RoundHalfUp</x:String>
-                <x:String>RoundTowardsZero</x:String>
-                <x:String>RoundUp</x:String>
-            </ComboBox>
+                </ComboBox>
 
 
+                <ComboBox x:Name="algo" Header="Rounding Algorithm" RelativePanel.Below="rounder" SelectedValue="RoundAwayFromZero" >
+                    <x:String>None</x:String>
+                    <x:String>RoundAwayFromZero</x:String>
+                    <x:String>RoundDown</x:String>
+                    <x:String>RoundHalfAwayFromZero</x:String>
+                    <x:String>RoundHalfDown</x:String>
+                    <x:String>RoundHalfToEven</x:String>
+                    <x:String>RoundHalfToOdd</x:String>
+                    <x:String>RoundHalfTowardsZero</x:String>
+                    <x:String>RoundHalfUp</x:String>
+                    <x:String>RoundTowardsZero</x:String>
+                    <x:String>RoundUp</x:String>
+                </ComboBox>
 
-            <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="algo" RelativePanel.Below="algo" />
-            <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
 
-            <TextBlock Text="SignificantDigitPrecision (For sig rounder)" RelativePanel.RightOf="sigprec" RelativePanel.Below="increment" />
-            <controls:NumberBox x:Name="sigprec" RelativePanel.Below="increment" Value="1"/>
 
-            <controls:NumberBox
+                <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="algo" RelativePanel.Below="algo" />
+                <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
+
+                <TextBlock Text="SignificantDigitPrecision (For sig rounder)" RelativePanel.RightOf="sigprec" RelativePanel.Below="increment" />
+                <controls:NumberBox x:Name="sigprec" RelativePanel.Below="increment" Value="1"/>
+
+                <controls:NumberBox
                 x:Name="numBox"
                 Margin="0,50,0,0"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
@@ -133,7 +132,7 @@
 
                 />
 
-        </RelativePanel>
+            </RelativePanel>
 
 
 
@@ -145,5 +144,5 @@
 
 
 
-    </Grid>
+        </Grid>
 </local:TestPage>

@@ -10,8 +10,9 @@
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
 
-    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
-
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
+    
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -94,6 +95,7 @@
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
     <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
