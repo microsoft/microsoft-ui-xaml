@@ -8,6 +8,8 @@
 #include "DisplayRegionHelper.h"
 #include "LifetimeHandler.h"
 
+#define ApplicationViewMode_Spanning 2
+
 DisplayRegionHelper::DisplayRegionHelper() 
 {
 };
@@ -57,15 +59,18 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
             view = winrt::ApplicationView::GetForCurrentView();
         } catch(...) {}
 
-        // Verify that the window is Tiled
-        if (view)
+        // Verify that the view mode is spanned.
+        // WinUI bug 1051: Once ApplicationViewMode::Spanning is in a public SDK, check for that instead.
+        if (view && (int)(view.ViewMode()) == ApplicationViewMode_Spanning)
         {
             auto regions = view.GetDisplayRegions();
-            info.RegionCount = std::min(regions.Size(), c_maxRegions);
 
-            // More than one region
-            if (info.RegionCount == 2)
+            // An even number of regions
+            if (regions.Size() == 2 || regions.Size()  == 4)
             {
+                // TwoPaneView does not split into more than 2 regions
+                info.RegionCount = 2;
+
                 winrt::Rect windowRect = WindowRect();
 
                 if (windowRect.Width > windowRect.Height)
