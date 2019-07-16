@@ -31,7 +31,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)DisplayRegionHelperTestApiFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TwoPaneView.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)TwoPaneView_rs1.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

@@ -1375,7 +1375,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
-                isAnimationsEnabledOverride))
+                isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 Log.Comment("Waiting for any pending ExpressionAnimation start/stop notifications to occur");
                 CompositionPropertySpy.SynchronouslyTickUIThread(6);
@@ -1466,7 +1466,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
-                isAnimationsEnabledOverride))
+                isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 Log.Comment("Waiting for any pending ExpressionAnimation start/stop notifications to occur");
                 CompositionPropertySpy.SynchronouslyTickUIThread(6);
@@ -1780,8 +1780,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
-                enableExpressionAnimationStatusNotifications: true,
-                isAnimationsEnabledOverride))
+                enableExpressionAnimationStatusNotifications: true, 
+                isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);
                 ScrollerOperation operation = null;
@@ -1852,7 +1852,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
                 enableExpressionAnimationStatusNotifications: true,
-                isAnimationsEnabledOverride))
+                isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 float originalZoomFactor = 1.0f;
                 AutoResetEvent scrollerViewChangeOperationEvent = new AutoResetEvent(false);

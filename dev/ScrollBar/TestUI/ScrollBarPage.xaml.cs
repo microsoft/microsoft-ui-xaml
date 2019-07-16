@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "ScrollBar")]
     public sealed partial class ScrollBarPage : TestPage
     {
         public ScrollBarPage()

@@ -17,6 +17,7 @@ using RadioButtons = Microsoft.UI.Xaml.Controls.RadioButtons;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "RadioButtons", Icon = "RadioButton.png")]
     public sealed partial class RadioButtonsPage : TestPage
     {
         ObservableCollection<string> m_itemCollection;

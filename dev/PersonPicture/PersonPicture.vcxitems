@@ -29,7 +29,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)PersonPicture.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)PersonPictureAutomationPeer.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)PersonPicture.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

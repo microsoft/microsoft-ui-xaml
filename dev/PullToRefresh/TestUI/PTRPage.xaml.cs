@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "PTR", Icon = "PullToRefresh.png")]
     public sealed partial class PTRPage : TestPage
     {
         public PTRPage()

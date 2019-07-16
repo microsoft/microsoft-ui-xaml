@@ -510,6 +510,8 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
+#ifdef ICONSOURCE_INCLUDED
+
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
     if (auto fontIconSource = iconSource.try_as<winrt::FontIconSource>())
@@ -568,6 +570,8 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
 
     return nullptr;
 }
+
+#endif
 
 void SharedHelpers::SetBinding(
     std::wstring_view const& pathString,

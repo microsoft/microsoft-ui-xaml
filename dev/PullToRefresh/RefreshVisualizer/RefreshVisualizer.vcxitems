@@ -9,6 +9,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PULLTOREFRESH_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -32,7 +33,7 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RefreshVisualizer.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

@@ -13,6 +13,7 @@ using Windows.UI;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "SliderInteraction", Icon = "Slider.png")]
     public sealed partial class SliderInteractionPage : TestPage
     {
         public SliderInteractionPage()

@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "CheckBox", Icon = "CheckBox.png")]
     public sealed partial class CheckBoxPage : TestPage
     {
         public CheckBoxPage()

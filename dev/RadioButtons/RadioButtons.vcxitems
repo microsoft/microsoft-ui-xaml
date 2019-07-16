@@ -26,7 +26,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItemAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
