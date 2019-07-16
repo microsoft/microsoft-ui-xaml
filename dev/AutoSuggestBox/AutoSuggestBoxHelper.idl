@@ -1,0 +1,16 @@
+﻿namespace MU_XCP_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[default_interface]
+runtimeclass AutoSuggestBoxHelper
+{
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyDynamicCornerRadiusPropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty ApplyDynamicCornerRadiusProperty{ get; };
+    static void SetApplyDynamicCornerRadius(Windows.UI.Xaml.UIElement element, Boolean value);
+    static Boolean GetApplyDynamicCornerRadius(Windows.UI.Xaml.UIElement element);
+};
+
+}
