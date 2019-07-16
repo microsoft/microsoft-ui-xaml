@@ -122,9 +122,6 @@
     <Prefer32Bit>true</Prefer32Bit>
     <UseDotNetNativeToolchain>false</UseDotNetNativeToolchain>
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants>
-  </PropertyGroup>
   <PropertyGroup>
     <NoWarn>$(NoWarn);0105</NoWarn>
   </PropertyGroup>

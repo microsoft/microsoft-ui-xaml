@@ -64,5 +64,15 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Button_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ToggleButton_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
   </ItemGroup>
 </Project>

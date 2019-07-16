@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TREEVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -53,7 +54,7 @@
     <Midl Include="$(MSBuildThisFileDirectory)TreeView.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

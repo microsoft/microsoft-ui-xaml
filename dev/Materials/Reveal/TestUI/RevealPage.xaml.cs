@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "Reveal", Icon = "Reveal.png")]
     public sealed partial class RevealPage : TestPage
     {
         public RevealPage()
@@ -20,7 +21,9 @@ namespace MUXControlsTestApp
             navigateToRevealStates.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealStatesPage), 0); };
             navigateToRevealRegressionTests.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealRegressionTestsPage), 0); };
             navigateToCoreWindowEventsTests.Click += delegate { Frame.NavigateWithoutAnimation(typeof(CoreWindowEventsPage), 0); };
+#if FEATURE_NAVIGATIONVIEW_ENABLED
             navigateToRevealMarkup.Click += delegate { Frame.NavigateWithoutAnimation(typeof(RevealMarkupPage), 0); };
+#endif
         }
     }
 }

@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "ContentDialog")]
     public sealed partial class ContentDialogPage : TestPage
     {
         public ContentDialogPage()

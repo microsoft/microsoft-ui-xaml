@@ -44,12 +44,6 @@
     <UseInsiderSDK>true</UseInsiderSDK>
   </PropertyGroup>
   <Import Condition="$(BuildingWithBuildExe) == 'true'" Project="$(NTMAKEENV)\Microsoft.Build.settings" />
-  <!-- We build a custom version of MUX.dll for use by the Store app. This includes only the types that the Store App team actually need. -->
-  <!-- This is controlled by the MSBUILD BuildLeanMuxForTheStoreApp variable and the BUILD_LEAN_MUX_FOR_THE_STORE_APP preprocess symbol. -->
-  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
-    <!-- If BuildLeanMuxForTheStoreApp is unset, default it to false. -->
-    <BuildLeanMuxForTheStoreApp>false</BuildLeanMuxForTheStoreApp>
-  </PropertyGroup>
   <PropertyGroup Condition="$(MUXFinalRelease) != 'true'">
     <!-- If MUXPrelease is unset, default it to false. -->
     <MUXFinalRelease>false</MUXFinalRelease>
@@ -63,14 +57,6 @@
   <PropertyGroup Condition="$(EmitTelemetryEvents) == 'true'">
     <DefineConstants>$(DefineConstants);EMIT_TELEMETRY_EVENTS</DefineConstants>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_LEAN_MUX_FOR_THE_STORE_APP</PreprocessorDefinitions>
-    </ClCompile>
-    <Midl>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_LEAN_MUX_FOR_THE_STORE_APP</PreprocessorDefinitions>
-    </Midl>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(MUXFinalRelease) == 'false'">
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE</PreprocessorDefinitions>

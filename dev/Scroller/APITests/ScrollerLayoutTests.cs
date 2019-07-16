@@ -78,8 +78,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
-                c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
 
             IdleSynchronizer.Wait();
 
@@ -98,8 +98,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
-                c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
         }
 
         [TestMethod]
@@ -149,8 +149,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
-                c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
         }
 
         [TestMethod]
@@ -249,49 +249,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: true,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: true,
                     scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
 
                 ViewportHeight(
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: true,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: true,
                     scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
 
                 ViewportHeight(
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: true,
                     isScrollerParentMaxSizeSet: false,
                     scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
                 ViewportHeight(
                     isScrollerParentSizeSet: false,
                     isScrollerParentMaxSizeSet: true,
                     scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight);
+                    scrollerContentHeight: scrollerContentHeight);
             }
         }
 
@@ -660,8 +660,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
-                c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
+                expectedFinalVerticalOffset: c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
         }
 
         [TestMethod]

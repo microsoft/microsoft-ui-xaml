@@ -13,11 +13,21 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ComboBox_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ComboBoxHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ComboBoxHelper.properties.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ComboBoxHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ComboBoxHelper.idl" />
   </ItemGroup>
 </Project>

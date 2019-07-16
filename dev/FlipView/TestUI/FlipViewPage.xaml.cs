@@ -3,6 +3,7 @@
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "FlipView", Icon = "FlipView.png")]
     public sealed partial class FlipViewPage : TestPage
     {
         public FlipViewPage()

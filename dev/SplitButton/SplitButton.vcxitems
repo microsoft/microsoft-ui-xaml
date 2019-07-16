@@ -32,7 +32,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ToggleSplitButton.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ToggleSplitButtonAutomationPeer.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)SplitButton.xaml">
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
