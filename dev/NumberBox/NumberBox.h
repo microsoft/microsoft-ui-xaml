@@ -17,7 +17,6 @@ class NumberBox :
 
 public:
     NumberBox();
-    ~NumberBox() {}
 
     // IFrameworkElement
     void OnApplyTemplate();

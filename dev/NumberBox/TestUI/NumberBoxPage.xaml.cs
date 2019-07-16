@@ -12,9 +12,6 @@ using System.Windows.Input;
 using Windows.UI.Notifications;
 using Microsoft.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
-using NumberBox = Microsoft.UI.Xaml.Controls.NumberBox;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -22,12 +19,9 @@ namespace MUXControlsTestApp
     public sealed partial class NumberBoxPage : TestPage
     {
         NumberBox box;
-        
-
         public NumberBoxPage()
         {
             this.InitializeComponent();
-
         }
 
         private void Hyperscroll_Checked(object sender, RoutedEventArgs e)
@@ -61,9 +55,6 @@ namespace MUXControlsTestApp
             {
                 box.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
             }
-
-
-
         }
 
         private void Bounds_Changed(object sender, RoutedEventArgs e)
@@ -95,24 +86,5 @@ namespace MUXControlsTestApp
                 box.MinMaxMode = NumberBoxMinMaxMode.WrapEnabled;
             }
         }
-
-
-        private void fraction_changed(object sender, RoutedEventArgs e)
-        {
-
-           // box = FindVisualChildByName(this, "numBox") as NumberBox;
-           // TextBox fracbox = (TextBox)sender;
-           // box.FractionDigits = fracbox
-          //  Int32 fractiondig;
-
-            
-        }
-
-
-
-
-
-
-
     }
 }

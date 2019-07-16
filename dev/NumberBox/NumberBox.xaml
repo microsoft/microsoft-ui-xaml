@@ -42,15 +42,31 @@
                                 </VisualState>
                                 <VisualState x:Name="SpinButtonsCollapsed" />
                             </VisualStateGroup>
-
-                            
                         </VisualStateManager.VisualStateGroups>
+                        
                         <TextBox x:Name="InputBox"/>
-                        <Button x:Name="DownSpinButton" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw"  BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}" IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"  VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}" BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}" Content="&#xE70D;" />
-                        <Button x:Name="UpSpinButton" Visibility="Collapsed"  BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}" IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"  VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}" BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}" Content="&#xE70E;" />
+                        <Button x:Name="DownSpinButton"
+                                Visibility="Collapsed"
+                                AutomationProperties.AccessibilityView="Raw"
+                                BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}"
+                                IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"
+                                VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}"
+                                BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Content="&#xE70D;" />
+                        <Button x:Name="UpSpinButton"
+                                Visibility="Collapsed"
+                                BorderThickness="0 2 2 2"
+                                FontSize="{TemplateBinding FontSize}"
+                                IsTabStop="False"
+                                MinWidth="34"
+                                Margin="{ThemeResource HelperButtonThemePadding}"
+                                VerticalAlignment="Stretch"
+                                Background="{ThemeResource TextControlBackground}"
+                                BorderBrush="{ThemeResource TextControlBorderBrush}"
+                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                Content="&#xE70E;" />
+                        
                     </StackPanel>
-
-                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

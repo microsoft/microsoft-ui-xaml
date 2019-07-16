@@ -67,25 +67,24 @@ void NumberBox::OnPlaceholderTextPropertyChanged(const winrt::DependencyProperty
 
 void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateFormatter();
+    m_formatter.FractionDigits(FractionDigits());
 }
 void NumberBox::OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateFormatter();
+    m_formatter.IntegerDigits(IntegerDigits());
 }
 void NumberBox::OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateFormatter();
+    m_formatter.SignificantDigits(SignificantDigits());
 }
 void NumberBox::OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateFormatter();
+    m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
 }
 void NumberBox::OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateFormatter();
+    m_formatter.IsZeroSigned(IsZeroSigned());
 }
-
 
 void NumberBox::OnRoundingAlgorithmPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
@@ -183,9 +182,7 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
     {
         StepValue(false);
     }
-
 }
-
 
 // Increments or decrements value by StepFrequency, wrapping if necessary
 void NumberBox::StepValue(bool sign)
@@ -225,9 +222,6 @@ void NumberBox::StepValue(bool sign)
     ValidateInput();
 
 }
-
-
-
 
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
@@ -308,7 +302,6 @@ void NumberBox::UpdateFormatter()
     m_formatter.SignificantDigits(SignificantDigits());
     m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
     m_formatter.IsZeroSigned(IsZeroSigned());
-  
 }
 
 void NumberBox::UpdateRounder()
