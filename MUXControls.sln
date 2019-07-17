@@ -40,7 +40,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{5EF3865D
 		tools\ExtractPackageDependencies.ps1 = tools\ExtractPackageDependencies.ps1
 		tools\GenerateAppxDependenciesXML.cmd = tools\GenerateAppxDependenciesXML.cmd
 		tools\GenerateAppxDependenciesXML.ps1 = tools\GenerateAppxDependenciesXML.ps1
-		tools\GenerateMergedXaml.ps1 = tools\GenerateMergedXaml.ps1
 		tools\GenerateNewProperty.ps1 = tools\GenerateNewProperty.ps1
 		tools\GenerateSystemDllImageResources.ps1 = tools\GenerateSystemDllImageResources.ps1
 		tools\GenerateSystemDllStringResources.ps1 = tools\GenerateSystemDllStringResources.ps1

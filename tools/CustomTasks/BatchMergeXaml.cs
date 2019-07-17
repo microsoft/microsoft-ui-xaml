@@ -36,7 +36,10 @@ namespace CustomTasks
         public string OutputDirectory { get; set; }
 
         [Required]
-        public string TlogOutputPath { get; set; }
+        public string TlogReadFilesOutputPath { get; set; }
+
+        [Required]
+        public string TlogWriteFilesOutputPath { get; set; }
 
 
         [Output]
@@ -145,7 +148,9 @@ namespace CustomTasks
             filesRead.AddRange(RS5Pages.Select(item => item.ItemSpec));
             filesRead.AddRange(N19H1Pages.Select(item => item.ItemSpec));
 
-            File.WriteAllLines(TlogOutputPath, filesRead);
+            File.WriteAllLines(TlogReadFilesOutputPath, filesRead);
+
+            File.WriteAllLines(TlogWriteFilesOutputPath, FilesWritten);
 
             return !Log.HasLoggedErrors;
         }
