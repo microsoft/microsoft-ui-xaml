@@ -34,6 +34,8 @@ public:
     void OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
 
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

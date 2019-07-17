@@ -26,6 +26,7 @@ GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitPrecisionPropert
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
 
 NumberBoxProperties::NumberBoxProperties()
@@ -234,6 +235,17 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(1),
                 nullptr);
     }
+    if (!s_TextProperty)
+    {
+        s_TextProperty =
+            InitializeDependencyProperty(
+                L"Text",
+                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnTextPropertyChanged));
+    }
     if (!s_ValueProperty)
     {
         s_ValueProperty =
@@ -267,6 +279,7 @@ void NumberBoxProperties::ClearProperties()
     s_SignificantDigitsProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_StepFrequencyProperty = nullptr;
+    s_TextProperty = nullptr;
     s_ValueProperty = nullptr;
 }
 
@@ -364,6 +377,14 @@ void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnSpinButtonPlacementModePropertyChanged(args);
+}
+
+void NumberBoxProperties::OnTextPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnTextPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnValuePropertyChanged(
@@ -552,6 +573,16 @@ void NumberBoxProperties::StepFrequency(double value)
 double NumberBoxProperties::StepFrequency()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepFrequencyProperty));
+}
+
+void NumberBoxProperties::Text(winrt::hstring const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_TextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+}
+
+winrt::hstring NumberBoxProperties::Text()
+{
+    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextProperty));
 }
 
 void NumberBoxProperties::Value(double value)

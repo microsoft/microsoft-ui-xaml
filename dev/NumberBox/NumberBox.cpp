@@ -103,15 +103,19 @@ void NumberBox::OnSignificantDigitPrecisionPropertyChanged(const winrt::Dependen
     UpdateRounder();
 }
 
+void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    m_TextBox.Text(Text());
+}
+
+
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (m_TextBox)
     {
-       // UpdateTextToValue();
+       // UpdateTextToValue(); Causing bugs currently, disabled. 
     }
 }
-
-
 
 // Trigger any validation, rounding, and processing done onLostFocus
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -132,7 +136,6 @@ void NumberBox::ValidateInput()
     }
 
     winrt::IReference<double> parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
-    // TODO: Formatter.Format(value)
 
     if (parsedNum && IsInBounds(parsedNum.Value()) )
     {
@@ -142,6 +145,14 @@ void NumberBox::ValidateInput()
     }
     else
     {
+        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+        {
+            // Revert to previous value
+            SetErrorState(false);
+            UpdateTextToValue();
+            return;
+        }
+        Value(parsedNum.Value());
         SetErrorState(true);
     }
 }
@@ -193,11 +204,11 @@ void NumberBox::StepValue(bool sign)
 
     if (sign)
     {
-        newVal = newVal + StepFrequency();
+        newVal += StepFrequency();
     }
     else
     {
-        newVal =  newVal - StepFrequency();
+        newVal -= StepFrequency();
     }
 
     // MinMaxMode Wrapping
@@ -216,11 +227,23 @@ void NumberBox::StepValue(bool sign)
         return;
     }
 
+    // Input Overwriting - Coerce to min or max
+    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && !IsInBounds(newVal) )
+    {
+        if (newVal > MaxValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled) )
+        {
+            newVal = MaxValue();
+        }
+        else if (newVal < MinValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MinEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled))
+        {
+            newVal = MinValue();
+        }
+    }
+
     // Update Text and Revalidate new value
     Value(newVal);
     UpdateTextToValue();
     ValidateInput();
-
 }
 
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0

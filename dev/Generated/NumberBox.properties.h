@@ -63,6 +63,9 @@ public:
     void StepFrequency(double value);
     double StepFrequency();
 
+    void Text(winrt::hstring const& value);
+    winrt::hstring Text();
+
     void Value(double value);
     double Value();
 
@@ -84,6 +87,7 @@ public:
     static winrt::DependencyProperty SignificantDigitsProperty() { return s_SignificantDigitsProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
     static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
+    static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
     static GlobalDependencyProperty s_BasicValidationModeProperty;
@@ -104,6 +108,7 @@ public:
     static GlobalDependencyProperty s_SignificantDigitsProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
     static GlobalDependencyProperty s_StepFrequencyProperty;
+    static GlobalDependencyProperty s_TextProperty;
     static GlobalDependencyProperty s_ValueProperty;
 
     winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value);
@@ -159,6 +164,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSpinButtonPlacementModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTextPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

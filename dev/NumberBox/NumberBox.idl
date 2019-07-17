@@ -64,6 +64,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Header;
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    String Text;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String PlaceholderText; 
     NumberBoxBasicValidationMode BasicValidationMode;
 
@@ -116,6 +118,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
