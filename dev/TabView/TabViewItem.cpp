@@ -37,6 +37,11 @@ void TabViewItem::OnApplyTemplate()
     }
 }
 
+winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
+{
+    return winrt::make<TabViewItemAutomationPeer>(*this);
+}
+
 void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     UpdateCloseButton();

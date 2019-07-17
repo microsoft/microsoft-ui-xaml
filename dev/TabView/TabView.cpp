@@ -38,6 +38,7 @@ void TabView::OnApplyTemplate()
     winrt::IControlProtected controlProtected{ *this };
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
+    m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
     
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
@@ -79,6 +80,16 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
+
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        winrt::KeyboardAccelerator keyboardAccelerator;
+        keyboardAccelerator.Key(winrt::VirtualKey::F4);
+        keyboardAccelerator.Modifiers(winrt::VirtualKeyModifiers::Control);
+        keyboardAccelerator.Invoked({ this, &TabView::OnCtrlF4Invoked });
+        keyboardAccelerator.ScopeOwner(*this);
+        KeyboardAccelerators().Append(keyboardAccelerator);
+    }
 
     UpdateItemsSource();
 }
@@ -320,9 +331,14 @@ void TabView::UpdateTabWidths()
         {
             widthTaken += addButtonColumn.ActualWidth();
         }
-        if (auto rightContentColumn = m_rightContentColumn.get())
+        if (auto&& rightContentColumn = m_rightContentColumn.get())
         {
-            widthTaken += rightContentColumn.ActualWidth();
+            if (auto rightContentPresenter = m_rightContentPresenter.get())
+            {
+                winrt::Size rightContentSize = rightContentPresenter.DesiredSize();
+                rightContentColumn.MinWidth(rightContentSize.Width);
+                widthTaken += rightContentSize.Width;
+            }
         }
 
         if (auto tabColumn = m_tabColumn.get())
@@ -427,4 +443,17 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
         return listView.ContainerFromIndex(index);
     }
     return nullptr;
+}
+
+void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
+{
+    if (auto selectedTab = SelectedItem().try_as<winrt::TabViewItem>())
+    {
+        if (selectedTab.IsCloseable())
+        {
+            // Close the tab on ctrl + F4
+            CloseTab(selectedTab);
+            args.Handled(true);
+        }
+    }
 }
