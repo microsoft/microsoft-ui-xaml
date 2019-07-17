@@ -750,13 +750,15 @@ $@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
                     sb.AppendLine(String.Format(
 @"void {0}Properties::{1}({2} {3}value)
 {{", ownerType.Name, prop.Name, prop.PropertyCppName, CppInputModifier(prop.PropertyType)));
+                    string localName = "value";
                     if (prop.PropertyValidationCallback != null)
                     {
-                        sb.AppendLine(String.Format(
-@"    static_cast<{0}*>(this)->{1}(value);", ownerType.Name, prop.PropertyValidationCallback));
+                        localName = "coercedValue";
+                        sb.AppendLine($@"    {prop.PropertyCppName} {localName} = value;");
+                        sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->{prop.PropertyValidationCallback}({localName});");
                     }
-                    sb.AppendLine(String.Format(@"    static_cast<{0}*>(this)->SetValue(s_{1}Property, ValueHelper<{2}>::BoxValueIfNecessary(value));
-}}", ownerType.Name, prop.Name, prop.PropertyCppName));
+                    sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->SetValue(s_{prop.Name}Property, ValueHelper<{prop.PropertyCppName}>::BoxValueIfNecessary({localName}));
+}}");
                     sb.AppendLine(String.Format(@"
 {0} {1}Properties::{2}()
 {{

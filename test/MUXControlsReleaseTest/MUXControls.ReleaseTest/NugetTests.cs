@@ -58,15 +58,47 @@ namespace MUXControls.ReleaseTest
         }
 
         [TestMethod]
-        public void RepeaterNoCrashTest()
+        public void RepeaterBasicTests()
         {
             using (var setup = new TestSetupHelper("Repeater Tests"))
             {
-                var button = new Button(FindElement.ByName("AddItemsButton"));
-                button.Click();
+                var AddItemsButton = new Button(FindElement.ByName("AddItemsButton"));
+                AddItemsButton.Click();
 
-                var item3 = FindElement.ByName("Item3");
-                Verify.IsNotNull(item3);
+                Verify.IsNotNull(FindElement.ByName("Item1"));
+                Verify.IsNotNull(FindElement.ByName("Item2"));
+                Verify.IsNotNull(FindElement.ByName("Item3"));
+
+                var clearOutputButton = new Button(FindElement.ByName("ClearOutputButton"));
+                clearOutputButton.Click();
+
+                var removeItemButton = new Button(FindElement.ByName("RemoveItemButton"));
+                removeItemButton.Click();
+                var outputText = new TextBlock(FindElement.ByName("OutputText"));
+                Verify.IsTrue(outputText.DocumentText.Contains("Element Cleared"));
+
+                clearOutputButton.Click();
+
+                var gridLayoutButton = new Button(FindElement.ByName("UniformGridLayoutButton"));
+                gridLayoutButton.Click();
+                Verify.IsTrue(outputText.DocumentText.Contains("Element Cleared"));
+                Verify.IsTrue(outputText.DocumentText.Contains("0Prepared"));
+                Verify.IsTrue(outputText.DocumentText.Contains("1Prepared"));
+            }
+        }
+
+        // This test covers loading nav view, reveal and acrylic brushes for PGO training
+        [TestMethod]
+        public void NavigationViewBasicTest()
+        {
+            using (var setup = new TestSetupHelper("NavigationView Tests"))
+            {
+                var button = new Button(FindElement.ByName("Close Navigation"));
+                button.Click();
+                Verify.IsNotNull(FindElement.ByName("Item1"));
+                Verify.IsNotNull(FindElement.ByName("Item2"));
+                Verify.IsNotNull(FindElement.ByName("Item3"));
+                button.Click();
             }
         }
     }

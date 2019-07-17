@@ -99,6 +99,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TestPages\NavigationViewTestPage.xaml.cs">
+      <DependentUpon>NavigationViewTestPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TestPages\CompactDictionaryTestPage.xaml.cs">
       <DependentUpon>CompactDictionaryTestPage.xaml</DependentUpon>
     </Compile>
@@ -135,6 +138,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="TestPages\NavigationViewTestPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TestPages\CompactDictionaryTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
