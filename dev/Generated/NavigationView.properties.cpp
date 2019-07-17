@@ -795,8 +795,9 @@ winrt::AutoSuggestBox NavigationViewProperties::AutoSuggestBox()
 
 void NavigationViewProperties::CompactModeThresholdWidth(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_CompactModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_CompactModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::CompactModeThresholdWidth()
@@ -806,8 +807,9 @@ double NavigationViewProperties::CompactModeThresholdWidth()
 
 void NavigationViewProperties::CompactPaneLength(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::CompactPaneLength()
@@ -837,8 +839,9 @@ winrt::NavigationViewDisplayMode NavigationViewProperties::DisplayMode()
 
 void NavigationViewProperties::ExpandedModeThresholdWidth(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_ExpandedModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_ExpandedModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::ExpandedModeThresholdWidth()
@@ -998,8 +1001,9 @@ winrt::DataTemplateSelector NavigationViewProperties::MenuItemTemplateSelector()
 
 void NavigationViewProperties::OpenPaneLength(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_OpenPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_OpenPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::OpenPaneLength()

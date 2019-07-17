@@ -68,7 +68,7 @@ public:
         bool useCache = false);
 
     void CoerceToZeroOneRange(double& value);
-    void CoerceToZeroOneRange_Nullable(winrt::IReference<double> const& value);
+    void CoerceToZeroOneRange_Nullable(winrt::IReference<double>& value);
 
 protected: // AcrylicTestApi needs CreateAcrylicBrush be public or protected
     void CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateAcrylicBrush = false);
