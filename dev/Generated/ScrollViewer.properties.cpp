@@ -575,8 +575,9 @@ winrt::ContentOrientation ScrollViewerProperties::ContentOrientation()
 
 void ScrollViewerProperties::HorizontalAnchorRatio(double value)
 {
-    static_cast<ScrollViewer*>(this)->ValidateAnchorRatio(value);
-    static_cast<ScrollViewer*>(this)->SetValue(s_HorizontalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<ScrollViewer*>(this)->ValidateAnchorRatio(coercedValue);
+    static_cast<ScrollViewer*>(this)->SetValue(s_HorizontalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double ScrollViewerProperties::HorizontalAnchorRatio()
@@ -646,8 +647,9 @@ winrt::InputKind ScrollViewerProperties::IgnoredInputKind()
 
 void ScrollViewerProperties::MaxZoomFactor(double value)
 {
-    static_cast<ScrollViewer*>(this)->ValidateZoomFactoryBoundary(value);
-    static_cast<ScrollViewer*>(this)->SetValue(s_MaxZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<ScrollViewer*>(this)->ValidateZoomFactoryBoundary(coercedValue);
+    static_cast<ScrollViewer*>(this)->SetValue(s_MaxZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double ScrollViewerProperties::MaxZoomFactor()
@@ -657,8 +659,9 @@ double ScrollViewerProperties::MaxZoomFactor()
 
 void ScrollViewerProperties::MinZoomFactor(double value)
 {
-    static_cast<ScrollViewer*>(this)->ValidateZoomFactoryBoundary(value);
-    static_cast<ScrollViewer*>(this)->SetValue(s_MinZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<ScrollViewer*>(this)->ValidateZoomFactoryBoundary(coercedValue);
+    static_cast<ScrollViewer*>(this)->SetValue(s_MinZoomFactorProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double ScrollViewerProperties::MinZoomFactor()
@@ -669,8 +672,9 @@ double ScrollViewerProperties::MinZoomFactor()
 
 void ScrollViewerProperties::VerticalAnchorRatio(double value)
 {
-    static_cast<ScrollViewer*>(this)->ValidateAnchorRatio(value);
-    static_cast<ScrollViewer*>(this)->SetValue(s_VerticalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<ScrollViewer*>(this)->ValidateAnchorRatio(coercedValue);
+    static_cast<ScrollViewer*>(this)->SetValue(s_VerticalAnchorRatioProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double ScrollViewerProperties::VerticalAnchorRatio()

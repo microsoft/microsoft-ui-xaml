@@ -16,6 +16,8 @@ using DropDownButton = Microsoft.UI.Xaml.Controls.DropDownButton;
 
 namespace MUXControlsTestApp
 {
+
+    [TopLevelTestPage(Name = "DropDownButton", Icon = "DropDownButton.png")]
     public sealed partial class DropDownButtonPage : TestPage
     {
         private int _clickCount = 0;

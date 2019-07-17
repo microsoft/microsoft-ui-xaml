@@ -15,7 +15,6 @@ set VERSIONBUILDNUMBER=local
 set VERSIONBUILDREVISION=10001
 
 set BUILDALL=
-set BUILDLEANMUXFORTHESTOREAPP=
 set MUXFINAL=
 set PROJECTPATH=
 set BUILDTARGET=
@@ -55,18 +54,6 @@ set BUILDALL=1
 goto :MoreArguments
 
 :MoreArguments
-if "%1" == "BuildLeanMuxForTheStoreApp" (
-    REM echo LeanMux
-    set BUILDLEANMUXFORTHESTOREAPP=1
-    shift
-    goto :MoreArguments
-)
-if "%1" == "/leanmux" (
-    REM echo LeanMux
-    set BUILDLEANMUXFORTHESTOREAPP=1
-    shift
-    goto :MoreArguments
-)
 if "%1" == "/muxfinal" (
     REM echo MUXFinal
     set MUXFINAL=1
@@ -138,7 +125,6 @@ REM
 set PreferredToolArchitecture=x64
 
 set EXTRAMSBUILDPARAMS=
-if "%BUILDLEANMUXFORTHESTOREAPP%" == "1" ( set EXTRAMSBUILDPARAMS=/p:BuildLeanMuxForTheStoreApp=true )
 if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )

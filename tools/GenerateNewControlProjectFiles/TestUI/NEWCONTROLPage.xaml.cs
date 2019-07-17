@@ -16,6 +16,7 @@ using NEWCONTROL = Microsoft.UI.Xaml.Controls.NEWCONTROL;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "NEWCONTROL")]
     public sealed partial class NEWCONTROLPage : TestPage
     {
         public NEWCONTROLPage()
