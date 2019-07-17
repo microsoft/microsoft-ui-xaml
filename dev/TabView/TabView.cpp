@@ -447,16 +447,13 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
 
 void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    if (IsEnabled())
+    if (auto selectedTab = SelectedItem().try_as<winrt::TabViewItem>())
     {
-        if (auto selectedTab = SelectedItem().try_as<winrt::TabViewItem>())
+        if (selectedTab.IsCloseable())
         {
-            if (selectedTab.IsCloseable())
-            {
-                // Close the tab on ctrl + F4
-                CloseTab(selectedTab);
-                args.Handled(true);
-            }
+            // Close the tab on ctrl + F4
+            CloseTab(selectedTab);
+            args.Handled(true);
         }
     }
 }
