@@ -65,8 +65,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(new CornerRadius(2, 2, 0, 0), textBox.CornerRadius);
 
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
-                var suggestionsList = TestUtilities.FindDescendents<ListView>(popup).Where(e => e.Name == "SuggestionsList").Single();
-                Verify.AreEqual(new CornerRadius(0, 0, 2, 2), suggestionsList.CornerRadius);
+                var popupBorder = popup.Child as Border;
+                Verify.AreEqual(new CornerRadius(0, 0, 2, 2), popupBorder.CornerRadius);
             });
         }
 

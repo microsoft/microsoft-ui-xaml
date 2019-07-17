@@ -11,7 +11,7 @@
 using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
 
 static constexpr auto c_popupName = L"SuggestionsPopup"sv;
-static constexpr auto c_suggestionsListName = L"SuggestionsList"sv;
+static constexpr auto c_popupBorderName = L"SuggestionsContainer"sv;
 static constexpr auto c_textBoxName = L"TextBox"sv;
 static constexpr auto c_textBoxBorderName = L"BorderElement"sv;
 GlobalDependencyProperty AutoSuggestBoxHelper::s_AutoSuggestEventRevokersProperty{ nullptr };
@@ -127,12 +127,9 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
         textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
     }
 
-    if (auto suggestionsList = GetTemplateChildT<winrt::ListView>(c_suggestionsListName, autoSuggestBox))
+    if (auto popupBorder = GetTemplateChildT<winrt::Border>(c_popupBorderName, autoSuggestBox))
     {
-        if (auto listViewControl7 = suggestionsList.try_as<winrt::IControl7>())
-        {
-            suggestionsList.CornerRadius(popupRadius);
-        }
+        popupBorder.CornerRadius(popupRadius);
     }
 
     if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_textBoxName, autoSuggestBox))
@@ -154,11 +151,11 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
 bool AutoSuggestBoxHelper::IsPopupOpenDown(const winrt::AutoSuggestBox& autoSuggestBox)
 {
     double verticalOffset = 0;
-    if (auto suggestionsList = GetTemplateChildT<winrt::ListView>(c_suggestionsListName, autoSuggestBox))
+    if (auto popupBorder = GetTemplateChildT<winrt::Border>(c_popupBorderName, autoSuggestBox))
     {
         if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_textBoxName, autoSuggestBox))
         {
-            auto transform = suggestionsList.TransformToVisual(textBox);
+            auto transform = popupBorder.TransformToVisual(textBox);
             auto popupTop = transform.TransformPoint(winrt::Point(0, 0));
             verticalOffset = popupTop.Y;
         }
