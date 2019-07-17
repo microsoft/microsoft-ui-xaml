@@ -101,5 +101,18 @@ namespace MUXControls.ReleaseTest
                 button.Click();
             }
         }
+
+        [TestMethod]
+        public void VerifyNavigationViewCustomHeaderContentMargins()
+        {
+            using (var setup = new TestSetupHelper("NavigationView with custom resources Tests"))
+            {
+                var tblTopHeaderContentMarginResult = new TextBlock(FindElement.ByName("tblTopHeaderContentMarginResult"));
+                Verify.AreEqual("16,3,0,7", tblTopHeaderContentMarginResult.GetText());
+
+                var tblLeftMinimalHeaderContentMarginResult = new TextBlock(FindElement.ByName("tblLeftMinimalHeaderContentMarginResult"));
+                Verify.AreEqual("18,1,0,0", tblLeftMinimalHeaderContentMarginResult.GetText());
+            }
+        }
     }
 }

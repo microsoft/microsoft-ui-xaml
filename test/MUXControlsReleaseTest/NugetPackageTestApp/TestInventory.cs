@@ -32,6 +32,11 @@ namespace NugetPackageTestApp
                     Name = "NavigationView Tests",
                     PageType = typeof(NavigationViewTestPage),
                 },
+                new TestDeclaration()
+                {
+                    Name = "NavigationView with custom resources Tests",
+                    PageType = typeof(NavigationViewWithCustomResourcesTestPage),
+                },
             };
         }
 

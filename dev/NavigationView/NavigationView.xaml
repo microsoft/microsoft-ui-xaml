@@ -27,13 +27,15 @@
 
                                 <VisualState x:Name="Minimal">
                                     <VisualState.Setters>
-                                        <Setter Target="HeaderContent.Margin" Value="48,5,0,0" />
+                                        <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
+
                                 <VisualState x:Name="TopNavigationMinimal" />
+
                                 <VisualState x:Name="MinimalWithBackButton">
                                     <VisualState.Setters>
-                                        <Setter Target="HeaderContent.Margin" Value="104,5,0,0" />
+                                        <Setter Target="HeaderContent.Margin" Value="{ThemeResource NavigationViewMinimalHeaderMargin}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -162,7 +164,7 @@
                                   Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
                             <Grid x:Name="ButtonHolderGrid" Grid.Row="1">
-                                <Button 
+                                <Button
                                     x:Name="NavigationViewBackButton"
                                     Style="{StaticResource NavigationBackButtonNormalStyle}"
                                     VerticalAlignment="Top"
@@ -451,14 +453,22 @@
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="*" />
                                         </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
 
                                         <Grid x:Name="ContentTopPadding"
-                                              Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"
-                                              Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"/>
+                                            Grid.ColumnSpan="2"
+                                            Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"
+                                            Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}"/>
+
+                                        <Grid x:Name="ContentLeftPadding" Grid.Row="1"/>
 
                                         <ContentControl
                                             x:Name="HeaderContent"
                                             Grid.Row="1"
+                                            Grid.Column="1"
                                             MinHeight="{StaticResource PaneToggleButtonHeight}"
                                             IsTabStop="False"
                                             Content="{TemplateBinding Header}"
@@ -470,6 +480,7 @@
                                         <ContentPresenter
                                             AutomationProperties.LandmarkType="Main"
                                             Grid.Row="2"
+                                            Grid.ColumnSpan="2"
                                             Content="{TemplateBinding Content}"/>
                                     </Grid>
                                 </SplitView.Content>

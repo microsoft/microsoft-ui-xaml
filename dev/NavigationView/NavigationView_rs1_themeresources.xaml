@@ -225,6 +225,8 @@
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">12,0,12,0</Thickness>
     <Thickness x:Key="NavigationViewItemInnerHeaderMargin">10,0,0,0</Thickness>
+    <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
+    <Thickness x:Key="NavigationViewHeaderMargin">12,5,0,11</Thickness>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
         <Setter Property="FontSize" Value="16" />
@@ -1161,15 +1163,13 @@
         <Setter Property="TextWrapping" Value="NoWrap"/>        
     </Style>
 
-    
     <!-- based on TitleTextBlockStyle -->
     <Style x:Key="NavigationViewTitleHeaderContentControlTextStyle" TargetType="ContentControl">
         <Setter Property="FontWeight" Value="SemiLight" />
         <Setter Property="FontSize" Value="24" />
         <Setter Property="FontFamily" Value="XamlAutoFontFamily" />
-        <Setter Property="Margin" Value="12,5,0,11"/>
+        <Setter Property="Margin" Value="{ThemeResource NavigationViewHeaderMargin}"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>
-
 
 </ResourceDictionary>
