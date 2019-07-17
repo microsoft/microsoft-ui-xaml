@@ -3611,27 +3611,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void VerifyHeaderContentMarginOnTopNav()
-        {
-            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
-            {
-                Log.Comment("Flipping orientation: Left -> Top.");
-                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
-                flipOrientationButton.Invoke();
-                Wait.ForIdle();
-
-                Log.Comment("Get HeaderContent Margin");
-                var getHeaderContentMarginButton = new Button(FindElement.ByName("GetHeaderContentMargin"));
-                getHeaderContentMarginButton.Invoke();
-                Wait.ForIdle();
-
-                var result = new TextBlock(FindElement.ByName("HeaderContentMarginResult"));
-                Verify.AreEqual(result.GetText(), "12,5,0,11");
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("TestSuite", "D")]
         public void VerifyTopNavigationMinimalVisualStateOnTopNav()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))

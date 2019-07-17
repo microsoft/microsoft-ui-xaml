@@ -33,12 +33,11 @@ static constexpr auto c_contentGridName = L"ContentGrid"sv;
 static constexpr auto c_searchButtonName = L"PaneAutoSuggestButton"sv;
 static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
-static constexpr auto c_headerContent = L"HeaderContent"sv;
+static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
 static constexpr auto c_navViewBackButton = L"NavigationViewBackButton"sv;
 static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToolTip"sv;
 static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
-static constexpr auto c_buttonHolderGrid = L"ButtonHolderGrid"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
@@ -59,7 +58,6 @@ static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
 
 static constexpr int c_backButtonHeight = 40;
 static constexpr int c_backButtonWidth = 40;
-static constexpr int c_backButtonPaneButtonMargin = 8;
 static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
@@ -293,6 +291,8 @@ void NavigationView::OnApplyTemplate()
     // Get pointer to the pane content area, for use in the selection indicator animation
     m_paneContentGrid.set(GetTemplateChildT<winrt::UIElement>(c_paneContentGridName, controlProtected));
 
+    m_contentLeftPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_contentLeftPadding, controlProtected));
+
     // Set automation name on search button
     if (auto button = GetTemplateChildT<winrt::Button>(c_searchButtonName, controlProtected))
     {
@@ -322,7 +322,6 @@ void NavigationView::OnApplyTemplate()
         m_coreTitleBar.set(coreTitleBar);
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
         m_titleBarIsVisibleChangedRevoker = coreTitleBar.IsVisibleChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarIsVisibleChanged });
-        m_headerContent.set(GetTemplateChildT<winrt::FrameworkElement>(c_headerContent, controlProtected));
 
         if (ShouldPreserveNavigationViewRS4Behavior())
         {
@@ -1523,7 +1522,7 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
         auto handled = false;
         if (visualStateName == visualStateNameMinimal && IsTopNavigationView())
         {
-            // TopNavigationMinimal is introduced since RS6. We need to fallback to Minimal if customer re-template RS5 NavigationView.
+            // TopNavigationMinimal was introduced in 19H1. We need to fallback to Minimal if the customer uses an older template.
             handled = winrt::VisualStateManager::GoToState(*this, L"TopNavigationMinimal", false /*useTransitions*/);
         }
         if (!handled)
@@ -2568,6 +2567,11 @@ int NavigationView::GetSelectedItemIndex()
     return m_topDataProvider.IndexOf(SelectedItem());
 }
 
+double NavigationView::GetPaneToggleButtonWidth()
+{
+    return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonWidth", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonWidth)));
+}
+
 void NavigationView::UpdateTopNavigationWidthCache()
 {
     int size = m_topDataProvider.GetPrimaryListSize();
@@ -3012,17 +3016,7 @@ void NavigationView::UpdatePaneToggleSize()
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            double width = c_paneToggleButtonWidth;
-
-            auto resourceName = box_value(L"PaneToggleButtonWidth");
-            if (winrt::Application::Current().Resources().HasKey(resourceName))
-            {
-                if (auto lookup = winrt::Application::Current().Resources().Lookup(resourceName))
-                {
-                    width = unbox_value<double>(lookup);
-                }
-            }
-
+            double width = GetPaneToggleButtonWidth();
             double togglePaneButtonWidth = width;
 
             if (ShouldShowBackButton() && splitView.DisplayMode() == winrt::SplitViewDisplayMode::Overlay)
@@ -3066,17 +3060,47 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
     }
 
     auto shouldShowBackButton = ShouldShowBackButton();
-    auto visibility = Util::VisibilityFromBool(shouldShowBackButton);
-    GetTemplateSettings()->BackButtonVisibility(visibility);
-   
-    if (auto backButton = m_backButton.get(); backButton && ShouldPreserveNavigationViewRS4Behavior())
+    auto backButtonVisibility = Util::VisibilityFromBool(shouldShowBackButton);
+    auto visualStateDisplayMode = GetVisualStateDisplayMode(DisplayMode());
+    bool useLeftPaddingForBackOrCloseButton =
+        (visualStateDisplayMode == NavigationViewVisualStateDisplayMode::Minimal && !IsTopNavigationView()) ||
+         visualStateDisplayMode == NavigationViewVisualStateDisplayMode::MinimalWithBackButton;
+    double leftPaddingForBackOrCloseButton = 0.0;
+    GetTemplateSettings()->BackButtonVisibility(backButtonVisibility);
+
+    if (useLeftPaddingForBackOrCloseButton)
     {
-        backButton.Visibility(visibility);
+        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
+    }
+
+    if (auto backButton = m_backButton.get())
+    {
+        if (ShouldPreserveNavigationViewRS4Behavior())
+        {
+            backButton.Visibility(backButtonVisibility);
+        }
+
+        if (useLeftPaddingForBackOrCloseButton && backButtonVisibility == winrt::Visibility::Visible)
+        {
+            leftPaddingForBackOrCloseButton += backButton.Width();
+        }
     }
 
     if (auto closeButton = m_closeButton.get())
     {
-        closeButton.Visibility(Util::VisibilityFromBool(ShouldShowCloseButton()));
+        auto closeButtonVisibility = Util::VisibilityFromBool(ShouldShowCloseButton());
+
+        closeButton.Visibility(closeButtonVisibility);
+
+        if (useLeftPaddingForBackOrCloseButton && closeButtonVisibility == winrt::Visibility::Visible)
+        {
+            leftPaddingForBackOrCloseButton += closeButton.Width();
+        }
+    }
+
+    if (auto contentLeftPadding = m_contentLeftPadding.get())
+    {
+        contentLeftPadding.Width(leftPaddingForBackOrCloseButton);
     }
 
     if (auto paneContentGridAsUIE = m_paneContentGrid.get())
@@ -3113,15 +3137,7 @@ void NavigationView::UpdatePaneTitleMargins()
 {
     if (auto textBlock = m_paneTitleTextBlock.get())
     {
-        double width = 0;
-
-        double buttonSize = c_paneToggleButtonWidth; // in case the resource lookup fails
-        if (auto lookup = winrt::Application::Current().Resources().Lookup(box_value(L"PaneToggleButtonWidth")))
-        {
-            buttonSize = unbox_value<double>(lookup);
-        }
-
-        width += buttonSize;
+        double width = GetPaneToggleButtonWidth();
 
         if (ShouldShowBackButton() && IsOverlay())
         {
