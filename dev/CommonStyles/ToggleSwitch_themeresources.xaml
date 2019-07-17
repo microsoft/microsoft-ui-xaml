@@ -379,7 +379,7 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="KnobTranslateTransform"
                                             Storyboard.TargetProperty="X"
-                                            To="24"
+                                            To="20"
                                             Duration="0" />
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="SwitchKnobBounds" Storyboard.TargetProperty="Opacity">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="1" />
@@ -500,7 +500,7 @@
                             <Rectangle x:Name="OuterBorder"
                                 Grid.Row="1"
                                 Height="20"
-                                Width="44"
+                                Width="40"
                                 RadiusX="10"
                                 RadiusY="10"
                                 Fill="{ThemeResource ToggleSwitchFillOff}"
@@ -509,7 +509,7 @@
                             <Rectangle x:Name="SwitchKnobBounds"
                                 Grid.Row="1"
                                 Height="20"
-                                Width="44"
+                                Width="40"
                                 RadiusX="10"
                                 RadiusY="10"
                                 Fill="{ThemeResource ToggleSwitchFillOn}"
