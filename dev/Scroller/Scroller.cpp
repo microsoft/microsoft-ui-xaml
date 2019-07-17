@@ -681,6 +681,7 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         std::min(finalSize.Height, m_availableSize.Height)
     };
 
+    bool renderSizeChanged = false;
     double newUnzoomedExtentWidth = 0.0;
     double newUnzoomedExtentHeight = 0.0;
 
@@ -692,11 +693,8 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         bool isAnchoringElementVertically = false;
         bool isAnchoringFarEdgeHorizontally = false;
         bool isAnchoringFarEdgeVertically = false;
-        winrt::Size contentArrangeSize =
-        {
-            content.DesiredSize().Width,
-            content.DesiredSize().Height
-        };
+        winrt::Size oldRenderSize = content.RenderSize();
+        winrt::Size contentArrangeSize = content.DesiredSize();
 
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
@@ -921,6 +919,8 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
             OnViewChanged(contentLayoutOffsetXDelta != 0.0f /*horizontalOffsetChanged*/, contentLayoutOffsetYDelta != 0.0f /*verticalOffsetChanged*/);
         }
+
+        renderSizeChanged = content.RenderSize() != oldRenderSize;
     }
 
     // Set a rectangular clip on this Scroller the same size as the arrange
@@ -941,6 +941,7 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
     rectangleGeometry.Rect(newClipRect);
 
     UpdateUnzoomedExtentAndViewport(
+        renderSizeChanged,
         newUnzoomedExtentWidth  /*unzoomedExtentWidth*/,
         newUnzoomedExtentHeight /*unzoomedExtentHeight*/,
         viewport.Width          /*viewportWidth*/,
@@ -2969,6 +2970,9 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
 {
     MUX_ASSERT(content);
 
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, m_unzoomedExtentWidth, m_unzoomedExtentHeight);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, content.RenderSize().Width, content.RenderSize().Height);
+
     double deltaX = m_unzoomedExtentWidth - content.RenderSize().Width;
     double deltaY = m_unzoomedExtentHeight - content.RenderSize().Height;
 
@@ -2979,6 +2983,10 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
         const winrt::HorizontalAlignment horizontalAlignment = contentAsFE.HorizontalAlignment();
         const winrt::VerticalAlignment verticalAlignment = contentAsFE.VerticalAlignment();
         const winrt::Thickness contentMargin = contentAsFE.Margin();
+
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, horizontalAlignment, verticalAlignment);
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, contentMargin.Left, contentMargin.Right);
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, contentMargin.Top, contentMargin.Bottom);
 
         if (horizontalAlignment == winrt::HorizontalAlignment::Left)
         {
@@ -3013,6 +3021,8 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
         deltaX += contentMargin.Left;
         deltaY += contentMargin.Top;
     }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, deltaX, deltaY);
 
     return winrt::float2{ static_cast<float>(deltaX), static_cast<float>(deltaY) };
 }
@@ -3270,6 +3280,8 @@ void Scroller::SetupPositionBoundariesExpressionAnimations(
 void Scroller::SetupTransformExpressionAnimations(
     const winrt::UIElement& content)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     const bool useTranslationProperty = IsVisualTranslationPropertyAvailable();
 
     MUX_ASSERT(content);
@@ -3281,9 +3293,6 @@ void Scroller::SetupTransformExpressionAnimations(
     MUX_ASSERT(m_interactionTracker);
 
     winrt::float2 arrangeRenderSizesDelta = GetArrangeRenderSizesDelta(content);
-
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
-        L"arrangeRenderSizesDelta", arrangeRenderSizesDelta.x, arrangeRenderSizesDelta.y);
 
     if (useTranslationProperty)
     {
@@ -4297,9 +4306,11 @@ void Scroller::OnUnloaded(
         const winrt::UIElement content = Content();
 
         UpdateUnzoomedExtentAndViewport(
+            false /*renderSizeChanged*/,
             content ? m_unzoomedExtentWidth : 0.0,
             content ? m_unzoomedExtentHeight : 0.0,
-            0.0 /*viewportWidth*/, 0.0 /*viewportHeight*/);
+            0.0 /*viewportWidth*/,
+            0.0 /*viewportHeight*/);
     }
 }
 
@@ -5460,9 +5471,13 @@ void Scroller::UpdateExpressionAnimationSources()
 }
 
 void Scroller::UpdateUnzoomedExtentAndViewport(
-    double unzoomedExtentWidth, double unzoomedExtentHeight,
-    double viewportWidth, double viewportHeight)
+    bool renderSizeChanged,
+    double unzoomedExtentWidth,
+    double unzoomedExtentHeight,
+    double viewportWidth,
+    double viewportHeight)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, renderSizeChanged);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentWidth", unzoomedExtentWidth);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentHeight", unzoomedExtentHeight);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"viewportWidth", viewportWidth);
@@ -5509,7 +5524,7 @@ void Scroller::UpdateUnzoomedExtentAndViewport(
         UpdateExpressionAnimationSources();
     }
 
-    if (extentChanged && content)
+    if ((extentChanged || renderSizeChanged) && content)
     {
         OnContentSizeChanged(content);
     }

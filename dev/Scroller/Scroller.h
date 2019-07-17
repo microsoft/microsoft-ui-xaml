@@ -403,8 +403,11 @@ private:
         const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
     void UpdateUnzoomedExtentAndViewport(
-        double unzoomedExtentWidth, double unzoomedExtentHeight,
-        double viewportWidth, double viewportHeight);
+        bool renderSizeChanged,
+        double unzoomedExtentWidth,
+        double unzoomedExtentHeight,
+        double viewportWidth,
+        double viewportHeight);
     void UpdateScrollAutomationPatternProperties();
     void UpdateIsInertiaFromImpulse(bool isInertiaFromImpulse);
     void UpdateOffset(ScrollerDimension dimension, double zoomedOffset);
