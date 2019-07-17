@@ -8,15 +8,15 @@ using Windows.UI.Xaml.Media;
 
 namespace NugetPackageTestApp
 {
-    public sealed partial class NavigationViewTestPage : TestPage
+    public sealed partial class NavigationViewWithCustomResourcesTestPage : TestPage
     {
-        public NavigationViewTestPage()
+        public NavigationViewWithCustomResourcesTestPage()
         {
             this.InitializeComponent();
-            Loaded += NavigationViewTestPage_Loaded;
+            Loaded += NavigationViewWithCustomResourcesTestPage_Loaded;
         }
 
-        private void NavigationViewTestPage_Loaded(object sender, RoutedEventArgs e)
+        private void NavigationViewWithCustomResourcesTestPage_Loaded(object sender, RoutedEventArgs e)
         {
             GetHeaderContentMargins();
         }

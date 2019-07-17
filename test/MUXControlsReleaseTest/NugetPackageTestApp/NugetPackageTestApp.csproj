@@ -102,8 +102,8 @@
     <Compile Include="TestPages\CompactDictionaryTestPage.xaml.cs">
       <DependentUpon>CompactDictionaryTestPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TestPages\NavigationViewTestPage.xaml.cs">
-      <DependentUpon>NavigationViewTestPage.xaml</DependentUpon>
+    <Compile Include="TestPages\NavigationViewWithCustomResourcesTestPage.xaml.cs">
+      <DependentUpon>NavigationViewWithCustomResourcesTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="TestPages\PullToRefreshTestPage.xaml.cs">
       <DependentUpon>PullToRefreshTestPage.xaml</DependentUpon>
@@ -142,7 +142,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="TestPages\NavigationViewTestPage.xaml">
+    <Page Include="TestPages\NavigationViewWithCustomResourcesTestPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
