@@ -144,39 +144,46 @@ namespace MUXControlsTestApp.Samples
             tracker.HorizontalAnchorRatio = maintainViewportSlider.Value;
         }
 
-        private void OnItemSpacingSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void OnRowSpacingSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (_pageInfo.Level0Layout != null)
             {
-                LayoutHelper.SetMinItemSpacing(_pageInfo.Level0Layout, itemSpacingSlider.Value); ;
+                LayoutHelper.SetMinRowSpacing(_pageInfo.Level0Layout, rowSpacingSlider.Value); ;
             }
 
             if (_pageInfo.Level1Layout != null)
             {
-                LayoutHelper.SetMinItemSpacing(_pageInfo.Level1Layout, itemSpacingSlider.Value);
+                LayoutHelper.SetMinRowSpacing(_pageInfo.Level1Layout, rowSpacingSlider.Value);
             }
 
             if (_pageInfo.Level2Layout != null)
             {
-                LayoutHelper.SetMinItemSpacing(_pageInfo.Level2Layout, itemSpacingSlider.Value);
+                LayoutHelper.SetMinRowSpacing(_pageInfo.Level2Layout, rowSpacingSlider.Value);
+            }
+        }
+        private void OnMaxRowsOrColumnsSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            if (_pageInfo.Level0Layout != null)
+            {
+                LayoutHelper.SetMaxRowsOrColumns(_pageInfo.Level0Layout, (int)(maxRowsOrColumnsSlider.Value));
             }
         }
 
-        private void OnLineSpacingSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        private void OnColumnSpacingSliderValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
             if (_pageInfo.Level0Layout != null)
             {
-                LayoutHelper.SetLineSpacing(_pageInfo.Level0Layout, lineSpacingSlider.Value);
+                LayoutHelper.SetMinColumnSpacing(_pageInfo.Level0Layout, colSpacingSlider.Value);
             }
 
             if (_pageInfo.Level1Layout != null)
             {
-                LayoutHelper.SetLineSpacing(_pageInfo.Level1Layout, lineSpacingSlider.Value);
+                LayoutHelper.SetMinColumnSpacing(_pageInfo.Level1Layout, colSpacingSlider.Value);
             }
 
             if (_pageInfo.Level2Layout != null)
             {
-                LayoutHelper.SetLineSpacing(_pageInfo.Level2Layout, lineSpacingSlider.Value);
+                LayoutHelper.SetMinColumnSpacing(_pageInfo.Level2Layout, colSpacingSlider.Value);
             }
         }
 

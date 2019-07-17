@@ -18,7 +18,15 @@ namespace MUXControlsTestApp.Samples
 {
     public static class LayoutHelper
     {
-        public static void SetMinItemSpacing(Layout layout, double value)
+        public static void SetMaxRowsOrColumns(Layout layout, int value)
+        {
+            if (layout is UniformGridLayout)
+            {
+                ((UniformGridLayout)layout).MaximumRowsOrColumns = value;
+            }
+        }
+
+        public static void SetMinRowSpacing(Layout layout, double value)
         {
             if (layout is UniformGridLayout)
             {
@@ -34,7 +42,7 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
-        public static void SetLineSpacing(Layout layout, double value)
+        public static void SetMinColumnSpacing(Layout layout, double value)
         {
             if (layout is UniformGridLayout)
             {

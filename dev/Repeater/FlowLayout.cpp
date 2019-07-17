@@ -57,6 +57,7 @@ winrt::Size FlowLayout::MeasureOverride(
         true, /* isWrapping*/
         MinItemSpacing(),
         LineSpacing(),
+        MAXUINT /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
         LayoutId());
     return desiredSize;
@@ -185,7 +186,7 @@ winrt::Rect FlowLayout::GetExtent(
     UNREFERENCED_PARAMETER(lastRealized);
 
     auto extent = winrt::Rect{};
-    
+
     const int itemsCount = context.ItemCount();
 
     if (itemsCount > 0)
@@ -223,7 +224,7 @@ winrt::Rect FlowLayout::GetExtent(
             // We dont have anything realized. make an educated guess.
             int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
-                std::isfinite(availableSizeMinor) ? 
+                std::isfinite(availableSizeMinor) ?
                 MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
                 MinorMajorRect(
                     0,
@@ -268,7 +269,7 @@ void FlowLayout::OnLineArranged(
 
     REPEATER_TRACE_INFO(L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
         winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), startIndex, countInLine, lineSize);
-    
+
     const auto flowState = GetAsFlowState(context.LayoutState());
     flowState->OnLineArranged(startIndex, countInLine, lineSize, context);
 }
@@ -413,7 +414,7 @@ double FlowLayout::GetAverageLineInfo(
         flowState->OnLineArranged(0, estimatedCountInLine, desiredSize.*Major(), context);
         flowState->SpecialElementDesiredSize(desiredSize);
     }
-    
+
     avgCountInLine = std::max(1.0, flowState->TotalItemsPerLine() / flowState->TotalLinesMeasured());
     avgLineSize = round(flowState->TotalLineSize() / flowState->TotalLinesMeasured());
 
