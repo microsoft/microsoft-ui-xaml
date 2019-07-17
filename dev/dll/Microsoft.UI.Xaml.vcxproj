@@ -224,6 +224,7 @@
       <ShowIncludes>false</ShowIncludes>
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_STATIC_RTTI=0</PreprocessorDefinitions>
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
