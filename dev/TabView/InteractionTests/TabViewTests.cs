@@ -247,6 +247,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void KeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ functionality (specifically, KeyboardAccelerators)");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Log.Comment("Set focus inside the TabView");
