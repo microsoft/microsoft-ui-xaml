@@ -101,9 +101,10 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 {
     if (comboBox.IsEditable())
     {
-        // TODO, read default values from theme resource once we have them
-        winrt::CornerRadius popupRadius { 0 };
-        winrt::CornerRadius textBoxRadius{ 0 };
+        auto controlRadiusInspectable = winrt::Application::Current().Resources().Lookup(box_value(L"ControlCornerRadius"));
+        auto overlayRadiusInspectable = winrt::Application::Current().Resources().Lookup(box_value(L"OverlayCornerRadius"));
+        auto textBoxRadius = unbox_value<winrt::CornerRadius>(controlRadiusInspectable);
+        auto popupRadius = unbox_value<winrt::CornerRadius>(overlayRadiusInspectable);
 
         if (auto comboBoxControl7 = comboBox.try_as<winrt::IControl7>())
         {
