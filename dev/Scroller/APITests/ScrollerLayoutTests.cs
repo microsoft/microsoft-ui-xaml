@@ -182,6 +182,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
             ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
@@ -463,6 +464,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
             ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
@@ -762,6 +764,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+
+            ValidateContentWithConstrainedWidth(
+                compositor,
+                scroller,
+                content: imageScrollerContent,
+                horizontalAlignment: HorizontalAlignment.Stretch,
+                leftMargin: c_leftMargin,
+                rightMargin: c_rightMargin,
+                expectedMinPosition: 0.0f,
+                expectedZoomFactor: 1.0f);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
             ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
