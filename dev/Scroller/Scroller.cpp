@@ -7557,7 +7557,7 @@ void Scroller::HookContentPropertyChanged(
         {
             if (!m_contentMinWidthChangedRevoker)
             {
-                m_contentMinWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::WidthProperty(), { this, &Scroller::OnContentPropertyChanged });
+                m_contentMinWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MinWidthProperty(), { this, &Scroller::OnContentPropertyChanged });
             }
             if (!m_contentWidthChangedRevoker)
             {
@@ -7565,11 +7565,11 @@ void Scroller::HookContentPropertyChanged(
             }
             if (!m_contentMaxWidthChangedRevoker)
             {
-                m_contentMaxWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::WidthProperty(), { this, &Scroller::OnContentPropertyChanged });
+                m_contentMaxWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MaxWidthProperty(), { this, &Scroller::OnContentPropertyChanged });
             }
             if (!m_contentMinHeightChangedRevoker)
             {
-                m_contentMinHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::HeightProperty(), { this, &Scroller::OnContentPropertyChanged });
+                m_contentMinHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MinHeightProperty(), { this, &Scroller::OnContentPropertyChanged });
             }
             if (!m_contentHeightChangedRevoker)
             {
@@ -7577,7 +7577,7 @@ void Scroller::HookContentPropertyChanged(
             }
             if (!m_contentMaxHeightChangedRevoker)
             {
-                m_contentMaxHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::HeightProperty(), { this, &Scroller::OnContentPropertyChanged });
+                m_contentMaxHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MaxHeightProperty(), { this, &Scroller::OnContentPropertyChanged });
             }
             if (!m_contentHorizontalAlignmentChangedRevoker)
             {
