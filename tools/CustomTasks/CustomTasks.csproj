@@ -54,7 +54,6 @@
   <ItemGroup>
     <Compile Include="BatchMergeXaml.cs" />
     <Compile Include="DependencyPropertyCodeGen.cs" />
-    <Compile Include="GenerateMergedXaml.cs" />
     <Compile Include="MergedDictionary.cs" />
     <Compile Include="RunPowershellScript.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
