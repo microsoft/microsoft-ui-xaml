@@ -156,6 +156,7 @@ private:
     void UpdatePaneTabFocusNavigation();
     void UpdatePaneToggleSize();
     void UpdateBackAndCloseButtonsVisibility();
+    void UpdatePaneTitleMargins();
     void UpdateLeftNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);

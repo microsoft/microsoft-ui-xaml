@@ -421,6 +421,7 @@ void NavigationView::OnApplyTemplate()
     UpdateNavigationViewUseSystemVisual();
     PropagateNavigationViewAsParent();
     UpdateVisualState();
+    UpdatePaneTitleMargins();
 }
 
 // Hook up the Settings Item Invoked event listener
@@ -809,6 +810,7 @@ void NavigationView::UpdateIsClosedCompact()
 
         UpdateTitleBarPadding();
         UpdateBackAndCloseButtonsVisibility();
+        UpdatePaneTitleMargins();
         UpdatePaneToggleSize();
     }
 }
@@ -923,74 +925,74 @@ void NavigationView::UpdateSettingsItemToolTip()
 // Updates the PaneTitleHolder.Visibility and PaneTitleTextBlock.Parent properties based on the PaneDisplayMode, PaneTitle and IsPaneToggleButtonVisible properties.
 void NavigationView::UpdatePaneTitleFrameworkElementParents()
 {
-    auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
-    auto isTopNavigationView = IsTopNavigationView();
-
     if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
     {
+        auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
+        auto isTopNavigationView = IsTopNavigationView();
+
         paneTitleHolderFrameworkElement.Visibility(
             (isPaneToggleButtonVisible ||
              isTopNavigationView ||
              PaneTitle().size() == 0 ||
              (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen())) ?
             winrt::Visibility::Collapsed : winrt::Visibility::Visible);
-    }
 
-    if (auto paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
-    {
-        auto paneTitleOnTopPane = m_paneTitleOnTopPane.get();
-        auto paneTitlePresenter = m_paneTitlePresenter.get();
-        auto paneToggleButton = m_paneToggleButton.get();
-
-        if (isTopNavigationView)
+        if (auto paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
         {
-            // PaneTitleTextBlock must be PaneTitleOnTopPane's Content
-            if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
-            {
-                paneToggleButton.Content(nullptr);
-            }
-            else if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
-            {
-                paneTitlePresenter.Content(nullptr);
-            }
+            auto paneTitleOnTopPane = m_paneTitleOnTopPane.get();
+            auto paneTitlePresenter = m_paneTitlePresenter.get();
+            auto paneToggleButton = m_paneToggleButton.get();
 
-            if (paneTitleOnTopPane && paneTitleOnTopPane.Content() != paneTitleFrameworkElement)
+            if (isTopNavigationView)
             {
-                paneTitleOnTopPane.Content(paneTitleFrameworkElement);
-            }
-        }
-        else if (isPaneToggleButtonVisible)
-        {
-            // PaneTitleTextBlock must be TogglePaneButton's Content
-            if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
-            {
-                paneTitlePresenter.Content(nullptr);
-            }
-            else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
-            {
-                paneTitleOnTopPane.Content(nullptr);
-            }
+                // PaneTitleTextBlock must be PaneTitleOnTopPane's Content
+                if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
+                {
+                    paneToggleButton.Content(nullptr);
+                }
+                else if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
+                {
+                    paneTitlePresenter.Content(nullptr);
+                }
 
-            if (paneToggleButton && paneToggleButton.Content() != paneTitleFrameworkElement)
-            {
-                paneToggleButton.Content(paneTitleFrameworkElement);
+                if (paneTitleOnTopPane && paneTitleOnTopPane.Content() != paneTitleFrameworkElement)
+                {
+                    paneTitleOnTopPane.Content(paneTitleFrameworkElement);
+                }
             }
-        }
-        else
-        {
-            // PaneTitleTextBlock must be PaneTitlePresenter's Content
-            if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
+            else if (isPaneToggleButtonVisible)
             {
-                paneToggleButton.Content(nullptr);
-            }
-            else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
-            {
-                paneTitleOnTopPane.Content(nullptr);
-            }
+                // PaneTitleTextBlock must be TogglePaneButton's Content
+                if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
+                {
+                    paneTitlePresenter.Content(nullptr);
+                }
+                else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
+                {
+                    paneTitleOnTopPane.Content(nullptr);
+                }
 
-            if (paneTitlePresenter && paneTitlePresenter.Content() != paneTitleFrameworkElement)
+                if (paneToggleButton && paneToggleButton.Content() != paneTitleFrameworkElement)
+                {
+                    paneToggleButton.Content(paneTitleFrameworkElement);
+                }
+            }
+            else
             {
-                paneTitlePresenter.Content(paneTitleFrameworkElement);
+                // PaneTitleTextBlock must be PaneTitlePresenter's Content
+                if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
+                {
+                    paneToggleButton.Content(nullptr);
+                }
+                else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
+                {
+                    paneTitleOnTopPane.Content(nullptr);
+                }
+
+                if (paneTitlePresenter && paneTitlePresenter.Content() != paneTitleFrameworkElement)
+                {
+                    paneTitlePresenter.Content(paneTitleFrameworkElement);
+                }
             }
         }
     }
@@ -3299,6 +3301,24 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         winrt::VisualStateManager::GoToState(*this, shouldShowBackButton ? L"BackButtonVisible" : L"BackButtonCollapsed", false /*useTransitions*/);
     }
     UpdateTitleBarPadding();
+}
+
+void NavigationView::UpdatePaneTitleMargins()
+{
+    if (ShouldPreserveNavigationViewRS4Behavior())
+    {
+        if (auto paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
+        {
+            double width = GetPaneToggleButtonWidth();
+
+            if (ShouldShowBackButton() && IsOverlay())
+            {
+                width += c_backButtonWidth;
+            }
+
+            paneTitleFrameworkElement.Margin({ width, 0, 0, 0 }); // see "Hamburger title" on uni
+        }
+    }
 }
 
 void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
