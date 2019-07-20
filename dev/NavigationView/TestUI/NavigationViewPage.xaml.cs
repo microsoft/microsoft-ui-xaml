@@ -445,7 +445,7 @@ namespace MUXControlsTestApp
 
         private void ChangePaneTitle_Click(object sender, RoutedEventArgs e)
         {
-            NavView.PaneTitle = (String.IsNullOrEmpty(NavView.PaneTitle) ? "NavView Test" : "");
+            NavView.PaneTitle = string.IsNullOrEmpty(NavView.PaneTitle) ? "NavView Test" : string.Empty;
         }
 
         private void CopyVolumeToolTipButton_Click(object sender, RoutedEventArgs e)
@@ -570,9 +570,24 @@ namespace MUXControlsTestApp
 
         private void ChangePaneHeader_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock text = new TextBlock();
-            text.Text = "Modified Pane Header";
-            NavView.PaneHeader = text;
+            if (NavView.PaneHeader == null)
+            {
+                TextBlock text = new TextBlock();
+                text.Text = "Modified Pane Header";
+                NavView.PaneHeader = text;
+            }
+            else if (NavView.PaneHeader is TextBlock)
+            {
+                TextBox text = new TextBox();
+                text.Text = "Large Pane Header";
+                text.IsReadOnly = true;
+                text.FontSize = 26;
+                NavView.PaneHeader = text;
+            }
+            else
+            {
+                NavView.PaneHeader = null;
+            }
 
             FindAndGiveAutomationNameToVisualChild("PaneHeaderOnTopPane");
             FindAndGiveAutomationNameToVisualChild("PaneHeaderContentBorder");

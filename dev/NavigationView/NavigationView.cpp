@@ -21,7 +21,8 @@
 #include "TraceLogging.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
-static constexpr auto c_paneTitleTextBlock = L"PaneTitleTextBlock"sv;
+static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
+static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
 static constexpr auto c_rootSplitViewName = L"RootSplitView"sv;
 static constexpr auto c_menuItemsHost = L"MenuItemsHost"sv;
 static constexpr auto c_settingsName = L"SettingsNavPaneItem"sv;
@@ -47,17 +48,23 @@ static constexpr auto c_topNavGrid = L"TopNavGrid"sv;
 static constexpr auto c_topNavContentOverlayAreaGrid = L"TopNavContentOverlayAreaGrid"sv;
 static constexpr auto c_leftNavPaneAutoSuggestBoxPresenter = L"PaneAutoSuggestBoxPresenter"sv;
 static constexpr auto c_topNavPaneAutoSuggestBoxPresenter = L"TopPaneAutoSuggestBoxPresenter"sv;
+static constexpr auto c_paneTitlePresenter = L"PaneTitlePresenter"sv;
 
 static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
 
 static constexpr auto c_paneHeaderOnTopPane = L"PaneHeaderOnTopPane"sv;
+static constexpr auto c_paneTitleOnTopPane = L"PaneTitleOnTopPane"sv;
 static constexpr auto c_paneCustomContentOnTopPane = L"PaneCustomContentOnTopPane"sv;
 static constexpr auto c_paneFooterOnTopPane = L"PaneFooterOnTopPane"sv;
+static constexpr auto c_paneHeaderCloseButtonColumn = L"PaneHeaderCloseButtonColumn"sv;
+static constexpr auto c_paneHeaderToggleButtonColumn = L"PaneHeaderToggleButtonColumn"sv;
+static constexpr auto c_paneHeaderContentBorderRow = L"PaneHeaderContentBorderRow"sv;
 
 static constexpr int c_backButtonHeight = 40;
 static constexpr int c_backButtonWidth = 40;
+static constexpr int c_paneToggleButtonHeight = 40;
 static constexpr int c_paneToggleButtonWidth = 40;
 static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior = 56;
 static constexpr int c_backButtonRowDefinition = 1;
@@ -108,6 +115,19 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_paneSearchButtonClickRevoker.revoke();
     m_paneSearchButton.set(nullptr);
+
+    m_paneHeaderOnTopPane.set(nullptr);
+    m_paneTitleOnTopPane.set(nullptr);
+
+    m_paneTitleHolderFrameworkElementSizeChangedRevoker.revoke();
+    m_paneTitleHolderFrameworkElement.set(nullptr);
+
+    m_paneTitleFrameworkElement.set(nullptr);
+    m_paneTitlePresenter.set(nullptr);
+
+    m_paneHeaderCloseButtonColumn.set(nullptr);
+    m_paneHeaderToggleButtonColumn.set(nullptr);
+    m_paneHeaderContentBorderRow.set(nullptr);
 }
 
 NavigationView::NavigationView()
@@ -180,6 +200,11 @@ void NavigationView::OnApplyTemplate()
         m_paneHeaderOnTopPane.set(paneHeaderOnTopPane);
     }
 
+    if (auto paneTitleOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneTitleOnTopPane, controlProtected))
+    {
+        m_paneTitleOnTopPane.set(paneTitleOnTopPane);
+    }
+
     if (auto paneCustomContentOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected))
     {
         m_paneCustomContentOnTopPane.set(paneCustomContentOnTopPane);
@@ -190,12 +215,6 @@ void NavigationView::OnApplyTemplate()
         m_paneFooterOnTopPane.set(paneFooterOnTopPane);
     }
 
-    if (auto textBlock = GetTemplateChildT<winrt::TextBlock>(c_paneTitleTextBlock, controlProtected))
-    {
-        m_paneTitleTextBlock.set(textBlock);
-        UpdatePaneTitleMargins();
-    }
-    
     // Get a pointer to the root SplitView
     if (auto splitView = GetTemplateChildT<winrt::SplitView>(c_rootSplitViewName, controlProtected))
     {
@@ -293,6 +312,18 @@ void NavigationView::OnApplyTemplate()
 
     m_contentLeftPadding.set(GetTemplateChildT<winrt::FrameworkElement>(c_contentLeftPadding, controlProtected));
 
+    m_paneHeaderCloseButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(c_paneHeaderCloseButtonColumn, controlProtected));
+    m_paneHeaderToggleButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(c_paneHeaderToggleButtonColumn, controlProtected));
+    m_paneHeaderContentBorderRow.set(GetTemplateChildT<winrt::RowDefinition>(c_paneHeaderContentBorderRow, controlProtected));
+    m_paneTitleFrameworkElement.set(GetTemplateChildT<winrt::FrameworkElement>(c_paneTitleFrameworkElement, controlProtected));
+    m_paneTitlePresenter.set(GetTemplateChildT<winrt::ContentControl>(c_paneTitlePresenter, controlProtected));
+
+    if (auto paneTitleHolderFrameworkElement = GetTemplateChildT<winrt::FrameworkElement>(c_paneTitleHolderFrameworkElement, controlProtected))
+    {
+        m_paneTitleHolderFrameworkElement.set(paneTitleHolderFrameworkElement);
+        m_paneTitleHolderFrameworkElementSizeChangedRevoker = paneTitleHolderFrameworkElement.SizeChanged(winrt::auto_revoke, { this, &NavigationView::OnPaneTitleHolderSizeChanged });
+    }
+
     // Set automation name on search button
     if (auto button = GetTemplateChildT<winrt::Button>(c_searchButtonName, controlProtected))
     {
@@ -382,6 +413,7 @@ void NavigationView::OnApplyTemplate()
     // Do initial setup
     UpdatePaneDisplayMode();    
     UpdateHeaderVisibility();
+    UpdatePaneTitleFrameworkElementParents();
     UpdateTitleBarPadding();
     UpdatePaneTabFocusNavigation();
     UpdateBackAndCloseButtonsVisibility();
@@ -539,7 +571,6 @@ void NavigationView::OnSizeChanged(winrt::IInspectable const& /*sender*/, winrt:
     UpdateAdaptiveLayout(width);
     UpdateTitleBarPadding();
     UpdateBackAndCloseButtonsVisibility();
-    UpdatePaneTitleMargins();
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
@@ -633,6 +664,11 @@ void NavigationView::OnPaneSearchButtonClick(const winrt::IInspectable& /*sender
     {
         autoSuggestBox.Focus(winrt::FocusState::Keyboard);
     }
+}
+
+void NavigationView::OnPaneTitleHolderSizeChanged(const winrt::IInspectable& /*sender*/, const winrt::SizeChangedEventArgs& /*args*/)
+{
+    UpdateBackAndCloseButtonsVisibility();
 }
 
 void NavigationView::OpenPane()
@@ -773,7 +809,6 @@ void NavigationView::UpdateIsClosedCompact()
 
         UpdateTitleBarPadding();
         UpdateBackAndCloseButtonsVisibility();
-        UpdatePaneTitleMargins();
         UpdatePaneToggleSize();
     }
 }
@@ -881,6 +916,82 @@ void NavigationView::UpdateSettingsItemToolTip()
             auto toolTip = winrt::ToolTip();
             toolTip.Content(box_value(localizedSettingsName));
             winrt::ToolTipService::SetToolTip(settingsItem, toolTip);
+        }
+    }
+}
+
+// Updates the PaneTitleHolder.Visibility and PaneTitleTextBlock.Parent properties based on the PaneDisplayMode, PaneTitle and IsPaneToggleButtonVisible properties.
+void NavigationView::UpdatePaneTitleFrameworkElementParents()
+{
+    auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
+    auto isTopNavigationView = IsTopNavigationView();
+
+    if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
+    {
+        paneTitleHolderFrameworkElement.Visibility(
+            (isPaneToggleButtonVisible ||
+             isTopNavigationView ||
+             PaneTitle().size() == 0 ||
+             (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen())) ?
+            winrt::Visibility::Collapsed : winrt::Visibility::Visible);
+    }
+
+    if (auto paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
+    {
+        auto paneTitleOnTopPane = m_paneTitleOnTopPane.get();
+        auto paneTitlePresenter = m_paneTitlePresenter.get();
+        auto paneToggleButton = m_paneToggleButton.get();
+
+        if (isTopNavigationView)
+        {
+            // PaneTitleTextBlock must be PaneTitleOnTopPane's Content
+            if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
+            {
+                paneToggleButton.Content(nullptr);
+            }
+            else if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
+            {
+                paneTitlePresenter.Content(nullptr);
+            }
+
+            if (paneTitleOnTopPane && paneTitleOnTopPane.Content() != paneTitleFrameworkElement)
+            {
+                paneTitleOnTopPane.Content(paneTitleFrameworkElement);
+            }
+        }
+        else if (isPaneToggleButtonVisible)
+        {
+            // PaneTitleTextBlock must be TogglePaneButton's Content
+            if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
+            {
+                paneTitlePresenter.Content(nullptr);
+            }
+            else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
+            {
+                paneTitleOnTopPane.Content(nullptr);
+            }
+
+            if (paneToggleButton && paneToggleButton.Content() != paneTitleFrameworkElement)
+            {
+                paneToggleButton.Content(paneTitleFrameworkElement);
+            }
+        }
+        else
+        {
+            // PaneTitleTextBlock must be PaneTitlePresenter's Content
+            if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
+            {
+                paneToggleButton.Content(nullptr);
+            }
+            else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
+            {
+                paneTitleOnTopPane.Content(nullptr);
+            }
+
+            if (paneTitlePresenter && paneTitlePresenter.Content() != paneTitleFrameworkElement)
+            {
+                paneTitlePresenter.Content(paneTitleFrameworkElement);
+            }
         }
     }
 }
@@ -2572,6 +2683,11 @@ double NavigationView::GetPaneToggleButtonWidth()
     return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonWidth", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonWidth)));
 }
 
+double NavigationView::GetPaneToggleButtonHeight()
+{
+    return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonHeight", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonHeight)));
+}
+
 void NavigationView::UpdateTopNavigationWidthCache()
 {
     int size = m_topDataProvider.GetPrimaryListSize();
@@ -2636,6 +2752,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }    
     else if (property == s_PaneTitleProperty)
     {
+        UpdatePaneTitleFrameworkElementParents();
+        UpdateBackAndCloseButtonsVisibility();
         UpdatePaneToggleSize();
     }
     else if (property == s_IsBackButtonVisibleProperty)
@@ -2671,6 +2789,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         m_wasForceClosed = false;
 
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
+        UpdatePaneTitleFrameworkElementParents();
         UpdatePaneToggleButtonVisibility();
         UpdatePaneVisibility();
         UpdateVisualState();
@@ -2711,6 +2830,8 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_IsPaneToggleButtonVisibleProperty)
     {
+        UpdatePaneTitleFrameworkElementParents();
+        UpdateBackAndCloseButtonsVisibility();
         UpdatePaneToggleButtonVisibility();
         UpdateVisualState();
     }
@@ -2792,6 +2913,7 @@ void NavigationView::OnIsPaneOpenChanged()
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
+    UpdatePaneTitleFrameworkElementParents();
 
     if (SharedHelpers::IsThemeShadowAvailable())
     {
@@ -3066,11 +3188,21 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         (visualStateDisplayMode == NavigationViewVisualStateDisplayMode::Minimal && !IsTopNavigationView()) ||
          visualStateDisplayMode == NavigationViewVisualStateDisplayMode::MinimalWithBackButton;
     double leftPaddingForBackOrCloseButton = 0.0;
+    double paneHeaderPaddingForToggleButton = 0.0;
+    double paneHeaderPaddingForCloseButton = 0.0;
+    double paneHeaderContentBorderRowMinHeight = 0.0;
+
     GetTemplateSettings()->BackButtonVisibility(backButtonVisibility);
 
-    if (useLeftPaddingForBackOrCloseButton)
+    if (m_paneToggleButton && IsPaneToggleButtonVisible())
     {
-        leftPaddingForBackOrCloseButton = GetPaneToggleButtonWidth();
+        paneHeaderContentBorderRowMinHeight = GetPaneToggleButtonHeight();
+        paneHeaderPaddingForToggleButton = GetPaneToggleButtonWidth();
+
+        if (useLeftPaddingForBackOrCloseButton)
+        {
+            leftPaddingForBackOrCloseButton = paneHeaderPaddingForToggleButton;
+        }
     }
 
     if (auto backButton = m_backButton.get())
@@ -3092,9 +3224,15 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
 
         closeButton.Visibility(closeButtonVisibility);
 
-        if (useLeftPaddingForBackOrCloseButton && closeButtonVisibility == winrt::Visibility::Visible)
+        if (closeButtonVisibility == winrt::Visibility::Visible)
         {
-            leftPaddingForBackOrCloseButton += closeButton.Width();
+            paneHeaderContentBorderRowMinHeight = std::max(paneHeaderContentBorderRowMinHeight, closeButton.Height());
+
+            if (useLeftPaddingForBackOrCloseButton)
+            {
+                paneHeaderPaddingForCloseButton = closeButton.Width();
+                leftPaddingForBackOrCloseButton += paneHeaderPaddingForCloseButton;
+            }
         }
     }
 
@@ -3103,26 +3241,56 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         contentLeftPadding.Width(leftPaddingForBackOrCloseButton);
     }
 
+    if (auto paneHeaderToggleButtonColumn = m_paneHeaderToggleButtonColumn.get())
+    {
+        // Account for the PaneToggleButton's width in the PaneHeader's placement.
+        paneHeaderToggleButtonColumn.Width(winrt::GridLengthHelper::FromValueAndType(paneHeaderPaddingForToggleButton, winrt::GridUnitType::Pixel));
+    }
+
+    if (auto paneHeaderCloseButtonColumn = m_paneHeaderCloseButtonColumn.get())
+    {
+        // Account for the CloseButton's width in the PaneHeader's placement.
+        paneHeaderCloseButtonColumn.Width(winrt::GridLengthHelper::FromValueAndType(paneHeaderPaddingForCloseButton, winrt::GridUnitType::Pixel));
+    }
+
+    if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
+    {
+        if (paneHeaderContentBorderRowMinHeight == 0.00 && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible)
+        {
+            // Handling the case where the PaneTottleButton is collapsed and the PaneTitle's height needs to push the rest of the NavigationView's UI down.
+            paneHeaderContentBorderRowMinHeight = paneTitleHolderFrameworkElement.ActualHeight();
+        }
+    }
+
+    if (auto paneHeaderContentBorderRow = m_paneHeaderContentBorderRow.get())
+    {
+        paneHeaderContentBorderRow.MinHeight(paneHeaderContentBorderRowMinHeight);
+    }
+
     if (auto paneContentGridAsUIE = m_paneContentGrid.get())
     {
         if (auto paneContentGrid = paneContentGridAsUIE.try_as<winrt::Grid>())
         {
             auto rowDefs = paneContentGrid.RowDefinitions();
-            auto rowDef = rowDefs.GetAt(c_backButtonRowDefinition);
 
-            int backButtonRowHeight = 0;
-            if (!IsOverlay() && shouldShowBackButton)
+            if (rowDefs.Size() >= c_backButtonRowDefinition)
             {
-                backButtonRowHeight = c_backButtonHeight;
-            }
-            else if (ShouldPreserveNavigationViewRS3Behavior())
-            {
-                // This row represented the height of the hamburger+margin in RS3 and prior
-                backButtonRowHeight = c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior;
-            }
+                auto rowDef = rowDefs.GetAt(c_backButtonRowDefinition);
 
-            auto length = winrt::GridLengthHelper::FromPixels(backButtonRowHeight);
-            rowDef.Height(length);
+                int backButtonRowHeight = 0;
+                if (!IsOverlay() && shouldShowBackButton)
+                {
+                    backButtonRowHeight = c_backButtonHeight;
+                }
+                else if (ShouldPreserveNavigationViewRS3Behavior())
+                {
+                    // This row represented the height of the hamburger+margin in RS3 and prior
+                    backButtonRowHeight = c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Behavior;
+                }
+
+                auto length = winrt::GridLengthHelper::FromPixels(backButtonRowHeight);
+                rowDef.Height(length);
+            }
         }
     }
 
@@ -3131,21 +3299,6 @@ void NavigationView::UpdateBackAndCloseButtonsVisibility()
         winrt::VisualStateManager::GoToState(*this, shouldShowBackButton ? L"BackButtonVisible" : L"BackButtonCollapsed", false /*useTransitions*/);
     }
     UpdateTitleBarPadding();
-}
-
-void NavigationView::UpdatePaneTitleMargins()
-{
-    if (auto textBlock = m_paneTitleTextBlock.get())
-    {
-        double width = GetPaneToggleButtonWidth();
-
-        if (ShouldShowBackButton() && IsOverlay())
-        {
-            width += c_backButtonWidth;
-        }
-
-        textBlock.Margin({ width, 0, 0, 0 }); // see "Hamburger title" on uni
-    }
 }
 
 void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
@@ -3347,7 +3500,13 @@ void NavigationView::UpdateTitleBarPadding()
             }
         }
 
-        if (auto paneButton = m_paneToggleButton.get())
+        auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get();
+        auto paneToggleButton = m_paneToggleButton.get();
+
+        bool setPaneTitleHolderFrameworkElementMargin = paneTitleHolderFrameworkElement && paneTitleHolderFrameworkElement.Visibility() == winrt::Visibility::Visible;
+        bool setPaneToggleButtonMargin = !setPaneTitleHolderFrameworkElementMargin && paneToggleButton && paneToggleButton.Visibility() == winrt::Visibility::Visible;
+
+        if (setPaneTitleHolderFrameworkElementMargin || setPaneToggleButtonMargin)
         {
             auto thickness = winrt::ThicknessHelper::FromLengths(0, 0, 0, 0);
 
@@ -3366,7 +3525,17 @@ void NavigationView::UpdateTitleBarPadding()
             {
                 thickness = winrt::ThicknessHelper::FromLengths(c_backButtonWidth, 0, 0, 0);
             }
-            paneButton.Margin(thickness);
+
+            if (setPaneTitleHolderFrameworkElementMargin)
+            {
+                // The PaneHeader is hosted by PaneTitlePresenter and PaneTitleHolder.
+                paneTitleHolderFrameworkElement.Margin(thickness);
+            }
+            else
+            {
+                // The PaneHeader is hosted by PaneToggleButton
+                paneToggleButton.Margin(thickness);
+            }
         }
     }
 

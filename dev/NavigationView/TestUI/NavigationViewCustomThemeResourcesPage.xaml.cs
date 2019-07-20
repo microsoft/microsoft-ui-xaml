@@ -4,10 +4,7 @@
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Windows.UI.Xaml.Automation;
 using Windows.ApplicationModel.Core;
 
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
@@ -18,6 +15,8 @@ namespace MUXControlsTestApp
 {
     public sealed partial class NavigationViewCustomThemeResourcesPage : TestPage
     {
+        private Style defaultPaneTitleTextBlockStyle = null;
+
         public NavigationViewCustomThemeResourcesPage()
         {
             this.InitializeComponent();
@@ -151,9 +150,34 @@ namespace MUXControlsTestApp
             titleBar.ExtendViewIntoTitleBar = true;
         }
 
-        private void ChangePaneTitle_Click(object sender, RoutedEventArgs e)
+        private void ChangePaneTitleText_Click(object sender, RoutedEventArgs e)
         {
-            NavView.PaneTitle = (String.IsNullOrEmpty(NavView.PaneTitle) ? "|NavView Test|" : "");
+            NavView.PaneTitle = (String.IsNullOrEmpty(NavView.PaneTitle) ? "|NavView Test|" : string.Empty);
+        }
+
+        private void ChangePaneTitleStyle_Click(object sender, RoutedEventArgs e)
+        {
+            Grid rootGrid = VisualTreeHelper.GetChild(NavView, 0) as Grid;
+            if (rootGrid != null)
+            {
+                var paneTitleTextBlock = rootGrid.FindName("PaneTitleTextBlock") as TextBlock;
+                if (paneTitleTextBlock != null)
+                {
+                    if (defaultPaneTitleTextBlockStyle == null)
+                    {
+                        defaultPaneTitleTextBlockStyle = paneTitleTextBlock.Style;
+                    }
+
+                    if (defaultPaneTitleTextBlockStyle == paneTitleTextBlock.Style)
+                    {
+                        paneTitleTextBlock.Style = Resources["NavigationViewPaneTitleStyle"] as Style;
+                    }
+                    else
+                    {
+                        paneTitleTextBlock.Style = defaultPaneTitleTextBlockStyle;
+                    }
+                }
+            }
         }
 
         private void ChangeHeaderButton_Click(object sender, RoutedEventArgs args)
