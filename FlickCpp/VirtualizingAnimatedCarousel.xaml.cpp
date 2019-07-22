@@ -1,10 +1,10 @@
 ﻿//
-// UserSwitcherControl.xaml.cpp
-// Implementation of the UserSwitcherControl class
+// VirtualizingAnimatedCarousel.xaml.cpp
+// Implementation of the VirtualizingAnimatedCarousel class
 //
 
 #include "pch.h"
-#include "UserSwitcherControl.xaml.h"
+#include "VirtualizingAnimatedCarousel.xaml.h"
 
 using namespace FlickCpp;
 using namespace Microsoft::UI::Xaml::Controls;
@@ -19,29 +19,29 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Hosting;
 using namespace Windows::UI::Xaml::Input;
 
-/*static*/ const TimeSpan UserSwitcherControl::s_prevNextButtonHoldPeriod = TimeSpan { 3000000 /*3e+6 ticks = 3e+8 ns = 300 ms*/ };
-/*static*/ constexpr int UserSwitcherControl::s_continousScrollingItemSkipCount = 2;
-/*static*/ const TimeSpan UserSwitcherControl::s_prevNextButtonContinousScrollingSelectionPeriod = TimeSpan { 1000000 /*1e+6 ticks = 1e+8 ns = 100 ms*/ };
-/*static*/ const TimeSpan UserSwitcherControl::s_scrollViewerChangeViewDelayPeriodForDefaultItemSelectionInEvenItemCountScenario = TimeSpan { 1500000 /*1.5e+6 ticks = 1.5e+8 ns = 150 ms*/ };
-/*static*/ const TimeSpan UserSwitcherControl::s_scrollViewerChangeViewDelayPeriodToEnsureAnimationIsShown = TimeSpan { 100000 /*1e+5 ticks = 1e+7 ns = 10 ms*/ };
-/*static*/ const TimeSpan UserSwitcherControl::s_preserveSelectedItemAfterUserSwitcherControlSizeChangePeriod = TimeSpan { 2000000 /*2e+6 ticks = 2e+8 ns = 200 ms*/ };
+/*static*/ const TimeSpan VirtualizingAnimatedCarousel::s_prevNextButtonHoldPeriod = TimeSpan { 3000000 /*3e+6 ticks = 3e+8 ns = 300 ms*/ };
+/*static*/ constexpr int VirtualizingAnimatedCarousel::s_continousScrollingItemSkipCount = 2;
+/*static*/ const TimeSpan VirtualizingAnimatedCarousel::s_prevNextButtonContinousScrollingSelectionPeriod = TimeSpan { 1000000 /*1e+6 ticks = 1e+8 ns = 100 ms*/ };
+/*static*/ const TimeSpan VirtualizingAnimatedCarousel::s_scrollViewerChangeViewDelayPeriodForDefaultItemSelectionInEvenItemCountScenario = TimeSpan { 1500000 /*1.5e+6 ticks = 1.5e+8 ns = 150 ms*/ };
+/*static*/ const TimeSpan VirtualizingAnimatedCarousel::s_scrollViewerChangeViewDelayPeriodToEnsureAnimationIsShown = TimeSpan { 100000 /*1e+5 ticks = 1e+7 ns = 10 ms*/ };
+/*static*/ const TimeSpan VirtualizingAnimatedCarousel::s_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangePeriod = TimeSpan { 2000000 /*2e+6 ticks = 2e+8 ns = 200 ms*/ };
 
-/*static*/ double UserSwitcherControl::Floor(double num)
+/*static*/ double VirtualizingAnimatedCarousel::Floor(double num)
 {
     return static_cast<int>(num);
 }
 
-/*static*/ double UserSwitcherControl::AbsoluteValue(double num)
+/*static*/ double VirtualizingAnimatedCarousel::AbsoluteValue(double num)
 {
     return ((num < 0) ? (-1 * num) : num);
 }
 
-UserSwitcherControl::UserSwitcherControl()
+VirtualizingAnimatedCarousel::VirtualizingAnimatedCarousel()
 {
 	InitializeComponent();
 
     m_dispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
-    m_viewModel = ref new UserSwitcherViewModel();
+    m_viewModel = ref new DemoViewModel();
     PropertyChanged(this, ref new PropertyChangedEventArgs(L"ViewModel"));
     m_carouselPrevButton = UserCarouselPrevButton;
     m_carouselNextButton = UserCarouselNextButton;
@@ -52,30 +52,30 @@ UserSwitcherControl::UserSwitcherControl()
     // Workaround for known numerical limitation on inset clips where scrollviewer fails to clip content on right side of viewport
     ElementCompositionPreview::GetElementVisual(m_scrollViewer)->Clip = ElementCompositionPreview::GetScrollViewerManipulationPropertySet(m_scrollViewer)->Compositor->CreateInsetClip();
 
-    m_carouselPrevButton->AddHandler(UIElement::PointerPressedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselPrevButton_PointerPressed), true);
-    m_carouselPrevButton->AddHandler(UIElement::PointerCanceledEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselPrevButton_PointerCanceled), true);
-    m_carouselPrevButton->AddHandler(UIElement::PointerReleasedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselPrevButton_PointerReleased), true);
-    m_carouselPrevButton->AddHandler(UIElement::PointerExitedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselPrevButton_PointerExited), true);
-    m_carouselPrevButton->AddHandler(UIElement::PointerCaptureLostEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselPrevButton_PointerCaptureLost), true);
+    m_carouselPrevButton->AddHandler(UIElement::PointerPressedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselPrevButton_PointerPressed), true);
+    m_carouselPrevButton->AddHandler(UIElement::PointerCanceledEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselPrevButton_PointerCanceled), true);
+    m_carouselPrevButton->AddHandler(UIElement::PointerReleasedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselPrevButton_PointerReleased), true);
+    m_carouselPrevButton->AddHandler(UIElement::PointerExitedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselPrevButton_PointerExited), true);
+    m_carouselPrevButton->AddHandler(UIElement::PointerCaptureLostEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselPrevButton_PointerCaptureLost), true);
 
-    m_carouselNextButton->AddHandler(UIElement::PointerPressedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerPressed), true);
-    m_carouselNextButton->AddHandler(UIElement::PointerCanceledEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerCanceled), true);
-    m_carouselNextButton->AddHandler(UIElement::PointerReleasedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerReleased), true);
-    m_carouselNextButton->AddHandler(UIElement::PointerExitedEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerExited), true);
-    m_carouselNextButton->AddHandler(UIElement::PointerCaptureLostEvent, ref new PointerEventHandler(this, &UserSwitcherControl::CarouselNextButton_PointerCaptureLost), true);
+    m_carouselNextButton->AddHandler(UIElement::PointerPressedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselNextButton_PointerPressed), true);
+    m_carouselNextButton->AddHandler(UIElement::PointerCanceledEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselNextButton_PointerCanceled), true);
+    m_carouselNextButton->AddHandler(UIElement::PointerReleasedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselNextButton_PointerReleased), true);
+    m_carouselNextButton->AddHandler(UIElement::PointerExitedEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselNextButton_PointerExited), true);
+    m_carouselNextButton->AddHandler(UIElement::PointerCaptureLostEvent, ref new PointerEventHandler(this, &VirtualizingAnimatedCarousel::CarouselNextButton_PointerCaptureLost), true);
 }
 
-UserSwitcherViewModel^ UserSwitcherControl::ViewModel::get()
+DemoViewModel^ VirtualizingAnimatedCarousel::ViewModel::get()
 {
     return m_viewModel;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::PrevButtonContinuousScrollingPeriodicTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::PrevButtonContinuousScrollingPeriodicTimer::get()
 {
     return m_prevButtonContinuousScrollingPeriodicTimer;
 }
 
-void UserSwitcherControl::PrevButtonContinuousScrollingPeriodicTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::PrevButtonContinuousScrollingPeriodicTimer::set(ThreadPoolTimer^ value)
 {
     if (m_prevButtonContinuousScrollingPeriodicTimer != nullptr)
     {
@@ -86,12 +86,12 @@ void UserSwitcherControl::PrevButtonContinuousScrollingPeriodicTimer::set(Thread
     m_prevButtonContinuousScrollingPeriodicTimer = value;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::NextButtonContinuousScrollingPeriodicTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::NextButtonContinuousScrollingPeriodicTimer::get()
 {
     return m_nextButtonContinuousScrollingPeriodicTimer;
 }
 
-void UserSwitcherControl::NextButtonContinuousScrollingPeriodicTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::NextButtonContinuousScrollingPeriodicTimer::set(ThreadPoolTimer^ value)
 {
     if (m_nextButtonContinuousScrollingPeriodicTimer != nullptr)
     {
@@ -102,12 +102,12 @@ void UserSwitcherControl::NextButtonContinuousScrollingPeriodicTimer::set(Thread
     m_nextButtonContinuousScrollingPeriodicTimer = value;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::PrevButtonHoldTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::PrevButtonHoldTimer::get()
 {
     return m_prevButtonHoldTimer;
 }
 
-void UserSwitcherControl::PrevButtonHoldTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::PrevButtonHoldTimer::set(ThreadPoolTimer^ value)
 {
     if (m_prevButtonHoldTimer != nullptr)
     {
@@ -118,12 +118,12 @@ void UserSwitcherControl::PrevButtonHoldTimer::set(ThreadPoolTimer^ value)
     m_prevButtonHoldTimer = value;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::NextButtonHoldTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::NextButtonHoldTimer::get()
 {
     return m_nextButtonHoldTimer;
 }
 
-void UserSwitcherControl::NextButtonHoldTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::NextButtonHoldTimer::set(ThreadPoolTimer^ value)
 {
     if (m_nextButtonHoldTimer != nullptr)
     {
@@ -134,12 +134,12 @@ void UserSwitcherControl::NextButtonHoldTimer::set(ThreadPoolTimer^ value)
     m_nextButtonHoldTimer = value;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::ScrollViewerChangeViewTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::ScrollViewerChangeViewTimer::get()
 {
     return m_scrollViewerChangeViewTimer;
 }
 
-void UserSwitcherControl::ScrollViewerChangeViewTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::ScrollViewerChangeViewTimer::set(ThreadPoolTimer^ value)
 {
     if (m_scrollViewerChangeViewTimer != nullptr)
     {
@@ -150,40 +150,40 @@ void UserSwitcherControl::ScrollViewerChangeViewTimer::set(ThreadPoolTimer^ valu
     m_scrollViewerChangeViewTimer = value;
 }
 
-ThreadPoolTimer^ UserSwitcherControl::PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer::get()
+ThreadPoolTimer^ VirtualizingAnimatedCarousel::PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer::get()
 {
-    return m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer;
+    return m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer;
 }
 
-void UserSwitcherControl::PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer::set(ThreadPoolTimer^ value)
+void VirtualizingAnimatedCarousel::PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer::set(ThreadPoolTimer^ value)
 {
-    if (m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer != nullptr)
+    if (m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer != nullptr)
     {
-        m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer->Cancel();
-        m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = nullptr;
+        m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer->Cancel();
+        m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer = nullptr;
     }
 
-    m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = value;
+    m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer = value;
 }
 
-void UserSwitcherControl::HideCarouselNextPrevButtons()
+void VirtualizingAnimatedCarousel::HideCarouselNextPrevButtons()
 {
     m_carouselPrevButton->IsEnabled = false;
     m_carouselNextButton->IsEnabled = false;
 }
 
-void UserSwitcherControl::ShowCarouselNextPrevButtons()
+void VirtualizingAnimatedCarousel::ShowCarouselNextPrevButtons()
 {
     m_carouselPrevButton->IsEnabled = true;
     m_carouselNextButton->IsEnabled = true;
 }
 
-double UserSwitcherControl::CenterPointOfViewportInExtent()
+double VirtualizingAnimatedCarousel::CenterPointOfViewportInExtent()
 {
     return m_scrollViewer->HorizontalOffset + m_scrollViewer->ViewportWidth / 2;
 }
 
-int UserSwitcherControl::GetSelectedIndexFromViewport()
+int VirtualizingAnimatedCarousel::GetSelectedIndexFromViewport()
 {
     if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
@@ -195,7 +195,7 @@ int UserSwitcherControl::GetSelectedIndexFromViewport()
     return selectedIndex;
 }
 
-Object^ UserSwitcherControl::GetSelectedItemFromViewport()
+Object^ VirtualizingAnimatedCarousel::GetSelectedItemFromViewport()
 {
     if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
@@ -214,7 +214,7 @@ Object^ UserSwitcherControl::GetSelectedItemFromViewport()
     return selectedItem;
 }
 
-void UserSwitcherControl::DetermineIfCarouselNextPrevButtonsShouldBeHidden()
+void VirtualizingAnimatedCarousel::DetermineIfCarouselNextPrevButtonsShouldBeHidden()
 {
     if ((m_repeater->ItemsSourceView->Count > 1) && (m_repeater->ItemsSourceView->Count < m_repeaterLayout->MaxNumberOfItemsThatCanFitInViewport))
     {
@@ -235,7 +235,7 @@ void UserSwitcherControl::DetermineIfCarouselNextPrevButtonsShouldBeHidden()
     }
 }
 
-void UserSwitcherControl::SetSelectedItemInViewport(int itemIndexInItemsSource)
+void VirtualizingAnimatedCarousel::SetSelectedItemInViewport(int itemIndexInItemsSource)
 {
     if ((itemIndexInItemsSource != SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected)
         && ((itemIndexInItemsSource < 0) || (itemIndexInItemsSource >= m_repeater->ItemsSourceView->Count)))
@@ -278,7 +278,7 @@ void UserSwitcherControl::SetSelectedItemInViewport(int itemIndexInItemsSource)
     }
 }
 
-void UserSwitcherControl::ScrollViewer_ViewChanged(Object^ /*sender*/, ScrollViewerViewChangedEventArgs^ e)
+void VirtualizingAnimatedCarousel::ScrollViewer_ViewChanged(Object^ /*sender*/, ScrollViewerViewChangedEventArgs^ e)
 {
     if (!e->IsIntermediate)
     {
@@ -289,17 +289,17 @@ void UserSwitcherControl::ScrollViewer_ViewChanged(Object^ /*sender*/, ScrollVie
     DetermineIfCarouselNextPrevButtonsShouldBeHidden();
 }
 
-void UserSwitcherControl::ScrollViewer_ViewChanging(Object^ /*sender*/, ScrollViewerViewChangingEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::ScrollViewer_ViewChanging(Object^ /*sender*/, ScrollViewerViewChangingEventArgs^ /*e*/)
 {
     DetermineIfCarouselNextPrevButtonsShouldBeHidden();
 }
 
-void UserSwitcherControl::ScrollViewer_LayoutUpdated(Object^ sender, Object^ e)
+void VirtualizingAnimatedCarousel::ScrollViewer_LayoutUpdated(Object^ sender, Object^ e)
 {
-    m_selectedItemIndexPriorToUserSwitcherControlSizeChange = GetSelectedIndexFromViewport();
+    m_selectedItemIndexPriorToVirtualizingAnimatedCarouselSizeChange = GetSelectedIndexFromViewport();
 }
 
-void UserSwitcherControl::ResetCarouselWithDefaultSelectionForCurrentItemCount()
+void VirtualizingAnimatedCarousel::ResetCarouselWithDefaultSelectionForCurrentItemCount()
 {
     if ((m_repeater->ItemsSourceView == nullptr) || (m_repeater->ItemsSourceView->Count == 0))
     {
@@ -339,11 +339,11 @@ void UserSwitcherControl::ResetCarouselWithDefaultSelectionForCurrentItemCount()
                 ref new TimerElapsedHandler(
                     [weakThis](ThreadPoolTimer^ /*timer*/)
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
                             thisRef->m_dispatcher->RunIdleAsync(ref new IdleDispatchedHandler([weakThis](IdleDispatchedHandlerArgs^ /*args*/)
                             {
-                                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                                 {
                                     thisRef->m_scrollViewer->ChangeView(
                                         ((thisRef->m_scrollViewer->ExtentWidth / 2) - (thisRef->m_scrollViewer->ViewportWidth / 2) - (thisRef->m_repeaterLayout->Spacing / 2) - (thisRef->m_repeaterLayout->ItemWidth / 2)) /*horizontalOffset*/,
@@ -382,12 +382,12 @@ void UserSwitcherControl::ResetCarouselWithDefaultSelectionForCurrentItemCount()
     m_repeater->SelectedItem = selectedItem;
 }
 
-void UserSwitcherControl::Repeater_Loaded(Object^ /*sender*/, RoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::Repeater_Loaded(Object^ /*sender*/, RoutedEventArgs^ /*e*/)
 {
     ResetCarouselWithDefaultSelectionForCurrentItemCount();
 }
 
-void UserSwitcherControl::Repeater_ElementPrepared(ItemsRepeater^ /*sender*/, ItemsRepeaterElementPreparedEventArgs^ e)
+void VirtualizingAnimatedCarousel::Repeater_ElementPrepared(ItemsRepeater^ /*sender*/, ItemsRepeaterElementPreparedEventArgs^ e)
 {
     Visual^ item = ElementCompositionPreview::GetElementVisual(e->Element);
     Visual^ svVisual = ElementCompositionPreview::GetElementVisual(m_scrollViewer);
@@ -424,7 +424,7 @@ void UserSwitcherControl::Repeater_ElementPrepared(ItemsRepeater^ /*sender*/, It
     item->StartAnimationGroup(animationGroup);
 }
 
-void UserSwitcherControl::CancelAllCarouselPrevButtonTimers()
+void VirtualizingAnimatedCarousel::CancelAllCarouselPrevButtonTimers()
 {
     if (ScrollViewerChangeViewTimer != nullptr)
     {
@@ -445,7 +445,7 @@ void UserSwitcherControl::CancelAllCarouselPrevButtonTimers()
     }
 }
 
-void UserSwitcherControl::CancelAllCarouselNextButtonTimers()
+void VirtualizingAnimatedCarousel::CancelAllCarouselNextButtonTimers()
 {
     if (ScrollViewerChangeViewTimer != nullptr)
     {
@@ -466,13 +466,13 @@ void UserSwitcherControl::CancelAllCarouselNextButtonTimers()
     }
 }
 
-void UserSwitcherControl::CancelAllCarouselScrollRelatedTimers()
+void VirtualizingAnimatedCarousel::CancelAllCarouselScrollRelatedTimers()
 {
     CancelAllCarouselPrevButtonTimers();
     CancelAllCarouselNextButtonTimers();
 }
 
-void UserSwitcherControl::ScrollViewer_Tapped(Object^ /*sender*/, TappedRoutedEventArgs^ e)
+void VirtualizingAnimatedCarousel::ScrollViewer_Tapped(Object^ /*sender*/, TappedRoutedEventArgs^ e)
 {
     CancelAllCarouselScrollRelatedTimers();
     double centerOfViewportOffsetInScrollViewer = CenterPointOfViewportInExtent();
@@ -507,13 +507,13 @@ void UserSwitcherControl::ScrollViewer_Tapped(Object^ /*sender*/, TappedRoutedEv
             ref new TimerElapsedHandler(
                 [weakThis, offsetToScrollTo](ThreadPoolTimer^ /*timer*/)
                 {
-                    if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                    if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                     {
                         thisRef->m_dispatcher->RunAsync(
                             CoreDispatcherPriority::Normal,
                             ref new DispatchedHandler([weakThis, offsetToScrollTo]()
                             {
-                                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                                 {
                                     thisRef->m_scrollViewer->ChangeView(
                                         offsetToScrollTo /*horizontalOffset*/,
@@ -528,7 +528,7 @@ void UserSwitcherControl::ScrollViewer_Tapped(Object^ /*sender*/, TappedRoutedEv
     }
 }
 
-void UserSwitcherControl::SelectNextItem(int numberOfItemsToSkip)
+void VirtualizingAnimatedCarousel::SelectNextItem(int numberOfItemsToSkip)
 {
     // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
     // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
@@ -547,13 +547,13 @@ void UserSwitcherControl::SelectNextItem(int numberOfItemsToSkip)
         ref new TimerElapsedHandler(
             [weakThis, offsetToScrollTo](ThreadPoolTimer^ /*timer*/)
             {
-                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                 {
                     thisRef->m_dispatcher->RunAsync(
                         CoreDispatcherPriority::Normal,
                         ref new DispatchedHandler([weakThis, offsetToScrollTo]()
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
                             thisRef->m_scrollViewer->ChangeView(
                                 offsetToScrollTo /*horizontalOffset*/,
@@ -567,12 +567,12 @@ void UserSwitcherControl::SelectNextItem(int numberOfItemsToSkip)
         s_scrollViewerChangeViewDelayPeriodToEnsureAnimationIsShown);
 }
 
-void UserSwitcherControl::SelectNextItem()
+void VirtualizingAnimatedCarousel::SelectNextItem()
 {
     SelectNextItem(0 /*numberOfItemsToSkip*/);
 }
 
-void UserSwitcherControl::SelectPreviousItem(int numberOfItemsToSkip)
+void VirtualizingAnimatedCarousel::SelectPreviousItem(int numberOfItemsToSkip)
 {
     // In the nominal case, centerOfViewportOffsetInScrollViewer will be the offset of the current centerpoint in the scrollviewer's viewport;
     // however, if the "center" item is not perfectly centered (i.e. where the centerpoint falls on the item's size.x/2)
@@ -591,13 +591,13 @@ void UserSwitcherControl::SelectPreviousItem(int numberOfItemsToSkip)
         ref new TimerElapsedHandler(
             [weakThis, offsetToScrollTo](ThreadPoolTimer^ /*timer*/)
             {
-                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                 {
                     thisRef->m_dispatcher->RunAsync(
                         CoreDispatcherPriority::Normal,
                         ref new DispatchedHandler([weakThis, offsetToScrollTo]()
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
                             thisRef->m_scrollViewer->ChangeView(
                                 offsetToScrollTo /*horizontalOffset*/,
@@ -611,12 +611,12 @@ void UserSwitcherControl::SelectPreviousItem(int numberOfItemsToSkip)
         s_scrollViewerChangeViewDelayPeriodToEnsureAnimationIsShown);
 }
 
-void UserSwitcherControl::SelectPreviousItem()
+void VirtualizingAnimatedCarousel::SelectPreviousItem()
 {
     SelectPreviousItem(0 /*numberOfItemsToSkip*/);
 }
 
-void UserSwitcherControl::StartContinuousScrolling(ScrollDirection scrollDirection)
+void VirtualizingAnimatedCarousel::StartContinuousScrolling(ScrollDirection scrollDirection)
 {
     CancelAllCarouselScrollRelatedTimers();
 
@@ -627,13 +627,13 @@ void UserSwitcherControl::StartContinuousScrolling(ScrollDirection scrollDirecti
             ref new TimerElapsedHandler(
                 [weakThis](ThreadPoolTimer^ /*timer*/)
                 {
-                    if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                    if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                     {
                         thisRef->m_dispatcher->RunAsync(
                             CoreDispatcherPriority::Normal,
                             ref new DispatchedHandler([weakThis]()
                             {
-                                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                                 {
                                     thisRef->SelectPreviousItem(thisRef->s_continousScrollingItemSkipCount);
                                 }
@@ -649,13 +649,13 @@ void UserSwitcherControl::StartContinuousScrolling(ScrollDirection scrollDirecti
             ref new TimerElapsedHandler(
                 [weakThis](ThreadPoolTimer^ /*timer*/)
                 {
-                    if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                    if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                     {
                         thisRef->m_dispatcher->RunAsync(
                             CoreDispatcherPriority::Normal,
                             ref new DispatchedHandler([weakThis]()
                         {
-                            if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                            if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                             {
                                 thisRef->SelectNextItem(thisRef->s_continousScrollingItemSkipCount);
                             }
@@ -666,7 +666,7 @@ void UserSwitcherControl::StartContinuousScrolling(ScrollDirection scrollDirecti
     }
 }
 
-void UserSwitcherControl::CarouselPrevButton_PointerPressed(Object^ sender, PointerRoutedEventArgs^ e)
+void VirtualizingAnimatedCarousel::CarouselPrevButton_PointerPressed(Object^ sender, PointerRoutedEventArgs^ e)
 {
     if (!(safe_cast<UIElement^>(sender)->CapturePointer(e->Pointer)))
     {
@@ -681,15 +681,15 @@ void UserSwitcherControl::CarouselPrevButton_PointerPressed(Object^ sender, Poin
         ref new TimerElapsedHandler(
             [weakThis](ThreadPoolTimer^ /*timer*/)
             {
-                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                 {
                     thisRef->m_dispatcher->RunAsync(
                         CoreDispatcherPriority::Normal,
                         ref new DispatchedHandler([weakThis]()
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
-                            thisRef->StartContinuousScrolling(UserSwitcherControl::ScrollDirection::Previous);
+                            thisRef->StartContinuousScrolling(VirtualizingAnimatedCarousel::ScrollDirection::Previous);
                         }
                     }));
                 }
@@ -697,27 +697,27 @@ void UserSwitcherControl::CarouselPrevButton_PointerPressed(Object^ sender, Poin
         s_prevNextButtonHoldPeriod);
 }
 
-void UserSwitcherControl::CarouselPrevButton_PointerCanceled(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselPrevButton_PointerCanceled(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselPrevButton_PointerReleased(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselPrevButton_PointerReleased(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselPrevButton_PointerExited(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselPrevButton_PointerExited(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselPrevButton_PointerCaptureLost(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselPrevButton_PointerCaptureLost(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselNextButton_PointerPressed(Object^ sender, PointerRoutedEventArgs^ e)
+void VirtualizingAnimatedCarousel::CarouselNextButton_PointerPressed(Object^ sender, PointerRoutedEventArgs^ e)
 {
     if (!(safe_cast<UIElement^>(sender)->CapturePointer(e->Pointer)))
     {
@@ -732,15 +732,15 @@ void UserSwitcherControl::CarouselNextButton_PointerPressed(Object^ sender, Poin
         ref new TimerElapsedHandler(
             [weakThis](ThreadPoolTimer^ /*timer*/)
             {
-                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                 {
                     thisRef->m_dispatcher->RunAsync(
                         CoreDispatcherPriority::Normal,
                         ref new DispatchedHandler([weakThis]()
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
-                            thisRef->StartContinuousScrolling(UserSwitcherControl::ScrollDirection::Next);
+                            thisRef->StartContinuousScrolling(VirtualizingAnimatedCarousel::ScrollDirection::Next);
                         }
                     }));
                 }
@@ -748,51 +748,51 @@ void UserSwitcherControl::CarouselNextButton_PointerPressed(Object^ sender, Poin
         s_prevNextButtonHoldPeriod);
 }
 
-void UserSwitcherControl::CarouselNextButton_PointerCanceled(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselNextButton_PointerCanceled(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselNextButton_PointerReleased(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselNextButton_PointerReleased(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselNextButton_PointerExited(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselNextButton_PointerExited(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::CarouselNextButton_PointerCaptureLost(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::CarouselNextButton_PointerCaptureLost(Object^ /*sender*/, PointerRoutedEventArgs^ /*e*/)
 {
     CancelAllCarouselScrollRelatedTimers();
 }
 
-void UserSwitcherControl::UserSwitcherControl_SizeChanged(Object^ /*sender*/, SizeChangedEventArgs^ /*e*/)
+void VirtualizingAnimatedCarousel::VirtualizingAnimatedCarousel_SizeChanged(Object^ /*sender*/, SizeChangedEventArgs^ /*e*/)
 {
-    if (PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer != nullptr)
+    if (PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer != nullptr)
     {
         return;
     }
 
-    SetSelectedItemInViewport(m_selectedItemIndexPriorToUserSwitcherControlSizeChange);
+    SetSelectedItemInViewport(m_selectedItemIndexPriorToVirtualizingAnimatedCarouselSizeChange);
 
     auto weakThis = WeakReference(this);
-    PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = ThreadPoolTimer::CreateTimer(
+    PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer = ThreadPoolTimer::CreateTimer(
         ref new TimerElapsedHandler(
             [weakThis](ThreadPoolTimer^ /*timer*/)
             {
-                if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                 {
                     thisRef->m_dispatcher->RunIdleAsync(
                         ref new IdleDispatchedHandler([weakThis](IdleDispatchedHandlerArgs^ /*args*/)
                     {
-                        if (auto thisRef = weakThis.Resolve<UserSwitcherControl>())
+                        if (auto thisRef = weakThis.Resolve<VirtualizingAnimatedCarousel>())
                         {
-                            thisRef->PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = nullptr;
+                            thisRef->PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer = nullptr;
                         }
                     }));
                 }
             }),
-        s_preserveSelectedItemAfterUserSwitcherControlSizeChangePeriod);
+        s_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangePeriod);
 }

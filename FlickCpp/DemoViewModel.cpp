@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include <UserSwitcherViewModel.h>
+#include <DemoViewModel.h>
 
 using namespace FlickCpp;
 using namespace Platform;
@@ -8,15 +8,15 @@ using namespace Windows::Foundation::Collections;
 using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Interop;
 
-UserSwitcherViewModel::UserSwitcherViewModel()
+DemoViewModel::DemoViewModel()
 {
 }
 
-UserSwitcherViewModel::~UserSwitcherViewModel()
+DemoViewModel::~DemoViewModel()
 {
 }
 
-IVector<String^>^ UserSwitcherViewModel::Users::get()
+IVector<String^>^ DemoViewModel::Users::get()
 {
     if (m_users == nullptr)
     {
@@ -32,18 +32,18 @@ IVector<String^>^ UserSwitcherViewModel::Users::get()
     return m_users;
 }
 
-void UserSwitcherViewModel::Users::set(IVector<String^>^ value)
+void DemoViewModel::Users::set(IVector<String^>^ value)
 {
     m_users = value;
     PropertyChanged(this, ref new PropertyChangedEventArgs(L"Data"));
 }
 
-String^ UserSwitcherViewModel::SelectedUser::get()
+String^ DemoViewModel::SelectedUser::get()
 {
     return m_selectedUser;
 }
 
-void UserSwitcherViewModel::SelectedUser::set(String^ value)
+void DemoViewModel::SelectedUser::set(String^ value)
 {
     m_selectedUser = value;
     PropertyChanged(this, ref new PropertyChangedEventArgs(L"SelectedUser"));

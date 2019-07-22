@@ -1,31 +1,31 @@
 ﻿//
-// UserSwitcherControl.xaml.h
-// Declaration of the UserSwitcherControl class
+// VirtualizingAnimatedCarousel.xaml.h
+// Declaration of the VirtualizingAnimatedCarousel class
 //
 
 #pragma once
 
-#include "UserSwitcherControl.g.h"
+#include "VirtualizingAnimatedCarousel.g.h"
 #include "VirtualizingAnimatedUniformCarouselStackLayout.h"
 #include "SelectableSnapPointForwardingRepeater.h"
-#include "UserSwitcherViewModel.h"
+#include "DemoViewModel.h"
 
 namespace FlickCpp
 {
 	[Windows::Foundation::Metadata::WebHostHidden]
-	public ref class UserSwitcherControl sealed
+	public ref class VirtualizingAnimatedCarousel sealed
         : public Windows::UI::Xaml::Data::INotifyPropertyChanged
 	{
 
 	public:
-		UserSwitcherControl();
+		VirtualizingAnimatedCarousel();
 
         // INotifyPropertyChanged
         virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;
 
-        property FlickCpp::UserSwitcherViewModel^ ViewModel
+        property FlickCpp::DemoViewModel^ ViewModel
         {
-            FlickCpp::UserSwitcherViewModel^ get();
+            FlickCpp::DemoViewModel^ get();
         }
 
     private:
@@ -68,7 +68,7 @@ namespace FlickCpp
             void set(Windows::System::Threading::ThreadPoolTimer^ value);
         }
 
-        property Windows::System::Threading::ThreadPoolTimer^ PreserveSelectedItemAfterUserSwitcherControlSizeChangeTimer
+        property Windows::System::Threading::ThreadPoolTimer^ PreserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer
         {
             Windows::System::Threading::ThreadPoolTimer^ get();
             void set(Windows::System::Threading::ThreadPoolTimer^ value);
@@ -95,7 +95,7 @@ namespace FlickCpp
         void SelectNextItem();
         void SelectPreviousItem(int numberOfItemsToSkip);
         void SelectPreviousItem();
-        void StartContinuousScrolling(FlickCpp::UserSwitcherControl::ScrollDirection scrollDirection);
+        void StartContinuousScrolling(FlickCpp::VirtualizingAnimatedCarousel::ScrollDirection scrollDirection);
         void CarouselPrevButton_PointerPressed(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
         void CarouselPrevButton_PointerCanceled(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
         void CarouselPrevButton_PointerReleased(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
@@ -106,14 +106,14 @@ namespace FlickCpp
         void CarouselNextButton_PointerReleased(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
         void CarouselNextButton_PointerExited(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
         void CarouselNextButton_PointerCaptureLost(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ e);
-        void UserSwitcherControl_SizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
+        void VirtualizingAnimatedCarousel_SizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 
         static const Windows::Foundation::TimeSpan s_prevNextButtonHoldPeriod;
         static const int s_continousScrollingItemSkipCount;
         static const Windows::Foundation::TimeSpan s_prevNextButtonContinousScrollingSelectionPeriod;
         static const Windows::Foundation::TimeSpan s_scrollViewerChangeViewDelayPeriodForDefaultItemSelectionInEvenItemCountScenario;
         static const Windows::Foundation::TimeSpan s_scrollViewerChangeViewDelayPeriodToEnsureAnimationIsShown;
-        static const Windows::Foundation::TimeSpan s_preserveSelectedItemAfterUserSwitcherControlSizeChangePeriod;
+        static const Windows::Foundation::TimeSpan s_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangePeriod;
 
         Windows::UI::Core::CoreDispatcher^ m_dispatcher = nullptr;;
         Windows::UI::Xaml::Controls::Button^ m_carouselPrevButton = nullptr;
@@ -126,8 +126,8 @@ namespace FlickCpp
         Windows::System::Threading::ThreadPoolTimer^ m_prevButtonHoldTimer = nullptr;
         Windows::System::Threading::ThreadPoolTimer^ m_nextButtonHoldTimer = nullptr;
         Windows::System::Threading::ThreadPoolTimer^ m_scrollViewerChangeViewTimer = nullptr;
-        Windows::System::Threading::ThreadPoolTimer^ m_preserveSelectedItemAfterUserSwitcherControlSizeChangeTimer = nullptr;
-        int m_selectedItemIndexPriorToUserSwitcherControlSizeChange = FlickCpp::SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected;
-        FlickCpp::UserSwitcherViewModel^ m_viewModel;
+        Windows::System::Threading::ThreadPoolTimer^ m_preserveSelectedItemAfterVirtualizingAnimatedCarouselSizeChangeTimer = nullptr;
+        int m_selectedItemIndexPriorToVirtualizingAnimatedCarouselSizeChange = FlickCpp::SelectableSnapPointForwardingRepeater::SelectedIndexValueWhenNoItemIsSelected;
+        FlickCpp::DemoViewModel^ m_viewModel;
 	};
 }

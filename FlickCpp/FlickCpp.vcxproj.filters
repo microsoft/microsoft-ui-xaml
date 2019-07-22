@@ -16,19 +16,19 @@
     <ClCompile Include="App.xaml.cpp" />
     <ClCompile Include="MainPage.xaml.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="UserSwitcherControl.xaml.cpp" />
     <ClCompile Include="SelectableSnapPointForwardingRepeater.cpp" />
     <ClCompile Include="VirtualizingAnimatedUniformCarouselStackLayout.cpp" />
-    <ClCompile Include="UserSwitcherViewModel.cpp" />
+    <ClCompile Include="VirtualizingAnimatedCarousel.xaml.cpp" />
+    <ClCompile Include="DemoViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="App.xaml.h" />
     <ClInclude Include="MainPage.xaml.h" />
-    <ClInclude Include="UserSwitcherControl.xaml.h" />
     <ClInclude Include="SelectableSnapPointForwardingRepeater.h" />
     <ClInclude Include="VirtualizingAnimatedUniformCarouselStackLayout.h" />
-    <ClInclude Include="UserSwitcherViewModel.h" />
+    <ClInclude Include="VirtualizingAnimatedCarousel.xaml.h" />
+    <ClInclude Include="DemoViewModel.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\LockScreenLogo.scale-200.png">
@@ -62,6 +62,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="MainPage.xaml" />
-    <Page Include="UserSwitcherControl.xaml" />
+    <Page Include="VirtualizingAnimatedCarousel.xaml" />
   </ItemGroup>
 </Project>

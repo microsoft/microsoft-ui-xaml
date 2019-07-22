@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="FlickCpp.UserSwitcherControl"
+    x:Class="FlickCpp.VirtualizingAnimatedCarousel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:FlickCpp"
@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    SizeChanged="UserSwitcherControl_SizeChanged">
+    SizeChanged="VirtualizingAnimatedCarousel_SizeChanged">
 
     <UserControl.Resources>
         <Style x:Name="UserCarouselNextPrevButtonStyle" TargetType="Button">

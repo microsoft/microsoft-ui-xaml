@@ -177,10 +177,10 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="SelectableSnapPointForwardingRepeater.h" />
-    <ClInclude Include="UserSwitcherControl.xaml.h">
-      <DependentUpon>UserSwitcherControl.xaml</DependentUpon>
+    <ClInclude Include="VirtualizingAnimatedCarousel.xaml.h">
+      <DependentUpon>VirtualizingAnimatedCarousel.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="UserSwitcherViewModel.h" />
+    <ClInclude Include="DemoViewModel.h" />
     <ClInclude Include="VirtualizingAnimatedUniformCarouselStackLayout.h" />
   </ItemGroup>
   <ItemGroup>
@@ -190,7 +190,7 @@
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UserSwitcherControl.xaml">
+    <Page Include="VirtualizingAnimatedCarousel.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -228,10 +228,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SelectableSnapPointForwardingRepeater.cpp" />
-    <ClCompile Include="UserSwitcherControl.xaml.cpp">
-      <DependentUpon>UserSwitcherControl.xaml</DependentUpon>
+    <ClCompile Include="VirtualizingAnimatedCarousel.xaml.cpp">
+      <DependentUpon>VirtualizingAnimatedCarousel.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="UserSwitcherViewModel.cpp" />
+    <ClCompile Include="DemoViewModel.cpp" />
     <ClCompile Include="VirtualizingAnimatedUniformCarouselStackLayout.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

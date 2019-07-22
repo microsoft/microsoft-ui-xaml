@@ -4,12 +4,12 @@ namespace FlickCpp
 {
     [Windows::UI::Xaml::Data::Bindable]
     [Windows::Foundation::Metadata::WebHostHidden]
-    public ref class UserSwitcherViewModel sealed
+    public ref class DemoViewModel sealed
         : public Windows::UI::Xaml::Data::INotifyPropertyChanged
     {
     public:
-        UserSwitcherViewModel();
-        virtual ~UserSwitcherViewModel();
+        DemoViewModel();
+        virtual ~DemoViewModel();
 
         // INotifyPropertyChanged
         virtual event Windows::UI::Xaml::Data::PropertyChangedEventHandler^ PropertyChanged;

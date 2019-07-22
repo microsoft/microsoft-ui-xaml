@@ -12,6 +12,6 @@
     IsTabStop="True">
 
     <Grid>
-        <local:UserSwitcherControl/>
+        <local:VirtualizingAnimatedCarousel/>
     </Grid>
 </Page>
