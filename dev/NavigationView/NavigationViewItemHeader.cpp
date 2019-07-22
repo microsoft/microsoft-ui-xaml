@@ -14,8 +14,7 @@ NavigationViewItemHeader::NavigationViewItemHeader()
 }
 
 NavigationViewItemHeader::~NavigationViewItemHeader()
-{
-}
+= default;
 
 void NavigationViewItemHeader::OnApplyTemplate()
 {

@@ -126,7 +126,7 @@ private:
     {
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context) :
             m_element(owner, element),
@@ -138,7 +138,7 @@ private:
 
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context,
             winrt::Rect oldBounds,
@@ -152,11 +152,11 @@ private:
             MUX_ASSERT(trigger == AnimationTrigger::BoundsChange);
         }
 
-        winrt::UIElement Element() const { return m_element.get(); }
-        AnimationTrigger Trigger() const { return m_trigger; }
-        winrt::AnimationContext Context() const { return m_context; }
-        winrt::Rect OldBounds() const { return m_oldBounds; }
-        winrt::Rect NewBounds() const { return m_newBounds; }
+        [[nodiscard]] winrt::UIElement Element() const { return m_element.get(); }
+        [[nodiscard]] AnimationTrigger Trigger() const { return m_trigger; }
+        [[nodiscard]] winrt::AnimationContext Context() const { return m_context; }
+        [[nodiscard]] winrt::Rect OldBounds() const { return m_oldBounds; }
+        [[nodiscard]] winrt::Rect NewBounds() const { return m_newBounds; }
 
     private:
         tracker_ref<winrt::UIElement> m_element;

@@ -34,7 +34,7 @@ private:
 #endif
     ~LifetimeHandler();
 public:
-    LifetimeHandler() {}; // Trying to make this private gives: cannot access private member declared in class 'LifeTimeHandler'
+    LifetimeHandler() = default;; // Trying to make this private gives: cannot access private member declared in class 'LifeTimeHandler'
 
 #ifdef REPEATER_INCLUDED
     static com_ptr<CachedVisualTreeHelpers> GetCachedVisualTreeHelpersInstance();

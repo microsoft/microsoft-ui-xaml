@@ -10,7 +10,7 @@ struct WorkInfo
         m_workFunc(workFunc)
     {}
 
-    int Priority() const { return m_priority; }
+    [[nodiscard]] int Priority() const { return m_priority; }
     void InvokeWorkFunc() const { m_workFunc(); }
 
 private:

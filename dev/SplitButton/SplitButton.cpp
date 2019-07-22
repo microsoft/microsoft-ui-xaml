@@ -21,8 +21,7 @@ SplitButton::SplitButton()
 }
 
 SplitButton::~SplitButton()
-{
-}
+= default;
 
 void SplitButton::OnApplyTemplate()
 {

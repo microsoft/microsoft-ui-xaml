@@ -17,8 +17,8 @@ public:
     ScrollControllerInteractionRequestedEventArgs(
         const winrt::PointerPoint& pointerPoint);
 
-    winrt::PointerPoint PointerPoint() const;
-    bool Handled() const;
+    [[nodiscard]] winrt::PointerPoint PointerPoint() const;
+    [[nodiscard]] bool Handled() const;
     void Handled(bool handled); 
 
 private:

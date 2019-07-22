@@ -11,8 +11,7 @@
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 
 NavigationViewList::NavigationViewList()
-{
-}
+= default;
 
 // IItemsControlOverrides
 

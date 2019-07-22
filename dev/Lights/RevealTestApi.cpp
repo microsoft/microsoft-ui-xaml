@@ -15,8 +15,7 @@ RevealTestApi::RevealTestApi()
 }
 
 RevealTestApi::~RevealTestApi()
-{
-}
+= default;
 
 winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
 {

@@ -28,7 +28,7 @@ public:
     static int GetElementFactoryElementIndex(winrt::IInspectable const& getArgs);
 
     static hstring GetLayoutId(winrt::IInspectable const& layout);
-    static void SetLayoutId(winrt::IInspectable const& layout, hstring id);
+    static void SetLayoutId(winrt::IInspectable const& layout, const hstring& id);
 
 private:
     static RepeaterTestHooks* s_testHooks;

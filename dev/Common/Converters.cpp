@@ -8,8 +8,7 @@
 CppWinRTActivatableClassWithBasicFactory(CornerRadiusFilterConverter)
 
 CornerRadiusFilterConverter::CornerRadiusFilterConverter()
-{
-}
+= default;
 
 winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius const& radius, FilterType const& filter)
 {

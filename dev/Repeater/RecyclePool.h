@@ -62,8 +62,8 @@ private:
         ElementInfo(const ITrackerHandleManager* refManager, const winrt::UIElement& element, const winrt::Panel& owner)
             :m_element(refManager, element), m_owner(refManager, owner) {}
 
-        winrt::UIElement Element() const { return m_element.get(); };
-        winrt::Panel Owner() const { return m_owner.get(); };
+        [[nodiscard]] winrt::UIElement Element() const { return m_element.get(); };
+        [[nodiscard]] winrt::Panel Owner() const { return m_owner.get(); };
 
     private:
         tracker_ref<winrt::UIElement> m_element;

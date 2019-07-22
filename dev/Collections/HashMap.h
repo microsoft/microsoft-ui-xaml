@@ -11,8 +11,8 @@ class HashMap :
         winrt::IMapView<K, V>,
         winrt::IIterable<winrt::IKeyValuePair<K, V>>>
 {
-    typedef typename tracker_ref<K> K_storage;
-    typedef typename tracker_ref<V> V_storage;
+    using K_storage = tracker_ref<K>;
+    using V_storage = tracker_ref<V>;
     typedef typename winrt::IKeyValuePair<K, V> KVP;
 
     typedef typename std::map<K_storage, V_storage>::const_iterator T_iterator;
@@ -95,17 +95,17 @@ public:
     }
 #pragma endregion
 
-    unsigned int GetMutationCount() const
+    [[nodiscard]] unsigned int GetMutationCount() const
     {
         return m_mutationCount;
     }
 
-    T_iterator Begin() const
+    [[nodiscard]] T_iterator Begin() const
     {
         return m_map.cbegin();
     }
 
-    T_iterator End() const
+    [[nodiscard]] T_iterator End() const
     {
         return m_map.cend();
     }

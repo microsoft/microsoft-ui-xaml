@@ -11,7 +11,7 @@ class TreeViewDragItemsCompletedEventArgs :
 {
 public:
     void DragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args);
-    DataPackageOperation DropResult() const;
+    [[nodiscard]] DataPackageOperation DropResult() const;
     winrt::IVectorView<winrt::IInspectable> Items();
 
 private:

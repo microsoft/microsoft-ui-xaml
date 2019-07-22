@@ -9,7 +9,7 @@
 
 using namespace Microsoft::WRL;
 
-HINSTANCE g_hInstance = NULL;
+HINSTANCE g_hInstance = nullptr;
 
 #if defined(DBG) && defined(BUILD_WINDOWS)
 // defined in:

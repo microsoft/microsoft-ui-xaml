@@ -22,12 +22,12 @@ public:
         winrt::IInspectable const& options);
     ~ViewChange();
 
-    ScrollerViewKind ViewKind() const
+    [[nodiscard]] ScrollerViewKind ViewKind() const
     {
         return m_viewKind;
     }
 
-    winrt::IInspectable Options() const
+    [[nodiscard]] winrt::IInspectable Options() const
     {
         return m_options;
     }

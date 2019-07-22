@@ -18,9 +18,9 @@ public:
         double offsetDelta,
         winrt::ScrollOptions const & options);
 
-    double OffsetDelta() const;
-    winrt::ScrollOptions Options() const;
-    winrt::ScrollInfo Info() const;
+    [[nodiscard]] double OffsetDelta() const;
+    [[nodiscard]] winrt::ScrollOptions Options() const;
+    [[nodiscard]] winrt::ScrollInfo Info() const;
     void Info(winrt::ScrollInfo info);
 
 private:

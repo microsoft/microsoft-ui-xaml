@@ -18,9 +18,9 @@ public:
     void OnArrangeLayoutEnd();
 
     ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
-    double TotalElementSize() const { return m_totalElementSize; }
-    double MaxArrangeBounds() const { return m_maxArrangeBounds; }
-    int TotalElementsMeasured() const { return m_totalElementsMeasured; }
+    [[nodiscard]] double TotalElementSize() const { return m_totalElementSize; }
+    [[nodiscard]] double MaxArrangeBounds() const { return m_maxArrangeBounds; }
+    [[nodiscard]] int TotalElementsMeasured() const { return m_totalElementsMeasured; }
 
 private:
     ::FlowLayoutAlgorithm m_flowAlgorithm{ this };

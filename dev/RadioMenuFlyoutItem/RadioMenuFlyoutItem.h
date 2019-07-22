@@ -21,7 +21,7 @@ struct WINRT_EBO DeriveFromToggleMenuFlyoutItemHelper_base : winrt::Windows::UI:
         return static_cast<winrt::IInspectable>(*this).as<class_type>();
     }
 
-    hstring GetRuntimeClassName() const
+    [[nodiscard]] hstring GetRuntimeClassName() const
     {
         return hstring{ winrt::name_of<T>() };
     }

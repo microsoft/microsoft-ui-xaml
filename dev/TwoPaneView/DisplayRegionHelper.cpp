@@ -9,12 +9,10 @@
 #include "LifetimeHandler.h"
 
 DisplayRegionHelper::DisplayRegionHelper() 
-{
-};
+= default;;
 
 DisplayRegionHelper::~DisplayRegionHelper()
-{
-}
+= default;
 
 /* static */
 DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()

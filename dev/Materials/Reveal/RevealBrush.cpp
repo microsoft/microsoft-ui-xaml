@@ -117,8 +117,7 @@ RevealBorderBrush::RevealBorderBrush()
 }
 
 RevealBackgroundBrush::RevealBackgroundBrush()
-{
-}
+= default;
 
 
 RevealBrush::~RevealBrush()

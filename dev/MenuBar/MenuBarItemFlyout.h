@@ -9,8 +9,8 @@ class MenuBarItemFlyout :
     public ReferenceTracker<MenuBarItemFlyout, winrt::implementation::MenuBarItemFlyoutT>
 {
 public:
-    MenuBarItemFlyout() {}
-    virtual ~MenuBarItemFlyout() {}
+    MenuBarItemFlyout() = default;
+    virtual ~MenuBarItemFlyout() = default;
 
     // Property changed event handler.
     static void OnPropertyChanged(

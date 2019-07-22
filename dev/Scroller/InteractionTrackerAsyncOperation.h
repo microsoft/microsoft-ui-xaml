@@ -48,7 +48,7 @@ public:
         std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
-    int32_t GetViewChangeId() const
+    [[nodiscard]] int32_t GetViewChangeId() const
     {
         return m_viewChangeId;
     }
@@ -58,7 +58,7 @@ public:
         m_viewChangeId = viewChangeId;
     }
 
-    bool IsAnimated() const
+    [[nodiscard]] bool IsAnimated() const
     {
         switch (m_operationType)
         {
@@ -70,7 +70,7 @@ public:
         return true;
     }
 
-    bool IsCanceled() const
+    [[nodiscard]] bool IsCanceled() const
     {
         return m_isCanceled;
     }
@@ -82,7 +82,7 @@ public:
         m_isCanceled = isCanceled;
     }
 
-    bool IsDelayed() const
+    [[nodiscard]] bool IsDelayed() const
     {
         return m_isDelayed;
     }
@@ -94,17 +94,17 @@ public:
         m_isDelayed = isDelayed;
     }
 
-    bool IsQueued() const
+    [[nodiscard]] bool IsQueued() const
     {
         return m_preProcessingTicksCountdown > 0;
     }
 
-    bool IsUnqueueing() const
+    [[nodiscard]] bool IsUnqueueing() const
     {
         return m_preProcessingTicksCountdown > 0 && m_preProcessingTicksCountdown < m_queuedOperationTicks;
     }
 
-    bool IsCompleted() const
+    [[nodiscard]] bool IsCompleted() const
     {
         return m_isCompleted;
     }
@@ -116,7 +116,7 @@ public:
         m_isCompleted = isCompleted;
     }
 
-    int GetTicksCountdown() const
+    [[nodiscard]] int GetTicksCountdown() const
     {
         return m_preProcessingTicksCountdown;
     }
@@ -129,19 +129,19 @@ public:
         m_preProcessingTicksCountdown = m_queuedOperationTicks = ticksCountdown;
     }
 
-    InteractionTrackerAsyncOperationTrigger GetOperationTrigger() const
+    [[nodiscard]] InteractionTrackerAsyncOperationTrigger GetOperationTrigger() const
     {
         return m_operationTrigger;
     }
 
     // Returns True when the operation fulfills a horizontal IScrollController request.
-    bool IsHorizontalScrollControllerRequest() const
+    [[nodiscard]] bool IsHorizontalScrollControllerRequest() const
     {
         return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
     }
 
     // Returns True when the operation fulfills a vertical IScrollController request.
-    bool IsVerticalScrollControllerRequest() const
+    [[nodiscard]] bool IsVerticalScrollControllerRequest() const
     {
         return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest);
     }
@@ -181,12 +181,12 @@ public:
         return m_preProcessingTicksCountdown == 0;
     }
 
-    InteractionTrackerAsyncOperationType GetOperationType() const
+    [[nodiscard]] InteractionTrackerAsyncOperationType GetOperationType() const
     {
         return m_operationType;
     }
 
-    int GetRequestId() const
+    [[nodiscard]] int GetRequestId() const
     {
         return m_requestId;
     }
@@ -198,12 +198,12 @@ public:
         m_requestId = requestId;
     }
 
-    std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
+    [[nodiscard]] std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
     {
         return m_viewChangeBase;
     }
 
-    std::shared_ptr<InteractionTrackerAsyncOperation> GetRequiredOperation() const
+    [[nodiscard]] std::shared_ptr<InteractionTrackerAsyncOperation> GetRequiredOperation() const
     {
         return m_requiredOperation;
     }

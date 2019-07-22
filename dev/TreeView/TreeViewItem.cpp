@@ -66,7 +66,7 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
 void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
 {
-    winrt::DragEventArgs args = e;
+    const winrt::DragEventArgs& args = e;
 
     if (args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
     {
@@ -128,7 +128,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
 
 void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
 {
-    winrt::DragEventArgs args = e;
+    const winrt::DragEventArgs& args = e;
     auto treeView = AncestorTreeView();
     
     if (treeView)
@@ -177,7 +177,7 @@ void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
 
 void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
 {
-    winrt::DragEventArgs args = e;
+    const winrt::DragEventArgs& args = e;
     winrt::TreeViewItem draggedOverItem = *this;
 
     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
@@ -235,7 +235,7 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
 
 void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& e)
 {
-    winrt::DragEventArgs args = e;
+    const winrt::DragEventArgs& args = e;
     if (auto treeView = AncestorTreeView())
     {
         auto treeViewList = treeView->ListControl();

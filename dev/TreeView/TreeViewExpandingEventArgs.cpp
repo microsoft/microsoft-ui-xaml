@@ -6,8 +6,7 @@
 #include "TreeViewExpandingEventArgs.h"
 
 TreeViewExpandingEventArgs::TreeViewExpandingEventArgs()
-{
-}
+= default;
 
 winrt::TreeViewNode TreeViewExpandingEventArgs::Node()
 {

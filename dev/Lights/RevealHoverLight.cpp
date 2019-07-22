@@ -167,12 +167,10 @@ winrt::hstring& RevealHoverLight::GetLightIdStatic()
 }
 
 RevealHoverLight::RevealHoverLight()
-{
-}
+= default;
 
 RevealHoverLight::~RevealHoverLight()
-{
-}
+= default;
 
 winrt::hstring RevealHoverLight::GetId()
 {

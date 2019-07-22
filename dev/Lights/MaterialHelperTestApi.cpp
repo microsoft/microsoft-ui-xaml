@@ -7,5 +7,4 @@
 #include "MaterialHelperTestApi.h"
 
 MaterialHelperTestApi::MaterialHelperTestApi()
-{
-}
+= default;

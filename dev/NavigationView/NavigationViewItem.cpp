@@ -28,8 +28,7 @@ NavigationViewItem::NavigationViewItem()
 }
 
 NavigationViewItem::~NavigationViewItem()
-{
-}
+= default;
 
 void NavigationViewItem::OnApplyTemplate()
 {

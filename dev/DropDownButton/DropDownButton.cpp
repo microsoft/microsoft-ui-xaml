@@ -16,8 +16,7 @@ DropDownButton::DropDownButton()
 }
 
 DropDownButton::~DropDownButton()
-{
-}
+= default;
 
 void DropDownButton::OnApplyTemplate()
 {

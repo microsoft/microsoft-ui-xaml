@@ -21,8 +21,7 @@ TeachingTip::TeachingTip()
 }
 
 TeachingTip::~TeachingTip()
-{
-}
+= default;
 
 winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 {

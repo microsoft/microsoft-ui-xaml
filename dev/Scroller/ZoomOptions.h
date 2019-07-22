@@ -21,10 +21,10 @@ public:
     static constexpr winrt::AnimationMode s_defaultAnimationMode{ winrt::AnimationMode::Auto };
     static constexpr winrt::SnapPointsMode s_defaultSnapPointsMode{ winrt::SnapPointsMode::Default };
 
-    winrt::AnimationMode AnimationMode() const;
+    [[nodiscard]] winrt::AnimationMode AnimationMode() const;
     void AnimationMode(winrt::AnimationMode const& animationMode);
 
-    winrt::SnapPointsMode SnapPointsMode() const;
+    [[nodiscard]] winrt::SnapPointsMode SnapPointsMode() const;
     void SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode);
 
 private:

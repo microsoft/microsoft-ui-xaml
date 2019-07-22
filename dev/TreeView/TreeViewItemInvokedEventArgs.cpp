@@ -7,8 +7,7 @@
 
 
 TreeViewItemInvokedEventArgs::TreeViewItemInvokedEventArgs()
-{
-}
+= default;
 
 winrt::IInspectable TreeViewItemInvokedEventArgs::InvokedItem()
 {

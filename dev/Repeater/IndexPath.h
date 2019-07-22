@@ -35,8 +35,8 @@ public:
     hstring ToString();
 #pragma endregion
 
-    bool IsValid() const;
-    winrt::IndexPath CloneWithChildIndex(int childIndex) const;
+    [[nodiscard]] bool IsValid() const;
+    [[nodiscard]] winrt::IndexPath CloneWithChildIndex(int childIndex) const;
 
 private:
     std::vector<int> m_path;

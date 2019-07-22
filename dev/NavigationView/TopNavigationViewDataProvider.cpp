@@ -27,8 +27,7 @@ TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandl
 
 
 TopNavigationViewDataProvider::~TopNavigationViewDataProvider()
-{
-}
+= default;
 
 winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetPrimaryItems()
 {
@@ -41,7 +40,7 @@ winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetOverflowIt
 }
 
 // The raw data is from MenuItems or MenuItemsSource
-void TopNavigationViewDataProvider::SetDataSource(winrt::IInspectable rawData)
+void TopNavigationViewDataProvider::SetDataSource(const winrt::IInspectable& rawData)
 {
     if (ShouldChangeDataSource(rawData)) // avoid to create multiple of datasource for the same raw data
     {        

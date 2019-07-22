@@ -2,8 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-
-
 using winrt::com_ptr;
 using winrt::weak_ref;
 using winrt::hstring;
@@ -28,8 +26,8 @@ inline winrt::DependencyProperty InitializeDependencyProperty(
     _In_ wstring_view const& propertyTypeNameString,
     _In_ wstring_view const& ownerTypeNameString,
     bool isAttached,
-    _In_opt_ winrt::IInspectable defaultValue,
-    _In_opt_ winrt::PropertyChangedCallback propertyChangedCallback = nullptr)
+    _In_opt_ const winrt::IInspectable& defaultValue,
+    _In_opt_ const winrt::PropertyChangedCallback& propertyChangedCallback = nullptr)
 {
     auto propertyType = winrt::Interop::TypeName();
     propertyType.Name = propertyTypeNameString;
@@ -160,9 +158,9 @@ struct PropertyChanged_revoker
        return *this;
    }
 
-   PropertyChanged_revoker(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, int64_t token) :
+   PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty&  dp, int64_t token) :
         m_object(object),
-        m_property(dp),
+        m_property(std::move(dp)),
         m_token(token)
     {}
 
@@ -328,7 +326,7 @@ struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls
         return static_cast<winrt::IInspectable>(*this).as<class_type>();
     }
 
-    hstring GetRuntimeClassName() const
+    [[nodiscard]] hstring GetRuntimeClassName() const
     {
         return hstring{ winrt::name_of<T>() };
     }
@@ -347,7 +345,7 @@ struct Awaitable
 
     // Awaitable contract.
     // Blocks until the awaitable is completed, or error.
-    bool await_ready() const noexcept
+    [[nodiscard]] bool await_ready() const noexcept
     {
         return ::WaitForSingleObject(m_signal.get(), 0) == 0;
     }

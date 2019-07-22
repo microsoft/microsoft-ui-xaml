@@ -7,9 +7,7 @@
 #include "NavigationView.h"
 
 NavigationViewDisplayModeChangedEventArgs::NavigationViewDisplayModeChangedEventArgs()
-{
-
-}
+= default;
 
 #pragma region INavigationViewDisplayModeChangedEventArgs
 winrt::NavigationViewDisplayMode NavigationViewDisplayModeChangedEventArgs::DisplayMode()

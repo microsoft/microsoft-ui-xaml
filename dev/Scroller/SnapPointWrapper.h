@@ -19,8 +19,8 @@ public:
 #endif //_DEBUG
 
     T SnapPoint() const;
-    std::tuple<double, double> ActualApplicableZone() const;
-    int CombinationCount() const;
+    [[nodiscard]] std::tuple<double, double> ActualApplicableZone() const;
+    [[nodiscard]] int CombinationCount() const;
     bool ResetIgnoredValue();
     void SetIgnoredValue(double ignoredValue);
 
@@ -42,8 +42,8 @@ public:
         SnapPointWrapper<T>* nextSnapPointWrapper,
         bool forImpulseOnly);
     void Combine(SnapPointWrapper<T>* snapPointWrapper);
-    double Evaluate(double value) const;
-    bool SnapsAt(double value) const;
+    [[nodiscard]] double Evaluate(double value) const;
+    [[nodiscard]] bool SnapsAt(double value) const;
 
     static SnapPointBase* GetSnapPointFromWrapper(std::shared_ptr<SnapPointWrapper<T>> snapPointWrapper);
 

@@ -51,7 +51,7 @@
 #include <functional>
 
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 #ifdef BUILD_WINDOWS
 #include <staging.h>

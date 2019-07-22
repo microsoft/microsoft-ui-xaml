@@ -4,8 +4,7 @@
 
 
 TeachingTipClosedEventArgs::TeachingTipClosedEventArgs()
-{
-}
+= default;
 
 winrt::TeachingTipCloseReason TeachingTipClosedEventArgs::Reason()
 {

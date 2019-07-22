@@ -9,7 +9,7 @@ class ElementFactoryGetArgs :
     public ReferenceTracker<ElementFactoryGetArgs, winrt::implementation::ElementFactoryGetArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ElementFactoryGetArgs() {}
+    ElementFactoryGetArgs() = default;
 
 #pragma region IElementFactoryGetArgs
     winrt::IInspectable Data();

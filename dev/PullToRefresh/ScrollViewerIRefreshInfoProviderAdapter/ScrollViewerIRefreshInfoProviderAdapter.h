@@ -24,7 +24,7 @@ private:
 
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnScrollViewerDirectManipulationCompleted(const winrt::IInspectable& sender, const winrt::IInspectable& args);
-    void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs args);
+    void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs& args);
 
     bool IsWithinOffsetThreshold();
     void CleanupScrollViewer();
@@ -32,8 +32,8 @@ private:
 
     bool IsOrientationVertical();
     winrt::UIElement GetScrollContent();
-    winrt::FxScrollViewer AdaptFromTreeRecursiveHelper(winrt::DependencyObject, int depth);
-    void MakeInteractionSource(winrt::UIElement contentParent);
+    winrt::FxScrollViewer AdaptFromTreeRecursiveHelper(const winrt::DependencyObject&, int depth);
+    void MakeInteractionSource(const winrt::UIElement& contentParent);
 
     tracker_com_ref<RefreshInfoProviderImpl> m_infoProvider{ this };
     tracker_ref<winrt::IAdapterAnimationHandler> m_animationHandler{ this };

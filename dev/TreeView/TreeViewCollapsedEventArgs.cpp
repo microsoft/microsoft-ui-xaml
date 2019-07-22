@@ -6,8 +6,7 @@
 #include "TreeViewCollapsedEventArgs.h"
 
 TreeViewCollapsedEventArgs::TreeViewCollapsedEventArgs()
-{
-}
+= default;
 
 winrt::TreeViewNode TreeViewCollapsedEventArgs::Node()
 {

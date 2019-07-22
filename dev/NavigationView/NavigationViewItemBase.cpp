@@ -12,12 +12,12 @@
 struct NavigationViewItemBaseFactory :
     public winrt::implements<NavigationViewItemBaseFactory, winrt::IActivationFactory, winrt::INavigationViewItemBaseFactory>
 {
-    hstring GetRuntimeClassName() const
+    [[nodiscard]] hstring GetRuntimeClassName() const
     {
         return winrt::hstring_name_of<winrt::NavigationViewItemBase>();
     }
 
-    winrt::IInspectable ActivateInstance() const
+    [[nodiscard]] winrt::IInspectable ActivateInstance() const
     {
         throw winrt::hresult_not_implemented();
     }
@@ -26,8 +26,7 @@ struct NavigationViewItemBaseFactory :
 CppWinRTActivatableClassWithFactory(NavigationViewItemBase, NavigationViewItemBaseFactory);
 
 NavigationViewItemBase::NavigationViewItemBase()
-{
-}
+= default;
 
 NavigationViewListPosition NavigationViewItemBase::Position()
 {

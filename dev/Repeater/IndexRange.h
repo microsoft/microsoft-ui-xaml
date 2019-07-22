@@ -7,13 +7,13 @@
 struct IndexRange
 {
 public:
-    IndexRange() {}
+    IndexRange() = default;
     IndexRange(int begin, int end);
-    int Begin() const;
-    int End() const;
-    bool Contains(int index) const;
+    [[nodiscard]] int Begin() const;
+    [[nodiscard]] int End() const;
+    [[nodiscard]] bool Contains(int index) const;
     bool Split(int splitIndex, IndexRange& before, IndexRange& after);
-    bool Intersects(const IndexRange& other) const;
+    [[nodiscard]] bool Intersects(const IndexRange& other) const;
     bool operator==(const IndexRange& rhs) const;
 
 private:

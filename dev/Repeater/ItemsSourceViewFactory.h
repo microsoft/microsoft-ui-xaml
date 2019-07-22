@@ -11,12 +11,12 @@ class ItemsSourceViewFactory :
 {
 public:
 
-    hstring GetRuntimeClassName() const
+    [[nodiscard]] hstring GetRuntimeClassName() const
     {
         return hstring{ winrt::name_of<winrt::ItemsSourceView>() };
     }
 
-    winrt::IInspectable ActivateInstance() const
+    [[nodiscard]] winrt::IInspectable ActivateInstance() const
     {
         throw winrt::hresult_not_implemented();
     }

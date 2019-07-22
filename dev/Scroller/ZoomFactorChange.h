@@ -15,12 +15,12 @@ public:
         winrt::IInspectable const& options);
     ~ZoomFactorChange();
 
-    float ZoomFactor() const
+    [[nodiscard]] float ZoomFactor() const
     {
         return m_zoomFactor;
     }
 
-    winrt::IReference<winrt::float2> CenterPoint() const
+    [[nodiscard]] winrt::IReference<winrt::float2> CenterPoint() const
     {
         return m_centerPoint;
     }

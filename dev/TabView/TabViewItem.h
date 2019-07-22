@@ -17,7 +17,7 @@ class TabViewItem :
 
 public:
     TabViewItem();
-    ~TabViewItem() {}
+    ~TabViewItem() = default;
 
     // IFrameworkElement
     void OnApplyTemplate();

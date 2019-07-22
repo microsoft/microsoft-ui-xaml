@@ -27,7 +27,7 @@ public:
     winrt::IVector<winrt::IInspectable> GetOverflowItems();
 
     // The raw data is from MenuItems or MenuItemsSource
-    void SetDataSource(winrt::IInspectable rawData);
+    void SetDataSource(const winrt::IInspectable& rawData);
     bool ShouldChangeDataSource(winrt::IInspectable const& rawData);
 
     void OnRawDataChanged(std::function<void(winrt::NotifyCollectionChangedEventArgs const& args)> const& dataChangeCallback);

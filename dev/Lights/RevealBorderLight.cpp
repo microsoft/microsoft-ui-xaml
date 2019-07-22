@@ -44,10 +44,10 @@ static constexpr RevealBorderSpotlightStateDesc s_revealBorderSpotlightStateWide
 static constexpr auto c_PointerOffsetExpression = L"pointer.Position + Vector3(0,0,props.SpotlightHeight)";
 
 RevealBorderLight::RevealBorderLight()
-{}
+= default;
 
 RevealBorderLight::~RevealBorderLight()
-{}
+= default;
 
 winrt::hstring& RevealBorderLight::GetLightThemeIdStatic()
 {

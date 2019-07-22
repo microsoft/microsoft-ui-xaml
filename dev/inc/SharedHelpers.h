@@ -89,7 +89,7 @@ public:
     // DependencyObject helpers
     static bool IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility = false);
 
-    static void SyncWait(winrt::IAsyncAction asyncAction)
+    static void SyncWait(const winrt::IAsyncAction& asyncAction)
     {
         MUXControls::Common::Handle synchronizationHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
 
@@ -306,7 +306,7 @@ public:
     }
 
 private:
-    SharedHelpers() {}
+    SharedHelpers() = default;
 
     template <uint16_t APIVersion> static bool IsAPIContractVxAvailable();
 

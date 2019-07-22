@@ -28,7 +28,7 @@ public:
     winrt::ZoomInfo ZoomInfo();
 
     void SetZoomFactorChangeId(int32_t zoomFactorChangeId);
-    winrt::CompositionAnimation GetAnimation() const;
+    [[nodiscard]] winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetCenterPoint(const winrt::float2& centerPoint);
     void SetStartZoomFactor(const float& startZoomFactor);

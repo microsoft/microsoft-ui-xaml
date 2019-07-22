@@ -72,13 +72,13 @@ public:
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue) = 0;
-    virtual double Influence(double edgeOfMidpoint) const = 0;
-    virtual double ImpulseInfluence(double edgeOfMidpoint, double ignoredValue) const = 0;
+    [[nodiscard]] virtual double Influence(double edgeOfMidpoint) const = 0;
+    [[nodiscard]] virtual double ImpulseInfluence(double edgeOfMidpoint, double ignoredValue) const = 0;
     virtual void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const = 0;
-    virtual int SnapCount() const = 0;
-    virtual double Evaluate(std::tuple<double, double> actualApplicableZone, double value) const = 0;
+    [[nodiscard]] virtual int SnapCount() const = 0;
+    [[nodiscard]] virtual double Evaluate(std::tuple<double, double> actualApplicableZone, double value) const = 0;
 
     // Returns True when this snap point is sensitive to the viewport size and is interested in future updates.
     virtual bool OnUpdateViewport(double newViewport) = 0;
@@ -88,7 +88,7 @@ public:
     void VisualizationColor(winrt::Color color);
 #endif // _DEBUG
 
-    bool SnapsAt(
+    [[nodiscard]] bool SnapsAt(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
     void UpdateExpressionAnimationForImpulse(
@@ -107,8 +107,8 @@ protected:
     // Needed as work around for Modern Idl inheritance bug
     SnapPointBase();
 
-    winrt::hstring GetTargetExpression(winrt::hstring const& target) const;
-    winrt::hstring GetIsInertiaFromImpulseExpression(winrt::hstring const& target) const;
+    [[nodiscard]] winrt::hstring GetTargetExpression(winrt::hstring const& target) const;
+    [[nodiscard]] winrt::hstring GetIsInertiaFromImpulseExpression(winrt::hstring const& target) const;
 
     double m_specifiedApplicableRange{ INFINITY };
 #ifdef ApplicableRangeType
@@ -205,21 +205,21 @@ public:
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
-    double Influence(
+    [[nodiscard]] double Influence(
         double edgeOfMidpoint) const;
-    double ImpulseInfluence(
+    [[nodiscard]] double ImpulseInfluence(
         double edgeOfMidpoint,
         double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
-    int SnapCount() const;
-    double Evaluate(
+    [[nodiscard]] int SnapCount() const;
+    [[nodiscard]] double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
 
 private:
-    double ActualValue() const;
+    [[nodiscard]] double ActualValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
@@ -294,25 +294,25 @@ public:
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
-    double Influence(
+    [[nodiscard]] double Influence(
         double edgeOfMidpoint) const;
-    double ImpulseInfluence(
+    [[nodiscard]] double ImpulseInfluence(
         double edgeOfMidpoint,
         double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
-    int SnapCount() const;
-    double Evaluate(
+    [[nodiscard]] int SnapCount() const;
+    [[nodiscard]] double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
 
 private:
-    double ActualOffset() const;
-    double ActualStart() const;
-    double ActualEnd() const;
-    double DetermineFirstRepeatedSnapPointValue() const;
-    double DetermineLastRepeatedSnapPointValue() const;
+    [[nodiscard]] double ActualOffset() const;
+    [[nodiscard]] double ActualStart() const;
+    [[nodiscard]] double ActualEnd() const;
+    [[nodiscard]] double DetermineFirstRepeatedSnapPointValue() const;
+    [[nodiscard]] double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(
@@ -398,16 +398,16 @@ public:
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
-    double Influence(
+    [[nodiscard]] double Influence(
         double edgeOfMidpoint) const;
-    double ImpulseInfluence(
+    [[nodiscard]] double ImpulseInfluence(
         double edgeOfMidpoint,
         double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
-    int SnapCount() const;
-    double Evaluate(
+    [[nodiscard]] int SnapCount() const;
+    [[nodiscard]] double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
 
@@ -484,22 +484,22 @@ public:
         double currentIgnoredValue,
         double previousIgnoredValue,
         double nextIgnoredValue);
-    double Influence(
+    [[nodiscard]] double Influence(
         double edgeOfMidpoint) const;
-    double ImpulseInfluence(
+    [[nodiscard]] double ImpulseInfluence(
         double edgeOfMidpoint,
         double ignoredValue) const;
     void Combine(
         int& combinationCount,
         winrt::SnapPointBase const& snapPoint) const;
-    int SnapCount() const;
-    double Evaluate(
+    [[nodiscard]] int SnapCount() const;
+    [[nodiscard]] double Evaluate(
         std::tuple<double, double> actualApplicableZone,
         double value) const;
 
 private:
-    double DetermineFirstRepeatedSnapPointValue() const;
-    double DetermineLastRepeatedSnapPointValue() const;
+    [[nodiscard]] double DetermineFirstRepeatedSnapPointValue() const;
+    [[nodiscard]] double DetermineLastRepeatedSnapPointValue() const;
     double DetermineMinActualApplicableZone(
         SnapPointBase* previousSnapPoint) const;
     double DetermineMinActualImpulseApplicableZone(

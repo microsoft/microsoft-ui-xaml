@@ -17,7 +17,7 @@ public:
     
     void OnBeginMeasure(const ScrollOrientation& orientation);
 
-    int GetRealizedElementCount() const ;
+    [[nodiscard]] int GetRealizedElementCount() const ;
     winrt::UIElement GetAt(int realizedIndex);
 
     void Add(const winrt::UIElement& element, int dataIndex);
@@ -26,30 +26,30 @@ public:
     void DiscardElementsOutsideWindow(bool forward, int startIndex);
     void ClearRealizedRange();
 
-    winrt::Rect GetLayoutBoundsForDataIndex(int dataIndex) const;
+    [[nodiscard]] winrt::Rect GetLayoutBoundsForDataIndex(int dataIndex) const;
     void SetLayoutBoundsForDataIndex(int dataIndex, const winrt::Rect& bounds);
 
-    winrt::Rect GetLayoutBoundsForRealizedIndex(int realizedIndex) const;
+    [[nodiscard]] winrt::Rect GetLayoutBoundsForRealizedIndex(int realizedIndex) const;
     void SetLayoutBoundsForRealizedIndex(int realizedIndex, const winrt::Rect& bounds);
 
-    bool IsDataIndexRealized(int index) const;
-    bool IsIndexValidInData(int currentIndex) const;
+    [[nodiscard]] bool IsDataIndexRealized(int index) const;
+    [[nodiscard]] bool IsIndexValidInData(int currentIndex) const;
 
     winrt::UIElement GetRealizedElement(int dataIndex);
     void EnsureElementRealized(bool forward, int dataIndex, const wstring_view& layoutId);
 
-    bool IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const;
+    [[nodiscard]] bool IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const;
     void DataSourceChanged(const winrt::IInspectable& source, winrt::NotifyCollectionChangedEventArgs const& args);
     
     // we do not want copies of this type
     ElementManager(const ElementManager& that) = delete;
     ElementManager& ElementManager::operator=(const ElementManager& other) = delete;
 
-    int GetElementDataIndex(const winrt::UIElement& suggestedAnchor) const;
-    int GetDataIndexFromRealizedRangeIndex(int rangeIndex) const;
+    [[nodiscard]] int GetElementDataIndex(const winrt::UIElement& suggestedAnchor) const;
+    [[nodiscard]] int GetDataIndexFromRealizedRangeIndex(int rangeIndex) const;
 
 private:
-    int GetRealizedRangeIndexFromDataIndex(int dataIndex) const;
+    [[nodiscard]] int GetRealizedRangeIndexFromDataIndex(int dataIndex) const;
 
     void DiscardElementsOutsideWindow(const winrt::Rect& window, const ScrollOrientation& orientation);
     static bool Intersects(const winrt::Rect& lhs, const winrt::Rect& rhs, const ScrollOrientation& orientation);
@@ -57,7 +57,7 @@ private:
     void OnItemsAdded(int index, int count);
     void OnItemsRemoved(int index, int count);
 
-    bool IsVirtualizingContext() const;
+    [[nodiscard]] bool IsVirtualizingContext() const;
 
     const ITrackerHandleManager* m_owner;
 

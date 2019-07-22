@@ -18,8 +18,7 @@ ToggleSplitButton::ToggleSplitButton()
 }
 
 ToggleSplitButton::~ToggleSplitButton()
-{
-}
+= default;
 
 void ToggleSplitButton::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {

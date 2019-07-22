@@ -16,19 +16,19 @@ class ViewportManagerDownLevel : public ViewportManager
 public:
     ViewportManagerDownLevel(ItemsRepeater* owner);
 
-    winrt::UIElement SuggestedAnchor() const override;
+    [[nodiscard]] winrt::UIElement SuggestedAnchor() const override;
 
-    double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
+    [[nodiscard]] double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
     void HorizontalCacheLength(double value) override;
 
-    double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
+    [[nodiscard]] double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
     void VerticalCacheLength(double value) override;
 
-    winrt::Rect GetLayoutVisibleWindow() const override;
-    winrt::Rect GetLayoutRealizationWindow() const override;
+    [[nodiscard]] winrt::Rect GetLayoutVisibleWindow() const override;
+    [[nodiscard]] winrt::Rect GetLayoutRealizationWindow() const override;
 
     void SetLayoutExtent(winrt::Rect extent) override;
-    winrt::Point GetOrigin() const override{ return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
+    [[nodiscard]] winrt::Point GetOrigin() const override{ return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
     void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override {}
@@ -40,7 +40,7 @@ public:
 
     void ResetScrollers() override;
 
-    winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
+    [[nodiscard]] winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
 
 private:
     struct ScrollerInfo;
@@ -51,14 +51,14 @@ private:
     void OnConfigurationChanged(const winrt::IRepeaterScrollingSurface& sender);
 
     void EnsureScrollers();
-    bool HasScrollers() const { return !!m_horizontalScroller || !!m_verticalScroller; }
+    [[nodiscard]] bool HasScrollers() const { return !!m_horizontalScroller || !!m_verticalScroller; }
     bool AddScroller(const winrt::IRepeaterScrollingSurface& scroller);
     void UpdateViewport();
     void ResetCacheBuffer();
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
     void TryInvalidateMeasure();
-    winrt::IRepeaterScrollingSurface GetOuterScroller() const;
+    [[nodiscard]] winrt::IRepeaterScrollingSurface GetOuterScroller() const;
 
     winrt::hstring GetLayoutId();
 
@@ -116,7 +116,7 @@ private:
             m_scroller(owner, scroller)
         { }
 
-        winrt::IRepeaterScrollingSurface Scroller() const
+        [[nodiscard]] winrt::IRepeaterScrollingSurface Scroller() const
         {
             return m_scroller.get();
         }

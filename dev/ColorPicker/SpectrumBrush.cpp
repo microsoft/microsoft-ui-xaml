@@ -7,8 +7,7 @@
 #include "Vector.h"
 
 SpectrumBrush::SpectrumBrush()
-{
-}
+= default;
 
 void SpectrumBrush::OnConnected()
 {

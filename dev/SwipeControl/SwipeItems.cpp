@@ -18,9 +18,7 @@ SwipeItems::SwipeItems()
 }
 
 SwipeItems::~SwipeItems()
-{
-
-}
+= default;
 
 void SwipeItems::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {

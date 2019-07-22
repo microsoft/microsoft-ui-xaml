@@ -124,13 +124,13 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     {
     protected:
         // This is a header file so we can't use "using namespace", but we can do this:
-        typedef winrt::Color UIColor; // Renamed because we use "Color" as a field name
-        typedef winrt::PropertyValue PropertyValue;
-        typedef winrt::float2 Vector2;
-        typedef winrt::float3 Vector3;
-        typedef winrt::float3x2 Matrix3x2;
-        typedef winrt::Matrix5x4 Matrix5x4;
-        typedef GRAPHICS_EFFECT_PROPERTY_MAPPING PropertyMapping;
+        using UIColor = winrt::Color; // Renamed because we use "Color" as a field name
+        using PropertyValue = winrt::PropertyValue;
+        using Vector2 = winrt::float2;
+        using Vector3 = winrt::float3;
+        using Matrix3x2 = winrt::float3x2;
+        using Matrix5x4 = int;
+        using PropertyMapping = GRAPHICS_EFFECT_PROPERTY_MAPPING;
 
     public:
         // IGraphicsEffect

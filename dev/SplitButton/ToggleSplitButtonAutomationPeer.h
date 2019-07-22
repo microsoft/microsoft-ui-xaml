@@ -12,7 +12,7 @@ class ToggleSplitButtonAutomationPeer :
 
 public:
     ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner);
-    ~ToggleSplitButtonAutomationPeer() {}
+    ~ToggleSplitButtonAutomationPeer() = default;
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

@@ -9,7 +9,7 @@ class QPCTimer final
 public:
     QPCTimer();
     void Reset();
-    int DurationInMilliSeconds() const;
+    [[nodiscard]] int DurationInMilliSeconds() const;
 
 private:
     LARGE_INTEGER m_start;

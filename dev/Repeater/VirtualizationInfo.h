@@ -28,25 +28,25 @@ class VirtualizationInfo : public winrt::implements<VirtualizationInfo, winrt::I
 public:
     VirtualizationInfo();
 
-    ElementOwner Owner() const { return m_owner; }
-    int Index() const { return m_index; }
+    [[nodiscard]] ElementOwner Owner() const { return m_owner; }
+    [[nodiscard]] int Index() const { return m_index; }
 
     // Pinned means that the element is protected from getting cleared by layout.
     // A pinned element may still get cleared by a collection change.
     // IsPinned == true doesn't necessarly mean that the element is currently
     // owned by the PinnedPool, only that its ownership may be transferred to the
     // PinnedPool if it gets cleared by layout.
-    bool IsPinned() const;
-    bool IsHeldByLayout() const;
-    bool IsRealized() const;
-    bool IsInUniqueIdResetPool() const;
+    [[nodiscard]] bool IsPinned() const;
+    [[nodiscard]] bool IsHeldByLayout() const;
+    [[nodiscard]] bool IsRealized() const;
+    [[nodiscard]] bool IsInUniqueIdResetPool() const;
 
     // Info for phasing
     void UpdatePhasingInfo(int phase, const winrt::IInspectable& data, const winrt::IDataTemplateComponent& component);
-    int Phase() const { return m_phase; }
+    [[nodiscard]] int Phase() const { return m_phase; }
     void Phase(int phase) { m_phase = phase; }
-    winrt::IInspectable Data() const { return m_data.get(); }
-    winrt::IDataTemplateComponent DataTemplateComponent() const { return m_dataTemplateComponent.get(); }
+    [[nodiscard]] winrt::IInspectable Data() const { return m_data.get(); }
+    [[nodiscard]] winrt::IDataTemplateComponent DataTemplateComponent() const { return m_dataTemplateComponent.get(); }
 
     static constexpr int PhaseNotSpecified = std::numeric_limits<int>::min();
     static constexpr int PhaseReachedEnd = -1;
@@ -68,10 +68,10 @@ public:
 
     void UpdateIndex(int newIndex);
 
-    winrt::Rect ArrangeBounds() const { return m_arrangeBounds; }
+    [[nodiscard]] winrt::Rect ArrangeBounds() const { return m_arrangeBounds; }
     void ArrangeBounds(winrt::Rect value) { m_arrangeBounds = value; }
 
-    wstring_view UniqueId() const { return m_uniqueId; }
+    [[nodiscard]] wstring_view UniqueId() const { return m_uniqueId; }
 
 #pragma region Keep element from being recycled
     bool KeepAlive() { return m_keepAlive; }

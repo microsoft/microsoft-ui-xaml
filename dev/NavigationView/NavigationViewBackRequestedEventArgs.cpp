@@ -6,6 +6,4 @@
 #include "NavigationViewBackRequestedEventArgs.h"
 
 NavigationViewBackRequestedEventArgs::NavigationViewBackRequestedEventArgs()
-{
-
-}
+= default;
