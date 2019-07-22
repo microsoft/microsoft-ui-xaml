@@ -445,7 +445,6 @@ void TreeViewItem::UpdateSelection(TreeNodeSelectionState const& state)
             {
                 if (auto node = TreeNode())
                 {
-                    //listControl->ListViewModel()->UpdateSelection(node, state);
                     UpdateMultipleSelection(state);
                 }
             }
@@ -466,7 +465,6 @@ void TreeViewItem::UpdateSelection(TreeNodeSelectionState const& state)
 void TreeViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
 {
     bool isSelected = unbox_value<bool>(GetValue(args));
-    //UpdateSelection(isSelected ? TreeNodeSelectionState::Selected : TreeNodeSelectionState::UnSelected);
     if (auto treeView = AncestorTreeView())
     {
         if (auto node = TreeNode())
@@ -491,61 +489,6 @@ void TreeViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/
             }
         }
     }
-    
-    
-    //if (auto treeView = AncestorTreeView())
-    //{
-    //    auto listControl = treeView->ListControl();
-    //    bool isMultiselect = listControl->IsMultiselect();
-    //    auto viewModel = listControl->ListViewModel();
-
-    //    // Checkbox is only used in multi-select mode
-    //    if (isMultiselect && isSelected != m_selectionBox.get().IsChecked().Value())
-    //    {
-    //        m_selectionBox.get().IsChecked(isSelected);
-    //    }
-
-    //    if (auto node = TreeNode())
-    //    {
-    //        auto selectedNodes = viewModel->GetSelectedNodes();
-    //        if (isMultiselect)
-    //        {
-    //            if (isSelected)
-    //            {
-    //                selectedNodes.Append(node);
-    //            }
-    //            else
-    //            {
-    //                unsigned int index;
-    //                if (selectedNodes.IndexOf(node, index))
-    //                {
-    //                    selectedNodes.RemoveAt(index);
-    //                }
-    //            }
-    //        }
-    //        else
-    //        {
-    //            if (isSelected)
-    //            {
-    //                if (selectedNodes.Size() > 0 && selectedNodes.GetAt(0) != node)
-    //                {
-    //                    selectedNodes.Clear();
-    //                }
-    //                if (selectedNodes.Size() == 0)
-    //                {
-    //                    selectedNodes.Append(node);
-    //                }
-    //            }
-    //            else
-    //            {
-    //                if (selectedNodes.Size() > 0 && selectedNodes.GetAt(0) == node)
-    //                {
-    //                    selectedNodes.Clear();
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
 }
 
 void TreeViewItem::UpdateMultipleSelection(TreeNodeSelectionState const& state)
