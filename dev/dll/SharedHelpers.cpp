@@ -510,6 +510,8 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
+#ifdef ICONSOURCE_INCLUDED
+
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
     if (auto fontIconSource = iconSource.try_as<winrt::FontIconSource>())
@@ -569,6 +571,30 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
     return nullptr;
 }
 
+#endif
+
+void SharedHelpers::SetBinding(
+    std::wstring_view const& pathString,
+    winrt::DependencyObject const& target,
+    winrt::DependencyProperty const& targetProperty)
+{
+    winrt::Binding binding;
+    winrt::RelativeSource relativeSource;
+    relativeSource.Mode(winrt::RelativeSourceMode::TemplatedParent);
+    binding.RelativeSource(relativeSource);
+
+    binding.Path(winrt::PropertyPath(pathString));
+
+    winrt::BindingOperations::SetBinding(target, targetProperty, binding);
+}
+
+// Be cautious: this function may introduce memory leak because Source holds strong reference to target too
+// There’s an intermediary object – the BindingExpression when BindingOperations::SetBinding
+// For example, if source is NavigationView and target is content control,
+// and there is strong reference: NavigationView -> ContentControl
+// BindingExpression.Source also make a strong reference to NavigationView
+// and it introduces the cycle: ContentControl -> BindingExpression -> NavigationView -> ContentControl
+// Prefer to use RelativeSource version of SetBinding if possible.
 void SharedHelpers::SetBinding(
     winrt::IInspectable const& source,
     std::wstring_view const& pathString,
@@ -578,8 +604,8 @@ void SharedHelpers::SetBinding(
     winrt::BindingMode mode)
 {
     winrt::Binding binding;
-
     binding.Source(source);
+
     binding.Path(winrt::PropertyPath(pathString));
     binding.Mode(mode);
 

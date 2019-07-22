@@ -1,4 +1,6 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 50  # Sanity check for minimum expected tests to be reported
 jobs:
 - job: ComponentDetection
   pool:
@@ -123,6 +125,7 @@ jobs:
     buildJobName: 'BuildNugetPkgTests'
     buildArtifactName: 'NugetPkgTestsDrop'
     runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
    
@@ -132,6 +135,7 @@ jobs:
     buildJobName: 'BuildFrameworkPkgTests'
     buildArtifactName: 'FrameworkPkgTestsDrop'
     runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
 
@@ -141,6 +145,7 @@ jobs:
     - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
 # NuGet package WACK tests 
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml

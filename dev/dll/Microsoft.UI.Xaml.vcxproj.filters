@@ -27,6 +27,7 @@
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
@@ -112,12 +113,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(OutDir)Generic.xaml" />
-    <Page Include="$(OutDir)rs1_themeresources.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
-    <Page Include="$(OutDir)rs1_compact_themeresources.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
   </ItemGroup>
   <ItemGroup>

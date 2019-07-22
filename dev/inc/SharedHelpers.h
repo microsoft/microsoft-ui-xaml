@@ -222,7 +222,14 @@ public:
         }
     }
 
+#ifdef ICONSOURCE_INCLUDED
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
+#endif
+
+    static void SetBinding(
+        std::wstring_view const& pathString,
+        winrt::DependencyObject const& target,
+        winrt::DependencyProperty const& targetProperty);
 
     static void SetBinding(
         winrt::IInspectable const& source,

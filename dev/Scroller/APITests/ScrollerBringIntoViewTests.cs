@@ -910,9 +910,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Log.Comment("Final view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                     scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
-                Verify.AreEqual(scroller.HorizontalOffset, expectedHorizontalOffset);
-                Verify.AreEqual(scroller.VerticalOffset, expectedVerticalOffset);
-                Verify.AreEqual(scroller.ZoomFactor, originalZoomFactor);
+                Verify.AreEqual(expectedHorizontalOffset, scroller.HorizontalOffset);
+                Verify.AreEqual(expectedVerticalOffset, scroller.VerticalOffset);
+                Verify.AreEqual(originalZoomFactor, scroller.ZoomFactor);
             });
         }
 
@@ -1059,13 +1059,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Final outer view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                     outerScroller.HorizontalOffset, outerScroller.VerticalOffset, outerScroller.ZoomFactor);
 
-                Verify.AreEqual(innerScroller.HorizontalOffset, expectedInnerHorizontalOffset);
-                Verify.AreEqual(innerScroller.VerticalOffset, expectedInnerVerticalOffset);
-                Verify.AreEqual(innerScroller.ZoomFactor, originalInnerZoomFactor);
+                Verify.AreEqual(expectedInnerHorizontalOffset, innerScroller.HorizontalOffset);
+                Verify.AreEqual(expectedInnerVerticalOffset, innerScroller.VerticalOffset);
+                Verify.AreEqual(originalInnerZoomFactor, innerScroller.ZoomFactor);
 
-                Verify.AreEqual(outerScroller.HorizontalOffset, expectedOuterHorizontalOffset);
-                Verify.AreEqual(outerScroller.VerticalOffset, expectedOuterVerticalOffset);
-                Verify.AreEqual(outerScroller.ZoomFactor, originalOuterZoomFactor);
+                Verify.AreEqual(expectedOuterHorizontalOffset, outerScroller.HorizontalOffset);
+                Verify.AreEqual(expectedOuterVerticalOffset, outerScroller.VerticalOffset);
+                Verify.AreEqual(originalOuterZoomFactor, outerScroller.ZoomFactor);
             });
         }
 
@@ -1140,11 +1140,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Final outer view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                     outerScrollViewer.HorizontalOffset, outerScrollViewer.VerticalOffset, outerScrollViewer.ZoomFactor);
 
-                Verify.AreEqual(innerScrollViewer.HorizontalOffset, expectedInnerHorizontalOffset);
-                Verify.AreEqual(innerScrollViewer.VerticalOffset, expectedInnerVerticalOffset);
+                Verify.AreEqual(expectedInnerHorizontalOffset, innerScrollViewer.HorizontalOffset);
+                Verify.AreEqual(expectedInnerVerticalOffset, innerScrollViewer.VerticalOffset);
 
-                Verify.AreEqual(outerScrollViewer.HorizontalOffset, expectedOuterHorizontalOffset);
-                Verify.AreEqual(outerScrollViewer.VerticalOffset, expectedOuterVerticalOffset);
+                Verify.AreEqual(expectedOuterHorizontalOffset, outerScrollViewer.HorizontalOffset);
+                Verify.AreEqual(expectedOuterVerticalOffset, outerScrollViewer.VerticalOffset);
             });
         }
 

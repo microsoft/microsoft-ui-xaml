@@ -29,7 +29,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)CommandBarFlyoutCommandBarTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TextCommandBarFlyout.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CommandBarFlyout.xaml">
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>

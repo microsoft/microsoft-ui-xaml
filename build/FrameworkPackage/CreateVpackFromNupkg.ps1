@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
 Use this script to create a VPack that can be pushed to the OS.
-The input to this script should be a non-prerelease .nupkg containing the MUX Framework Packages.
+The input to this script can be either a prerelease or a non-prerelease .nupkg.
 This script does not push the vpack, but gives the required command to do so.
 #>
 [CmdLetBinding()]
@@ -10,15 +10,31 @@ Param(
     [string]$NugetPackageInputPath,
 
     [Parameter(Mandatory=$true)]
-    [string]$VPackDirectoryOutputPath
+    [string]$VPackDirectoryOutputPath,
+
+    [Parameter(Mandatory=$true)]
+    [string]$PublicsDir # e.g. "d:\os\public\x86chk.nocil"
     )
 
-$outputDirName = "Microsoft.UI.Xaml"
+$vpackName  = "Microsoft.UI.Xaml"
+$outputDirName = $vpackName
 $outputPath = Join-Path $VPackDirectoryOutputPath $outputDirName
+
+if(!(Test-Path $PublicsDir))
+{
+    Write-Error "The path '$PublicsDir' does not exist."
+    exit 1
+}
 
 if(Test-Path $outputPath)
 {
     Write-Error "The path '$outputPath' already exists. Please delete the old '$outputDirName' directory before running this script."
+    exit 1
+}
+
+if(!(Get-Command mdmerge -ErrorAction Ignore))
+{
+    Write-Error "Cannot find mdmerge. Make sure to run from a Developer Command Prompt."
     exit 1
 }
 
@@ -30,6 +46,9 @@ if(!$nupkgFileNameWithoutExtension.StartsWith("Microsoft.UI.Xaml.","OrdinalIgnor
     exit 1
 }
 
+$isPrerelease = $nupkgFileNameWithoutExtension.EndsWith("-prerelease","OrdinalIgnoreCase")
+$nupkgFileNameWithoutExtension = $nupkgFileNameWithoutExtension -replace "-prerelease"
+
 $ver = $nupkgFileNameWithoutExtension -replace "Microsoft.UI.Xaml."
 $verParts = $ver.Split(".")
 if($verParts.Count -ne 3)
@@ -40,7 +59,8 @@ if($verParts.Count -ne 3)
 $verMajor = $verParts[0]
 $verMinor = $verParts[1]
 $verPatch = $verParts[2]
-Write-Verbose "Version = '$verMajor.$verMinor.$verPatch'"
+$verPrereleaseSuffix = if ($isPrerelease) {"-prerelease"} else {""}
+Write-Verbose "Version = '$verMajor.$verMinor.$verPatch$verPrereleaseSuffix'"
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $archive = [System.IO.Compression.ZipFile]::OpenRead($NugetPackageInputPath)
@@ -60,38 +80,70 @@ Write-Verbose "Temp Nuget directory: $nugetUnpacked"
 
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
 
-$flavors = @("x86", "x64", "arm", "arm64")
-foreach ($flavor in $flavors)
+$osBuildMetadataDir = Join-Path $PublicsDir "onecoreuap\internal\buildmetadata"
+$outputMetaDataDir = Join-Path $outputPath "metadata"
+$inputWinmdDir = Join-Path $nugetUnpacked "lib\uap10.0\"
+
+# We need to re-merge Microsoft.UI.Xaml.winmd against the razzle metadata instead of against the metadata from the public sdk:
+$mdMergeArgs = "-v -metadata_dir $osBuildMetadataDir -o $outputMetaDataDir -i $inputWinmdDir -partial -n:3 -createPublicMetadata -transformExperimental:transform"
+Invoke-Expression "mdmerge $mdMergeArgs"
+if($LASTEXITCODE)
 {
-    $sourcePathDir = Join-Path $nugetUnpacked "tools\AppX\$flavor\Release\"
+    Write-Error "mdmerge exited with error ($LASTEXITCODE)"
+    exit
+}
 
-    $search = "Microsoft.UI.Xaml.*.appx"
-    $found = Get-ChildItem $sourcePathDir -Filter $search
-    if ($found.Length -eq 0)
+if($isPrerelease)
+{
+    $flavors = @("x86", "x64", "arm", "arm64")
+    foreach ($flavor in $flavors)
     {
-        Write-Error "Could not find '$search' in '$sourcePathDir'"
-        Exit 1
+        $flavorPath = Join-Path $outputPath $flavor
+        New-Item -ItemType Directory -Force -Path $flavorPath
+
+        $runtimeDir = Join-Path $nugetUnpacked "runtimes\win10-$flavor\native\"
+
+        Copy-Item "$runtimeDir\*" -Destination $flavorPath -Recurse
+        Copy-Item "$outputMetaDataDir\*.winmd" -Destination $flavorPath
     }
+}
+Else
+{
+    $flavors = @("x86", "x64", "arm", "arm64")
+    foreach ($flavor in $flavors)
+    {
+        $sourcePathDir = Join-Path $nugetUnpacked "tools\AppX\$flavor\Release\"
 
-    $fileName = $found[0].Name
-    $sourcePathFull = $found[0].FullName
-    
-    $destPathDir = Join-Path $outputPath $flavor
-    $destPathFull = Join-Path $destPathDir $fileName
+        $search = "Microsoft.UI.Xaml.*.appx"
+        $found = Get-ChildItem $sourcePathDir -Filter $search
+        if ($found.Length -eq 0)
+        {
+            Write-Error "Could not find '$search' in '$sourcePathDir'"
+            Exit 1
+        }
 
-    Write-Verbose "Create directory '$destPathDir'"
-    New-Item -ItemType Directory -Force -Path $destPathDir | Out-Null
+        $fileName = $found[0].Name
+        $sourcePathFull = $found[0].FullName
+        
+        $destPathDir = Join-Path $outputPath $flavor
+        $destPathFull = Join-Path $destPathDir $fileName
 
-    Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
-    Copy-Item $sourcePathFull $destPathFull
+        Write-Verbose "Create directory '$destPathDir'"
+        New-Item -ItemType Directory -Force -Path $destPathDir | Out-Null
+
+        Write-Verbose "Copy item from '$sourcePathFull' to '$destPathFull' "
+        Copy-Item $sourcePathFull $destPathFull
+    }
 }
 
 Write-Verbose "Removing temp dir '$nugetUnpacked'"
 Remove-Item -Force -Recurse $nugetUnpacked
 
+$verPrereleaseSwitch = If ($isPrerelease) {"/Prerelease:prerelease"} Else {""}
+
 Write-Host "Created the vpack in this directory:"
 Write-Host "    $outputPath" 
 Write-Host "" 
 Write-Host "Push this vpack with the following command:"
-Write-Host "    VPack.exe push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch"
+Write-Host "    vpack push /Name:Microsoft.UI.Xaml /SourceDirectory:$outputPath /VersionIncrementType:None /Major:$verMajor /Minor:$verMinor /Patch:$verPatch $verPrereleaseSwitch"
 Write-Host "Then update %SDXROOT%/build/Config/OSDependencies.Manifest in the OS repo to consume this new version."

@@ -6,7 +6,8 @@
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract4Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,4)"
     xmlns:contract4NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,4)"
-    xmlns:media="using:Microsoft.UI.Xaml.Media">
+    xmlns:media="using:Microsoft.UI.Xaml.Media"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Dark">
@@ -224,6 +225,8 @@
     <Thickness x:Key="NavigationViewItemBorderThickness">1</Thickness>
     <Thickness x:Key="NavigationViewItemOnLeftIconBoxMargin">12,0,12,0</Thickness>
     <Thickness x:Key="NavigationViewItemInnerHeaderMargin">10,0,0,0</Thickness>
+    <Thickness x:Key="NavigationViewMinimalHeaderMargin">8,5,0,0</Thickness>
+    <Thickness x:Key="NavigationViewHeaderMargin">12,5,0,11</Thickness>
 
     <Style x:Key="PaneToggleButtonStyle" TargetType="Button">
         <Setter Property="FontSize" Value="16" />
@@ -574,7 +577,9 @@
                                 Width="2"
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
+                                Opacity="0.0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
 
                         <Border
@@ -591,7 +596,8 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Viewbox x:Name="IconBox"                                
+                            <Viewbox x:Name="IconBox"
+                                Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                 <ContentPresenter 
                                     x:Name="Icon" 
@@ -673,7 +679,9 @@
                                 Width="2"
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"/>
+                                Opacity="0.0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
 
                         <Grid 
@@ -687,6 +695,7 @@
 
                             <Viewbox 
                                 x:Name="IconBox"                                
+                                Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
                                 <ContentPresenter 
                                     x:Name="Icon" 
@@ -934,7 +943,9 @@
                                 x:Name="SelectionIndicator"
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0" />
+                                Opacity="0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1031,7 +1042,9 @@
                                 x:Name="SelectionIndicator"
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0" />
+                                Opacity="0"
+                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
+                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1150,15 +1163,13 @@
         <Setter Property="TextWrapping" Value="NoWrap"/>        
     </Style>
 
-    
     <!-- based on TitleTextBlockStyle -->
     <Style x:Key="NavigationViewTitleHeaderContentControlTextStyle" TargetType="ContentControl">
         <Setter Property="FontWeight" Value="SemiLight" />
         <Setter Property="FontSize" Value="24" />
         <Setter Property="FontFamily" Value="XamlAutoFontFamily" />
-        <Setter Property="Margin" Value="12,5,0,11"/>
+        <Setter Property="Margin" Value="{ThemeResource NavigationViewHeaderMargin}"/>
         <Setter Property="VerticalAlignment" Value="Stretch"/>
     </Style>
-
 
 </ResourceDictionary>

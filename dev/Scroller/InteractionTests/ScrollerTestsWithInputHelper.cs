@@ -2,12 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
-
+using System;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-
-using System;
-using System.Threading;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -18,21 +15,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-using Point =  MS.Internal.Mita.Foundation.PointI;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Point = System.Drawing.Point;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -286,13 +272,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Scrolls a Rectangle in a Scroller, with the mouse wheel.")]
         public void ScrollWithMouseWheel()
         {
-            const double minVerticalScrollPercent = 5.0;
+            ScrollWithMouseWheel(useCustomMouseWheelScrollLines: false);
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Scrolls a Rectangle in a Scroller, with the mouse wheel, using an increased WheelScrollLines OS setting.")]
+        public void ScrollWithMouseWheelUsingCustomScrollLines()
+        {
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+            {
+                Log.Warning("This test is skipped starting with RS5 where the InteractionTracker does its own mouse wheel handling and adapts to the OS' WheelScrollLines setting automatically.");
+                return;
+            }
+
+            ScrollWithMouseWheel(useCustomMouseWheelScrollLines: true);
+        }
+
+        private void ScrollWithMouseWheel(bool useCustomMouseWheelScrollLines)
+        {
+            const int defaultMouseWheelScrollLines = 3;
+            int mouseWheelScrollLinesMultiplier = useCustomMouseWheelScrollLines ? 3 : 1;
+            double minVerticalScrollPercent = 5.0 * mouseWheelScrollLinesMultiplier;
 
             Log.Comment("Selecting Scroller tests");
 
             using (var setup = new TestSetupHelper("Scroller Tests"))
             {
                 SetOutputDebugStringLevel("Verbose");
+
+                if (useCustomMouseWheelScrollLines)
+                {
+                    SetMouseWheelScrollLines(defaultMouseWheelScrollLines * mouseWheelScrollLinesMultiplier);
+                }
 
                 GoToSimpleContentsPage();
 

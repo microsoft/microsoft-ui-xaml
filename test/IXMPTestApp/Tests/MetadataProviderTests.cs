@@ -26,7 +26,6 @@ namespace IXMPTestApp.Tests
             var dispatcher = CoreApplication.MainView.Dispatcher;
             dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
             {
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                 Log.Comment("Loading RefreshContainer...");
                 XamlReader.Load(@"
                     <controls:RefreshContainer
@@ -130,8 +129,6 @@ namespace IXMPTestApp.Tests
                         xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                         xmlns:controls='using:Microsoft.UI.Xaml.Controls' />");
 
-#endif
-
                 Log.Comment("Loading NavigationView...");
                 XamlReader.Load(@"
                     <controls:NavigationView
@@ -158,8 +155,6 @@ namespace IXMPTestApp.Tests
                         <TextBlock HorizontalAlignment='Center' VerticalAlignment='Center'>Content</TextBlock>
                     </controls:NavigationView>");
 
-
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                 Log.Comment("Loading PersonPicture...");
                 XamlReader.Load(@"<controls:PersonPicture 
                                     x:Name='personPicture'
@@ -168,7 +163,6 @@ namespace IXMPTestApp.Tests
                                     xmlns:controls='using:Microsoft.UI.Xaml.Controls'
                                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'/>");
 
-#endif
             }).AsTask().Wait();
         }
     }

@@ -34,19 +34,19 @@ RegGetValueW(
 class RegUtil
 {
 public:
+    // Default values of the WheelScrollLines / WheelScrollChars number boxes in the Control Panel.
+    static constexpr int32_t s_defaultMouseWheelScrollLines{ 3 }; 
+    static constexpr int32_t s_defaultMouseWheelScrollChars{ 3 };
+
     // Used on RS4 and RS5 to indicate whether ScrollBars must auto-hide or not.
-    static bool UseDynamicScrollbars() noexcept
-    {
-        LPCWSTR subKey = L"Control Panel\\Accessibility";
-        LPCWSTR value = L"DynamicScrollbars";
-        DWORD keyValue = 0;
-        DWORD keySize = sizeof(DWORD);
+    static bool UseDynamicScrollbars() noexcept;
+    // Used on RS4- to retrieve the reg key values for HKEY_CURRENT_USER\Control Panel\Desktop\WheelScrollChars and WheelScrollLines.
+    static int32_t GetMouseWheelScrollLinesOrChars(bool useCache, bool isHorizontalMouseWheel) noexcept;
 
-        if (SUCCEEDED(HRESULT_FROM_WIN32(::RegGetValueW(HKEY_CURRENT_USER, subKey, value, RRF_RT_REG_DWORD, nullptr, &keyValue, &keySize))))
-        {
-            return keyValue != 0;
-        }
+private:
+    static bool s_hasMouseWheelScrollLinesCache;
+    static bool s_hasMouseWheelScrollCharsCache;
 
-        return true;
-    }
+    static int32_t s_mouseWheelScrollLines;
+    static int32_t s_mouseWheelScrollChars;
 };

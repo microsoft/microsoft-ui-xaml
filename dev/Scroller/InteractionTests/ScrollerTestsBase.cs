@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Common;
 using System;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
-using Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -16,25 +16,27 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
-using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     // Base class for ScrollerTestsWithAutomationPeer and ScrollerTestsWithInputHelper with common private debugging facilities.
     public class ScrollerTestsBase
     {
+        // Sets the MUXControlsTestApp.ScrollerPage's txtMouseWheelScrollLines text to the provided value for custom mouse wheel scrolling.
+        protected void SetMouseWheelScrollLines(int mouseWheelScrollLines)
+        {
+            Log.Comment("Retrieving txtMouseWheelScrollLines");
+            UIObject mouseWheelScrollLinesUIObject = FindElement.ById("txtMouseWheelScrollLines");
+            Verify.IsNotNull(mouseWheelScrollLinesUIObject);
+            Edit txtMouseWheelScrollLines = new Edit(mouseWheelScrollLinesUIObject);
+            Verify.IsNotNull(txtMouseWheelScrollLines);
+            txtMouseWheelScrollLines.SetValueAndWait(mouseWheelScrollLines.ToString());
+        }
+
         // outputDebugStringLevel can be "None", "Info" or "Verbose"
         protected void SetOutputDebugStringLevel(string outputDebugStringLevel)
         {

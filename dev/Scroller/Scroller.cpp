@@ -14,6 +14,7 @@
 #include "ScrollerAutomationPeer.h"
 #include "ScrollerTestHooks.h"
 #include "Vector.h"
+#include "RegUtil.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollerTrace::s_IsDebugOutputEnabled{ false };
@@ -621,8 +622,10 @@ winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
         // to be scrollable in those directions.
         winrt::Size contentAvailableSize
         {
-            m_contentOrientation == winrt::ContentOrientation::Vertical ? availableSize.Width : std::numeric_limits<float>::infinity(),
-            m_contentOrientation == winrt::ContentOrientation::Horizontal ? availableSize.Height : std::numeric_limits<float>::infinity()
+            (m_contentOrientation == winrt::ContentOrientation::Vertical || m_contentOrientation == winrt::ContentOrientation::Both) ?
+                availableSize.Width : std::numeric_limits<float>::infinity(),
+            (m_contentOrientation == winrt::ContentOrientation::Horizontal || m_contentOrientation == winrt::ContentOrientation::Both) ?
+                availableSize.Height : std::numeric_limits<float>::infinity()
         };
 
         if (m_contentOrientation != winrt::ContentOrientation::None)
@@ -633,13 +636,13 @@ winrt::Size Scroller::MeasureOverride(winrt::Size const& availableSize)
             {
                 winrt::Thickness contentMargin = contentAsFE.Margin();
 
-                if (m_contentOrientation == winrt::ContentOrientation::Vertical)
+                if (m_contentOrientation == winrt::ContentOrientation::Vertical || m_contentOrientation == winrt::ContentOrientation::Both)
                 {
                     // Even though the content's Width is constrained, take into account the MinWidth, Width and MaxWidth values
                     // potentially set on the content so it is allowed to grow accordingly.
                     contentAvailableSize.Width = static_cast<float>(GetComputedMaxWidth(availableSize.Width, contentAsFE));
                 }
-                else if (m_contentOrientation == winrt::ContentOrientation::Horizontal)
+                if (m_contentOrientation == winrt::ContentOrientation::Horizontal || m_contentOrientation == winrt::ContentOrientation::Both)
                 {
                     // Even though the content's Height is constrained, take into account the MinHeight, Height and MaxHeight values
                     // potentially set on the content so it is allowed to grow accordingly.
@@ -678,6 +681,7 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         std::min(finalSize.Height, m_availableSize.Height)
     };
 
+    bool renderSizeChanged = false;
     double newUnzoomedExtentWidth = 0.0;
     double newUnzoomedExtentHeight = 0.0;
 
@@ -689,29 +693,42 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         bool isAnchoringElementVertically = false;
         bool isAnchoringFarEdgeHorizontally = false;
         bool isAnchoringFarEdgeVertically = false;
-        winrt::Size contentArrangeSize =
-        {
-            content.DesiredSize().Width,
-            content.DesiredSize().Height
-        };
+        winrt::Size oldRenderSize = content.RenderSize();
+        winrt::Size contentArrangeSize = content.DesiredSize();
 
         const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
-        if (contentAsFE)
+        const winrt::Thickness contentMargin = [contentAsFE]()
         {
-            if (contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
-                isnan(contentAsFE.Width()) &&
-                contentArrangeSize.Width < viewport.Width)
-            {
-                contentArrangeSize.Width = viewport.Width;
-            }
+            return contentAsFE ? contentAsFE.Margin() : winrt::Thickness{0};
+        }();
 
-            if (contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
+        const bool wasContentArrangeWidthStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.HorizontalAlignment() == winrt::HorizontalAlignment::Stretch &&
+                isnan(contentAsFE.Width()) &&
+                contentArrangeSize.Width < viewport.Width;
+        }();
+
+        const bool wasContentArrangeHeightStretched = [contentAsFE, contentArrangeSize, viewport]()
+        {
+            return contentAsFE &&
+                contentAsFE.VerticalAlignment() == winrt::VerticalAlignment::Stretch &&
                 isnan(contentAsFE.Height()) &&
-                contentArrangeSize.Height < viewport.Height)
-            {
-                contentArrangeSize.Height = viewport.Height;
-            }
+                contentArrangeSize.Height < viewport.Height;
+        }();
+
+        if (wasContentArrangeWidthStretched)
+        {
+            // Allow the content to stretch up to the larger viewport width.
+            contentArrangeSize.Width = viewport.Width;
+        }
+
+        if (wasContentArrangeHeightStretched)
+        {
+            // Allow the content to stretch up to the larger viewport height.
+            contentArrangeSize.Height = viewport.Height;
         }
 
         finalContentRect =
@@ -721,9 +738,6 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
             contentArrangeSize.Width,
             contentArrangeSize.Height
         };
-
-        newUnzoomedExtentWidth = contentArrangeSize.Width;
-        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
         IsAnchoring(&isAnchoringElementHorizontally, &isAnchoringElementVertically, &isAnchoringFarEdgeHorizontally, &isAnchoringFarEdgeVertically);
 
@@ -749,8 +763,12 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
                 ResetAnchorElement();
             }
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
 
             if (!isnan(preArrangeViewportToElementAnchorPointsDistance.Width) || !isnan(preArrangeViewportToElementAnchorPointsDistance.Height))
             {
@@ -787,20 +805,22 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
         {
             ResetAnchorElement();
 
-            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
-            content.Arrange(finalContentRect);
+            contentArrangeSize = ArrangeContent(
+                content,
+                contentMargin,
+                finalContentRect,
+                wasContentArrangeWidthStretched,
+                wasContentArrangeHeightStretched);
         }
 
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+        newUnzoomedExtentWidth = contentArrangeSize.Width;
+        newUnzoomedExtentHeight = contentArrangeSize.Height;
 
-        winrt::Thickness contentMargin{};
         double maxUnzoomedExtentWidth = std::numeric_limits<double>::infinity();
         double maxUnzoomedExtentHeight = std::numeric_limits<double>::infinity();
 
         if (contentAsFE)
         {
-            contentMargin = contentAsFE.Margin();
-
             // Determine the maximum size directly set on the content, if any.
             maxUnzoomedExtentWidth = GetComputedMaxWidth(maxUnzoomedExtentWidth, contentAsFE);
             maxUnzoomedExtentHeight = GetComputedMaxHeight(maxUnzoomedExtentHeight, contentAsFE);
@@ -899,6 +919,8 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
             OnViewChanged(contentLayoutOffsetXDelta != 0.0f /*horizontalOffsetChanged*/, contentLayoutOffsetYDelta != 0.0f /*verticalOffsetChanged*/);
         }
+
+        renderSizeChanged = content.RenderSize() != oldRenderSize;
     }
 
     // Set a rectangular clip on this Scroller the same size as the arrange
@@ -919,6 +941,7 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
     rectangleGeometry.Rect(newClipRect);
 
     UpdateUnzoomedExtentAndViewport(
+        renderSizeChanged,
         newUnzoomedExtentWidth  /*unzoomedExtentWidth*/,
         newUnzoomedExtentHeight /*unzoomedExtentHeight*/,
         viewport.Width          /*viewportWidth*/,
@@ -983,8 +1006,8 @@ void Scroller::IdleStateEntered(
     UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedVerticalSnapPoints, ScrollerDimension::VerticalScroll);
     UpdateSnapPointsIgnoredValue(&m_sortedConsolidatedZoomSnapPoints, ScrollerDimension::ZoomFactor);
 
-    // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
-    StopZoomFactorExpressionAnimation();
+    // Stop Translation and Scale animations if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+    StopTranslationAndZoomFactorExpressionAnimations();
 }
 
 // On pre-RS5 releases, updates the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions.
@@ -1191,6 +1214,65 @@ void Scroller::ValuesChanged(
 }
 
 #pragma endregion
+
+// Returns the size used to arrange the provided Scroller content.
+winrt::Size Scroller::ArrangeContent(
+    const winrt::UIElement& content,
+    const winrt::Thickness& contentMargin,
+    winrt::Rect& finalContentRect,
+    bool wasContentArrangeWidthStretched,
+    bool wasContentArrangeHeightStretched)
+{
+    MUX_ASSERT(content);
+
+    winrt::Size contentArrangeSize =
+    {
+        finalContentRect.Width,
+        finalContentRect.Height
+    };
+
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, wasContentArrangeWidthStretched, wasContentArrangeHeightStretched);
+    content.Arrange(finalContentRect);
+    SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this, L"content RenderSize", content.RenderSize().Width, content.RenderSize().Height);
+
+    if (wasContentArrangeWidthStretched || wasContentArrangeHeightStretched)
+    {
+        bool reArrangeNeeded = false;
+        const auto renderWidth = content.RenderSize().Width;
+        const auto renderHeight = content.RenderSize().Height;
+        const auto marginWidth = static_cast<float>(contentMargin.Left + contentMargin.Right);
+        const auto marginHeight = static_cast<float>(contentMargin.Top + contentMargin.Bottom);
+        const auto scaleFactorRounding = 0.5f / static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
+
+        if (wasContentArrangeWidthStretched &&
+            renderWidth > 0.0f &&
+            renderWidth + marginWidth < finalContentRect.Width * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially horizontally.
+            contentArrangeSize.Width = finalContentRect.Width = renderWidth + marginWidth;
+            reArrangeNeeded = true;
+        }
+
+        if (wasContentArrangeHeightStretched &&
+            renderHeight > 0.0f &&
+            renderHeight + marginHeight < finalContentRect.Height * (1.0f - std::numeric_limits<float>::epsilon()) - scaleFactorRounding)
+        {
+            // Content stretched partially vertically.
+            contentArrangeSize.Height = finalContentRect.Height = renderHeight + marginHeight;
+            reArrangeNeeded = true;
+        }
+
+        if (reArrangeNeeded)
+        {
+            // Re-arrange the content using the partially stretched size.
+            SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this, L"content re-Arrange", TypeLogging::RectToString(finalContentRect).c_str());
+            content.Arrange(finalContentRect);
+        }
+    }
+
+    return contentArrangeSize;
+}
 
 // Used to perform a flickerless change to the Content's XAML Layout Offset. The InteractionTracker's Position is unaffected, but its Min/MaxPosition expressions
 // and the Scroller HorizontalOffset/VerticalOffset property are updated accordingly once the change is incorporated into the XAML layout engine.
@@ -2888,6 +2970,9 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
 {
     MUX_ASSERT(content);
 
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, m_unzoomedExtentWidth, m_unzoomedExtentHeight);
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, content.RenderSize().Width, content.RenderSize().Height);
+
     double deltaX = m_unzoomedExtentWidth - content.RenderSize().Width;
     double deltaY = m_unzoomedExtentHeight - content.RenderSize().Height;
 
@@ -2895,29 +2980,28 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
 
     if (contentAsFE)
     {
-        winrt::HorizontalAlignment horizontalAlignment = contentAsFE.HorizontalAlignment();
-        winrt::VerticalAlignment verticalAlignment = contentAsFE.VerticalAlignment();
-
-        if (horizontalAlignment == winrt::HorizontalAlignment::Stretch)
-        {
-            deltaX = 0.0;
-        }
-
-        if (verticalAlignment == winrt::VerticalAlignment::Stretch)
-        {
-            deltaY = 0.0;
-        }
-
+        const winrt::HorizontalAlignment horizontalAlignment = contentAsFE.HorizontalAlignment();
+        const winrt::VerticalAlignment verticalAlignment = contentAsFE.VerticalAlignment();
         const winrt::Thickness contentMargin = contentAsFE.Margin();
 
-        if (horizontalAlignment == winrt::HorizontalAlignment::Center ||
-            horizontalAlignment == winrt::HorizontalAlignment::Right)
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, horizontalAlignment, verticalAlignment);
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, contentMargin.Left, contentMargin.Right);
+        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, contentMargin.Top, contentMargin.Bottom);
+
+        if (horizontalAlignment == winrt::HorizontalAlignment::Left)
+        {
+            deltaX = 0.0f;
+        }
+        else
         {
             deltaX -= contentMargin.Left + contentMargin.Right;
         }
 
-        if (verticalAlignment == winrt::VerticalAlignment::Center ||
-            verticalAlignment == winrt::VerticalAlignment::Bottom)
+        if (verticalAlignment == winrt::VerticalAlignment::Top)
+        {
+            deltaY = 0.0f;
+        }
+        else
         {
             deltaY -= contentMargin.Top + contentMargin.Bottom;
         }
@@ -2927,24 +3011,18 @@ winrt::float2 Scroller::GetArrangeRenderSizesDelta(
         {
             deltaX /= 2.0f;
         }
-        else if (horizontalAlignment == winrt::HorizontalAlignment::Left)
-        {
-            deltaX = 0.0f;
-        }
 
         if (verticalAlignment == winrt::VerticalAlignment::Center ||
             verticalAlignment == winrt::VerticalAlignment::Stretch)
         {
             deltaY /= 2.0f;
         }
-        else if (verticalAlignment == winrt::VerticalAlignment::Top)
-        {
-            deltaY = 0.0f;
-        }
 
         deltaX += contentMargin.Left;
         deltaY += contentMargin.Top;
     }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, deltaX, deltaY);
 
     return winrt::float2{ static_cast<float>(deltaX), static_cast<float>(deltaY) };
 }
@@ -3202,6 +3280,8 @@ void Scroller::SetupPositionBoundariesExpressionAnimations(
 void Scroller::SetupTransformExpressionAnimations(
     const winrt::UIElement& content)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+
     const bool useTranslationProperty = IsVisualTranslationPropertyAvailable();
 
     MUX_ASSERT(content);
@@ -3213,9 +3293,6 @@ void Scroller::SetupTransformExpressionAnimations(
     MUX_ASSERT(m_interactionTracker);
 
     winrt::float2 arrangeRenderSizesDelta = GetArrangeRenderSizesDelta(content);
-
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_FLT_FLT, METH_NAME, this,
-        L"arrangeRenderSizesDelta", arrangeRenderSizesDelta.x, arrangeRenderSizesDelta.y);
 
     if (useTranslationProperty)
     {
@@ -3243,34 +3320,30 @@ void Scroller::SetupTransformExpressionAnimations(
         m_transformMatrixZoomFactorExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 
-    StartTransformExpressionAnimations(content, false /*forZoomFactorAnimationInterruption*/);
+    StartTransformExpressionAnimations(content, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::StartTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            m_translationExpressionAnimation.Target(scrollPropertyName);
+            m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
 
-                m_translationExpressionAnimation.Target(scrollPropertyName);
-                m_zoomFactorExpressionAnimation.Target(zoomFactorPropertyName);
-
-                content.StartAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StartAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             content.StartAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3312,26 +3385,23 @@ void Scroller::StartTransformExpressionAnimations(
 
 void Scroller::StopTransformExpressionAnimations(
     const winrt::UIElement& content,
-    bool forZoomFactorAnimationInterruption)
+    bool forAnimationsInterruption)
 {
     if (content)
     {
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            if (!forZoomFactorAnimationInterruption)
-            {
-                auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
+            auto const scrollPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::Scroll);
 
-                content.StopAnimation(m_translationExpressionAnimation);
-                RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
-            }
+            content.StopAnimation(m_translationExpressionAnimation);
+            RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, scrollPropertyName /*propertyName*/);
 
             auto const zoomFactorPropertyName = GetVisualTargetedPropertyName(ScrollerDimension::ZoomFactor);
 
             content.StopAnimation(m_zoomFactorExpressionAnimation);
             RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, zoomFactorPropertyName /*propertyName*/);
         }
-        else if (!forZoomFactorAnimationInterruption) // The zoom factor animation interruption is only effective with facades.
+        else if (!forAnimationsInterruption) // The animations interruption is only effective with facades.
         {
             const winrt::Visual contentVisual = winrt::ElementCompositionPreview::GetElementVisual(content);
 
@@ -3369,24 +3439,32 @@ void Scroller::StopTransformExpressionAnimations(
     }
 }
 
-// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Scale animation.
-bool Scroller::StartZoomFactorExpressionAnimation()
+// Returns True when Scroller::OnCompositionTargetRendering calls are not needed for restarting the Translation and Scale animations.
+bool Scroller::StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown)
 {
-    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+    if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
     {
         MUX_ASSERT(IsVisualTranslationPropertyAvailable());
 
-        // A Scale animation restart is pending after the Idle State was reached or a zoom factor change operation completed.
-        m_zoomFactorAnimationRestartTicksCountdown--;
+        // A Translation and Scale animations restart is pending after the Idle State was reached or a zoom factor change operation completed.
+        m_translationAndZoomFactorAnimationsRestartTicksCountdown--;
 
-        if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+        if (m_translationAndZoomFactorAnimationsRestartTicksCountdown == 0 || interruptCountdown)
         {
-            // Countdown is over, restart the Scale animation.
+            // Countdown is over or state is no longer Idle, restart the Translation and Scale animations.
             MUX_ASSERT(m_interactionTracker);
 
             SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
-            StartTransformExpressionAnimations(Content(), true /*forZoomFactorAnimationInterruption*/);
+            if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
+            {
+                MUX_ASSERT(interruptCountdown);
+
+                SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, m_translationAndZoomFactorAnimationsRestartTicksCountdown);
+                m_translationAndZoomFactorAnimationsRestartTicksCountdown = 0;
+            }
+            
+            StartTransformExpressionAnimations(Content(), true /*forAnimationsInterruption*/);
         }
         else
         {
@@ -3398,11 +3476,11 @@ bool Scroller::StartZoomFactorExpressionAnimation()
     return true;
 }
 
-void Scroller::StopZoomFactorExpressionAnimation()
+void Scroller::StopTranslationAndZoomFactorExpressionAnimations()
 {
     if (m_zoomFactorExpressionAnimation && m_animationRestartZoomFactor != m_zoomFactor)
     {
-        // The zoom factor has changed since the last restart of the Scale animation.
+        // The zoom factor has changed since the last restart of the Translation and Scale animations.
         MUX_ASSERT(IsVisualTranslationPropertyAvailable());
 
         const winrt::UIElement content = Content();
@@ -3410,20 +3488,20 @@ void Scroller::StopZoomFactorExpressionAnimation()
         // The zoom factor animation interruption is only effective with facades.
         if (SharedHelpers::IsTranslationFacadeAvailable(content))
         {
-            if (m_zoomFactorAnimationRestartTicksCountdown == 0)
+            if (m_translationAndZoomFactorAnimationsRestartTicksCountdown == 0)
             {
                 SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, m_animationRestartZoomFactor, m_zoomFactor);
 
-                // Stop Scale animation to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
-                StopTransformExpressionAnimations(content, true /*forZoomFactorAnimationInterruption*/);
+                // Stop Translation and Scale animations to trigger rasterization of Content, to avoid fuzzy text rendering for instance.
+                StopTransformExpressionAnimations(content, true /*forAnimationsInterruption*/);
 
-                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Scale animation
+                // Trigger Scroller::OnCompositionTargetRendering calls in order to re-establish the Translation and Scale animations
                 // after the Content rasterization was triggered within a few ticks.
                 HookCompositionTargetRendering();
             }
 
             m_animationRestartZoomFactor = m_zoomFactor;
-            m_zoomFactorAnimationRestartTicksCountdown = s_zoomFactorAnimationRestartTicks;
+            m_translationAndZoomFactorAnimationsRestartTicksCountdown = s_translationAndZoomFactorAnimationsRestartTicks;
         }
     }
 }
@@ -3751,6 +3829,43 @@ void Scroller::SetContentLayoutOffsetY(float contentLayoutOffsetY)
     }
 }
 
+winrt::float2 Scroller::GetArrangeRenderSizesDelta()
+{
+    winrt::float2 arrangeRenderSizesDelta{};
+    const winrt::UIElement content = Content();
+
+    if (content)
+    {
+        arrangeRenderSizesDelta = GetArrangeRenderSizesDelta(content);
+    }
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, arrangeRenderSizesDelta.x, arrangeRenderSizesDelta.y);
+
+    return arrangeRenderSizesDelta;
+}
+
+winrt::float2 Scroller::GetMinPosition()
+{
+    winrt::float2 minPosition{};
+
+    ComputeMinMaxPositions(m_zoomFactor, &minPosition, nullptr);
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, minPosition.x, minPosition.y);
+
+    return minPosition;
+}
+
+winrt::float2 Scroller::GetMaxPosition()
+{
+    winrt::float2 maxPosition{};
+
+    ComputeMinMaxPositions(m_zoomFactor, nullptr, &maxPosition);
+
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, maxPosition.x, maxPosition.y);
+
+    return maxPosition;
+}
+
 winrt::IVector<winrt::ScrollSnapPointBase> Scroller::GetConsolidatedScrollSnapPoints(ScrollerDimension dimension)
 {
     winrt::IVector<winrt::ScrollSnapPointBase> snapPoints = winrt::make<Vector<winrt::ScrollSnapPointBase>>();
@@ -3990,6 +4105,15 @@ void Scroller::OnContentPropertyChanged(const winrt::DependencyObject& /*sender*
                 }
             }
         }
+        else if (args == winrt::FrameworkElement::MinWidthProperty() ||
+                 args == winrt::FrameworkElement::WidthProperty() ||
+                 args == winrt::FrameworkElement::MaxWidthProperty() ||
+                 args == winrt::FrameworkElement::MinHeightProperty() ||
+                 args == winrt::FrameworkElement::HeightProperty() ||
+                 args == winrt::FrameworkElement::MaxHeightProperty())
+        {
+            InvalidateMeasure();
+        }
     }
 }
 
@@ -4002,10 +4126,12 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    bool unhookCompositionTargetRendering = StartZoomFactorExpressionAnimation();
+    bool unhookCompositionTargetRendering = StartTranslationAndZoomFactorExpressionAnimations();
 
     if (!m_interactionTrackerAsyncOperations.empty() && SharedHelpers::IsFrameworkElementLoaded(*this))
     {
+        bool delayProcessingViewChanges = false;
+
         for (auto operationsIter = m_interactionTrackerAsyncOperations.begin(); operationsIter != m_interactionTrackerAsyncOperations.end();)
         {
             auto& interactionTrackerAsyncOperation = *operationsIter;
@@ -4020,10 +4146,42 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (interactionTrackerAsyncOperation->IsQueued())
             {
-                bool needsProcessing = false;
+                if (!delayProcessingViewChanges && interactionTrackerAsyncOperation->GetTicksCountdown() == 1)
+                {
+                    // Evaluate whether all remaining queued operations need to be delayed until the completion of a prior required operation.
+                    std::shared_ptr<InteractionTrackerAsyncOperation> requiredInteractionTrackerAsyncOperation = interactionTrackerAsyncOperation->GetRequiredOperation();
 
-                interactionTrackerAsyncOperation->TickQueuedOperation(&needsProcessing);
-                if (needsProcessing)
+                    if (requiredInteractionTrackerAsyncOperation)
+                    {
+                        if (!requiredInteractionTrackerAsyncOperation->IsCanceled() && !requiredInteractionTrackerAsyncOperation->IsCompleted())
+                        {
+                            // Prior required operation is not canceled or completed yet. All subsequent operations need to be delayed.
+                            delayProcessingViewChanges = true;
+                        }
+                        else
+                        {
+                            // Previously set required operation is now canceled or completed. Check if it needs to be replaced with an older one.
+                            requiredInteractionTrackerAsyncOperation = GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation);
+                            interactionTrackerAsyncOperation->SetRequiredOperation(requiredInteractionTrackerAsyncOperation);
+                            if (requiredInteractionTrackerAsyncOperation)
+                            {
+                                // An older operation is now required. All subsequent operations need to be delayed.
+                                delayProcessingViewChanges = true;
+                            }
+                        }
+                    }
+                }
+
+                if (delayProcessingViewChanges)
+                {
+                    if (interactionTrackerAsyncOperation->GetTicksCountdown() > 1)
+                    {
+                        // Ticking the queued operation without processing it.
+                        interactionTrackerAsyncOperation->TickQueuedOperation();
+                    }
+                    unhookCompositionTargetRendering = false;
+                }                    
+                else if (interactionTrackerAsyncOperation->TickQueuedOperation())
                 {
                     // InteractionTracker is ready for the operation's processing.
                     ProcessDequeuedViewChange(interactionTrackerAsyncOperation);
@@ -4039,16 +4197,13 @@ void Scroller::OnCompositionTargetRendering(const winrt::IInspectable& /*sender*
             }
             else if (!interactionTrackerAsyncOperation->IsAnimated())
             {
-                bool needsCompletion = false;
-
-                interactionTrackerAsyncOperation->TickNonAnimatedOperation(&needsCompletion);
-                if (needsCompletion)
+                if (interactionTrackerAsyncOperation->TickNonAnimatedOperation())
                 {
                     // The non-animated view change request did not result in a status change or ValuesChanged notification. Consider it completed.
                     CompleteViewChange(interactionTrackerAsyncOperation, ScrollerViewChangeResult::Completed);
-                    if (m_zoomFactorAnimationRestartTicksCountdown > 0)
+                    if (m_translationAndZoomFactorAnimationsRestartTicksCountdown > 0)
                     {
-                        // Do not unhook the Rendering event when there is a pending restart of the Scale animation. 
+                        // Do not unhook the Rendering event when there is a pending restart of the Translation and Scale animations. 
                         unhookCompositionTargetRendering = false;
                     }
                     m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
@@ -4151,9 +4306,11 @@ void Scroller::OnUnloaded(
         const winrt::UIElement content = Content();
 
         UpdateUnzoomedExtentAndViewport(
+            false /*renderSizeChanged*/,
             content ? m_unzoomedExtentWidth : 0.0,
             content ? m_unzoomedExtentHeight : 0.0,
-            0.0 /*viewportWidth*/, 0.0 /*viewportHeight*/);
+            0.0 /*viewportWidth*/,
+            0.0 /*viewportHeight*/);
     }
 }
 
@@ -5226,7 +5383,7 @@ void Scroller::UpdateContent(
             if ((m_transformMatrixTranslateXExpressionAnimation && m_transformMatrixTranslateYExpressionAnimation && m_transformMatrixZoomFactorExpressionAnimation && !useTranslationProperty) ||
                 (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && useTranslationProperty))
             {
-                StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
+                StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
             }
             ScrollToOffsets(0.0 /*zoomedHorizontalOffset*/, 0.0 /*zoomedVerticalOffset*/);
         }
@@ -5284,13 +5441,19 @@ void Scroller::UpdateTransformSource(
         (m_translationExpressionAnimation && m_zoomFactorExpressionAnimation && IsVisualTranslationPropertyAvailable()));
     MUX_ASSERT(m_interactionTracker);
 
-    StopTransformExpressionAnimations(oldContent, false /*forZoomFactorAnimationInterruption*/);
-    StartTransformExpressionAnimations(newContent, false /*forZoomFactorAnimationInterruption*/);
+    StopTransformExpressionAnimations(oldContent, false /*forAnimationsInterruption*/);
+    StartTransformExpressionAnimations(newContent, false /*forAnimationsInterruption*/);
 }
 
 void Scroller::UpdateState(
     const winrt::InteractionState& state)
 {
+    if (state != winrt::InteractionState::Idle)
+    {
+        // Restart the interrupted expression animations sooner than planned to visualize the new view change immediately.
+        StartTranslationAndZoomFactorExpressionAnimations(true /*interruptCountdown*/);
+    }
+
     if (state != m_state)
     {
         m_state = state;
@@ -5308,9 +5471,13 @@ void Scroller::UpdateExpressionAnimationSources()
 }
 
 void Scroller::UpdateUnzoomedExtentAndViewport(
-    double unzoomedExtentWidth, double unzoomedExtentHeight,
-    double viewportWidth, double viewportHeight)
+    bool renderSizeChanged,
+    double unzoomedExtentWidth,
+    double unzoomedExtentHeight,
+    double viewportWidth,
+    double viewportHeight)
 {
+    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, renderSizeChanged);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentWidth", unzoomedExtentWidth);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"unzoomedExtentHeight", unzoomedExtentHeight);
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_DBL, METH_NAME, this, L"viewportWidth", viewportWidth);
@@ -5357,7 +5524,7 @@ void Scroller::UpdateUnzoomedExtentAndViewport(
         UpdateExpressionAnimationSources();
     }
 
-    if (extentChanged && content)
+    if ((extentChanged || renderSizeChanged) && content)
     {
         OnContentSizeChanged(content);
     }
@@ -6009,6 +6176,10 @@ void Scroller::ChangeZoomFactorPrivate(
 
     m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
 
+    // Workaround for InteractionTracker bug 22414894 - calling TryUpdateScale after a non-animated view change during the same tick results in an incorrect position.
+    // That non-animated view change needs to complete before this TryUpdateScale gets invoked.
+    interactionTrackerAsyncOperation->SetRequiredOperation(GetLastNonAnimatedInteractionTrackerOperation(interactionTrackerAsyncOperation));
+
     if (viewChangeId)
     {
         m_latestViewChangeId = GetNextViewChangeId();
@@ -6105,12 +6276,25 @@ void Scroller::ProcessPointerWheelScroll(
         true /*isOperationTypeForOffsetsChange*/,
         InteractionTrackerAsyncOperationTrigger::MouseWheel);
 
+    // When isHorizontalMouseWheel == True, retrieve the reg key value for HKEY_CURRENT_USER\Control Panel\Desktop\WheelScrollChars.
+    // When isHorizontalMouseWheel == False, retrieve WheelScrollLines instead. Those two values can be set in the Control Panel's Mouse Properties / Wheel page.
+    // For improved performance, use the cached value, if present, when the InteractionTracker is in Inertia state, which is the state triggered by a mouse wheel input.
+    int32_t mouseWheelScrollLinesOrChars = RegUtil::GetMouseWheelScrollLinesOrChars(m_state == winrt::InteractionState::Inertia /*useCache*/, isHorizontalMouseWheel);
+
+    if (mouseWheelScrollLinesOrChars == -1)
+    {
+        MUX_ASSERT(!isHorizontalMouseWheel);
+        // The 'One screen at a time' option is selected in the Control Panel. The InteractionTracker's built-in behavior on RS5+ is equivalent to WheelScrollChars == 20.
+        mouseWheelScrollLinesOrChars = 20;
+    }
+
     // Mouse wheel delta amount required per initial velocity unit.
     int32_t mouseWheelDeltaForVelocityUnit = s_mouseWheelDeltaForVelocityUnit;
     com_ptr<ScrollerTestHooks> globalTestHooks = ScrollerTestHooks::GetGlobalTestHooks();
 
     if (globalTestHooks)
     {
+        mouseWheelScrollLinesOrChars = isHorizontalMouseWheel ? globalTestHooks->MouseWheelScrollChars() : globalTestHooks->MouseWheelScrollLines();
         mouseWheelDeltaForVelocityUnit = globalTestHooks->MouseWheelDeltaForVelocityUnit();
     }
 
@@ -6118,9 +6302,9 @@ void Scroller::ProcessPointerWheelScroll(
     // Maximum absolute velocity. Any additional velocity has no effect.
     const float c_maxVelocity = 4000.0f;
     // Velocity per unit (which is a mouse wheel delta of 120 by default). That is the velocity required to achieve a change of c_offsetChangePerVelocityUnit pixels.
-    const float c_unitVelocity = 1.572420572916667f * c_displayAdjustment;
+    const float c_unitVelocity = 0.524140190972223f * c_displayAdjustment * mouseWheelScrollLinesOrChars;
     // Effect of unit velocity on offset, to match the built-in RS5 behavior.
-    const float c_offsetChangePerVelocityUnit = 0.15f * c_displayAdjustment;
+    const float c_offsetChangePerVelocityUnit = 0.05f * mouseWheelScrollLinesOrChars * c_displayAdjustment;
 
     std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = nullptr;
     float offsetVelocity = static_cast<float>(mouseWheelDelta) / mouseWheelDeltaForVelocityUnit * c_unitVelocity;
@@ -6843,6 +7027,8 @@ void Scroller::CompleteViewChange(
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         interactionTrackerAsyncOperation.get(), TypeLogging::ScrollerViewChangeResultToString(result).c_str());
 
+    interactionTrackerAsyncOperation->SetIsCompleted(true);
+
     bool onHorizontalOffsetChangeCompleted = false;
     bool onVerticalOffsetChangeCompleted = false;
 
@@ -6858,8 +7044,8 @@ void Scroller::CompleteViewChange(
                 RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
             default:
-                // Stop Scale animation if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
-                StopZoomFactorExpressionAnimation();
+                // Stop Translation and Scale animations if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
+                StopTranslationAndZoomFactorExpressionAnimations();
 
                 RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
@@ -7060,6 +7246,34 @@ int Scroller::GetInteractionTrackerOperationsCount(bool includeAnimatedOperation
     return operationsCount;
 }
 
+std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetLastNonAnimatedInteractionTrackerOperation(
+    std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const
+{
+    bool priorInteractionTrackerOperationSeen = false;
+
+    for (auto operationsIter = m_interactionTrackerAsyncOperations.end(); operationsIter != m_interactionTrackerAsyncOperations.begin();)
+    {
+        operationsIter--;
+
+        auto& interactionTrackerAsyncOperation = *operationsIter;
+
+        if (!priorInteractionTrackerOperationSeen && priorToInteractionTrackerOperation == interactionTrackerAsyncOperation)
+        {
+            priorInteractionTrackerOperationSeen = true;
+        }
+        else if (priorInteractionTrackerOperationSeen &&
+            !interactionTrackerAsyncOperation->IsAnimated() &&
+            !interactionTrackerAsyncOperation->IsCompleted() &&
+            !interactionTrackerAsyncOperation->IsCanceled())
+        {
+            MUX_ASSERT(interactionTrackerAsyncOperation->IsDelayed() || interactionTrackerAsyncOperation->IsQueued());
+            return interactionTrackerAsyncOperation;
+        }
+    }
+
+    return nullptr;
+}
+
 std::shared_ptr<InteractionTrackerAsyncOperation> Scroller::GetInteractionTrackerOperationFromRequestId(int requestId) const
 {
     MUX_ASSERT(requestId >= 0);
@@ -7256,16 +7470,16 @@ bool Scroller::IsInputKindIgnored(winrt::InputKind const& inputKind)
 
 void Scroller::HookCompositionTargetRendering()
 {
-    if (!m_renderingToken)
+    if (!m_renderingRevoker)
     {
         winrt::Windows::UI::Xaml::Media::CompositionTarget compositionTarget{ nullptr };
-        m_renderingToken = compositionTarget.Rendering(winrt::auto_revoke, { this, &Scroller::OnCompositionTargetRendering });
+        m_renderingRevoker = compositionTarget.Rendering(winrt::auto_revoke, { this, &Scroller::OnCompositionTargetRendering });
     }
 }
 
 void Scroller::UnhookCompositionTargetRendering()
 {
-    m_renderingToken.revoke();    
+    m_renderingRevoker.revoke();
 }
 
 void Scroller::HookDpiChangedEvent()
@@ -7292,24 +7506,24 @@ void Scroller::HookDpiChangedEvent()
 
 void Scroller::HookScrollerEvents()
 {
-    if (!m_loadedToken)
+    if (!m_loadedRevoker)
     {
-        m_loadedToken = Loaded(winrt::auto_revoke, { this, &Scroller::OnLoaded });
+        m_loadedRevoker = Loaded(winrt::auto_revoke, { this, &Scroller::OnLoaded });
     }
 
-    if (!m_unloadedToken)
+    if (!m_unloadedRevoker)
     {
-        m_unloadedToken = Unloaded(winrt::auto_revoke, { this, &Scroller::OnUnloaded });
+        m_unloadedRevoker = Unloaded(winrt::auto_revoke, { this, &Scroller::OnUnloaded });
     }
 
-    if (SharedHelpers::IsRS4OrHigher() && !m_bringIntoViewRequested)
+    if (SharedHelpers::IsRS4OrHigher() && !m_bringIntoViewRequestedRevoker)
     {
-        m_bringIntoViewRequested = BringIntoViewRequested(winrt::auto_revoke, { this, &Scroller::OnBringIntoViewRequestedHandler });
+        m_bringIntoViewRequestedRevoker = BringIntoViewRequested(winrt::auto_revoke, { this, &Scroller::OnBringIntoViewRequestedHandler });
     }
 
-    if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() && !m_pointerWheelChangedToken)
+    if (!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled() && !m_pointerWheelChangedRevoker)
     {
-        m_pointerWheelChangedToken = PointerWheelChanged(winrt::auto_revoke, { this, &Scroller::OnPointerWheelChangedHandler });
+        m_pointerWheelChangedRevoker = PointerWheelChanged(winrt::auto_revoke, { this, &Scroller::OnPointerWheelChangedHandler });
     }
 
     if (!m_pointerPressedEventHandler)
@@ -7322,15 +7536,10 @@ void Scroller::HookScrollerEvents()
 
 void Scroller::UnhookScrollerEvents()
 {
-    m_loadedToken.revoke();
-    m_unloadedToken.revoke();
-    m_bringIntoViewRequested.revoke();
-    
-    if (m_pointerWheelChangedToken)
-    {
-        MUX_ASSERT(!Scroller::IsInteractionTrackerPointerWheelRedirectionEnabled());
-        m_pointerWheelChangedToken.revoke();
-    }
+    m_loadedRevoker.revoke();
+    m_unloadedRevoker.revoke();
+    m_bringIntoViewRequestedRevoker.revoke();
+    m_pointerWheelChangedRevoker.revoke();
 
     if (m_pointerPressedEventHandler)
     {
@@ -7344,13 +7553,40 @@ void Scroller::HookContentPropertyChanged(
 {
     if (content)
     {
-        if (!m_contentHorizontalAlignmentChangedToken)
+        if (auto contentAsFE = content.try_as<winrt::FrameworkElement>())
         {
-            m_contentHorizontalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
-        }
-        if (!m_contentVerticalAlignmentChangedToken)
-        {
-            m_contentVerticalAlignmentChangedToken = RegisterPropertyChanged(content, winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
+            if (!m_contentMinWidthChangedRevoker)
+            {
+                m_contentMinWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MinWidthProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentWidthChangedRevoker)
+            {
+                m_contentWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::WidthProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentMaxWidthChangedRevoker)
+            {
+                m_contentMaxWidthChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MaxWidthProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentMinHeightChangedRevoker)
+            {
+                m_contentMinHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MinHeightProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentHeightChangedRevoker)
+            {
+                m_contentHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::HeightProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentMaxHeightChangedRevoker)
+            {
+                m_contentMaxHeightChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::MaxHeightProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentHorizontalAlignmentChangedRevoker)
+            {
+                m_contentHorizontalAlignmentChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::HorizontalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
+            if (!m_contentVerticalAlignmentChangedRevoker)
+            {
+                m_contentVerticalAlignmentChangedRevoker = RegisterPropertyChanged(contentAsFE, winrt::FrameworkElement::VerticalAlignmentProperty(), { this, &Scroller::OnContentPropertyChanged });
+            }
         }
     }
 }
@@ -7364,8 +7600,14 @@ void Scroller::UnhookContentPropertyChanged(
 
         if (contentAsFE)
         {
-            m_contentHorizontalAlignmentChangedToken.revoke();
-            m_contentVerticalAlignmentChangedToken.revoke();
+            m_contentMinWidthChangedRevoker.revoke();
+            m_contentWidthChangedRevoker.revoke();
+            m_contentMaxWidthChangedRevoker.revoke();
+            m_contentMinHeightChangedRevoker.revoke();
+            m_contentHeightChangedRevoker.revoke();
+            m_contentMaxHeightChangedRevoker.revoke();
+            m_contentHorizontalAlignmentChangedRevoker.revoke();
+            m_contentVerticalAlignmentChangedRevoker.revoke();
         }
     }
 }
@@ -7376,29 +7618,29 @@ void Scroller::HookHorizontalScrollControllerEvents(
 {
     MUX_ASSERT(horizontalScrollController);
 
-    if (hasInteractionSource && !m_horizontalScrollControllerInteractionRequestedToken)
+    if (hasInteractionSource && !m_horizontalScrollControllerInteractionRequestedRevoker)
     {
-        m_horizontalScrollControllerInteractionRequestedToken = horizontalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
+        m_horizontalScrollControllerInteractionRequestedRevoker = horizontalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (!m_horizontalScrollControllerInteractionInfoChangedToken)
+    if (!m_horizontalScrollControllerInteractionInfoChangedRevoker)
     {
-        m_horizontalScrollControllerInteractionInfoChangedToken = horizontalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_horizontalScrollControllerInteractionInfoChangedRevoker = horizontalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (!m_horizontalScrollControllerScrollToRequestedToken)
+    if (!m_horizontalScrollControllerScrollToRequestedRevoker)
     {
-        m_horizontalScrollControllerScrollToRequestedToken = horizontalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
+        m_horizontalScrollControllerScrollToRequestedRevoker = horizontalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (!m_horizontalScrollControllerScrollByRequestedToken)
+    if (!m_horizontalScrollControllerScrollByRequestedRevoker)
     {
-        m_horizontalScrollControllerScrollByRequestedToken = horizontalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
+        m_horizontalScrollControllerScrollByRequestedRevoker = horizontalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
     }
 
-    if (!m_horizontalScrollControllerScrollFromRequestedToken)
+    if (!m_horizontalScrollControllerScrollFromRequestedRevoker)
     {
-        m_horizontalScrollControllerScrollFromRequestedToken = horizontalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
+        m_horizontalScrollControllerScrollFromRequestedRevoker = horizontalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -7408,29 +7650,29 @@ void Scroller::HookVerticalScrollControllerEvents(
 {
     MUX_ASSERT(verticalScrollController);
 
-    if (hasInteractionSource && !m_verticalScrollControllerInteractionRequestedToken)
+    if (hasInteractionSource && !m_verticalScrollControllerInteractionRequestedRevoker)
     {
-        m_verticalScrollControllerInteractionRequestedToken = verticalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
+        m_verticalScrollControllerInteractionRequestedRevoker = verticalScrollController.InteractionRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionRequested });
     }
 
-    if (!m_verticalScrollControllerInteractionInfoChangedToken)
+    if (!m_verticalScrollControllerInteractionInfoChangedRevoker)
     {
-        m_verticalScrollControllerInteractionInfoChangedToken = verticalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
+        m_verticalScrollControllerInteractionInfoChangedRevoker = verticalScrollController.InteractionInfoChanged(winrt::auto_revoke, { this, &Scroller::OnScrollControllerInteractionInfoChanged });
     }
 
-    if (!m_verticalScrollControllerScrollToRequestedToken)
+    if (!m_verticalScrollControllerScrollToRequestedRevoker)
     {
-        m_verticalScrollControllerScrollToRequestedToken = verticalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
+        m_verticalScrollControllerScrollToRequestedRevoker = verticalScrollController.ScrollToRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollToRequested });
     }
 
-    if (!m_verticalScrollControllerScrollByRequestedToken)
+    if (!m_verticalScrollControllerScrollByRequestedRevoker)
     {
-        m_verticalScrollControllerScrollByRequestedToken = verticalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
+        m_verticalScrollControllerScrollByRequestedRevoker = verticalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollByRequested });
     }
 
-    if (!m_verticalScrollControllerScrollFromRequestedToken)
+    if (!m_verticalScrollControllerScrollFromRequestedRevoker)
     {
-        m_verticalScrollControllerScrollFromRequestedToken = verticalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
+        m_verticalScrollControllerScrollFromRequestedRevoker = verticalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &Scroller::OnScrollControllerScrollFromRequested });
     }
 }
 
@@ -7438,22 +7680,22 @@ void Scroller::UnhookHorizontalScrollControllerEvents(
     const winrt::IScrollController& horizontalScrollController)
 {
     MUX_ASSERT(horizontalScrollController);
-    m_horizontalScrollControllerInteractionRequestedToken.revoke();
-    m_horizontalScrollControllerInteractionInfoChangedToken.revoke();
-    m_verticalScrollControllerScrollToRequestedToken.revoke();
-    m_verticalScrollControllerScrollByRequestedToken.revoke();
-    m_horizontalScrollControllerScrollFromRequestedToken.revoke();
+    m_horizontalScrollControllerInteractionRequestedRevoker.revoke();
+    m_horizontalScrollControllerInteractionInfoChangedRevoker.revoke();
+    m_verticalScrollControllerScrollToRequestedRevoker.revoke();
+    m_verticalScrollControllerScrollByRequestedRevoker.revoke();
+    m_horizontalScrollControllerScrollFromRequestedRevoker.revoke();
 }
 
 void Scroller::UnhookVerticalScrollControllerEvents(
     const winrt::IScrollController& verticalScrollController)
 {
     MUX_ASSERT(verticalScrollController);
-    m_verticalScrollControllerInteractionRequestedToken.revoke();
-    m_verticalScrollControllerInteractionInfoChangedToken.revoke();
-    m_verticalScrollControllerScrollToRequestedToken.revoke();
-    m_verticalScrollControllerScrollByRequestedToken.revoke();
-    m_verticalScrollControllerScrollFromRequestedToken.revoke();
+    m_verticalScrollControllerInteractionRequestedRevoker.revoke();
+    m_verticalScrollControllerInteractionInfoChangedRevoker.revoke();
+    m_verticalScrollControllerScrollToRequestedRevoker.revoke();
+    m_verticalScrollControllerScrollByRequestedRevoker.revoke();
+    m_verticalScrollControllerScrollFromRequestedRevoker.revoke();
 }
 
 void Scroller::RaiseInteractionSourcesChanged()

@@ -5,6 +5,7 @@
 
 namespace CommandingHelpers
 {
+#ifdef ICONSOURCE_INCLUDED
     class IconSourceToIconSourceElementConverter : public winrt::implements<IconSourceToIconSourceElementConverter, winrt::IValueConverter>
     {
     public:
@@ -43,11 +44,6 @@ namespace CommandingHelpers
             winrt::hstring const& language) noexcept;
     };
 
-    void BindToLabelPropertyIfUnset(
-        winrt::XamlUICommand const& uiCommand,
-        winrt::DependencyObject const& target,
-        winrt::DependencyProperty const& labelProperty);
-
     void BindToIconPropertyIfUnset(
         winrt::XamlUICommand const& uiCommand,
         winrt::DependencyObject const& target,
@@ -57,6 +53,13 @@ namespace CommandingHelpers
         winrt::XamlUICommand const& uiCommand,
         winrt::DependencyObject const& target,
         winrt::DependencyProperty const& iconSourceProperty);
+
+#endif
+
+    void BindToLabelPropertyIfUnset(
+        winrt::XamlUICommand const& uiCommand,
+        winrt::DependencyObject const& target,
+        winrt::DependencyProperty const& labelProperty);
 
     void BindToKeyboardAcceleratorsIfUnset(
         winrt::XamlUICommand const& uiCommand,

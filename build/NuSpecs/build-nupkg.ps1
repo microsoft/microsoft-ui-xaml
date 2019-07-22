@@ -70,10 +70,6 @@ if ($prereleaseversion)
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
 
 $nupkgtitle = "Microsoft.UI.Xaml"
-if($env:BuildLeanMuxForTheStoreApp -eq "true")
-{
-    $nupkgtitle = "Microsoft.UI.Xaml-Slim"
-}
 
 function New-TemporaryDirectory {
     $parent = [System.IO.Path]::GetTempPath()

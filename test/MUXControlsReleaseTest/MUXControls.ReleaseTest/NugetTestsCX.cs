@@ -32,6 +32,12 @@ namespace MUXControls.ReleaseTest
         [TestCleanup]
         public void TestCleanup()
         {
+            PGOManager.PGOSweepIfInstrumented(TestEnvironment.TestContext.TestName);
+        }
+
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
+        {
             TestEnvironment.AssemblyCleanupWorker(TestType.NugetCX);
         }
 
@@ -41,6 +47,17 @@ namespace MUXControls.ReleaseTest
             var textBlock = new TextBlock(FindElement.ByName("TestTextBlock"));
             Verify.IsNotNull(textBlock);
             Verify.AreEqual(textBlock.DocumentText, "Loaded");
+        }
+
+        [TestMethod]
+        public void RepeaterNoCrashTest()
+        {
+            var button = new Button(FindElement.ByName("AddItemsButton"));
+            button.Click();
+            Wait.ForIdle();
+
+            var item3 = FindElement.ByName("Item3");
+            Verify.IsNotNull(item3);
         }
     }
 }

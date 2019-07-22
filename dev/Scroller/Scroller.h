@@ -75,10 +75,9 @@ public:
     static constexpr int s_zoomFactorChangeMinMs{ 50 };
     static constexpr int s_zoomFactorChangeMaxMs{ 1000 };
 
-    // Number of ticks ellapsed before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    static constexpr int s_zoomFactorAnimationRestartTicks = 4;
+    // Number of ticks ellapsed before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    static constexpr int s_translationAndZoomFactorAnimationsRestartTicks = 4;
 
     // Mouse-wheel-triggered scrolling/zooming constants
     // Mouse wheel delta amount required per initial velocity unit
@@ -218,6 +217,10 @@ public:
     void SetContentLayoutOffsetX(float contentLayoutOffsetX);
     void SetContentLayoutOffsetY(float contentLayoutOffsetY);
 
+    winrt::float2 GetArrangeRenderSizesDelta();
+    winrt::float2 GetMinPosition();
+    winrt::float2 GetMaxPosition();
+
     winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints()
     {
         return GetConsolidatedScrollSnapPoints(ScrollerDimension::HorizontalScroll);
@@ -248,6 +251,9 @@ public:
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void OnContentSizeChanged(
+        const winrt::IInspectable& sender,
+        const winrt::SizeChangedEventArgs& args);
     void OnContentPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
@@ -278,6 +284,12 @@ private:
     static winrt::hstring DependencyPropertyToString(const winrt::IDependencyProperty& dependencyProperty);
 #endif
 
+    winrt::Size ArrangeContent(
+        const winrt::UIElement& content,
+        const winrt::Thickness& contentMargin,
+        winrt::Rect& finalContentRect,
+        bool wasContentArrangeWidthStretched,
+        bool wasContentArrangeHeightStretched);
     float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
@@ -368,12 +380,12 @@ private:
         const winrt::UIElement& content);
     void StartTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
+        bool forAnimationsInterruption);
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content,
-        bool forZoomFactorAnimationInterruption);
-    bool StartZoomFactorExpressionAnimation();
-    void StopZoomFactorExpressionAnimation();
+        bool forAnimationsInterruption);
+    bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
+    void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollerDimension dimension);
@@ -391,8 +403,11 @@ private:
         const winrt::InteractionState& state);
     void UpdateExpressionAnimationSources();
     void UpdateUnzoomedExtentAndViewport(
-        double unzoomedExtentWidth, double unzoomedExtentHeight,
-        double viewportWidth, double viewportHeight);
+        bool renderSizeChanged,
+        double unzoomedExtentWidth,
+        double unzoomedExtentHeight,
+        double viewportWidth,
+        double viewportHeight);
     void UpdateScrollAutomationPatternProperties();
     void UpdateIsInertiaFromImpulse(bool isInertiaFromImpulse);
     void UpdateOffset(ScrollerDimension dimension, double zoomedOffset);
@@ -488,6 +503,8 @@ private:
     int GetInteractionTrackerOperationsCount(
         bool includeAnimatedOperations,
         bool includeNonAnimatedOperations) const;
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
+        std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
@@ -790,10 +807,9 @@ private:
     uint32_t m_screenWidthInRawPixels{};
     uint32_t m_screenHeightInRawPixels{};
 
-    // Number of ticks remaining before restarting the Scale animation to allow
-    // the Content rasterization to be triggered after the Idle State is reached
-    // or a zoom factor change operation completed.
-    uint8_t m_zoomFactorAnimationRestartTicksCountdown{};
+    // Number of ticks remaining before restarting the Translation and Scale animations to allow the Content
+    // rasterization to be triggered after the Idle State is reached or a zoom factor change operation completed.
+    uint8_t m_translationAndZoomFactorAnimationsRestartTicksCountdown{};
 
     // For perf reasons, the value of ContentOrientation is cached.
     winrt::ContentOrientation m_contentOrientation{ s_defaultContentOrientation };
@@ -839,26 +855,32 @@ private:
     event_source<winrt::PostArrangeEventHandler> m_postArrange{ this };
     event_source<winrt::ConfigurationChangedEventHandler> m_configurationChanged{ this };
 
-    // Event Tokens
-    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
-    winrt::FrameworkElement::Loaded_revoker m_loadedToken{};
-    winrt::FrameworkElement::Unloaded_revoker m_unloadedToken{};
-    winrt::UIElement::BringIntoViewRequested_revoker m_bringIntoViewRequested{};
-    winrt::UIElement::PointerWheelChanged_revoker m_pointerWheelChangedToken{};
-    PropertyChanged_revoker m_contentHorizontalAlignmentChangedToken{};
-    PropertyChanged_revoker m_contentVerticalAlignmentChangedToken{};
+    // Event Revokers
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingRevoker{};
+    winrt::FrameworkElement::Loaded_revoker m_loadedRevoker{};
+    winrt::FrameworkElement::Unloaded_revoker m_unloadedRevoker{};
+    winrt::UIElement::BringIntoViewRequested_revoker m_bringIntoViewRequestedRevoker{};
+    winrt::UIElement::PointerWheelChanged_revoker m_pointerWheelChangedRevoker{};
+    PropertyChanged_revoker m_contentMinWidthChangedRevoker{};
+    PropertyChanged_revoker m_contentWidthChangedRevoker{};
+    PropertyChanged_revoker m_contentMaxWidthChangedRevoker{};
+    PropertyChanged_revoker m_contentMinHeightChangedRevoker{};
+    PropertyChanged_revoker m_contentHeightChangedRevoker{};
+    PropertyChanged_revoker m_contentMaxHeightChangedRevoker{};
+    PropertyChanged_revoker m_contentHorizontalAlignmentChangedRevoker{};
+    PropertyChanged_revoker m_contentVerticalAlignmentChangedRevoker{};
 
-    winrt::IScrollController::ScrollToRequested_revoker m_horizontalScrollControllerScrollToRequestedToken{};
-    winrt::IScrollController::ScrollByRequested_revoker m_horizontalScrollControllerScrollByRequestedToken{};
-    winrt::IScrollController::ScrollFromRequested_revoker m_horizontalScrollControllerScrollFromRequestedToken{};
-    winrt::IScrollController::InteractionRequested_revoker m_horizontalScrollControllerInteractionRequestedToken{};
-    winrt::IScrollController::InteractionInfoChanged_revoker m_horizontalScrollControllerInteractionInfoChangedToken{};
+    winrt::IScrollController::ScrollToRequested_revoker m_horizontalScrollControllerScrollToRequestedRevoker{};
+    winrt::IScrollController::ScrollByRequested_revoker m_horizontalScrollControllerScrollByRequestedRevoker{};
+    winrt::IScrollController::ScrollFromRequested_revoker m_horizontalScrollControllerScrollFromRequestedRevoker{};
+    winrt::IScrollController::InteractionRequested_revoker m_horizontalScrollControllerInteractionRequestedRevoker{};
+    winrt::IScrollController::InteractionInfoChanged_revoker m_horizontalScrollControllerInteractionInfoChangedRevoker{};
 
-    winrt::IScrollController::ScrollToRequested_revoker m_verticalScrollControllerScrollToRequestedToken{};
-    winrt::IScrollController::ScrollByRequested_revoker m_verticalScrollControllerScrollByRequestedToken{};
-    winrt::IScrollController::ScrollFromRequested_revoker m_verticalScrollControllerScrollFromRequestedToken{};
-    winrt::IScrollController::InteractionRequested_revoker m_verticalScrollControllerInteractionRequestedToken{};
-    winrt::IScrollController::InteractionInfoChanged_revoker m_verticalScrollControllerInteractionInfoChangedToken{};
+    winrt::IScrollController::ScrollToRequested_revoker m_verticalScrollControllerScrollToRequestedRevoker{};
+    winrt::IScrollController::ScrollByRequested_revoker m_verticalScrollControllerScrollByRequestedRevoker{};
+    winrt::IScrollController::ScrollFromRequested_revoker m_verticalScrollControllerScrollFromRequestedRevoker{};
+    winrt::IScrollController::InteractionRequested_revoker m_verticalScrollControllerInteractionRequestedRevoker{};
+    winrt::IScrollController::InteractionInfoChanged_revoker m_verticalScrollControllerInteractionInfoChangedRevoker{};
 
     // Used for mouse-wheel scrolling on pre-RS5 Windows versions.
     winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};

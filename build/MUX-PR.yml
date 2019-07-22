@@ -1,8 +1,24 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
 jobs:
+- job: Setup
+  steps:
+    - task: powershell@2
+      name: checkPayload
+      displayName: 'Check if build is required for this PR'
+      inputs:
+        targetType: filePath
+        filePath: build\ShouldSkipPRBuild.ps1
+ 
 - job: Build
-  condition:
-    eq(variables['useBuildOutputFromBuildId'],'') 
+  dependsOn: Setup
+  condition: |
+    and
+    (
+      eq(variables['useBuildOutputFromBuildId'],''), 
+      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+    )
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -31,8 +47,15 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    dependsOn: 
+    - Setup 
+    - Build
+    condition: |
+      and
+      (
+        ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
+        in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      )
     testSuite: 'DevTestSuite'
 
 # Create Nuget Package
@@ -59,3 +82,4 @@ jobs:
   parameters:
     dependsOn: RunTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)

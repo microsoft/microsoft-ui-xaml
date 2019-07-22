@@ -31,7 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RatingControl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RatingControl.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>

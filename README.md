@@ -8,6 +8,9 @@ WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.c
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
+## :pizza: Achievement unlocked: 1000 Contributions! :pizza:
+We recently hit our 1000th community contribution!  ([**#1000**](https://github.com/microsoft/microsoft-ui-xaml/issues/1000) by [@eugenegff](https://github.com/eugenegff))  This is a wonderful milestone for WinUI.  To celebrate, on July 26th we’ll randomly draw 10 people from the community that follow/contribute to our repo.  These 10 people will receive a small special thank you gift.  **Make sure you’re [watching](https://github.com/microsoft/microsoft-ui-xaml/watchers) our repo to be included in the draw on the 26th!**
+
 ## WinUI 3.0 Announcement
 
 At the Microsoft Build conference in May 2019 we [shared our plans for WinUI 3.0](https://mybuild.techcommunity.microsoft.com/sessions/77008), which will greatly expand the scope of WinUI to include the full native Windows UI platform. 
@@ -61,16 +64,15 @@ You don't need version checks or conditional XAML markup to use WinUI controls o
 
 ### Version support
 
-The Microsoft.UI.Xaml 2.2 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.14393.0 when building. 
+The Microsoft.UI.Xaml 2.2 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.15063.0 when building. 
 
 Your app's users can be on any of the following supported Windows versions:
 * Windows Insider Previews
-* May 2019 Update (18362)
-* October 2018 Update (17763)
-* April 2018 Update (17134)
-* Fall Creators Update (16299)
-* Creators Update (15063)
-* Anniversary Update (14393)
+* May 2019 Update (18362 aka "19H1")
+* October 2018 Update (17763 aka "Redstone 5")
+* April 2018 Update (17134 aka "Redstone 4")
+* Fall Creators Update (16299 aka "Redstone 3")
+* Creators Update (15063 aka "Redstone 2")
 
 Some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
 

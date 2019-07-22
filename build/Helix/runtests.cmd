@@ -1,6 +1,6 @@
 setlocal ENABLEDELAYEDEXPANSION
 
-robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP
+robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
@@ -8,11 +8,10 @@ reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t 
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe
 
-cd scripts
+powershell -ExecutionPolicy Bypass .\EnsureMachineState.ps1
 powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
-cd ..
 
-set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll NugetPackageTestApp.appx NugetPackageTestAppCX.appx
+set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll
 set testBinaries=
 for %%B in (%testBinaryCandidates%) do (
     if exist %%B (
@@ -30,12 +29,15 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
     %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
 )
 
-cd scripts
+FOR %%I in (*.pgc) DO (
+    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
+)
+
 set FailedTestQuery=
-for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_original.wtl`) DO (
+for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_original.wtl`) DO (
   set FailedTestQuery=%%I
 )
-cd ..
 
 rem The first time, we'll just re-run failed tests once.  In many cases, tests fail very rarely, such that
 rem a single re-run will be sufficient to detect many unreliable tests.
@@ -55,12 +57,10 @@ rem If there are still failing tests remaining, we'll run them eight more times,
 rem If any tests fail all ten times, we can be pretty confident that these are actual test failures rather than unreliable tests.
 if not exist te_rerun.wtl goto :SkipReruns
 
-cd scripts
 set FailedTestQuery=
-for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 ..\te_rerun.wtl`) DO (
+for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_rerun.wtl`) DO (
   set FailedTestQuery=%%I
 )
-cd ..
 
 if "%FailedTestQuery%" == "" goto :SkipReruns
 
@@ -76,8 +76,12 @@ FOR %%I in (WexLogFileOutput\*.jpg) DO (
 
 :SkipReruns
 
-cd scripts
-powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 ..\te_original.wtl ..\te_rerun.wtl ..\te_rerun_multiple.wtl ..\testResults.xml %testnameprefix%
-cd ..
+powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl %testnameprefix%
+powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl testResults.xml %testnameprefix%
+
+FOR %%I in (*_subresults.json) DO (
+    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
+    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%I
+)
 
 type testResults.xml

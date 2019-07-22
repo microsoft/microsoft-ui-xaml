@@ -10,15 +10,6 @@ com_ptr<ScrollerTestHooks> ScrollerTestHooks::s_testHooks{};
 
 ScrollerTestHooks::ScrollerTestHooks()
 {
-    m_offsetsChangeMsPerUnit = Scroller::s_offsetsChangeMsPerUnit;
-    m_offsetsChangeMinMs = Scroller::s_offsetsChangeMinMs;
-    m_offsetsChangeMaxMs = Scroller::s_offsetsChangeMaxMs;
-
-    m_zoomFactorChangeMsPerUnit = Scroller::s_zoomFactorChangeMsPerUnit;
-    m_zoomFactorChangeMinMs = Scroller::s_zoomFactorChangeMinMs;
-    m_zoomFactorChangeMaxMs = Scroller::s_zoomFactorChangeMaxMs;
-
-    m_mouseWheelDeltaForVelocityUnit = Scroller::s_mouseWheelDeltaForVelocityUnit;
     m_mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? Scroller::s_mouseWheelInertiaDecayRate : Scroller::s_mouseWheelInertiaDecayRateRS1;
 }
 
@@ -103,6 +94,30 @@ void ScrollerTestHooks::MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVel
     hooks->m_mouseWheelDeltaForVelocityUnit = mouseWheelDeltaForVelocityUnit;
 }
 
+int ScrollerTestHooks::MouseWheelScrollLines()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollLines;
+}
+
+void ScrollerTestHooks::MouseWheelScrollLines(int mouseWheelScrollLines)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollLines = mouseWheelScrollLines;
+}
+
+int ScrollerTestHooks::MouseWheelScrollChars()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollChars;
+}
+
+void ScrollerTestHooks::MouseWheelScrollChars(int mouseWheelScrollChars)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollChars = mouseWheelScrollChars;
+}
+
 float ScrollerTestHooks::MouseWheelInertiaDecayRate()
 {
     auto hooks = EnsureGlobalTestHooks();
@@ -185,6 +200,33 @@ void ScrollerTestHooks::SetContentLayoutOffsetY(const winrt::Scroller& scroller,
     {
         winrt::get_self<Scroller>(scroller)->SetContentLayoutOffsetY(contentLayoutOffsetY);
     }
+}
+
+winrt::float2 ScrollerTestHooks::GetArrangeRenderSizesDelta(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetArrangeRenderSizesDelta();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMinPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMinPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMaxPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMaxPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
 }
 
 winrt::ScrollerViewChangeResult ScrollerTestHooks::GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs)

@@ -135,6 +135,7 @@ private:
     void UpdateTopNavigationWidthCache();
 
     int GetSelectedItemIndex();
+    double GetPaneToggleButtonWidth();
 
     bool BumperNavigation(int offset);
 
@@ -153,7 +154,7 @@ private:
     void UpdateSelectedItem();
     void UpdatePaneTabFocusNavigation();
     void UpdatePaneToggleSize();
-    void UpdateBackButtonVisibility();
+    void UpdateBackAndCloseButtonsVisibility();
     void UpdatePaneTitleMargins();
     void UpdateLeftNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
@@ -240,7 +241,6 @@ private:
     void OpenPane();
     void ClosePane();
     bool AttemptClosePaneLightly();
-    void ClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
@@ -257,6 +257,8 @@ private:
     bool IsOverlay();
     bool IsLightDismissible();
     bool ShouldShowBackButton();
+    bool ShouldShowCloseButton();
+    bool ShouldShowBackOrCloseButton();
 
     void UnhookEventsAndClearFields(bool isFromDestructor = false);
 
@@ -272,8 +274,8 @@ private:
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
+    tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::TextBlock> m_paneTitleTextBlock{ this };
-    tracker_ref<winrt::Grid> m_buttonHolderGrid{ this };
     tracker_ref<winrt::ListView> m_leftNavListView{ this };
     tracker_ref<winrt::ListView> m_topNavListView{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
@@ -286,8 +288,7 @@ private:
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
     tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_topPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_headerContent{ this };
+    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{ this };
 
     tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
 
@@ -315,6 +316,7 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
+    winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};

@@ -24,5 +24,8 @@
     <File
       location="TeachingTip"
       path="%LocRoot%\..\..\dev\TeachingTip\Strings\en-us\Resources.resw"/>
+    <File
+      location="TabView"
+      path="%LocRoot%\..\..\dev\TabView\Strings\en-us\Resources.resw"/>
   </Module>
 </Modules>

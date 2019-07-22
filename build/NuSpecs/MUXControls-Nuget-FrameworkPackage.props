@@ -129,14 +129,6 @@
       <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutputToBeRemoved)" />
     </ItemGroup>
   </Target>
-
-  <!-- Workaround for apps that need RS1 support, include this only if min version is RS1 -->
-  <ItemGroup Condition="($([System.Version]::Parse('$(TargetPlatformMinVersion)').Build) &lt; 15063) And '$(DisableMicrosoftUIXamlRS1ThemesWorkaround)'==''">
-    <Page Include="$(MSBuildThisFileDirectory)rs1_themes\generic.xaml">
-      <SubType>Designer</SubType>
-      <Link>Microsoft.UI.Xaml\Themes\generic.xaml</Link>
-    </Page>
-  </ItemGroup>
   
   <!-- Make this URI works in framework package "ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" -->
   <ItemGroup>

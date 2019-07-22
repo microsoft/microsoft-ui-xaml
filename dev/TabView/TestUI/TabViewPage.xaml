@@ -21,15 +21,17 @@
                 <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
+                <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddButtonVisible, Mode=TwoWay}"/>
 
-                <Button x:Name="AddTabButton" AutomationProperties.Name="AddTabButton" Content="Add Tab" Margin="0,4,0,8" Click="AddTabButton_Click"/>
                 <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
+                <Button x:Name="SelectItemButton" AutomationProperties.Name="SelectItemButton"  Content="Select Item 1" Margin="0,0,0,8" Click="SelectItemButton_Click"/>
+                <Button x:Name="SelectIndexButton" AutomationProperties.Name="SelectIndexButton"  Content="Select Index 2" Margin="0,0,0,8" Click="SelectIndexButton_Click"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
                     <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
                         <ComboBoxItem Content="SizeToContent"/>
-                        <ComboBoxItem Content="Fixed"/>
+                        <ComboBoxItem Content="Equal"/>
                     </ComboBox>
                 </StackPanel>
 
@@ -39,12 +41,34 @@
                 </StackPanel>
             </StackPanel>
 
-            <controls:TabView x:Name="Tabs" TabWidthMode="Fixed" CanReorderItems="True" CanDragItems="True" AllowDrop="True" Grid.Column="1" SelectionChanged="TabViewSelectionChanged" TabClosing="TabViewTabClosing">
+            <controls:TabView
+                x:Name="Tabs"
+                Grid.Column="1"
+                TabWidthMode="Equal"
+                SelectedIndex="0"
+                SelectionChanged="TabViewSelectionChanged"
+                TabClosing="TabViewTabClosing"
+                AddButtonClick="AddButtonClick">
+
+                <controls:TabView.RightCustomContent>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                    </Grid>
+                </controls:TabView.RightCustomContent>
 
                 <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" IsSelected="True">
-                        <Button x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent" Padding="16">Home text</Button>
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
+                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
+                            <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
+                            <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
+                        </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop">

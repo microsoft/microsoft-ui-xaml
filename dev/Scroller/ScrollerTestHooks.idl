@@ -45,6 +45,8 @@ runtimeclass ScrollerTestHooks
     static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled { get; set; };
     static Windows.Foundation.IReference<Boolean> IsAnimationsEnabledOverride { get; set; };
     static Int32 MouseWheelDeltaForVelocityUnit { get; set; };
+    static Int32 MouseWheelScrollLines{ get; set; };
+    static Int32 MouseWheelScrollChars{ get; set; };
     static Single MouseWheelInertiaDecayRate { get; set; };
     static void GetOffsetsChangeVelocityParameters(out Int32 millisecondsPerUnit, out Int32 minMilliseconds, out Int32 maxMilliseconds);
     static void SetOffsetsChangeVelocityParameters(Int32 millisecondsPerUnit, Int32 minMilliseconds, Int32 maxMilliseconds);
@@ -54,6 +56,9 @@ runtimeclass ScrollerTestHooks
     static void SetContentLayoutOffsetX(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, out Single contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetY);
+    static Windows.Foundation.Numerics.Vector2 GetArrangeRenderSizesDelta(MU_XCP_NAMESPACE.Scroller scroller);
+    static Windows.Foundation.Numerics.Vector2 GetMinPosition(MU_XCP_NAMESPACE.Scroller scroller);
+    static Windows.Foundation.Numerics.Vector2 GetMaxPosition(MU_XCP_NAMESPACE.Scroller scroller);
     static ScrollerViewChangeResult GetScrollCompletedResult(MU_XC_NAMESPACE.ScrollCompletedEventArgs scrollCompletedEventArgs);
     static ScrollerViewChangeResult GetZoomCompletedResult(MU_XC_NAMESPACE.ZoomCompletedEventArgs zoomCompletedEventArgs);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(MU_XCP_NAMESPACE.Scroller scroller);

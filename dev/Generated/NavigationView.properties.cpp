@@ -23,6 +23,7 @@ GlobalDependencyProperty NavigationViewProperties::s_IsPaneOpenProperty{ nullptr
 GlobalDependencyProperty NavigationViewProperties::s_IsPaneToggleButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_IsPaneVisibleProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_IsSettingsVisibleProperty{ nullptr };
+GlobalDependencyProperty NavigationViewProperties::s_IsTitleBarAutoPaddingEnabledProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_MenuItemContainerStyleProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_MenuItemContainerStyleSelectorProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_MenuItemsProperty{ nullptr };
@@ -222,6 +223,17 @@ void NavigationViewProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnIsSettingsVisiblePropertyChanged));
+    }
+    if (!s_IsTitleBarAutoPaddingEnabledProperty)
+    {
+        s_IsTitleBarAutoPaddingEnabledProperty =
+            InitializeDependencyProperty(
+                L"IsTitleBarAutoPaddingEnabled",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NavigationView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(true),
+                winrt::PropertyChangedCallback(&OnIsTitleBarAutoPaddingEnabledPropertyChanged));
     }
     if (!s_MenuItemContainerStyleProperty)
     {
@@ -451,6 +463,7 @@ void NavigationViewProperties::ClearProperties()
     s_IsPaneToggleButtonVisibleProperty = nullptr;
     s_IsPaneVisibleProperty = nullptr;
     s_IsSettingsVisibleProperty = nullptr;
+    s_IsTitleBarAutoPaddingEnabledProperty = nullptr;
     s_MenuItemContainerStyleProperty = nullptr;
     s_MenuItemContainerStyleSelectorProperty = nullptr;
     s_MenuItemsProperty = nullptr;
@@ -607,6 +620,14 @@ void NavigationViewProperties::OnIsPaneVisiblePropertyChanged(
 }
 
 void NavigationViewProperties::OnIsSettingsVisiblePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
+}
+
+void NavigationViewProperties::OnIsTitleBarAutoPaddingEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -774,8 +795,9 @@ winrt::AutoSuggestBox NavigationViewProperties::AutoSuggestBox()
 
 void NavigationViewProperties::CompactModeThresholdWidth(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_CompactModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_CompactModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::CompactModeThresholdWidth()
@@ -785,8 +807,9 @@ double NavigationViewProperties::CompactModeThresholdWidth()
 
 void NavigationViewProperties::CompactPaneLength(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_CompactPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::CompactPaneLength()
@@ -816,8 +839,9 @@ winrt::NavigationViewDisplayMode NavigationViewProperties::DisplayMode()
 
 void NavigationViewProperties::ExpandedModeThresholdWidth(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_ExpandedModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_ExpandedModeThresholdWidthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::ExpandedModeThresholdWidth()
@@ -905,6 +929,16 @@ bool NavigationViewProperties::IsSettingsVisible()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_IsSettingsVisibleProperty));
 }
 
+void NavigationViewProperties::IsTitleBarAutoPaddingEnabled(bool value)
+{
+    static_cast<NavigationView*>(this)->SetValue(s_IsTitleBarAutoPaddingEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NavigationViewProperties::IsTitleBarAutoPaddingEnabled()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_IsTitleBarAutoPaddingEnabledProperty));
+}
+
 void NavigationViewProperties::MenuItemContainerStyle(winrt::Style const& value)
 {
     static_cast<NavigationView*>(this)->SetValue(s_MenuItemContainerStyleProperty, ValueHelper<winrt::Style>::BoxValueIfNecessary(value));
@@ -967,8 +1001,9 @@ winrt::DataTemplateSelector NavigationViewProperties::MenuItemTemplateSelector()
 
 void NavigationViewProperties::OpenPaneLength(double value)
 {
-    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(value);
-    static_cast<NavigationView*>(this)->SetValue(s_OpenPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    double coercedValue = value;
+    static_cast<NavigationView*>(this)->CoerceToGreaterThanZero(coercedValue);
+    static_cast<NavigationView*>(this)->SetValue(s_OpenPaneLengthProperty, ValueHelper<double>::BoxValueIfNecessary(coercedValue));
 }
 
 double NavigationViewProperties::OpenPaneLength()

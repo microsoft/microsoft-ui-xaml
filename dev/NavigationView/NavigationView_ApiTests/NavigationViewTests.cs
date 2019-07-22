@@ -3,15 +3,12 @@
 
 using MUXControlsTestApp.Utilities;
 
-using System;
-using System.Collections.Generic;
-using Windows.Foundation.Metadata;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Shapes;
-using System.Collections.ObjectModel;
 using Common;
+using System;
+using Windows.Foundation.Metadata;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -22,13 +19,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -77,7 +72,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
             });
             IdleSynchronizer.Wait();
-            
+
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Expanded, "Left Expanded");
@@ -90,7 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Compact, "LeftCompact Compact");
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
             });
-            IdleSynchronizer.Wait();           
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
@@ -128,7 +123,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Setter styleSetter = null;
             Style hamburgerStyle = null;
 
-
             RunOnUIThread.Execute(() =>
             {
                 footer = new Rectangle();
@@ -152,6 +146,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(navView.Header);
                 Verify.IsTrue(navView.IsSettingsVisible);
                 Verify.IsTrue(navView.IsPaneToggleButtonVisible);
+                Verify.IsTrue(navView.IsTitleBarAutoPaddingEnabled);
                 Verify.IsTrue(navView.AlwaysShowHeader);
                 Verify.AreEqual(48, navView.CompactPaneLength);
                 Verify.AreEqual(320, navView.OpenPaneLength);
@@ -170,6 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Header = header;
                 navView.IsSettingsVisible = false;
                 navView.IsPaneToggleButtonVisible = false;
+                navView.IsTitleBarAutoPaddingEnabled = false;
                 navView.AlwaysShowHeader = false;
                 navView.CompactPaneLength = 40;
                 navView.OpenPaneLength = 300;
@@ -191,6 +187,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(header, navView.Header);
                 Verify.IsFalse(navView.IsSettingsVisible);
                 Verify.IsFalse(navView.IsPaneToggleButtonVisible);
+                Verify.IsFalse(navView.IsTitleBarAutoPaddingEnabled);
                 Verify.IsFalse(navView.AlwaysShowHeader);
                 Verify.AreEqual(40, navView.CompactPaneLength);
                 Verify.AreEqual(300, navView.OpenPaneLength);
@@ -347,25 +344,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-#if BUILD_WINDOWS
-        [TestMethod]
-        [TestProperty("BUG", "RS3:12705080")]
-        public void CanLoadSimpleNavigationView()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                XamlReader.Load(@"
-                    <NavigationView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                        <NavigationView.MenuItems>
-                            <NavigationViewItem Icon='Save' Content='Save' />
-                        </NavigationView.MenuItems>
-                        <TextBlock>Hello World</TextBlock>
-                    </NavigationView>");
-            });
-        }
-#endif
-
-#if !BUILD_WINDOWS
         // Disabled per GitHub Issue #211
         //[TestMethod]
         public void VerifyCanNotAddWUXItems()
@@ -395,6 +373,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.Throws<Exception>(() => { navView.UpdateLayout(); });
             });
         }
-#endif
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnTopNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.Top, "VerifyVerifyHeaderContentMarginOnTopNav");
+        }
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnMinimalNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
+        }
+
+        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
+        {
+            NavigationView navView = null;
+            UIElement headerContent = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView() { Header = "HEADER", PaneDisplayMode = paneDisplayMode, Width = 400.0 };
+                MUXControlsTestApp.App.TestContentRoot = navView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                if (rootGrid != null)
+                {
+                    headerContent = rootGrid.FindName("HeaderContent") as UIElement;
+                }
+            });
+
+            VisualTreeTestHelper.VerifyVisualTree(
+                root: headerContent,
+                masterFilePrefix: masterFilePrefix);
+        }
     }
 }
