@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "SharedHelpers.h"
 #include "SplitButtonTestHelper.h"
+#include "common.h"
 
 thread_local com_ptr<SplitButtonTestHelper> SplitButtonTestHelper::s_instance;
 

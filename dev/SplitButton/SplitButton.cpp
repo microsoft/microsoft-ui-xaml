@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
 #include "SplitButton.h"
 #include "SplitButtonAutomationPeer.h"
-#include "SplitButtonTestHelper.h"
 #include "SplitButtonEventArgs.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
+#include "SplitButtonTestHelper.h"
+#include "common.h"
 
 SplitButton::SplitButton()
 {
@@ -236,14 +236,14 @@ void SplitButton::CloseFlyout()
     }
 }
 
-void SplitButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void SplitButton::OnFlyoutOpened(const winrt::IInspectable&  /*sender*/, const winrt::IInspectable&  /*args*/)
 {
     m_isFlyoutOpen = true;
     UpdateVisualStates();
     SharedHelpers::RaiseAutomationPropertyChangedEvent(*this, winrt::ExpandCollapseState::Collapsed, winrt::ExpandCollapseState::Expanded);
 }
 
-void SplitButton::OnFlyoutClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void SplitButton::OnFlyoutClosed(const winrt::IInspectable&  /*sender*/, const winrt::IInspectable&  /*args*/)
 {
     m_isFlyoutOpen = false;
     UpdateVisualStates();
@@ -255,7 +255,7 @@ void SplitButton::OnFlyoutPlacementChanged(const winrt::DependencyObject& sender
     UpdateVisualStates();
 }
 
-void SplitButton::OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void SplitButton::OnClickPrimary(const winrt::IInspectable&  /*sender*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     auto eventArgs = winrt::make_self<SplitButtonClickEventArgs>();
     m_clickEventSource(*this, *eventArgs);
@@ -266,12 +266,12 @@ void SplitButton::OnClickPrimary(const winrt::IInspectable& sender, const winrt:
     }
 }
 
-void SplitButton::OnClickSecondary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void SplitButton::OnClickSecondary(const winrt::IInspectable&  /*sender*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     OpenFlyout();
 }
 
-void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
+void SplitButton::OnPointerEvent(const winrt::IInspectable&  /*sender*/, const winrt::PointerRoutedEventArgs& args)
 {
     winrt::PointerDeviceType pointerDeviceType = args.Pointer().PointerDeviceType();
 
@@ -288,7 +288,7 @@ void SplitButton::OnPointerEvent(const winrt::IInspectable& sender, const winrt:
     }
 }
 
-void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable&  /*sender*/, const winrt::KeyRoutedEventArgs& args)
 {
     winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)
@@ -298,7 +298,7 @@ void SplitButton::OnSplitButtonKeyDown(const winrt::IInspectable& sender, const 
     }
 }
 
-void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void SplitButton::OnSplitButtonKeyUp(const winrt::IInspectable&  /*sender*/, const winrt::KeyRoutedEventArgs& args)
 {
     winrt::VirtualKey key = args.Key();
     if (key == winrt::VirtualKey::Space || key == winrt::VirtualKey::Enter || key == winrt::VirtualKey::GamepadA)

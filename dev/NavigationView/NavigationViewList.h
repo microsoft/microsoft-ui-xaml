@@ -13,7 +13,7 @@ public:
 
     // IItemsControlOverrides
     winrt::DependencyObject GetContainerForItemOverride();
-    bool IsItemItsOwnContainerOverride(winrt::IInspectable const& item);
+    bool IsItemItsOwnContainerOverride(winrt::IInspectable const& args);
     void ClearContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item);
     void PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item);
 

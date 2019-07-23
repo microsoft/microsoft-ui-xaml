@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ElementFactory.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(ElementFactory);
 
@@ -23,12 +23,12 @@ void ElementFactory::RecycleElement(winrt::ElementFactoryRecycleArgs const& args
 
 #pragma region IElementFactoryOverrides
 
-winrt::UIElement ElementFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
+winrt::UIElement ElementFactory::GetElementCore(winrt::ElementFactoryGetArgs const&  /*args*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
-void ElementFactory::RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args)
+void ElementFactory::RecycleElementCore(winrt::ElementFactoryRecycleArgs const&  /*args*/)
 {
     throw winrt::hresult_not_implemented();
 }

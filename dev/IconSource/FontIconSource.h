@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "IconSource.h"
 #include "FontIconSource.g.h"
 #include "FontIconSource.properties.h"
+#include "IconSource.h"
 
 static constexpr auto c_fontIconSourceDefaultFontFamily{ L"Segoe MDL2 Assets"sv };
 

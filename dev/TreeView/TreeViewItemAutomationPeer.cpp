@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "TreeView.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemAutomationPeer.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewItemAutomationPeer);
 
-TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner) :
+TreeViewItemAutomationPeer::TreeViewItemAutomationPeer(winrt::TreeViewItem  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }

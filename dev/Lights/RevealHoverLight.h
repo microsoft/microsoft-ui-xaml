@@ -3,8 +3,8 @@
 
 #pragma once
 #include "MaterialHelper.h"
-#include "SpotLightStateHelper.h"
 #include "RevealTestApi.h"
+#include "SpotLightStateHelper.h"
 
 #include "RevealHoverLight.g.h"
 
@@ -71,7 +71,7 @@ private:
     LightStates m_currentLightState{ LightStates::Off };
 
     void GotoLightState(LightEvents e);
-    void GotoLightStateHelper(LightStates target, bool skipAnimation = false);
+    void GotoLightStateHelper(LightStates target, bool skipAnimation);
 
     void EnableHoverAnimation();
     void DisableHoverAnimation();
@@ -115,6 +115,6 @@ private:
     // For mouse and touch we will set this to false and have our light follow the pointer position.
     bool m_centerLight{ true };
 
-    const RevealHoverSpotlightStateDesc* m_spotLightStates;
+    const RevealHoverSpotlightStateDesc* m_spotLightStates{};
     winrt::IInspectable m_elementPointerPressedEventHandler{};
 };

@@ -9,7 +9,7 @@ class ItemsRepeaterElementClearingEventArgs :
     public ReferenceTracker<ItemsRepeaterElementClearingEventArgs, winrt::implementation::ItemsRepeaterElementClearingEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ItemsRepeaterElementClearingEventArgs(
+    explicit ItemsRepeaterElementClearingEventArgs(
         const winrt::UIElement& element);
 
 #pragma region IElementClearingEventArgs

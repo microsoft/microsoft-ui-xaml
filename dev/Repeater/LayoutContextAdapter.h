@@ -4,14 +4,14 @@
 #pragma once
 
 #include "LayoutContext.h"
-#include "VirtualizingLayoutContext.h"
 #include "NonvirtualizingLayoutContext.h"
+#include "VirtualizingLayoutContext.h"
 
 class LayoutContextAdapter :
     public winrt::implements<LayoutContextAdapter, VirtualizingLayoutContext>
 {
 public:
-    LayoutContextAdapter(winrt::NonVirtualizingLayoutContext const& nonVirtualizingContext);
+    explicit LayoutContextAdapter(winrt::NonVirtualizingLayoutContext const& nonVirtualizingContext);
 
 #pragma region ILayoutContextOverrides
 

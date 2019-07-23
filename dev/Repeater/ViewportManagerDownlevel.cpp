@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "ViewportManagerDownLevel.h"
 #include "ItemsRepeater.h"
+#include "ViewportManagerDownLevel.h"
 #include "layout.h"
+#include <common.h>
+#include <pch.h>
 
 // Pixel delta by which to inflate the cache buffer on each side.  Rather than fill the entire
 // cache buffer all at once, we chunk the work to make the UI thread more responsive.  We inflate
@@ -96,8 +96,8 @@ winrt::Rect ViewportManagerDownLevel::GetLayoutVisibleWindow() const
         // to zero and the layout origin is expected to change once layout is done.
         // Until then, we need a window that's going to protect the anchor from
         // getting recycled.
-        visibleWindow.X = 0.0f;
-        visibleWindow.Y = 0.0f;
+        visibleWindow.X = 0.0F;
+        visibleWindow.Y = 0.0F;
     }
     else if (HasScrollers())
     {
@@ -115,8 +115,8 @@ winrt::Rect ViewportManagerDownLevel::GetLayoutRealizationWindow() const
     {
         realizationWindow.X -= static_cast<float>(m_horizontalCacheBufferPerSide);
         realizationWindow.Y -= static_cast<float>(m_verticalCacheBufferPerSide);
-        realizationWindow.Width += static_cast<float>(m_horizontalCacheBufferPerSide) * 2.0f;
-        realizationWindow.Height += static_cast<float>(m_verticalCacheBufferPerSide) * 2.0f;
+        realizationWindow.Width += static_cast<float>(m_horizontalCacheBufferPerSide) * 2.0F;
+        realizationWindow.Height += static_cast<float>(m_verticalCacheBufferPerSide) * 2.0F;
     }
 
     return realizationWindow;
@@ -128,7 +128,7 @@ void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
     m_expectedViewportShift.Y += m_layoutExtent.Y - extent.Y;
 
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
-    if (std::abs(m_expectedViewportShift.X) > 1.f || std::abs(m_expectedViewportShift.Y) > 1.f)
+    if (std::abs(m_expectedViewportShift.X) > 1.F || std::abs(m_expectedViewportShift.Y) > 1.F)
     {
         REPEATER_TRACE_INFO(L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
             GetLayoutId().data(), m_expectedViewportShift.X, m_expectedViewportShift.Y);
@@ -236,7 +236,7 @@ void ViewportManagerDownLevel::OnCacheBuildActionCompleted()
     m_owner->InvalidateMeasure();
 }
 
-void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
+void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface& /*unused*/, const bool isFinal)
 {
     if (!m_managingViewportDisabled)
     {
@@ -251,7 +251,7 @@ void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrolling
     }
 }
 
-void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
+void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurface& /*unused*/)
 {
     if (!m_managingViewportDisabled)
     {
@@ -290,7 +290,7 @@ void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurf
     }
 }
 
-void ViewportManagerDownLevel::OnConfigurationChanged(const winrt::IRepeaterScrollingSurface& sender)
+void ViewportManagerDownLevel::OnConfigurationChanged(const winrt::IRepeaterScrollingSurface&  /*sender*/)
 {
     m_ensuredScrollers = false;
     TryInvalidateMeasure();
@@ -330,7 +330,7 @@ void ViewportManagerDownLevel::EnsureScrollers()
     }
 }
 
-bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurface& scroller)
+bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurface&  /*scroller*/)
 {
     MUX_ASSERT(!(m_horizontalScroller && m_verticalScroller));
 

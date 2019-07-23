@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "RepeaterTestHooksFactory.h"
+#include "common.h"
 
 RepeaterTestHooks* RepeaterTestHooks::s_testHooks = nullptr;
 
 void RepeaterTestHooks::EnsureHooks()
 {
-    if (!s_testHooks)
+    if (s_testHooks == nullptr)
     {
         s_testHooks = winrt::make_self<RepeaterTestHooks>().detach();
     }
@@ -23,7 +23,7 @@ winrt::event_token RepeaterTestHooks::BuildTreeCompleted(winrt::TypedEventHandle
 
 void RepeaterTestHooks::BuildTreeCompleted(winrt::event_token const& token)
 {
-    if (s_testHooks)
+    if (s_testHooks != nullptr)
     {
         s_testHooks->BuildTreeCompletedImpl(token);
     }
@@ -31,7 +31,7 @@ void RepeaterTestHooks::BuildTreeCompleted(winrt::event_token const& token)
 
 void RepeaterTestHooks::NotifyBuildTreeCompleted()
 {
-    if (s_testHooks)
+    if (s_testHooks != nullptr)
     {
         s_testHooks->NotifyBuildTreeCompletedImpl();
     }

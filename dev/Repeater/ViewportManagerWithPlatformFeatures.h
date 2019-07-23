@@ -16,7 +16,7 @@ class ItemsRepeater;
 class ViewportManagerWithPlatformFeatures : public ViewportManager
 {
 public:
-    ViewportManagerWithPlatformFeatures(ItemsRepeater* owner);
+    explicit ViewportManagerWithPlatformFeatures(ItemsRepeater* owner);
 
     [[nodiscard]] winrt::UIElement SuggestedAnchor() const override;
 
@@ -37,8 +37,8 @@ public:
     void OnElementCleared(const winrt::UIElement& element) override;
     void OnOwnerMeasuring() override;
     void OnOwnerArranged() override;
-    void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) override;
-    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) override;
+    void OnMakeAnchor(const winrt::UIElement& anchor, bool isAnchorOutsideRealizedRange) override;
+    void OnBringIntoViewRequested(winrt::BringIntoViewRequestedEventArgs args) override;
 
     void ResetScrollers() override;
 
@@ -53,7 +53,7 @@ private:
 
     void EnsureScroller();
     [[nodiscard]] bool HasScroller() const { return m_scroller != nullptr; }
-    void UpdateViewport(winrt::Rect const& args);
+    void UpdateViewport(winrt::Rect const& viewport);
     void ResetCacheBuffer();
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
@@ -67,12 +67,12 @@ private:
     ItemsRepeater* m_owner{ nullptr };
 
     bool m_ensuredScroller{ false };
-    tracker_ref<winrt::Controls::IScrollAnchorProvider> m_scroller;
+    tracker_ref<winrt::Controls::IScrollAnchorProvider> m_scroller{};
 
-    tracker_ref<winrt::UIElement> m_makeAnchorElement;
+    tracker_ref<winrt::UIElement> m_makeAnchorElement{};
     bool m_isAnchorOutsideRealizedRange{};  // Value is only valid when m_makeAnchorElement is set.
 
-    tracker_ref<winrt::IAsyncAction> m_cacheBuildAction;
+    tracker_ref<winrt::IAsyncAction> m_cacheBuildAction{};
 
     winrt::Rect m_visibleWindow{};
     winrt::Rect m_layoutExtent{};

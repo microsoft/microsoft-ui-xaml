@@ -5,10 +5,10 @@
 
 struct bringintoview_event_revoker;
 
-#include "NavigationViewItemBase.h"
 #include "NavigationViewItem.g.h"
-#include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
+#include "NavigationViewItemBase.h"
+#include "NavigationViewItemPresenter.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,

@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TreeViewNode.h"
+#include "InspectingDataSource.h"
+#include "RuntimeProfiler.h"
 #include "TreeView.h"
-#include "TreeViewList.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemAutomationPeer.h"
-#include "ViewModel.h"
+#include "TreeViewList.h"
 #include "TreeViewNode.h"
-#include "RuntimeProfiler.h"
-#include "InspectingDataSource.h"
+#include "TreeViewNode.h"
+#include "ViewModel.h"
+#include "common.h"
 
 static constexpr auto c_listControlName = L"ListControl"sv;
 

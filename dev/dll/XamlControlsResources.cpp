@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "XamlControlsResources.h"
 #include "RevealBrush.h"
+#include "XamlControlsResources.h"
+#include "common.h"
 
 #ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
@@ -111,7 +111,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 {
                     return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
                 }
-                else if (isRS5OrHigher)
+                if (isRS5OrHigher)
                 {
                     return L"ms-appx://" MUXCONTROLS_PACKAGE_NAME "/" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
                 }
@@ -134,7 +134,7 @@ void SetDefaultStyleKeyWorker(winrt::IControlProtected const& controlProtected, 
                 {
                     return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/19h1_generic.xaml";
                 }
-                else if (isRS5OrHigher)
+                if (isRS5OrHigher)
                 {
                     return L"ms-appx:///" MUXCONTROLSROOT_NAMESPACE_STR "/Themes/rs5_generic.xaml";
                 }

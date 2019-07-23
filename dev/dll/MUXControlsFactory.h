@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "XamlMetadataProvider.h"
 #include "XamlControlsXamlMetaDataProvider.g.h"
+#include "XamlMetadataProvider.h"
 
 class MUXControlsFactory :
     public winrt::factory_implementation::XamlControlsXamlMetaDataProviderT<MUXControlsFactory, XamlMetadataProvider>

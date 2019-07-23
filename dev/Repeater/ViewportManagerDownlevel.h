@@ -14,7 +14,7 @@ class ItemsRepeater;
 class ViewportManagerDownLevel : public ViewportManager
 {
 public:
-    ViewportManagerDownLevel(ItemsRepeater* owner);
+    explicit ViewportManagerDownLevel(ItemsRepeater* owner);
 
     [[nodiscard]] winrt::UIElement SuggestedAnchor() const override;
 
@@ -35,8 +35,8 @@ public:
     void OnElementCleared(const winrt::UIElement& element) override;
     void OnOwnerMeasuring() override {};
     void OnOwnerArranged() override;
-    void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) override;
-    void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) override;
+    void OnMakeAnchor(const winrt::UIElement& anchor, bool isAnchorOutsideRealizedRange) override;
+    void OnBringIntoViewRequested(winrt::BringIntoViewRequestedEventArgs args) override;
 
     void ResetScrollers() override;
 
@@ -46,7 +46,7 @@ private:
     struct ScrollerInfo;
 
     void OnCacheBuildActionCompleted();
-    void OnViewportChanged(const winrt::IRepeaterScrollingSurface& sender, const bool isFinal);
+    void OnViewportChanged(const winrt::IRepeaterScrollingSurface& sender, bool isFinal);
     void OnPostArrange(const winrt::IRepeaterScrollingSurface& sender);
     void OnConfigurationChanged(const winrt::IRepeaterScrollingSurface& sender);
 
@@ -69,20 +69,20 @@ private:
     // and m_verticalScroller are set. In the latter case, we don't care about the other
     // scroller that we haven't reached yet.
     bool m_ensuredScrollers{ false };
-    std::vector<ScrollerInfo> m_parentScrollers;
+    std::vector<ScrollerInfo> m_parentScrollers{};
 
     // In order to support the Store scenario (vertical list of horizontal lists),
     // we need to build a synthetic virtualization window by taking the horizontal and
     // vertical components of the viewport from two different scrollers.
-    tracker_ref<winrt::IRepeaterScrollingSurface> m_horizontalScroller;
-    tracker_ref<winrt::IRepeaterScrollingSurface> m_verticalScroller;
+    tracker_ref<winrt::IRepeaterScrollingSurface> m_horizontalScroller{};
+    tracker_ref<winrt::IRepeaterScrollingSurface> m_verticalScroller{};
     // Invariant: !m_innerScrollableScroller || m_horizontalScroller == m_innerScrollableScroller || m_verticalScroller == m_innerScrollableScroller.
-    tracker_ref<winrt::IRepeaterScrollingSurface> m_innerScrollableScroller;
+    tracker_ref<winrt::IRepeaterScrollingSurface> m_innerScrollableScroller{};
 
-    tracker_ref<winrt::UIElement> m_makeAnchorElement;
+    tracker_ref<winrt::UIElement> m_makeAnchorElement{};
     bool m_isAnchorOutsideRealizedRange{};  // Value is only valid when m_makeAnchorElement is set.
 
-    tracker_ref<winrt::IAsyncAction> m_cacheBuildAction;
+    tracker_ref<winrt::IAsyncAction> m_cacheBuildAction{};
 
     winrt::Rect m_visibleWindow{};
     winrt::Rect m_layoutExtent{};
@@ -100,7 +100,7 @@ private:
     bool m_managingViewportDisabled{ false };
 
     // Event tokens
-    winrt::IRepeaterScrollingSurface::PostArrange_revoker m_postArrangeToken;
+    winrt::IRepeaterScrollingSurface::PostArrange_revoker m_postArrangeToken{};
 
     // Stores information about a parent scrolling surface.
     // We subscribe to...
@@ -126,6 +126,6 @@ private:
         winrt::IRepeaterScrollingSurface::ConfigurationChanged_revoker ConfigurationChangedToken{};
 
     private:
-        tracker_ref<winrt::IRepeaterScrollingSurface> m_scroller;       
+        tracker_ref<winrt::IRepeaterScrollingSurface> m_scroller{};       
     };
 };

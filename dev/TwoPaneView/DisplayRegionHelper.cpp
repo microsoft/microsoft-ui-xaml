@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SharedHelpers.h"
-#include "Vector.h"
 #include "DisplayRegionHelper.h"
 #include "LifetimeHandler.h"
+#include "SharedHelpers.h"
+#include "Vector.h"
+#include "common.h"
 
 DisplayRegionHelper::DisplayRegionHelper() 
 = default;;
@@ -104,10 +104,10 @@ winrt::UIElement DisplayRegionHelper::WindowElement()
 
         return window;
     }
-    else
-    {
+    
+    
         return winrt::Window::Current().Content();
-    }
+    
 }
 
 /* static */
@@ -125,10 +125,10 @@ winrt::Rect DisplayRegionHelper::WindowRect()
             (float)window.ActualHeight() };
         return rc;
     }
-    else
-    {
+    
+    
         return winrt::Window::Current().Bounds();
-    }
+    
 }
 
 /* static */
@@ -146,7 +146,7 @@ bool DisplayRegionHelper::SimulateDisplayRegions()
 }
 
 /* static */
-void DisplayRegionHelper::SimulateMode(winrt::TwoPaneViewMode value)
+void DisplayRegionHelper::SimulateMode(winrt::TwoPaneViewMode  /*value*/)
 {
     auto instance = LifetimeHandler::GetDisplayRegionHelperInstance();
     instance->m_simulateMode = value;

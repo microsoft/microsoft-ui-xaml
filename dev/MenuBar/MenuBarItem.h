@@ -37,7 +37,7 @@ private:
 
     void PopulateContent();
     void AttachEventHandlers();
-    void DetachEventHandlers(bool useSafeGet = false);
+    void DetachEventHandlers(bool useSafeGet);
     void OpenFlyoutFrom(FlyoutLocation location);
 
     void OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
@@ -59,7 +59,7 @@ private:
     tracker_ref<winrt::Button> m_button{ this };
     tracker_ref<winrt::MenuBarItemFlyout> m_flyout{ this };
     weak_ref<winrt::DependencyObject> m_passThroughElement;
-    weak_ref<winrt::MenuBar> m_menuBar;
+    weak_ref<winrt::MenuBar> m_menuBar{};
     bool m_isFlyoutOpen{ false };
 
     // Event tokens and handlers

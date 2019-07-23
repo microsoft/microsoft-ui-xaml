@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
 #include "ToggleSplitButton.h"
 #include "ToggleSplitButtonAutomationPeer.h"
 #include "Utils.h"
+#include "common.h"
 
-ToggleSplitButtonAutomationPeer::ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner)
+ToggleSplitButtonAutomationPeer::ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton  /*unused*/const& owner)
     : ReferenceTracker(owner)
 {
 }

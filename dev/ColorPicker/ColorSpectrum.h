@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ColorHelpers.h"
 #include "ColorChangedEventArgs.h"
+#include "ColorHelpers.h"
 #include "DispatcherHelper.h"
 
 #include "ColorSpectrum.g.h"
@@ -24,7 +24,7 @@ public:
     void OnApplyTemplate();
 
     // IControlOverrides overrides
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
     void OnGotFocus(winrt::RoutedEventArgs const& e);
     void OnLostFocus(winrt::RoutedEventArgs const& e);
 
@@ -115,7 +115,7 @@ private:
     bool m_isPointerOver;
     bool m_isPointerPressed;
     bool m_shouldShowLargeSelection;
-    std::vector<Hsv> m_hsvValues;
+    std::vector<Hsv> m_hsvValues{};
 
     // XAML elements
     winrt::Grid m_layoutRoot{ nullptr };

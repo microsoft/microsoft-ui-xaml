@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ParallaxView.h"
 #include "RuntimeProfiler.h"
+#include "common.h"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ void ParallaxView::RefreshAutomaticVerticalOffsets()
 #pragma region IFrameworkElementOverridesHelper
 winrt::Size ParallaxView::MeasureOverride(winrt::Size const& availableSize)
 {
-    winrt::Size childDesiredSize{ 0.0f, 0.0f };
+    winrt::Size childDesiredSize{ 0.0F, 0.0F };
     winrt::UIElement child = Child();
 
     if (child)
@@ -112,7 +112,7 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
         {
             // Ensure the child is properly aligned within the ParallaxView based on its
             // alignment properties. This alignment behavior is identical to the Border's behavior.
-            float offset = 0.0f;
+            float offset = 0.0F;
 
             switch (childAsFE.HorizontalAlignment())
             {
@@ -131,7 +131,7 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
             }
             finalRect.X = offset;
 
-            offset = 0.0f;
+            offset = 0.0F;
 
             switch (childAsFE.VerticalAlignment())
             {
@@ -169,10 +169,10 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
 
         winrt::Rect currentClipRect = rectangleGeometry.Rect();
 
-        if (currentClipRect.X != 0.0f || currentClipRect.Width != finalSize.Width ||
-            currentClipRect.Y != 0.0f || currentClipRect.Height != finalSize.Height)
+        if (currentClipRect.X != 0.0F || currentClipRect.Width != finalSize.Width ||
+            currentClipRect.Y != 0.0F || currentClipRect.Height != finalSize.Height)
         {
-            winrt::Rect newClipRect{ 0.0f, 0.0f, finalSize.Width, finalSize.Height };
+            winrt::Rect newClipRect{ 0.0F, 0.0F, finalSize.Width, finalSize.Height };
             rectangleGeometry.Rect(newClipRect);
         }
     }
@@ -194,10 +194,10 @@ wstring_view ParallaxView::GetVisualTargetedPropertyName(winrt::Orientation orie
     {
         return orientation == winrt::Orientation::Horizontal ? s_translationXPropertyName : s_translationYPropertyName;
     }
-    else
-    {
+    
+    
         return orientation == winrt::Orientation::Horizontal ? s_transformMatrixTranslateXPropertyName : s_transformMatrixTranslateYPropertyName;
-    }
+    
 }
 
 
@@ -252,10 +252,12 @@ void ParallaxView::OnPropertyChanged(
 // Invoked by ScrollInputHelper when a characteristic changes requires a re-evaluation of the parallaxing expression animations.
 void ParallaxView::OnScrollInputHelperInfoChanged(bool horizontalInfoChanged, bool verticalInfoChanged)
 {
-    if (horizontalInfoChanged)
+    if (horizontalInfoChanged) {
         UpdateExpressionAnimation(winrt::Orientation::Horizontal);
-    if (verticalInfoChanged)
+}
+    if (verticalInfoChanged) {
         UpdateExpressionAnimation(winrt::Orientation::Vertical);
+}
 }
 
 void ParallaxView::OnLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& /*args*/)
@@ -301,7 +303,7 @@ void ParallaxView::OnChildPropertyChanged(const winrt::DependencyObject& sender,
     }
 }
 
-void ParallaxView::UpdateChild(const winrt::UIElement& oldChild, const winrt::UIElement& newChild)
+void ParallaxView::UpdateChild(const winrt::UIElement&  /*oldChild*/, const winrt::UIElement& newChild)
 {
     winrt::FrameworkElement childAsFrameworkElement = nullptr;
     
@@ -416,7 +418,7 @@ void ParallaxView::UpdateStartOffsetExpression(winrt::Orientation orientation)
             //   startOffset = HorizontalSourceStartOffset
             // Else
             //   startOffset = HorizontalSourceStartOffset * ZoomFactor
-            if (startOffset > 0.0f)
+            if (startOffset > 0.0F)
             {
                 startOffsetExpression = L"startOffset * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName());
                 startOffsetExpressionAnimation.SetReferenceParameter(L"source", m_scrollInputHelper->SourcePropertySet());
@@ -535,7 +537,7 @@ void ParallaxView::UpdateEndOffsetExpression(winrt::Orientation orientation)
             }
             else
             {
-                if (endOffset <= 0.0f)
+                if (endOffset <= 0.0F)
                 {
                     endOffsetExpression = L"Max(0.0f, (contentSize + endOffset) * source." + static_cast<std::wstring>(m_scrollInputHelper->GetSourceScalePropertyName()) + L" - viewportSize)";
                 }

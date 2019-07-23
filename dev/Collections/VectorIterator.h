@@ -43,7 +43,7 @@ class VectorIterator :
         reference_tracker_implements_t<typename Traits::IteratorType>::type>
 {
 public:
-    VectorIterator(typename Traits::VectorType const& vector)
+    explicit VectorIterator(typename Traits::VectorType const& vector)
     {
         m_vector.set(vector);
     }

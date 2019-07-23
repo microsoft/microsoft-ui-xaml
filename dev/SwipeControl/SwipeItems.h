@@ -26,7 +26,7 @@ public:
     void RemoveAtEnd();
     void Clear();
 
-    // TODO:
+    // TODO(ranjeshj): 
     winrt::IIterator<winrt::SwipeItem> First() { throw winrt::hresult_not_implemented(); }
     uint32_t GetMany(uint32_t startIndex, winrt::array_view<winrt::SwipeItem> items) { throw winrt::hresult_not_implemented(); }
     void ReplaceAll(winrt::array_view<winrt::SwipeItem const> items) { throw winrt::hresult_not_implemented(); }

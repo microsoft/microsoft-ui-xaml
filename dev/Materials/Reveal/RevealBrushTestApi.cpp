@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RevealBrushTestApi.h"
 #include "RevealBrush.h"
+#include "RevealBrushTestApi.h"
+#include "common.h"
 
 winrt::RevealBrush RevealBrushTestApi::RevealBrush()
 {

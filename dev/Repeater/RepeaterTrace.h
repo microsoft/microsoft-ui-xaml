@@ -3,23 +3,23 @@
 
 #pragma once
 
-#include "common.h"
+#include "MUXControlsTestHooks.h"
 #include "TraceLogging.h"
 #include "Utils.h"
-#include "MUXControlsTestHooks.h"
+#include "common.h"
 
 inline bool IsRepeaterTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_REPEATER || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_REPEATER) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsRepeaterPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_REPEATER || g_PerfProviderMatchAnyKeyword == 0);
+        (((g_PerfProviderMatchAnyKeyword & KEYWORD_REPEATER) != 0U) || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define REPEATER_TRACE_INFO(message, ...) \

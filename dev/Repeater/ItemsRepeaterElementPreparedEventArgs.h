@@ -22,6 +22,6 @@ public:
 
 private:
     tracker_ref<winrt::UIElement> m_element{ this };
-    int m_index;
+    int m_index{};
     winrt::hstring m_viewType;
 };

@@ -9,7 +9,7 @@ class ButtonInteractionInvokedEventArgs :
     public ReferenceTracker<ButtonInteractionInvokedEventArgs, winrt::implementation::ButtonInteractionInvokedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    ButtonInteractionInvokedEventArgs(winrt::UIElement const& target);
+    explicit ButtonInteractionInvokedEventArgs(winrt::UIElement const& target);
 
     winrt::UIElement Target();
 

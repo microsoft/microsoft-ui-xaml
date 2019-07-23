@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "Vector.h"
 #include "Scroller.h"
-#include "ScrollerTrace.h"
 #include "ScrollerAnchorRequestedEventArgs.h"
+#include "ScrollerTrace.h"
+#include "Vector.h"
+#include "common.h"
 
-ScrollerAnchorRequestedEventArgs::ScrollerAnchorRequestedEventArgs(const winrt::Scroller& scroller)
+ScrollerAnchorRequestedEventArgs::ScrollerAnchorRequestedEventArgs(const winrt::Scroller&  /*scroller*/)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scroller);
 
@@ -51,7 +51,7 @@ winrt::IVector<winrt::UIElement> ScrollerAnchorRequestedEventArgs::GetAnchorCand
     return m_anchorCandidates.get();
 }
 
-void ScrollerAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates)
+void ScrollerAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>&  /*anchorCandidates*/)
 {
     winrt::IVector<winrt::UIElement> anchorCandidatesTmp = winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
         

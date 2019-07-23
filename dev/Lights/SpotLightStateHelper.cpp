@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SpotLightStateHelper.h"
 #include "AnimationUtility.h"
+#include "SpotLightStateHelper.h"
+#include "common.h"
 
 bool IsStateAnimated(const RevealHoverSpotlightStateDesc& state)
 {
@@ -50,7 +50,7 @@ void PlaySpotLightStateAnimation(
     const winrt::CompositionPropertySet& offsetProps,
     const RevealHoverSpotlightStateDesc& targetState,
     std::function<void()>* cancelationFunction,
-    std::function<void()> onComplete)
+    std::function<void()>  /*onComplete*/)
 {
     if (cancelationFunction) *cancelationFunction = nullptr;
 
@@ -100,7 +100,7 @@ void PlaySpotLightStateAnimation(
                     onComplete();
                 });
 
-                if (cancelationFunction)
+                if (cancelationFunction != nullptr)
                 {
                     *cancelationFunction = [scopedBatch, completedEventToken]
                     {

@@ -18,7 +18,7 @@ namespace StringUtil
 
     std::wstring Utf8ToUtf16(const std::string_view& utf8Str);
     std::string Utf16ToUtf8(const std::wstring_view& utf16Str);
-}
+} // namespace StringUtil
 
 class VisualStateUtil
 {
@@ -47,7 +47,7 @@ namespace LayoutUtils
     {
         return (element ? element.ActualWidth() : 0);
     }
-}
+}  // namespace LayoutUtils
 
 namespace Util
 {
@@ -55,4 +55,4 @@ namespace Util
     { 
         return visible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     }
-}
+} // namespace Util

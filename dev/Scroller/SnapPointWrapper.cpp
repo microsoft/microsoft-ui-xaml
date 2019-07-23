@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "SnapPointWrapper.h"
+#include "common.h"
 
 template<typename T>
 SnapPointWrapper<T>::SnapPointWrapper(T const& snapPoint)

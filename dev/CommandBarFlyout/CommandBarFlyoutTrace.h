@@ -3,23 +3,23 @@
 
 #pragma once
 
-#include "common.h"
+#include "MUXControlsTestHooks.h"
 #include "TraceLogging.h"
 #include "Utils.h"
-#include "MUXControlsTestHooks.h"
+#include "common.h"
 
 inline bool IsCommandBarFlyoutTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_COMMANDBARFLYOUT || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_COMMANDBARFLYOUT) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsCommandBarFlyoutVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_COMMANDBARFLYOUT || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_COMMANDBARFLYOUT) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 #define COMMANDBARFLYOUT_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \

@@ -11,7 +11,7 @@ class SplitButtonAutomationPeer :
 {
 
 public:
-    SplitButtonAutomationPeer(winrt::SplitButton const& owner);
+    explicit SplitButtonAutomationPeer(winrt::SplitButton const& owner);
     ~SplitButtonAutomationPeer() = default;
 
     // IAutomationPeerOverrides

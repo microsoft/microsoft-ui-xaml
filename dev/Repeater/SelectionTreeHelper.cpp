@@ -1,19 +1,19 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
+#include "IndexPath.h"
 #include "ItemsRepeater.common.h"
 #include "SelectionNode.h"
 #include "SelectionTreeHelper.h"
-#include "IndexPath.h"
+#include <common.h>
+#include <pch.h>
 
 // static
 void SelectionTreeHelper::TraverseIndexPath(
-    std::shared_ptr<SelectionNode> root,
-    const winrt::IndexPath& path,
+    std::shared_ptr<SelectionNode>  /*root*/,
+    const winrt::IndexPath&  /*path*/,
     bool realizeChildren,
-    std::function<void(std::shared_ptr<SelectionNode>, const winrt::IndexPath&, int /*depth*/, int /*childIndex*/)> nodeAction)
+    std::function<void(std::shared_ptr<SelectionNode>, const winrt::IndexPath&, int /*depth*/, int /*childIndex*/)>  /*nodeAction*/)
 {
     auto node = root;
     for (int depth = 0; depth < path.GetSize(); depth++)
@@ -30,9 +30,9 @@ void SelectionTreeHelper::TraverseIndexPath(
 
 // static 
 void SelectionTreeHelper::Traverse(
-    std::shared_ptr<SelectionNode> root,
+    std::shared_ptr<SelectionNode>  /*root*/,
     bool realizeChildren,
-    std::function<void(const TreeWalkNodeInfo&)> nodeAction)
+    std::function<void(const TreeWalkNodeInfo&)>  /*nodeAction*/)
 {
     auto pendingNodes = std::vector<TreeWalkNodeInfo>();
     auto current = winrt::make<IndexPath>(nullptr);
@@ -62,10 +62,10 @@ void SelectionTreeHelper::Traverse(
 
 // static 
 void SelectionTreeHelper::TraverseRangeRealizeChildren(
-    std::shared_ptr<SelectionNode> root,
-    const winrt::IndexPath& start,
-    const winrt::IndexPath& end,
-    std::function<void(const TreeWalkNodeInfo&)> nodeAction)
+    std::shared_ptr<SelectionNode>  /*root*/,
+    const winrt::IndexPath&  /*start*/,
+    const winrt::IndexPath&  /*end*/,
+    std::function<void(const TreeWalkNodeInfo&)>  /*nodeAction*/)
 {
     MUX_ASSERT(start.CompareTo(end) == -1);
 
@@ -130,7 +130,7 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
 }
 
 // static 
-bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::IndexPath& subset)
+bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath&  /*path*/, const winrt::IndexPath&  /*subset*/)
 {
     bool isSubset = true;
     for (int i = 0; i < subset.GetSize(); i++)
@@ -144,7 +144,7 @@ bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::In
 }
 
 // static 
-winrt::IndexPath SelectionTreeHelper::StartPath(const winrt::IndexPath& path, int length)
+winrt::IndexPath SelectionTreeHelper::StartPath(const winrt::IndexPath&  /*path*/, int length)
 {
     std::vector<int> subPath;
     for (int i = 0; i < length; i++)

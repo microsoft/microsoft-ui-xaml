@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SwipeControl.h"
-#include "SwipeItems.h"
-#include "SwipeItemInvokedEventArgs.h"
-#include "SwipeItem.h"
-#include "RuntimeProfiler.h"
 #include "CommandingHelpers.h"
+#include "RuntimeProfiler.h"
+#include "SwipeControl.h"
+#include "SwipeItem.h"
+#include "SwipeItemInvokedEventArgs.h"
+#include "SwipeItems.h"
+#include "common.h"
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
@@ -30,7 +30,7 @@ SwipeItem::~SwipeItem()
 #pragma endregion
 
 
-void SwipeItem::InvokeSwipe(const winrt::SwipeControl& swipeControl)
+void SwipeItem::InvokeSwipe(const winrt::SwipeControl&  /*swipeControl*/)
 {
     auto eventArgs = winrt::make_self<SwipeItemInvokedEventArgs>();
     eventArgs->SwipeControl(swipeControl);

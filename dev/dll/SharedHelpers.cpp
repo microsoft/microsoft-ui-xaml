@@ -290,7 +290,7 @@ bool SharedHelpers::IsInFrameworkPackage()
 }
 
 // Platform scale helpers
-winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect)
+winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const&  /*xamlRootReference*/, const winrt::Rect& dipsRect)
 {
     try
     {
@@ -316,7 +316,7 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
     return dipsRect;
 }
 
-winrt::Rect SharedHelpers::ConvertPhysicalToDips(winrt::UIElement const& xamlRootReference, const winrt::Rect& physicalRect)
+winrt::Rect SharedHelpers::ConvertPhysicalToDips(winrt::UIElement const&  /*xamlRootReference*/, const winrt::Rect& physicalRect)
 {
     try
     {
@@ -412,7 +412,7 @@ winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const win
     return stream;
 }
 
-void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()> callback)
+void SharedHelpers::QueueCallbackForCompositionRendering(std::function<void()>  /*callback*/)
 {
     try
     {

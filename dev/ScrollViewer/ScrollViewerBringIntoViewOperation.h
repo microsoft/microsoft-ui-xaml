@@ -8,7 +8,7 @@
 class ScrollViewerBringIntoViewOperation
 {
 public:
-    ScrollViewerBringIntoViewOperation(winrt::UIElement const& targetElement);
+    explicit ScrollViewerBringIntoViewOperation(winrt::UIElement const& targetElement);
     ~ScrollViewerBringIntoViewOperation();
 
     [[nodiscard]] bool HasMaxTicksCount() const;

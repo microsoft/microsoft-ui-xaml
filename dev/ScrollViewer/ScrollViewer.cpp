@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "Scroller.h"
-#include "ScrollViewer.h"
-#include "RuntimeProfiler.h"
 #include "FocusHelper.h"
 #include "RegUtil.h"
+#include "RuntimeProfiler.h"
+#include "ScrollViewer.h"
 #include "ScrollViewerTestHooks.h"
+#include "Scroller.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollViewerTrace::s_IsDebugOutputEnabled{ false };
@@ -78,7 +78,7 @@ float ScrollViewer::ZoomFactor()
         return scroller.ZoomFactor();
     }
 
-    return 0.0f;
+    return 0.0F;
 }
 
 double ScrollViewer::ExtentWidth()

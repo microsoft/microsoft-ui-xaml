@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include <DoubleUtil.h>
-#include "ItemsRepeater.common.h"
+#include "FlowLayout.h"
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
-#include "FlowLayout.h"
+#include "ItemsRepeater.common.h"
 #include "VirtualizingLayoutContext.h"
+#include <DoubleUtil.h>
+#include <common.h>
+#include <pch.h>
 
 FlowLayout::FlowLayout()
 {

@@ -13,9 +13,9 @@
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::Convert(
     winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::TypeName const&  /*targetType*/,
+    winrt::IInspectable const&  /*parameter*/,
+    winrt::hstring const&  /*language*/)
 {
     if (value)
     {
@@ -38,19 +38,19 @@ winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::C
 }
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::ConvertBack(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language) noexcept
+    winrt::IInspectable const&  /*value*/,
+    winrt::TypeName const&  /*targetType*/,
+    winrt::IInspectable const&  /*parameter*/,
+    winrt::hstring const&  /*language*/) noexcept
 {
     winrt::throw_hresult(E_NOTIMPL);
 }
 
 winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Convert(
     winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::TypeName const&  /*targetType*/,
+    winrt::IInspectable const&  /*parameter*/,
+    winrt::hstring const&  /*language*/)
 {
     if (auto bitmapIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>(value))
     {
@@ -101,10 +101,10 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 }
 
 winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::ConvertBack(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language) noexcept
+    winrt::IInspectable const&  /*value*/,
+    winrt::TypeName const&  /*targetType*/,
+    winrt::IInspectable const&  /*parameter*/,
+    winrt::hstring const&  /*language*/) noexcept
 {
     winrt::throw_hresult(E_NOTIMPL);
 }

@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
 #include "OffsetsChangeWithAdditionalVelocity.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 OffsetsChangeWithAdditionalVelocity::OffsetsChangeWithAdditionalVelocity(
     winrt::float2 offsetsVelocity,
     winrt::float2 anticipatedOffsetsChange,
-    winrt::IReference<winrt::float2> inertiaDecayRate) :
+    winrt::IReference<winrt::float2>  /*inertiaDecayRate*/) :
         m_offsetsVelocity(offsetsVelocity),
         m_anticipatedOffsetsChange(anticipatedOffsetsChange),
         m_inertiaDecayRate(inertiaDecayRate)

@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "InitialsGenerator.h"
 #include "PersonPicture.h"
 #include "PersonPictureAutomationPeer.h"
-#include "ResourceAccessor.h"
-#include "Utils.h"
-#include "RuntimeProfiler.h"
 #include "PersonPictureTemplateSettings.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "Utils.h"
+#include "common.h"
 
 PersonPicture::PersonPicture()
 {
@@ -24,8 +24,8 @@ PersonPicture::PersonPicture()
 }
 
 void PersonPicture::LoadImageAsync(
-    std::shared_ptr<winrt::IRandomAccessStreamReference> thumbStreamReference,
-    std::function<void(winrt::BitmapImage)> completedFunction)
+    std::shared_ptr<winrt::IRandomAccessStreamReference>  /*thumbStreamReference*/,
+    std::function<void(winrt::BitmapImage)>  /*completedFunction*/)
 {
     com_ptr<PersonPicture> strongThis = get_strong();
     auto operation = thumbStreamReference->OpenReadAsync();
@@ -368,7 +368,7 @@ void PersonPicture::UpdateAutomationName()
 winrt::hstring PersonPicture::GetLocalizedPluralBadgeItemStringResource(unsigned int numericValue)
 {
     UINT32 valueMod10 = numericValue % 10;
-    winrt::hstring value;
+    winrt::hstring value{};
 
     if (numericValue == 1)  // Singular
     {

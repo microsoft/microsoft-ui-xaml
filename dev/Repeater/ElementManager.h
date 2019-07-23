@@ -11,7 +11,7 @@ class ElementManager final
 {
 
 public:
-    ElementManager(const ITrackerHandleManager* owner) : m_owner(owner) { }
+    explicit ElementManager(const ITrackerHandleManager* owner) : m_owner(owner) { }
 
     void SetContext(const winrt::VirtualizingLayoutContext& virtualContext);
     
@@ -61,8 +61,8 @@ private:
 
     const ITrackerHandleManager* m_owner;
 
-    std::vector<tracker_ref<winrt::UIElement>> m_realizedElements;
-    std::vector<winrt::Rect> m_realizedElementLayoutBounds;
+    std::vector<tracker_ref<winrt::UIElement>> m_realizedElements{};
+    std::vector<winrt::Rect> m_realizedElementLayoutBounds{};
     int m_firstRealizedDataIndex{ -1 };
     winrt::VirtualizingLayoutContext m_context{ nullptr };
 };

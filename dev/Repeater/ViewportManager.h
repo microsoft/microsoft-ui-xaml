@@ -22,8 +22,8 @@ public:
     virtual void OnElementCleared(const winrt::UIElement& element) = 0;
     virtual void OnOwnerMeasuring() = 0;
     virtual void OnOwnerArranged() = 0;
-    virtual void OnMakeAnchor(const winrt::UIElement& anchor, const bool isAnchorOutsideRealizedRange) = 0;
-    virtual void OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args) = 0;
+    virtual void OnMakeAnchor(const winrt::UIElement& anchor, bool isAnchorOutsideRealizedRange) = 0;
+    virtual void OnBringIntoViewRequested(winrt::BringIntoViewRequestedEventArgs args) = 0;
 
     virtual void ResetScrollers() = 0;
 

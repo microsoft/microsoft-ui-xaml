@@ -88,11 +88,11 @@ private:
     /////////	Internal Reference Vars   /////////
     ///////////////////////////////////////////////
     bool m_isInteractingForRefresh{ false };
-    double m_executionRatio{ 0.8f };
-    double m_interactionRatio{ 0.0f };
+    double m_executionRatio{ 0.8F };
+    double m_interactionRatio{ 0.0F };
     tracker_ref<winrt::Compositor> m_compositor{ this };
     tracker_ref<winrt::Panel> m_containerPanel{ this };
     tracker_ref<winrt::Panel> m_root{ this };
-    float m_startingRotationAngle{ 0.0f };
+    float m_startingRotationAngle{ 0.0F };
     winrt::RefreshPullDirection m_pullDirection{ winrt::RefreshPullDirection::TopToBottom };
 };

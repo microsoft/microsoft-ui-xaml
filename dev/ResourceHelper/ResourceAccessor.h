@@ -38,7 +38,7 @@ public:
 #ifdef BUILD_WINDOWS
         return resourceId == -1;
 #else
-        return resourceId.size() == 0;
+        return resourceId.empty();
 #endif
     }
 };

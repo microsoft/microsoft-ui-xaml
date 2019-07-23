@@ -4,14 +4,14 @@
 #pragma once
 
 #include "AnimationManager.h"
-#include "ViewManager.h"
-#include "VirtualizationInfo.h"
-#include "ItemsRepeaterElementPreparedEventArgs.h"
-#include "ItemsRepeaterElementClearingEventArgs.h"
-#include "ItemsRepeaterElementIndexChangedEventArgs.h"
 #include "ItemsRepeater.g.h"
 #include "ItemsRepeater.properties.h"
+#include "ItemsRepeaterElementClearingEventArgs.h"
+#include "ItemsRepeaterElementIndexChangedEventArgs.h"
+#include "ItemsRepeaterElementPreparedEventArgs.h"
+#include "ViewManager.h"
 #include "ViewportManager.h"
+#include "VirtualizationInfo.h"
 
 class VirtualizationInfo;
 

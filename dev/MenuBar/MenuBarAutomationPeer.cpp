@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ResourceAccessor.h"
 #include "MenuBarAutomationPeer.h"
+#include "ResourceAccessor.h"
 #include "Utils.h"
+#include "common.h"
 
-MenuBarAutomationPeer::MenuBarAutomationPeer(winrt::MenuBar const& owner) : ReferenceTracker(owner)
+MenuBarAutomationPeer::MenuBarAutomationPeer(winrt::MenuBar  /*unused*/const& owner) : ReferenceTracker(owner)
 {
 }
 

@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "SharedHelpers.h"
 #include "TabView.h"
 #include "TabViewItem.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-#include "SharedHelpers.h"
+#include "common.h"
 
 TabViewItem::TabViewItem()
 {
@@ -42,7 +42,7 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
     return winrt::make<TabViewItemAutomationPeer>(*this);
 }
 
-void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TabViewItem::OnLoaded(const winrt::IInspectable&  /*sender*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     UpdateCloseButton();
 }
@@ -61,7 +61,7 @@ void TabViewItem::UpdateCloseButton()
     }
 }
 
-void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void TabViewItem::OnCloseButtonClick(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs& /*unused*/)
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
@@ -70,12 +70,12 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::Ro
     }
 }
 
-void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject& /*unused*/, const winrt::DependencyProperty& /*unused*/)
 {
     UpdateCloseButton();
 }
 
-void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*unused*/)
 {
     UpdateCloseButton();
 }

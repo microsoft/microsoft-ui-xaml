@@ -8,7 +8,7 @@ class DispatcherHelper
 {
 public:
 
-    DispatcherHelper(const winrt::DependencyObject& dependencyObject = nullptr)
+    explicit DispatcherHelper(const winrt::DependencyObject& dependencyObject)
     {
         if (SharedHelpers::IsDispatcherQueueAvailable())
         {
@@ -35,7 +35,7 @@ public:
         }
     }
 
-    void RunAsync(std::function<void()> func, bool fallbackToThisThread = false) const
+    void RunAsync(std::function<void()>  /*func*/, bool fallbackToThisThread) const
     {
         if (dispatcherQueue)
         {

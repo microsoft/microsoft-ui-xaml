@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ScrollerTestHooksExpressionAnimationStatusChangedEventArgs.h"
+#include "common.h"
 
 ScrollerTestHooksExpressionAnimationStatusChangedEventArgs::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs(
     bool isExpressionAnimationStarted, wstring_view const& propertyName)

@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "PersonPicture.h"
 #include "PersonPictureAutomationPeer.h"
+#include "common.h"
 
-PersonPictureAutomationPeer::PersonPictureAutomationPeer(winrt::PersonPicture const& owner) :
+PersonPictureAutomationPeer::PersonPictureAutomationPeer(winrt::PersonPicture  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }

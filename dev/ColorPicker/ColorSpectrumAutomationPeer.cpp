@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ColorSpectrumAutomationPeer.h"
+#include "common.h"
 
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
-ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner) :
+ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }
@@ -118,10 +118,10 @@ winrt::hstring ColorSpectrumAutomationPeer::GetValueString(winrt::Color color, w
             winrt::ColorHelper::ToDisplayName(color).data(),
             hue, saturation, value);
     }
-    else
-    {
+    
+    
         return StringUtil::FormatString(
             ResourceAccessor::GetLocalizedStringResource(SR_ValueStringColorSpectrumWithoutColorName),
             hue, saturation, value);
-    }
+    
 }

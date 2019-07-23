@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "QPCTimer.h"
 #include "BuildTreeScheduler.h"
+#include "QPCTimer.h"
 #include "RepeaterTestHooks.h"
+#include "common.h"
 
 double BuildTreeScheduler::m_budgetInMs = 40.0;
 thread_local QPCTimer BuildTreeScheduler::m_timer{};
@@ -26,7 +26,7 @@ bool BuildTreeScheduler::ShouldYield()
     return m_timer.DurationInMilliSeconds() > m_budgetInMs;
 }
 
-void BuildTreeScheduler::OnRendering(const winrt::IInspectable&, const winrt::IInspectable&)
+void BuildTreeScheduler::OnRendering(const winrt::IInspectable& /*unused*/, const winrt::IInspectable& /*unused*/)
 {
       bool budgetReached = ShouldYield();
     if (!budgetReached && m_pendingWork.size() > 0)

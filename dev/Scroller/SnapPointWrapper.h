@@ -13,7 +13,7 @@ template <typename T>
 class SnapPointWrapper
 {
 public:
-    SnapPointWrapper(T const& snapPoint);
+    explicit SnapPointWrapper(T const& snapPoint);
 #ifdef _DEBUG
     ~SnapPointWrapper();
 #endif //_DEBUG

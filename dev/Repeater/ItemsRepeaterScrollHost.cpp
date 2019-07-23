@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
+#include "DoubleUtil.h"
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeaterScrollHost.h"
-#include "DoubleUtil.h"
 #include "RuntimeProfiler.h"
+#include <common.h>
+#include <pch.h>
 
 CppWinRTActivatableClassWithBasicFactory(ItemsRepeaterScrollHost)
 
@@ -142,7 +142,7 @@ void ItemsRepeaterScrollHost::VerticalAnchorRatio(double value)
     m_verticalEdge = value;
 }
 
-// TODO: this API should go on UIElement.
+// TODO(ranjeshj): this API should go on UIElement.
 void ItemsRepeaterScrollHost::StartBringIntoView(
     winrt::UIElement const& element,
     double alignmentX,
@@ -355,7 +355,7 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
 
     if (std::abs(pendingViewportShift) > 1)
     {
-        // TODO: do we need to account for the zoom factor?
+        // TODO(ranjeshj): do we need to account for the zoom factor?
         // BUG:
         //  Unfortunately, if we have to correct while animating, we almost never
         //  update the ongoing animation correctly and we end up missing our target

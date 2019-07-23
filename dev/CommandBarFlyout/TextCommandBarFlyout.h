@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "TextCommandBarFlyout.g.h"
 #include "CommandBarFlyout.h"
 #include "DispatcherHelper.h"
+#include "TextCommandBarFlyout.g.h"
 
 enum class TextControlButtons
 {
@@ -75,18 +75,18 @@ private:
 
     winrt::ICommandBarElement GetButton(TextControlButtons button);
 
-    std::map<TextControlButtons, winrt::ICommandBarElement> m_buttons;
+    std::map<TextControlButtons, winrt::ICommandBarElement> m_buttons{};
     winrt::AppBarButton m_proofingButton{ nullptr };
 
-    std::vector<winrt::XamlUICommand::ExecuteRequested_revoker> m_buttonCommandRevokers;
-    std::vector<winrt::ButtonBase::Click_revoker> m_buttonClickRevokers;
-    std::vector<winrt::ToggleButton::Checked_revoker> m_toggleButtonCheckedRevokers;
-    std::vector<winrt::ToggleButton::Unchecked_revoker> m_toggleButtonUncheckedRevokers;
+    std::vector<winrt::XamlUICommand::ExecuteRequested_revoker> m_buttonCommandRevokers{};
+    std::vector<winrt::ButtonBase::Click_revoker> m_buttonClickRevokers{};
+    std::vector<winrt::ToggleButton::Checked_revoker> m_toggleButtonCheckedRevokers{};
+    std::vector<winrt::ToggleButton::Unchecked_revoker> m_toggleButtonUncheckedRevokers{};
 
     winrt::FrameworkElement::Loaded_revoker m_proofingButtonLoadedRevoker{};
 
-    std::vector<winrt::MenuFlyoutItem::Click_revoker> m_proofingMenuItemClickRevokers;
-    std::vector<winrt::ToggleMenuFlyoutItem::Click_revoker> m_proofingMenuToggleItemClickRevokers;
+    std::vector<winrt::MenuFlyoutItem::Click_revoker> m_proofingMenuItemClickRevokers{};
+    std::vector<winrt::ToggleMenuFlyoutItem::Click_revoker> m_proofingMenuToggleItemClickRevokers{};
     DispatcherHelper m_dispatcherHelper{ *this };
 
     bool m_isSettingToggleButtonState = false;

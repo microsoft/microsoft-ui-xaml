@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "VirtualizingLayoutContext.h"
 #include "VirtualLayoutContextAdapter.h"
+#include "VirtualizingLayoutContext.h"
+#include <common.h>
+#include <pch.h>
 
-VirtualLayoutContextAdapter::VirtualLayoutContextAdapter(winrt::VirtualizingLayoutContext const& virtualizingContext)
+VirtualLayoutContextAdapter::VirtualLayoutContextAdapter(winrt::VirtualizingLayoutContext  /*unused*/const& virtualizingContext)
 {
     m_virtualizingContext = winrt::make_weak(virtualizingContext);
 }

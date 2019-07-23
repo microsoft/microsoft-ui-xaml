@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "LayoutPanel.h"
 #include "LayoutPanelLayoutContext.h"
+#include <common.h>
+#include <pch.h>
 
-LayoutPanelLayoutContext::LayoutPanelLayoutContext(winrt::LayoutPanel const& owner)
+LayoutPanelLayoutContext::LayoutPanelLayoutContext(winrt::LayoutPanel  /*unused*/const& owner)
 {
     m_owner = winrt::make_weak(owner);
 }

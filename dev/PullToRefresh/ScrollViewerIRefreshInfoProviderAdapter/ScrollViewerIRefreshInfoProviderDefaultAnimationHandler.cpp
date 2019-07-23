@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ViewModel.h"
+#include "PTRTracing.h"
+#include "ScrollViewerIRefreshInfoProviderAdapter.h"
 #include "TreeViewNode.h"
 #include "VectorChangedEventArgs.h"
-#include "ScrollViewerIRefreshInfoProviderAdapter.h"
-#include "PTRTracing.h"
+#include "ViewModel.h"
+#include "common.h"
 
 #define REFRESH_ANIMATION_DURATION 100ms
 #define REFRESH_VISUALIZER_OVERPAN_RATIO 0.4
@@ -23,7 +23,7 @@
 // Factoring out this functionality is a way to expose the animation for
 // Alteration without having to expose the "delicate" interaction tracker.
 
-ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ScrollViewerIRefreshInfoProviderDefaultAnimationHandler(const winrt::UIElement&  container, const winrt::RefreshPullDirection& refreshPullDirection)
+ScrollViewerIRefreshInfoProviderDefaultAnimationHandler::ScrollViewerIRefreshInfoProviderDefaultAnimationHandler(const winrt::UIElement&  container, const winrt::RefreshPullDirection&  /*refreshPullDirection*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     if (container)

@@ -11,7 +11,7 @@ class IconSource :
     public IconSourceProperties
 {
 public:
-    static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource)
+    static winrt::IconElement MakeIconElementFrom(winrt::IconSource  /*unused*/const& iconSource)
     {
         return SharedHelpers::MakeIconElementFrom(iconSource);
     }

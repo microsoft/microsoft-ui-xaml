@@ -24,6 +24,6 @@ public:
 
 private:
     tracker_ref<winrt::UIElement> m_element{ this };
-    int m_oldIndex;
-    int m_newIndex;
+    int m_oldIndex{};
+    int m_newIndex{};
 };

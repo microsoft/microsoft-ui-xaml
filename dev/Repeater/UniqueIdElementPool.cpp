@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "UniqueIdElementPool.h"
 #include "ItemsRepeater.h"
+#include "UniqueIdElementPool.h"
+#include <common.h>
+#include <pch.h>
 
 UniqueIdElementPool::UniqueIdElementPool(ItemsRepeater* owner) :
     m_owner(owner)

@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MUXControlsTestHooks.h"
+#include "common.h"
 
 MUXControlsTestHooks* MUXControlsTestHooks::s_testHooks = nullptr;
 
 void MUXControlsTestHooks::EnsureHooks()
 {
-    if (!s_testHooks)
+    if (s_testHooks == nullptr)
     {
         s_testHooks = winrt::make_self<MUXControlsTestHooks>().detach();
     }
@@ -33,7 +33,7 @@ void MUXControlsTestHooks::SetLoggingLevelForInstance(winrt::IInspectable const&
     s_testHooks->SetLoggingLevelForInstanceImpl(sender, isLoggingInfoLevel, isLoggingVerboseLevel);
 }
 
-winrt::event_token MUXControlsTestHooks::LoggingMessage(winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs> const& value)
+winrt::event_token MUXControlsTestHooks::LoggingMessage(winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs>  /*unused*/const& value)
 {
     EnsureHooks();
     return s_testHooks->LoggingMessageImpl(value);
@@ -41,7 +41,7 @@ winrt::event_token MUXControlsTestHooks::LoggingMessage(winrt::TypedEventHandler
 
 void MUXControlsTestHooks::LoggingMessage(winrt::event_token const& token)
 {
-    if (s_testHooks)
+    if (s_testHooks != nullptr)
     {
         s_testHooks->LoggingMessageImpl(token);
     }

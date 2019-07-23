@@ -9,7 +9,7 @@ class ChildrenInTabFocusOrderIterable :
         reference_tracker_implements_t<winrt::IIterable<winrt::DependencyObject>>::type>
 {
 public:
-    ChildrenInTabFocusOrderIterable(const winrt::ItemsRepeater& repeater);
+    explicit ChildrenInTabFocusOrderIterable(const winrt::ItemsRepeater& repeater);
 
 #pragma region IIterable implementation
     winrt::IIterator<winrt::DependencyObject> First();
@@ -21,7 +21,7 @@ private:
         public winrt::implements<ChildrenInTabFocusOrderIterator, winrt::IIterator<winrt::DependencyObject>>
     {
     public:
-        ChildrenInTabFocusOrderIterator(const winrt::ItemsRepeater& repeater);
+        explicit ChildrenInTabFocusOrderIterator(const winrt::ItemsRepeater& repeater);
 
 #pragma region IIterable implementation
         winrt::DependencyObject Current();
@@ -44,7 +44,7 @@ private:
             return false;
         }
 
-        uint32_t GetMany(winrt::array_view<winrt::DependencyObject> values)
+        uint32_t GetMany(winrt::array_view<winrt::DependencyObject>  /*values*/)
         {
             uint32_t howMany = 0;
             if (HasCurrent())
@@ -63,7 +63,7 @@ private:
 #pragma endregion
 
     private:
-        std::vector<std::pair<int /* index */, winrt::UIElement>> m_realizedChildren;
+        std::vector<std::pair<int /* index */, winrt::UIElement>> m_realizedChildren{};
         int m_index = 0;
     };
 

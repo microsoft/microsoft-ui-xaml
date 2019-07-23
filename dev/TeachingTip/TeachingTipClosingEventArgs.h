@@ -12,7 +12,7 @@ public:
     winrt::TeachingTipCloseReason Reason();
     void Reason(const winrt::TeachingTipCloseReason& reason);
     bool Cancel();
-    void Cancel(const bool cancel);
+    void Cancel(bool cancel);
 
     winrt::Deferral GetDeferral();
     void SetDeferral(const winrt::Deferral& deferral);

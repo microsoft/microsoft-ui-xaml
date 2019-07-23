@@ -11,7 +11,7 @@ class ToggleSplitButtonAutomationPeer :
 {
 
 public:
-    ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner);
+    explicit ToggleSplitButtonAutomationPeer(winrt::ToggleSplitButton const& owner);
     ~ToggleSplitButtonAutomationPeer() = default;
 
     // IAutomationPeerOverrides

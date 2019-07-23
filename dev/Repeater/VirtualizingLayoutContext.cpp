@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "VirtualizingLayoutContext.h"
 #include "VirtualLayoutContextAdapter.h"
+#include "VirtualizingLayoutContext.h"
+#include <common.h>
+#include <pch.h>
 
 CppWinRTActivatableClassWithBasicFactory(VirtualizingLayoutContext);
 
@@ -28,7 +28,7 @@ winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAt(int index)
     return get_strong().as<winrt::IVirtualizingLayoutContextOverrides>().GetOrCreateElementAtCore(index, winrt::ElementRealizationOptions::None);
 }
 
-winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAt(int index, winrt::ElementRealizationOptions const& options)
+winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAt(int index, winrt::ElementRealizationOptions  /*unused*/const& options)
 {
     // Calling this way because GetOrCreateElementAtCore is ambiguous.
     // Use .as instead of try_as because try_as uses non-delegating inner and we need to call the outer for overrides.
@@ -69,7 +69,7 @@ winrt::IInspectable VirtualizingLayoutContext::GetItemAtCore(int /*index*/)
     throw winrt::hresult_not_implemented();
 }
 
-winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAtCore(int /*index*/, winrt::ElementRealizationOptions const& /* options */)
+winrt::UIElement VirtualizingLayoutContext::GetOrCreateElementAtCore(int /*index*/, winrt::ElementRealizationOptions  /*unused*/const& /* options */)
 {
     throw winrt::hresult_not_implemented();
 }

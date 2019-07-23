@@ -3,8 +3,8 @@
 
 #include "pch.h"
 #include "ItemTemplateWrapper.h"
-#include "RecyclePool.h"
 #include "ItemsRepeater.common.h"
+#include "RecyclePool.h"
 
 ItemTemplateWrapper::ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate)
 {

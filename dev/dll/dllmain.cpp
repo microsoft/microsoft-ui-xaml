@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "TraceLogging.h"
+#include "common.h"
 #include <initguid.h>
 #include <wrl\module.h>
 
@@ -21,7 +21,7 @@ void InitCheckedMemoryChainLock();
 
 STDAPI_(void) SendTelemetryOnSuspend();
 
-STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void *)
+STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void * /*unused*/)
 {
     if (DLL_PROCESS_ATTACH == reason)
     {
@@ -74,7 +74,7 @@ STDAPI  DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOI
 
 // Workaround for:
 // Bug 18379704: C++/WinRT causes apps to fail WACK due to usage of CoIncrementMTAUsage 
-int32_t WINRT_CALL WINRT_CoIncrementMTAUsage(void**) noexcept { return S_OK; }
+int32_t WINRT_CALL WINRT_CoIncrementMTAUsage(void** /*unused*/) noexcept { return S_OK; }
 
 // Microsoft.UI.Xaml.def includes this as an export, but it only applies to WUXC.
 // We'll stub it out for MUX to avoid the build error we get otherwise.

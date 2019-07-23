@@ -239,7 +239,7 @@ Return Value:
 
     Status = MICROSOFTTELEMETRY_EVENT_SET_INFORMATION(
         RegHandle,
-        (EVENT_INFO_CLASS)2, // EventProviderSetTraits
+        static_cast<EVENT_INFO_CLASS>(2), // EventProviderSetTraits
         (PVOID)Traits,
         *(USHORT*)Traits);
 

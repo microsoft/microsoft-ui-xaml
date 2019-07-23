@@ -11,7 +11,7 @@ class TabViewAutomationPeer :
 {
 
 public:
-    TabViewAutomationPeer(winrt::TabView const& owner);
+    explicit TabViewAutomationPeer(winrt::TabView const& owner);
     ~TabViewAutomationPeer() = default;
 
     // IAutomationPeerOverrides

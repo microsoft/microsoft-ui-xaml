@@ -53,7 +53,7 @@ public:
 
 private:
     winrt::RefreshPullDirection m_refreshPullDirection{ winrt::RefreshPullDirection::TopToBottom };
-    winrt::Size m_refreshVisualizerSize{ 1.0f, 1.0f };
+    winrt::Size m_refreshVisualizerSize{ 1.0F, 1.0F };
     bool m_isInteractingForRefresh{ false };
     int m_interactionRatioChangedCount{ 0 };
     winrt::CompositionPropertySet m_compositionProperties{ nullptr };

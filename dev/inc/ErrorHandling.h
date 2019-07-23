@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <windows.h>
 #include <exception>
+#include <windows.h>
 
 #ifndef E_INVALID_OPERATION
 #define E_INVALID_OPERATION HRESULT_FROM_WIN32(ERROR_INVALID_OPERATION)

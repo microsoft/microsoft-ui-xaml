@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "InitialsGenerator.h"
+#include "common.h"
+#include <algorithm>
 #include <cwctype>
 #include <sstream>
-#include <algorithm>
 
 /// <summary>
 /// Helper function which takes in a Contact object and produces initials
@@ -45,18 +45,18 @@ winrt::hstring InitialsGenerator::InitialsFromContactObject(const winrt::Contact
             std::wstring firstName = static_cast<std::wstring>(contact.FirstName());
             std::wstring lastName = static_cast<std::wstring>(contact.LastName());
 
-            std::wstring result = GetFirstFullCharacter(firstName.data());
-            result.append(GetFirstFullCharacter(lastName.data()));
+            std::wstring result = GetFirstFullCharacter(firstName);
+            result.append(GetFirstFullCharacter(lastName));
 
             std::transform(result.begin(), result.end(), result.begin(), ::towupper);
 
             return winrt::hstring(result);
         }
-        else
-        {
+        
+        
             // Return empty string. In our code-behind we will produce a generic glyph as a result.
             return winrt::hstring(L"");
-        }
+        
     }
 
     // If the supplied object does not contain granular name data, then we must
@@ -94,7 +94,7 @@ winrt::hstring InitialsGenerator::InitialsFromDisplayName(const wstring_view &co
 
             return winrt::hstring(result);
         }
-        else if (words.size() > 1)
+        if (words.size() > 1)
         {
             // If there's at least two words, we'll show two initials.
             // 
@@ -250,12 +250,12 @@ CharacterType InitialsGenerator::GetCharacterType(const wstring_view &str)
     for (int i = 0; i < 3; i++)
     {
         // Break on null character. 0xFEFF is a terminating character which appears as null.
-        if ((str.data()[i] == '\0') || (str.data()[i] == 0xFEFF))
+        if ((str[i] == '\0') || (str[i] == 0xFEFF))
         {
             break;
         }
 
-        wchar_t character = str.data()[i];
+        wchar_t character = str[i];
         CharacterType evaluationResult = GetCharacterType(character);
 
         // In mix-match scenarios, we'll want to follow this order of precedence:

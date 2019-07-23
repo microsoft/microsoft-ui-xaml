@@ -5,17 +5,17 @@
 
 #include "FloatUtil.h"
 #include "InteractionTrackerAsyncOperation.h"
-#include "ScrollAnimationStartingEventArgs.h"
-#include "ZoomAnimationStartingEventArgs.h"
-#include "ScrollCompletedEventArgs.h"
-#include "ZoomCompletedEventArgs.h"
-#include "ScrollerBringingIntoViewEventArgs.h"
-#include "ScrollerAnchorRequestedEventArgs.h"
-#include "SnapPointWrapper.h"
-#include "ScrollerTrace.h"
-#include "ViewChange.h"
 #include "OffsetsChange.h"
 #include "OffsetsChangeWithAdditionalVelocity.h"
+#include "ScrollAnimationStartingEventArgs.h"
+#include "ScrollCompletedEventArgs.h"
+#include "ScrollerAnchorRequestedEventArgs.h"
+#include "ScrollerBringingIntoViewEventArgs.h"
+#include "ScrollerTrace.h"
+#include "SnapPointWrapper.h"
+#include "ViewChange.h"
+#include "ZoomAnimationStartingEventArgs.h"
+#include "ZoomCompletedEventArgs.h"
 #include "ZoomFactorChange.h"
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
 
@@ -84,9 +84,9 @@ public:
     // 120 matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr int32_t s_mouseWheelDeltaForVelocityUnit = 120;
     // Inertia decay rate to achieve the c_zoomFactorChangePerVelocityUnit=0.1f zoom factor change per velocity unit
-    static constexpr float s_mouseWheelInertiaDecayRateRS1 = 0.997361f;
+    static constexpr float s_mouseWheelInertiaDecayRateRS1 = 0.997361F;
     // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
-    static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
+    static constexpr float s_mouseWheelInertiaDecayRate = 0.999972F;
 
     static const winrt::ScrollInfo s_noOpScrollInfo;
     static const winrt::ZoomInfo s_noOpZoomInfo;
@@ -230,12 +230,12 @@ public:
     winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedScrollSnapPoints(ScrollerDimension dimension);
     winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints();
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetHorizontalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
+    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetHorizontalSnapPointWrapper(winrt::ScrollSnapPointBase  /*unused*/const& scrollSnapPoint)
     {
         return GetScrollSnapPointWrapper(ScrollerDimension::HorizontalScroll, scrollSnapPoint);
     }
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetVerticalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
+    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetVerticalSnapPointWrapper(winrt::ScrollSnapPointBase  /*unused*/const& scrollSnapPoint)
     {
         return GetScrollSnapPointWrapper(ScrollerDimension::VerticalScroll, scrollSnapPoint);
     }
@@ -377,7 +377,7 @@ private:
     void StopTransformExpressionAnimations(
         const winrt::UIElement& content,
         bool forAnimationsInterruption);
-    bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
+    bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown);
     void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
@@ -595,7 +595,7 @@ private:
         int32_t offsetsChangeId);
     winrt::CompositionAnimation RaiseZoomAnimationStarting(
         const winrt::ScalarKeyFrameAnimation& zoomFactorAnimation,
-        const float endZoomFactor,
+        float endZoomFactor,
         const winrt::float2& centerPoint,
         int32_t zoomFactorChangeId);
     void RaiseViewChangeCompleted(
@@ -660,13 +660,13 @@ private:
 
     void OnHorizontalSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ScrollSnapPointBase>& sender,
-        const winrt::IVectorChangedEventArgs event);
+        winrt::IVectorChangedEventArgs event);
     void OnVerticalSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ScrollSnapPointBase>& sender,
-        const winrt::IVectorChangedEventArgs event);
+        winrt::IVectorChangedEventArgs event);
     void OnZoomSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ZoomSnapPointBase>& sender,
-        const winrt::IVectorChangedEventArgs event);
+        winrt::IVectorChangedEventArgs event);
 
     template <typename T> bool SnapPointsViewportChangedHelper(
         winrt::IObservableVector<T> const& snapPoints,
@@ -686,14 +686,14 @@ private:
 #pragma region IRepeaterScrollingSurface Helpers
     void RaiseConfigurationChanged();
     void RaisePostArrange();
-    void RaiseViewportChanged(const bool isFinal);
+    void RaiseViewportChanged(bool isFinal);
     void RaiseAnchorRequested();
 
     void IsAnchoring(
         _Out_ bool* isAnchoringElementHorizontally,
         _Out_ bool* isAnchoringElementVertically,
-        _Out_opt_ bool* isAnchoringFarEdgeHorizontally = nullptr,
-        _Out_opt_ bool* isAnchoringFarEdgeVertically = nullptr);
+        _Out_opt_ bool* isAnchoringFarEdgeHorizontally,
+        _Out_opt_ bool* isAnchoringFarEdgeVertically);
     void ComputeViewportAnchorPoint(
         double viewportWidth,
         double viewportHeight,
@@ -775,12 +775,12 @@ private:
     int m_latestViewChangeId{ 0 };
     int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
-    winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
-    float m_animationRestartZoomFactor{ 1.0f };
-    float m_endOfInertiaZoomFactor{ 1.0f };
-    float m_zoomFactor{ 1.0f };
-    float m_contentLayoutOffsetX{ 0.0f };
-    float m_contentLayoutOffsetY{ 0.0f };
+    winrt::float2 m_endOfInertiaPosition{ 0.0F, 0.0F };
+    float m_animationRestartZoomFactor{ 1.0F };
+    float m_endOfInertiaZoomFactor{ 1.0F };
+    float m_zoomFactor{ 1.0F };
+    float m_contentLayoutOffsetX{ 0.0F };
+    float m_contentLayoutOffsetY{ 0.0F };
     double m_zoomedHorizontalOffset{ 0.0 };
     double m_zoomedVerticalOffset{ 0.0 };
     double m_unzoomedExtentWidth{ 0.0 };
@@ -809,8 +809,8 @@ private:
     tracker_ref<winrt::IScrollController> m_verticalScrollController{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
     tracker_ref<winrt::ScrollerAnchorRequestedEventArgs> m_anchorRequestedEventArgs{ this };
-    std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
-    std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
+    std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates{};
+    std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations{};
     winrt::Rect m_anchorElementBounds{};
     winrt::InteractionState m_state{ winrt::InteractionState::Idle };
     winrt::IInspectable m_pointerPressedEventHandler{ nullptr };
@@ -873,7 +873,7 @@ private:
     winrt::ICoreWindow::KeyDown_revoker m_coreWindowKeyDownRevoker{};
     winrt::ICoreWindow::KeyUp_revoker m_coreWindowKeyUpRevoker{};
 
-    winrt::IObservableVector<winrt::ScrollSnapPointBase>::VectorChanged_revoker m_horizontalSnapPointsVectorChangedRevoker{};
+    winrt::IObservableVector<winrt::ScrollSnapPointBase>::VectorChanged_revoker{} m_horizontalSnapPointsVectorChangedRevoker{};
     winrt::IObservableVector<winrt::ScrollSnapPointBase>::VectorChanged_revoker m_verticalSnapPointsVectorChangedRevoker{};
     winrt::IObservableVector<winrt::ZoomSnapPointBase>::VectorChanged_revoker m_zoomSnapPointsVectorChangedRevoker{};
 
@@ -885,9 +885,9 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
     // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
-    static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
+    static constexpr float s_offsetEqualityEpsilon{ 0.00001F };
     // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
-    static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
+    static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001F };
 
     // Property names being targeted for the Scroller.Content's Visual.
     // RedStone v1 case:

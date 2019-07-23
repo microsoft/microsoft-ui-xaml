@@ -34,7 +34,7 @@ private:
     void DetachEventHandlers();
 
     void UpdateFlowsFromAndFlowsTo();
-    void UpdateUI(bool useTransitions = true);
+    void UpdateUI(bool useTransitions);
     void UpdateVisualState(bool useTransitions);
     void UpdateTemplateSettings();
     void EnsureAutomationSetCountAndPosition();

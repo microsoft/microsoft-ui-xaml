@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
+#include "DoubleUtil.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "SharedHelpers.h"
 #include "TabView.h"
 #include "TabViewAutomationPeer.h"
-#include "DoubleUtil.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
-#include "SharedHelpers.h"
+#include "common.h"
 #include <Vector.h>
 
 static constexpr double c_tabMinimumWidth = 48.0;
@@ -17,7 +17,7 @@ static constexpr double c_tabMaximumWidth = 200.0;
 static constexpr wstring_view c_tabViewItemMinWidthName{ L"TabViewItemMinWidth"sv };
 static constexpr wstring_view c_tabViewItemMaxWidthName{ L"TabViewItemMaxWidth"sv };
 
-// TODO: what is the right number and should this be customizable?
+// TODO(ranjeshj): what is the right number and should this be customizable?
 static constexpr double c_scrollAmount = 50.0;
 
 TabView::TabView()
@@ -109,32 +109,32 @@ void TabView::UpdateItemsSource()
     }
 }
 
-void TabView::OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     UpdateItemsSource();
 }
 
-void TabView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     UpdateItemsSource();
 }
 
-void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     UpdateSelectedIndex();
 }
 
-void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void TabView::OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     UpdateSelectedItem();
 }
 
-void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& /*unused*/)
 {
     UpdateTabWidths();
 }
 
-void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+void TabView::OnAddButtonClick(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs& args)
 {
     m_addButtonClickEventSource(*this, args);
 }
@@ -144,12 +144,12 @@ winrt::AutomationPeer TabView::OnCreateAutomationPeer()
     return winrt::make<TabViewAutomationPeer>(*this);
 }
 
-void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void TabView::OnLoaded(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs& /*unused*/)
 {
     UpdateTabContent();
 }
 
-void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+void TabView::OnListViewLoaded(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
     {
@@ -176,7 +176,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     }
 }
 
-void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+void TabView::OnScrollViewerLoaded(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
@@ -196,7 +196,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
     UpdateTabWidths();
 }
 
-void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs&)
+void TabView::OnSizeChanged(const winrt::IInspectable& /*unused*/, const winrt::SizeChangedEventArgs& /*unused*/)
 {
     UpdateTabWidths();
 }

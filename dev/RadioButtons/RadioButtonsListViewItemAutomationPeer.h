@@ -12,7 +12,7 @@ class RadioButtonsListViewItemAutomationPeer :
         winrt::implementation::RadioButtonsListViewItemAutomationPeerT>
 {
 public:
-    RadioButtonsListViewItemAutomationPeer(winrt::RadioButtonsListViewItem const& owner);
+    explicit RadioButtonsListViewItemAutomationPeer(winrt::RadioButtonsListViewItem const& owner);
 
     // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();

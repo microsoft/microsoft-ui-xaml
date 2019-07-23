@@ -191,7 +191,7 @@ winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount)
     }
 }
 
-winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options)
+winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions&  /*options*/)
 {
     if (options)
     {
@@ -206,7 +206,7 @@ winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options)
     }
 }
 
-winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options)
+winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions&  /*options*/)
 {
     if (options)
     {
@@ -265,4 +265,4 @@ winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTracke
     }
 }
 
-}
+} // namespace TypeLogging

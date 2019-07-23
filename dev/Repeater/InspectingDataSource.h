@@ -11,7 +11,7 @@ class InspectingDataSource :
 public:
     ForwardRefToBaseReferenceTracker(ItemsSourceView)
 
-    InspectingDataSource(const winrt::IInspectable& source);
+    explicit InspectingDataSource(const winrt::IInspectable& source);
     ~InspectingDataSource();
 
 #pragma region IDataSourceOverrides

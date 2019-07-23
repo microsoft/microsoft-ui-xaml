@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "common.h"
 #include "TeachingTipClosedEventArgs.h"
+#include "common.h"
 
 
 TeachingTipClosedEventArgs::TeachingTipClosedEventArgs()

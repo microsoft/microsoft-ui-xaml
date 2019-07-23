@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
 #include "TraceLogging.h"
+#include <pch.h>
 
 // GUID_NULL is not defined for us in Windows, so we'll define it here in that case.
 #ifdef BUILD_WINDOWS
@@ -42,7 +42,7 @@ void WINAPI TelemetryProviderEnabledCallback(
     _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
     _In_opt_  PVOID /*callbackContext*/)
 {
-    g_IsTelemetryProviderEnabled = !!isEnabled;
+    g_IsTelemetryProviderEnabled = !(isEnabled == 0u);
     g_TelemetryProviderLevel = level;
     g_TelemetryProviderMatchAnyKeyword = matchAnyKeyword;
 }
@@ -75,7 +75,7 @@ void WINAPI PerfProviderEnabledCallback(
     _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
     _In_opt_  PVOID /*callbackContext*/)
 {
-    g_IsPerfProviderEnabled = !!isEnabled;
+    g_IsPerfProviderEnabled = !(isEnabled == 0u);
     g_PerfProviderLevel = level;
     g_PerfProviderMatchAnyKeyword = matchAnyKeyword;
 }
@@ -108,7 +108,7 @@ void WINAPI LoggingProviderEnabledCallback(
     _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
     _In_opt_  PVOID /*callbackContext*/)
 {
-    g_IsLoggingProviderEnabled = !!isEnabled;
+    g_IsLoggingProviderEnabled = !(isEnabled == 0u);
     g_LoggingProviderLevel = level;
     g_LoggingProviderMatchAnyKeyword = matchAnyKeyword;
 }

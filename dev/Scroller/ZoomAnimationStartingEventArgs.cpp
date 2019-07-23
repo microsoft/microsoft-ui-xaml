@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
 #include "ScrollerTrace.h"
 #include "ZoomAnimationStartingEventArgs.h"
+#include "common.h"
 
 winrt::float2 ZoomAnimationStartingEventArgs::CenterPoint()
 {

@@ -68,19 +68,19 @@ private:
     // chlidren containing leaf entries.
 
     // For inner nodes (any node whose children are data sources)
-    std::vector<std::shared_ptr<SelectionNode>> m_childrenNodes;
+    std::vector<std::shared_ptr<SelectionNode>> m_childrenNodes{};
     // Don't take a ref.
     SelectionNode* m_parent { nullptr };
 
     // For parents of leaf nodes (any node whose children are not data sources)
-    std::vector<IndexRange> m_selected;
+    std::vector<IndexRange> m_selected{};
     
-    tracker_ref<winrt::IInspectable> m_source;
-    tracker_ref<winrt::ItemsSourceView> m_dataSource;
+    tracker_ref<winrt::IInspectable> m_source{};
+    tracker_ref<winrt::ItemsSourceView> m_dataSource{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
 
     int m_selectedCount{ 0 };
-    std::vector<int> m_selectedIndicesCached;
+    std::vector<int> m_selectedIndicesCached{};
     bool m_selectedIndicesCacheIsValid = false;
     int m_anchorIndex{ -1 };
     int m_realizedChildrenNodeCount{ 0 };

@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "Vector.h"
-#include "SplitDataSourceBase.h"
-#include "TopNavigationViewDataProvider.h"
 #include "InspectingDataSource.h"
 #include "NavigationViewItem.h"
+#include "SplitDataSourceBase.h"
+#include "TopNavigationViewDataProvider.h"
+#include "Vector.h"
+#include "common.h"
 
 TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner)
     :SplitDataSourceT()
@@ -115,7 +115,7 @@ void TopNavigationViewDataProvider::MoveAllItemsToPrimaryList()
     }
 }
 
-std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::vector<int> const& indexesInPrimary)
+std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::vector<int> const&  /*indexesInPrimary*/)
 {
     std::vector<int> indexes;
     if (!indexesInPrimary.empty())
@@ -144,7 +144,7 @@ void TopNavigationViewDataProvider::MoveItemsToPrimaryList(std::vector<int> cons
     MoveItemsToList(indexes, PrimaryList);
 }
 
-void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const& indexes, NavigationViewSplitVectorID vectorID)
+void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const&  /*indexes*/, NavigationViewSplitVectorID vectorID)
 {
     for (auto &index : indexes)
     {
@@ -195,7 +195,7 @@ void TopNavigationViewDataProvider::UpdateWidthForPrimaryItem(int indexInPrimary
 
 float TopNavigationViewDataProvider::WidthRequiredToRecoveryAllItemsToPrimary()
 {
-    auto width = 0.f;
+    auto width = 0.F;
     for (int i=0; i<Size(); i++)
     {
         if (!IsItemInPrimaryList(i))
@@ -207,7 +207,7 @@ float TopNavigationViewDataProvider::WidthRequiredToRecoveryAllItemsToPrimary()
     return std::max(0.f, width);
 }
 
-bool TopNavigationViewDataProvider::HasInvalidWidth(std::vector<int> & items)
+bool TopNavigationViewDataProvider::HasInvalidWidth(std::vector<int> &  /*items*/)
 {
     bool hasInvalidWidth = false;
     for (auto &index : items)
@@ -231,9 +231,9 @@ float TopNavigationViewDataProvider::GetWidthForItem(int index)
     return width;
 }
 
-float TopNavigationViewDataProvider::CalculateWidthForItems(std::vector<int> &items)
+float TopNavigationViewDataProvider::CalculateWidthForItems(std::vector<int> & /*items*/)
 {
-    float width = 0.f;
+    float width = 0.F;
     for (auto &index : items)
     {
         width += GetWidthForItem(index);
@@ -267,7 +267,7 @@ int TopNavigationViewDataProvider::IndexOf(const winrt::IInspectable& value, Nav
     return IndexOfImpl(value, vectorID);
 }
 
-void TopNavigationViewDataProvider::OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
+void TopNavigationViewDataProvider::OnDataSourceChanged(const winrt::IInspectable&  /*sender*/, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     switch (args.Action())
     {
@@ -346,7 +346,7 @@ void TopNavigationViewDataProvider::SetWidthForItem(int index, float width)
     }
 }
 
-void TopNavigationViewDataProvider::ChangeDataSource(winrt::ItemsSourceView newValue)
+void TopNavigationViewDataProvider::ChangeDataSource(winrt::ItemsSourceView  /*newValue*/)
 {
     auto oldValue = m_dataSource.get();
     if (oldValue != newValue)

@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ScrollOptions.h"
 #include "ScrollBarController.h"
-#include "ScrollViewer.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "ScrollControllerScrollToRequestedEventArgs.h"
 #include "ScrollControllerScrollByRequestedEventArgs.h"
 #include "ScrollControllerScrollFromRequestedEventArgs.h"
+#include "ScrollControllerScrollToRequestedEventArgs.h"
+#include "ScrollOptions.h"
+#include "ScrollViewer.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 ScrollBarController::ScrollBarController()
 {
@@ -74,11 +74,11 @@ winrt::Orientation ScrollBarController::InteractionVisualScrollOrientation()
 }
 
 void ScrollBarController::SetExpressionAnimationSources(
-    winrt::CompositionPropertySet const& propertySet,
-    winrt::hstring const& minOffsetPropertyName,
-    winrt::hstring const& maxOffsetPropertyName,
-    winrt::hstring const& offsetPropertyName,
-    winrt::hstring const& multiplierPropertyName)
+    winrt::CompositionPropertySet const&  /*propertySet*/,
+    winrt::hstring const&  /*minOffsetPropertyName*/,
+    winrt::hstring const&  /*maxOffsetPropertyName*/,
+    winrt::hstring const&  /*offsetPropertyName*/,
+    winrt::hstring const&  /*multiplierPropertyName*/)
 {
     // Unused because InteractionVisual returns null.
     SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);

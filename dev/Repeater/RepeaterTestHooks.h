@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "WinEventLogLevels.h"
 #include "RepeaterTestHooks.g.h"
+#include "WinEventLogLevels.h"
 
 class RepeaterTestHooks :
     public winrt::implementation::RepeaterTestHooksT<RepeaterTestHooks>

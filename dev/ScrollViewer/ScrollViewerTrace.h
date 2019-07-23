@@ -3,30 +3,30 @@
 
 #pragma once
 
-#include "common.h"
+#include "MUXControlsTestHooks.h"
 #include "TraceLogging.h"
 #include "Utils.h"
-#include "MUXControlsTestHooks.h"
+#include "common.h"
 
 inline bool IsScrollViewerTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollViewerVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollViewerPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_PerfProviderMatchAnyKeyword == 0);
+        (((g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER) != 0U) || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define SCROLLVIEWER_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \

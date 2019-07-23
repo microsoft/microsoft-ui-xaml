@@ -123,7 +123,7 @@ void PlaySpotLightStateAnimation(
     const winrt::CompositionPropertySet& colorsProxy,
     const winrt::CompositionPropertySet& offsetProps,
     const RevealHoverSpotlightStateDesc& targetState,
-    std::function<void()>* cancelationFunction = nullptr,
+    std::function<void()>* cancelationFunction,
     std::function<void()> onComplete = nullptr);
 
 void SetSpotLightStateImmediate(const winrt::SpotLight& compositionSpotLight,

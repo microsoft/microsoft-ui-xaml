@@ -14,7 +14,7 @@ class NavigationViewItemAutomationPeer :
         winrt::IInvokeProvider>
 {
 public:
-    NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner);
+    explicit NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner);
 
     // IAutomationPeerOverrides 
     winrt::hstring GetNameCore();

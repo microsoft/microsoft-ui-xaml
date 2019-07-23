@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "Scroller.h"
 #include "ScrollCompletedEventArgs.g.h"
+#include "Scroller.h"
 
 class ScrollCompletedEventArgs :
     public winrt::implementation::ScrollCompletedEventArgsT<ScrollCompletedEventArgs>

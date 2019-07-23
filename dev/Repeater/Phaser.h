@@ -22,7 +22,7 @@ private:
 class Phaser final
 {
 public:
-    Phaser(ItemsRepeater* owner);
+    explicit Phaser(ItemsRepeater* owner);
     void PhaseElement(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
     void StopPhasing(const winrt::UIElement& element, const winrt::com_ptr<VirtualizationInfo>& virtInfo);
 

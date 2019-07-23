@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ResourceAccessor.h"
-#include "NavigationViewItemAutomationPeer.h"
 #include "NavigationView.h"
+#include "NavigationViewItemAutomationPeer.h"
 #include "NavigationViewItemBase.h"
+#include "ResourceAccessor.h"
+#include "common.h"
 
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewItemAutomationPeer);
 
-NavigationViewItemAutomationPeer::NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner) :
+NavigationViewItemAutomationPeer::NavigationViewItemAutomationPeer(winrt::NavigationViewItem  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }
@@ -262,7 +262,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 // Basically, we do the same here as GetPositionOrSetCountInLeftNavHelper without dealing with the listview directly, because 
 // TopDataProvider provcides two methods: GetOverflowItems() and GetPrimaryItems(), so we can break the loop (in case of position) by 
 // comparing the value of the FrameworkElementAutomationPeer we can get from the item we're iterating through to this object.
-int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(winrt::IVector<winrt::IInspectable> navigationViewElements, AutomationOutput automationOutput)
+int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(winrt::IVector<winrt::IInspectable>  /*navigationViewElements*/, AutomationOutput automationOutput)
 {
     int32_t returnValue = 0;
     

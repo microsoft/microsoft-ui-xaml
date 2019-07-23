@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTrace.h"
 #include "ScrollControllerInteractionRequestedEventArgs.h"
+#include "ScrollerTrace.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(ScrollControllerInteractionRequestedEventArgs)
 

@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
-#include "ToggleSplitButton.g.h"
 #include "SplitButton.h"
+#include "ToggleSplitButton.g.h"
 #include "ToggleSplitButton.properties.h"
 
 class ToggleSplitButton :

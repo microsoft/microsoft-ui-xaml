@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
 #include "InteractionTrackerAsyncOperation.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(
     InteractionTrackerAsyncOperationType operationType,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     bool isDelayed,
-    std::shared_ptr<ViewChangeBase> viewChangeBase)
+    std::shared_ptr<ViewChangeBase>  /*viewChangeBase*/)
     : m_operationType(operationType)
     , m_operationTrigger(operationTrigger)
     , m_isDelayed(isDelayed)

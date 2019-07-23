@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "NavigationViewItemSeparator.h"
 #include "Utils.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewItemSeparator);
 
@@ -13,7 +13,7 @@ NavigationViewItemSeparator::NavigationViewItemSeparator()
     SetDefaultStyleKey(this);
 }
 
-void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
+void NavigationViewItemSeparator::UpdateVisualState(bool  /*useTransitions*/)
 {
     if (m_appliedTemplate)
     {

@@ -82,7 +82,7 @@ public:
     void AutoRecycleCandidate(bool value) { m_autoRecycleCandidate = value; }
 
 private:
-    unsigned m_pinCounter{ 0u };
+    unsigned m_pinCounter{ 0U };
     int m_index{ -1 };
     winrt::hstring m_uniqueId;
     ElementOwner m_owner{ ElementOwner::ElementFactory };

@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
-#include "Utils.h"
+#include "TreeViewItem.h"
 #include "TreeViewList.h"
 #include "TreeViewListAutomationPeer.h"
-#include "TreeViewItem.h"
+#include "Utils.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewList);
 

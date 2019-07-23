@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
-#include "Utils.h"
-#include "TabViewListView.h"
-#include "TabViewItem.h"
-#include "TabView.h"
 #include "SharedHelpers.h"
+#include "TabView.h"
+#include "TabViewItem.h"
+#include "TabViewListView.h"
+#include "Utils.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(TabViewListView);
 

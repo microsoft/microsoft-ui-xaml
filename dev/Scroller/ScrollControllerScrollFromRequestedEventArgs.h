@@ -24,7 +24,7 @@ public:
     void Info(winrt::ScrollInfo info);
 
 private:
-    float m_offsetVelocity{ 0.0f };
+    float m_offsetVelocity{ 0.0F };
     winrt::IReference<float> m_inertiaDecayRate{};
     winrt::ScrollInfo m_info{ -1 };
 };

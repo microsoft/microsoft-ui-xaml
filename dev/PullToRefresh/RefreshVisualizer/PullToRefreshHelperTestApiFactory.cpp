@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RefreshVisualizerEventArgs.h"
-#include "RefreshInteractionRatioChangedEventArgs.h"
 #include "PullToRefreshHelperTestApi.h"
 #include "PullToRefreshHelperTestApiFactory.h"
+#include "RefreshInteractionRatioChangedEventArgs.h"
+#include "RefreshVisualizerEventArgs.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(PullToRefreshHelperTestApi)
 

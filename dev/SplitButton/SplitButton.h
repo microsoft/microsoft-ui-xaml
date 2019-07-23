@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
 #include "SplitButton.g.h"
 #include "SplitButton.properties.h"
@@ -31,7 +31,7 @@ public:
     virtual void OnClickPrimary(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     virtual bool InternalIsChecked() { return false; }
 
-    void UpdateVisualStates(bool useTransitions = true);
+    void UpdateVisualStates(bool useTransitions);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 

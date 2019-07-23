@@ -32,7 +32,7 @@ template<typename T>
 class NavigationViewItemHelper
 {
 public:
-    NavigationViewItemHelper(const ITrackerHandleManager* owner): m_owner(owner)
+    explicit NavigationViewItemHelper(const ITrackerHandleManager* owner): m_owner(owner)
     {
     }
 

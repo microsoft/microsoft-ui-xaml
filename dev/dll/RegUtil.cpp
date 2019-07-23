@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
 #include "RegUtil.h"
+#include <pch.h>
 
 bool RegUtil::s_hasMouseWheelScrollLinesCache{ false };
 bool RegUtil::s_hasMouseWheelScrollCharsCache{ false };

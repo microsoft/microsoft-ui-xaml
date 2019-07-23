@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
 class FocusHelper
 {
@@ -114,7 +114,7 @@ public:
     static winrt::UIElement GetUIElementForFocusCandidate(const winrt::DependencyObject& dobj)
     {
         auto uielement = dobj.try_as<winrt::UIElement>();
-        auto parent = dobj;
+        const auto& parent = dobj;
         while (uielement == nullptr && parent != nullptr)
         {
             parent = winrt::VisualTreeHelper::GetParent(dobj);

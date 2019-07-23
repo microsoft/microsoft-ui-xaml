@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "CommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
-#include "Vector.h"
 #include "RuntimeProfiler.h"
+#include "Vector.h"
+#include "common.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };

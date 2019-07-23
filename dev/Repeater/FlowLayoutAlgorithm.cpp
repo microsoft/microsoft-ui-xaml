@@ -1,14 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include <ItemsRepeater.common.h>
 #include "FlowLayoutAlgorithm.h"
 #include "VirtualizingLayoutContext.h"
+#include <ItemsRepeater.common.h>
+#include <common.h>
+#include <pch.h>
 
 void FlowLayoutAlgorithm::InitializeForContext(
-    const winrt::VirtualizingLayoutContext& context,
+    const winrt::VirtualizingLayoutContext&  /*context*/,
     IFlowLayoutAlgorithmDelegates* callbacks)
 {
     m_algorithmCallbacks = callbacks;
@@ -16,7 +16,7 @@ void FlowLayoutAlgorithm::InitializeForContext(
     m_elementManager.SetContext(context);
 }
 
-void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayoutContext& context)
+void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayoutContext&  /*context*/)
 {
     if (IsVirtualizingContext())
     {
@@ -29,7 +29,7 @@ void FlowLayoutAlgorithm::UninitializeForContext(const winrt::VirtualizingLayout
 
 winrt::Size FlowLayoutAlgorithm::Measure(
     const winrt::Size& availableSize,
-    const winrt::VirtualizingLayoutContext& context,
+    const winrt::VirtualizingLayoutContext&  /*context*/,
     bool isWrapping,
     double minItemSpacing,
     double lineSpacing,
@@ -80,7 +80,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 
 winrt::Size FlowLayoutAlgorithm::Arrange(
     const winrt::Size& finalSize,
-    const winrt::VirtualizingLayoutContext& context,
+    const winrt::VirtualizingLayoutContext&  /*context*/,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
@@ -95,7 +95,7 @@ winrt::Size FlowLayoutAlgorithm::Arrange(
 }
 
 void FlowLayoutAlgorithm::MakeAnchor(
-    const winrt::VirtualizingLayoutContext& context,
+    const winrt::VirtualizingLayoutContext&  /*context*/,
     int index,
     const winrt::Size& availableSize)
 {
@@ -128,7 +128,7 @@ winrt::Size FlowLayoutAlgorithm::MeasureElement(
     const winrt::UIElement& element,
     int index,
     const winrt::Size& availableSize,
-    const winrt::VirtualizingLayoutContext& context)
+    const winrt::VirtualizingLayoutContext&  /*context*/)
 {
     auto measureSize = m_algorithmCallbacks->Algorithm_GetMeasureSize(index, availableSize, context);
     element.Measure(measureSize);
@@ -267,7 +267,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
         m_elementManager.ClearRealizedRange();
     }
 
-    // TODO: Perhaps we can track changes in the property setter
+    // TODO(ranjeshj): Perhaps we can track changes in the property setter
     m_lastAvailableSize = availableSize;
     m_lastItemSpacing = minItemSpacing;
 
@@ -513,7 +513,7 @@ winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize
 void FlowLayoutAlgorithm::RaiseLineArranged()
 {
     auto realizationRect = RealizationRect();
-    if (realizationRect.Width != 0.0f || realizationRect.Height != 0.0f)
+    if (realizationRect.Width != 0.0F || realizationRect.Height != 0.0F)
     {
         int realizedElementCount = m_elementManager.GetRealizedElementCount();
         if (realizedElementCount > 0)
@@ -714,13 +714,7 @@ winrt::UIElement FlowLayoutAlgorithm::GetElementIfRealized(int dataIndex)
 
 bool FlowLayoutAlgorithm::TryAddElement0(winrt::UIElement const& element)
 {
-    if (m_elementManager.GetRealizedElementCount() == 0)
-    {
-        m_elementManager.Add(element, 0);
-        return true;
-    }
-
-    return false;
+    return ;
 }
 
 bool FlowLayoutAlgorithm::IsVirtualizingContext()

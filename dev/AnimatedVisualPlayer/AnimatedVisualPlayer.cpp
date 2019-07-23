@@ -46,8 +46,8 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         // Do not do anything after calling SetProgress()... the AnimationPlay is destructed already.
         return;
     }
-    else 
-    {
+    
+    
         // Create an animation to drive the Progress property.
         auto compositor = m_owner.m_progressPropertySet.Compositor();
         auto animation = compositor.CreateScalarKeyFrameAnimation();
@@ -134,7 +134,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
         }
 
         m_owner.IsPlaying(true);
-    }
+    
 }
 
 bool AnimatedVisualPlayer::AnimationPlay::IsCurrentPlay()
@@ -478,8 +478,8 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
         return finalSize;
     }
 
-    winrt::float2 scale;
-    winrt::float2 arrangedSize;
+    winrt::float2 scale{};
+    winrt::float2 arrangedSize{};
 
     if (!m_animatedVisualRoot)
     {
@@ -561,7 +561,7 @@ winrt::DependencyProperty InitializeDp(
     _In_ wstring_view const& propertyNameString,
     _In_ wstring_view const& propertyTypeNameString,
     _In_opt_ const winrt::IInspectable& defaultValue,
-    _In_opt_ const winrt::PropertyChangedCallback& propertyChangedCallback = nullptr)
+    _In_opt_ const winrt::PropertyChangedCallback& propertyChangedCallback)
 {
     // There are no attached properties.
     auto isAttached = false;
@@ -740,7 +740,7 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
 }
 
 void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
-    winrt::DependencyPropertyChangedEventArgs const& args)
+    winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     if (m_isFallenBack)
     {
@@ -749,7 +749,7 @@ void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
 }
 
 void AnimatedVisualPlayer::OnSourcePropertyChanged(
-    winrt::DependencyPropertyChangedEventArgs const& args)
+    winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     auto newSource = safe_cast<winrt::IAnimatedVisualSource>(args.NewValue());
 
@@ -953,7 +953,7 @@ void AnimatedVisualPlayer::OnPlaybackRatePropertyChanged(
 }
 
 void AnimatedVisualPlayer::OnStretchPropertyChanged(
-    winrt::DependencyPropertyChangedEventArgs const&)
+    winrt::DependencyPropertyChangedEventArgs const& /*unused*/)
 {
     InvalidateMeasure();
 }

@@ -20,7 +20,7 @@ class TopNavigationViewDataProvider: public SplitDataSourceT
 {
 public:
     
-    TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner);
+    explicit TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner);
     ~TopNavigationViewDataProvider();
 
     winrt::IVector<winrt::IInspectable> GetPrimaryItems();
@@ -76,9 +76,9 @@ private:
     bool IsContainerNavigationViewItem(int index);
     bool IsContainerNavigationViewHeader(int index);
 
-    tracker_ref<winrt::ItemsSourceView> m_dataSource;
+    tracker_ref<winrt::ItemsSourceView> m_dataSource{};
     // If the raw datasource is the same, we don't need to create new winrt::ItemsSourceView object.
-    tracker_ref<winrt::IInspectable> m_rawDataSource;
+    tracker_ref<winrt::IInspectable> m_rawDataSource{};
     // Event tokens
     winrt::event_token m_dataSourceChanged{};
     std::function<void(const winrt::NotifyCollectionChangedEventArgs& args)> m_dataChangeCallback;

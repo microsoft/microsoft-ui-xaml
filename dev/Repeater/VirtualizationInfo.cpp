@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "VirtualizationInfo.h"
 #include "ItemsRepeater.h"
+#include "VirtualizationInfo.h"
+#include <common.h>
+#include <pch.h>
 
 VirtualizationInfo::VirtualizationInfo()
     : m_arrangeBounds(ItemsRepeater::InvalidRect)
@@ -13,7 +13,7 @@ VirtualizationInfo::VirtualizationInfo()
 
 bool VirtualizationInfo::IsPinned() const
 {
-    return m_pinCounter > 0u;
+    return m_pinCounter > 0U;
 }
 
 bool VirtualizationInfo::IsHeldByLayout() const
@@ -65,7 +65,7 @@ void VirtualizationInfo::MoveOwnershipToElementFactory()
 {
     MUX_ASSERT(m_owner != ElementOwner::ElementFactory);
     m_owner = ElementOwner::ElementFactory;
-    m_pinCounter = 0u;
+    m_pinCounter = 0U;
     m_index = -1;
     m_uniqueId.clear();
     m_arrangeBounds = ItemsRepeater::InvalidRect;
@@ -87,7 +87,7 @@ void VirtualizationInfo::MoveOwnershipToAnimator()
     MUX_ASSERT(m_owner == ElementOwner::Layout || m_owner == ElementOwner::UniqueIdResetPool);
     m_owner = ElementOwner::Animator;
     m_index = -1;
-    m_pinCounter = 0u;
+    m_pinCounter = 0U;
 }
 
 void VirtualizationInfo::MoveOwnershipToPinnedPool()

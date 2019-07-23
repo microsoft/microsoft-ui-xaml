@@ -46,12 +46,12 @@ void CustomProperty::SetValue(winrt::IInspectable const& target, winrt::IInspect
     m_setter(target, value);
 }
 
-winrt::IInspectable CustomProperty::GetIndexedValue(winrt::IInspectable const& target, winrt::IInspectable const& index)
+winrt::IInspectable CustomProperty::GetIndexedValue(winrt::IInspectable const&  /*target*/, winrt::IInspectable const&  /*index*/)
 {
     throw winrt::hresult_not_implemented();
 }
 
-void CustomProperty::SetIndexedValue(winrt::IInspectable const& target, winrt::IInspectable const& value, winrt::IInspectable const& index)
+void CustomProperty::SetIndexedValue(winrt::IInspectable const&  /*target*/, winrt::IInspectable const&  /*value*/, winrt::IInspectable const&  /*index*/)
 {
     throw winrt::hresult_not_implemented();
 }

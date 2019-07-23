@@ -11,7 +11,7 @@ class TreeViewItemAutomationPeer :
         winrt::ISelectionItemProvider>
 {
 public:
-    TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner);
+    explicit TreeViewItemAutomationPeer(winrt::TreeViewItem const& owner);
 
     // IExpandCollapseProvider
     winrt::ExpandCollapseState ExpandCollapseState();

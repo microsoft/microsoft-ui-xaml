@@ -66,8 +66,8 @@ private:
         [[nodiscard]] winrt::Panel Owner() const { return m_owner.get(); };
 
     private:
-        tracker_ref<winrt::UIElement> m_element;
-        tracker_ref<winrt::Panel> m_owner;
+        tracker_ref<winrt::UIElement> m_element{};
+        tracker_ref<winrt::Panel> m_owner{};
     };
 
     std::map<winrt::hstring /*key*/, std::vector<ElementInfo>> m_elements;

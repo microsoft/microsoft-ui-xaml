@@ -20,7 +20,7 @@ public:
     void OnApplyTemplate();
 
     // IControlOverrides overrides
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
     void OnGotFocus(winrt::RoutedEventArgs const& e);
     void OnLostFocus(winrt::RoutedEventArgs const& e);
 

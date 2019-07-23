@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "InteractionTrackerOwner.h"
 #include "Scroller.h"
+#include "common.h"
 
-InteractionTrackerOwner::InteractionTrackerOwner(const winrt::Scroller& scroller)
+InteractionTrackerOwner::InteractionTrackerOwner(const winrt::Scroller&  /*scroller*/)
 {
     SCROLLER_TRACE_VERBOSE(scroller, TRACE_MSG_METH_PTR, METH_NAME, this, scroller);
 

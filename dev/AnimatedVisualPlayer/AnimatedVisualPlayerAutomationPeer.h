@@ -8,7 +8,7 @@ class AnimatedVisualPlayerAutomationPeer :
     public ReferenceTracker<AnimatedVisualPlayerAutomationPeer, winrt::implementation::AnimatedVisualPlayerAutomationPeerT>
 {
 public:
-    AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner);
+    explicit AnimatedVisualPlayerAutomationPeer(winrt::AnimatedVisualPlayer const& owner);
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();

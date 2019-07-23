@@ -66,7 +66,7 @@ public:
 
     // Number of connected RevealBrushes in the tree (i.e. # of brushes that need lights)
     int m_revealBrushConnectedCount{};
-    std::vector<std::pair<winrt::IVector<winrt::XamlLight>, std::vector<winrt::XamlLight>>> m_revealLightsToRemove;
+    std::vector<std::pair<winrt::IVector<winrt::XamlLight>, std::vector<winrt::XamlLight>>> m_revealLightsToRemove{};
 
 
     enum AcrylicBrushCacheHelperParam
@@ -100,7 +100,7 @@ public:
     winrt::Compositor m_acrylicCompositor{ nullptr };
 
     // Reveal
-    std::array<winrt::ICompositionEffectFactory, (size_t)RevealBrushCacheFlags::MaxCacheSize>
+    std::array<winrt::ICompositionEffectFactory, static_cast<size_t>(RevealBrushCacheFlags::MaxCacheSize)>
         m_revealBrushCompositionEffectFactoryCache;
 
     winrt::CompositionSurfaceBrush CreateScaledBrush(int dpiScale);
@@ -201,7 +201,7 @@ public:
     static bool RS2IsSafeToCreateNoise();
     static bool IsFullScreenOrTabletMode();
 
-    void UpdatePolicyStatus(bool onUIThread = false);
+    void UpdatePolicyStatus(bool onUIThread);
 
     static void SetShouldBeginAttachingLights(bool shouldBeginAttachingLights);
     static bool ShouldBeginAttachingLights();
@@ -221,7 +221,7 @@ private:
     void OnUISettingsChanged(const winrt::UISettings& /*sender*/, const winrt::IInspectable& /*args*/);
     void OnDpiChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
-    void OnVisibilityChanged(const winrt::CoreWindow&, const winrt::VisibilityChangedEventArgs& args);
+    void OnVisibilityChanged(const winrt::CoreWindow& /*unused*/, const winrt::VisibilityChangedEventArgs& args);
 
     void HookupDpiChangedHandler();
     void HookupVisibilityChangedHandler();
@@ -238,7 +238,7 @@ private:
     winrt::event_token m_compositionCapabilitiesChangedToken{};
     winrt::event_token m_advancedEffectsEnabledChangedToken{};
     winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};
-    winrt::CoreWindow::VisibilityChanged_revoker m_visibilityChangedRevoker;
+    winrt::CoreWindow::VisibilityChanged_revoker m_visibilityChangedRevoker{};
     winrt::event_token m_windowSizeChangedToken{};
     winrt::CompositionCapabilities m_compositionCapabilities{ nullptr };
     winrt::IUISettings4 m_uiSettings{ nullptr };

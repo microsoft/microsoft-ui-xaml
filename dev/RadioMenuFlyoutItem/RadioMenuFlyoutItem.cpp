@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "RadioMenuFlyoutItem.h"
-#include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "common.h"
 
 RadioMenuFlyoutItem::RadioMenuFlyoutItem()
 {
@@ -32,7 +32,7 @@ void RadioMenuFlyoutItem::OnPropertyChanged(const winrt::DependencyPropertyChang
     }
 }
 
-void RadioMenuFlyoutItem::OnInternalIsCheckedChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void RadioMenuFlyoutItem::OnInternalIsCheckedChanged(const winrt::DependencyObject&  /*sender*/, const winrt::DependencyProperty&  /*args*/)
 {
     if (!InternalIsChecked())
     {

@@ -9,7 +9,7 @@ class ScrollerTestHooksInteractionSourcesChangedEventArgs :
     public winrt::implementation::ScrollerTestHooksInteractionSourcesChangedEventArgsT<ScrollerTestHooksInteractionSourcesChangedEventArgs>
 {
 public:
-    ScrollerTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    explicit ScrollerTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
 
     // IScrollerTestHooksInteractionSourcesChangedEventArgs overrides
     winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection InteractionSources();

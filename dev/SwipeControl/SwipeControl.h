@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "SwipeControlTrace.h"
 #include "SwipeControl.g.h"
+#include "SwipeControlTrace.h"
 
 #include "SwipeControl.properties.h"
 

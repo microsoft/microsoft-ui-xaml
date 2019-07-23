@@ -11,7 +11,7 @@ class InteractionTrackerOwner
     : public winrt::implements<InteractionTrackerOwner, winrt::IInteractionTrackerOwner>
 {
 public:
-    InteractionTrackerOwner(const winrt::Scroller& scroller);
+    explicit InteractionTrackerOwner(const winrt::Scroller& scroller);
     ~InteractionTrackerOwner();
 
 #pragma region IInteractionTrackerOwner

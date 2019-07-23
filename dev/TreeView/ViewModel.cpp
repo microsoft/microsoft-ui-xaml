@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ViewModel.h"
 #include "TreeViewItem.h"
-#include "VectorChangedEventArgs.h"
 #include "TreeViewList.h"
+#include "VectorChangedEventArgs.h"
+#include "ViewModel.h"
+#include "common.h"
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -27,7 +27,7 @@ class SelectedTreeNodeVector :
 
 private:
     ViewModel* m_viewModel{ nullptr };
-    void UpdateSelection(winrt::TreeViewNode const& node, TreeNodeSelectionState state)
+    void UpdateSelection(winrt::TreeViewNode  /*unused*/const& node, TreeNodeSelectionState state)
     {
         if (winrt::get_self<TreeViewNode>(node)->SelectionState() != state)
         {
@@ -42,7 +42,7 @@ public:
         m_viewModel = viewModel;
     }
 
-    void Append(winrt::TreeViewNode const& node)
+    void Append(winrt::TreeViewNode  /*unused*/const& node)
     {
         if (!m_viewModel->IsInSingleSelectionMode())
         {
@@ -50,7 +50,7 @@ public:
         }
     }
 
-    void InsertAt(unsigned int index, winrt::TreeViewNode const& node)
+    void InsertAt(unsigned int  /*index*/, winrt::TreeViewNode  /*unused*/const& node)
     {
         if (!Contains(node))
         {
@@ -59,7 +59,7 @@ public:
         }
     }
 
-    void SetAt(unsigned int index, winrt::TreeViewNode const& node)
+    void SetAt(unsigned int index, winrt::TreeViewNode  /*unused*/const& node)
     {
         RemoveAt(index);
         InsertAt(index, node);
@@ -78,7 +78,7 @@ public:
         RemoveAt(Size() - 1);
     }
 
-    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> nodes)
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const>  /*nodes*/)
     {
         Clear();
 
@@ -96,7 +96,7 @@ public:
         }
     }
 
-    bool Contains(winrt::TreeViewNode const& node)
+    bool Contains(winrt::TreeViewNode  /*unused*/const& node)
     {
         uint32_t index;
         return GetVectorInnerImpl()->IndexOf(node, index);
@@ -104,7 +104,7 @@ public:
 
     // Default write methods will trigger TreeView visual updates.
     // If you want to update vector content without notifying TreeViewNodes, use "core" version of the methods.
-    void AppendCore(winrt::TreeViewNode const& node)
+    void AppendCore(winrt::TreeViewNode  /*unused*/const& node)
     {
         GetVectorInnerImpl()->Append(node);
     }
@@ -203,7 +203,7 @@ bool ViewModel::IndexOf(winrt::IInspectable const& value, uint32_t& index)
     }
 }
 
-uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::IInspectable> values)
+uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::IInspectable>  /*values*/)
 {
     auto inner = GetVectorInnerImpl();
     if (IsContentMode())
@@ -313,14 +313,14 @@ void ViewModel::Clear()
     }
 }
 
-void ViewModel::ReplaceAll(winrt::array_view<winrt::IInspectable const> items)
+void ViewModel::ReplaceAll(winrt::array_view<winrt::IInspectable const>  /*items*/)
 {
     auto inner = GetVectorInnerImpl();
     return inner->ReplaceAll(items);
 }
 
 // Helper function
-void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
+void ViewModel::PrepareView(const winrt::TreeViewNode&  /*originNode*/)
 {
     // Remove any existing RootNode events/children
     if (auto existingOriginNode = m_originNode.get())

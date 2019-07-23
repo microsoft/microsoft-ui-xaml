@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ScrollerTrace.h"
 #include "ScrollAnimationStartingEventArgs.g.h"
+#include "ScrollerTrace.h"
 
 class ScrollAnimationStartingEventArgs :
     public winrt::implementation::ScrollAnimationStartingEventArgsT<ScrollAnimationStartingEventArgs>
@@ -36,6 +36,6 @@ public:
 private:
     winrt::CompositionAnimation m_animation{ nullptr };
     int32_t m_offsetsChangeId{ -1 };
-    winrt::float2 m_startPosition{ 0.0f, 0.0f };
-    winrt::float2 m_endPosition{ 0.0f, 0.0f };
+    winrt::float2 m_startPosition{ 0.0F, 0.0F };
+    winrt::float2 m_endPosition{ 0.0F, 0.0F };
 };

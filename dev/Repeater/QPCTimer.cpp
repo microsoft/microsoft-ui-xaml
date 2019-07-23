@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "QPCTimer.h"
+#include "common.h"
 #include <windows.h>
 
 QPCTimer::QPCTimer()
 {
-    if (!QueryPerformanceFrequency(&m_frequency) || !QueryPerformanceCounter(&m_start))
+    if ((QueryPerformanceFrequency(&m_frequency) == 0) || (QueryPerformanceCounter(&m_start) == 0))
     {
         throw winrt::hresult_error(E_FAIL);
     }
@@ -25,7 +25,7 @@ int QPCTimer::DurationInMilliSeconds() const
     auto success = QueryPerformanceCounter(&now);
     int elapsedMilliSeconds = 0;
 
-    if (success)
+    if (success != 0)
     {
         double elapsedSeconds = static_cast<DOUBLE>(now.QuadPart - m_start.QuadPart) / static_cast<DOUBLE>(m_frequency.QuadPart);
         elapsedMilliSeconds = static_cast<int>(elapsedSeconds * 1000);

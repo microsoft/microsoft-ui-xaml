@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "SnapPointBase.g.h"
-#include "ScrollSnapPointBase.g.h"
-#include "ScrollSnapPoint.g.h"
 #include "RepeatedScrollSnapPoint.g.h"
-#include "ZoomSnapPointBase.g.h"
-#include "ZoomSnapPoint.g.h"
 #include "RepeatedZoomSnapPoint.g.h"
+#include "ScrollSnapPoint.g.h"
+#include "ScrollSnapPointBase.g.h"
+#include "SnapPointBase.g.h"
+#include "ZoomSnapPoint.g.h"
+#include "ZoomSnapPointBase.g.h"
 
 struct ScrollerSnapPointSortPredicate
 {
@@ -160,9 +160,9 @@ class ScrollSnapPoint:
     public winrt::implementation::ScrollSnapPointT<ScrollSnapPoint, ScrollSnapPointBase>
 {
 public:
-    ScrollSnapPoint(
+    explicit ScrollSnapPoint(
         double snapPointValue,
-        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
+        winrt::ScrollSnapPointsAlignment alignment winrt::ScrollSnapPointsAlignment::Near);
 
 #ifdef ApplicableRangeType
     ScrollSnapPoint(
@@ -245,7 +245,7 @@ public:
         double interval,
         double start,
         double end,
-        winrt::ScrollSnapPointsAlignment alignment = winrt::ScrollSnapPointsAlignment::Near);
+        winrt::ScrollSnapPointsAlignment alignment winrt::ScrollSnapPointsAlignment::Near);
 
 #ifdef ApplicableRangeType
     RepeatedScrollSnapPoint(
@@ -335,10 +335,10 @@ private:
         double start,
         double end) const;
 
-    double m_offset{ 0.0f };
-    double m_interval{ 0.0f };
-    double m_start{ 0.0f };
-    double m_end{ 0.0f };
+    double m_offset{ 0.0F };
+    double m_interval{ 0.0F };
+    double m_start{ 0.0F };
+    double m_end{ 0.0F };
 };
 
 class ZoomSnapPointBase :
@@ -355,7 +355,7 @@ class ZoomSnapPoint :
     public winrt::implementation::ZoomSnapPointT<ZoomSnapPoint, ZoomSnapPointBase>
 {
 public:
-    ZoomSnapPoint(
+    explicit ZoomSnapPoint(
         double snapPointValue);
 
 #ifdef ApplicableRangeType
@@ -522,8 +522,8 @@ private:
         double start,
         double end) const;
 
-    double m_offset{ 0.0f };
-    double m_interval{ 0.0f };
-    double m_start{ 0.0f };
-    double m_end{ 0.0f };
+    double m_offset{ 0.0F };
+    double m_interval{ 0.0F };
+    double m_start{ 0.0F };
+    double m_end{ 0.0F };
 };

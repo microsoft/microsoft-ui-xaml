@@ -7,12 +7,12 @@ class NavigationViewItem;
 class NavigationViewList;
 struct bringintoview_event_revoker;
 
-#include "NavigationViewTemplateSettings.h"
-#include "NavigationViewItem.h"
 #include "NavigationView.g.h"
-#include "TopNavigationViewDataProvider.h"
-#include "NavigationViewHelper.h"
 #include "NavigationView.properties.h"
+#include "NavigationViewHelper.h"
+#include "NavigationViewItem.h"
+#include "NavigationViewTemplateSettings.h"
+#include "TopNavigationViewDataProvider.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -64,7 +64,7 @@ public:
 
     static void CreateAndAttachHeaderAnimation(const winrt::Visual& visual);
 
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
     bool IsFullScreenOrTabletMode();
 
@@ -98,7 +98,7 @@ private:
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
     void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
     void CloseTopNavigationViewFlyout();
-    void UpdateVisualState(bool useTransitions = false);
+    void UpdateVisualState(bool useTransitions);
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void SetNavigationViewListPosition(winrt::ListView& listView, NavigationViewListPosition position);
@@ -164,8 +164,8 @@ private:
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
-    void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
-    void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode = false);
+    void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode);
+    void SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode);
    
     NavigationViewVisualStateDisplayMode GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode);
     void UpdateVisualStateForDisplayModeGroup(const winrt::NavigationViewDisplayMode& displayMode);
@@ -187,7 +187,7 @@ private:
     void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
         bool isSettingsItem,
-        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
+        NavigationRecommendedTransitionDirection recommendedDirection);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
 
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
@@ -195,7 +195,7 @@ private:
     void UpdateTitleBarPadding();
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
-    void AnimateSelectionChanged(const winrt::IInspectable& lastItem, const winrt::IInspectable& currentItem);
+    void AnimateSelectionChanged(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
     void AnimateSelectionChangedToItem(const winrt::IInspectable& selectedItem);
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
@@ -260,7 +260,7 @@ private:
     bool ShouldShowCloseButton();
     bool ShouldShowBackOrCloseButton();
 
-    void UnhookEventsAndClearFields(bool isFromDestructor = false);
+    void UnhookEventsAndClearFields(bool isFromDestructor);
 
     bool IsSelectionSuppressed(const winrt::IInspectable& item);
     
@@ -365,7 +365,7 @@ private:
     TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::InitStep1 };
 
     // A threshold to stop recovery from overflow to normal happens immediately on resize.
-    float m_topNavigationRecoveryGracePeriodWidth{ 5.f };
+    float m_topNavigationRecoveryGracePeriodWidth{ 5.F };
 
     // Avoid layout cycle on InitStep2
     int m_measureOnInitStep2Count{ 0 };

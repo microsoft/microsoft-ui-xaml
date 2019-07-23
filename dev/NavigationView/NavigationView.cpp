@@ -4,21 +4,21 @@
 #include "pch.h"
 #include "common.h"
 
-#include "NavigationView.h"
-#include "Vector.h"
 #include "BindableVector.h"
-#include "NavigationViewDisplayModeChangedEventArgs.h"
-#include "NavigationViewPaneClosingEventArgs.h"
-#include "NavigationViewBackRequestedEventArgs.h"
-#include "ResourceAccessor.h"
 #include "CppWinRTHelpers.h"
+#include "NavigationView.h"
+#include "NavigationViewBackRequestedEventArgs.h"
+#include "NavigationViewDisplayModeChangedEventArgs.h"
 #include "NavigationViewItem.h"
-#include "NavigationViewSelectionChangedEventArgs.h"
 #include "NavigationViewItemInvokedEventArgs.h"
-#include "RuntimeProfiler.h"
 #include "NavigationViewList.h"
-#include "Utils.h"
+#include "NavigationViewPaneClosingEventArgs.h"
+#include "NavigationViewSelectionChangedEventArgs.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
 #include "TraceLogging.h"
+#include "Utils.h"
+#include "Vector.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleTextBlock = L"PaneTitleTextBlock"sv;
@@ -392,7 +392,7 @@ void NavigationView::OnApplyTemplate()
 }
 
 // Hook up the Settings Item Invoked event listener
-void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsName)
+void NavigationView::CreateAndHookEventsToSettings(std::wstring_view  /*settingsName*/)
 {
     winrt::IControlProtected controlProtected = *this;
     auto settingsItem = GetTemplateChildT<winrt::NavigationViewItem>(settingsName, controlProtected);
@@ -495,7 +495,7 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
     return __super::MeasureOverride(availableSize);
 }
 
-void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e)
+void NavigationView::OnLayoutUpdated(const winrt::IInspectable&  /*sender*/, const winrt::IInspectable&  /*e*/)
 {
     // We only need to handle once after MeasureOverride, so revoke the token.
     m_layoutUpdatedToken.revoke();
@@ -733,7 +733,7 @@ void NavigationView::OnSplitViewPaneOpened(const winrt::DependencyObject& /*send
     m_paneOpenedEventSource(*this, nullptr);
 }
 
-void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
+void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable&  /*obj*/)
 {
     if (m_leftNavListView)
     {
@@ -778,7 +778,7 @@ void NavigationView::UpdateIsClosedCompact()
     }
 }
 
-void NavigationView::OnBackButtonClicked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void NavigationView::OnBackButtonClicked(const winrt::IInspectable&  /*sender*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     auto eventArgs = winrt::make_self<NavigationViewBackRequestedEventArgs>();
     m_backRequestedEventSource(*this, *eventArgs);
@@ -848,7 +848,7 @@ bool NavigationView::ShouldShowBackOrCloseButton()
 // put the logic here as it will be called in a couple places
 void NavigationView::SetPaneToggleButtonAutomationName()
 {
-    winrt::hstring navigationName;
+    winrt::hstring navigationName{};
     if (IsPaneOpen())
     {
         navigationName = ResourceAccessor::GetLocalizedStringResource(SR_NavigationButtonOpenName);
@@ -930,10 +930,10 @@ void NavigationView::OnSettingsInvoked()
     }
 }
 
-winrt::float2 c_frame1point1 = winrt::float2(0.9f, 0.1f);
-winrt::float2 c_frame1point2 = winrt::float2(1.0f, 0.2f);
-winrt::float2 c_frame2point1 = winrt::float2(0.1f, 0.9f);
-winrt::float2 c_frame2point2 = winrt::float2(0.2f, 1.0f);
+winrt::float2 c_frame1point1 = winrt::float2(0.9F, 0.1F);
+winrt::float2 c_frame1point2 = winrt::float2(1.0F, 0.2F);
+winrt::float2 c_frame2point1 = winrt::float2(0.1F, 0.9F);
+winrt::float2 c_frame2point2 = winrt::float2(0.2F, 1.0F);
 
 void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& selectedItem)
 {
@@ -960,7 +960,7 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
         {
             if (prevIndicator && prevIndicator != m_prevIndicator.get())
             {
-                ResetElementAnimationProperties(prevIndicator, 0.0f);
+                ResetElementAnimationProperties(prevIndicator, 0.0F);
             }
             haveValidAnimation = true;
         } 
@@ -978,8 +978,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
         if ((prevItem != nextItem) && paneContentGrid && prevIndicator && nextIndicator && SharedHelpers::IsAnimationsEnabled())
         {
             // Make sure both indicators are visible and in their original locations
-            ResetElementAnimationProperties(prevIndicator, 1.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 1.0F);
+            ResetElementAnimationProperties(nextIndicator, 1.0F);
 
             // get the item positions in the pane
             winrt::Point point = winrt::Point(0, 0);
@@ -1023,8 +1023,8 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
         else
         {
             // if all else fails, or if animations are turned off, attempt to correctly set the positions and opacities of the indicators.
-            ResetElementAnimationProperties(prevIndicator, 0.0f);
-            ResetElementAnimationProperties(nextIndicator, 1.0f);
+            ResetElementAnimationProperties(prevIndicator, 0.0F);
+            ResetElementAnimationProperties(nextIndicator, 1.0F);
         }
 
         if (m_lastSelectedItemPendingAnimationInTopNav.get())
@@ -1048,9 +1048,9 @@ void NavigationView::PlayIndicatorAnimations(const winrt::UIElement& indicator, 
     winrt::Size size = indicator.RenderSize();
     float dimension = IsTopNavigationView() ? size.Width : size.Height;
 
-    float beginScale = 1.0f;
-    float endScale = 1.0f;
-    if (IsTopNavigationView() && fabs(size.Width) > 0.001f)
+    float beginScale = 1.0F;
+    float endScale = 1.0F;
+    if (IsTopNavigationView() && fabs(size.Width) > 0.001F)
     {
         beginScale = beginSize.Width / size.Width;
         endScale = endSize.Width / size.Width;
@@ -1384,10 +1384,10 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 
 void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
     bool isSettings,
-    winrt::NavigationViewItemBase const& container,
+    winrt::NavigationViewItemBase  /*unused*/const& container,
     NavigationRecommendedTransitionDirection recommendedDirection)
 {
-    auto invokedItem = item;
+    const auto& invokedItem = item;
     auto invokedContainer = container;
 
     auto eventArgs = winrt::make_self<NavigationViewItemInvokedEventArgs>();
@@ -1422,7 +1422,7 @@ void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
 }
 
 // forceSetDisplayMode: On first call to SetDisplayMode, force setting to initial values
-void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& displayMode, bool forceSetDisplayMode)
+void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode&  /*displayMode*/, bool forceSetDisplayMode)
 {
     // Need to keep the VisualStateGroup "DisplayModeGroup" updated even if the actual
     // display mode is not changed. This is due to the fact that there can be a transition between
@@ -1449,7 +1449,7 @@ void NavigationView::SetDisplayMode(const winrt::NavigationViewDisplayMode& disp
 //    PaneDisplayMode::Left || (PaneDisplayMode::Auto && DisplayMode::Expanded) -> Expanded
 //    PaneDisplayMode::LeftCompact || (PaneDisplayMode::Auto && DisplayMode::Compact) -> Compact
 //    Map others to Minimal or MinimalWithBackButton 
-NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode& displayMode)
+NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(const winrt::NavigationViewDisplayMode&  /*displayMode*/)
 {
     auto paneDisplayMode = PaneDisplayMode();
 
@@ -1478,13 +1478,13 @@ NavigationViewVisualStateDisplayMode NavigationView::GetVisualStateDisplayMode(c
     {
         return NavigationViewVisualStateDisplayMode::MinimalWithBackButton;
     }
-    else
-    {
+    
+    
         return NavigationViewVisualStateDisplayMode::Minimal;
-    }
+    
 }
 
-void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::NavigationViewDisplayMode& displayMode)
+void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::NavigationViewDisplayMode&  /*displayMode*/)
 {
     if (auto splitView = m_rootSplitView.get())
     {
@@ -1667,14 +1667,14 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             }
             return item;
         }
-        else
-        {
+        
+        
             if (auto lv = m_leftNavListView.get())
             {
                 auto item = lv.ItemFromContainer(nvi);
                 return item;
             }
-        }
+        
     }
 
     return nullptr;
@@ -1690,7 +1690,7 @@ winrt::DependencyObject NavigationView::ContainerFromMenuItem(winrt::IInspectabl
     return nullptr;
 }
 
-void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
+void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const&  /*args*/)
 {
     CloseTopNavigationViewFlyout();
     
@@ -1748,7 +1748,7 @@ void NavigationView::TopNavigationViewItemContentChanged()
     }
 }
 
-void NavigationView::OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args)
+void NavigationView::OnAccessKeyInvoked(winrt::IInspectable const&  /*sender*/, winrt::AccessKeyInvokedEventArgs const& args)
 {
     if (args.Handled())
     {
@@ -1932,7 +1932,7 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
     }
 }
 
-bool NavigationView::DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer)
+bool NavigationView::DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase  /*unused*/const& itemContainer)
 {
     // If item and selected item has same container, it would be selected item
     bool isSelectedItem = false;
@@ -2064,7 +2064,7 @@ void NavigationView::UpdateVisualStateForOverflowButton()
     winrt::VisualStateManager::GoToState(*this, state, false /* useTransitions*/);
 }
 
-void NavigationView::UpdateLeftNavigationOnlyVisualState(bool useTransitions)
+void NavigationView::UpdateLeftNavigationOnlyVisualState(bool  /*useTransitions*/)
 {
     bool isToggleButtonVisible = IsPaneToggleButtonVisible();
     winrt::VisualStateManager::GoToState(*this, isToggleButtonVisible ? L"TogglePaneButtonVisible" : L"TogglePaneButtonCollapsed", false /*useTransitions*/);
@@ -2346,7 +2346,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 
         // Calculate selected item size
         auto selectedItemIndex = -1;
-        auto selectedItemWidth = 0.f;
+        auto selectedItemWidth = 0.F;
         if (auto selectedItem = SelectedItem())
         {
             selectedItemIndex = m_topDataProvider.IndexOf(selectedItem);
@@ -2439,7 +2439,7 @@ void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size con
     }
 }
 
-std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float availableWidth, std::vector<int> const& includeItems)
+std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float availableWidth, std::vector<int> const&  /*includeItems*/)
 {
     std::vector<int> toBeMoved;
 
@@ -2481,7 +2481,7 @@ std::vector<int> NavigationView::FindMovableItemsRecoverToPrimaryList(float avai
     return toBeMoved;
 }
 
-std::vector<int> NavigationView::FindMovableItemsToBeRemovedFromPrimaryList(float widthAtLeastToBeRemoved, std::vector<int> const& excludeItems)
+std::vector<int> NavigationView::FindMovableItemsToBeRemovedFromPrimaryList(float widthAtLeastToBeRemoved, std::vector<int> const&  /*excludeItems*/)
 {
     std::vector<int> toBeMoved;
 
@@ -2547,7 +2547,7 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
     return m_topDataProvider.ConvertPrimaryIndexToIndex(toBeMoved);
 }
 
-void NavigationView::KeepAtLeastOneItemInPrimaryList(std::vector<int> itemInPrimaryToBeRemoved, bool shouldKeepFirst)
+void NavigationView::KeepAtLeastOneItemInPrimaryList(std::vector<int>  /*itemInPrimaryToBeRemoved*/, bool shouldKeepFirst)
 {
     if (!itemInPrimaryToBeRemoved.empty() && static_cast<int>(itemInPrimaryToBeRemoved.size()) == m_topDataProvider.GetPrimaryListSize())
     {
@@ -2729,7 +2729,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
 }
 
-void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnListViewLoaded(winrt::IInspectable const&  /*sender*/, winrt::RoutedEventArgs const&  /*args*/)
 {
     if (auto item = SelectedItem())
     {
@@ -2761,7 +2761,7 @@ void NavigationView::OnUnloaded(winrt::IInspectable const& sender, winrt::Routed
     m_titleBarIsVisibleChangedRevoker.revoke();
 }
 
-void NavigationView::OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnLoaded(winrt::IInspectable const&  /*sender*/, winrt::RoutedEventArgs const&  /*args*/)
 {
     if (auto coreTitleBar = m_coreTitleBar.get())
     {
@@ -2864,7 +2864,7 @@ void NavigationView::UpdatePaneDisplayMode()
     UpdateListViewItemSource();
 }
 
-void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)
+void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode  /*oldDisplayMode*/, winrt::NavigationViewPaneDisplayMode  /*newDisplayMode*/)
 {
     if (!m_appliedTemplate)
     {
@@ -2919,7 +2919,7 @@ void NavigationView::UpdatePaneVisibility()
     }
 }
 
-void NavigationView::SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParentTrackRef, tracker_ref<winrt::ContentControl> oldParentTrackRef, winrt::hstring const& propertyPathName)
+void NavigationView::SwapPaneHeaderContent(tracker_ref<winrt::ContentControl>  /*newParentTrackRef*/, tracker_ref<winrt::ContentControl>  /*oldParentTrackRef*/, winrt::hstring const& propertyPathName)
 {
     if (auto newParent = newParentTrackRef.get())
     {
@@ -2968,7 +2968,7 @@ void NavigationView::UpdateHeaderVisibility()
     UpdateHeaderVisibility(DisplayMode());
 }
 
-void NavigationView::UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode)
+void NavigationView::UpdateHeaderVisibility(winrt::NavigationViewDisplayMode  /*displayMode*/)
 {
     bool showHeader = AlwaysShowHeader() || displayMode == winrt::NavigationViewDisplayMode::Minimal;
     // Like bug 17517627, Customer like WallPaper Studio 10 expects a HeaderContent visual even if Header() is null. 
@@ -3328,7 +3328,7 @@ void NavigationView::UpdateTitleBarPadding()
             winrt::GeneralTransform gt = TransformToVisual(root);
             winrt::Point pos = gt.TransformPoint(winrt::Point());
 
-            if (pos.Y == 0.0f)
+            if (pos.Y == 0.0F)
             {
                 topPadding = coreTitleBar.Height();
             }
@@ -3403,7 +3403,7 @@ void NavigationView::UpdateSelectedItem()
     }
 }
 
-void NavigationView::RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode)
+void NavigationView::RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode&  /*displayMode*/)
 {
     SetValue(s_DisplayModeProperty, box_value(displayMode));
     auto eventArgs = winrt::make_self<NavigationViewDisplayModeChangedEventArgs>();

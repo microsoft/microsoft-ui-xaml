@@ -8,14 +8,14 @@ class LayoutPanelLayoutContext :
     public winrt::implements<LayoutPanelLayoutContext, NonVirtualizingLayoutContext>
 {
 public:
-    LayoutPanelLayoutContext(winrt::LayoutPanel const& owner);
+    explicit LayoutPanelLayoutContext(winrt::LayoutPanel const& owner);
 
 #pragma region ILayoutContextOverrides
 
     winrt::IVectorView<winrt::UIElement> ChildrenCore();
 
     winrt::IInspectable LayoutStateCore();
-    void LayoutStateCore(winrt::IInspectable const& state);
+    void LayoutStateCore(winrt::IInspectable const& value);
 
 #pragma endregion
 
@@ -25,5 +25,5 @@ private:
 
     // We hold a weak reference to prevent a leaking reference
     // cycle between the LayoutPanel and its layout.
-    winrt::weak_ref<winrt::LayoutPanel> m_owner;
+    winrt::weak_ref<winrt::LayoutPanel> m_owner{};
 };

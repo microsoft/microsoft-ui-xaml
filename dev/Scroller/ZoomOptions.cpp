@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
 #include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
 #include "ZoomOptions.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(ZoomOptions);
 
 ZoomOptions::ZoomOptions(
-    winrt::AnimationMode const& animationMode)
+    winrt::AnimationMode  /*unused*/const& animationMode)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
@@ -19,7 +19,7 @@ ZoomOptions::ZoomOptions(
 }
 
 ZoomOptions::ZoomOptions(
-    winrt::AnimationMode const& animationMode,
+    winrt::AnimationMode  /*unused*/const& animationMode,
     winrt::SnapPointsMode const& snapPointsMode)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,

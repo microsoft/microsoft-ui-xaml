@@ -4,12 +4,12 @@
 #include "pch.h"
 #include "common.h"
 
+#include "PTRTracing.h"
 #include "RefreshContainer.h"
 #include "RefreshVisualizer.h"
-#include "ScrollViewerIRefreshInfoProviderAdapter.h"
 #include "RefreshVisualizerEventArgs.h"
 #include "RuntimeProfiler.h"
-#include "PTRTracing.h"
+#include "ScrollViewerIRefreshInfoProviderAdapter.h"
 
 #include <DoubleUtil.h>
 
@@ -321,7 +321,7 @@ void RefreshContainer::OnVisualizerSizeChanged(const winrt::IInspectable& /*send
     }
 }
 
-void RefreshContainer::OnVisualizerRefreshRequested(const winrt::IInspectable& /*sender*/, const winrt::RefreshRequestedEventArgs& args)
+void RefreshContainer::OnVisualizerRefreshRequested(const winrt::IInspectable& /*sender*/, const winrt::RefreshRequestedEventArgs&  /*args*/)
 {
     PTR_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
     m_visualizerRefreshCompletedDeferral.set(args.GetDeferral());

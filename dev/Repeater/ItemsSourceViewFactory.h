@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ItemsSourceView.h"
 #include "InspectingDataSource.h"
+#include "ItemsSourceView.h"
 
 class ItemsSourceViewFactory :
     public winrt::implements<ItemsSourceViewFactory, winrt::IActivationFactory, winrt::IItemsSourceViewFactory>

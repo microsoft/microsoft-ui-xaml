@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "VirtualizingLayout.h"
 #include "FlowLayout.g.h"
 #include "FlowLayout.properties.h"
+#include "FlowLayoutState.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "OrientationBasedMeasures.h"
-#include "FlowLayoutState.h"
+#include "VirtualizingLayout.h"
 
 class FlowLayout :
     public ReferenceTracker<FlowLayout, winrt::implementation::FlowLayoutT, VirtualizingLayout>,
@@ -101,7 +101,7 @@ public:
         const winrt::Rect& lastRealizedLayoutBounds) override;
      void Algorithm_OnElementMeasured(
         const winrt::UIElement& element,
-        const int index,
+        int index,
         const winrt::Size& availableSize,
         const winrt::Size& measureSize,
         const winrt::Size& desiredSize,

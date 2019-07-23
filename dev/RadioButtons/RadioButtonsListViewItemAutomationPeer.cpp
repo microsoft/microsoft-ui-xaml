@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ResourceAccessor.h"
-#include "RadioButtonsListViewItemAutomationPeer.h"
 #include "RadioButtonsListViewItem.h"
+#include "RadioButtonsListViewItemAutomationPeer.h"
+#include "ResourceAccessor.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(RadioButtonsListViewItemAutomationPeer);
 
-RadioButtonsListViewItemAutomationPeer::RadioButtonsListViewItemAutomationPeer(winrt::RadioButtonsListViewItem const& owner) :
+RadioButtonsListViewItemAutomationPeer::RadioButtonsListViewItemAutomationPeer(winrt::RadioButtonsListViewItem  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }

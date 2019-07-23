@@ -5,7 +5,7 @@
 
 #include "ItemsRepeaterScrollHost.g.h"
 
-// TODO: move to framework level element tracking.
+// TODO(ranjeshj): move to framework level element tracking.
 class ItemsRepeaterScrollHost :
     public ReferenceTracker<ItemsRepeaterScrollHost, DeriveFromPanelHelper_base, winrt::ItemsRepeaterScrollHost, winrt::cloaked<winrt::IRepeaterScrollingSurface>>
 {

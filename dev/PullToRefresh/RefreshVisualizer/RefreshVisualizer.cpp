@@ -4,10 +4,10 @@
 #include "pch.h"
 #include "common.h"
 
+#include "PTRTracing.h"
 #include "RefreshVisualizer.h"
 #include "RefreshVisualizerEventArgs.h"
 #include "RuntimeProfiler.h"
-#include "PTRTracing.h"
 
 
 //The Opacity of the progress indicator in the non-pending non-executing states
@@ -572,7 +572,7 @@ void RefreshVisualizer::RefreshInfoProvider_InteractionRatioChanged(const winrt:
             }
             else if (m_interactionRatio > 0.0f)
             {
-                // TODO: IRefreshInfoProvider does not raise InteractionRatioChanged yet when DManip is overpanning. Thus we do not yet 
+                // TODO(ranjeshj): IRefreshInfoProvider does not raise InteractionRatioChanged yet when DManip is overpanning. Thus we do not yet 
                 // enter the Peeking state when DManip overpans in inertia.
                 UpdateRefreshState(winrt::RefreshVisualizerState::Peeking);
             }

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include "ItemsRepeater.common.h"
 #include "ChildrenInTabFocusOrderIterable.h"
+#include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
+#include <common.h>
+#include <pch.h>
 
 ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterable(const winrt::ItemsRepeater& repeater)
 {
@@ -18,7 +18,7 @@ ChildrenInTabFocusOrderIterable::First()
     return winrt::make<ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator>(m_repeater.get());
 }
 
-ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator::ChildrenInTabFocusOrderIterator(const winrt::ItemsRepeater& repeater)
+ChildrenInTabFocusOrderIterable::ChildrenInTabFocusOrderIterator::ChildrenInTabFocusOrderIterator(const winrt::ItemsRepeater&  /*repeater*/)
 {
     auto children = repeater.as<winrt::Panel>().Children();
     m_realizedChildren.reserve(children.Size());

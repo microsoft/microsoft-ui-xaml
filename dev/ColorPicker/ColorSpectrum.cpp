@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ColorSpectrum.h"
+#include "common.h"
 
 #include "ColorSpectrumAutomationPeer.h"
 #include "SpectrumBrush.h"
@@ -322,7 +322,7 @@ void ColorSpectrum::RaiseColorChanged()
     }
 }
 
-void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minHue = MinHue();
     int maxHue = MaxHue();
@@ -331,7 +331,7 @@ void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs
     {
         throw winrt::hresult_invalid_argument(L"MinHue must be between 0 and 359.");
     }
-    else if (maxHue < 0 || maxHue > 359)
+    if (maxHue < 0 || maxHue > 359)
     {
         throw winrt::hresult_invalid_argument(L"MaxHue must be between 0 and 359.");
     }
@@ -347,7 +347,7 @@ void ColorSpectrum::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs
     }
 }
 
-void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minSaturation = MinSaturation();
     int maxSaturation = MaxSaturation();
@@ -356,7 +356,7 @@ void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEv
     {
         throw winrt::hresult_invalid_argument(L"MinSaturation must be between 0 and 100.");
     }
-    else if (maxSaturation < 0 || maxSaturation > 100)
+    if (maxSaturation < 0 || maxSaturation > 100)
     {
         throw winrt::hresult_invalid_argument(L"MaxSaturation must be between 0 and 100.");
     }
@@ -372,7 +372,7 @@ void ColorSpectrum::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEv
     }
 }
 
-void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minValue = MinValue();
     int maxValue = MaxValue();
@@ -381,7 +381,7 @@ void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventAr
     {
         throw winrt::hresult_invalid_argument(L"MinValue must be between 0 and 100.");
     }
-    else if (maxValue < 0 || maxValue > 100)
+    if (maxValue < 0 || maxValue > 100)
     {
         throw winrt::hresult_invalid_argument(L"MaxValue must be between 0 and 100.");
     }
@@ -397,12 +397,12 @@ void ColorSpectrum::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventAr
     }
 }
 
-void ColorSpectrum::OnShapeChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorSpectrum::OnShapeChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     CreateBitmapsAndColorMap();
 }
 
-void ColorSpectrum::OnComponentsChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorSpectrum::OnComponentsChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     CreateBitmapsAndColorMap();
 }
@@ -574,10 +574,10 @@ void ColorSpectrum::UpdateEllipse()
         m_selectionEllipsePanel.Visibility(winrt::Visibility::Collapsed);
         return;
     }
-    else
-    {
+    
+    
         m_selectionEllipsePanel.Visibility(winrt::Visibility::Visible);
-    }
+    
 
     double xPosition;
     double yPosition;
@@ -1066,20 +1066,20 @@ void ColorSpectrum::FillPixelForBox(
     double y,
     const Hsv &baseHsv,
     double minDimension,
-    winrt::ColorSpectrumComponents components,
+    winrt::ColorSpectrumComponents  /*components*/,
     double minHue,
     double maxHue,
     double minSaturation,
     double maxSaturation,
     double minValue,
     double maxValue,
-    shared_ptr<vector<::byte>> bgraMinPixelData,
-    shared_ptr<vector<::byte>> bgraMiddle1PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle2PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle3PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle4PixelData,
-    shared_ptr<vector<::byte>> bgraMaxPixelData,
-    shared_ptr<vector<Hsv>> newHsvValues)
+    shared_ptr<vector<::byte>>  /*bgraMinPixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle1PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle2PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle3PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle4PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMaxPixelData*/,
+    shared_ptr<vector<Hsv>>  /*newHsvValues*/)
 {
     double hMin = minHue;
     double hMax = maxHue;
@@ -1226,20 +1226,20 @@ void ColorSpectrum::FillPixelForRing(
     double y,
     double radius,
     const Hsv &baseHsv,
-    winrt::ColorSpectrumComponents components,
+    winrt::ColorSpectrumComponents  /*components*/,
     double minHue,
     double maxHue,
     double minSaturation,
     double maxSaturation,
     double minValue,
     double maxValue,
-    shared_ptr<vector<::byte>> bgraMinPixelData,
-    shared_ptr<vector<::byte>> bgraMiddle1PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle2PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle3PixelData,
-    shared_ptr<vector<::byte>> bgraMiddle4PixelData,
-    shared_ptr<vector<::byte>> bgraMaxPixelData,
-    shared_ptr<vector<Hsv>> newHsvValues)
+    shared_ptr<vector<::byte>>  /*bgraMinPixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle1PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle2PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle3PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMiddle4PixelData*/,
+    shared_ptr<vector<::byte>>  /*bgraMaxPixelData*/,
+    shared_ptr<vector<Hsv>>  /*newHsvValues*/)
 {
     double hMin = minHue;
     double hMax = maxHue;

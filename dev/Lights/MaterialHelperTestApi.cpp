@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MaterialHelper.h"
 #include "MaterialHelperTestApi.h"
+#include "common.h"
 
 MaterialHelperTestApi::MaterialHelperTestApi()
 = default;

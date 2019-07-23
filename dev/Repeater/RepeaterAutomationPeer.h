@@ -9,7 +9,7 @@ class RepeaterAutomationPeer :
     public ReferenceTracker<RepeaterAutomationPeer, winrt::implementation::RepeaterAutomationPeerT>
 {
 public:
-    RepeaterAutomationPeer(winrt::ItemsRepeater const& owner);
+    explicit RepeaterAutomationPeer(winrt::ItemsRepeater const& owner);
 
 #pragma region IAutomationPeerOverrides
 

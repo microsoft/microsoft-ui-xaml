@@ -5,8 +5,8 @@
 
 #include "RefreshVisualizer.h"
 
-#include "RefreshStateChangedEventArgs.g.h"
 #include "RefreshRequestedEventArgs.g.h"
+#include "RefreshStateChangedEventArgs.g.h"
 
 //////////////////////////////////////////////////////////
 /////////        RefreshStateChanged        /////////////
@@ -36,7 +36,7 @@ class RefreshRequestedEventArgs :
     public ReferenceTracker<RefreshRequestedEventArgs, winrt::implementation::RefreshRequestedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    RefreshRequestedEventArgs(const winrt::Deferral& handler);
+    explicit RefreshRequestedEventArgs(const winrt::Deferral& handler);
 
     winrt::Deferral GetDeferral();
 

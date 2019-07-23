@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ColorPickerSliderAutomationPeer.h"
+#include "common.h"
 
 #include "ColorPicker.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
-ColorPickerSliderAutomationPeer::ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner)
+ColorPickerSliderAutomationPeer::ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider  /*unused*/const& owner)
     : ReferenceTracker(owner)
 {
 }
@@ -49,10 +49,10 @@ winrt::hstring ColorPickerSliderAutomationPeer::Value()
 
         return GetValueString(color, static_cast<int>(round(sliderValue)));
     }
-    else
-    {
+    
+    
         return L"";
-    }
+    
 }
 
 void ColorPickerSliderAutomationPeer::SetValue(winrt::hstring const& /*value*/)
@@ -72,7 +72,7 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
 {
     if (DownlevelHelper::ToDisplayNameExists())
     {
-        winrt::hstring resourceStringWithName;
+        winrt::hstring resourceStringWithName{};
         switch (Owner().as<winrt::ColorPickerSlider>().ColorChannel())
         {
         case winrt::ColorPickerHsvChannel::Hue:
@@ -93,9 +93,9 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
             value,
             winrt::ColorHelper::ToDisplayName(color).data());
     }
-    else
-    {
-        winrt::hstring resourceStringWithoutName;
+    
+    
+        winrt::hstring resourceStringWithoutName{};
         switch (Owner().as<winrt::ColorPickerSlider>().ColorChannel())
         {
         case winrt::ColorPickerHsvChannel::Hue:
@@ -114,5 +114,5 @@ winrt::hstring ColorPickerSliderAutomationPeer::GetValueString(winrt::Color colo
         return StringUtil::FormatString(
             resourceStringWithoutName,
             value);
-    }
+    
 }

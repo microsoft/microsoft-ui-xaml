@@ -9,7 +9,7 @@ struct GlobalDependencyProperty
 {
     GlobalDependencyProperty() = default;
 
-    constexpr GlobalDependencyProperty(nullptr_t)
+    constexpr explicit GlobalDependencyProperty(nullptr_t)
     {
     }
 
@@ -27,7 +27,7 @@ struct GlobalDependencyProperty
         return *this;
     }
 
-    GlobalDependencyProperty(winrt::DependencyProperty const& other)
+    explicit GlobalDependencyProperty(winrt::DependencyProperty const& other)
     {
         Property() = other;
     }
@@ -36,12 +36,12 @@ struct GlobalDependencyProperty
     GlobalDependencyProperty(GlobalDependencyProperty const&) = delete;
     GlobalDependencyProperty& operator=(GlobalDependencyProperty const& other) = delete;
 
-    operator winrt::DependencyProperty() const
+    explicit operator winrt::DependencyProperty() const
     {
         return Property();
     }
 
-    operator bool() const
+    explicit operator bool() const
     {
         return static_cast<bool>(m_dependencyProperty);
     }

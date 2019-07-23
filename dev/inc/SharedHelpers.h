@@ -9,7 +9,7 @@ class SharedHelpers
 {
 public:
     static bool IsAnimationsEnabled();
-    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
+    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();
@@ -87,7 +87,7 @@ public:
     static bool DoRectsIntersect(const winrt::Rect& rect1, const winrt::Rect& rect2);
 
     // DependencyObject helpers
-    static bool IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility = false);
+    static bool IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility);
 
     static void SyncWait(const winrt::IAsyncAction& asyncAction)
     {
@@ -195,10 +195,10 @@ public:
         {
             return frameworkElement.IsLoaded();
         }
-        else
-        {
+        
+        
             return winrt::VisualTreeHelper::GetParent(frameworkElement) != nullptr;
-        }
+        
     }
 
     template<typename AncestorType>
@@ -236,8 +236,8 @@ public:
         std::wstring_view const& pathString,
         winrt::DependencyObject const& target,
         winrt::DependencyProperty const& targetProperty,
-        winrt::IValueConverter const& converter = nullptr,
-        winrt::BindingMode mode = winrt::BindingMode::OneWay);
+        winrt::IValueConverter const& converter,
+        winrt::BindingMode mode);
 
     template <class ElementType>
     static void CopyVector(
@@ -351,22 +351,22 @@ private:
 #define DECLARE_FLAG_ENUM_OPERATOR_OVERLOADS(EnumType) \
 inline EnumType operator | (EnumType lhs, EnumType rhs) \
 { \
-    return static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    return static_cast<EnumType>(static_cast<std::underlying_type_t<(EnumType)>>(lhs) | static_cast<std::underlying_type_t<(EnumType)>>(rhs)); \
 } \
  \
-inline EnumType& operator |= (EnumType& lhs, EnumType rhs) \
+inline (EnumType)& operator |= ((EnumType)& lhs, EnumType rhs) \
 { \
-    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) | static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<(EnumType)>>(lhs) | static_cast<std::underlying_type_t<(EnumType)>>(rhs)); \
     return lhs; \
 } \
  \
-inline EnumType operator & (EnumType lhs, EnumType rhs) \
+inline (EnumType) operator & (EnumType lhs, EnumType rhs) \
 { \
-    return static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    return static_cast<EnumType>(static_cast<std::underlying_type_t<(EnumType)>>(lhs) & static_cast<std::underlying_type_t<(EnumType)>>(rhs)); \
 } \
 \
-inline EnumType& operator &= (EnumType& lhs, EnumType rhs) \
+inline (EnumType)& operator &= ((EnumType)& lhs, EnumType rhs) \
 { \
-    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<EnumType>>(lhs) & static_cast<std::underlying_type_t<EnumType>>(rhs)); \
+    lhs = static_cast<EnumType>(static_cast<std::underlying_type_t<(EnumType)>>(lhs) & static_cast<std::underlying_type_t<(EnumType)>>(rhs)); \
     return lhs; \
 }

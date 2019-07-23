@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SwipeItem.h"
 #include "SwipeControl.h"
+#include "SwipeItem.h"
 #include "SwipeItemInvokedEventArgs.h"
+#include "common.h"
 
 SwipeItemInvokedEventArgs::SwipeItemInvokedEventArgs()
 = default;

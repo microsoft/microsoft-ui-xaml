@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SharedHelpers.h"
 #include "ColorConversion.h"
+#include "SharedHelpers.h"
+#include "common.h"
 
 Rgb::Rgb(double r, double g, double b) : r{ r }, g{ g }, b{ b }
 {
@@ -279,7 +279,7 @@ void HexToRgba(const wstring_view& input, _Out_ Rgb *rgb, _Out_ double *alpha)
     // If we failed to parse the string into an integer, then we'll return all -1's.
     // ARGB values can never be negative, so this is a convenient error state to use
     // to indicate that this value should not actually be used.
-    if (TryParseInt(ptr, &hexValue, 16) == false)
+    if (!TryParseInt(ptr, &hexValue, 16))
     {
         *rgb = Rgb(-1, -1, -1);
         *alpha = -1;

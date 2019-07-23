@@ -19,7 +19,7 @@ public:
     virtual void RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args);
 #pragma endregion
 
-    // TODO: Bug 14901501: Figure out a better way to have reference tracking for types doing in-component derivation (e.g. RecyclingElementFactory : ElementFactory)
+    // TODO(ranjeshj): Bug 14901501: Figure out a better way to have reference tracking for types doing in-component derivation (e.g. RecyclingElementFactory : ElementFactory)
     virtual HRESULT __stdcall NonDelegatingQueryInterface(const GUID& id, void** object)
     {
         return __super::NonDelegatingQueryInterface(id, object);

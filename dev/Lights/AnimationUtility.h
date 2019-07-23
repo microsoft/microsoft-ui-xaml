@@ -19,12 +19,12 @@ inline auto MakeAnimation<winrt::Color>(const winrt::Compositor &compositor)
     return compositor.CreateColorKeyFrameAnimation();
 }
 
-void SetValueDirect(const winrt::CompositionPropertySet& target, std::wstring_view const& propName, const float value);
+void SetValueDirect(const winrt::CompositionPropertySet& target, std::wstring_view const& propName, float value);
 void SetValueDirect(const winrt::CompositionPropertySet& target, std::wstring_view const& propName, const winrt::Color& value);
-void SetValueDirect(const winrt::SpotLight& target, const SpotlightProperty prop, const winrt::float3& value);
-void SetValueDirect(const winrt::SpotLight& target, const SpotlightProperty prop, const float value);
-void SetValueDirect(const winrt::SpotLight& target, const SpotlightProperty prop, const winrt::Color& value);
-void SetValueDirect(const winrt::CompositionPropertySet& target, const SpotlightProperty prop, const winrt::Color& value);
+void SetValueDirect(const winrt::SpotLight& target, SpotlightProperty prop, const winrt::float3& value);
+void SetValueDirect(const winrt::SpotLight& target, SpotlightProperty prop, float value);
+void SetValueDirect(const winrt::SpotLight& target, SpotlightProperty prop, const winrt::Color& value);
+void SetValueDirect(const winrt::CompositionPropertySet& target, SpotlightProperty prop, const winrt::Color& value);
 
 template <typename ValueType>
 inline void AnimateTo(

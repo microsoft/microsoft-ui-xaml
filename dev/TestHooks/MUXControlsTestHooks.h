@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "WinEventLogLevels.h"
 #include "MUXControlsTestHooksLoggingMessageEventArgs.h"
+#include "WinEventLogLevels.h"
 
 // Logging level that results in no logging at all.
 #define WINEVENT_LEVEL_NONE 0x0
@@ -54,8 +54,8 @@ private:
 
 private:
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs>> m_loggingMessageEventSource;
-    std::map<std::wstring /*key:Type*/, UCHAR /*value:LoggingProviderLevel*/, std::less<>> m_typeLoggingLevels;
-    std::map<winrt::IInspectable /*key:Instance*/, UCHAR /*value:LoggingProviderLevel*/> m_instanceLoggingLevels;
+    std::map<std::wstring /*key:Type*/, UCHAR /*value:LoggingProviderLevel*/, std::less<>> m_typeLoggingLevels{};
+    std::map<winrt::IInspectable /*key:Instance*/, UCHAR /*value:LoggingProviderLevel*/> m_instanceLoggingLevels{};
     UCHAR m_globalLoggingLevel{ WINEVENT_LEVEL_NONE };
     winrt::event<winrt::TypedEventHandler<winrt::IInspectable, winrt::IInspectable>> m_buildTreeCompleted;
 };

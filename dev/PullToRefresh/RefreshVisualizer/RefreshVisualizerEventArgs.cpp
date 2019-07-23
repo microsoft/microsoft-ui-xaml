@@ -4,15 +4,15 @@
 #include "pch.h"
 #include "common.h"
 
+#include "PTRTracing.h"
 #include "RefreshVisualizer.h"
 #include "RefreshVisualizerEventArgs.h"
-#include "PTRTracing.h"
 
 //////////////////////////////////////////////////////////
 /////////        RefreshStateChanged        /////////////
 //////////////////////////////////////////////////////////
 
-RefreshStateChangedEventArgs::RefreshStateChangedEventArgs(winrt::RefreshVisualizerState oldValue, winrt::RefreshVisualizerState newValue)
+RefreshStateChangedEventArgs::RefreshStateChangedEventArgs(winrt::RefreshVisualizerState  /*oldValue*/, winrt::RefreshVisualizerState  /*newValue*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     m_oldState = oldValue;

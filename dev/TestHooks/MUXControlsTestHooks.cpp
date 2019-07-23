@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MUXControlsTestHooksFactory.h"
+#include "common.h"
 
 #ifdef SCROLLER_INCLUDED
-#include "ScrollerTrace.h"
 #include "ScrollViewerTrace.h"
+#include "ScrollerTrace.h"
 #endif
 
 #ifdef SWIPECONTROL_INCLUDED
@@ -29,8 +29,8 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
     {
         return m_globalLoggingLevel;
     }
-    else
-    {
+    
+    
         auto iterator = m_typeLoggingLevels.find(type);
 
         if (iterator != m_typeLoggingLevels.end())
@@ -41,7 +41,7 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
         {
             return WINEVENT_LEVEL_NONE;
         }
-    }
+    
 }
 
 UCHAR MUXControlsTestHooks::GetLoggingLevelForInstance(const winrt::IInspectable& sender)
@@ -189,7 +189,7 @@ void MUXControlsTestHooks::LogMessage(const winrt::IInspectable& sender, const w
 }
 
 winrt::event_token MUXControlsTestHooks::LoggingMessageImpl(
-    winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs> const& value)
+    winrt::TypedEventHandler<winrt::IInspectable, winrt::MUXControlsTestHooksLoggingMessageEventArgs>  /*unused*/const& value)
 {
     return m_loggingMessageEventSource.add(value);
 }

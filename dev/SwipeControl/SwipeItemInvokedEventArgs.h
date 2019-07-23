@@ -17,6 +17,6 @@ public:
     void SwipeControl(const winrt::SwipeControl& value);
 
 private:
-    winrt::SwipeControl m_swipeControl;
+    winrt::SwipeControl m_swipeControl{};
 };
 

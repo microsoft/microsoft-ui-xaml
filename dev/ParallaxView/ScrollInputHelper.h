@@ -126,9 +126,9 @@ private:
     winrt::FxZoomMode m_manipulationZoomMode{ winrt::FxZoomMode::Disabled };
     winrt::HorizontalAlignment m_manipulationHorizontalAlignment{ winrt::HorizontalAlignment::Stretch };
     winrt::VerticalAlignment m_manipulationVerticalAlignment{ winrt::VerticalAlignment::Stretch };
-    winrt::Size m_viewportSize{ 0.0f, 0.0f };
-    winrt::Size m_contentSize{ 0.0f, 0.0f };
-    winrt::Size m_outOfBoundsPanSize{ 0.0f, 0.0f };
+    winrt::Size m_viewportSize{ 0.0F, 0.0F };
+    winrt::Size m_contentSize{ 0.0F, 0.0F };
+    winrt::Size m_outOfBoundsPanSize{ 0.0F, 0.0F };
     bool m_isTargetElementInSource{ false };
     bool m_isScrollViewerInDirectManipulation{ false };
 

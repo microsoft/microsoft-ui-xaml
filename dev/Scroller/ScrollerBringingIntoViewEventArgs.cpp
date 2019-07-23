@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ScrollerTrace.h"
 #include "ScrollerBringingIntoViewEventArgs.h"
+#include "ScrollerTrace.h"
+#include "common.h"
 
 winrt::SnapPointsMode ScrollerBringingIntoViewEventArgs::SnapPointsMode()
 {

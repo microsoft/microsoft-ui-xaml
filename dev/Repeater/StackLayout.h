@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "VirtualizingLayout.h"
-#include "StackLayout.g.h"
-#include "StackLayout.properties.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "OrientationBasedMeasures.h"
+#include "StackLayout.g.h"
+#include "StackLayout.properties.h"
 #include "StackLayoutState.h"
+#include "VirtualizingLayout.h"
 
 class StackLayout :
     public ReferenceTracker<StackLayout, winrt::implementation::StackLayoutT, VirtualizingLayout>,

@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
+#include "TreeViewCollapsedEventArgs.h"
+#include "TreeViewDragItemsCompletedEventArgs.h"
+#include "TreeViewDragItemsStartingEventArgs.h"
+#include "TreeViewExpandingEventArgs.h"
+#include "TreeViewItemInvokedEventArgs.h"
 #include "TreeViewList.h"
 #include "TreeViewNode.h"
-#include "TreeViewItemInvokedEventArgs.h"
-#include "TreeViewExpandingEventArgs.h"
-#include "TreeViewCollapsedEventArgs.h"
-#include "TreeViewDragItemsStartingEventArgs.h"
-#include "TreeViewDragItemsCompletedEventArgs.h"
 
 #include "TreeView.g.h"
 #include "TreeView.properties.h"

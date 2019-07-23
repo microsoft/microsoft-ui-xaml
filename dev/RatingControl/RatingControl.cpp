@@ -2,22 +2,22 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "RatingControl.h"
 #include "RatingControlAutomationPeer.h"
 #include "RuntimeProfiler.h"
+#include "common.h"
 
 #include <RatingItemFontInfo.h>
 #include <RatingItemImageInfo.h>
 
-const float c_horizontalScaleAnimationCenterPoint = 0.5f;
-const float c_verticalScaleAnimationCenterPoint = 0.8f;
+const float c_horizontalScaleAnimationCenterPoint = 0.5F;
+const float c_verticalScaleAnimationCenterPoint = 0.8F;
 const winrt::Thickness c_focusVisualMargin = { -8, -7, -8, 0 };
 const int c_defaultRatingFontSizeForRendering = 32; // (32 = 2 * [default fontsize] -- because of double size rendering), remove when MSFT #10030063 is done
 const int c_defaultItemSpacing = 8;
 
-const float c_mouseOverScale = 0.8f;
-const float c_touchOverScale = 1.0f;
+const float c_mouseOverScale = 0.8F;
+const float c_touchOverScale = 1.0F;
 const float c_noPointerOverMagicNumber = -100;
 
 // 22 = 20(compensate for the -20 margin on StackPanel) + 2(magic number makes the text and star center-aligned)
@@ -49,7 +49,7 @@ float RatingControl::ActualRatingFontSize()
     return RenderingRatingFontSize() / 2;
 }
 
-// TODO MSFT #10030063: Convert to itemspacing DP
+// TODO(ranjeshj): MSFT #10030063: Convert to itemspacing DP
 double RatingControl::ItemSpacing()
 {
     // Stars are rendered 2x size and we use expression animation to shrink them down to desired size,
@@ -166,7 +166,7 @@ winrt::AutomationPeer RatingControl::OnCreateAutomationPeer()
 
 // private methods 
 
-// TODO: call me when font size changes, and stuff like that, glyph, etc
+// TODO(ranjeshj): call me when font size changes, and stuff like that, glyph, etc
 void RatingControl::StampOutRatingItems()
 {
     if (!m_backgroundStackPanel || !m_foregroundStackPanel)
@@ -216,7 +216,7 @@ void RatingControl::UpdateRatingItemsAppearance()
 {
     if (m_foregroundStackPanel)
     {
-        // TODO: MSFT 11521414 - complete disabled state functionality
+        // TODO(ranjeshj): MSFT 11521414 - complete disabled state functionality
 
         double placeholderValue = PlaceholderValue();
         double ratingValue = Value();
@@ -260,7 +260,7 @@ void RatingControl::UpdateRatingItemsAppearance()
 
         if (!IsEnabled())
         {
-            // TODO: MSFT 11521414 - complete disabled state functionality [merge this code block with ifs above]
+            // TODO(ranjeshj): MSFT 11521414 - complete disabled state functionality [merge this code block with ifs above]
             winrt::VisualStateManager::GoToState(*this, L"Disabled", false);
             CustomizeStackPanel(m_foregroundStackPanel.get(), RatingControlStates::Disabled);
         }
@@ -411,7 +411,7 @@ winrt::hstring RatingControl::GetAppropriateGlyph(RatingControlStates type)
 
 winrt::hstring RatingControl::GetNextGlyphIfNull(winrt::hstring glyph, RatingControlStates fallbackType)
 {
-    if (glyph.size() == 0)
+    if (glyph.empty())
     {
         if (fallbackType == RatingControlStates::Null)
         {
@@ -545,7 +545,7 @@ void RatingControl::SetRatingTo(double newRating, bool originatedFromMouse)
 
         if (SharedHelpers::IsRS1OrHigher() && IsFocusEngaged() && SharedHelpers::IsAnimationsEnabled())
         {
-            double focalPoint = CalculateStarCenter((int)(ratingValue - 1.0));
+            double focalPoint = CalculateStarCenter(static_cast<int>(ratingValue - 1.0));
             m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
         }
 
@@ -666,7 +666,7 @@ void RatingControl::OnIsClearEnabledChanged(const winrt::DependencyPropertyChang
 
 void RatingControl::OnIsReadOnlyChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
 {
-    // TODO: Colour changes - see spec
+    // TODO(ranjeshj): Colour changes - see spec
 }
 
 void RatingControl::OnItemInfoChanged(const winrt::DependencyPropertyChangedEventArgs& /*args*/)
@@ -879,7 +879,7 @@ double RatingControl::CalculateTotalRatingControlWidth()
 
 double RatingControl::CalculateStarCenter(int starIndex)
 {
-    // TODO: sub in real API DP values
+    // TODO(ranjeshj): sub in real API DP values
     // MSFT #10030063
     // [real Rating Size * (starIndex + 0.5)] + (starIndex * itemSpacing)
     return (ActualRatingFontSize() * (starIndex + 0.5)) + (starIndex * ItemSpacing());
@@ -887,7 +887,7 @@ double RatingControl::CalculateStarCenter(int starIndex)
 
 double RatingControl::CalculateActualRatingWidth()
 {
-    // TODO: replace hardcoding
+    // TODO(ranjeshj): replace hardcoding
     // MSFT #10030063
     // (max rating * rating size) + ((max rating - 1) * item spacing)
     return (MaxRating() * ActualRatingFontSize()) + ((MaxRating() - 1) * ItemSpacing());
@@ -1055,7 +1055,7 @@ void RatingControl::OnFocusDisengaged(const winrt::Control& /*sender*/, const wi
         }
 
         Value(m_preEngagementValue);
-        m_preEngagementValue = -1.0f;
+        m_preEngagementValue = -1.0F;
 
         if (valueChanged)
         {
@@ -1092,7 +1092,7 @@ void RatingControl::EnterGamepadEngagementMode()
     
     if (SharedHelpers::IsAnimationsEnabled())
     {
-        double focalPoint = CalculateStarCenter((int)(currentValue - 1.0));
+        double focalPoint = CalculateStarCenter(static_cast<int>(currentValue - 1.0));
         m_sharedPointerPropertySet.InsertScalar(L"starsScaleFocalPoint", static_cast<float>(focalPoint));
     }
 }
@@ -1112,43 +1112,43 @@ void RatingControl::RecycleEvents(bool useSafeGet)
 {
     if (auto backgroundStackPanel = m_backgroundStackPanel.safe_get(useSafeGet))
     {
-        if (m_pointerCancelledToken.value)
+        if (m_pointerCancelledToken.value != 0)
         {
             backgroundStackPanel.PointerCanceled(m_pointerCancelledToken);
             m_pointerCancelledToken.value = 0;
         }
 
-        if (m_pointerCaptureLostToken.value)
+        if (m_pointerCaptureLostToken.value != 0)
         {
             backgroundStackPanel.PointerCaptureLost(m_pointerCaptureLostToken);
             m_pointerCaptureLostToken.value = 0;
         }
 
-        if (m_pointerMovedToken.value)
+        if (m_pointerMovedToken.value != 0)
         {
             backgroundStackPanel.PointerMoved(m_pointerMovedToken);
             m_pointerMovedToken.value = 0;
         }
 
-        if (m_pointerEnteredToken.value)
+        if (m_pointerEnteredToken.value != 0)
         {
             backgroundStackPanel.PointerEntered(m_pointerEnteredToken);
             m_pointerEnteredToken.value = 0;
         }
 
-        if (m_pointerExitedToken.value)
+        if (m_pointerExitedToken.value != 0)
         {
             backgroundStackPanel.PointerExited(m_pointerExitedToken);
             m_pointerExitedToken.value = 0;
         }
 
-        if (m_pointerPressedToken.value)
+        if (m_pointerPressedToken.value != 0)
         {
             backgroundStackPanel.PointerPressed(m_pointerPressedToken);
             m_pointerPressedToken.value = 0;
         }
 
-        if (m_pointerReleasedToken.value)
+        if (m_pointerReleasedToken.value != 0)
         {
             backgroundStackPanel.PointerReleased(m_pointerReleasedToken);
             m_pointerReleasedToken.value = 0;
@@ -1157,7 +1157,7 @@ void RatingControl::RecycleEvents(bool useSafeGet)
 
     if (auto captionTextBlock = m_captionTextBlock.safe_get(useSafeGet))
     {
-        if (m_captionSizeChangedToken.value)
+        if (m_captionSizeChangedToken.value != 0)
         {
             captionTextBlock.SizeChanged(m_captionSizeChangedToken);
             m_captionSizeChangedToken.value = 0;
@@ -1165,7 +1165,7 @@ void RatingControl::RecycleEvents(bool useSafeGet)
     }
 }
 
-void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args)
+void RatingControl::OnTextScaleFactorChanged(const winrt::UISettings&  /*setting*/, const winrt::IInspectable&  /*args*/)
 {
     // OnTextScaleFactorChanged happens in non-UI thread, use dispatcher to call StampOutRatingItems in UI thread.
     auto strongThis = get_strong();

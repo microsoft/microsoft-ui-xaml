@@ -57,7 +57,7 @@ protected:
     std::function<void(winrt::IInspectable const&, winrt::IInspectable const&, winrt::IInspectable const&)> m_addToMap;
 
     winrt::IXamlMember m_contentProperty;
-    std::vector<winrt::IXamlMember> m_members;
+    std::vector<winrt::IXamlMember> m_members{};
 
     bool m_isSystemType = false;
 };
@@ -88,7 +88,7 @@ public:
 class PrimitiveXamlType : public XamlTypeBase
 {
 public:
-    PrimitiveXamlType(wstring_view const& typeName)
+    explicit PrimitiveXamlType(wstring_view const& typeName)
     {
         m_typeName = typeName;
         m_isSystemType = true;

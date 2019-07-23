@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "XamlMetadataProvider.h"
 #include "MUXControlsFactory.h"
+#include "XamlMetadataProvider.h"
+#include "common.h"
 
 #ifdef MATERIALS_INCLUDED
 #include "RevealBrush.h"

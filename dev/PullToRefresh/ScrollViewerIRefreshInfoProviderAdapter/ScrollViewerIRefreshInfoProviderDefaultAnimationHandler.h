@@ -27,7 +27,7 @@ private:
 
     bool IsOrientationVertical();
 
-    winrt::RefreshPullDirection m_refreshPullDirection;
+    winrt::RefreshPullDirection m_refreshPullDirection{};
 
     tracker_ref<winrt::UIElement> m_refreshVisualizer{ this };
     tracker_ref<winrt::UIElement> m_infoProvider{ this };

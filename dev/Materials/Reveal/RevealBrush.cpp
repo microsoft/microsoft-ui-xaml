@@ -2,19 +2,19 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "RevealBrush.h"
+#include "common.h"
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
 #include "Microsoft.UI.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-#include "XamlAmbientLight.h"
-#include "RevealHoverLight.h"
 #include "RevealBorderLight.h"
-#include "vector.h"
+#include "RevealHoverLight.h"
 #include "RuntimeProfiler.h"
+#include "XamlAmbientLight.h"
+#include "vector.h"
 
 CppWinRTActivatableClassWithDPFactory(RevealBackgroundBrush)
 CppWinRTActivatableClassWithDPFactory(RevealBorderBrush)
@@ -22,13 +22,13 @@ CppWinRTActivatableClassWithDPFactory(RevealBorderBrush)
 const winrt::Color RevealBrush::sc_defaultColor{ 0, 255, 255, 255 };
 
 const winrt::Color RevealBrush::sc_ambientContributionColor{ 255, 127, 127, 127 };
-const float RevealBrush::sc_diffuseAmount{ 0.2f };
-const float RevealBrush::sc_specularAmount{ 0.0f };
-const float RevealBrush::sc_specularShine{ 0.0f };
+const float RevealBrush::sc_diffuseAmount{ 0.2F };
+const float RevealBrush::sc_specularAmount{ 0.0F };
+const float RevealBrush::sc_specularShine{ 0.0F };
 
-const float RevealBrush::sc_diffuseAmountBorder{ 0.2f };
-const float RevealBrush::sc_specularAmountBorder{ 0.0f };
-const float RevealBrush::sc_specularShineBorder{ 0.0f };
+const float RevealBrush::sc_diffuseAmountBorder{ 0.2F };
+const float RevealBrush::sc_specularAmountBorder{ 0.0F };
+const float RevealBrush::sc_specularShineBorder{ 0.0F };
 
 const winrt::Matrix5x4 RevealBrush::sc_colorToAlphaMatrix =
     { 1.0f, 0.0f, 0.0f, 0.15f,
@@ -123,7 +123,7 @@ RevealBackgroundBrush::RevealBackgroundBrush()
 RevealBrush::~RevealBrush()
 {
 #ifndef BUILD_WINDOWS
-    if (m_noiseChangedToken.value)
+    if (m_noiseChangedToken.value != 0)
     {
         MaterialHelper::NoiseChanged(m_noiseChangedToken);
         m_noiseChangedToken.value = 0;
@@ -249,7 +249,7 @@ void RevealBrush::OnConnected()
     MaterialHelper::OnRevealBrushConnected();
 #endif
 
-    if (!m_fallbackColorChangedToken.value)
+    if (m_fallbackColorChangedToken.value == 0)
     {
         m_fallbackColorChangedToken.value = RegisterPropertyChangedCallback(
             winrt::XamlCompositionBrushBase::FallbackColorProperty(), { this, &RevealBrush::OnFallbackColorChanged });
@@ -257,7 +257,7 @@ void RevealBrush::OnConnected()
 
 #ifndef BUILD_WINDOWS
     // Stay subscribed to NoiseChanged events when brush disconnected so that it gets marked to pick up new noise when (and if) it gets reconnected.
-    if (!m_noiseChangedToken.value)
+    if (m_noiseChangedToken.value == 0)
     {
         m_noiseChangedToken = MaterialHelper::NoiseChanged([this](auto sender) { OnNoiseChanged(sender); });
     }
@@ -289,7 +289,7 @@ void RevealBrush::OnDisconnected()
         CompositionBrush(nullptr);
     }
 
-    if (m_fallbackColorChangedToken.value)
+    if (m_fallbackColorChangedToken.value != 0)
     {
         UnregisterPropertyChangedCallback(winrt::XamlCompositionBrushBase::FallbackColorProperty(), m_fallbackColorChangedToken.value);
         m_fallbackColorChangedToken.value = 0;
@@ -453,12 +453,12 @@ void RevealBrush::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelper
     PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(this));
 }
 #else
-void RevealBrush::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
+void RevealBrush::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>&  /*sender*/, bool isDisabledByMaterialPolicy)
 {
     PolicyStatusChangedHelper(isDisabledByMaterialPolicy);
 }
 
-void RevealBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender)
+void RevealBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>&  /*sender*/)
 {
     m_noiseChanged = true;
     if (m_isConnected)
@@ -1092,7 +1092,7 @@ void RevealBrush::OnIsContainerPropertyChanged(
 
 void RevealBrush::OnStatePropertyChanged(
     const winrt::DependencyObject& sender,
-    const winrt::DependencyPropertyChangedEventArgs& args)
+    const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     auto currentState = unbox_value<winrt::RevealBrushState>(args.OldValue());
     auto targetState = unbox_value<winrt::RevealBrushState>(args.NewValue());

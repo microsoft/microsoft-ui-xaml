@@ -7,9 +7,9 @@
 #pragma once
 
 #include <cstring>
-#include <wrl.h>
 #include <d2d1_1.h>
 #include <d2d1effects_2.h>
+#include <wrl.h>
 
 #pragma warning(push)
 #pragma warning(disable : 28285 28196 6387 6319)
@@ -66,7 +66,7 @@ namespace abi
 {
     struct IPropertyValue : IInspectable {};
     struct IGraphicsEffectSource : IInspectable {};
-}
+} // namespace abi
 
 // NOTE: We are redefining this to work around VS15.5 issue where the MIDL headers give errors with the new
 // compiler. We don't really want to be including MIDL headers anyway so this is kind of ok. This interface
@@ -141,18 +141,18 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 0; return S_OK; }
         IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override { *count = 0; return S_OK; }
 
-        IFACEMETHODIMP GetSource(UINT, _Outptr_ abi::IGraphicsEffectSource**) override
+        IFACEMETHODIMP GetSource(UINT /*unused*/, _Outptr_ abi::IGraphicsEffectSource** /*unused*/) override
         {
             return E_INVALIDARG;
         }
 
-        IFACEMETHODIMP GetProperty(UINT, _Outptr_ abi::IPropertyValue**) override
+        IFACEMETHODIMP GetProperty(UINT /*unused*/, _Outptr_ abi::IPropertyValue** /*unused*/) override
         {
             return E_INVALIDARG;
         }
 
-        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR, _Out_ UINT*,
-            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR /*unused*/, _Out_ UINT* /*unused*/,
+            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING* /*unused*/) override
         {
             return E_INVALIDARG;
         }
@@ -204,8 +204,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         }
 
         // M_PI requires us to be the first to include math.h, not worth it
-        static constexpr float k_PI = 3.14159265358979f;
-        static constexpr float k_DegreesPerRadian = 180.0f / k_PI;
+        static constexpr float k_PI = 3.14159265358979F;
+        static constexpr float k_DegreesPerRadian = 180.0F / k_PI;
 
     public:
         winrt::hstring m_Name;
@@ -294,10 +294,10 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1ArithmeticComposite);
         DECLARE_DUAL_SOURCES(Source1, Source2);
-        DECLARE_POD_PROPERTY(MultiplyAmount, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(Source1Amount, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(Source2Amount, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(Offset, float, 0.0f, true);
+        DECLARE_POD_PROPERTY(MultiplyAmount, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(Source1Amount, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(Source2Amount, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(Offset, float, 0.0F, true);
         DECLARE_POD_PROPERTY(ClampOutput, bool, false, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"MultiplyAmount", D2D1_ARITHMETICCOMPOSITE_PROP_COEFFICIENTS, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_VECTORX },
@@ -498,7 +498,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Contrast);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Contrast, float, 0.0f, value >= -1.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Contrast, float, 0.0F, value >= -1.0F && value <= 1.0F);
         DECLARE_POD_PROPERTY(ClampSource, bool, false, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Contrast", D2D1_CONTRAST_PROP_CONTRAST, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -529,7 +529,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1CrossFade);
         DECLARE_DUAL_SOURCES(Source1, Source2);
-        DECLARE_POD_PROPERTY(Weight, float, 0.5f, value >= 0.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Weight, float, 0.5F, value >= 0.0F && value <= 1.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Weight", D2D1_CROSSFADE_PROP_WEIGHT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
@@ -557,13 +557,13 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantDiffuse);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true); // D2D clamps within [0, 360] degrees
-        DECLARE_POD_PROPERTY(Elevation, float, 0.0f, true); // D2D clamps within [0, 360] degrees
-        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(Azimuth, float, 0.0F, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(Elevation, float, 0.0F, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
-        DECLARE_POD_PROPERTY(HeightMapKernelSize, winrt::float2, (winrt::float2{ 1.0f, 1.0f }),
-            value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
+        DECLARE_POD_PROPERTY(HeightMapKernelSize, winrt::float2, (winrt::float2{ 1.0F, 1.0F }),
+            value.x >= 0.01F && value.y >= 0.01F && value.x <= 100.0F && value.y <= 100.0F);
         DECLARE_POD_PROPERTY(HeightMapInterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Azimuth", D2D1_DISTANTDIFFUSE_PROP_AZIMUTH, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES },
@@ -605,11 +605,11 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1DistantSpecular);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Azimuth, float, 0.0f, true); // D2D clamps within [0, 360] degrees
-        DECLARE_POD_PROPERTY(Elevation, float, 0.0f, true); // D2D clamps within [0, 360] degrees
-        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(Azimuth, float, 0.0F, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(Elevation, float, 0.0F, true); // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
         DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
@@ -656,7 +656,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Exposure);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Exposure, float, 0.0f, value >= -2.0f && value <= 2.0f);
+        DECLARE_POD_PROPERTY(Exposure, float, 0.0F, value >= -2.0F && value <= 2.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Exposure", D2D1_EXPOSURE_PROP_EXPOSURE_VALUE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
@@ -684,21 +684,21 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GammaTransfer);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(RedAmplitude, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(RedExponent, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(RedOffset, float, 0.0f, true);
+        DECLARE_POD_PROPERTY(RedAmplitude, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(RedExponent, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(RedOffset, float, 0.0F, true);
         DECLARE_POD_PROPERTY(RedDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(GreenAmplitude, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(GreenExponent, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(GreenOffset, float, 0.0f, true);
+        DECLARE_POD_PROPERTY(GreenAmplitude, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(GreenExponent, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(GreenOffset, float, 0.0F, true);
         DECLARE_POD_PROPERTY(GreenDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(BlueAmplitude, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(BlueExponent, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(BlueOffset, float, 0.0f, true);
+        DECLARE_POD_PROPERTY(BlueAmplitude, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(BlueExponent, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(BlueOffset, float, 0.0F, true);
         DECLARE_POD_PROPERTY(BlueDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(AlphaAmplitude, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(AlphaExponent, float, 1.0f, true);
-        DECLARE_POD_PROPERTY(AlphaOffset, float, 0.0f, true);
+        DECLARE_POD_PROPERTY(AlphaAmplitude, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(AlphaExponent, float, 1.0F, true);
+        DECLARE_POD_PROPERTY(AlphaOffset, float, 0.0F, true);
         DECLARE_POD_PROPERTY(AlphaDisable, bool, false, true);
         DECLARE_POD_PROPERTY(ClampOutput, bool, false, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
@@ -759,7 +759,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1GaussianBlur);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(BlurAmount, float, 3.0f, value >= 0.0f && value <= 250.0f);
+        DECLARE_POD_PROPERTY(BlurAmount, float, 3.0F, value >= 0.0F && value <= 250.0F);
         DECLARE_POD_PROPERTY(Optimization, winrt::EffectOptimization, winrt::EffectOptimization::Balanced, true);
         DECLARE_POD_PROPERTY(BorderMode, winrt::EffectBorderMode, winrt::EffectBorderMode::Soft, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
@@ -803,7 +803,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1HueRotation);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Angle, float, 0.0f, true);  // D2D clamps within [0, 360] degrees
+        DECLARE_POD_PROPERTY(Angle, float, 0.0F, true);  // D2D clamps within [0, 360] degrees
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Angle", D2D1_HUEROTATION_PROP_ANGLE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES });
 
@@ -842,17 +842,17 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1LinearTransfer);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(RedOffset, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(RedSlope, float, 1.0f, true);
+        DECLARE_POD_PROPERTY(RedOffset, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(RedSlope, float, 1.0F, true);
         DECLARE_POD_PROPERTY(RedDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(GreenOffset, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(GreenSlope, float, 1.0f, true);
+        DECLARE_POD_PROPERTY(GreenOffset, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(GreenSlope, float, 1.0F, true);
         DECLARE_POD_PROPERTY(GreenDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(BlueOffset, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(BlueSlope, float, 1.0f, true);
+        DECLARE_POD_PROPERTY(BlueOffset, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(BlueSlope, float, 1.0F, true);
         DECLARE_POD_PROPERTY(BlueDisable, bool, false, true);
-        DECLARE_POD_PROPERTY(AlphaOffset, float, 0.0f, true);
-        DECLARE_POD_PROPERTY(AlphaSlope, float, 1.0f, true);
+        DECLARE_POD_PROPERTY(AlphaOffset, float, 0.0F, true);
+        DECLARE_POD_PROPERTY(AlphaSlope, float, 1.0F, true);
         DECLARE_POD_PROPERTY(AlphaDisable, bool, false, true);
         DECLARE_POD_PROPERTY(ClampOutput, bool, false, true);
         DECLARE_NAMED_PROPERTY_MAPPING(
@@ -916,7 +916,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Opacity);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Opacity, float, 1.0f, value >= 0.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Opacity, float, 1.0F, value >= 0.0F && value <= 1.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Opacity", D2D1_OPACITY_PROP_OPACITY, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
@@ -945,8 +945,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         DECLARE_D2D_GUID(CLSID_D2D1PointDiffuse);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(LightPosition, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
-        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
         DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
@@ -991,9 +991,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         DECLARE_D2D_GUID(CLSID_D2D1PointSpecular);
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(LightPosition, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
-        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
         DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
@@ -1083,7 +1083,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Saturation);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Saturation, float, 0.5f, value >= 0.0f && value <= 2.0f);
+        DECLARE_POD_PROPERTY(Saturation, float, 0.5F, value >= 0.0F && value <= 2.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Saturation", D2D1_SATURATION_PROP_SATURATION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
@@ -1111,7 +1111,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1Sepia);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Intensity, float, 0.5f, value >= 0.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Intensity, float, 0.5F, value >= 0.0F && value <= 1.0F);
         DECLARE_POD_PROPERTY(AlphaMode, winrt::CanvasAlphaMode, winrt::CanvasAlphaMode::Premultiplied, value != winrt::CanvasAlphaMode::Ignore);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Intensity", D2D1_SEPIA_PROP_INTENSITY, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1154,10 +1154,10 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(LightPosition, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
         DECLARE_POD_PROPERTY(LightTarget, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
-        DECLARE_POD_PROPERTY(Focus, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(Focus, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LimitingConeAngle, float, k_PI / 2.0f, true); // D2D clamps within [-90, 90] degrees
-        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(DiffuseAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
         DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
@@ -1211,11 +1211,11 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         DECLARE_SINGLE_SOURCE(Source);
         DECLARE_POD_PROPERTY(LightPosition, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
         DECLARE_POD_PROPERTY(LightTarget, Vector3, (Vector3{ 0.0f, 0.0f, 0.0f }), true);
-        DECLARE_POD_PROPERTY(Focus, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(Focus, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LimitingConeAngle, float, k_PI / 2.0f, true); // D2D clamps within [-90, 90] degrees
-        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0f, value >= 0.0f && value <= 10000.0f);
-        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0f, value >= -10000.0f && value <= 10000.0f);
+        DECLARE_POD_PROPERTY(SpecularExponent, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(SpecularAmount, float, 1.0F, value >= 0.0F && value <= 10000.0F);
+        DECLARE_POD_PROPERTY(HeightMapScale, float, 1.0F, value >= -10000.0F && value <= 10000.0F);
         DECLARE_POD_PROPERTY(LightColor, UIColor, (UIColor{ 255, 255, 255, 255 }), true);
         DECLARE_POD_PROPERTY(HeightMapKernelSize, Vector2, (Vector2{ 1.0f, 1.0f }),
             value.x >= 0.01f && value.y >= 0.01f && value.x <= 100.0f && value.y <= 100.0f);
@@ -1269,8 +1269,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
     public:
         DECLARE_D2D_GUID(CLSID_D2D1TemperatureTint);
         DECLARE_SINGLE_SOURCE(Source);
-        DECLARE_POD_PROPERTY(Temperature, float, 0.0f, value >= -1.0f && value <= 1.0f);
-        DECLARE_POD_PROPERTY(Tint, float, 0.0f, value >= -1.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Temperature, float, 0.0F, value >= -1.0F && value <= 1.0F);
+        DECLARE_POD_PROPERTY(Tint, float, 0.0F, value >= -1.0F && value <= 1.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"Temperature", D2D1_TEMPERATUREANDTINT_PROP_TEMPERATURE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"Tint", D2D1_TEMPERATUREANDTINT_PROP_TINT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
@@ -1334,7 +1334,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         DECLARE_POD_PROPERTY(InterpolationMode, winrt::CanvasImageInterpolation, winrt::CanvasImageInterpolation::Linear, true);
         DECLARE_POD_PROPERTY(BorderMode, winrt::EffectBorderMode, winrt::EffectBorderMode::Soft, true);
         DECLARE_POD_PROPERTY(TransformMatrix, winrt::float3x2, (winrt::float3x2{ 1, 0, 0, 1, 0, 0}), true);
-        DECLARE_POD_PROPERTY(Sharpness, float, 0.0f, value >= 0.0f && value <= 1.0f);
+        DECLARE_POD_PROPERTY(Sharpness, float, 0.0F, value >= 0.0F && value <= 1.0F);
         DECLARE_NAMED_PROPERTY_MAPPING(
             { L"InterpolationMode", D2D1_2DAFFINETRANSFORM_PROP_INTERPOLATION_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
             { L"BorderMode", D2D1_2DAFFINETRANSFORM_PROP_BORDER_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },
@@ -1383,5 +1383,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #    pragma pop_macro("DECLARE_NAMED_PROPERTY_MAPPING")
 #endif
 
-}}}}
+}  // namespace Effects
+} // namespace Composition
+}  // namespace UI
+}  // namespace Microsoft
 #pragma warning(pop)

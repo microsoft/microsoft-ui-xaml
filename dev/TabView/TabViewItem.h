@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
 #include "TabViewItem.g.h"
 #include "TabViewItem.properties.h"

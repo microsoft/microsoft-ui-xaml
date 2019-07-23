@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
 #include "TeachingTipTemplateSettings.h"
 
@@ -211,8 +211,8 @@ private:
     bool m_tipFollowsTarget{ false };
     bool m_returnTopForOutOfWindowPlacement{ true };
 
-    float m_contentElevation{ 32.0f };
-    float m_tailElevation{ 0.0f };
+    float m_contentElevation{ 32.0F };
+    float m_tailElevation{ 0.0F };
     bool m_tailShadowTargetsShadowTarget{ false };
 
     winrt::TimeSpan m_expandAnimationDuration{ 300ms };
@@ -242,18 +242,18 @@ private:
     }
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 1, 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
-    static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double  /*height*/) { return { (width / 2) + (TailShortSideLength() - 1.0F), 0, 1, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double  /*width*/, double  /*height*/) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0F, 0, 1, 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double  /*height*/) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0F), 0, 1, 0 }; }
+    static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double  /*width*/, double  /*height*/) { return { 0, 0, 0, 0 }; }
 
-    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
-    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double  /*height*/) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0F), 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double  /*height*/) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0F), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double  /*width*/, double  /*height*/) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0F, 0 }; }
+    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double  /*width*/, double  /*height*/) { return { 1, 1, 1, 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
-    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
-    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
+    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double  /*width*/, double  /*height*/) { return { 1, 1, 0, 0 }; }
+    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double  /*width*/, double  /*height*/) { return { 0, 1, 1, 0 }; }
 
     static inline double UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
     static inline double UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }
@@ -286,10 +286,10 @@ private:
     static constexpr wstring_view s_accentButtonStyleName{ L"AccentButtonStyle" };
     static constexpr wstring_view s_teachingTipTopHighlightBrushName{ L"TeachingTipTopHighlightBrush" };
 
-    static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint1{ 0.1f, 0.9f };
-    static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint2{ 0.2f, 1.0f };
-    static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint1{ 0.7f, 0.0f };
-    static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint2{ 1.0f, 0.5f };
+    static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint1{ 0.1F, 0.9F };
+    static constexpr winrt::float2 s_expandAnimationEasingCurveControlPoint2{ 0.2F, 1.0F };
+    static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint1{ 0.7F, 0.0F };
+    static constexpr winrt::float2 s_contractAnimationEasingCurveControlPoint2{ 1.0F, 0.5F };
 
     //It is possible this should be exposed as a property, but you can adjust what it does with margin.
     static constexpr float s_untargetedTipWindowEdgeMargin = 24;

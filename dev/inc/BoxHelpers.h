@@ -21,7 +21,7 @@ struct auto_unbox
     }
 
     template <typename T>
-    operator T() const
+    explicit operator T() const
     {
         return unbox_value<T>(m_value);
     }

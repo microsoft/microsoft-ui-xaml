@@ -11,7 +11,7 @@ class ColorPickerSliderAutomationPeer :
     public ReferenceTracker<ColorPickerSliderAutomationPeer, winrt::implementation::ColorPickerSliderAutomationPeerT, winrt::IValueProvider>
 {
 public:
-    ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner);
+    explicit ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner);
 
     // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

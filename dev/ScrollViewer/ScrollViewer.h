@@ -4,10 +4,10 @@
 #pragma once
 
 #include "ScrollBarController.h"
-#include "ScrollViewerTrace.h"
 #include "ScrollViewer.g.h"
 #include "ScrollViewer.properties.h"
 #include "ScrollViewerBringIntoViewOperation.h"
+#include "ScrollViewerTrace.h"
 
 class ScrollViewer :
     public ReferenceTracker<ScrollViewer, winrt::implementation::ScrollViewerT>,
@@ -198,7 +198,7 @@ private:
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
 
-    void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
+    void ResetHideIndicatorsTimer(bool isForDestructor, bool restart);
 
     void HookUISettingsEvent();
     void HookCompositionTargetRendering();
@@ -230,19 +230,19 @@ private:
     [[nodiscard]] bool AreBothScrollControllersVisible() const;
     bool AreScrollControllersAutoHiding();
     [[nodiscard]] bool IsScrollControllersSeparatorVisible() const;
-    void HideIndicators(bool useTransitions = true);
+    void HideIndicators(bool useTransitions);
     void HideIndicatorsAfterDelay();
-    void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
+    void UpdateScrollControllersAutoHiding(bool forceUpdate);
     void UpdateVisualStates(
-        bool useTransitions = true,
-        bool showIndicators = false,
-        bool hideIndicators = false,
-        bool scrollControllersAutoHidingChanged = false,
-        bool updateScrollControllersAutoHiding = false,
-        bool onlyForAutoHidingScrollControllers = false);
-    void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
-    void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
-    void GoToState(std::wstring_view const& stateName, bool useTransitions = true);
+        bool useTransitions,
+        bool showIndicators,
+        bool hideIndicators,
+        bool scrollControllersAutoHidingChanged,
+        bool updateScrollControllersAutoHiding,
+        bool onlyForAutoHidingScrollControllers);
+    void UpdateScrollControllersVisualState(bool useTransitions, bool showIndicators, bool hideIndicators);
+    void UpdateScrollControllersSeparatorVisualState(bool useTransitions, bool scrollControllersAutoHidingChanged);
+    void GoToState(std::wstring_view const& stateName, bool useTransitions);
 
     void HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs);
     void HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs);
@@ -354,7 +354,7 @@ private:
 
     // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
     // Scroller::BringingIntoView occurrences due to navigation.
-    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations;
+    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations{};
 
     // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.

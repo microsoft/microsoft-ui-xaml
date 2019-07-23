@@ -2,29 +2,29 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
+#include "MUXControlsTestHooks.h"
 #include "TraceLogging.h"
 #include "Utils.h"
-#include "MUXControlsTestHooks.h"
 
 inline bool IsPTRTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsPTRVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_PTR) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsPTRPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_PTR || g_PerfProviderMatchAnyKeyword == 0);
+        (((g_PerfProviderMatchAnyKeyword & KEYWORD_PTR) != 0U) || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define PTR_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \

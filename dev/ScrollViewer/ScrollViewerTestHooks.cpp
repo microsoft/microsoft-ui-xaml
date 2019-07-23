@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ScrollViewerTestHooksFactory.h"
+#include "common.h"
 
 com_ptr<ScrollViewerTestHooks> ScrollViewerTestHooks::s_testHooks{};
 
@@ -17,7 +17,7 @@ com_ptr<ScrollViewerTestHooks> ScrollViewerTestHooks::EnsureGlobalTestHooks()
     return s_testHooks;
 }
 
-winrt::IReference<bool> ScrollViewerTestHooks::GetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer)
+winrt::IReference<bool> ScrollViewerTestHooks::GetAutoHideScrollControllers(const winrt::ScrollViewer&  /*scrollViewer*/)
 {
     if (scrollViewer && s_testHooks)
     {
@@ -33,7 +33,7 @@ winrt::IReference<bool> ScrollViewerTestHooks::GetAutoHideScrollControllers(cons
     return nullptr;
 }
 
-void ScrollViewerTestHooks::SetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer, winrt::IReference<bool> value)
+void ScrollViewerTestHooks::SetAutoHideScrollControllers(const winrt::ScrollViewer&  /*scrollViewer*/, winrt::IReference<bool>  /*value*/)
 {
     if (scrollViewer && (s_testHooks || value))
     {
@@ -60,7 +60,7 @@ void ScrollViewerTestHooks::SetAutoHideScrollControllers(const winrt::ScrollView
     }
 }
 
-winrt::Scroller ScrollViewerTestHooks::GetScrollerPart(const winrt::ScrollViewer& scrollViewer)
+winrt::Scroller ScrollViewerTestHooks::GetScrollerPart(const winrt::ScrollViewer&  /*scrollViewer*/)
 {
     if (scrollViewer)
     {

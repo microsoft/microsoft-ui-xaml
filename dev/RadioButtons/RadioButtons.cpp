@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "RadioButtons.h"
-#include "Vector.h"
-#include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "Vector.h"
+#include "common.h"
 
 RadioButtons::RadioButtons()
 {
@@ -32,7 +32,7 @@ void RadioButtons::OnApplyTemplate()
     UpdateItemsSource();
 }
 
-void RadioButtons::OnListViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs& args)
+void RadioButtons::OnListViewLoaded(const winrt::IInspectable& /*sender*/, const winrt::RoutedEventArgs&  /*args*/)
 {
     if (auto listView = m_listView.get())
     {
@@ -61,7 +61,7 @@ void RadioButtons::OnListViewSelectionChanged(const winrt::IInspectable& sender,
     m_selectionChangedEventSource(sender, args);
 }
 
-void RadioButtons::OnListViewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void RadioButtons::OnListViewKeyDown(const winrt::IInspectable&  /*sender*/, const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Key() == winrt::VirtualKey::Control)
     {
@@ -77,7 +77,7 @@ void RadioButtons::OnListViewKeyDown(const winrt::IInspectable& sender, const wi
     }
 }
 
-void RadioButtons::OnListViewKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+void RadioButtons::OnListViewKeyUp(const winrt::IInspectable&  /*sender*/, const winrt::KeyRoutedEventArgs& args)
 {
     if (args.Key() == winrt::VirtualKey::Control)
     {

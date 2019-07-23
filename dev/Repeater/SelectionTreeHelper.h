@@ -14,7 +14,7 @@ public:
             : Node(node), Path(indexPath), ParentNode(nullptr) {}
 
         std::shared_ptr<SelectionNode> Node;
-        winrt::IndexPath Path;
+        winrt::IndexPath Path{}{};
         std::shared_ptr<SelectionNode> ParentNode;
     };
 

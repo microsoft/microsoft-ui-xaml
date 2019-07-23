@@ -8,10 +8,10 @@
 class IndexPath : public winrt::implementation::IndexPathT<IndexPath>
 {
 public:
-    IndexPath(int index);
+    explicit IndexPath(int index);
     IndexPath(int groupIndex, int itemIndex);
-    IndexPath(const winrt::IVector<int>& indices);
-    IndexPath(const std::vector<int>& indices);
+    explicit IndexPath(const winrt::IVector<int>& indices);
+    explicit IndexPath(const std::vector<int>& indices);
 
     template <typename ... Args>
     static winrt::IndexPath CreateFrom(Args&& ... args)
@@ -39,5 +39,5 @@ public:
     [[nodiscard]] winrt::IndexPath CloneWithChildIndex(int childIndex) const;
 
 private:
-    std::vector<int> m_path;
+    std::vector<int> m_path{}{}{}{};
 };

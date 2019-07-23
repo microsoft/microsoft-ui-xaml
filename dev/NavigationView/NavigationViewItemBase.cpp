@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
+#include "NavigationView.h"
 #include "NavigationViewItemBase.h"
 #include "NavigationViewList.h"
-#include "NavigationView.h"
+#include "common.h"
 
 // NOTE: We need to manually define this factory because the IDL does not specify a create method which means that
 // technically in the ABI this type is not activatable. However we might get asked for this factory so we need to provide it.

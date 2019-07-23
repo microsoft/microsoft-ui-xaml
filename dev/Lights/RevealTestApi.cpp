@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RevealTestApi.h"
-#include "RevealHoverLight.h"
 #include "RevealBorderLight.h"
+#include "RevealHoverLight.h"
+#include "RevealTestApi.h"
+#include "common.h"
 
 RevealTestApi::RevealTestApi()
 {
@@ -80,7 +80,7 @@ double RevealTestApi::BackgroundLightMinSize()
 void RevealTestApi::BackgroundLightMinSize(double value)
 {
 #if DBG
-    RevealHoverLight::s_lightMinSize = (float)value;
+    RevealHoverLight::s_lightMinSize = static_cast<float>(value);
 #endif
 }
 
@@ -96,7 +96,7 @@ double RevealTestApi::BackgroundLightMaxSize()
 void RevealTestApi::BackgroundLightMaxSize(double value)
 {
 #if DBG
-    RevealHoverLight::s_lightMaxSize = (float)value;
+    RevealHoverLight::s_lightMaxSize = static_cast<float>(value);
 #endif
 }
 

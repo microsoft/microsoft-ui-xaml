@@ -11,7 +11,7 @@ class ColorSpectrumAutomationPeer :
     public ReferenceTracker<ColorSpectrumAutomationPeer, winrt::implementation::ColorSpectrumAutomationPeerT, winrt::IValueProvider>
 {
 public:
-    ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner);
+    explicit ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner);
 
     // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

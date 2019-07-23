@@ -30,7 +30,7 @@ struct auto_cast
     }
 
     template <typename T>
-    operator T() const
+    explicit operator T() const
     {
         return safe_cast<T>(m_value);
     }

@@ -128,7 +128,7 @@ private:
             const ITrackerHandleManager* owner,
             const winrt::UIElement& element,
             AnimationTrigger trigger,
-            winrt::AnimationContext context) :
+            winrt::AnimationContext  /*context*/) :
             m_element(owner, element),
             m_trigger(trigger),
             m_context(context)
@@ -140,7 +140,7 @@ private:
             const ITrackerHandleManager* owner,
             const winrt::UIElement& element,
             AnimationTrigger trigger,
-            winrt::AnimationContext context,
+            winrt::AnimationContext  /*context*/,
             winrt::Rect oldBounds,
             winrt::Rect newBounds) :
             m_element(owner, element),
@@ -159,7 +159,7 @@ private:
         [[nodiscard]] winrt::Rect NewBounds() const { return m_newBounds; }
 
     private:
-        tracker_ref<winrt::UIElement> m_element;
+        tracker_ref<winrt::UIElement> m_element{}{};
         AnimationTrigger m_trigger{};
         winrt::AnimationContext m_context{};
         // Valid for Trigger == BoundsChange
@@ -167,7 +167,7 @@ private:
         winrt::Rect m_newBounds{};
     };
 
-    std::vector<ElementInfo> m_animatingElements;
+    std::vector<ElementInfo> m_animatingElements{};
     bool m_hasShowAnimationsPending{};
     bool m_hasHideAnimationsPending{};
     bool m_hasBoundsChangeAnimationsPending{};

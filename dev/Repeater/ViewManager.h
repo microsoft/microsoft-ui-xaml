@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "Phaser.h"
 #include "UniqueIdElementPool.h"
 #include "VirtualizationInfo.h"
-#include "Phaser.h"
 
 class ItemsRepeater;
 
@@ -14,7 +14,7 @@ class ItemsRepeater;
 class ViewManager final
 {
 public:
-    ViewManager(ItemsRepeater* owner);
+    explicit ViewManager(ItemsRepeater* owner);
 
     winrt::UIElement GetElement(int index, bool forceCreate, bool suppressAutoRecycle);
     void ClearElement(const winrt::UIElement& element, bool isClearedDueToCollectionChange);
@@ -66,25 +66,25 @@ private:
         [[nodiscard]] winrt::com_ptr<VirtualizationInfo> VirtualizationInfo() const { return m_virtInfo.get(); }
 
     private:
-        tracker_ref<winrt::UIElement> m_pinnedElement;
+        tracker_ref<winrt::UIElement> m_pinnedElement{};
 
         // We hold on VirtualizationInfo to make sure we can
         // quickly access its content rather than go through
         // ItemsRepeater.GetVirtualizationInfo(element) which is
         // slower (assuming it's implemented using attached
         // properties).
-        tracker_com_ref<::VirtualizationInfo> m_virtInfo;
+        tracker_com_ref<::VirtualizationInfo> m_virtInfo{};
     };
 
     ItemsRepeater* m_owner{ nullptr };
 
     // Pinned elements that are currently owned by layout are *NOT* in this pool.
-    std::vector<PinnedElementInfo> m_pinnedPool;
+    std::vector<PinnedElementInfo> m_pinnedPool{};
     UniqueIdElementPool m_resetPool;
 
     // _lastFocusedElement is listed in _pinnedPool.
     // It has to be an element we own (i.e. a direct child).
-    tracker_ref<winrt::UIElement> m_lastFocusedElement;
+    tracker_ref<winrt::UIElement> m_lastFocusedElement{};
     bool m_isDataSourceStableResetPending{};
 
     // Event tokens
@@ -98,8 +98,8 @@ private:
     tracker_ref<winrt::Windows::UI::Xaml::ElementFactoryGetArgs> m_ElementFactoryGetArgs;
     tracker_ref<winrt::Windows::UI::Xaml::ElementFactoryRecycleArgs> m_ElementFactoryRecycleArgs;
 #else
-    tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs> m_ElementFactoryGetArgs;
-    tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs> m_ElementFactoryRecycleArgs;
+    tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs> m_ElementFactoryGetArgs{};
+    tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs> m_ElementFactoryRecycleArgs{};
 #endif
 
     // These are first/last indices requested by layout and not cleared yet.

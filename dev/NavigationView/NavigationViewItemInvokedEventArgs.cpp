@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "NavigationViewItemInvokedEventArgs.h"
 #include "NavigationView.h"
+#include "NavigationViewItemInvokedEventArgs.h"
+#include "common.h"
 
 winrt::IInspectable NavigationViewItemInvokedEventArgs::InvokedItem()
 {

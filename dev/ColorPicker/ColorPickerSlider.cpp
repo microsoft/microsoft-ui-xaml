@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ColorPickerSlider.h"
 #include "ColorPickerSliderAutomationPeer.h"
+#include "common.h"
 
 #include "ColorPicker.h"
 #include "ResourceAccessor.h"
@@ -217,13 +217,13 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
             ResourceAccessor::GetLocalizedStringResource(SR_ToolTipStringAlphaSlider),
             sliderValue);
     }
-    else
-    {
+    
+    
         winrt::ColorPicker parentColorPicker = GetParentColorPicker();
         if (parentColorPicker && DownlevelHelper::ToDisplayNameExists())
         {
             Hsv currentHsv = winrt::get_self<ColorPicker>(parentColorPicker)->GetCurrentHsv();
-            winrt::hstring localizedString;
+            winrt::hstring localizedString{};
 
             switch (ColorChannel())
             {
@@ -252,7 +252,7 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
         }
         else
         {
-            winrt::hstring localizedString;
+            winrt::hstring localizedString{};
             switch (ColorChannel())
             {
             case winrt::ColorPickerHsvChannel::Hue:
@@ -272,5 +272,5 @@ winrt::hstring ColorPickerSlider::GetToolTipString()
                 localizedString,
                 sliderValue);
         }
-    }
+    
 }

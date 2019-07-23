@@ -14,7 +14,7 @@ public:
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollControllerInteractionRequestedEventArgs(
+    explicit ScrollControllerInteractionRequestedEventArgs(
         const winrt::PointerPoint& pointerPoint);
 
     [[nodiscard]] winrt::PointerPoint PointerPoint() const;

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "tracker_ref.h"
 #include "DispatcherHelper.h"
+#include "tracker_ref.h"
 
 
 // This type is a helper to make ReferenceTracker work with winrt::implements intead of a concrete implementation type
@@ -39,7 +39,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     using impl_type = typename ImplT<D, I ..., ::IReferenceTrackerExtension>;
 
     template <typename... Args>
-    ReferenceTracker(Args&&... args) : impl_type(std::forward<Args>(args) ...)
+    explicit ReferenceTracker(Args&&... args) : impl_type(std::forward<Args>(args) ...)
     {
         m_owningThreadId = ::GetCurrentThreadId();
 
@@ -108,7 +108,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         return S_OK;
     }
 
-    // TODO: Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
+    // TODO(ranjeshj): Remove once CppWinRT always calls shim for NonDelegatingAddRef/Release
 
     // TEMP-BEGIN
 
@@ -216,7 +216,7 @@ inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(_In_ unsigned i
 namespace CppWinRTTemp
 {
     static TrustLevel __stdcall GetTrustLevel_BaseTrust() { return BaseTrust;  }
-}
+} // namespace CppWinRTTemp
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \
     namespace CppWinRTTemp { static auto __stdcall RuntimeClassName__##className() { return winrt::name_of<className::class_type>().data(); } } \

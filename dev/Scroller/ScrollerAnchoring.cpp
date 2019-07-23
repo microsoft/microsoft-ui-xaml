@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "Scroller.h"
 #include "DoubleUtil.h"
+#include "Scroller.h"
 #include "ScrollerTestHooks.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 // Used when Scroller.HorizontalAnchorRatio or Scroller.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
 // It is declared at an edge if it's within 1/10th of a pixel.
@@ -73,11 +73,11 @@ void Scroller::IsAnchoring(
 {
     *isAnchoringElementHorizontally = false;
     *isAnchoringElementVertically = false;
-    if (isAnchoringFarEdgeHorizontally)
+    if (isAnchoringFarEdgeHorizontally != nullptr)
     {
         *isAnchoringFarEdgeHorizontally = false;
     }
-    if (isAnchoringFarEdgeVertically)
+    if (isAnchoringFarEdgeVertically != nullptr)
     {
         *isAnchoringFarEdgeVertically = false;
     }
@@ -108,7 +108,7 @@ void Scroller::IsAnchoring(
         {
             if (horizontalAnchorRatio == 1.0 && m_zoomedHorizontalOffset + m_viewportWidth - m_unzoomedExtentWidth * m_zoomFactor > -c_edgeDetectionTolerance)
             {
-                if (isAnchoringFarEdgeHorizontally)
+                if (isAnchoringFarEdgeHorizontally != nullptr)
                 {
                     *isAnchoringFarEdgeHorizontally = true;
                 }
@@ -133,7 +133,7 @@ void Scroller::IsAnchoring(
         {
             if (verticalAnchorRatio == 1.0 && m_zoomedVerticalOffset + m_viewportHeight - m_unzoomedExtentHeight * m_zoomFactor > -c_edgeDetectionTolerance)
             {
-                if (isAnchoringFarEdgeVertically)
+                if (isAnchoringFarEdgeVertically != nullptr)
                 {
                     *isAnchoringFarEdgeVertically = true;
                 }
@@ -273,10 +273,10 @@ winrt::Size Scroller::ComputeViewportToElementAnchorPointsDistance(
 
         return viewportToElementAnchorPointsDistance;
     }
-    else
-    {
+    
+    
         return winrt::Size{ FloatUtil::NaN, FloatUtil::NaN };
-    }
+    
 }
 
 void Scroller::ClearAnchorCandidates()

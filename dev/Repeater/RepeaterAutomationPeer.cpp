@@ -1,18 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
+#include "ItemsRepeater.common.h"
+#include "ItemsRepeater.h"
+#include "RepeaterAutomationPeer.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 #include <Vector.h>
-#include "ItemsRepeater.common.h"
-#include "RepeaterAutomationPeer.h"
-#include "ItemsRepeater.h"
+#include <common.h>
+#include <pch.h>
 
 CppWinRTActivatableClassWithBasicFactory(RepeaterAutomationPeer)
 
-RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner) :
+RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater  /*unused*/const& owner) :
     ReferenceTracker(owner)
 {
 }
@@ -30,7 +30,7 @@ winrt::IVector<winrt::AutomationPeer> RepeaterAutomationPeer::GetChildrenCore()
 
     // Filter out unrealized peers.
     {
-        for (unsigned i = 0u; i < peerCount; ++i)
+        for (unsigned i = 0U; i < peerCount; ++i)
         {
             auto childPeer = childrenPeers.GetAt(i);
             if (auto childElement = GetElement(childPeer, repeater))
@@ -67,7 +67,7 @@ winrt::AutomationControlType RepeaterAutomationPeer::GetAutomationControlTypeCor
 #pragma endregion
 
 // Get the immediate child element of repeater under which this childPeer came from. 
-winrt::UIElement RepeaterAutomationPeer::GetElement(const winrt::AutomationPeer& childPeer, const winrt::ItemsRepeater& repeater)
+winrt::UIElement RepeaterAutomationPeer::GetElement(const winrt::AutomationPeer& childPeer, const winrt::ItemsRepeater&  /*repeater*/)
 {
     auto childElement = static_cast<winrt::DependencyObject>(childPeer.as<winrt::FrameworkElementAutomationPeer>().Owner());
     

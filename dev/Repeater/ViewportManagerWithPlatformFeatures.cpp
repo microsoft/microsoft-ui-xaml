@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "ViewportManagerWithPlatformFeatures.h"
 #include "ItemsRepeater.h"
+#include "ViewportManagerWithPlatformFeatures.h"
 #include "layout.h"
+#include <common.h>
+#include <pch.h>
 
 // Pixel delta by which to inflate the cache buffer on each side.  Rather than fill the entire
 // cache buffer all at once, we chunk the work to make the UI thread more responsive.  We inflate
@@ -103,8 +103,8 @@ winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutVisibleWindow() const
         // to zero and the layout origin is expected to change once layout is done.
         // Until then, we need a window that's going to protect the anchor from
         // getting recycled.
-        visibleWindow.X = 0.0f;
-        visibleWindow.Y = 0.0f;
+        visibleWindow.X = 0.0F;
+        visibleWindow.Y = 0.0F;
     }
     else if (HasScroller())
     {
@@ -122,8 +122,8 @@ winrt::Rect ViewportManagerWithPlatformFeatures::GetLayoutRealizationWindow() co
     {
         realizationWindow.X -= static_cast<float>(m_horizontalCacheBufferPerSide);
         realizationWindow.Y -= static_cast<float>(m_verticalCacheBufferPerSide);
-        realizationWindow.Width += static_cast<float>(m_horizontalCacheBufferPerSide) * 2.0f;
-        realizationWindow.Height += static_cast<float>(m_verticalCacheBufferPerSide) * 2.0f;
+        realizationWindow.Width += static_cast<float>(m_horizontalCacheBufferPerSide) * 2.0F;
+        realizationWindow.Height += static_cast<float>(m_verticalCacheBufferPerSide) * 2.0F;
     }
 
     return realizationWindow;
@@ -135,7 +135,7 @@ void ViewportManagerWithPlatformFeatures::SetLayoutExtent(winrt::Rect extent)
     m_expectedViewportShift.Y += m_layoutExtent.Y - extent.Y;
 
     // We tolerate viewport imprecisions up to 1 pixel to avoid invaliding layout too much.
-    if (std::abs(m_expectedViewportShift.X) > 1.f || std::abs(m_expectedViewportShift.Y) > 1.f)
+    if (std::abs(m_expectedViewportShift.X) > 1.F || std::abs(m_expectedViewportShift.Y) > 1.F)
     {
         REPEATER_TRACE_INFO(L"%ls: \tExpecting viewport shift of (%.0f,%.0f) \n",
             GetLayoutId().data(), m_expectedViewportShift.X, m_expectedViewportShift.Y);
@@ -243,7 +243,7 @@ void ViewportManagerWithPlatformFeatures::OnOwnerArranged()
     }
 }
 
-void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args)
+void ViewportManagerWithPlatformFeatures::OnLayoutUpdated(winrt::IInspectable const&  /*sender*/, winrt::IInspectable const&  /*args*/)
 {
     m_layoutUpdatedRevoker.revoke();
     if (m_managingViewportDisabled)
@@ -377,7 +377,7 @@ void ViewportManagerWithPlatformFeatures::OnCacheBuildActionCompleted()
     }
 }
 
-void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::FrameworkElement const& sender, winrt::EffectiveViewportChangedEventArgs const& args)
+void ViewportManagerWithPlatformFeatures::OnEffectiveViewportChanged(winrt::FrameworkElement const&  /*sender*/, winrt::EffectiveViewportChangedEventArgs const& args)
 {
     assert(!m_managingViewportDisabled);
     REPEATER_TRACE_INFO(L"%ls: \tEffectiveViewportChanged event callback \n", GetLayoutId().data());

@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "XamlType.h"
 #include "XamlMember.h"
 #include "XamlMetadataProvider.h"
+#include "XamlType.h"
+#include "common.h"
 
 void XamlTypeBase::AddDPMember(
     wstring_view const& name,
@@ -89,7 +89,7 @@ winrt::IXamlType XamlTypeBase::KeyType()
 
 winrt::TypeName XamlTypeBase::UnderlyingType()
 {
-    winrt::TypeName typeName;
+    winrt::TypeName typeName{};
     typeName.Name = m_typeName;
     typeName.Kind =
         m_isSystemType ?
@@ -156,8 +156,8 @@ void XamlTypeBase::RunInitializer()
 void XamlTypeBase::AddMember(
     wstring_view const& name,
     wstring_view const& baseTypeName,
-    std::function<winrt::IInspectable(const winrt::IInspectable&)> getter,
-    std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)> setter,
+    std::function<winrt::IInspectable(const winrt::IInspectable&)>  /*getter*/,
+    std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)>  /*setter*/,
     bool isContent, 
     bool isDependencyProperty,
     bool isAttachable
@@ -194,8 +194,8 @@ void XamlTypeBase::EnsureProperties()
 XamlType::XamlType(
     wstring_view const& typeName,
     wstring_view const& baseTypeName,
-    std::function<winrt::IInspectable()> activator,
-    std::function<void(XamlTypeBase&)> populatePropertiesFunc
+    std::function<winrt::IInspectable()>  /*activator*/,
+    std::function<void(XamlTypeBase&)>  /*populatePropertiesFunc*/
     )
 {
     m_typeName = typeName;
@@ -216,7 +216,7 @@ void XamlType::SetAddToMapFunc(std::function<void(winrt::IInspectable const&, wi
 
 EnumXamlType::EnumXamlType(
     wstring_view const& typeName,
-    std::function<winrt::IInspectable(hstring)> createFromString
+    std::function<winrt::IInspectable(hstring)>  /*createFromString*/
     )
 {
     m_typeName = typeName;

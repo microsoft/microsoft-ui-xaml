@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
 #include <common.h>
+#include <pch.h>
 
 #include "NavigationView.h"
 #include "NavigationViewItem.h"
@@ -150,7 +150,7 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
     m_suggestedToolTipContent.set(newToolTipContent);
 }
 
-void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  /*args*/)
 {
     UpdateVisualStateNoTransition();
 }
@@ -239,8 +239,9 @@ void NavigationViewItem::UpdateVisualStateForToolTip()
 
 void NavigationViewItem::UpdateVisualState(bool useTransitions)
 {
-    if (!m_appliedTemplate)
+    if (!m_appliedTemplate) {
         return;
+}
 
     UpdateVisualStateForNavigationViewListPositionChange();
 

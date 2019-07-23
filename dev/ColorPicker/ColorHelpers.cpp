@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ColorHelpers.h"
 #include "SharedHelpers.h"
+#include "common.h"
 
 const int CheckerSize = 4;
 
@@ -18,7 +18,7 @@ Hsv FindNextNamedColor(
 
 Hsv IncrementColorChannel(
     const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
+    winrt::ColorPickerHsvChannel  /*channel*/,
     IncrementDirection direction,
     IncrementAmount amount,
     bool shouldWrap,
@@ -113,7 +113,7 @@ int sgn(T val)
 
 Hsv FindNextNamedColor(
     const Hsv &originalHsv,
-    winrt::ColorPickerHsvChannel channel,
+    winrt::ColorPickerHsvChannel  /*channel*/,
     IncrementDirection direction,
     bool shouldWrap,
     double minBound,
@@ -128,7 +128,7 @@ Hsv FindNextNamedColor(
     Hsv newHsv = originalHsv;
 
     winrt::hstring originalColorName = winrt::ColorHelper::ToDisplayName(ColorFromRgba(HsvToRgb(originalHsv)));
-    winrt::hstring newColorName = originalColorName;
+    const winrt::hstring& newColorName = originalColorName;
 
     double originalValue = 0;
     double *newValue = nullptr;
@@ -219,7 +219,7 @@ Hsv FindNextNamedColor(
         Hsv startHsv = newHsv;
         Hsv currentHsv = startHsv;
         double startEndOffset = 0;
-        winrt::hstring currentColorName = newColorName;
+        const winrt::hstring& currentColorName = newColorName;
 
         double *startValue = nullptr;
         double *currentValue = nullptr;
@@ -364,7 +364,7 @@ void CreateCheckeredBackgroundAsync(
     int width,
     int height,
     winrt::Color checkerColor,
-    std::shared_ptr<std::vector<byte>> const& bgraCheckeredPixelData,
+    std::shared_ptr<std::vector<byte>>  /*unused*/const& bgraCheckeredPixelData,
     winrt::IAsyncAction &asyncActionToAssign,
     DispatcherHelper dispatcherHelper,
     std::function<void(winrt::WriteableBitmap)> completedFunction)
@@ -442,7 +442,7 @@ void CreateCheckeredBackgroundAsync(
 winrt::WriteableBitmap CreateBitmapFromPixelData(
     int pixelWidth,
     int pixelHeight,
-    std::shared_ptr<std::vector<byte>> const& bgraPixelData)
+    std::shared_ptr<std::vector<byte>>  /*unused*/const& bgraPixelData)
 {
     // IBufferByteAccess isn't included in any WinMD file, because its sole method - Buffer() -
     // allows direct pointer access, which isn't applicable to C#.  In C#, there's a separate ToStream()
@@ -462,7 +462,7 @@ winrt::WriteableBitmap CreateBitmapFromPixelData(
 winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     int pixelWidth,
     int pixelHeight,
-    std::shared_ptr<std::vector<byte>> const& bgraPixelData)
+    std::shared_ptr<std::vector<byte>>  /*unused*/const& bgraPixelData)
 {
     MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
 

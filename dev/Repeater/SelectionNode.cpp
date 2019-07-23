@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "SelectionNode.h"
 #include "SelectionModel.h"
+#include "SelectionNode.h"
+#include <common.h>
 
 SelectionNode::SelectionNode(SelectionModel* manager, SelectionNode* parent) :
     m_manager(manager), m_parent(parent), m_source(manager), m_dataSource(manager)
@@ -167,7 +167,7 @@ bool SelectionNode::IsSelected(int index)
 winrt::IReference<bool> SelectionNode::IsSelectedWithPartial()
 {
     auto isSelected = winrt::PropertyValue::CreateBoolean(false).as<winrt::IReference<bool>>();
-    if (m_parent)
+    if (m_parent != nullptr)
     {
         auto parentsChildren = m_parent->m_childrenNodes;
         const auto it = std::find_if(parentsChildren.cbegin(), parentsChildren.cend(), [this](const std::shared_ptr<SelectionNode>& node) { return node.get() == this; });
@@ -317,8 +317,8 @@ bool SelectionNode::IsValidIndex(int index)
 
 void SelectionNode::AddRange(const IndexRange& addRange, bool raiseOnSelectionChanged)
 {
-    // TODO: Check for duplicates (Task 14107720)
-    // TODO: Optimize by merging adjacent ranges (Task 14107720)
+    // TODO(ranjeshj): Check for duplicates (Task 14107720)
+    // TODO(ranjeshj): Optimize by merging adjacent ranges (Task 14107720)
 
     int oldCount = SelectedCount();
 
@@ -345,7 +345,7 @@ void SelectionNode::RemoveRange(const IndexRange& removeRange, bool raiseOnSelec
 {
     int oldCount = m_selectedCount;
 
-    // TODO: Prevent overlap of Ranges in _selected (Task 14107720)
+    // TODO(ranjeshj): Prevent overlap of Ranges in _selected (Task 14107720)
     for (int i = removeRange.Begin(); i <= removeRange.End(); i++)
     {
         if (IsSelected(i))
@@ -465,7 +465,7 @@ bool SelectionNode::Select(int index, bool select, bool raiseOnSelectionChanged)
     return false;
 }
 
-void SelectionNode::OnSourceListChanged(const winrt::IInspectable& dataSource, const winrt::NotifyCollectionChangedEventArgs& args)
+void SelectionNode::OnSourceListChanged(const winrt::IInspectable&  /*dataSource*/, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     bool selectionInvalidated = false;
     switch (args.Action())
@@ -564,7 +564,7 @@ bool SelectionNode::OnItemsAdded(int index, int count)
     if (!selectionInvalidated)
     {
         auto parent = m_parent;
-        while (parent)
+        while (parent != nullptr)
         {
             auto isSelected = parent->IsSelectedWithPartial();
             // If a parent is selected, then it will become partially selected.
@@ -653,7 +653,7 @@ bool SelectionNode::OnItemsRemoved(int index, int count)
     if (!selectionInvalidated)
     {
         auto parent = m_parent;
-        while (parent)
+        while (parent != nullptr)
         {
             auto isSelected = parent->IsSelectedWithPartial();
             // If a parent is partially selected, then it will become selected.
@@ -729,7 +729,7 @@ SelectionState SelectionNode::EvaluateIsSelectedBasedOnChildrenNodes()
                         selectionState = SelectionState::PartiallySelected;
                         break;
                     }
-                    else if (isChildSelected.Value())
+                    if (isChildSelected.Value())
                     {
                         selectedCount++;
                     }

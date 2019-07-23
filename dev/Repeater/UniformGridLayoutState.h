@@ -5,8 +5,8 @@
 
 #include "ElementManager.h"
 
-#include "UniformGridLayoutState.g.h"
 #include "FlowLayoutAlgorithm.h"
+#include "UniformGridLayoutState.g.h"
 
 class UniformGridLayoutState :
     public ReferenceTracker<UniformGridLayoutState, winrt::implementation::UniformGridLayoutStateT, winrt::composing>
@@ -25,10 +25,10 @@ public:
     void EnsureFirstElementOwnership(winrt::VirtualizingLayoutContext const& context);
 
     void EnsureElementSize(
-        const winrt::Size availableSize,
+        winrt::Size availableSize,
         const winrt::VirtualizingLayoutContext& context,
-        const double itemWidth,
-        const double itemHeight,
+        double itemWidth,
+        double itemHeight,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,
@@ -41,9 +41,9 @@ private:
     double m_effectiveItemHeight{ 0.0 };
 
     void SetSize(const winrt::UIElement& UIElement,
-        const double itemWidth,
-        const double itemHeight,
-        const winrt::Size availableSize,
+        double itemWidth,
+        double itemHeight,
+        winrt::Size availableSize,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,

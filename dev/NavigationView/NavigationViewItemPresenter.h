@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "NavigationViewItemPresenter.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemPresenter.g.h"
 #include "NavigationViewItemPresenter.properties.h"
 
 class NavigationViewItem;

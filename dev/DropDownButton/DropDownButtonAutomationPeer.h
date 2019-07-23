@@ -11,7 +11,7 @@ class DropDownButtonAutomationPeer :
 {
 
 public:
-    DropDownButtonAutomationPeer(winrt::DropDownButton const& owner);
+    explicit DropDownButtonAutomationPeer(winrt::DropDownButton const& owner);
     ~DropDownButtonAutomationPeer() = default;
 
     // IAutomationPeerOverrides

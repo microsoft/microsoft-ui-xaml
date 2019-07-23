@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "ViewManager.h"
 #include "ItemsRepeater.h"
+#include "ViewManager.h"
+#include <common.h>
+#include <pch.h>
 #ifdef BUILD_WINDOWS
 #include "ElementFactoryGetArgsDownlevel.h"
 #include "ElementFactoryRecycleArgsDownlevel.h"
@@ -305,7 +305,7 @@ void ViewManager::UpdatePin(const winrt::UIElement& element, bool addPin)
     }
 }
 
-void ViewManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
+void ViewManager::OnItemsSourceChanged(const winrt::IInspectable& /*unused*/, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     // Note: For items that have been removed, the index will not be touched. It will hold
     // the old index before it was removed. It is not valid anymore.
@@ -487,7 +487,7 @@ void ViewManager::OnOwnerArranged()
 
         for (auto& entry : m_resetPool)
         {
-            // TODO: Task 14204306: ItemsRepeater: Find better focus candidate when focused element is deleted in the ItemsSource.
+            // TODO(ranjeshj): Task 14204306: ItemsRepeater: Find better focus candidate when focused element is deleted in the ItemsSource.
             // Focused element is getting cleared. Need to figure out semantics on where
             // focus should go when the focused element is removed from the data collection.
             ClearElement(entry.second.get(), true /* isClearedDueToCollectionChange */);
@@ -802,7 +802,7 @@ void ViewManager::UpdateFocusedElement()
     }
 }
 
-void ViewManager::OnFocusChanged(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void ViewManager::OnFocusChanged(const winrt::IInspectable& /*unused*/, const winrt::RoutedEventArgs& /*unused*/)
 {
     UpdateFocusedElement();
 }

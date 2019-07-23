@@ -116,4 +116,4 @@ winrt::hstring KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& event
 
 #pragma endregion
 
-}
+}  // namespace TypeLogging

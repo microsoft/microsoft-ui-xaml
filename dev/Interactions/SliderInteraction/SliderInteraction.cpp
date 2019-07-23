@@ -224,7 +224,7 @@ void SliderInteraction::OnPointerCanceled(winrt::UIElement const& sender, winrt:
     }
 }
 
-void SliderInteraction::OnPointerCaptureLost(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
+void SliderInteraction::OnPointerCaptureLost(winrt::UIElement const&  /*sender*/, winrt::PointerRoutedEventArgs const&  /*args*/)
 {
     m_hasPointerCapture = false;
     m_capturePosition = winrt::Point();

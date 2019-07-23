@@ -2,19 +2,19 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "InteractionTrackerOwner.h"
+#include "RegUtil.h"
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
-#include "InteractionTrackerOwner.h"
-#include "Scroller.h"
 #include "ScrollOptions.h"
-#include "ZoomOptions.h"
+#include "Scroller.h"
 #include "ScrollerAutomationPeer.h"
 #include "ScrollerTestHooks.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
 #include "Vector.h"
-#include "RegUtil.h"
+#include "ZoomOptions.h"
+#include "common.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool ScrollerTrace::s_IsDebugOutputEnabled{ false };
@@ -25,7 +25,7 @@ const double c_scrollerLineDelta = 16.0;
 
 // Default inertia decay rate used when a IScrollController makes a request for
 // an offset change with additional velocity.
-const float c_scrollerDefaultInertiaDecayRate = 0.95f;
+const float c_scrollerDefaultInertiaDecayRate = 0.95F;
 
 const winrt::ScrollInfo Scroller::s_noOpScrollInfo{ -1 };
 const winrt::ZoomInfo Scroller::s_noOpZoomInfo{ -1 };
@@ -4645,7 +4645,7 @@ void Scroller::OnPointerPressed(
     {
         // Swallowing Access Denied error because of InteractionTracker bug 17434718 which has been
         // causing crashes at least in RS3, RS4 and RS5.
-        // TODO - Stop eating the error in future OS versions that include a fix for 17434718 if any.
+        // TODO(ranjeshj): - Stop eating the error in future OS versions that include a fix for 17434718 if any.
         if (e.to_abi() != E_ACCESSDENIED)
         {
             throw;
@@ -4715,7 +4715,7 @@ void Scroller::OnScrollControllerInteractionRequested(
         {
             // Swallowing Access Denied error because of InteractionTracker bug 17434718 which has been
             // causing crashes at least in RS3, RS4 and RS5.
-            // TODO - Stop eating the error in future OS versions that include a fix for 17434718 if any.
+            // TODO(ranjeshj): - Stop eating the error in future OS versions that include a fix for 17434718 if any.
             if (e.to_abi() == E_ACCESSDENIED)
             {
                 // Do not set the Handled flag. The request is simply ignored.

@@ -6,7 +6,7 @@
 namespace TypeLogging
 {
     winrt::hstring KeyRoutedEventArgsToString(const winrt::KeyRoutedEventArgs& eventArgs);
-    winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, bool verbose = false);
+    winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, bool verbose);
     winrt::hstring RectToString(const winrt::Rect& rect);
     winrt::hstring Float2ToString(const winrt::float2& v2);
     winrt::hstring NullableFloatToString(const winrt::IReference<float>& nf);
@@ -14,5 +14,5 @@ namespace TypeLogging
     winrt::hstring OrientationToString(const winrt::Orientation& orientation);
     winrt::hstring ScrollEventTypeToString(const winrt::ScrollEventType& scrollEventType);
     winrt::hstring ScrollingIndicatorModeToString(const winrt::ScrollingIndicatorMode& indicatorMode);
-}
+} // namespace TypeLogging
 

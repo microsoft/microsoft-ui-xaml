@@ -5,9 +5,9 @@
 
 #include <RatingItemInfo.h>
 
+#include "DispatcherHelper.h"
 #include "RatingControl.g.h"
 #include "RatingControl.properties.h"
-#include "DispatcherHelper.h"
 
 enum RatingControlStates
 {
@@ -53,7 +53,7 @@ private:
     void ResetControlWidth();
 
     // Methods that handle data
-    void ChangeRatingBy(double increase, bool originatedFromMouse);
+    void ChangeRatingBy(double change, bool originatedFromMouse);
     void SetRatingTo(double newRating, bool originatedFromMouse);
 
     // Custom DependencyProperty changed event handlers
@@ -76,7 +76,7 @@ private:
     void OnPointerMovedOverBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerEnteredBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPointerExitedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-    void PointerExitedImpl(const winrt::PointerRoutedEventArgs& args, bool resetScaleAnimation = true);
+    void PointerExitedImpl(const winrt::PointerRoutedEventArgs& args, bool resetScaleAnimation);
     void OnPointerPressedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args); 
     void OnPointerReleasedBackgroundStackPanel(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnTextScaleFactorChanged(const winrt::UISettings& setting, const winrt::IInspectable& args);
@@ -99,9 +99,9 @@ private:
     };
 
     winrt::hstring GetAppropriateGlyph(RatingControlStates type);
-    winrt::hstring GetNextGlyphIfNull(winrt::hstring glyph, RatingControlStates fallbackType = RatingControlStates::Set);
+    winrt::hstring GetNextGlyphIfNull(winrt::hstring glyph, RatingControlStates fallbackType);
     winrt::ImageSource GetAppropriateImageSource(RatingControlStates type);
-    winrt::ImageSource GetNextImageIfNull(winrt::ImageSource image, RatingControlStates fallbackType = RatingControlStates::Set);
+    winrt::ImageSource GetNextImageIfNull(winrt::ImageSource image, RatingControlStates fallbackType);
 
 public:
     // IControlOverrides / IControlOverridesHelper
@@ -119,7 +119,7 @@ private:
     void EnterGamepadEngagementMode();
     void ExitGamepadEngagementMode();
 
-    void RecycleEvents(bool useSafeGet = false);
+    void RecycleEvents(bool useSafeGet);
 
     double CoerceValueBetweenMinAndMax(double value);
 

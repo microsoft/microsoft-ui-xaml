@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
+#include "NavigationViewItem.h"
+#include "NavigationViewList.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
-#include "NavigationViewList.h"
-#include "NavigationViewItem.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 

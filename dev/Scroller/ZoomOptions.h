@@ -10,8 +10,8 @@ class ZoomOptions :
     public winrt::implementation::ZoomOptionsT<ZoomOptions>
 {
 public:
-    ZoomOptions(winrt::AnimationMode const& animationMode);
-    ZoomOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
+    explicit ZoomOptions(winrt::AnimationMode const& animationMode);
+    explicit ZoomOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
 
     ~ZoomOptions()
     {

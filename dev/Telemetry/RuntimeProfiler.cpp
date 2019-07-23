@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
 #include "RuntimeProfiler.h"
 #include "TraceLogging.h"
+#include <pch.h>
 
 #define DEFINE_PROFILEGROUP(name, group, size) \
     CMethodProfileGroup<size>        name(group)
@@ -15,8 +15,8 @@ namespace RuntimeProfiler {
     struct FunctionTelemetryCount
     {
         volatile LONG      *pInstanceCount{ nullptr };
-        volatile UINT16     uTypeIndex;
-        volatile UINT16     uMethodIndex;
+        volatile UINT16     uTypeIndex{};
+        volatile UINT16     uMethodIndex{};
     };
 
     class CMethodProfileGroupBase
@@ -32,7 +32,7 @@ namespace RuntimeProfiler {
     public:
         static const int TableSize = size;
         
-        CMethodProfileGroup(ProfileGroup group)
+        explicit CMethodProfileGroup(ProfileGroup group)
         :   m_cMethods(0)
         ,   m_group(group)
         {
@@ -200,7 +200,7 @@ namespace RuntimeProfiler {
         }
     }
 
-    VOID CALLBACK TPTimerCallback(PTP_CALLBACK_INSTANCE, PVOID, PTP_TIMER) noexcept
+    VOID CALLBACK TPTimerCallback(PTP_CALLBACK_INSTANCE /*unused*/, PVOID /*unused*/, PTP_TIMER /*unused*/) noexcept
     {
         FireEvent(false);
     }
@@ -247,7 +247,7 @@ namespace RuntimeProfiler {
             //  intervals to indicate relative time.
             lidueTime.QuadPart = -10000 * (LONGLONG)(std::chrono::milliseconds(EventFrequency).count());
         
-            ftdueTime.dwHighDateTime = (DWORD)(lidueTime.HighPart);
+            ftdueTime.dwHighDateTime = static_cast<DWORD>(lidueTime.HighPart);
             ftdueTime.dwLowDateTime  = lidueTime.LowPart;
             
             //  Setting the callback window length to 60 seconds since the
@@ -271,7 +271,7 @@ namespace RuntimeProfiler {
     void RegisterMethod(ProfileGroup group, UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept
     {
         static INIT_ONCE            InitProfiler = INIT_ONCE_STATIC_INIT;
-        CMethodProfileGroupBase    *pGroup = gProfileGroups[(int)group].pGroup;
+        CMethodProfileGroupBase    *pGroup = gProfileGroups[static_cast<int>(group)].pGroup;
     
         InitOnceExecuteOnce(&InitProfiler, InitializeRuntimeProfiler, nullptr, nullptr);
 

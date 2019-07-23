@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ScrollerTestHooksInteractionSourcesChangedEventArgs.h"
+#include "common.h"
 
 ScrollerTestHooksInteractionSourcesChangedEventArgs::ScrollerTestHooksInteractionSourcesChangedEventArgs(
     const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)

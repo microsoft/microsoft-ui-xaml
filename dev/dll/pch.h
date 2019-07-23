@@ -21,9 +21,9 @@
 
 #include <windows.h>
 
+#include <wrl\event.h>
 #include <wrl\implements.h>
 #include <wrl\module.h>
-#include <wrl\event.h>
 
 #define MUX_ASSERT(X) _ASSERT(X) 
 #define MUX_ASSERT_MSG(X, MSG) _ASSERT_EXPR(X, MSG)
@@ -42,13 +42,13 @@
 
 #include <WindowsNumerics.h>
 
-#include <strsafe.h>
 #include <robuffer.h>
+#include <strsafe.h>
 
 // STL
-#include <vector>
-#include <map>
 #include <functional>
+#include <map>
+#include <vector>
 
 #define _USE_MATH_DEFINES
 #include <cmath>

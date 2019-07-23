@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
 #include "RecyclePool.h"
+#include <common.h>
+#include <pch.h>
 
 #pragma region IRecyclePool
 
@@ -78,7 +78,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(
             ElementInfo elementInfo{ this /* refManager */, nullptr, nullptr };
             // Prefer an element from the same owner or with no owner so that we don't incur
             // the enter/leave cost during recycling.
-            // TODO: prioritize elements with the same owner to those without an owner.
+            // TODO(ranjeshj): prioritize elements with the same owner to those without an owner.
             const auto& winrtOwner = owner;
             auto iter = std::find_if(
                 elements.begin(),

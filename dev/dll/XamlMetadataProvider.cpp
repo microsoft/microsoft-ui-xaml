@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "XamlMetadataProvider.h"
 #include "XamlType.h"
+#include "common.h"
 
 #ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
@@ -28,7 +28,7 @@ void XamlMetadataProvider::Initialize()
 
 bool XamlMetadataProvider::RegisterXamlType(
     _In_ PCWSTR typeName,
-    std::function<winrt::IXamlType()> createXamlTypeCallback
+    std::function<winrt::IXamlType()>  /*createXamlTypeCallback*/
     )
 {
     if (!s_types)

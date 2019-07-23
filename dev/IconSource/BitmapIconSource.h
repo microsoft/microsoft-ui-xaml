@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "IconSource.h"
 #include "BitmapIconSource.g.h"
 #include "BitmapIconSource.properties.h"
+#include "IconSource.h"
 
 class BitmapIconSource :
     public ReferenceTracker<BitmapIconSource, winrt::implementation::BitmapIconSourceT, IconSource>,

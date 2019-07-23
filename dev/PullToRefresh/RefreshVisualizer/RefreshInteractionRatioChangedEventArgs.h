@@ -9,7 +9,7 @@ class RefreshInteractionRatioChangedEventArgs :
     public winrt::implementation::RefreshInteractionRatioChangedEventArgsT<RefreshInteractionRatioChangedEventArgs>
 {
 public:
-    RefreshInteractionRatioChangedEventArgs(double value);
+    explicit RefreshInteractionRatioChangedEventArgs(double value);
 
     double InteractionRatio();
 

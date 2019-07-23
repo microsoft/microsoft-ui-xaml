@@ -5,9 +5,9 @@
 #include "MaterialHelper.h"
 #include "RevealBrushTestApi.h"
 
-#include "RevealBrush.g.h"
-#include "RevealBorderBrush.g.h"
 #include "RevealBackgroundBrush.g.h"
+#include "RevealBorderBrush.g.h"
+#include "RevealBrush.g.h"
 #include "RevealBrush.properties.h"
 
 
@@ -48,7 +48,7 @@ public:
 #endif
 
     static void AttachLights();
-    static void AttachLightsToAncestor(const winrt::UIElement& root, bool trackRootToDisconnectFrom);
+    static void AttachLightsToAncestor(const winrt::UIElement& root, bool trackAsRootToDisconnectFrom);
 
     static void ClearProperties();
     static void EnsureProperties();

@@ -4,14 +4,14 @@
 #pragma once
 
 #include "LayoutContext.h"
-#include "VirtualizingLayoutContext.h"
 #include "NonvirtualizingLayoutContext.h"
+#include "VirtualizingLayoutContext.h"
 
 class VirtualLayoutContextAdapter :
     public winrt::implements<VirtualLayoutContextAdapter, NonVirtualizingLayoutContext>
 {
 public:
-    VirtualLayoutContextAdapter(winrt::VirtualizingLayoutContext const& virtualizingContext);
+    explicit VirtualLayoutContextAdapter(winrt::VirtualizingLayoutContext const& virtualizingContext);
 
 #pragma region ILayoutContextOverrides
     winrt::IInspectable LayoutStateCore();
@@ -33,7 +33,7 @@ private:
         typename winrt::IIterable<T>>
     {
     public:
-        ChildrenCollection(winrt::VirtualizingLayoutContext const& context)
+        explicit ChildrenCollection(winrt::VirtualizingLayoutContext  /*unused*/const& context)
         {
             m_context = context;
         }
@@ -73,7 +73,7 @@ private:
             public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
         {
         public:
-            Iterator(const winrt::IVectorView<T>& childCollection)
+            explicit Iterator(const winrt::IVectorView<T>& childCollection)
             {
                 m_childCollection = childCollection;
             }

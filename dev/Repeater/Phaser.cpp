@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ItemsRepeater.common.h"
-#include "QPCTimer.h"
 #include "BuildTreeScheduler.h"
-#include "VirtualizationInfo.h"
+#include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
 #include "Phaser.h"
+#include "QPCTimer.h"
+#include "VirtualizationInfo.h"
+#include "common.h"
 
 Phaser::Phaser(ItemsRepeater* owner) :
     m_owner(owner)

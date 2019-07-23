@@ -3,30 +3,30 @@
 
 #pragma once
 
-#include "common.h"
+#include "MUXControlsTestHooks.h"
 #include "TraceLogging.h"
 #include "Utils.h"
-#include "MUXControlsTestHooks.h"
+#include "common.h"
 
 inline bool IsSwipeControlTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsSwipeControlVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_LoggingProviderMatchAnyKeyword == 0);
+        (((g_LoggingProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL) != 0U) || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsSwipeControlPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL || g_PerfProviderMatchAnyKeyword == 0);
+        (((g_PerfProviderMatchAnyKeyword & KEYWORD_SWIPECONTROL) != 0U) || g_PerfProviderMatchAnyKeyword == 0);
 }
 
 #define SWIPECONTROL_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \

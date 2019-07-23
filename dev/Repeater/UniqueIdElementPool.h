@@ -8,7 +8,7 @@ class ItemsRepeater;
 class UniqueIdElementPool final
 {
 public:
-    UniqueIdElementPool(ItemsRepeater* owner);
+    explicit UniqueIdElementPool(ItemsRepeater* owner);
 
     void Add(const winrt::UIElement& element);
     winrt::UIElement Remove(int index);
@@ -19,5 +19,5 @@ public:
 
 private:
     ItemsRepeater* m_owner{ nullptr };
-    std::map<std::wstring, tracker_ref<winrt::UIElement>> m_elementMap;
+    std::map<std::wstring, tracker_ref<winrt::UIElement>> m_elementMap{};
 };

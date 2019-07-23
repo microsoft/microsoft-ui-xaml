@@ -11,7 +11,7 @@ class MenuBarAutomationPeer :
 {
 
 public:
-    MenuBarAutomationPeer(winrt::MenuBar const& owner);
+    explicit MenuBarAutomationPeer(winrt::MenuBar const& owner);
 
     // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();

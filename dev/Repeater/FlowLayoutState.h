@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "FlowLayoutState.g.h"
 #include "FlowLayoutAlgorithm.h"
+#include "FlowLayoutState.g.h"
 
 class FlowLayoutState :
     public ReferenceTracker<FlowLayoutState, winrt::implementation::FlowLayoutStateT, winrt::composing>

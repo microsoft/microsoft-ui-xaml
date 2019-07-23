@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TwoPaneView.h"
 #include "DisplayRegionHelperTestApi.h"
 #include "RuntimeProfiler.h"
+#include "TwoPaneView.h"
+#include "common.h"
 
 static constexpr auto c_pane1ScrollViewerName = L"PART_Pane1ScrollViewer";
 static constexpr auto c_pane2ScrollViewerName = L"PART_Pane2ScrollViewer";
@@ -68,7 +68,7 @@ void TwoPaneView::OnApplyTemplate()
     }
 }
 
-void TwoPaneView::SetScrollViewerProperties(std::wstring_view const& scrollViewerName, winrt::Control::Loaded_revoker& revoker)
+void TwoPaneView::SetScrollViewerProperties(std::wstring_view const& scrollViewerName, winrt::Control::Loaded_revoker&  /*revoker*/)
 {
     if (SharedHelpers::IsRS5OrHigher())
     {
@@ -87,7 +87,7 @@ void TwoPaneView::SetScrollViewerProperties(std::wstring_view const& scrollViewe
     }
 }
 
-void TwoPaneView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
+void TwoPaneView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&  /*args*/)
 {
     if (auto scrollViewer = sender.as<winrt::FrameworkElement>())
     {
@@ -102,7 +102,7 @@ void TwoPaneView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const 
     }
 }
 
-void TwoPaneView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+void TwoPaneView::OnSizeChanged(const winrt::IInspectable&  /*sender*/, const winrt::SizeChangedEventArgs&  /*args*/)
 {
     UpdateMode();
 }
@@ -110,7 +110,8 @@ void TwoPaneView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::
 void TwoPaneView::UpdateMode()
 {
     // Don't bother running this logic until after we hit OnApplyTemplate.
-    if (!m_loaded) return;
+    if (!m_loaded) { return;
+}
 
     double controlWidth = ActualWidth();
     double controlHeight = ActualHeight();

@@ -9,8 +9,8 @@
 XamlMember::XamlMember(
     wstring_view const& memberName,
     const winrt::IXamlType& type,
-    std::function<winrt::IInspectable(const winrt::IInspectable&)> getter,
-    std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)> setter,
+    std::function<winrt::IInspectable(const winrt::IInspectable&)>  /*getter*/,
+    std::function<void(const winrt::IInspectable&, const winrt::IInspectable&)>  /*setter*/,
     bool isDependencyProperty,
     bool isAttachable)
 {

@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ComboBoxHelper.h"
 #include "ComboBoxHelper.properties.h"
-#include "DispatcherHelper.h"
 #include "Converters.h"
+#include "DispatcherHelper.h"
+#include <common.h>
+#include <pch.h>
 
 using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
 
@@ -74,7 +74,7 @@ void ComboBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
     }
 }
 
-void ComboBoxHelper::OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void ComboBoxHelper::OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable&  /*args*/)
 {
     if (auto comboBox = sender.try_as<winrt::ComboBox>())
     {
@@ -89,7 +89,7 @@ void ComboBoxHelper::OnDropDownOpened(const winrt::IInspectable& sender, const w
     }
 }
 
-void ComboBoxHelper::OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void ComboBoxHelper::OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable&  /*args*/)
 {
     if (auto comboBox = sender.try_as<winrt::ComboBox>())
     {
@@ -101,7 +101,7 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 {
     if (comboBox.IsEditable())
     {
-        // TODO, read default values from theme resource once we have them
+        // TODO(ranjeshj): , read default values from theme resource once we have them
         winrt::CornerRadius popupRadius { 0 };
         winrt::CornerRadius textBoxRadius{ 0 };
 

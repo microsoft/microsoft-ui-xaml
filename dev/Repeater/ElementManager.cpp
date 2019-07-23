@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include "ItemsRepeater.common.h"
 #include "ElementManager.h"
+#include "ItemsRepeater.common.h"
+#include <common.h>
+#include <pch.h>
 
 void ElementManager::SetContext(const winrt::VirtualizingLayoutContext& virtualContext)
 {
@@ -187,11 +187,11 @@ bool ElementManager::IsDataIndexRealized(int index) const
             GetDataIndexFromRealizedRangeIndex(0) <= index &&
             GetDataIndexFromRealizedRangeIndex(realizedCount - 1) >= index;
     }
-    else
-    {
+    
+    
         // Non virtualized - everything is realized
         return index >= 0 && index < m_context.ItemCount();
-    }
+    
 }
 
 bool ElementManager::IsIndexValidInData(int currentIndex) const
@@ -209,7 +209,7 @@ winrt::UIElement ElementManager::GetRealizedElement(int dataIndex)
 
 void ElementManager::EnsureElementRealized(bool forward, int dataIndex, const wstring_view& layoutId)
 {
-    if (IsDataIndexRealized(dataIndex) == false)
+    if (!IsDataIndexRealized(dataIndex))
     {
         auto element = m_context.GetOrCreateElementAt(dataIndex, winrt::ElementRealizationOptions::ForceCreate | winrt::ElementRealizationOptions::SuppressAutoRecycle);
 

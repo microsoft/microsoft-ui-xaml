@@ -11,7 +11,7 @@ class ScrollerAutomationPeer :
     public ReferenceTracker<ScrollerAutomationPeer, winrt::implementation::ScrollerAutomationPeerT, winrt::IScrollProvider>
 {
 public:
-    ScrollerAutomationPeer(winrt::Scroller const& owner);
+    explicit ScrollerAutomationPeer(winrt::Scroller const& owner);
 
     ~ScrollerAutomationPeer()
     {

@@ -11,7 +11,7 @@ class MenuBarItemAutomationPeer :
 {
 
 public:
-    MenuBarItemAutomationPeer(winrt::MenuBarItem const& owner);
+    explicit MenuBarItemAutomationPeer(winrt::MenuBarItem const& owner);
 
     // IAutomationPeerOverrides 
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

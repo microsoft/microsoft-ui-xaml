@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include "ItemsRepeater.common.h"
-#include "IFlowLayoutAlgorithmDelegates.h"
 #include "FlowLayoutAlgorithm.h"
+#include "IFlowLayoutAlgorithmDelegates.h"
+#include "ItemsRepeater.common.h"
 #include "UniformGridLayoutState.h"
+#include <common.h>
+#include <pch.h>
 
 CppWinRTActivatableClassWithBasicFactory(UniformGridLayoutState);
 
@@ -18,7 +18,7 @@ void UniformGridLayoutState::InitializeForContext(
     context.LayoutStateCore(*this);
 }
 
-void UniformGridLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutContext& context)
+void UniformGridLayoutState::UninitializeForContext(const winrt::VirtualizingLayoutContext&  /*context*/)
 {
     m_flowAlgorithm.UninitializeForContext(context);
 
@@ -30,10 +30,10 @@ void UniformGridLayoutState::UninitializeForContext(const winrt::VirtualizingLay
 
 void UniformGridLayoutState::EnsureElementSize(
     const winrt::Size availableSize,
-    const winrt::VirtualizingLayoutContext& context,
+    const winrt::VirtualizingLayoutContext&  /*context*/,
     const double layoutItemWidth,
     const double LayoutItemHeight,
-    const winrt::UniformGridLayoutItemsStretch& stretch,
+    const winrt::UniformGridLayoutItemsStretch&  /*stretch*/,
     const winrt::Orientation& orientation,
     double minRowSpacing,
     double minColumnSpacing)
@@ -73,7 +73,7 @@ void UniformGridLayoutState::SetSize(
     const double layoutItemWidth,
     const double LayoutItemHeight,
     const winrt::Size availableSize,
-    const winrt::UniformGridLayoutItemsStretch& stretch,
+    const winrt::UniformGridLayoutItemsStretch&  /*stretch*/,
     const winrt::Orientation& orientation,
     double minRowSpacing,
     double minColumnSpacing)
@@ -88,7 +88,7 @@ void UniformGridLayoutState::SetSize(
     itemSizeMinor += minorItemSpacing;
 
     auto numItemsPerColumn = static_cast<int>(std::max(1.0, availableSizeMinor / itemSizeMinor));
-    auto remainingSpace = ((int)availableSizeMinor) % ((int)itemSizeMinor);
+    auto remainingSpace = (static_cast<int>(availableSizeMinor)) % (static_cast<int>(itemSizeMinor));
     auto extraMinorPixelsForEachItem = remainingSpace / numItemsPerColumn;
 
     if (stretch == winrt::UniformGridLayoutItemsStretch::Fill)

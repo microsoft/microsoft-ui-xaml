@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MenuBar.h"
 #include "MenuBarItem.h"
-#include "ResourceAccessor.h"
 #include "MenuBarItemAutomationPeer.h"
+#include "ResourceAccessor.h"
 #include "Utils.h"
+#include "common.h"
 
-MenuBarItemAutomationPeer::MenuBarItemAutomationPeer(winrt::MenuBarItem const& owner) : ReferenceTracker(owner)
+MenuBarItemAutomationPeer::MenuBarItemAutomationPeer(winrt::MenuBarItem  /*unused*/const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -60,10 +60,10 @@ winrt::ExpandCollapseState MenuBarItemAutomationPeer::ExpandCollapseState()
     {
         return winrt::ExpandCollapseState::Expanded;
     }
-    else
-    {
+    
+    
         return winrt::ExpandCollapseState::Collapsed;
-    }
+    
 } 
 
 void MenuBarItemAutomationPeer::Collapse()

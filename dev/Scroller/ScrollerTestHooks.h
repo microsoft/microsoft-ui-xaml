@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "Scroller.h"
-#include "ScrollerTestHooksAnchorEvaluatedEventArgs.h"
-#include "ScrollerTestHooksInteractionSourcesChangedEventArgs.h"
-#include "ScrollerTestHooksExpressionAnimationStatusChangedEventArgs.h"
-#include "ScrollerTestHooks.g.h"
 #include "RegUtil.h"
+#include "Scroller.h"
+#include "ScrollerTestHooks.g.h"
+#include "ScrollerTestHooksAnchorEvaluatedEventArgs.h"
+#include "ScrollerTestHooksExpressionAnimationStatusChangedEventArgs.h"
+#include "ScrollerTestHooksInteractionSourcesChangedEventArgs.h"
 
 class ScrollerTestHooks :
     public winrt::implementation::ScrollerTestHooksT<ScrollerTestHooks>
@@ -119,5 +119,5 @@ private:
     int m_mouseWheelDeltaForVelocityUnit{ Scroller::s_mouseWheelDeltaForVelocityUnit };
     int m_mouseWheelScrollLines{ RegUtil::s_defaultMouseWheelScrollLines };
     int m_mouseWheelScrollChars{ RegUtil::s_defaultMouseWheelScrollChars };
-    float m_mouseWheelInertiaDecayRate{ 0.0f };
+    float m_mouseWheelInertiaDecayRate{ 0.0F };
 };

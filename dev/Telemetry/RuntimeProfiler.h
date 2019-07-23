@@ -58,7 +58,7 @@ namespace RuntimeProfiler
 
     void FireEvent(bool Suspend) noexcept;
     void RegisterMethod(ProfileGroup group, UINT16 TypeIndex, UINT16 MethodIndex, volatile LONG *Count) noexcept;
-}
+}  // namespace RuntimeProfiler
 
 #define __RP_Marker_ClassById(typeindex) \
     { \
@@ -66,7 +66,7 @@ namespace RuntimeProfiler
         static volatile LONG __RuntimeProfiler_Counter = -1; \
         if (0 == ::InterlockedIncrement(&__RuntimeProfiler_Counter)) \
         { \
-            RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, 9999, &__RuntimeProfiler_Counter); \
+            RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)(typeindex), 9999, &__RuntimeProfiler_Counter); \
         } \
     }
     
@@ -76,7 +76,7 @@ namespace RuntimeProfiler
         static volatile LONG __RuntimeProfiler_Counter = -1; \
         if (0 == ::InterlockedIncrement(&__RuntimeProfiler_Counter)) \
         { \
-            RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)typeindex, (UINT16)memberindex, &__RuntimeProfiler_Counter); \
+            RuntimeProfiler::RegisterMethod(RuntimeProfiler::PG_Class, (UINT16)(typeindex), (UINT16)(memberindex), &__RuntimeProfiler_Counter); \
         } \
     }
 

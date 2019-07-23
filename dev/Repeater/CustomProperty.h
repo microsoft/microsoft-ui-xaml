@@ -12,7 +12,7 @@ public:
     CustomProperty(
         winrt::hstring const& name,
         winrt::TypeName const& typeName,
-        std::function<winrt::IInspectable(winrt::IInspectable const&)>,
+        std::function<winrt::IInspectable(winrt::IInspectable const&)> /*getter*/,
         std::function<void(winrt::IInspectable const&, winrt::IInspectable const&)> m_setter);
 
     bool CanRead();

@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RefreshInfoProviderImpl.h"
-#include "ScrollViewerIRefreshInfoProviderAdapter.h"
-#include "RefreshInteractionRatioChangedEventArgs.h"
 #include "PTRTracing.h"
+#include "RefreshInfoProviderImpl.h"
+#include "RefreshInteractionRatioChangedEventArgs.h"
+#include "ScrollViewerIRefreshInfoProviderAdapter.h"
+#include "common.h"
 
 // There is not a lot of value in constantly firing the interaction ratio changed event as the
 // animations which are based off of it use the published composition property set which is
@@ -31,7 +31,7 @@ RefreshInfoProviderImpl::~RefreshInfoProviderImpl()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
-RefreshInfoProviderImpl::RefreshInfoProviderImpl(const winrt::RefreshPullDirection& refreshPullDirection, const winrt::Size& refreshVisualizerSize, const winrt::Compositor& compositor)
+RefreshInfoProviderImpl::RefreshInfoProviderImpl(const winrt::RefreshPullDirection&  /*refreshPullDirection*/, const winrt::Size& refreshVisualizerSize, const winrt::Compositor& compositor)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     m_refreshPullDirection = refreshPullDirection;
@@ -117,7 +117,7 @@ void RefreshInfoProviderImpl::OnRefreshCompleted()
     RaiseRefreshCompleted();
 }
 
-winrt::event_token RefreshInfoProviderImpl::InteractionRatioChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>& handler)
+winrt::event_token RefreshInfoProviderImpl::InteractionRatioChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::RefreshInteractionRatioChangedEventArgs>&  /*handler*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_InteractionRatioChangedEventSource.add(handler);
@@ -129,7 +129,7 @@ void RefreshInfoProviderImpl::InteractionRatioChanged(const winrt::event_token& 
     m_InteractionRatioChangedEventSource.remove(token);
 }
 
-winrt::event_token RefreshInfoProviderImpl::IsInteractingForRefreshChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler)
+winrt::event_token RefreshInfoProviderImpl::IsInteractingForRefreshChanged(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>&  /*handler*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_IsInteractingForRefreshChangedEventSource.add(handler);
@@ -141,7 +141,7 @@ void RefreshInfoProviderImpl::IsInteractingForRefreshChanged(const winrt::event_
     m_IsInteractingForRefreshChangedEventSource.remove(token);
 }
 
-winrt::event_token RefreshInfoProviderImpl::RefreshStarted(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler)
+winrt::event_token RefreshInfoProviderImpl::RefreshStarted(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>&  /*handler*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_RefreshStartedEventSource.add(handler);
@@ -153,7 +153,7 @@ void RefreshInfoProviderImpl::RefreshStarted(const winrt::event_token& token)
     m_RefreshStartedEventSource.remove(token);
 }
 
-winrt::event_token RefreshInfoProviderImpl::RefreshCompleted(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>& handler)
+winrt::event_token RefreshInfoProviderImpl::RefreshCompleted(const winrt::TypedEventHandler<winrt::IRefreshInfoProvider, winrt::IInspectable>&  /*handler*/)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, L"Add Handler");
     return m_RefreshCompletedEventSource.add(handler);

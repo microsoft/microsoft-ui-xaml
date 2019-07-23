@@ -23,7 +23,7 @@ public:
     int32_t RecommendedAnchorIndex();
 
     winrt::Point LayoutOrigin();
-    void LayoutOrigin(winrt::Point const& result);
+    void LayoutOrigin(winrt::Point const& value);
 #pragma endregion
 
 #pragma region IVirtualizingLayoutContextOverrides

@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ToggleSplitButton.h"
+#include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
 #include "SplitButton.h"
 #include "SplitButtonEventArgs.h"
+#include "ToggleSplitButton.h"
 #include "ToggleSplitButtonAutomationPeer.h"
-#include "RuntimeProfiler.h"
-#include "ResourceAccessor.h"
+#include "common.h"
 
 ToggleSplitButton::ToggleSplitButton()
 {

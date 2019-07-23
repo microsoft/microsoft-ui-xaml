@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SwipeItems.h"
-#include "SwipeItem.h"
 #include "SwipeControl.h"
+#include "SwipeItem.h"
+#include "SwipeItems.h"
 #include "Vector.h"
 #include "VectorIterator.h"
+#include "common.h"
 
 SwipeItems::SwipeItems()
 {
@@ -32,7 +32,7 @@ void SwipeItems::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 }
 
 void SwipeItems::put_Items(
-    const winrt::Collections::IVector<winrt::SwipeItem>& value)
+    const winrt::Collections::IVector<winrt::SwipeItem>&  /*value*/)
 {
     if (Mode() == winrt::SwipeMode::Execute && value.Size() > 1)
     {

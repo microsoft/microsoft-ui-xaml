@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SwipeControl.h"
-#include "SwipeItems.h"
-#include "Vector.h"
-#include "SwipeItem.h"
 #include "RuntimeProfiler.h"
+#include "SwipeControl.h"
+#include "SwipeItem.h"
+#include "SwipeItems.h"
 #include "SwipeTestHooks.h"
+#include "Vector.h"
+#include "common.h"
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool SwipeControlTrace::s_IsDebugOutputEnabled{ false };
@@ -51,7 +51,7 @@ void SwipeControl::Close()
         m_lastActionWasClosing = true;
         if (!m_isIdle)
         {
-            winrt::float3 initialPosition{ 0.0f };
+            winrt::float3 initialPosition{ 0.0F };
             switch (m_createdContent)
             {
             case CreatedContent::Left:
@@ -74,7 +74,7 @@ void SwipeControl::Close()
             m_interactionTracker.get().TryUpdatePosition(initialPosition);
         }
 
-        winrt::float3 addedVelocity{ 0.0f };
+        winrt::float3 addedVelocity{ 0.0F };
         switch (m_createdContent)
         {
         case CreatedContent::Left:
@@ -339,7 +339,7 @@ void SwipeControl::ValuesChanged(
         }
     }
 
-    float value = 0.0f;
+    float value = 0.0F;
 
     if (m_isHorizontal)
     {
@@ -611,7 +611,7 @@ void SwipeControl::OnSizeChanged(const winrt::IInspectable& /*sender*/, const wi
     }
 }
 
-void SwipeControl::OnSwipeContentStackPanelSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
+void SwipeControl::OnSwipeContentStackPanelSizeChanged(const winrt::IInspectable&  /*sender*/, const winrt::SizeChangedEventArgs& args)
 {
     if (m_interactionTracker)
     {
@@ -622,7 +622,7 @@ void SwipeControl::OnSwipeContentStackPanelSizeChanged(const winrt::IInspectable
 }
 
 void SwipeControl::OnPointerPressedEvent(
-    const winrt::IInspectable& sender,
+    const winrt::IInspectable&  /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
@@ -773,7 +773,7 @@ void SwipeControl::CurrentWindowSizeChanged(const winrt::IInspectable & /*sender
     CloseIfNotRemainOpenExecuteItem();
 }
 
-void SwipeControl::CurrentWindowVisibilityChanged(const winrt::CoreWindow & /*sender*/, const winrt::VisibilityChangedEventArgs /*args*/)
+void SwipeControl::CurrentWindowVisibilityChanged(const winrt::CoreWindow & /*sender*/, const winrt::VisibilityChangedEventArgs& /*args*/)
 {
     CloseIfNotRemainOpenExecuteItem();
 }
@@ -1044,7 +1044,7 @@ void SwipeControl::EnsureClip()
 {
     float width = static_cast<float>(ActualWidth());
     float height = static_cast<float>(ActualHeight());
-    winrt::Rect rect = { 0.0f, 0.0f, width, height };
+    winrt::Rect rect = { 0.0F, 0.0F, width, height };
     winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangleGeometry;
     rectangleGeometry.Rect(rect);
     Clip(rectangleGeometry);
@@ -1114,7 +1114,7 @@ void SwipeControl::CreateTopContent()
     }
 }
 
-void SwipeControl::CreateContent(const winrt::SwipeItems& items)
+void SwipeControl::CreateContent(const winrt::SwipeItems&  /*items*/)
 {
     if (m_swipeContentStackPanel && m_swipeContentStackPanel.get().Children())
     {
@@ -1271,7 +1271,7 @@ void SwipeControl::UpdateColors()
     }
 }
 
-winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swipeItem)
+winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem&  /*swipeItem*/)
 {
     winrt::AppBarButton itemAsButton;
     winrt::get_self<SwipeItem>(swipeItem)->GenerateControl(itemAsButton, m_swipeItemStyle.get());
@@ -1330,7 +1330,7 @@ void SwipeControl::UpdateColorsIfExecuteItem()
     UpdateExecuteForegroundColor(swipeItem);
 }
 
-void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem& swipeItem)
+void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem&  /*swipeItem*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1361,7 +1361,7 @@ void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem& swipeIte
     m_swipeContentRoot.get().Background(nullptr);
 }
 
-void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem& swipeItem)
+void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem&  /*swipeItem*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1451,7 +1451,7 @@ void SwipeControl::UpdateColorsIfRevealItems()
     m_swipeContentStackPanel.get().Background(nullptr);
 }
 
-void SwipeControl::OnLeftItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>& sender, const winrt::IVectorChangedEventArgs args)
+void SwipeControl::OnLeftItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>&  /*sender*/, const winrt::IVectorChangedEventArgs&  /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1464,7 +1464,7 @@ void SwipeControl::OnLeftItemsChanged(const winrt::IObservableVector<winrt::Swip
     }
 }
 
-void SwipeControl::OnRightItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>& sender, const winrt::IVectorChangedEventArgs args)
+void SwipeControl::OnRightItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>&  /*sender*/, const winrt::IVectorChangedEventArgs&  /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1477,7 +1477,7 @@ void SwipeControl::OnRightItemsChanged(const winrt::IObservableVector<winrt::Swi
     }
 }
 
-void SwipeControl::OnTopItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>& sender, const winrt::IVectorChangedEventArgs args)
+void SwipeControl::OnTopItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>&  /*sender*/, const winrt::IVectorChangedEventArgs&  /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1490,7 +1490,7 @@ void SwipeControl::OnTopItemsChanged(const winrt::IObservableVector<winrt::Swipe
     }
 }
 
-void SwipeControl::OnBottomItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>& sender, const winrt::IVectorChangedEventArgs args)
+void SwipeControl::OnBottomItemsChanged(const winrt::IObservableVector<winrt::SwipeItem>&  /*sender*/, const winrt::IVectorChangedEventArgs&  /*args*/)
 {
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
@@ -1675,7 +1675,7 @@ void SwipeControl::ThrowIfHasVerticalAndHorizontalContent(bool setIsHorizontal)
     }
 }
 
-std::wstring SwipeControl::GetAnimationTarget(winrt::UIElement child)
+std::wstring SwipeControl::GetAnimationTarget(const winrt::UIElement& child)
 {
     if (DownlevelHelper::SetIsTranslationEnabledExists() || SharedHelpers::IsTranslationFacadeAvailable(child))
     {
@@ -1692,7 +1692,7 @@ winrt::SwipeControl SwipeControl::GetThis()
     return *this;
 }
 
-bool SwipeControl::IsTranslationFacadeAvailableForSwipeControl(const winrt::UIElement& element)
+bool SwipeControl::IsTranslationFacadeAvailableForSwipeControl(const winrt::UIElement&  /*element*/)
 {
     //For now Facade's are causing more issues than they are worth for swipe control. Revist this
     //when we have a little more time.

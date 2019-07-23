@@ -9,8 +9,8 @@ class ItemTemplateWrapper :
     public winrt::implements<ItemTemplateWrapper, winrt::IElementFactoryShim>
 {
 public:
-    ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate);
-    ItemTemplateWrapper(winrt::DataTemplateSelector const& dataTemplateSelector);
+    explicit ItemTemplateWrapper(winrt::DataTemplate const& dataTemplate);
+    explicit ItemTemplateWrapper(winrt::DataTemplateSelector const& dataTemplateSelector);
 
     winrt::DataTemplate Template();
     void Template(winrt::DataTemplate const& value);

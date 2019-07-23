@@ -12,7 +12,7 @@ public:
 
     // IItemsControlOverrides
     winrt::DependencyObject GetContainerForItemOverride();
-    bool IsItemItsOwnContainerOverride(winrt::IInspectable const& item);
+    bool IsItemItsOwnContainerOverride(winrt::IInspectable const& args);
     void OnItemsChanged(winrt::IInspectable const& item);
 
 private:

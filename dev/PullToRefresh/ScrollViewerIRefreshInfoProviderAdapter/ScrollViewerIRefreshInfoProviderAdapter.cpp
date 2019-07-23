@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ScrollViewerIRefreshInfoProviderAdapter.h"
-#include "ScrollViewerIRefreshInfoProviderAdapterFactory.h"
+#include "PTRTracing.h"
 #include "RefreshInteractionRatioChangedEventArgs.h"
 #include "RefreshVisualizer.h"
 #include "ResourceAccessor.h"
-#include "PTRTracing.h"
+#include "ScrollViewerIRefreshInfoProviderAdapter.h"
+#include "ScrollViewerIRefreshInfoProviderAdapterFactory.h"
+#include "common.h"
 
 // The maximum initial scroll viewer offset allowed before PTR is disabled, and we enter the peeking state
 #define INITIAL_OFFSET_THRESHOLD 1.0f
@@ -37,7 +37,7 @@ ScrollViewerIRefreshInfoProviderAdapter::~ScrollViewerIRefreshInfoProviderAdapte
 }
 
 ScrollViewerIRefreshInfoProviderAdapter::ScrollViewerIRefreshInfoProviderAdapter(
-    winrt::RefreshPullDirection const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler)
+    winrt::RefreshPullDirection  /*unused*/const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
@@ -339,8 +339,8 @@ winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecu
         }
         return nullptr;
     }
-    else
-    {
+    
+    
         for (int i = 0; i < numChildren; i++)
         {
             winrt::DependencyObject childObject = winrt::VisualTreeHelper::GetChild(root, i);
@@ -351,7 +351,7 @@ winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecu
             }
         }
         return nullptr;
-    }
+    
 }
 
 void ScrollViewerIRefreshInfoProviderAdapter::CleanupScrollViewer()
@@ -362,17 +362,17 @@ void ScrollViewerIRefreshInfoProviderAdapter::CleanupScrollViewer()
         sv.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_boxedPointerPressedEventHandler.get());
         m_boxedPointerPressedEventHandler.set(nullptr);
     }
-    if (m_scrollViewer_DirectManipulationCompletedToken.value)
+    if (m_scrollViewer_DirectManipulationCompletedToken.value != 0)
     {
         sv.DirectManipulationCompleted(m_scrollViewer_DirectManipulationCompletedToken);
         m_scrollViewer_DirectManipulationCompletedToken.value = 0;
     }
-    if (m_scrollViewer_ViewChangingToken.value)
+    if (m_scrollViewer_ViewChangingToken.value != 0)
     {
         sv.ViewChanging(m_scrollViewer_ViewChangingToken);
         m_scrollViewer_ViewChangingToken.value = 0;
     }
-    if (m_scrollViewer_LoadedToken.value)
+    if (m_scrollViewer_LoadedToken.value != 0)
     {
         sv.Loaded(m_scrollViewer_LoadedToken);
         m_scrollViewer_LoadedToken.value = 0;
@@ -382,12 +382,12 @@ void ScrollViewerIRefreshInfoProviderAdapter::CleanupScrollViewer()
 void ScrollViewerIRefreshInfoProviderAdapter::CleanupIRefreshInfoProvider()
 {
     auto provider = m_infoProvider.get();
-    if (m_infoProvider_RefreshStartedToken.value)
+    if (m_infoProvider_RefreshStartedToken.value != 0)
     {
         provider->RefreshStarted(m_infoProvider_RefreshStartedToken);
         m_infoProvider_RefreshStartedToken.value = 0;
     }
-    if (m_infoProvider_RefreshCompletedToken.value)
+    if (m_infoProvider_RefreshCompletedToken.value != 0)
     {
         provider->RefreshCompleted(m_infoProvider_RefreshCompletedToken);
         m_infoProvider_RefreshCompletedToken.value = 0;

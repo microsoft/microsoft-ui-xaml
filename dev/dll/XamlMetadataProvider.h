@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "XamlType.h"
 #include "XamlMetadataProviderGenerated.h"
+#include "XamlType.h"
 
 #ifndef BUILD_WINDOWS
 #include "XamlControlsXamlMetaDataProvider.g.h"
@@ -63,6 +63,6 @@ private:
     };
 
     // Defined as raw pointer so it doesn't have an initializer, this way we can control when it's initialized relative to other globals.
-    // TODO: will clean this up with MSFT:9427272 - Codegen the IXamlMetadataProvider stuff
+    // TODO(ranjeshj): will clean this up with MSFT:9427272 - Codegen the IXamlMetadataProvider stuff
     static std::vector<Entry>* s_types;
 };

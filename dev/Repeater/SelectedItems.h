@@ -70,7 +70,7 @@ private:
         public ReferenceTracker<Iterator, reference_tracker_implements_t<winrt::IIterator<T>>::type>
     {
     public:
-        Iterator(const winrt::IVectorView<T>& selectedItems)
+        explicit Iterator(const winrt::IVectorView<T>& selectedItems)
         {
             m_selectedItems = selectedItems;
         }

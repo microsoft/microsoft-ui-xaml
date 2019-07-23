@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemAutomationPeer.h"
-#include "TreeViewList.h"
 #include "TreeViewItemTemplateSettings.h"
+#include "TreeViewList.h"
+#include "common.h"
 
 TreeViewItem::TreeViewItem()
 {
@@ -522,7 +522,7 @@ bool TreeViewItem::IsSelectedInternal()
 
 void TreeViewItem::UpdateIndentation(int depth)
 {
-    winrt::Thickness thickness;
+    winrt::Thickness thickness{};
     thickness.Left = depth * 16;
     thickness.Top = 0;
     thickness.Right = 0;
@@ -548,7 +548,7 @@ bool TreeViewItem::IsExpandCollapse(winrt::VirtualKey key)
     return (isDirectionPressed && !isShiftPressed && !isAltPressed && !isControlPressed);
 }
 
-void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt::TreeViewNode& targetNode, int position, int childIndex, bool isForwards)
+void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt::TreeViewNode&  /*targetNode*/, int position, int childIndex, bool isForwards)
 {
     int positionModifier = isForwards ? 1 : -1;
     if (auto skippedItem = listControl.ContainerFromIndex(position + positionModifier))
@@ -573,7 +573,7 @@ void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt:
     }
 }
 
-void TreeViewItem::HandleGamepadAInMultiselectMode(const winrt::TreeViewNode& node)
+void TreeViewItem::HandleGamepadAInMultiselectMode(const winrt::TreeViewNode&  /*node*/)
 {
     if (node.HasChildren())
     {
@@ -718,7 +718,7 @@ void TreeViewItem::RecycleEvents(bool useSafeGet)
 {
     if (auto chevron = useSafeGet ? m_expandCollapseChevron.safe_get() : m_expandCollapseChevron.get())
     {
-        if (m_expandCollapseChevronPointerPressedToken.value)
+        if (m_expandCollapseChevronPointerPressedToken.value != 0)
         {
             chevron.PointerCanceled(m_expandCollapseChevronPointerPressedToken);
             m_expandCollapseChevronPointerPressedToken.value = 0;

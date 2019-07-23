@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ViewChangeBase.h"
 #include "ScrollerTrace.h"
+#include "ViewChangeBase.h"
 
 enum class InteractionTrackerAsyncOperationType
 {
@@ -137,25 +137,26 @@ public:
     // Returns True when the operation fulfills a horizontal IScrollController request.
     [[nodiscard]] bool IsHorizontalScrollControllerRequest() const
     {
-        return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest);
+        return (static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest)) != 0;
     }
 
     // Returns True when the operation fulfills a vertical IScrollController request.
     [[nodiscard]] bool IsVerticalScrollControllerRequest() const
     {
-        return static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest);
+        return (static_cast<int>(m_operationTrigger) & static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)) != 0;
     }
 
     void SetIsScrollControllerRequest(bool isFromHorizontalScrollController)
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
 
-        if (isFromHorizontalScrollController)
+        if (isFromHorizontalScrollController) {
             m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) | 
                                  static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest));
-        else
+        } else {
             m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) |
                                  static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
+}
     }
 
     // Returns True when the post-processing ticks count has reached 0
@@ -208,7 +209,7 @@ public:
         return m_requiredOperation;
     }
 
-    void SetRequiredOperation(std::shared_ptr<InteractionTrackerAsyncOperation> requiredOperation)
+    void SetRequiredOperation(std::shared_ptr<InteractionTrackerAsyncOperation>  /*requiredOperation*/)
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
 

@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "ColorConversion.h"
 #include "CppWinRTHelpers.h"
 #include "DispatcherHelper.h"
-#include "ColorConversion.h"
 
 enum class IncrementDirection
 {

@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeaterElementIndexChangedEventArgs.h"
+#include "common.h"
 
 ItemsRepeaterElementIndexChangedEventArgs::ItemsRepeaterElementIndexChangedEventArgs(
     const winrt::UIElement& element,

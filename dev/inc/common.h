@@ -19,18 +19,18 @@ using ResourceIdType = const winrt::hstring &;
 typedef int ResourceIdType;
 #endif
 
-#include "ErrorHandling.h"
-#include "CppWinRTHelpers.h"
-#include "RuntimeClassHelpers.h"
-#include "SharedHelpers.h"
+#include "AutoHandle.h"
 #include "BoxHelpers.h"
 #include "CastHelpers.h"
-#include "event.h"
-#include "DownlevelHelper.h"
-#include "AutoHandle.h"
-#include "GlobalDependencyProperty.h"
 #include "CollectionHelper.h"
+#include "CppWinRTHelpers.h"
+#include "DownlevelHelper.h"
+#include "ErrorHandling.h"
+#include "GlobalDependencyProperty.h"
 #include "RoutedEventHelpers.h"
+#include "RuntimeClassHelpers.h"
+#include "SharedHelpers.h"
+#include "event.h"
 
 #ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"

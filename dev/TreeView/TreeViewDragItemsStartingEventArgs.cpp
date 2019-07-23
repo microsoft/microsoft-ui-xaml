@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "Vector.h"
 #include "TreeViewDragItemsStartingEventArgs.h"
+#include "Vector.h"
+#include "common.h"
 
 void TreeViewDragItemsStartingEventArgs::DragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args)
 {

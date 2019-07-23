@@ -11,7 +11,7 @@ class ScrollViewerIRefreshInfoProviderAdapter :
     public ReferenceTracker<ScrollViewerIRefreshInfoProviderAdapter, winrt::implementation::ScrollViewerIRefreshInfoProviderAdapterT, winrt::composable, winrt::composing>
 {
 public:
-    ScrollViewerIRefreshInfoProviderAdapter(winrt::RefreshPullDirection const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler);
+    explicit ScrollViewerIRefreshInfoProviderAdapter(winrt::RefreshPullDirection const& refreshPullDirection, winrt::IAdapterAnimationHandler const& animationHandler);
     ~ScrollViewerIRefreshInfoProviderAdapter();
 
     winrt::IRefreshInfoProvider AdaptFromTree(winrt::UIElement const& root, winrt::Size const& size);
@@ -32,7 +32,7 @@ private:
 
     bool IsOrientationVertical();
     winrt::UIElement GetScrollContent();
-    winrt::FxScrollViewer AdaptFromTreeRecursiveHelper(const winrt::DependencyObject&, int depth);
+    winrt::FxScrollViewer AdaptFromTreeRecursiveHelper(const winrt::DependencyObject& /*root*/, int depth);
     void MakeInteractionSource(const winrt::UIElement& contentParent);
 
     tracker_com_ref<RefreshInfoProviderImpl> m_infoProvider{ this };

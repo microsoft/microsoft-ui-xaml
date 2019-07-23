@@ -7,7 +7,7 @@ class TeachingTipAutomationPeer :
 {
 
 public:
-    TeachingTipAutomationPeer(winrt::TeachingTip const& owner);
+    explicit TeachingTipAutomationPeer(winrt::TeachingTip const& owner);
 
     // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();

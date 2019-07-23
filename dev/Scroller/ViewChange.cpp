@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
 #include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
 #include "ViewChange.h"
+#include "common.h"
 
 ViewChange::ViewChange(
     ScrollerViewKind viewKind,

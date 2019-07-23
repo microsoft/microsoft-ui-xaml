@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "DropDownButton.h"
 #include "DropDownButtonAutomationPeer.h"
-#include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
+#include "common.h"
 
 DropDownButton::DropDownButton()
 {
@@ -58,18 +58,18 @@ void DropDownButton::CloseFlyout()
     }
 }
 
-void DropDownButton::OnFlyoutPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void DropDownButton::OnFlyoutPropertyChanged(const winrt::DependencyObject&  /*sender*/, const winrt::DependencyProperty&  /*args*/)
 {
     RegisterFlyoutEvents();
 }
 
-void DropDownButton::OnFlyoutOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void DropDownButton::OnFlyoutOpened(const winrt::IInspectable&  /*sender*/, const winrt::IInspectable&  /*args*/)
 {
     m_isFlyoutOpen = true;
     SharedHelpers::RaiseAutomationPropertyChangedEvent(*this, winrt::ExpandCollapseState::Collapsed, winrt::ExpandCollapseState::Expanded);
 }
 
-void DropDownButton::OnFlyoutClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
+void DropDownButton::OnFlyoutClosed(const winrt::IInspectable&  /*sender*/, const winrt::IInspectable&  /*args*/)
 {
     m_isFlyoutOpen = false;
     SharedHelpers::RaiseAutomationPropertyChangedEvent(*this, winrt::ExpandCollapseState::Expanded, winrt::ExpandCollapseState::Collapsed);

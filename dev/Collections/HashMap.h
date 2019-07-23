@@ -122,7 +122,7 @@ private:
             reference_tracker_implements_t<winrt::IIterator<KVP>>::type>
     {
     public:
-        Iterator(HashMap<K, V>* map)
+        explicit Iterator(HashMap<K, V>* map)
         {
             m_map.set(map->get_strong());
             m_expectedMutationCount = map->GetMutationCount();
@@ -222,6 +222,6 @@ private:
         };
     };
 
-    std::map<K_storage, V_storage> m_map;
+    std::map<K_storage, V_storage> m_map{};
     unsigned int m_mutationCount = 0;
 };

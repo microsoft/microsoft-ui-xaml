@@ -2,15 +2,15 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "MaterialHelper.h"
 #include "AcrylicBrush.h"
-#include "RevealBrush.h"
-#include "XamlAmbientLight.h"
-#include "RevealBorderLight.h"
-#include "RevealHoverLight.h"
-#include "ResourceAccessor.h"
 #include "LifetimeHandler.h"
+#include "MaterialHelper.h"
+#include "ResourceAccessor.h"
+#include "RevealBorderLight.h"
+#include "RevealBrush.h"
+#include "RevealHoverLight.h"
+#include "XamlAmbientLight.h"
+#include "common.h"
 
 /* static */
 bool MaterialHelperBase::SimulateDisabledByPolicy()
@@ -112,7 +112,7 @@ void MaterialHelperBase::OnRevealBrushDisconnected()
 }
 
 /* static */
-void MaterialHelperBase::TrackRevealLightsToRemove(const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>& revealLightsToRemove)
+void MaterialHelperBase::TrackRevealLightsToRemove(const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>&  /*revealLightsToRemove*/)
 {
     auto instance = LifetimeHandler::GetMaterialHelperInstance();
     instance->m_revealLightsToRemove.emplace_back(lights, revealLightsToRemove);
@@ -125,7 +125,7 @@ winrt::CompositionEffectFactory MaterialHelperBase::GetOrCreateAcrylicBrushCompo
     bool useWindowAcrylic,
     bool useCrossFadeEffect,
     bool useCache,
-    std::function<winrt::CompositionEffectFactory()> cacheMissingCallback)
+    std::function<winrt::CompositionEffectFactory()>  /*cacheMissingCallback*/)
 {
     winrt::CompositionEffectFactory factory{ nullptr };
 
@@ -162,7 +162,7 @@ MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
     bool isBorder,
     bool isInverted,
     bool hasBaseColor,
-    std::function<winrt::CompositionEffectFactory()> cacheMissingCallback)
+    std::function<winrt::CompositionEffectFactory()>  /*cacheMissingCallback*/)
 {
     auto instance = LifetimeHandler::GetMaterialHelperInstance();
 
@@ -835,7 +835,7 @@ void MaterialHelper::OnDpiChanged(const winrt::IInspectable& sender, const winrt
         // This likely means the view has been closed and its logical DPI is no longer relevant. 
         // Ignore the error and do not notify subscriber materials in this case. 
 
-        // TODO: Consider adding below assert to get data on whether we are swallowing other errors here.
+        // TODO(ranjeshj): Consider adding below assert to get data on whether we are swallowing other errors here.
         //MUX_ASSERT(e.to_abi() == ERROR_INVALID_WINDOW_HANDLE);
     }
 
@@ -851,7 +851,7 @@ void MaterialHelper::OnDpiChanged(const winrt::IInspectable& sender, const winrt
 // Xaml may have offered its DComp resources - particularly the Noise texture - while app window was not visible.
 // Due to a bug 11159685 (fixed in RS3), LoadedImageSurface may fail to reclaim an offered and discarded surface, 
 // resulitng in "noiseless acrylic". Reload the noise with a new LIS when app regains visibilty as a workaround.
-void MaterialHelper::OnVisibilityChanged(const winrt::CoreWindow&, const winrt::VisibilityChangedEventArgs& args)
+void MaterialHelper::OnVisibilityChanged(const winrt::CoreWindow& /*unused*/, const winrt::VisibilityChangedEventArgs& args)
 {
     MUX_ASSERT(!SharedHelpers::IsRS3OrHigher());
 

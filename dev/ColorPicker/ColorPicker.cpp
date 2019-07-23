@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "SharedHelpers.h"
 #include "ColorPicker.h"
 #include "ColorSpectrum.h"
+#include "SharedHelpers.h"
+#include "common.h"
 
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
@@ -336,7 +336,7 @@ void ColorPicker::OnColorChanged(winrt::DependencyPropertyChangedEventArgs const
     }
 }
 
-void ColorPicker::OnPreviousColorChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnPreviousColorChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     UpdatePreviousColorRectangle();
     UpdateVisualState(true /* useTransitions */);
@@ -356,12 +356,12 @@ void ColorPicker::OnIsAlphaEnabledChanged(winrt::DependencyPropertyChangedEventA
     OnPartVisibilityChanged(args);
 }
 
-void ColorPicker::OnPartVisibilityChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnPartVisibilityChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     UpdateVisualState(true /* useTransitions */);
 }
 
-void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minHue = MinHue();
     int maxHue = MaxHue();
@@ -370,7 +370,7 @@ void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs c
     {
         throw winrt::hresult_invalid_argument(L"MinHue must be between 0 and 359.");
     }
-    else if (maxHue < 0 || maxHue > 359)
+    if (maxHue < 0 || maxHue > 359)
     {
         throw winrt::hresult_invalid_argument(L"MaxHue must be between 0 and 359.");
     }
@@ -381,7 +381,7 @@ void ColorPicker::OnMinMaxHueChanged(winrt::DependencyPropertyChangedEventArgs c
     UpdateThirdDimensionSlider();
 }
 
-void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minSaturation = MinSaturation();
     int maxSaturation = MaxSaturation();
@@ -390,7 +390,7 @@ void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEven
     {
         throw winrt::hresult_invalid_argument(L"MinSaturation must be between 0 and 100.");
     }
-    else if (maxSaturation < 0 || maxSaturation > 100)
+    if (maxSaturation < 0 || maxSaturation > 100)
     {
         throw winrt::hresult_invalid_argument(L"MaxSaturation must be between 0 and 100.");
     }
@@ -401,7 +401,7 @@ void ColorPicker::OnMinMaxSaturationChanged(winrt::DependencyPropertyChangedEven
     UpdateThirdDimensionSlider();
 }
 
-void ColorPicker::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     int minValue = MinValue();
     int maxValue = MaxValue();
@@ -410,7 +410,7 @@ void ColorPicker::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs
     {
         throw winrt::hresult_invalid_argument(L"MinValue must be between 0 and 100.");
     }
-    else if (maxValue < 0 || maxValue > 100)
+    if (maxValue < 0 || maxValue > 100)
     {
         throw winrt::hresult_invalid_argument(L"MaxValue must be between 0 and 100.");
     }
@@ -421,7 +421,7 @@ void ColorPicker::OnMinMaxValueChanged(winrt::DependencyPropertyChangedEventArgs
     UpdateThirdDimensionSlider();
 }
 
-void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChangedEventArgs const& args)
+void ColorPicker::OnColorSpectrumComponentsChanged(winrt::DependencyPropertyChangedEventArgs const&  /*args*/)
 {
     UpdateThirdDimensionSlider();
     SetThirdDimensionSliderChannel();
@@ -633,7 +633,7 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
     m_updatingControls = false;
 }
 
-void ColorPicker::OnColorSpectrumColorChanged(const winrt::ColorSpectrum& sender, const winrt::ColorChangedEventArgs& /*args*/)
+void ColorPicker::OnColorSpectrumColorChanged(const winrt::ColorSpectrum&  /*sender*/, const winrt::ColorChangedEventArgs& /*args*/)
 {
     // If we're updating controls, then this is being raised in response to that,
     // so we'll ignore it.
@@ -665,7 +665,7 @@ void ColorPicker::OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEve
     CancelAsyncAction(m_alphaSliderCheckeredBackgroundBitmapAction);
 }
 
-void ColorPicker::OnCheckerColorChanged(winrt::DependencyObject const& o, winrt::DependencyProperty const& p)
+void ColorPicker::OnCheckerColorChanged(winrt::DependencyObject const&  /*o*/, winrt::DependencyProperty const&  /*p*/)
 {
     CreateColorPreviewCheckeredBackground();
     CreateAlphaSliderCheckeredBackground();
@@ -1174,7 +1174,8 @@ void ColorPicker::UpdateAlphaSlider()
 
 void ColorPicker::CreateColorPreviewCheckeredBackground()
 {
-    if (SharedHelpers::IsInDesignMode()) return;
+    if (SharedHelpers::IsInDesignMode()) { return;
+}
 
     if (m_colorPreviewRectangleGrid &&
         m_colorPreviewRectangleCheckeredBackgroundImageBrush)
@@ -1200,7 +1201,8 @@ void ColorPicker::CreateColorPreviewCheckeredBackground()
 
 void ColorPicker::CreateAlphaSliderCheckeredBackground()
 {
-    if (SharedHelpers::IsInDesignMode()) return;
+    if (SharedHelpers::IsInDesignMode()) { return;
+}
 
     if (m_alphaSliderBackgroundRectangle &&
         m_alphaSliderCheckeredBackgroundImageBrush)
@@ -1242,7 +1244,7 @@ void ColorPicker::AddGradientStop(const winrt::LinearGradientBrush& brush, doubl
 
 winrt::Color ColorPicker::GetCheckerColor()
 {
-    winrt::Color checkerColor;
+    winrt::Color checkerColor{};
 
     if (m_checkerColorBrush)
     {

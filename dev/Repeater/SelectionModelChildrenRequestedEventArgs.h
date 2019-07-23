@@ -9,7 +9,7 @@ class SelectionModelChildrenRequestedEventArgs :
     public ReferenceTracker<SelectionModelChildrenRequestedEventArgs, winrt::implementation::SelectionModelChildrenRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& data);
+    explicit SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source);
 
 #pragma region ISelectionModelChildrenRequestedEventArgs
     winrt::IInspectable Source();

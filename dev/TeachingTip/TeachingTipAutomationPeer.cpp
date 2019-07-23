@@ -1,11 +1,11 @@
 ﻿#include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
 #include "TeachingTipAutomationPeer.h"
+#include "common.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
-TeachingTipAutomationPeer::TeachingTipAutomationPeer(winrt::TeachingTip const& owner) : ReferenceTracker(owner)
+TeachingTipAutomationPeer::TeachingTipAutomationPeer(winrt::TeachingTip  /*unused*/const& owner) : ReferenceTracker(owner)
 {
 }
 
@@ -15,10 +15,10 @@ winrt::AutomationControlType TeachingTipAutomationPeer::GetAutomationControlType
     {
         return winrt::AutomationControlType::Window;
     }
-    else
-    {
+    
+    
         return winrt::AutomationControlType::Pane;
-    }
+    
 }
 
 winrt::hstring TeachingTipAutomationPeer::GetClassNameCore()
@@ -33,7 +33,7 @@ winrt::WindowInteractionState TeachingTipAutomationPeer::InteractionState()
     {
         return winrt::WindowInteractionState::ReadyForUserInteraction;
     }
-    else if (teachingTip->m_isIdle && !teachingTip->IsOpen())
+    if (teachingTip->m_isIdle && !teachingTip->IsOpen())
     {
         return winrt::WindowInteractionState::BlockedByModalWindow;
     }
@@ -82,7 +82,7 @@ void TeachingTipAutomationPeer::SetVisualState(winrt::WindowVisualState state)
     
 }
 
-bool TeachingTipAutomationPeer::WaitForInputIdle(int32_t milliseconds)
+bool TeachingTipAutomationPeer::WaitForInputIdle(int32_t  /*milliseconds*/)
 {
     return true;
 }

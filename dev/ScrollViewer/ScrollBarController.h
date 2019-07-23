@@ -105,7 +105,7 @@ private:
     static constexpr double s_minimumVelocity{ 30.0 };
 
     // Inertia decay rate for SmallChange / LargeChange animated Value changes.
-    static constexpr float s_inertiaDecayRate = 0.9995f;
+    static constexpr float s_inertiaDecayRate = 0.9995F;
 
     // Additional velocity required with decay s_inertiaDecayRate to move Position by one pixel.
     static constexpr double s_velocityNeededPerPixel{ 7.600855902349023 };

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "ColorHelpers.h"
 #include "ColorChangedEventArgs.h"
+#include "ColorHelpers.h"
 #include "DispatcherHelper.h"
 
 #include "ColorPicker.g.h"

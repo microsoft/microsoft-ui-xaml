@@ -21,7 +21,7 @@ public:
         SpaceEvenly
     };
 
-    FlowLayoutAlgorithm(const ITrackerHandleManager* owner) :
+    explicit FlowLayoutAlgorithm(const ITrackerHandleManager* owner) :
         m_owner(owner),
         m_elementManager(owner),
         m_context(owner)
@@ -122,7 +122,7 @@ private:
     winrt::Size m_lastAvailableSize{};
     double m_lastItemSpacing{};
     bool m_collectionChangePending{};
-    tracker_ref<winrt::VirtualizingLayoutContext> m_context;
+    tracker_ref<winrt::VirtualizingLayoutContext> m_context{};
     IFlowLayoutAlgorithmDelegates* m_algorithmCallbacks{ nullptr };
     winrt::Rect m_lastExtent{};
     int m_firstRealizedDataIndexInsideRealizationWindow{ -1 };

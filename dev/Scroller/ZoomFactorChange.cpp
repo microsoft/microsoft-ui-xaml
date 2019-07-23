@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
 #include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
 #include "ZoomFactorChange.h"
+#include "common.h"
 
 ZoomFactorChange::ZoomFactorChange(
     float zoomFactor,
-    winrt::IReference<winrt::float2> centerPoint,
+    winrt::IReference<winrt::float2>  /*centerPoint*/,
     ScrollerViewKind zoomFactorKind,
     winrt::IInspectable const& options) :
         m_zoomFactor(zoomFactor),

@@ -4,5 +4,5 @@
 #include "pch.h"
 #include "common.h"
 
-#include "IconSource.h"
 #include "BitmapIconSource.h"
+#include "IconSource.h"

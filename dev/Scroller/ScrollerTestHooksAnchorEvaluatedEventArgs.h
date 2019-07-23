@@ -9,7 +9,7 @@ class ScrollerTestHooksAnchorEvaluatedEventArgs :
     public winrt::implementation::ScrollerTestHooksAnchorEvaluatedEventArgsT<ScrollerTestHooksAnchorEvaluatedEventArgs>
 {
 public:
-    ScrollerTestHooksAnchorEvaluatedEventArgs(const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAanchorPointVerticalOffset);
+    ScrollerTestHooksAnchorEvaluatedEventArgs(const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
 
     // IScrollerTestHooksAnchorEvaluatedEventArgs overrides
     winrt::UIElement AnchorElement();

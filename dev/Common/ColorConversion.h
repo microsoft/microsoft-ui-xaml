@@ -39,7 +39,7 @@ winrt::hstring RgbToHex(const Rgb &rgb);
 void HexToRgba(const wstring_view& input, _Out_ Rgb *rgb, _Out_ double *alpha);
 winrt::hstring RgbaToHex(const Rgb &rgb, double alpha);
 
-winrt::Color ColorFromRgba(const Rgb &rgb, double alpha = 1.0);
+winrt::Color ColorFromRgba(const Rgb &rgb, double alpha);
 Rgb RgbFromColor(const winrt::Color &color);
 
 // We represent HSV and alpha using a Vector4 (float4 in C++/WinRT).
@@ -54,4 +54,4 @@ namespace hsv
     inline void SetValue(winrt::float4 &hsva, float value) { hsva.z = value; }
     inline float GetAlpha(const winrt::float4 &hsva) { return hsva.w; }
     inline void SetAlpha(winrt::float4 &hsva, float alpha) { hsva.w = alpha; }
-}
+} // namespace hsv

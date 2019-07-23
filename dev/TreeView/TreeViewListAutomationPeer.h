@@ -13,7 +13,7 @@ class TreeViewListAutomationPeer :
         winrt::ISelectionProvider>
 {
 public:
-    TreeViewListAutomationPeer(winrt::TreeViewList const& owner);
+    explicit TreeViewListAutomationPeer(winrt::TreeViewList const& owner);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

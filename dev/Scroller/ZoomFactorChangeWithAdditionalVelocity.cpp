@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
 #include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
+#include "common.h"
 
 ZoomFactorChangeWithAdditionalVelocity::ZoomFactorChangeWithAdditionalVelocity(
     float zoomFactorVelocity,
     float anticipatedZoomFactorChange,
-    winrt::IReference<winrt::float2> centerPoint,
-    winrt::IReference<float> inertiaDecayRate) :
+    winrt::IReference<winrt::float2>  /*centerPoint*/,
+    winrt::IReference<float>  /*inertiaDecayRate*/) :
         m_zoomFactorVelocity(zoomFactorVelocity),
         m_anticipatedZoomFactorChange(anticipatedZoomFactorChange),
         m_centerPoint(centerPoint),

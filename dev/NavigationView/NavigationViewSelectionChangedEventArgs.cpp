@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "NavigationViewSelectionChangedEventArgs.h"
 #include "NavigationView.h"
+#include "NavigationViewSelectionChangedEventArgs.h"
+#include "common.h"
 
 winrt::IInspectable NavigationViewSelectionChangedEventArgs::SelectedItem()
 {

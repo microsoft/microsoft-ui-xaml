@@ -3,9 +3,9 @@
 
 #pragma once
 
+#include "DispatcherHelper.h"
 #include "PersonPicture.g.h"
 #include "PersonPicture.properties.h"
-#include "DispatcherHelper.h"
 
 class PersonPicture :
     public ReferenceTracker<PersonPicture, winrt::implementation::PersonPictureT>,
@@ -74,7 +74,7 @@ private:
     void OnContactChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     // Event handlers
-    void OnSizeChanged(const winrt::IInspectable &sender, const winrt::SizeChangedEventArgs &e);
+    void OnSizeChanged(const winrt::IInspectable &sender, const winrt::SizeChangedEventArgs &args);
     void OnUnloaded(const winrt::IInspectable &sender, const winrt::RoutedEventArgs &e);
 
     // Helper functions

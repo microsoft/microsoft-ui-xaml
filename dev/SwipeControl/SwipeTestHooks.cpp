@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "SwipeTestHooksFactory.h"
+#include "common.h"
 
 com_ptr<SwipeTestHooks> SwipeTestHooks::s_testHooks{};
 
@@ -24,7 +24,7 @@ winrt::SwipeControl SwipeTestHooks::GetLastInteractedWithSwipeControl()
     return SwipeControl::GetLastInteractedWithSwipeControl();
 }
 
-bool SwipeTestHooks::GetIsOpen(const winrt::SwipeControl& swipeControl)
+bool SwipeTestHooks::GetIsOpen(const winrt::SwipeControl&  /*swipeControl*/)
 {
     if (swipeControl)
     {
@@ -40,7 +40,7 @@ bool SwipeTestHooks::GetIsOpen(const winrt::SwipeControl& swipeControl)
     }
 }
 
-bool SwipeTestHooks::GetIsIdle(const winrt::SwipeControl& swipeControl)
+bool SwipeTestHooks::GetIsIdle(const winrt::SwipeControl&  /*swipeControl*/)
 {
     if (swipeControl)
     {
@@ -77,7 +77,7 @@ void SwipeTestHooks::LastInteractedWithSwipeControlChanged(winrt::event_token co
     hooks->m_lastInteractedWithSwipeControlChangedEventSource.remove(token);
 }
 
-void SwipeTestHooks::NotifyOpenedStatusChanged(const winrt::SwipeControl& sender)
+void SwipeTestHooks::NotifyOpenedStatusChanged(const winrt::SwipeControl&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_openedStatusChangedEventSource)
@@ -86,7 +86,7 @@ void SwipeTestHooks::NotifyOpenedStatusChanged(const winrt::SwipeControl& sender
     }
 }
 
-winrt::event_token SwipeTestHooks::OpenedStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value)
+winrt::event_token SwipeTestHooks::OpenedStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_openedStatusChangedEventSource.add(value);
@@ -98,7 +98,7 @@ void SwipeTestHooks::OpenedStatusChanged(winrt::event_token const& token)
     hooks->m_openedStatusChangedEventSource.remove(token);
 }
 
-void SwipeTestHooks::NotifyIdleStatusChanged(const winrt::SwipeControl& sender)
+void SwipeTestHooks::NotifyIdleStatusChanged(const winrt::SwipeControl&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_idleStatusChangedEventSource)
@@ -107,7 +107,7 @@ void SwipeTestHooks::NotifyIdleStatusChanged(const winrt::SwipeControl& sender)
     }
 }
 
-winrt::event_token SwipeTestHooks::IdleStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable> const& value)
+winrt::event_token SwipeTestHooks::IdleStatusChanged(winrt::TypedEventHandler<winrt::SwipeControl, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_idleStatusChangedEventSource.add(value);

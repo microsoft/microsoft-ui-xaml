@@ -1,8 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
 #include <common.h>
+#include <pch.h>
 
 #include "LifetimeHandler.h"
 
@@ -16,7 +16,7 @@ LifetimeHandler::~LifetimeHandler()
 
 LifetimeHandler& LifetimeHandler::Instance()
 {
-    if (!s_tlsInstanceNoRef)
+    if (s_tlsInstanceNoRef == nullptr)
     {
         bool managedByCoreApplicationView = false;
         com_ptr<LifetimeHandler> strongInstance = winrt::make_self<LifetimeHandler>();

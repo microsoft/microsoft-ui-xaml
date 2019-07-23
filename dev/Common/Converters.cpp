@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "Converters.h"
+#include <common.h>
+#include <pch.h>
 
 CppWinRTActivatableClassWithBasicFactory(CornerRadiusFilterConverter)
 
@@ -39,9 +39,9 @@ winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius con
 
 winrt::IInspectable CornerRadiusFilterConverter::Convert(
     winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
+    winrt::TypeName const&  /*targetType*/,
     winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::hstring const&  /*language*/)
 {
     auto radius = unbox_value<winrt::CornerRadius>(value);
     auto filter = unbox_value<winrt::hstring>(parameter);
@@ -71,10 +71,10 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
 }
 
 winrt::IInspectable CornerRadiusFilterConverter::ConvertBack(
-    winrt::IInspectable const& value,
-    winrt::TypeName const& targetType,
-    winrt::IInspectable const& parameter,
-    winrt::hstring const& language)
+    winrt::IInspectable const&  /*value*/,
+    winrt::TypeName const&  /*targetType*/,
+    winrt::IInspectable const&  /*parameter*/,
+    winrt::hstring const&  /*language*/)
 {
     winrt::throw_hresult(E_NOTIMPL);
 }

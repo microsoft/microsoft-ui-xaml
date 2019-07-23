@@ -3,51 +3,51 @@
 
 #pragma once
 
-#include <winrt\base.h>
-#include <winrt\Windows.Foundation.h>
-#include <winrt\Windows.Foundation.Collections.h>
-#include <winrt\Windows.Foundation.Metadata.h>
+#include <winrt\Microsoft.UI.Private.Controls.h>
 #include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Contacts.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
 #include <winrt\Windows.ApplicationModel.DataTransfer.h>
-#include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
+#include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.Devices.Input.h>
+#include <winrt\Windows.Foundation.Collections.h>
+#include <winrt\Windows.Foundation.Metadata.h>
+#include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Globalization.NumberFormatting.h>
-#include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Graphics.Display.h>
 #include <winrt\Windows.Graphics.Effects.h>
+#include <winrt\Windows.Graphics.Imaging.h>
 #include <winrt\Windows.Storage.Streams.h>
 #include <winrt\Windows.System.Power.h>
 #include <winrt\Windows.System.Profile.h>
-#include <winrt\Windows.System.h>
 #include <winrt\Windows.System.Threading.h>
-#include <winrt\Windows.UI.h>
-#include <winrt\Windows.UI.Composition.h>
+#include <winrt\Windows.System.h>
 #include <winrt\Windows.UI.Composition.Effects.h>
 #include <winrt\Windows.UI.Composition.Interactions.h>
+#include <winrt\Windows.UI.Composition.h>
 #include <winrt\Windows.UI.Core.h>
 #include <winrt\Windows.UI.Input.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
 #include <winrt\Windows.UI.WindowManagement.h>
-#include <winrt\Windows.UI.Xaml.h>
 #include <winrt\Windows.UI.Xaml.Automation.Peers.h>
 #include <winrt\Windows.UI.Xaml.Automation.Provider.h>
-#include <winrt\Windows.UI.Xaml.Controls.h>
 #include <winrt\Windows.UI.Xaml.Controls.Primitives.h>
+#include <winrt\Windows.UI.Xaml.Controls.h>
 #include <winrt\Windows.UI.Xaml.Data.h>
 #include <winrt\Windows.UI.Xaml.Documents.h>
 #include <winrt\Windows.UI.Xaml.Hosting.h>
 #include <winrt\Windows.UI.Xaml.Input.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
 #include <winrt\Windows.UI.Xaml.Markup.h>
-#include <winrt\Windows.UI.Xaml.Media.h>
 #include <winrt\Windows.UI.Xaml.Media.Animation.h>
 #include <winrt\Windows.UI.Xaml.Media.Imaging.h>
+#include <winrt\Windows.UI.Xaml.Media.h>
 #include <winrt\Windows.UI.Xaml.Shapes.h>
-#include <winrt\Microsoft.UI.Private.Controls.h>
+#include <winrt\Windows.UI.Xaml.h>
+#include <winrt\Windows.UI.h>
+#include <winrt\base.h>
 #if __has_include("winrt\Microsoft.UI.Private.Media.h")
 #include <winrt\Microsoft.UI.Private.Media.h>
 #endif
@@ -147,7 +147,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::implementation;
-    }
+    } // namespace implementation
 
     namespace Microsoft::UI::Private::Controls::factory_implementation {}
     namespace Microsoft::UI::Private::Media::factory_implementation {}
@@ -165,7 +165,7 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
-    }
+    } // namespace factory_implementation
 #else
     using namespace ::winrt::Windows::UI::Xaml::Controls;
     using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives;
@@ -399,4 +399,4 @@ namespace winrt
     using ElementFactoryRecycleArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs;
     using IElementFactory = winrt::IInspectable;
 #endif
-}
+} // namespace winrt

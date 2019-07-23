@@ -13,7 +13,7 @@ public:
 #pragma region ILayout
     // For debugging purposes only.
     winrt::hstring LayoutId();
-    void LayoutId(winrt::hstring const& state);
+    void LayoutId(winrt::hstring const& value);
 
     void InitializeForContext(winrt::LayoutContext const& context);
     void UninitializeForContext(winrt::LayoutContext const& context);
@@ -38,7 +38,7 @@ private:
      event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_measureInvalidatedEventSource{ };
      event<winrt::TypedEventHandler<winrt::Layout, winrt::IInspectable>> m_arrangeInvalidatedEventSource { };
 
-     // TODO: This is for debugging purposes only. It should be removed when 
+     // TODO(ranjeshj): This is for debugging purposes only. It should be removed when 
      // the Layout.LayoutId API is removed.
      winrt::hstring m_layoutId;
 };

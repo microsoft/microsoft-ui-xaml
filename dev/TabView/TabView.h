@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "pch.h"
 #include "common.h"
+#include "pch.h"
 
 #include "TabView.g.h"
 #include "TabView.properties.h"
@@ -14,7 +14,7 @@ class TabViewTabClosingEventArgs :
     public winrt::implementation::TabViewTabClosingEventArgsT<TabViewTabClosingEventArgs>
 {
 public:
-    TabViewTabClosingEventArgs(winrt::IInspectable const& item) { m_item = item; }
+    explicit TabViewTabClosingEventArgs(winrt::IInspectable const& item) { m_item = item; }
 
     bool Cancel() { return m_cancel; }
     void Cancel(bool value) { m_cancel = value; }

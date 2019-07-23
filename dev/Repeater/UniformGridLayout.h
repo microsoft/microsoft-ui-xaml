@@ -3,12 +3,12 @@
 
 #pragma once
 
-#include "VirtualizingLayout.h"
-#include "UniformGridLayout.g.h"
-#include "UniformGridLayout.properties.h"
 #include "IFlowLayoutAlgorithmDelegates.h"
 #include "OrientationBasedMeasures.h"
+#include "UniformGridLayout.g.h"
+#include "UniformGridLayout.properties.h"
 #include "UniformGridLayoutState.h"
+#include "VirtualizingLayout.h"
 
 class UniformGridLayout :
     public ReferenceTracker<UniformGridLayout, winrt::implementation::UniformGridLayoutT, VirtualizingLayout>,

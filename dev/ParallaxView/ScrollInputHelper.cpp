@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ScrollInputHelper.h"
 #include "Scroller.h"
+#include "common.h"
 
 PCWSTR ScrollInputHelper::s_horizontalOffsetPropertyName = L"TranslationX";
 PCWSTR ScrollInputHelper::s_verticalOffsetPropertyName = L"TranslationY";
@@ -12,7 +12,7 @@ PCWSTR ScrollInputHelper::s_scalePropertyName = L"Scale";
 
 ScrollInputHelper::ScrollInputHelper(
     const ITrackerHandleManager* owner,
-    std::function<void(bool, bool)> infoChangedFunction)
+    std::function<void(bool, bool)>  /*infoChangedFunction*/)
     :m_owner(owner)
 {
     m_infoChangedFunction = infoChangedFunction;
@@ -151,7 +151,7 @@ void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewe
     }
 }
 
-void ScrollInputHelper::SetScroller(const winrt::Scroller& scroller)
+void ScrollInputHelper::SetScroller(const winrt::Scroller&  /*scroller*/)
 {
     if (scroller != m_scroller.get())
     {
@@ -194,7 +194,7 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
 // Returns the inner ScrollViewer or Scroller if any.
 void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     const winrt::DependencyObject& rootElement,
-    _Out_ winrt::Scroller* scroller,
+    _Out_ winrt::Scroller*  /*scroller*/,
     _Out_ winrt::FxScrollViewer* scrollViewer)
 {
     *scroller = nullptr;
@@ -264,10 +264,10 @@ winrt::HorizontalAlignment ScrollInputHelper::GetEffectiveHorizontalAlignment() 
     {
         return m_manipulationHorizontalAlignment;
     }
-    else
-    {
+    
+    
         return ComputeHorizontalContentAlignment();
-    }
+    
 }
 
 // Returns the effective vertical alignment of the ScrollViewer content.
@@ -277,10 +277,10 @@ winrt::VerticalAlignment ScrollInputHelper::GetEffectiveVerticalAlignment() cons
     {
         return m_manipulationVerticalAlignment;
     }
-    else
-    {
+    
+    
         return ComputeVerticalContentAlignment();
-    }
+    
 }
 
 // Returns the effective zoom mode of the ScrollViewer.
@@ -290,10 +290,10 @@ winrt::FxZoomMode ScrollInputHelper::GetEffectiveZoomMode() const
     {
         return m_manipulationZoomMode;
     }
-    else
-    {
+    
+    
         return ComputeZoomMode();
-    }
+    
 }
 
 // Updates the m_outOfBoundsPanSize field based on the viewport size and zoom mode.
@@ -324,14 +324,14 @@ void ScrollInputHelper::UpdateOutOfBoundsPanSize()
     }
     else
     {
-        m_outOfBoundsPanSize.Width = m_outOfBoundsPanSize.Height = 0.0f;
+        m_outOfBoundsPanSize.Width = m_outOfBoundsPanSize.Height = 0.0F;
     }
 }
 
 // Updates the m_contentSize field.
 void ScrollInputHelper::UpdateContentSize()
 {
-    m_contentSize.Width = m_contentSize.Height = 0.0f;
+    m_contentSize.Width = m_contentSize.Height = 0.0F;
     auto scroller = m_scroller.get();
 
     if (!scroller && !m_scrollViewer)
@@ -511,7 +511,7 @@ void ScrollInputHelper::UpdateViewportSize()
     }
     else
     {
-        m_viewportSize.Width = m_viewportSize.Height = 0.0f;
+        m_viewportSize.Width = m_viewportSize.Height = 0.0F;
     }
 }
 

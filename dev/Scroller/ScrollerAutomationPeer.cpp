@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
-#include "ScrollerAutomationPeer.h"
 #include "ResourceAccessor.h"
+#include "ScrollerAutomationPeer.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
@@ -16,7 +16,7 @@ double ScrollerAutomationPeer::s_noScroll{ -1.0 };
 
 CppWinRTActivatableClassWithBasicFactory(ScrollerAutomationPeer);
 
-ScrollerAutomationPeer::ScrollerAutomationPeer(winrt::Scroller const& owner)
+ScrollerAutomationPeer::ScrollerAutomationPeer(winrt::Scroller  /*unused*/const& owner)
     : ReferenceTracker(owner)
 {
     SCROLLER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);

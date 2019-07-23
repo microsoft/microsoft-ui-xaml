@@ -14,7 +14,7 @@ public:
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollerAnchorRequestedEventArgs(const winrt::Scroller& scroller);
+    explicit ScrollerAnchorRequestedEventArgs(const winrt::Scroller& scroller);
 
 #pragma region IScrollerAnchorRequestedEventArgs
     winrt::IVector<winrt::UIElement> AnchorCandidates();

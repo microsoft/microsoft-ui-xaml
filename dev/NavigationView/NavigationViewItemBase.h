@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.g.h"
 
 class NavigationViewItemBase :
     public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
@@ -30,12 +30,12 @@ public:
     }
 
     // IControlOverrides overrides
-    virtual void OnGotFocus(winrt::RoutedEventArgs const& e)
+    virtual void OnGotFocus(winrt::RoutedEventArgs const&  /*e*/)
     {
         __super::OnGotFocus(e);
     }
 
-    virtual void OnLostFocus(winrt::RoutedEventArgs const& e)
+    virtual void OnLostFocus(winrt::RoutedEventArgs const&  /*e*/)
     {
         __super::OnLostFocus(e);
     }

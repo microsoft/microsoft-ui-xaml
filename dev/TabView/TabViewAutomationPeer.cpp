@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "ResourceAccessor.h"
 #include "TabView.h"
 #include "TabViewAutomationPeer.h"
 #include "Utils.h"
+#include "common.h"
 
-TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner)
+TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView  /*unused*/const& owner)
     : ReferenceTracker(owner)
 {
 }

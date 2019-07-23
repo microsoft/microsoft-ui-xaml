@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
-#include "ItemsRepeater.common.h"
 #include "AnimationManager.h"
+#include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
+#include <common.h>
+#include <pch.h>
 
 AnimationManager::AnimationManager(ItemsRepeater* owner) :
     m_owner(owner),
@@ -14,7 +14,7 @@ AnimationManager::AnimationManager(ItemsRepeater* owner) :
     // ItemsRepeater is not fully constructed yet. Don't interact with it.
 }
 
-void AnimationManager::OnAnimatorChanged(const winrt::ElementAnimator& newAnimator)
+void AnimationManager::OnAnimatorChanged(const winrt::ElementAnimator&  /*newAnimator*/)
 {
     // While an element is hiding, we have ownership of it. We need
     // to know when its animation completes so that we give it back
@@ -38,7 +38,7 @@ void AnimationManager::OnLayoutChanging()
     m_hasRecordedLayoutTransitions = true;
 }
 
-void AnimationManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
+void AnimationManager::OnItemsSourceChanged(const winrt::IInspectable& /*unused*/, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     switch (args.Action())
     {

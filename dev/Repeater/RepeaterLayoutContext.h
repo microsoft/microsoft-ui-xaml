@@ -9,7 +9,7 @@ class RepeaterLayoutContext :
     public winrt::implements<RepeaterLayoutContext, VirtualizingLayoutContext>
 {
 public:
-    RepeaterLayoutContext(const winrt::ItemsRepeater& owner);
+    explicit RepeaterLayoutContext(const winrt::ItemsRepeater& owner);
 
     // Explicitly implement GetRuntimeClassName because winrt::implements chooses the first interface
     // as our name and we want the concrete VirtualizingLayoutContext as our name.
@@ -21,7 +21,7 @@ public:
 #pragma region ILayoutContextOverrides
 
     winrt::IInspectable LayoutStateCore();
-    void LayoutStateCore(winrt::IInspectable const& state);
+    void LayoutStateCore(winrt::IInspectable const& value);
 
 #pragma endregion
 
@@ -47,5 +47,5 @@ private:
 
     // We hold a weak reference to prevent a leaking reference
     // cycle between the ItemsRepeater and its layout.
-    winrt::weak_ref<winrt::ItemsRepeater> m_owner;
+    winrt::weak_ref<winrt::ItemsRepeater> m_owner{};
 };

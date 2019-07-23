@@ -95,7 +95,7 @@ class event_source :
     public ReferenceTrackerStorageHelper<event_source<T>, T>
 {
 public:
-    event_source(ITrackerHandleManager* owner)
+    explicit event_source(ITrackerHandleManager* owner)
         : ReferenceTrackerContainerBase{ owner }
     {
     }

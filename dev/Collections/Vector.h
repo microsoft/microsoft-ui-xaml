@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "VectorIterator.h"
 #include "VectorChangedEventArgs.h"
+#include "VectorIterator.h"
 #include <algorithm>
 
 // Nearly all Vector need to set DependencyObjectBase flag 
@@ -33,10 +33,10 @@ constexpr int MakeVectorParam()
 
 template <int flag> struct VectorFlagHelper
 {
-    static constexpr bool isObservable = !!(flag & static_cast<int>(VectorFlag::Observable));
-    static constexpr bool isDependencyObjectBase = !!(flag & static_cast<int>(VectorFlag::DependencyObjectBase));
-    static constexpr bool isBindable = !!(flag & static_cast<int>(VectorFlag::Bindable));
-    static constexpr bool isNoTrackerRef = !!(flag & static_cast<int>(VectorFlag::NoTrackerRef));
+    static constexpr bool isObservable = !((flag & static_cast<int>(VectorFlag::Observable)) == 0);
+    static constexpr bool isDependencyObjectBase = !((flag & static_cast<int>(VectorFlag::DependencyObjectBase)) == 0);
+    static constexpr bool isBindable = !((flag & static_cast<int>(VectorFlag::Bindable)) == 0);
+    static constexpr bool isNoTrackerRef = !((flag & static_cast<int>(VectorFlag::NoTrackerRef)) == 0);
 };
 
 // TStorageWrapperImpl is used to do the data conversion from T <-> T_Storage
@@ -55,7 +55,7 @@ template <typename T, bool isNoTrackerRef> struct TStorageWrapperImpl
         return holder;
     }
 
-    static T unwrap(const Holder& holder, bool useSafeGet = false)
+    static T unwrap(const Holder& holder, bool useSafeGet)
     {
         return holder.safe_get(useSafeGet);
     }
@@ -69,7 +69,7 @@ template <typename T> struct TStorageWrapperImpl<T, true>
         return value;
     }
 
-    static T unwrap(const Holder& holder, bool useSafeGet = false)
+    static T unwrap(const Holder& holder, bool useSafeGet)
     {
         return holder;
     }
@@ -80,7 +80,7 @@ template <typename T> struct TStorageWrapperImpl<T, true>
 template <class T, bool isObservable, bool isBindable>
 struct ObservableTraits
 {
-    typedef struct Dummy { Dummy(ITrackerHandleManager*) {} } EventSource;
+    typedef struct Dummy { explicit Dummy(ITrackerHandleManager* /*unused*/) {} } EventSource;
     using EventHandler = typename std::conditional<isBindable,
         winrt::BindableVectorChangedEventHandler,
         winrt::VectorChangedEventHandler<T>
@@ -162,7 +162,7 @@ private:
     }
 
 public:
-    VectorInnerImpl(ITrackerHandleManager* trackerHandleManager)
+    explicit VectorInnerImpl(ITrackerHandleManager* trackerHandleManager)
     {
         m_trackerHandleManager = trackerHandleManager;
     }
@@ -297,7 +297,7 @@ protected:
     {
         return Wrapper::wrap(value, GetTrackerHandlerManager());
     }
-    inline typename T_type unwrap(T_Storage& hold, bool useSafeGet = false)
+    inline typename T_type unwrap(T_Storage& hold, bool useSafeGet)
     {
         return Wrapper::unwrap(hold, useSafeGet);
     }
@@ -320,7 +320,7 @@ private:
     using EventToken = typename VectorOptions::EventToken;
 
 public:
-    ObservableVectorInnerImpl(IVectorOwner<EventSource, T_type>* pIVectorExternal) :
+    explicit ObservableVectorInnerImpl(IVectorOwner<EventSource, T_type>* pIVectorExternal) :
         VectorInnerImpl<VectorOptions, Wrapper>(pIVectorExternal->GetExternalTrackerHandleManager()),
         m_pIVectorExternal(pIVectorExternal)
     {
@@ -577,7 +577,7 @@ public:
     {
     }
 
-    VectorBase(uint32_t capacity) : VectorBase()
+    explicit VectorBase(uint32_t capacity) : VectorBase()
     {
         GetVectorInnerImpl()->reserve(capacity);
     }
@@ -601,7 +601,7 @@ class Vector :
 {
 public:
     Vector() {}
-    Vector(uint32_t capacity) : VectorBase(capacity) {}
+    explicit Vector(uint32_t capacity) : VectorBase(capacity) {}
 
     // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to provide multiple datasource for controls.
     // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. 
@@ -616,7 +616,7 @@ public:
     //                      SplitDataSource calls A.IndexOf (C# provided it)
     //                      SpiltDataSource help to convert the indexInRawData to indexInC
     //                  return index in C    
-    Vector(std::function<int(typename T const& value)> indexOfFunction) : m_indexOfFunction(indexOfFunction)
+    explicit Vector(std::function<int(typename T const& value)> indexOfFunction) : m_indexOfFunction(indexOfFunction)
     {
         if (m_indexOfFunction)
         {

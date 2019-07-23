@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "TreeViewItemTemplateSettings.h"
-#include "TreeView.h"
-#include "TreeViewNode.h"
 #include "DispatcherHelper.h"
+#include "TreeView.h"
+#include "TreeViewItemTemplateSettings.h"
+#include "TreeViewNode.h"
 
 #include "TreeViewItem.g.h"
 #include "TreeViewItem.properties.h"
@@ -73,7 +73,7 @@ private:
     void OnExpandCollapseChevronPointerPressed(
         const winrt::IInspectable& /*sender*/,
         const winrt::PointerRoutedEventArgs& args);
-    void RecycleEvents(bool useSafeGet = false);
+    void RecycleEvents(bool useSafeGet);
     winrt::TreeViewNode TreeNode();
     void UpdateNodeIsExpandedAsync(winrt::TreeViewNode const& node, bool isExpanded);
     bool IsInContentMode();

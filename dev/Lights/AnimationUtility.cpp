@@ -2,8 +2,8 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "AnimationUtility.h"
+#include "common.h"
 
 void SetValueDirect(const winrt::CompositionPropertySet& target, std::wstring_view const& propName, const float value)
 {

@@ -14,7 +14,7 @@ namespace winrt
     {
         return hstring(winrt::name_of<T>());
     }
-}
+} // namespace winrt
 
 inline winrt::IInspectable& to_winrt(::IInspectable*& instance)
 {
@@ -27,7 +27,7 @@ inline winrt::DependencyProperty InitializeDependencyProperty(
     _In_ wstring_view const& ownerTypeNameString,
     bool isAttached,
     _In_opt_ const winrt::IInspectable& defaultValue,
-    _In_opt_ const winrt::PropertyChangedCallback& propertyChangedCallback = nullptr)
+    _In_opt_ const winrt::PropertyChangedCallback& propertyChangedCallback)
 {
     auto propertyType = winrt::Interop::TypeName();
     propertyType.Name = propertyTypeNameString;
@@ -43,10 +43,10 @@ inline winrt::DependencyProperty InitializeDependencyProperty(
     {
         return winrt::DependencyProperty::RegisterAttached(propertyNameString, propertyType, ownerType, propertyMetadata);
     }
-    else
-    {
+    
+    
         return winrt::DependencyProperty::Register(propertyNameString, propertyType, ownerType, propertyMetadata);
-    }
+    
 }
 
 // Helper to provide default values and boxing without differences at the call sites
@@ -321,7 +321,7 @@ struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls
 {
     using class_type = typename T;
 
-    operator class_type() const noexcept
+    explicit operator class_type() const noexcept
     {
         return static_cast<winrt::IInspectable>(*this).as<class_type>();
     }
@@ -340,7 +340,7 @@ struct Awaitable
 {
     Awaitable()
     {
-        m_signal.attach(::CreateEvent(nullptr, true, false, nullptr));
+        m_signal.attach(::CreateEvent(nullptr, 1, 0, nullptr));
     }
 
     // Awaitable contract.
@@ -372,7 +372,7 @@ protected:
     }
 
 private:
-    static void __stdcall CoroutineCompletedCallback(PTP_CALLBACK_INSTANCE, void* context, PTP_WAIT, TP_WAIT_RESULT) noexcept
+    static void __stdcall CoroutineCompletedCallback(PTP_CALLBACK_INSTANCE /*unused*/, void*  /*context*/, PTP_WAIT /*unused*/, TP_WAIT_RESULT /*unused*/) noexcept
     {
         // Resumes anyone waiting on the awaitable.
         std::experimental::coroutine_handle<>::from_address(context)();

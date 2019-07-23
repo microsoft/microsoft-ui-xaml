@@ -12,6 +12,6 @@ public:
     [[nodiscard]] int DurationInMilliSeconds() const;
 
 private:
-    LARGE_INTEGER m_start;
-    LARGE_INTEGER m_frequency;
+    LARGE_INTEGER m_start{};
+    LARGE_INTEGER m_frequency{};
 };

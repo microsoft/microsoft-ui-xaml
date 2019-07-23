@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
 #include "ScrollControllerScrollByRequestedEventArgs.h"
+#include "ScrollerTypeLogging.h"
+#include "TypeLogging.h"
+#include "common.h"
 
 CppWinRTActivatableClassWithBasicFactory(ScrollControllerScrollByRequestedEventArgs);
 
 ScrollControllerScrollByRequestedEventArgs::ScrollControllerScrollByRequestedEventArgs(
     double offsetDelta,
-    winrt::ScrollOptions const & options)
+    winrt::ScrollOptions  /*unused*/const & options)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offsetDelta);
@@ -35,7 +35,7 @@ winrt::ScrollInfo ScrollControllerScrollByRequestedEventArgs::Info() const
     return m_info;
 }
 
-void ScrollControllerScrollByRequestedEventArgs::Info(winrt::ScrollInfo info)
+void ScrollControllerScrollByRequestedEventArgs::Info(winrt::ScrollInfo  /*info*/)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 

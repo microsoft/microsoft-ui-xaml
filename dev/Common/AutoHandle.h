@@ -5,7 +5,7 @@
 
 // Macros to make it easier to declare / instantiate instances of the template class for specific handle data type
 #define DECLARE_AUTOHANDLE_CLASS(className, handlePolicy) \
-    typedef MUXControls::Common::AutoHandle<handlePolicy> className; \
+    typedef MUXControls::Common::AutoHandle<handlePolicy> (className); \
 
 namespace MUXControls { namespace Common {
 
@@ -31,7 +31,7 @@ namespace MUXControls { namespace Common {
             return &m_handle;
         }
 
-        operator THandleType() const;
+        explicit operator THandleType() const;
 
         void Attach(THandleType handle);
 
@@ -44,7 +44,7 @@ namespace MUXControls { namespace Common {
 
         void Release();
 
-        bool IsValid() const;
+        [[nodiscard]] bool IsValid() const;
 
     private:
         AutoHandle(const AutoHandle&); // not implemented
@@ -149,7 +149,7 @@ namespace MUXControls { namespace Common {
 
         static bool IsValid(const HANDLE& handle)
         {
-            return (INVALID_HANDLE_VALUE != handle) && handle;
+            return (INVALID_HANDLE_VALUE != handle) && (handle != nullptr);
         }
 
         static HANDLE Invalidate(HANDLE& handle)
@@ -162,4 +162,5 @@ namespace MUXControls { namespace Common {
     // Declare most used AutoHandles
     DECLARE_AUTOHANDLE_CLASS(Handle, HandlePolicy);
 
-} } // namespace MUXControls::Common
+} // namespace Common
+ } // namespace MUXControls

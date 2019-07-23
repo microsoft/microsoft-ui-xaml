@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "Scroller.h"
 #include "ScrollOptions.g.h"
+#include "Scroller.h"
 
 class ScrollOptions :
     public winrt::implementation::ScrollOptionsT<ScrollOptions>
 {
 public:
-    ScrollOptions(winrt::AnimationMode const& animationMode);
-    ScrollOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
+    explicit ScrollOptions(winrt::AnimationMode const& animationMode);
+    explicit ScrollOptions(winrt::AnimationMode const& animationMode, winrt::SnapPointsMode const& snapPointsMode);
 
     ~ScrollOptions()
     {

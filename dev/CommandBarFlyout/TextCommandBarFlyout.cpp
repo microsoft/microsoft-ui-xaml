@@ -2,11 +2,11 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "TextCommandBarFlyout.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
+#include "TextCommandBarFlyout.h"
+#include "common.h"
 
 TextCommandBarFlyout::TextCommandBarFlyout()
 {
@@ -90,7 +90,7 @@ void TextCommandBarFlyout::InitializeButtonWithProperties(
         {
             winrt::hstring acceleratorKeyString{ ResourceAccessor::GetLocalizedStringResource(acceleratorKeyResourceId) };
 
-            if (acceleratorKeyString.size() > 0)
+            if (!acceleratorKeyString.empty())
             {
                 WCHAR acceleratorKeyChar = acceleratorKeyString[0];
                 winrt::VirtualKey acceleratorKey = SharedHelpers::GetVirtualKeyFromChar(acceleratorKeyChar);
@@ -483,10 +483,10 @@ TextControlButtons TextCommandBarFlyout::GetRichEditBoxButtonsToAdd(winrt::RichE
 
     if (document)
     {
-        winrt::hstring text;
+        winrt::hstring text{};
         document.GetText(winrt::TextGetOptions::None, text);
 
-        if (text.size() > 0)
+        if (!text.empty())
         {
             buttonsToAdd |= TextControlButtons::SelectAll;
         }

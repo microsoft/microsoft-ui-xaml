@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "ResourceAccessor.h"
 #include "RatingControlAutomationPeer.h"
+#include "ResourceAccessor.h"
 #include "Utils.h"
+#include "common.h"
 
 RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner)
     : ReferenceTracker(owner)
@@ -26,9 +26,9 @@ bool RatingControlAutomationPeer::IsReadOnly()
 hstring RatingControlAutomationPeer::IValueProvider_Value()
 {
     double ratingValue = GetRatingControl().Value();
-    winrt::hstring valueString;
+    winrt::hstring valueString{};
 
-    winrt::hstring ratingString;
+    winrt::hstring ratingString{};
 
     if (ratingValue == -1)
     {
@@ -89,10 +89,10 @@ double RatingControlAutomationPeer::Value()
     {
         return 0;
     }
-    else
-    {
+    
+    
         return value;
-    }
+    
 }
 
 void RatingControlAutomationPeer::SetValue(double value)
@@ -149,7 +149,7 @@ winrt::RatingControl RatingControlAutomationPeer::GetRatingControl()
 int RatingControlAutomationPeer::DetermineFractionDigits(double value)
 {
     value = value * 100;
-    int intValue = (int)value;
+    int intValue = static_cast<int>(value);
 
     // When reading out the Value_Value, we want clients to read out the least number of digits
     // possible. We don't want a 3 (represented as a double) to be read out as 3.00...
@@ -160,7 +160,7 @@ int RatingControlAutomationPeer::DetermineFractionDigits(double value)
     {
         return 0;   
     }
-    else if (intValue % 10 == 0)
+    if (intValue % 10 == 0)
     {
         return 1;
     }
@@ -172,7 +172,7 @@ int RatingControlAutomationPeer::DetermineFractionDigits(double value)
 
 int RatingControlAutomationPeer::DetermineSignificantDigits(double value, int fractionDigits)
 {
-    int sigFigsInt = (int)value;
+    int sigFigsInt = static_cast<int>(value);
     int length = 0;
 
     while (sigFigsInt > 0)

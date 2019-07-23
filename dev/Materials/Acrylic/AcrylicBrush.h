@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "MaterialHelper.h"
 #include "AcrylicTestApi.h"
+#include "MaterialHelper.h"
 
 #include "AcrylicBrush.g.h"
 #include "AcrylicBrush.properties.h"
@@ -65,23 +65,23 @@ public:
         winrt::Color luminosityColor,
         winrt::Color fallbackColor,
         bool shouldBrushBeOpaque,
-        bool useCache = false);
+        bool useCache);
 
     void CoerceToZeroOneRange(double& value);
     void CoerceToZeroOneRange_Nullable(winrt::IReference<double>& value);
 
 protected: // AcrylicTestApi needs CreateAcrylicBrush be public or protected
-    void CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateAcrylicBrush = false);
+    void CreateAcrylicBrush(bool useCrossFadeEffect, bool forceCreateAcrylicBrush);
 
 private:
     static constexpr auto TintColorColor{ L"TintColor.Color"sv };
     static constexpr auto LuminosityColorColor{ L"LuminosityColor.Color"sv };
     static constexpr auto FallbackColorColor{ L"FallbackColor.Color"sv };
 
-    static constexpr float sc_blurRadius = 30.0f;
-    static constexpr float sc_noiseOpacity = 0.02f;
+    static constexpr float sc_blurRadius = 30.0F;
+    static constexpr float sc_noiseOpacity = 0.02F;
     static constexpr winrt::Color sc_exclusionColor{ 26, 255, 255, 255 };
-    static constexpr float sc_saturation = 1.25f;
+    static constexpr float sc_saturation = 1.25F;
 
     static winrt::IGraphicsEffect CombineNoiseWithTintEffect_Legacy(
         const winrt::IGraphicsEffectSource& blurredSource,
@@ -90,7 +90,7 @@ private:
     static winrt::IGraphicsEffect CombineNoiseWithTintEffect_Luminosity(
         const winrt::IGraphicsEffectSource& blurredSource,
         const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect,
-        const winrt::Color initialLuminosityColor,
+        winrt::Color initialLuminosityColor,
         std::vector<winrt::hstring>& animatedProperties);
 
     static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor &compositor,

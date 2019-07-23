@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RevealHoverLight.h"
 #include "IsTargetDPHelper.h"
+#include "RevealHoverLight.h"
 #include "SpotLightStateHelper.h"
+#include "common.h"
 
 #pragma warning(push)
 #pragma warning(disable: 6101)  // Returning uninitialized memory '<value>'.  A successful path through the function does not set the named _Out_ parameter.
@@ -14,9 +14,9 @@
 
 CppWinRTActivatableClassWithBasicFactory(RevealHoverLight)
 
-static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.f, 0.f },{ 0.f, 0.f } };
-static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5f, 0.f } ,{ 0.6f, 1.f } };
-static constexpr EasingInfo c_CubicEasingRelease = EasingInfo{ EasingTypes::CubicBezier,{ 0.33f, 0.f },{ 0.67f, 1.f } };
+static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.F, 0.F },{ 0.F, 0.F } };
+static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5F, 0.F } ,{ 0.6F, 1.F } };
+static constexpr EasingInfo c_CubicEasingRelease = EasingInfo{ EasingTypes::CubicBezier,{ 0.33F, 0.F },{ 0.67F, 1.F } };
 static constexpr winrt::TimeSpan c_HalfDuration = 166ms;
 
 // Due to "Bug 14047529: Flash when moving mouse over NavigationView items due to reveal backplate"
@@ -137,15 +137,15 @@ static constexpr std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightS
 std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> RevealHoverLight::s_revealHoverSpotlightStates = sc_revealHoverSpotlightStates;
 std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> RevealHoverLight::s_pressSpotLightStates = sc_pressSpotLightStates;
 
-float RevealHoverLight::s_lightMinSize{ 16.0f };
-float RevealHoverLight::s_lightMaxSize{ 512.0f };
-float RevealHoverLight::s_sizeAdjustment{ 12.0f };
-float RevealHoverLight::s_pressOuterSize{ 47.25f };
-float RevealHoverLight::s_innerConeAngleInDegrees{ 0.f };
-float RevealHoverLight::s_outerConeAngleInDegrees{ 0.f };
-float RevealHoverLight::s_spotlightHeight{ 256.f };
-float RevealHoverLight::s_constantAttenuation{ 2.f };
-float RevealHoverLight::s_linearAttenuation{ 0.5f };
+float RevealHoverLight::s_lightMinSize{ 16.0F };
+float RevealHoverLight::s_lightMaxSize{ 512.0F };
+float RevealHoverLight::s_sizeAdjustment{ 12.0F };
+float RevealHoverLight::s_pressOuterSize{ 47.25F };
+float RevealHoverLight::s_innerConeAngleInDegrees{ 0.F };
+float RevealHoverLight::s_outerConeAngleInDegrees{ 0.F };
+float RevealHoverLight::s_spotlightHeight{ 256.F };
+float RevealHoverLight::s_constantAttenuation{ 2.F };
+float RevealHoverLight::s_linearAttenuation{ 0.5F };
 static constexpr auto c_PointerOffsetExpression = L"pointer.Position + Vector3(0, 0, props.SpotlightHeight)";
 static constexpr auto c_CenteredOffsetExpression = L"Vector3((visual.Size.X / 2), (visual.Size.Y / 2), props.SpotlightHeight)";
 static constexpr auto c_OuterAngleExpression = L"ATan((Clamp(Max(visual.Size.X, visual.Size.Y) + props.SizeAdjustment, props.MinSize, props.MaxSize) * props.OuterAngleScale) / props.SpotlightHeight)";

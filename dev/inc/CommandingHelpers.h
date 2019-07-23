@@ -77,4 +77,4 @@ namespace CommandingHelpers
         winrt::XamlUICommand const& uiCommand,
         winrt::FrameworkElement const& target,
         winrt::DependencyProperty const& targetProperty);
-};
+}  // namespace CommandingHelpers

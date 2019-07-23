@@ -48,7 +48,7 @@ struct __declspec(novtable) ITrackerHandleManager
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
 #endif
-        return !!m_trackerOwnerInnerNoRef->TryGetSafeTrackerValue(handle, value);
+        return !(m_trackerOwnerInnerNoRef->TryGetSafeTrackerValue(handle, value) == 0U);
     }
     catch (...) { return false; }
 
@@ -279,7 +279,7 @@ public:
     }
 
     template<typename V = T>
-    V safe_get(bool useSafeGet = true) const
+    V safe_get(bool useSafeGet) const
     {
         if (m_valueNoRef == nullptr)
         {
@@ -416,7 +416,7 @@ struct tracker_ref<winrt::hstring, TrackerRefFallback::None, IUnknown*> : public
 class ReferenceTrackerContainerBase
 {
 public:
-    ReferenceTrackerContainerBase(ITrackerHandleManager* owner)
+    explicit ReferenceTrackerContainerBase(ITrackerHandleManager* owner)
         : m_owner{ owner }
     {
 #if _DEBUG

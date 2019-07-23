@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
 #include "ItemsRepeater.common.h"
-#include "RepeaterLayoutContext.h"
 #include "ItemsRepeater.h"
+#include "RepeaterLayoutContext.h"
+#include <common.h>
+#include <pch.h>
 
 RepeaterLayoutContext::RepeaterLayoutContext(const winrt::ItemsRepeater& owner)
 {
@@ -24,7 +24,7 @@ int32_t RepeaterLayoutContext::ItemCountCore()
     return 0;
 }
 
-winrt::UIElement RepeaterLayoutContext::GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options)
+winrt::UIElement RepeaterLayoutContext::GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions  /*unused*/const& options)
 {
     return winrt::get_self<ItemsRepeater>(GetOwner())->GetElementImpl(index, 
         (options & winrt::ElementRealizationOptions::ForceCreate) == winrt::ElementRealizationOptions::ForceCreate,

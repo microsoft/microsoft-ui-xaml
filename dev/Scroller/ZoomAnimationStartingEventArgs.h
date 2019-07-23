@@ -37,7 +37,7 @@ public:
 private:
     winrt::CompositionAnimation m_animation{ nullptr };
     winrt::float2 m_centerPoint{ };
-    float m_startZoomFactor{ 1.0f };
-    float m_endZoomFactor{ 1.0f };
+    float m_startZoomFactor{ 1.0F };
+    float m_endZoomFactor{ 1.0F };
     int32_t m_zoomFactorChangeId{ -1 };
 };

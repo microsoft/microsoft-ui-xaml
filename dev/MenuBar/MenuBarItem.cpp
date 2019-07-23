@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MenuBar.h"
 #include "MenuBarItem.h"
+#include "MenuBarItemAutomationPeer.h"
 #include "MenuBarItemFlyout.h"
 #include "Vector.h"
 #include "VectorIterator.h"
-#include "MenuBarItemAutomationPeer.h"
+#include "common.h"
 
 MenuBarItem::MenuBarItem()
 {   
@@ -100,7 +100,7 @@ void MenuBarItem::AttachEventHandlers()
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &MenuBarItem::OnMenuBarItemAccessKeyInvoked });
 }
 
-void MenuBarItem::DetachEventHandlers(bool useSafeGet)
+void MenuBarItem::DetachEventHandlers(bool  /*useSafeGet*/)
 {
     m_pressedRevoker.revoke();
     m_pointerOverRevoker.revoke();
@@ -122,7 +122,7 @@ void MenuBarItem::DetachEventHandlers(bool useSafeGet)
 }
 
 // Event Handlers
-void MenuBarItem::OnMenuBarItemPointerEntered(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+void MenuBarItem::OnMenuBarItemPointerEntered(winrt::IInspectable const&  /*sender*/, winrt::PointerRoutedEventArgs const&  /*args*/)
 {
     if (auto menuBar = m_menuBar.get())
     {
@@ -134,7 +134,7 @@ void MenuBarItem::OnMenuBarItemPointerEntered(winrt::IInspectable const& sender,
     }
 }
 
-void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const&  /*sender*/, winrt::PointerRoutedEventArgs const&  /*args*/)
 {
     if (auto menuBar = m_menuBar.get())
     {
@@ -146,7 +146,7 @@ void MenuBarItem::OnMenuBarItemPointerPressed(winrt::IInspectable const& sender,
     }
 }
 
-void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const&  /*sender*/, winrt::KeyRoutedEventArgs const& args)
 {
     auto key = args.Key();
     if (key == winrt::VirtualKey::Down
@@ -157,7 +157,7 @@ void MenuBarItem::OnMenuBarItemKeyDown( winrt::IInspectable const& sender, winrt
     }
 }
 
-void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const&  /*sender*/, winrt::KeyRoutedEventArgs const& args)
 {
     auto key = args.Key();
     if (key == winrt::VirtualKey::Right)
@@ -184,7 +184,7 @@ void MenuBarItem::OnPresenterKeyDown( winrt::IInspectable const& sender, winrt::
     }
 }
 
-void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<winrt::MenuFlyoutItemBase> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
+void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<winrt::MenuFlyoutItemBase> const&  /*sender*/, winrt::Collections::IVectorChangedEventArgs const& e)
 {
     if (auto flyout = m_flyout.safe_get())
     {
@@ -203,7 +203,7 @@ void MenuBarItem::OnItemsVectorChanged(winrt::Collections::IObservableVector<win
     }
 }
 
-void MenuBarItem::OnMenuBarItemAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args)
+void MenuBarItem::OnMenuBarItemAccessKeyInvoked(winrt::IInspectable const&  /*sender*/, winrt::AccessKeyInvokedEventArgs const& args)
 {
     ShowMenuFlyout();
     args.Handled(true);
@@ -284,7 +284,7 @@ void MenuBarItem::Invoke()
 }
 
 // Menu Flyout Events
-void MenuBarItem::OnFlyoutClosed( winrt::IInspectable const& sender, winrt::IInspectable const& args)
+void MenuBarItem::OnFlyoutClosed( winrt::IInspectable const&  /*sender*/, winrt::IInspectable const&  /*args*/)
 {
     m_isFlyoutOpen = false;
 
@@ -296,7 +296,7 @@ void MenuBarItem::OnFlyoutClosed( winrt::IInspectable const& sender, winrt::IIns
     UpdateVisualStates();
 }
 
-void MenuBarItem::OnFlyoutOpening( winrt::IInspectable const& sender, winrt::IInspectable const& args)
+void MenuBarItem::OnFlyoutOpening( winrt::IInspectable const&  /*sender*/, winrt::IInspectable const&  /*args*/)
 {
     Focus(winrt::FocusState::Pointer);
 
@@ -310,7 +310,7 @@ void MenuBarItem::OnFlyoutOpening( winrt::IInspectable const& sender, winrt::IIn
     UpdateVisualStates();
 }
 
-void MenuBarItem::OnVisualPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void MenuBarItem::OnVisualPropertyChanged(const winrt::DependencyObject&  /*sender*/, const winrt::DependencyProperty&  /*args*/)
 {
     UpdateVisualStates();
 }

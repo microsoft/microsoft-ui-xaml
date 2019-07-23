@@ -2,12 +2,12 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "MenuBar.h"
+#include "MenuBarAutomationPeer.h"
 #include "MenuBarItem.h"
 #include "Vector.h"
 #include "VectorIterator.h"
-#include "MenuBarAutomationPeer.h"
+#include "common.h"
 
 MenuBar::MenuBar()
 {

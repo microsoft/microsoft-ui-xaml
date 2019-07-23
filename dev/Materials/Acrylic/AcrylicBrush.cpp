@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "AcrylicBrush.h"
 #include "AcrylicBrushFactory.h"
 #include "ColorConversion.h"
 #include "ResourceAccessor.h"
+#include "RuntimeProfiler.h"
 #include "SharedHelpers.h"
 #include "Vector.h"
-#include "RuntimeProfiler.h"
+#include "common.h"
 #if BUILD_WINDOWS
 #include <FeatureStaging-ShellViewManagement.h>
 #endif
@@ -29,7 +29,7 @@ AcrylicBrush::~AcrylicBrush()
         m_islandTransformChangedToken.value = 0;
     }
 #else
-    if (m_noiseChangedToken.value)
+    if (m_noiseChangedToken.value != 0)
     {
         MaterialHelper::NoiseChanged(m_noiseChangedToken);
         m_noiseChangedToken.value = 0;
@@ -151,7 +151,7 @@ void AcrylicBrush::OnConnected()
     m_materialPolicyChangedToken = MaterialHelper::PolicyChanged([this](auto sender, auto args) { OnMaterialPolicyStatusChanged(sender, args); });
 
     // Stay subscribed to NoiseChanged events when brush disconnected so that it gets marked to pick up new noise when (and if) it gets reconnected.
-    if (!m_noiseChangedToken.value)
+    if (m_noiseChangedToken.value == 0)
     {
         m_noiseChangedToken = MaterialHelper::NoiseChanged([this](auto sender) { OnNoiseChanged(sender); });
     }
@@ -228,7 +228,7 @@ void AcrylicBrush::OnDisconnected()
     m_fallbackColorChangedToken.value = 0;
 }
 
-winrt::CompositionAnimation AcrylicBrush::MakeColorAnimation(const winrt::Color& color, const winrt::TimeSpan& duration, const winrt::Compositor& compositor)
+winrt::CompositionAnimation AcrylicBrush::MakeColorAnimation(const winrt::Color& color, const winrt::TimeSpan&  /*duration*/, const winrt::Compositor& compositor)
 {
     auto animation = compositor.CreateColorKeyFrameAnimation();
     animation.InsertKeyFrame(1.0, color);
@@ -239,7 +239,7 @@ winrt::CompositionAnimation AcrylicBrush::MakeColorAnimation(const winrt::Color&
 winrt::CompositionAnimation AcrylicBrush::MakeFloatAnimation(
     float fromValue,
     float toValue,
-    const winrt::TimeSpan& duration,
+    const winrt::TimeSpan&  /*duration*/,
     const winrt::CompositionEasingFunction& easing,
     const winrt::Compositor& compositor)
 {
@@ -415,7 +415,7 @@ winrt::Color AcrylicBrush::GetEffectiveLuminosityColor()
 }
 
 // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
-winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double> luminosityOpacity)
+winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double>  /*luminosityOpacity*/)
 {
     // To create the Luminosity blend input color, we're taking the TintColor input, converting to HSV, and clamping the V between these values
     const double minHsvV = 0.125;
@@ -501,12 +501,12 @@ void AcrylicBrush::PolicyStatusChangedHelper(bool isDisabledByMaterialPolicy)
         UpdateAcrylicStatus();
     }
 }
-void AcrylicBrush::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
+void AcrylicBrush::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>&  /*sender*/, bool isDisabledByMaterialPolicy)
 {
     PolicyStatusChangedHelper(isDisabledByMaterialPolicy);
 }
 
-void AcrylicBrush::OnWindowSizeChanged(const com_ptr<MaterialHelperBase>& sender, bool isFullScreenOrTabletMode)
+void AcrylicBrush::OnWindowSizeChanged(const com_ptr<MaterialHelperBase>&  /*sender*/, bool isFullScreenOrTabletMode)
 {
     m_isFullScreenOrTabletMode = isFullScreenOrTabletMode;
     UpdateAcrylicBrush();
@@ -558,7 +558,7 @@ void AcrylicBrush::UpdateWindowActivationStatus()
 }
 #endif
 
-void AcrylicBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender)
+void AcrylicBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>&  /*sender*/)
 {
     m_noiseChanged = true;
     if (m_isConnected)
@@ -619,7 +619,7 @@ winrt::CompositionEffectBrush AcrylicBrush::CreateAcrylicBrushWorker(
 
 winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Legacy(
     const winrt::IGraphicsEffectSource& blurredSource,
-    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect)
+    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect&  /*tintColorEffect*/)
 {
     // Apply saturation
     auto saturationEffect = winrt::make_self<Microsoft::UI::Composition::Effects::SaturationEffect>();
@@ -649,9 +649,9 @@ winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Legacy(
 
 winrt::IGraphicsEffect AcrylicBrush::CombineNoiseWithTintEffect_Luminosity(
     const winrt::IGraphicsEffectSource& blurredSource,
-    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect& tintColorEffect,
+    const winrt::Microsoft::UI::Composition::Effects::ColorSourceEffect&  /*tintColorEffect*/,
     const winrt::Color initialLuminosityColor,
-    std::vector<winrt::hstring>& animatedProperties
+    std::vector<winrt::hstring>&  /*animatedProperties*/
     )
 {
     animatedProperties.push_back(winrt::hstring(LuminosityColorColor));
@@ -1060,18 +1060,18 @@ void AcrylicBrush::UpdateAcrylicBrush()
 
                 m_isWaitingForFallbackAnimationComplete = true;
 
-                float acrylicStart = 0.0f;
-                float acrylicEnd = 0.0f;
+                float acrylicStart = 0.0F;
+                float acrylicEnd = 0.0F;
 
                 if (m_isUsingAcrylicBrush)
                 {
                     // Fallback -> Acrylic Transition. Create the Acrlyic Brush and animate it from fallback color to acrylic effect.
-                    acrylicEnd = 1.0f;
+                    acrylicEnd = 1.0F;
                 }
                 else
                 {
                     // Acrylic -> Fallback transition. Animate acrylic to the fallback color, then create the fallback brush.
-                    acrylicStart = 1.0f;
+                    acrylicStart = 1.0F;
                 }
 
                 CreateAnimation(m_brush,

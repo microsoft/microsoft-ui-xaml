@@ -10,7 +10,7 @@ class ItemsRepeater;
 class AnimationManager final
 {
 public:
-    AnimationManager(ItemsRepeater* owner);
+    explicit AnimationManager(ItemsRepeater* owner);
 
     void OnAnimatorChanged(const winrt::ElementAnimator& newAnimator);
     void OnLayoutChanging();
@@ -24,7 +24,7 @@ private:
     void OnHideAnimationCompleted(const winrt::ElementAnimator& sender, const winrt::UIElement& element);
 
     ItemsRepeater* m_owner;
-    tracker_ref<winrt::ElementAnimator> m_animator;
+    tracker_ref<winrt::ElementAnimator> m_animator{};
 
     // We infer the animation context
     // from heuristics like whether or not

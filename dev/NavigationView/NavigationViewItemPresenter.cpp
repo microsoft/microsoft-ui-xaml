@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.h"
+#include "NavigationViewItemPresenter.h"
 #include "SharedHelpers.h"
+#include "common.h"
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {

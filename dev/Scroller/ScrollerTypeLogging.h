@@ -3,9 +3,9 @@
 
 #pragma once
 
-#include "ViewChange.h"
 #include "InteractionTrackerAsyncOperation.h"
 #include "Scroller.h"
+#include "ViewChange.h"
 
 namespace TypeLogging
 {
@@ -26,5 +26,5 @@ namespace TypeLogging
     winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options);
     winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType);
     winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger);
-};
+}  // namespace TypeLogging
 

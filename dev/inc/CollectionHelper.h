@@ -25,4 +25,4 @@ namespace CollectionHelper
             c.push_back(v);
         }
     }
-}
+}  // namespace CollectionHelper

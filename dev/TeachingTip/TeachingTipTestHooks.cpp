@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
-#include "common.h"
 #include "TeachingTipTestHooks.h"
+#include "common.h"
 
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::s_testHooks{};
 
@@ -16,7 +16,7 @@ com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::EnsureGlobalTestHooks()
     return s_testHooks;
 }
 
-void TeachingTipTestHooks::SetExpandEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction)
+void TeachingTipTestHooks::SetExpandEasingFunction(const winrt::TeachingTip&  /*teachingTip*/, const winrt::CompositionEasingFunction& easingFunction)
 {
     if (teachingTip && easingFunction)
     {
@@ -24,7 +24,7 @@ void TeachingTipTestHooks::SetExpandEasingFunction(const winrt::TeachingTip& tea
     }
 }
 
-void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& teachingTip, const winrt::CompositionEasingFunction& easingFunction)
+void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip&  /*teachingTip*/, const winrt::CompositionEasingFunction& easingFunction)
 {
     if (teachingTip && easingFunction)
     {
@@ -32,7 +32,7 @@ void TeachingTipTestHooks::SetContractEasingFunction(const winrt::TeachingTip& t
     }
 }
 
-void TeachingTipTestHooks::SetTipShouldHaveShadow(const winrt::TeachingTip& teachingTip, bool tipShouldHaveShadow)
+void TeachingTipTestHooks::SetTipShouldHaveShadow(const winrt::TeachingTip&  /*teachingTip*/, bool tipShouldHaveShadow)
 {
     if (teachingTip)
     {
@@ -40,7 +40,7 @@ void TeachingTipTestHooks::SetTipShouldHaveShadow(const winrt::TeachingTip& teac
     }
 }
 
-void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachingTip, float elevation)
+void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip&  /*teachingTip*/, float elevation)
 {
     if (teachingTip)
     {
@@ -48,7 +48,7 @@ void TeachingTipTestHooks::SetContentElevation(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetTailElevation(const winrt::TeachingTip& teachingTip, float elevation)
+void TeachingTipTestHooks::SetTailElevation(const winrt::TeachingTip&  /*teachingTip*/, float elevation)
 {
     if (teachingTip)
     {
@@ -56,7 +56,7 @@ void TeachingTipTestHooks::SetTailElevation(const winrt::TeachingTip& teachingTi
     }
 }
 
-void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip& teachingTip, bool useTestWindowBounds)
+void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip&  /*teachingTip*/, bool useTestWindowBounds)
 {
     if (teachingTip)
     {
@@ -64,7 +64,7 @@ void TeachingTipTestHooks::SetUseTestWindowBounds(const winrt::TeachingTip& teac
     }
 }
 
-void TeachingTipTestHooks::SetTestWindowBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testWindowBounds)
+void TeachingTipTestHooks::SetTestWindowBounds(const winrt::TeachingTip&  /*teachingTip*/, const winrt::Rect& testWindowBounds)
 {
     if (teachingTip)
     {
@@ -72,7 +72,7 @@ void TeachingTipTestHooks::SetTestWindowBounds(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetUseTestScreenBounds(const winrt::TeachingTip& teachingTip, bool useTestScreenBounds)
+void TeachingTipTestHooks::SetUseTestScreenBounds(const winrt::TeachingTip&  /*teachingTip*/, bool useTestScreenBounds)
 {
     if (teachingTip)
     {
@@ -80,7 +80,7 @@ void TeachingTipTestHooks::SetUseTestScreenBounds(const winrt::TeachingTip& teac
     }
 }
 
-void TeachingTipTestHooks::SetTestScreenBounds(const winrt::TeachingTip& teachingTip, const winrt::Rect& testScreenBounds)
+void TeachingTipTestHooks::SetTestScreenBounds(const winrt::TeachingTip&  /*teachingTip*/, const winrt::Rect& testScreenBounds)
 {
     if (teachingTip)
     {
@@ -88,7 +88,7 @@ void TeachingTipTestHooks::SetTestScreenBounds(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachingTip, bool tipFollowsTarget)
+void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip&  /*teachingTip*/, bool tipFollowsTarget)
 {
     if (teachingTip)
     {
@@ -96,7 +96,7 @@ void TeachingTipTestHooks::SetTipFollowsTarget(const winrt::TeachingTip& teachin
     }
 }
 
-void TeachingTipTestHooks::SetReturnTopForOutOfWindowPlacement(const winrt::TeachingTip& teachingTip, bool returnTopForOutOfWindowPlacement)
+void TeachingTipTestHooks::SetReturnTopForOutOfWindowPlacement(const winrt::TeachingTip&  /*teachingTip*/, bool returnTopForOutOfWindowPlacement)
 {
     if (teachingTip)
     {
@@ -104,7 +104,7 @@ void TeachingTipTestHooks::SetReturnTopForOutOfWindowPlacement(const winrt::Teac
     }
 }
 
-void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& expandAnimationDuration)
+void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip&  /*teachingTip*/, const winrt::TimeSpan&  /*expandAnimationDuration*/)
 {
     if (teachingTip)
     {
@@ -112,7 +112,7 @@ void TeachingTipTestHooks::SetExpandAnimationDuration(const winrt::TeachingTip& 
     }
 }
 
-void TeachingTipTestHooks::SetContractAnimationDuration(const winrt::TeachingTip& teachingTip, const winrt::TimeSpan& contractAnimationDuration)
+void TeachingTipTestHooks::SetContractAnimationDuration(const winrt::TeachingTip&  /*teachingTip*/, const winrt::TimeSpan&  /*contractAnimationDuration*/)
 {
     if (teachingTip)
     {
@@ -120,7 +120,7 @@ void TeachingTipTestHooks::SetContractAnimationDuration(const winrt::TeachingTip
     }
 }
 
-void TeachingTipTestHooks::NotifyOpenedStatusChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyOpenedStatusChanged(const winrt::TeachingTip&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_openedStatusChangedEventSource)
@@ -129,7 +129,7 @@ void TeachingTipTestHooks::NotifyOpenedStatusChanged(const winrt::TeachingTip& s
     }
 }
 
-winrt::event_token TeachingTipTestHooks::OpenedStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::OpenedStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_openedStatusChangedEventSource.add(value);
@@ -141,7 +141,7 @@ void TeachingTipTestHooks::OpenedStatusChanged(winrt::event_token const& token)
     hooks->m_openedStatusChangedEventSource.remove(token);
 }
 
-void TeachingTipTestHooks::NotifyIdleStatusChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyIdleStatusChanged(const winrt::TeachingTip&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_idleStatusChangedEventSource)
@@ -150,7 +150,7 @@ void TeachingTipTestHooks::NotifyIdleStatusChanged(const winrt::TeachingTip& sen
     }
 }
 
-winrt::event_token TeachingTipTestHooks::IdleStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::IdleStatusChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_idleStatusChangedEventSource.add(value);
@@ -163,7 +163,7 @@ void TeachingTipTestHooks::IdleStatusChanged(winrt::event_token const& token)
 }
 
 
-bool TeachingTipTestHooks::GetIsIdle(const winrt::TeachingTip& teachingTip)
+bool TeachingTipTestHooks::GetIsIdle(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {
@@ -172,7 +172,7 @@ bool TeachingTipTestHooks::GetIsIdle(const winrt::TeachingTip& teachingTip)
     return true;
 }
 
-void TeachingTipTestHooks::NotifyEffectivePlacementChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyEffectivePlacementChanged(const winrt::TeachingTip&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_effectivePlacementChangedEventSource)
@@ -181,7 +181,7 @@ void TeachingTipTestHooks::NotifyEffectivePlacementChanged(const winrt::Teaching
     }
 }
 
-winrt::event_token TeachingTipTestHooks::EffectivePlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::EffectivePlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_effectivePlacementChangedEventSource.add(value);
@@ -193,7 +193,7 @@ void TeachingTipTestHooks::EffectivePlacementChanged(winrt::event_token const& t
     hooks->m_effectivePlacementChangedEventSource.remove(token);
 }
 
-winrt::TeachingTipPlacementMode TeachingTipTestHooks::GetEffectivePlacement(const winrt::TeachingTip& teachingTip)
+winrt::TeachingTipPlacementMode TeachingTipTestHooks::GetEffectivePlacement(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {
@@ -202,7 +202,7 @@ winrt::TeachingTipPlacementMode TeachingTipTestHooks::GetEffectivePlacement(cons
     return winrt::TeachingTipPlacementMode::Auto;
 }
 
-void TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(const winrt::TeachingTip&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_effectiveHeroContentPlacementChangedEventSource)
@@ -211,7 +211,7 @@ void TeachingTipTestHooks::NotifyEffectiveHeroContentPlacementChanged(const winr
     }
 }
 
-winrt::event_token TeachingTipTestHooks::EffectiveHeroContentPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::EffectiveHeroContentPlacementChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_effectiveHeroContentPlacementChangedEventSource.add(value);
@@ -223,7 +223,7 @@ void TeachingTipTestHooks::EffectiveHeroContentPlacementChanged(winrt::event_tok
     hooks->m_effectiveHeroContentPlacementChangedEventSource.remove(token);
 }
 
-winrt::TeachingTipHeroContentPlacementMode TeachingTipTestHooks::GetEffectiveHeroContentPlacement(const winrt::TeachingTip& teachingTip)
+winrt::TeachingTipHeroContentPlacementMode TeachingTipTestHooks::GetEffectiveHeroContentPlacement(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {
@@ -232,7 +232,7 @@ winrt::TeachingTipHeroContentPlacementMode TeachingTipTestHooks::GetEffectiveHer
     return winrt::TeachingTipHeroContentPlacementMode::Auto;
 }
 
-void TeachingTipTestHooks::NotifyOffsetChanged(const winrt::TeachingTip& sender)
+void TeachingTipTestHooks::NotifyOffsetChanged(const winrt::TeachingTip&  /*sender*/)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_offsetChangedEventSource)
@@ -241,7 +241,7 @@ void TeachingTipTestHooks::NotifyOffsetChanged(const winrt::TeachingTip& sender)
     }
 }
 
-winrt::event_token TeachingTipTestHooks::OffsetChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+winrt::event_token TeachingTipTestHooks::OffsetChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>  /*unused*/const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_offsetChangedEventSource.add(value);
@@ -253,7 +253,7 @@ void TeachingTipTestHooks::OffsetChanged(winrt::event_token const& token)
     hooks->m_offsetChangedEventSource.remove(token);
 }
 
-double TeachingTipTestHooks::GetVerticalOffset(const winrt::TeachingTip& teachingTip)
+double TeachingTipTestHooks::GetVerticalOffset(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {
@@ -262,7 +262,7 @@ double TeachingTipTestHooks::GetVerticalOffset(const winrt::TeachingTip& teachin
     return 0.0;
 }
 
-double TeachingTipTestHooks::GetHorizontalOffset(const winrt::TeachingTip& teachingTip)
+double TeachingTipTestHooks::GetHorizontalOffset(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {
@@ -271,7 +271,7 @@ double TeachingTipTestHooks::GetHorizontalOffset(const winrt::TeachingTip& teach
     return 0.0;
 }
 
-winrt::Popup TeachingTipTestHooks::GetPopup(const winrt::TeachingTip& teachingTip)
+winrt::Popup TeachingTipTestHooks::GetPopup(const winrt::TeachingTip&  /*teachingTip*/)
 {
     if (teachingTip)
     {

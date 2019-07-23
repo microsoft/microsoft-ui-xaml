@@ -2,10 +2,10 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "CommandBarFlyoutCommandBar.h"
 #include "CommandBarFlyoutCommandBarTemplateSettings.h"
 #include "TypeLogging.h"
+#include "common.h"
 
 CommandBarFlyoutCommandBar::CommandBarFlyoutCommandBar()
 {

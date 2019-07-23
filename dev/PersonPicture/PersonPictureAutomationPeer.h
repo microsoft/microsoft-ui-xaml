@@ -11,7 +11,7 @@ class PersonPictureAutomationPeer :
     public ReferenceTracker<PersonPictureAutomationPeer, winrt::implementation::PersonPictureAutomationPeerT>
 {
 public:
-    PersonPictureAutomationPeer(winrt::PersonPicture const& owner);
+    explicit PersonPictureAutomationPeer(winrt::PersonPicture const& owner);
 
     // IAutomationPeerOverrides 
     winrt::AutomationControlType GetAutomationControlTypeCore();

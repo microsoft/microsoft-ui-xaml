@@ -18,13 +18,13 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
         formatString.data(),
         0,
         0,
-        (LPTSTR)&formattedString,
+        reinterpret_cast<LPTSTR>(&formattedString),
         0,
         &pArgs);
 
     va_end(pArgs);
 
-    winrt::hstring result((LPTSTR)formattedString);
+    winrt::hstring result(static_cast<LPTSTR>(formattedString));
     LocalFree(formattedString);
 
     return result;
@@ -33,13 +33,13 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
 std::wstring StringUtil::Utf8ToUtf16(const std::string_view& utf8Str)
 {
     std::wstring converted;
-    if (utf8Str.size() > 0)
+    if (!utf8Str.empty())
     {
-        int length = MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), (int)utf8Str.size(), nullptr, 0);
+        int length = MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), static_cast<int>(utf8Str.size()), nullptr, 0);
         if (length > 0)
         {
             converted.resize(length);
-            if (MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), (int)utf8Str.size(), converted.data(), (int)converted.size()) == 0)
+            if (MultiByteToWideChar(CP_UTF8, 0, utf8Str.data(), static_cast<int>(utf8Str.size()), converted.data(), static_cast<int>(converted.size())) == 0)
             {
                 winrt::throw_last_error();
             }
@@ -56,13 +56,13 @@ std::wstring StringUtil::Utf8ToUtf16(const std::string_view& utf8Str)
 std::string StringUtil::Utf16ToUtf8(const std::wstring_view& utf16Str)
 {
     std::string converted;
-    if (utf16Str.size() > 0)
+    if (!utf16Str.empty())
     {
-        int length = WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), (int)utf16Str.size(), nullptr, 0, nullptr, nullptr);
+        int length = WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), static_cast<int>(utf16Str.size()), nullptr, 0, nullptr, nullptr);
         if (length > 0)
         {
             converted.resize(length);
-            if (WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), (int)utf16Str.size(), converted.data(), (int)converted.size(), nullptr, nullptr) == 0)
+            if (WideCharToMultiByte(CP_UTF8, 0, utf16Str.data(), static_cast<int>(utf16Str.size()), converted.data(), static_cast<int>(converted.size()), nullptr, nullptr) == 0)
             {
                 winrt::throw_last_error();
             }

@@ -2,9 +2,9 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "AcrylicTestApi.h"
 #include "AcrylicBrush.h"
+#include "AcrylicTestApi.h"
+#include "common.h"
 
 winrt::AcrylicBrush AcrylicTestApi::AcrylicBrush()
 {

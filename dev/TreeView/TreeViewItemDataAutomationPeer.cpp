@@ -2,16 +2,16 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
 #include "TreeView.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemDataAutomationPeer.h"
+#include "common.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewItemDataAutomationPeer);
 
-TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::TreeViewListAutomationPeer const& parent) :
+TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::TreeViewListAutomationPeer  /*unused*/const& parent) :
     ReferenceTracker(item, parent)
 {
 }

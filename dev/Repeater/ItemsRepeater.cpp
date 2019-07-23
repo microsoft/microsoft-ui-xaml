@@ -1,17 +1,17 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-#include <pch.h>
-#include <common.h>
+#include "ChildrenInTabFocusOrderIterable.h"
 #include "ItemsRepeater.common.h"
 #include "ItemsRepeater.h"
-#include "RepeaterLayoutContext.h"
-#include "ChildrenInTabFocusOrderIterable.h"
-#include "SharedHelpers.h"
 #include "RepeaterAutomationPeer.h"
-#include "ViewportManagerWithPlatformFeatures.h"
-#include "ViewportManagerDownlevel.h"
+#include "RepeaterLayoutContext.h"
 #include "RuntimeProfiler.h"
+#include "SharedHelpers.h"
+#include "ViewportManagerDownlevel.h"
+#include "ViewportManagerWithPlatformFeatures.h"
+#include <common.h>
+#include <pch.h>
 
 #ifndef BUILD_WINDOWS
 #include "ItemTemplateWrapper.h"
@@ -20,8 +20,8 @@
 // Change to 'true' to turn on debugging outputs in Output window
 bool RepeaterTrace::s_IsDebugOutputEnabled{ false };
 
-winrt::Point ItemsRepeater::ClearedElementsArrangePosition = winrt::Point(-10000.0f, -10000.0f);
-winrt::Rect ItemsRepeater::InvalidRect = { -1.f, -1.f, -1.f, -1.f };
+winrt::Point ItemsRepeater::ClearedElementsArrangePosition = winrt::Point(-10000.0F, -10000.0F);
+winrt::Rect ItemsRepeater::InvalidRect = { -1.F, -1.F, -1.F, -1.F };
 
 ItemsRepeater::ItemsRepeater()
 {
@@ -491,7 +491,7 @@ void ItemsRepeater::OnUnloaded(const winrt::IInspectable& /*sender*/, const winr
     }
 }
 
-void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& oldValue, const winrt::ItemsSourceView& newValue)
+void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView&  /*oldValue*/, const winrt::ItemsSourceView&  /*newValue*/)
 {
     if (m_isLayoutInProgress)
     {
@@ -617,7 +617,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
     InvalidateMeasure();
 }
 
-void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::Layout& newValue)
+void ItemsRepeater::OnLayoutChanged(const winrt::Layout&  /*oldValue*/, const winrt::Layout&  /*newValue*/)
 {
     if (m_isLayoutInProgress)
     {
@@ -666,7 +666,7 @@ void ItemsRepeater::OnLayoutChanged(const winrt::Layout& oldValue, const winrt::
     InvalidateMeasure();
 }
 
-void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue */, const winrt::ElementAnimator& newValue)
+void ItemsRepeater::OnAnimatorChanged(const winrt::ElementAnimator& /* oldValue */, const winrt::ElementAnimator&  /*newValue*/)
 {
     m_animationManager.OnAnimatorChanged(newValue);
     if (!SharedHelpers::IsRS5OrHigher())

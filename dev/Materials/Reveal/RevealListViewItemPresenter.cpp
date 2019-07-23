@@ -2,14 +2,14 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "common.h"
-#include "RevealListViewItemPresenter.h"
 #include "RevealBrush.h"
+#include "RevealListViewItemPresenter.h"
+#include "common.h"
 
 RevealListViewItemPresenter::RevealListViewItemPresenter()
 = default;
 
-bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool useTransitions) 
+bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool  /*useTransitions*/) 
 {
     RevealBrush::EnsureProperties();
 
