@@ -1111,7 +1111,8 @@ void TeachingTip::OnPopupOpened(const winrt::IInspectable&, const winrt::IInspec
         if (auto xamlRoot = uiElement10.XamlRoot())
         {
             m_currentXamlRootSize = xamlRoot.Size();
-            m_xamlRootChangedRevoker = { xamlRoot, xamlRoot.Changed({ this, &TeachingTip::XamlRootChanged }) };
+            m_xamlRoot.set(xamlRoot);
+            m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &TeachingTip::XamlRootChanged });
         }
     }
     else
@@ -1174,6 +1175,7 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
 {
     m_windowSizeChangedRevoker.revoke();
     m_xamlRootChangedRevoker.revoke();
+    m_xamlRoot.set(nullptr);
     if (auto&& lightDismissIndicatorPopup = m_lightDismissIndicatorPopup.get())
     {
         lightDismissIndicatorPopup.IsOpen(false);
