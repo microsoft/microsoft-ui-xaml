@@ -10,7 +10,6 @@ class TreeViewCollapsedEventArgs :
     public ReferenceTracker<TreeViewCollapsedEventArgs, winrt::implementation::TreeViewCollapsedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TreeViewCollapsedEventArgs();
     winrt::TreeViewNode Node();
     void Node(const winrt::TreeViewNode& value);
     winrt::IInspectable Item();

@@ -12,8 +12,6 @@ class SwipeItem :
 {
 public:
     SwipeItem();
-    virtual ~SwipeItem();
-
     // Property changed handler.
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 

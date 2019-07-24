@@ -8,15 +8,9 @@
 
 class SplitButtonClickEventArgs :
     public winrt::implementation::SplitButtonClickEventArgsT<SplitButtonClickEventArgs>
-{
-public:
-    SplitButtonClickEventArgs() = default;
-};
+{};
 
 class ToggleSplitButtonIsCheckedChangedEventArgs :
     public winrt::implementation::ToggleSplitButtonIsCheckedChangedEventArgsT<ToggleSplitButtonIsCheckedChangedEventArgs>
-{
-public:
-    ToggleSplitButtonIsCheckedChangedEventArgs() = default;
-};
+{};
 

@@ -7,9 +7,6 @@ class SplitButtonTestHelper :
     public winrt::implements<SplitButtonTestHelper, winrt::IInspectable>
 {
 public:
-    SplitButtonTestHelper() = default;
-    ~SplitButtonTestHelper() = default;
-
     static void SimulateTouch(bool value);
     static bool SimulateTouch();
 

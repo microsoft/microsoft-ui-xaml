@@ -12,7 +12,6 @@ class TabViewItemAutomationPeer :
 
 public:
     TabViewItemAutomationPeer(winrt::TabViewItem const& owner);
-    ~TabViewItemAutomationPeer() = default;
 
     // IAutomationPeerOverrides
     hstring GetClassNameCore();

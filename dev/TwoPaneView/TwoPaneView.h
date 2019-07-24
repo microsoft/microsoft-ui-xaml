@@ -31,7 +31,6 @@ class TwoPaneView :
 {
 public:
     TwoPaneView();
-    ~TwoPaneView();
 
     // IFrameworkElement
     void OnApplyTemplate();

@@ -19,7 +19,6 @@ class TeachingTip :
 
 public:
     TeachingTip();
-    ~TeachingTip();
 
     // IFrameworkElement
     void OnApplyTemplate();

@@ -18,7 +18,6 @@ public:
     static winrt::DependencyObject GetParent(winrt::DependencyObject const& child);
 
     static winrt::IDataTemplateComponent GetDataTemplateComponent(winrt::UIElement const& element);
-    CachedVisualTreeHelpers() = default;
 
 private:
     winrt::ILayoutInformationStatics m_layoutInfo;

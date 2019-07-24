@@ -12,7 +12,6 @@ class SplitButtonAutomationPeer :
 
 public:
     SplitButtonAutomationPeer(winrt::SplitButton const& owner);
-    ~SplitButtonAutomationPeer() = default;
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

@@ -9,8 +9,6 @@ class NavigationViewDisplayModeChangedEventArgs :
     public winrt::implementation::NavigationViewDisplayModeChangedEventArgsT<NavigationViewDisplayModeChangedEventArgs>
 {
 public:
-    NavigationViewDisplayModeChangedEventArgs();
-
 #pragma region INavigationViewDisplayModeChangedEventArgs
     winrt::NavigationViewDisplayMode DisplayMode();
 #pragma endregion

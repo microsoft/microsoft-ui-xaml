@@ -6,8 +6,6 @@ class TeachingTipClosedEventArgs :
     public winrt::implementation::TeachingTipClosedEventArgsT<TeachingTipClosedEventArgs>
 {
 public:
-    TeachingTipClosedEventArgs();
-
     winrt::TeachingTipCloseReason Reason();
     void Reason(const winrt::TeachingTipCloseReason& reason);
 private:

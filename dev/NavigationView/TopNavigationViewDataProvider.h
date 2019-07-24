@@ -21,7 +21,6 @@ class TopNavigationViewDataProvider: public SplitDataSourceT
 public:
     
     TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner);
-    ~TopNavigationViewDataProvider();
 
     winrt::IVector<winrt::IInspectable> GetPrimaryItems();
     winrt::IVector<winrt::IInspectable> GetOverflowItems();
