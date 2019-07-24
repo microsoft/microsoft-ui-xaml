@@ -9,6 +9,7 @@
 #include "TabView.g.h"
 #include "TabView.properties.h"
 #include "TabViewTabClosingEventArgs.g.h"
+#include "TabViewTabDraggedOutsideEventArgs.g.h"
 
 class TabViewTabClosingEventArgs :
     public winrt::implementation::TabViewTabClosingEventArgsT<TabViewTabClosingEventArgs>
@@ -23,6 +24,18 @@ public:
 
 private:
     bool m_cancel{};
+    winrt::IInspectable m_item{};
+};
+
+class TabViewTabDraggedOutsideEventArgs :
+    public winrt::implementation::TabViewTabDraggedOutsideEventArgsT<TabViewTabDraggedOutsideEventArgs>
+{
+public:
+    TabViewTabDraggedOutsideEventArgs(winrt::IInspectable const& item) { m_item = item; }
+
+    winrt::IInspectable Item() { return m_item; }
+
+private:
     winrt::IInspectable m_item{};
 };
 
@@ -57,13 +70,16 @@ public:
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void OnAddButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollDecreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollIncreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+
+    void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
+    void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
+    void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
 
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
@@ -88,8 +104,12 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
 
+    //bool m_isDragging{ false };
+
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
+    winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
+    winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
 

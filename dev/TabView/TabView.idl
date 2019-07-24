@@ -20,6 +20,13 @@ runtimeclass TabViewTabClosingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+runtimeclass TabViewTabDraggedOutsideEventArgs
+{
+    Object Item { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
 unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 {
     TabView();
@@ -46,6 +53,8 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     Object AddButtonCommandParameter{ get; set; };
 
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabClosingEventArgs> TabClosing;
+
+    event Windows.Foundation.TypedEventHandler<TabView, TabViewTabDraggedOutsideEventArgs> TabDraggedOutside;
 
     event Windows.Foundation.TypedEventHandler<TabView, Object> AddButtonClick;
 

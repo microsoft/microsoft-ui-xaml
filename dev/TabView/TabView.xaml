@@ -217,7 +217,8 @@
 
                     <Grid
                         Background="{ThemeResource TabViewItemHeaderBackground}"
-                        Padding="{TemplateBinding Padding}">
+                        Padding="{TemplateBinding Padding}"
+                        Margin="-1,0,0,0">
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
@@ -393,7 +394,15 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+                        <Border x:Name="TabSeparator"
+                            HorizontalAlignment="Right"
+                            Width="1"
+                            BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                            BorderThickness="1"
+                            Margin="0,6,0,6"/>
+
                         <Grid x:Name="LayoutRoot"
+                            Grid.Column="1"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"

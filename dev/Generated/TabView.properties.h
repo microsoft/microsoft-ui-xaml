@@ -97,10 +97,13 @@ public:
     void SelectionChanged(winrt::event_token const& token);
     winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs> const& value);
     void TabClosing(winrt::event_token const& token);
+    winrt::event_token TabDraggedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs> const& value);
+    void TabDraggedOutside(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable>> m_addButtonClickEventSource;
     event_source<winrt::SelectionChangedEventHandler> m_selectionChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs>> m_tabClosingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs>> m_tabDraggedOutsideEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

@@ -29,6 +29,7 @@ TabViewProperties::TabViewProperties()
     : m_addButtonClickEventSource{static_cast<TabView*>(this)}
     , m_selectionChangedEventSource{static_cast<TabView*>(this)}
     , m_tabClosingEventSource{static_cast<TabView*>(this)}
+    , m_tabDraggedOutsideEventSource{static_cast<TabView*>(this)}
 {
     EnsureProperties();
 }
@@ -461,4 +462,14 @@ winrt::event_token TabViewProperties::TabClosing(winrt::TypedEventHandler<winrt:
 void TabViewProperties::TabClosing(winrt::event_token const& token)
 {
     m_tabClosingEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabDraggedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs> const& value)
+{
+    return m_tabDraggedOutsideEventSource.add(value);
+}
+
+void TabViewProperties::TabDraggedOutside(winrt::event_token const& token)
+{
+    m_tabDraggedOutsideEventSource.remove(token);
 }

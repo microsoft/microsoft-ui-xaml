@@ -53,6 +53,9 @@ void TabView::OnApplyTemplate()
         {
             m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
             m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
+
+            m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
+            m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
         }
         return listView;
     }());
@@ -253,6 +256,57 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
     UpdateTabContent();
 
     m_selectionChangedEventSource(sender, args);
+}
+
+void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
+{
+    //m_isDragging = true;
+}
+
+void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
+{
+    //### m_isDragging = false;
+
+    // None means it's outside of the tab strip area
+    /*if (args.DropResult() == winrt::DataPackageOperation::None)
+    {
+        auto item = args.Items().First();
+        auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
+
+        if (!tab)
+        {
+            if (auto fe = item.try_as<winrt::FrameworkElement>())
+            {
+                //tab = fe.FindParent<winrt::TabViewItem>();
+            }
+        }
+
+        if (!tab)
+        {
+            // We still don't have a TabViewItem, most likely is a static TabViewItem in the template being dragged and not selected.
+            // This is a fallback scenario for static tabs.
+            // Note: This can be wrong if two TabViewItems share the exact same Content (i.e. a string), this should be unlikely in any practical scenario.
+
+            int numItems = static_cast<int>(Items().Size());
+            for (int i = 0; i < numItems; i++)
+            {
+                auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
+                if (tabItem.Content() == item)
+                {
+                    tab = tabItem;
+                    break;
+                }
+            }
+        }
+
+        auto myArgs = winrt::make_self<TabViewTabDraggedOutsideEventArgs>(item);
+        m_tabDraggedOutsideEventSource(*this, *myArgs);
+    }
+    else
+    {
+        // If dragging the active tab, there's an issue with the CP blanking.
+        TabView_SelectionChanged(this, null);
+    }*/
 }
 
 void TabView::UpdateTabContent()
