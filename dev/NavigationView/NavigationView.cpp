@@ -2970,7 +2970,7 @@ void NavigationView::UpdateHeaderVisibility()
 
 void NavigationView::UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode)
 {
-    // Ignore AlwaysShowHeader property in case DisplayMode is minimum and we're not a Top NavigationView
+    // Ignore AlwaysShowHeader property in case DisplayMode is Minimal and it's not Top NavigationView
     bool showHeader = AlwaysShowHeader() || (!IsTopNavigationView() && displayMode == winrt::NavigationViewDisplayMode::Minimal);
 
     // Like bug 17517627, Customer like WallPaper Studio 10 expects a HeaderContent visual even if Header() is null. 
