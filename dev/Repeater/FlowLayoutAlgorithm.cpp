@@ -488,7 +488,7 @@ winrt::Rect FlowLayoutAlgorithm::EstimateExtent(const winrt::Size& availableSize
     {
         firstRealizedElement = m_elementManager.GetAt(0);
         firstBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
-        firstDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);;
+        firstDataIndex = m_elementManager.GetDataIndexFromRealizedRangeIndex(0);
 
         int last = m_elementManager.GetRealizedElementCount() - 1;
         lastRealizedElement = m_elementManager.GetAt(last);

@@ -5,7 +5,7 @@
 
 struct __declspec(novtable) ITrackerHandleManager
 {
-    virtual ~ITrackerHandleManager() = default;;
+    virtual ~ITrackerHandleManager() = default;
 
     const ITrackerHandleManager* GetTrackerHandleManager() const
     {

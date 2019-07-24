@@ -129,7 +129,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         using Vector2 = winrt::float2;
         using Vector3 = winrt::float3;
         using Matrix3x2 = winrt::float3x2;
-        using Matrix5x4 = int;
+        using Matrix5x4 = winrt::Matrix5x4;
         using PropertyMapping = GRAPHICS_EFFECT_PROPERTY_MAPPING;
 
     public:
