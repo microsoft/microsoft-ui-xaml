@@ -11,17 +11,17 @@ public:
         std::function<void(bool, bool)> infoChangedFunction);
     ~ScrollInputHelper();
 
-    [[nodiscard]] winrt::UIElement TargetElement() const;
-    [[nodiscard]] winrt::CompositionPropertySet SourcePropertySet() const;
-    [[nodiscard]] bool IsTargetElementInSource() const;
+    winrt::UIElement TargetElement() const;
+    winrt::CompositionPropertySet SourcePropertySet() const;
+    bool IsTargetElementInSource() const;
 
-    [[nodiscard]] winrt::hstring GetSourceOffsetPropertyName(winrt::Orientation orientation) const;
-    [[nodiscard]] winrt::hstring GetSourceScalePropertyName() const;
-    [[nodiscard]] double GetOffsetFromScrollContentElement(const winrt::UIElement& element, winrt::Orientation orientation) const;
-    [[nodiscard]] double GetMaxUnderpanOffset(winrt::Orientation orientation) const;
-    [[nodiscard]] double GetMaxOverpanOffset(winrt::Orientation orientation) const;
-    [[nodiscard]] double GetContentSize(winrt::Orientation orientation) const;
-    [[nodiscard]] double GetViewportSize(winrt::Orientation orientation) const;
+    winrt::hstring GetSourceOffsetPropertyName(winrt::Orientation orientation) const;
+    winrt::hstring GetSourceScalePropertyName() const;
+    double GetOffsetFromScrollContentElement(const winrt::UIElement& element, winrt::Orientation orientation) const;
+    double GetMaxUnderpanOffset(winrt::Orientation orientation) const;
+    double GetMaxOverpanOffset(winrt::Orientation orientation) const;
+    double GetContentSize(winrt::Orientation orientation) const;
+    double GetViewportSize(winrt::Orientation orientation) const;
     void SetSourceElement(const winrt::UIElement& sourceElement);
     void SetTargetElement(const winrt::UIElement& targetElement);
 
@@ -31,10 +31,10 @@ private:
         const winrt::DependencyObject& rootElement,
         _Out_ winrt::Scroller* scroller,
         _Out_ winrt::FxScrollViewer* scrollViewer);
-    [[nodiscard]] winrt::UIElement GetScrollContentElement() const;
-    [[nodiscard]] winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
-    [[nodiscard]] winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
-    [[nodiscard]] winrt::FxZoomMode GetEffectiveZoomMode() const;
+    winrt::UIElement GetScrollContentElement() const;
+    winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
+    winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
+    winrt::FxZoomMode GetEffectiveZoomMode() const;
     
     void SetScrollViewer(const winrt::FxScrollViewer& scrollViewer);
     void SetScroller(const winrt::Scroller& scroller);
@@ -48,11 +48,11 @@ private:
     void UpdateManipulationAlignments();
     void UpdateInternalExpressionAnimations(bool horizontalInfoChanged, bool verticalInfoChanged, bool zoomInfoChanged);
 
-    [[nodiscard]] winrt::HorizontalAlignment ComputeHorizontalContentAlignment() const;
-    [[nodiscard]] winrt::VerticalAlignment ComputeVerticalContentAlignment() const;
-    [[nodiscard]] winrt::FxZoomMode ComputeZoomMode() const;
+    winrt::HorizontalAlignment ComputeHorizontalContentAlignment() const;
+    winrt::VerticalAlignment ComputeVerticalContentAlignment() const;
+    winrt::FxZoomMode ComputeZoomMode() const;
 
-    [[nodiscard]] bool IsScrollContentPresenterIScrollInfoProvider() const;
+    bool IsScrollContentPresenterIScrollInfoProvider() const;
 
     void EnsureInternalSourcePropertySetAndExpressionAnimations();
     void StartInternalExpressionAnimations(const winrt::CompositionPropertySet& source);

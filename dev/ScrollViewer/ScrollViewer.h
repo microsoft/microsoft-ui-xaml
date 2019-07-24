@@ -82,7 +82,7 @@ public:
 
     // Invoked by ScrollViewerTestHooks
     void ScrollControllersAutoHidingChanged();
-    [[nodiscard]] winrt::Scroller GetScrollerPart() const;
+    winrt::Scroller GetScrollerPart() const;
 
     static void ValidateAnchorRatio(double value);
     static void ValidateZoomFactoryBoundary(double value);
@@ -226,10 +226,10 @@ private:
 
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
-    [[nodiscard]] bool AreAllScrollControllersCollapsed() const;
-    [[nodiscard]] bool AreBothScrollControllersVisible() const;
+    bool AreAllScrollControllersCollapsed() const;
+    bool AreBothScrollControllersVisible() const;
     bool AreScrollControllersAutoHiding();
-    [[nodiscard]] bool IsScrollControllersSeparatorVisible() const;
+    bool IsScrollControllersSeparatorVisible() const;
     void HideIndicators(bool useTransitions = true);
     void HideIndicatorsAfterDelay();
     void UpdateScrollControllersAutoHiding(bool forceUpdate = false);

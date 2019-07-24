@@ -28,7 +28,7 @@ public:
     { }
 
     // Methods
-    [[nodiscard]] winrt::Rect LastExtent() const { return m_lastExtent; }
+    winrt::Rect LastExtent() const { return m_lastExtent; }
 
     void InitializeForContext(const winrt::VirtualizingLayoutContext& context, IFlowLayoutAlgorithmDelegates* callbacks);
     void UninitializeForContext(const winrt::VirtualizingLayoutContext& context);
@@ -86,7 +86,7 @@ private:
         const winrt::VirtualizingLayoutContext& context,
         int index,
         const winrt::Size& availableSize);
-    [[nodiscard]] bool IsReflowRequired() const;
+    bool IsReflowRequired() const;
     bool ShouldContinueFillingUpSpace(
         int index,
         GenerateDirection direction);

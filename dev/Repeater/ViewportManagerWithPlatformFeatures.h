@@ -18,19 +18,19 @@ class ViewportManagerWithPlatformFeatures : public ViewportManager
 public:
     ViewportManagerWithPlatformFeatures(ItemsRepeater* owner);
 
-    [[nodiscard]] winrt::UIElement SuggestedAnchor() const override;
+    winrt::UIElement SuggestedAnchor() const override;
 
-    [[nodiscard]] double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
+    double HorizontalCacheLength() const override { return m_maximumHorizontalCacheLength; }
     void HorizontalCacheLength(double value) override;
 
-    [[nodiscard]] double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
+    double VerticalCacheLength() const override { return m_maximumVerticalCacheLength; }
     void VerticalCacheLength(double value) override;
 
-    [[nodiscard]] winrt::Rect GetLayoutVisibleWindow() const override;
-    [[nodiscard]] winrt::Rect GetLayoutRealizationWindow() const override;
+    winrt::Rect GetLayoutVisibleWindow() const override;
+    winrt::Rect GetLayoutRealizationWindow() const override;
 
     void SetLayoutExtent(winrt::Rect extent) override;
-    [[nodiscard]] winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
+    winrt::Point GetOrigin() const override { return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
     void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override;
@@ -42,7 +42,7 @@ public:
 
     void ResetScrollers() override;
 
-    [[nodiscard]] winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
+    winrt::UIElement MadeAnchor() const override { return m_makeAnchorElement.get(); }
 
 private:
     struct ScrollerInfo;
@@ -52,15 +52,15 @@ private:
     void OnLayoutUpdated(winrt::IInspectable const& sender, winrt::IInspectable const& args);
 
     void EnsureScroller();
-    [[nodiscard]] bool HasScroller() const { return m_scroller != nullptr; }
+    bool HasScroller() const { return m_scroller != nullptr; }
     void UpdateViewport(winrt::Rect const& args);
     void ResetCacheBuffer();
     void ValidateCacheLength(double cacheLength);
     void RegisterCacheBuildWork();
     void TryInvalidateMeasure();
-    [[nodiscard]] winrt::Rect GetLayoutVisibleWindowDiscardAnchor() const;
+    winrt::Rect GetLayoutVisibleWindowDiscardAnchor() const;
 
-    [[nodiscard]] winrt::hstring GetLayoutId() const;
+    winrt::hstring GetLayoutId() const;
     void OnCompositionTargetRendering(winrt::IInspectable const& sender, winrt::IInspectable const& args);
     winrt::UIElement GetImmediateChildOfRepeater(winrt::UIElement const& descendant);
 

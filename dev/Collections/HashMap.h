@@ -95,17 +95,17 @@ public:
     }
 #pragma endregion
 
-    [[nodiscard]] unsigned int GetMutationCount() const
+    unsigned int GetMutationCount() const
     {
         return m_mutationCount;
     }
 
-    [[nodiscard]] T_iterator Begin() const
+    T_iterator Begin() const
     {
         return m_map.cbegin();
     }
 
-    [[nodiscard]] T_iterator End() const
+    T_iterator End() const
     {
         return m_map.cend();
     }

@@ -29,17 +29,17 @@ public:
     bool Cancel();
     void Cancel(bool value); 
 
-    [[nodiscard]] double GetTargetHorizontalOffset() const
+    double GetTargetHorizontalOffset() const
     {
         return m_targetHorizontalOffset;
     }
 
-    [[nodiscard]] double GetTargetVerticalOffset() const
+    double GetTargetVerticalOffset() const
     {
         return m_targetVerticalOffset;
     }
 
-    [[nodiscard]] bool GetCancel() const
+    bool GetCancel() const
     {
         return m_cancel;
     }

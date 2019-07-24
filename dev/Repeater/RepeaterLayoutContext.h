@@ -13,7 +13,7 @@ public:
 
     // Explicitly implement GetRuntimeClassName because winrt::implements chooses the first interface
     // as our name and we want the concrete VirtualizingLayoutContext as our name.
-    [[nodiscard]] hstring GetRuntimeClassName() const
+    hstring GetRuntimeClassName() const
     {
         return VirtualizingLayoutContext::GetRuntimeClassName();
     }

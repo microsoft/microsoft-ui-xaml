@@ -28,7 +28,7 @@ public:
     winrt::float2 EndPosition();
 
     void SetOffsetsChangeId(int32_t offsetsChangeId);
-    [[nodiscard]] winrt::CompositionAnimation GetAnimation() const;
+    winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetStartPosition(const winrt::float2& startPosition);
     void SetEndPosition(const winrt::float2& endPosition);

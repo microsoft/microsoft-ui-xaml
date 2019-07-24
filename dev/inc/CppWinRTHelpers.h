@@ -326,7 +326,7 @@ struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls
         return static_cast<winrt::IInspectable>(*this).as<class_type>();
     }
 
-    [[nodiscard]] hstring GetRuntimeClassName() const
+    hstring GetRuntimeClassName() const
     {
         return hstring{ winrt::name_of<T>() };
     }
@@ -345,7 +345,7 @@ struct Awaitable
 
     // Awaitable contract.
     // Blocks until the awaitable is completed, or error.
-    [[nodiscard]] bool await_ready() const noexcept
+    bool await_ready() const noexcept
     {
         return ::WaitForSingleObject(m_signal.get(), 0) == 0;
     }

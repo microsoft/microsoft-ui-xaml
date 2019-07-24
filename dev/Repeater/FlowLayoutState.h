@@ -17,11 +17,11 @@ public:
     void OnLineArranged(int startIndex, int countInLine, double lineSize, const winrt::VirtualizingLayoutContext& context);
 
     ::FlowLayoutAlgorithm& FlowAlgorithm() { return m_flowAlgorithm; }
-    [[nodiscard]] double TotalLineSize() const { return m_totalLineSize; }
-    [[nodiscard]] int TotalLinesMeasured() const { return m_totalLinesMeasured; }
-    [[nodiscard]] double TotalItemsPerLine() const { return m_totalItemsPerLine; }
+    double TotalLineSize() const { return m_totalLineSize; }
+    int TotalLinesMeasured() const { return m_totalLinesMeasured; }
+    double TotalItemsPerLine() const { return m_totalItemsPerLine; }
 
-    [[nodiscard]] winrt::Size SpecialElementDesiredSize() const { return m_specialElementDesiredSize; }
+    winrt::Size SpecialElementDesiredSize() const { return m_specialElementDesiredSize; }
     void SpecialElementDesiredSize(winrt::Size value) { m_specialElementDesiredSize = value; }
 
 private:

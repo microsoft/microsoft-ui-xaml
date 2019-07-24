@@ -15,12 +15,12 @@ public:
         winrt::IInspectable const& options);
     ~OffsetsChange();
 
-    [[nodiscard]] double ZoomedHorizontalOffset() const
+    double ZoomedHorizontalOffset() const
     {
         return m_zoomedHorizontalOffset;
     }
 
-    [[nodiscard]] double ZoomedVerticalOffset() const
+    double ZoomedVerticalOffset() const
     {
         return m_zoomedVerticalOffset;
     }

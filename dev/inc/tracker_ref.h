@@ -358,7 +358,7 @@ private:
 #endif
     }
 
-    [[nodiscard]] bool ShouldFallbackToComPointers() const
+    bool ShouldFallbackToComPointers() const
     {
         // On pre-RS4 builds we sometimes hit a crash when using tracker ref:
         // Bug 13904947: AV during ResetReferencesFromSparcePropertyValues in QUIAffinityReleaseQueue::DoCleanup
@@ -432,7 +432,7 @@ public:
 #endif
     }
 
-    [[nodiscard]] const ITrackerHandleManager* GetTrackerHandleManager() const
+    const ITrackerHandleManager* GetTrackerHandleManager() const
     {
         return m_owner;
     }

@@ -14,21 +14,21 @@ public:
         winrt::IReference<winrt::float2> inertiaDecayRate);
     ~OffsetsChangeWithAdditionalVelocity();
 
-    [[nodiscard]] winrt::float2 OffsetsVelocity() const
+    winrt::float2 OffsetsVelocity() const
     {
         return m_offsetsVelocity;
     }
 
     void OffsetsVelocity(winrt::float2 const& offsetsVelocity);
 
-    [[nodiscard]] winrt::float2 AnticipatedOffsetsChange() const
+    winrt::float2 AnticipatedOffsetsChange() const
     {
         return m_anticipatedOffsetsChange;
     }
 
     void AnticipatedOffsetsChange(winrt::float2 const& anticipatedOffsetsChange);
 
-    [[nodiscard]] winrt::IReference<winrt::float2> InertiaDecayRate() const
+    winrt::IReference<winrt::float2> InertiaDecayRate() const
     {
         return safe_cast<winrt::IReference<winrt::float2>>(m_inertiaDecayRate);
     }

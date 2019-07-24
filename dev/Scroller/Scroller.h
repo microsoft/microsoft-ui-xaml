@@ -204,12 +204,12 @@ public:
         const winrt::UIElement& element);
 
     // Invoked by ScrollerTestHooks
-    [[nodiscard]] float GetContentLayoutOffsetX() const
+    float GetContentLayoutOffsetX() const
     {
         return m_contentLayoutOffsetX;
     }
 
-    [[nodiscard]] float GetContentLayoutOffsetY() const
+    float GetContentLayoutOffsetY() const
     {
         return m_contentLayoutOffsetY;
     }
@@ -253,8 +253,8 @@ public:
 
 #pragma region Automation Peer Helpers
     // Public methods accessed by the CScrollerAutomationPeer class
-    [[nodiscard]] double GetZoomedExtentWidth() const;
-    [[nodiscard]] double GetZoomedExtentHeight() const;
+    double GetZoomedExtentWidth() const;
+    double GetZoomedExtentHeight() const;
 
     void PageLeft();
     void PageRight();
@@ -283,13 +283,13 @@ private:
         winrt::Rect& finalContentRect,
         bool wasContentArrangeWidthStretched,
         bool wasContentArrangeHeightStretched);
-    [[nodiscard]] float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
-    [[nodiscard]] float ComputeEndOfInertiaZoomFactor() const;
+    float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
+    float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
     void ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition);
     winrt::float2 ComputePositionFromOffsets(double zoomedHorizontalOffset, double zoomedVerticalOffset);
     template <typename T> double ComputeValueAfterSnapPoints(double value, std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>> const& snapPointsSet);
-    [[nodiscard]] winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
+    winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
     void ComputeBringIntoViewTargetOffsets(
         const winrt::UIElement& content,
         const winrt::SnapPointsMode& snapPointsMode,
@@ -486,23 +486,23 @@ private:
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
     void CompleteDelayedOperations();
-    [[nodiscard]] winrt::float2 GetMouseWheelAnticipatedOffsetsChange() const;
-    [[nodiscard]] float GetMouseWheelAnticipatedZoomFactorChange() const;
-    [[nodiscard]] int GetInteractionTrackerOperationsTicksCountdownForTrigger(
+    winrt::float2 GetMouseWheelAnticipatedOffsetsChange() const;
+    float GetMouseWheelAnticipatedZoomFactorChange() const;
+    int GetInteractionTrackerOperationsTicksCountdownForTrigger(
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
-    [[nodiscard]] int GetInteractionTrackerOperationsCount(
+    int GetInteractionTrackerOperationsCount(
         bool includeAnimatedOperations,
         bool includeNonAnimatedOperations) const;
-    [[nodiscard]] std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
         std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const;
-    [[nodiscard]] std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
-    [[nodiscard]] std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         ScrollerViewKind const& viewKind,
         winrt::ScrollOptions const& options) const;
-    [[nodiscard]] std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
     template <typename T> winrt::InteractionTrackerInertiaRestingValue GetInertiaRestingValue(
@@ -521,25 +521,25 @@ private:
     winrt::ZoomMode GetMouseWheelZoomMode();
 #endif
 
-    [[nodiscard]] double GetComputedMaxWidth(
+    double GetComputedMaxWidth(
         double defaultMaxWidth,
         const winrt::FrameworkElement& content) const;
-    [[nodiscard]] double GetComputedMaxHeight(
+    double GetComputedMaxHeight(
         double defaultMaxHeight,
         const winrt::FrameworkElement& content) const;
-    [[nodiscard]] winrt::float2 GetArrangeRenderSizesDelta(
+    winrt::float2 GetArrangeRenderSizesDelta(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMinPositionExpression(
+    winrt::hstring GetMinPositionExpression(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMinPositionXExpression(
+    winrt::hstring GetMinPositionXExpression(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMinPositionYExpression(
+    winrt::hstring GetMinPositionYExpression(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMaxPositionExpression(
+    winrt::hstring GetMaxPositionExpression(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMaxPositionXExpression(
+    winrt::hstring GetMaxPositionXExpression(
         const winrt::UIElement& content) const;
-    [[nodiscard]] winrt::hstring GetMaxPositionYExpression(
+    winrt::hstring GetMaxPositionYExpression(
         const winrt::UIElement& content) const;
 
     winrt::CompositionAnimation GetPositionAnimation(
@@ -553,10 +553,10 @@ private:
         int32_t zoomFactorChangeId);
     int GetNextViewChangeId();
 
-    [[nodiscard]] bool IsInertiaFromImpulse() const;
-    [[nodiscard]] bool IsLoadedAndSetUp() const;
+    bool IsInertiaFromImpulse() const;
+    bool IsLoadedAndSetUp() const;
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
-    [[nodiscard]] bool HasBringingIntoViewListener() const
+    bool HasBringingIntoViewListener() const
     {
         return !!m_bringingIntoViewEventSource;
     }

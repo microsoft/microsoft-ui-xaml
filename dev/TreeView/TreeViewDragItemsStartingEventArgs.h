@@ -10,9 +10,9 @@ class TreeViewDragItemsStartingEventArgs :
 {
 public:
     void DragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args);
-    [[nodiscard]] bool Cancel() const;
+    bool Cancel() const;
     void Cancel(const bool value);
-    [[nodiscard]] DataPackage Data() const;
+    DataPackage Data() const;
     winrt::IVector<winrt::IInspectable> Items();
 
 private:

@@ -40,12 +40,12 @@ struct FrameworkPackageDetectorFactory :
     {
         return L"Microsoft.UI.Xaml.Controls.Internal.FrameworkPackageDetector";
     }
-    [[nodiscard]] hstring GetRuntimeClassName() const
+    hstring GetRuntimeClassName() const
     {
         return RuntimeClassName();
     }
 
-    [[nodiscard]] winrt::IInspectable ActivateInstance() const
+    winrt::IInspectable ActivateInstance() const
     {
         throw winrt::hresult_not_implemented();
     }

@@ -25,7 +25,7 @@ public:
     winrt::IVector<winrt::UIElement> GetAnchorCandidates();
     void SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates);
 
-    [[nodiscard]] winrt::UIElement GetAnchorElement() const;
+    winrt::UIElement GetAnchorElement() const;
     void SetAnchorElement(const winrt::UIElement& anchorElement);
 
 private:

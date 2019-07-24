@@ -62,8 +62,8 @@ private:
     {
         PinnedElementInfo(const ITrackerHandleManager* owner, const winrt::UIElement& element);
 
-        [[nodiscard]] winrt::UIElement PinnedElement() const { return m_pinnedElement.get(); }
-        [[nodiscard]] winrt::com_ptr<VirtualizationInfo> VirtualizationInfo() const { return m_virtInfo.get(); }
+        winrt::UIElement PinnedElement() const { return m_pinnedElement.get(); }
+        winrt::com_ptr<VirtualizationInfo> VirtualizationInfo() const { return m_virtInfo.get(); }
 
     private:
         tracker_ref<winrt::UIElement> m_pinnedElement;

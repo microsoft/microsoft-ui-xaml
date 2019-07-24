@@ -88,13 +88,13 @@ public:
     static winrt::com_ptr<VirtualizationInfo> GetVirtualizationInfo(const winrt::UIElement& element);
     static winrt::com_ptr<VirtualizationInfo> CreateAndInitializeVirtualizationInfo(const winrt::UIElement& element);
 
-    [[nodiscard]] winrt::IInspectable LayoutState() const { return m_layoutState.get(); }
+    winrt::IInspectable LayoutState() const { return m_layoutState.get(); }
     void LayoutState(const winrt::IInspectable& value) { m_layoutState.set(value); }
-    [[nodiscard]] winrt::Rect VisibleWindow() const { return m_viewportManager->GetLayoutVisibleWindow(); }
-    [[nodiscard]] winrt::Rect RealizationWindow() const { return m_viewportManager->GetLayoutRealizationWindow(); }
-    [[nodiscard]] winrt::UIElement SuggestedAnchor() const { return m_viewportManager->SuggestedAnchor(); }
-    [[nodiscard]] winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
-    [[nodiscard]] winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
+    winrt::Rect VisibleWindow() const { return m_viewportManager->GetLayoutVisibleWindow(); }
+    winrt::Rect RealizationWindow() const { return m_viewportManager->GetLayoutRealizationWindow(); }
+    winrt::UIElement SuggestedAnchor() const { return m_viewportManager->SuggestedAnchor(); }
+    winrt::UIElement MadeAnchor() const { return m_viewportManager->MadeAnchor(); }
+    winrt::Point LayoutOrigin() const { return m_layoutOrigin; }
     void LayoutOrigin(winrt::Point value) { m_layoutOrigin = value; }
 
     // Pinning APIs
@@ -136,7 +136,7 @@ private:
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 
     winrt::VirtualizingLayoutContext GetLayoutContext();
-    [[nodiscard]] bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
+    bool IsProcessingCollectionChange() const { return m_processingItemsSourceChange != nullptr; }
 
     winrt::IIterable<winrt::DependencyObject> CreateChildrenInTabFocusOrderIterable();
 

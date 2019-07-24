@@ -62,7 +62,7 @@ private:
         return reinterpret_cast<winrt::DependencyProperty&>(m_dependencyProperty);
     }
 
-    [[nodiscard]] winrt::DependencyProperty const& Property() const
+    winrt::DependencyProperty const& Property() const
     {
         return reinterpret_cast<winrt::DependencyProperty const&>(m_dependencyProperty);
     }

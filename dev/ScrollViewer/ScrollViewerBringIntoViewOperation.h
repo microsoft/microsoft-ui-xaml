@@ -11,9 +11,9 @@ public:
     ScrollViewerBringIntoViewOperation(winrt::UIElement const& targetElement);
     ~ScrollViewerBringIntoViewOperation();
 
-    [[nodiscard]] bool HasMaxTicksCount() const;
-    [[nodiscard]] winrt::UIElement TargetElement() const;
-    [[nodiscard]] int8_t TicksCount() const;
+    bool HasMaxTicksCount() const;
+    winrt::UIElement TargetElement() const;
+    int8_t TicksCount() const;
     int8_t TickOperation();
 
 private:

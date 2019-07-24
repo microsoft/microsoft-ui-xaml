@@ -754,12 +754,12 @@ private:
         {
         }
 
-        [[nodiscard]] winrt::IInspectable Current() const
+        winrt::IInspectable Current() const
         {
             return m_inner.Current();
         }
 
-        [[nodiscard]] bool HasCurrent() const noexcept
+        bool HasCurrent() const noexcept
         {
             return m_inner.HasCurrent();
         }

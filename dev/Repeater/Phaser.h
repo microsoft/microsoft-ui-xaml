@@ -12,8 +12,8 @@ struct ElementInfo
         m_virtInfo(virtInfo)
     {}
 
-    [[nodiscard]] winrt::UIElement Element() const { return m_element; }
-    [[nodiscard]] winrt::com_ptr<VirtualizationInfo> VirtInfo() const { return m_virtInfo; }
+    winrt::UIElement Element() const { return m_element; }
+    winrt::com_ptr<VirtualizationInfo> VirtInfo() const { return m_virtInfo; }
 private:
     winrt::UIElement m_element{ nullptr };
     winrt::com_ptr<VirtualizationInfo> m_virtInfo{ nullptr };
