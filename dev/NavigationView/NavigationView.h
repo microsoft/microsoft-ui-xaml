@@ -247,6 +247,7 @@ private:
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
     void UpdatePaneTitleFrameworkElementParents();
+    std::function<void ()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSplitViewPaneClosed(const winrt::DependencyObject& sender, const winrt::IInspectable& obj);

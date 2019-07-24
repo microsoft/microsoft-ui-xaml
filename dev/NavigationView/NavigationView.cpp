@@ -180,40 +180,13 @@ void NavigationView::OnApplyTemplate()
         }
     }
 
-    if (auto leftNavPaneHeaderContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneHeaderContentBorder, controlProtected))
-    {
-        m_leftNavPaneHeaderContentBorder.set(leftNavPaneHeaderContentBorder);
-    }
-
-    if (auto leftNavPaneCustomContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneCustomContentBorder, controlProtected))
-    {
-        m_leftNavPaneCustomContentBorder.set(leftNavPaneCustomContentBorder);
-    }
-
-    if (auto leftNavFooterContentBorder = GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, controlProtected))
-    {
-        m_leftNavFooterContentBorder.set(leftNavFooterContentBorder);
-    }
-
-    if (auto paneHeaderOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneHeaderOnTopPane, controlProtected))
-    {
-        m_paneHeaderOnTopPane.set(paneHeaderOnTopPane);
-    }
-
-    if (auto paneTitleOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneTitleOnTopPane, controlProtected))
-    {
-        m_paneTitleOnTopPane.set(paneTitleOnTopPane);
-    }
-
-    if (auto paneCustomContentOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected))
-    {
-        m_paneCustomContentOnTopPane.set(paneCustomContentOnTopPane);
-    }
-
-    if (auto paneFooterOnTopPane = GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected))
-    {
-        m_paneFooterOnTopPane.set(paneFooterOnTopPane);
-    }
+    m_leftNavPaneHeaderContentBorder.set(GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneHeaderContentBorder, controlProtected));
+    m_leftNavPaneCustomContentBorder.set(GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneCustomContentBorder, controlProtected));
+    m_leftNavFooterContentBorder.set(GetTemplateChildT<winrt::ContentControl>(c_leftNavFooterContentBorder, controlProtected));
+    m_paneHeaderOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneHeaderOnTopPane, controlProtected));
+    m_paneTitleOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneTitleOnTopPane, controlProtected));
+    m_paneCustomContentOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected));
+    m_paneFooterOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected));
 
     // Get a pointer to the root SplitView
     if (auto splitView = GetTemplateChildT<winrt::SplitView>(c_rootSplitViewName, controlProtected))
@@ -238,6 +211,8 @@ void NavigationView::OnApplyTemplate()
         UpdateIsClosedCompact();
     }
 
+    m_topNavGrid.set(GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected));
+
     // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
     if (auto leftNavListView = GetTemplateChildT<winrt::ListView>(c_menuItemsHost, controlProtected))
     {
@@ -249,6 +224,12 @@ void NavigationView::OnApplyTemplate()
         m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
         SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
+
+        // Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
+        if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
+        {
+            leftNavListView.SingleSelectionFollowsFocus(false);
+        }
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -287,25 +268,9 @@ void NavigationView::OnApplyTemplate()
         }
     }
 
-    if (auto topNavGrid = GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected))
-    {
-        m_topNavGrid.set(topNavGrid);
-    }
-
-    if (auto topNavContentOverlayAreaGrid = GetTemplateChildT<winrt::Border>(c_topNavContentOverlayAreaGrid, controlProtected))
-    {
-        m_topNavContentOverlayAreaGrid.set(topNavContentOverlayAreaGrid);
-    }
-
-    if (auto leftNavSearchContentControl = GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneAutoSuggestBoxPresenter, controlProtected))
-    {
-        m_leftNavPaneAutoSuggestBoxPresenter.set(leftNavSearchContentControl);
-    }
-
-    if (auto topNavSearchContentControl = GetTemplateChildT<winrt::ContentControl>(c_topNavPaneAutoSuggestBoxPresenter, controlProtected))
-    {
-        m_topNavPaneAutoSuggestBoxPresenter.set(topNavSearchContentControl);
-    }
+    m_topNavContentOverlayAreaGrid.set(GetTemplateChildT<winrt::Border>(c_topNavContentOverlayAreaGrid, controlProtected));
+    m_leftNavPaneAutoSuggestBoxPresenter.set(GetTemplateChildT<winrt::ContentControl>(c_leftNavPaneAutoSuggestBoxPresenter, controlProtected));
+    m_topNavPaneAutoSuggestBoxPresenter.set(GetTemplateChildT<winrt::ContentControl>(c_topNavPaneAutoSuggestBoxPresenter, controlProtected));
 
     // Get pointer to the pane content area, for use in the selection indicator animation
     m_paneContentGrid.set(GetTemplateChildT<winrt::UIElement>(c_paneContentGridName, controlProtected));
@@ -347,8 +312,7 @@ void NavigationView::OnApplyTemplate()
     }
 
     // Register for changes in title bar layout
-    winrt::CoreApplicationViewTitleBar coreTitleBar = winrt::CoreApplication::GetCurrentView().TitleBar();
-    if (coreTitleBar)
+    if (auto coreTitleBar = winrt::CoreApplication::GetCurrentView().TitleBar())
     {
         m_coreTitleBar.set(coreTitleBar);
         m_titleBarMetricsChangedRevoker = coreTitleBar.LayoutMetricsChanged(winrt::auto_revoke, { this, &NavigationView::OnTitleBarMetricsChanged });
@@ -396,12 +360,6 @@ void NavigationView::OnApplyTemplate()
         {
             contentGrid.XYFocusKeyboardNavigation(winrt::XYFocusKeyboardNavigationMode::Disabled);
         }
-    }
-
-    // Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
-    if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior() && m_leftNavListView)
-    {
-        m_leftNavListView.get().SingleSelectionFollowsFocus(false);
     }
 
     m_accessKeyInvokedRevoker = AccessKeyInvoked(winrt::auto_revoke, { this, &NavigationView::OnAccessKeyInvoked });
@@ -925,7 +883,7 @@ void NavigationView::UpdateSettingsItemToolTip()
 // Updates the PaneTitleHolder.Visibility and PaneTitleTextBlock.Parent properties based on the PaneDisplayMode, PaneTitle and IsPaneToggleButtonVisible properties.
 void NavigationView::UpdatePaneTitleFrameworkElementParents()
 {
-    if (auto paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
+    if (auto&& paneTitleHolderFrameworkElement = m_paneTitleHolderFrameworkElement.get())
     {
         auto isPaneToggleButtonVisible = IsPaneToggleButtonVisible();
         auto isTopNavigationView = IsTopNavigationView();
@@ -937,65 +895,33 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
              (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::LeftMinimal && !IsPaneOpen())) ?
             winrt::Visibility::Collapsed : winrt::Visibility::Visible);
 
-        if (auto paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
+        if (auto&& paneTitleFrameworkElement = m_paneTitleFrameworkElement.get())
         {
-            auto paneTitleOnTopPane = m_paneTitleOnTopPane.get();
-            auto paneTitlePresenter = m_paneTitlePresenter.get();
-            auto paneToggleButton = m_paneToggleButton.get();
+            const auto first = SetPaneTitleFrameworkElementParent(m_paneToggleButton.get(), paneTitleFrameworkElement, isTopNavigationView || !isPaneToggleButtonVisible);
+            const auto second = SetPaneTitleFrameworkElementParent(m_paneTitlePresenter.get(), paneTitleFrameworkElement, isTopNavigationView || isPaneToggleButtonVisible);
+            const auto third = SetPaneTitleFrameworkElementParent(m_paneTitleOnTopPane.get(), paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
+            first ? first() : second ? second() : third ? third() : 0;
+        }
+    }
+}
 
-            if (isTopNavigationView)
+std::function<void ()> NavigationView::SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle)
+{
+    if (parent)
+    {
+        if ((parent.Content() == paneTitle) == shouldNotContainPaneTitle)
+        {
+            if (shouldNotContainPaneTitle)
             {
-                // PaneTitleTextBlock must be PaneTitleOnTopPane's Content
-                if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
-                {
-                    paneToggleButton.Content(nullptr);
-                }
-                else if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
-                {
-                    paneTitlePresenter.Content(nullptr);
-                }
-
-                if (paneTitleOnTopPane && paneTitleOnTopPane.Content() != paneTitleFrameworkElement)
-                {
-                    paneTitleOnTopPane.Content(paneTitleFrameworkElement);
-                }
-            }
-            else if (isPaneToggleButtonVisible)
-            {
-                // PaneTitleTextBlock must be TogglePaneButton's Content
-                if (paneTitlePresenter && paneTitlePresenter.Content() == paneTitleFrameworkElement)
-                {
-                    paneTitlePresenter.Content(nullptr);
-                }
-                else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
-                {
-                    paneTitleOnTopPane.Content(nullptr);
-                }
-
-                if (paneToggleButton && paneToggleButton.Content() != paneTitleFrameworkElement)
-                {
-                    paneToggleButton.Content(paneTitleFrameworkElement);
-                }
+                parent.Content(nullptr);
             }
             else
             {
-                // PaneTitleTextBlock must be PaneTitlePresenter's Content
-                if (paneToggleButton && paneToggleButton.Content() == paneTitleFrameworkElement)
-                {
-                    paneToggleButton.Content(nullptr);
-                }
-                else if (paneTitleOnTopPane && paneTitleOnTopPane.Content() == paneTitleFrameworkElement)
-                {
-                    paneTitleOnTopPane.Content(nullptr);
-                }
-
-                if (paneTitlePresenter && paneTitlePresenter.Content() != paneTitleFrameworkElement)
-                {
-                    paneTitlePresenter.Content(paneTitleFrameworkElement);
-                }
+                return [parent, paneTitle]() { parent.Content(paneTitle); };
             }
         }
     }
+    return nullptr;
 }
 
 void NavigationView::OnSettingsTapped(const winrt::IInspectable& /*sender*/, const winrt::TappedRoutedEventArgs& /*args*/)
