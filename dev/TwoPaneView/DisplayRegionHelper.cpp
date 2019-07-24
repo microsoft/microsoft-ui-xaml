@@ -25,6 +25,8 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
     info.RegionCount = 1;
     info.Mode = winrt::TwoPaneViewMode::SinglePane;
 
+    OutputDebugString(L"  GetRegionInfo()\n");
+
     if (instance->m_simulateDisplayRegions)
     {
         // Create fake rectangles for test app
@@ -50,6 +52,9 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
     }
     else if (SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable())
     {
+        WCHAR strOut[1024];
+        OutputDebugString(L"    DisplayRegions available\n");
+
         // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.
         winrt::ApplicationView view{ nullptr };
         try
@@ -60,16 +65,25 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
         // Verify that the window is Tiled
         if (view)
         {
+            OutputDebugString(L"    Got ApplicationView\n");
+
             auto regions = view.GetDisplayRegions();
             info.RegionCount = std::min(regions.Size(), c_maxRegions);
+
+            StringCchPrintf(strOut, ARRAYSIZE(strOut), L"    Regions found: %d\n", regions.Size());
+            OutputDebugString(strOut);
 
             // More than one region
             if (info.RegionCount == 2)
             {
+                OutputDebugString(L"    2 regions found\n");
+
                 winrt::Rect windowRect = WindowRect();
 
                 if (windowRect.Width > windowRect.Height)
                 {
+                    OutputDebugString(L"    Double portrait\n");
+
                     info.Mode = winrt::TwoPaneViewMode::Wide;
                     float width = windowRect.Width / 2;
                     info.Regions[0] = { 0, 0, width, windowRect.Height };
@@ -77,6 +91,8 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
                 }
                 else
                 {
+                    OutputDebugString(L"    Double landscape\n");
+
                     info.Mode = winrt::TwoPaneViewMode::Tall;
                     float height = windowRect.Height / 2;
                     info.Regions[0] = { 0, 0, windowRect.Width, height };

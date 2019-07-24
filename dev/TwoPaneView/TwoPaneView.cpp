@@ -118,18 +118,25 @@ void TwoPaneView::UpdateMode()
 
     ViewMode newMode = (PanePriority() == winrt::TwoPaneViewPriority::Pane1) ? ViewMode::Pane1Only : ViewMode::Pane2Only;
 
+    OutputDebugString(L"UpdateMode()\n");
+
     // Calculate new mode
     DisplayRegionHelperInfo info = DisplayRegionHelper::GetRegionInfo();
     winrt::Rect rcControl = GetControlRect();
     bool isInMultipleRegions = IsInMultipleRegions(info, rcControl);
-    
+
+    WCHAR strOut[1024];
+
     if (isInMultipleRegions)
     {
+        OutputDebugString(L"  Multiple Regions\n");
+
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
         {
             // Regions are laid out horizontally
             if (WideModeConfiguration() != winrt::TwoPaneViewWideModeConfiguration::SinglePane)
             {
+                OutputDebugString(L"  Split horizontally due to regions\n");
                 newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight : ViewMode::RightLeft;
             }
         }
@@ -138,27 +145,41 @@ void TwoPaneView::UpdateMode()
             // Regions are laid out vertically
             if (TallModeConfiguration() != winrt::TwoPaneViewTallModeConfiguration::SinglePane)
             {
+                OutputDebugString(L"  Split vertically due to regions\n");
                 newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom : ViewMode::BottomTop;
             }
         }
     }
     else
     {
+        OutputDebugString(L"  One Region\n");
+
+        /*StringCchPrintf(strOut, ARRAYSIZE(strOut), L"  Control Width: %f\n", controlWidth);
+        OutputDebugString(strOut);
+
+        StringCchPrintf(strOut, ARRAYSIZE(strOut), L"  MinWideModeWidth: %f\n", MinWideModeWidth());
+        OutputDebugString(strOut);*/
+
         // One region
         if (controlWidth > MinWideModeWidth() && WideModeConfiguration() != winrt::TwoPaneViewWideModeConfiguration::SinglePane)
         {
             // Split horizontally
+            OutputDebugString(L"  Split horizontally\n");
             newMode = (WideModeConfiguration() == winrt::TwoPaneViewWideModeConfiguration::LeftRight) ? ViewMode::LeftRight : ViewMode::RightLeft;
         }
         else if (controlHeight > MinTallModeHeight() && TallModeConfiguration() != winrt::TwoPaneViewTallModeConfiguration::SinglePane)
         {
             // Split vertically
+            OutputDebugString(L"  Split vertically\n");
             newMode = (TallModeConfiguration() == winrt::TwoPaneViewTallModeConfiguration::TopBottom) ? ViewMode::TopBottom : ViewMode::BottomTop;
         }
     }
 
     // Update row/column sizes (this may need to happen even if the mode doesn't change)
     UpdateRowsColumns(newMode, info, rcControl);
+
+    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"  newMode: %d\n", newMode);
+    OutputDebugString(strOut);
 
     // Update mode if necessary
     if (newMode != m_currentMode)
@@ -169,12 +190,12 @@ void TwoPaneView::UpdateMode()
 
         switch (m_currentMode)
         {
-            case ViewMode::Pane1Only: winrt::VisualStateManager::GoToState(*this, L"ViewMode_OneOnly", true); break;
-            case ViewMode::Pane2Only: winrt::VisualStateManager::GoToState(*this, L"ViewMode_TwoOnly", true); break;
-            case ViewMode::LeftRight: winrt::VisualStateManager::GoToState(*this, L"ViewMode_LeftRight", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
-            case ViewMode::RightLeft: winrt::VisualStateManager::GoToState(*this, L"ViewMode_RightLeft", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
-            case ViewMode::TopBottom: winrt::VisualStateManager::GoToState(*this, L"ViewMode_TopBottom", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
-            case ViewMode::BottomTop: winrt::VisualStateManager::GoToState(*this, L"ViewMode_BottomTop", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
+            case ViewMode::Pane1Only: OutputDebugString(L"  GoToState: ViewMode_OneOnly\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_OneOnly", true); break;
+            case ViewMode::Pane2Only: OutputDebugString(L"  GoToState: ViewMode_TwoOnly\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_TwoOnly", true); break;
+            case ViewMode::LeftRight: OutputDebugString(L"  GoToState: ViewMode_LeftRight\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_LeftRight", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
+            case ViewMode::RightLeft: OutputDebugString(L"  GoToState: ViewMode_RightLeft\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_RightLeft", true); newViewMode = winrt::TwoPaneViewMode::Wide; break;
+            case ViewMode::TopBottom: OutputDebugString(L"  GoToState: ViewMode_TopBottom\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_TopBottom", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
+            case ViewMode::BottomTop: OutputDebugString(L"  GoToState: ViewMode_BottomTop\n"); winrt::VisualStateManager::GoToState(*this, L"ViewMode_BottomTop", true); newViewMode = winrt::TwoPaneViewMode::Tall; break;
         }
 
         if (newViewMode != Mode())
@@ -253,6 +274,8 @@ bool TwoPaneView::IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect 
 {
     bool isInMultipleRegions = false;
 
+    OutputDebugString(L"  IsInMultipleRegions: ");
+
     if (info.Mode != winrt::TwoPaneViewMode::SinglePane)
     {
         winrt::Rect rc1 = info.Regions[0];
@@ -261,20 +284,42 @@ bool TwoPaneView::IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect 
 
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
         {
+            OutputDebugString(L"Wide Mode: ");
+
             // Check that the control is over the split
             if (rcControl.X < rc1.Width && rcControl.X + rcControl.Width > rc2.X)
             {
+                OutputDebugString(L"Control covers split\n");
                 isInMultipleRegions = true;
+            }
+            else
+            {
+                OutputDebugString(L"Control is not over split\n");
             }
         }
         else if (info.Mode == winrt::TwoPaneViewMode::Tall)
         {
+            OutputDebugString(L"Tall Mode: ");
+
             // Check that the control is over the split
             if (rcControl.Y < rc1.Height && rcControl.Y + rcControl.Height > rc2.Y)
             {
+                OutputDebugString(L"Control covers split\n");
                 isInMultipleRegions = true;
             }
+            else
+            {
+                OutputDebugString(L"Control is not over split\n");
+            }
         }
+        else
+        {
+            OutputDebugString(L"Impossible\n");
+        }
+    }
+    else
+    {
+        OutputDebugString(L"OneRegion\n");
     }
 
     return isInMultipleRegions;
