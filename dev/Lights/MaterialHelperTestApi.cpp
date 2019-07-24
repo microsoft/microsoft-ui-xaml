@@ -5,6 +5,3 @@
 #include "common.h"
 #include "MaterialHelper.h"
 #include "MaterialHelperTestApi.h"
-
-MaterialHelperTestApi::MaterialHelperTestApi()
-= default;

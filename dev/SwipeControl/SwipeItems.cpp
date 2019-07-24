@@ -17,9 +17,6 @@ SwipeItems::SwipeItems()
     put_Items(collection);
 }
 
-SwipeItems::~SwipeItems()
-= default;
-
 void SwipeItems::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.Property() == s_ModeProperty)

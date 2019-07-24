@@ -26,9 +26,6 @@ TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandl
 }
 
 
-TopNavigationViewDataProvider::~TopNavigationViewDataProvider()
-= default;
-
 winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetPrimaryItems()
 {
     return GetVector(PrimaryList)->GetVector();

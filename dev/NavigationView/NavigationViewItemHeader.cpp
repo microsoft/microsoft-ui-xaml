@@ -13,9 +13,6 @@ NavigationViewItemHeader::NavigationViewItemHeader()
     SetDefaultStyleKey(this);
 }
 
-NavigationViewItemHeader::~NavigationViewItemHeader()
-= default;
-
 void NavigationViewItemHeader::OnApplyTemplate()
 {
     if (auto splitView = GetSplitView())

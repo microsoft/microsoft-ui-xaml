@@ -20,9 +20,6 @@ TeachingTip::TeachingTip()
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
 }
 
-TeachingTip::~TeachingTip()
-= default;
-
 winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 {
     return winrt::make<TeachingTipAutomationPeer>(*this);

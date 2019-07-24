@@ -19,9 +19,6 @@ static constexpr auto c_rowBottomName    = L"PART_RowBottom"sv;
 
 using namespace std;
 
-TwoPaneView::~TwoPaneView()
-= default;
-
 TwoPaneView::TwoPaneView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TwoPaneView);

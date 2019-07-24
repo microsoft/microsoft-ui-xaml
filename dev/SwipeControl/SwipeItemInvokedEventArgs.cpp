@@ -7,9 +7,6 @@
 #include "SwipeControl.h"
 #include "SwipeItemInvokedEventArgs.h"
 
-SwipeItemInvokedEventArgs::SwipeItemInvokedEventArgs()
-= default;
-
 #pragma region ISwipeItemInvokedEventArgs
 winrt::SwipeControl SwipeItemInvokedEventArgs::SwipeControl()
 {

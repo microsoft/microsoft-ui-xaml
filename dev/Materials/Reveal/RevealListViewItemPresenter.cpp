@@ -6,9 +6,6 @@
 #include "RevealListViewItemPresenter.h"
 #include "RevealBrush.h"
 
-RevealListViewItemPresenter::RevealListViewItemPresenter()
-= default;
-
 bool RevealListViewItemPresenter::GoToElementStateCore(winrt::hstring const& state, bool useTransitions) 
 {
     RevealBrush::EnsureProperties();

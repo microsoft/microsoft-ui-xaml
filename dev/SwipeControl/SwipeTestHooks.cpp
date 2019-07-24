@@ -7,9 +7,6 @@
 
 com_ptr<SwipeTestHooks> SwipeTestHooks::s_testHooks{};
 
-SwipeTestHooks::SwipeTestHooks()
-= default;
-
 com_ptr<SwipeTestHooks> SwipeTestHooks::EnsureGlobalTestHooks()
 {
     static bool s_initialized = []() {

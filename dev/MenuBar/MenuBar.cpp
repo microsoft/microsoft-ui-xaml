@@ -17,9 +17,6 @@ MenuBar::MenuBar()
     SetValue(s_ItemsProperty, items);
 }
 
-MenuBar::~MenuBar()
-= default;
-
 // IUIElement / IUIElementOverridesHelper
 winrt::AutomationPeer MenuBar::OnCreateAutomationPeer()
 {

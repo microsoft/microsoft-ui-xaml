@@ -1,10 +1,6 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTipClosedEventArgs.h"
-
-
-TeachingTipClosedEventArgs::TeachingTipClosedEventArgs()
-= default;
 
 winrt::TeachingTipCloseReason TeachingTipClosedEventArgs::Reason()
 {

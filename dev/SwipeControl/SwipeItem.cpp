@@ -24,9 +24,6 @@ SwipeItem::SwipeItem()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_SwipeItem);
 }
 
-SwipeItem::~SwipeItem()
-= default;
-
 #pragma endregion
 
 

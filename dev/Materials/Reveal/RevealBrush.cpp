@@ -116,10 +116,6 @@ RevealBorderBrush::RevealBorderBrush()
     m_isBorder = true;
 }
 
-RevealBackgroundBrush::RevealBackgroundBrush()
-= default;
-
-
 RevealBrush::~RevealBrush()
 {
 #ifndef BUILD_WINDOWS

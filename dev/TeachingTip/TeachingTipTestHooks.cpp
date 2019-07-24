@@ -4,9 +4,6 @@
 
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::s_testHooks{};
 
-TeachingTipTestHooks::TeachingTipTestHooks()
-= default;
-
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::EnsureGlobalTestHooks()
 {
     static bool s_initialized = []() {

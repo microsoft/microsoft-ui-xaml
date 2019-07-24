@@ -14,9 +14,6 @@ RevealTestApi::RevealTestApi()
 #endif
 }
 
-RevealTestApi::~RevealTestApi()
-= default;
-
 winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
 {
     if (auto root = winrt::Window::Current().Content())
