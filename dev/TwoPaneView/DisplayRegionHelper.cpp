@@ -70,7 +70,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
             auto regions = view.GetDisplayRegions();
             info.RegionCount = std::min(regions.Size(), c_maxRegions);
 
-            StringCchPrintf(strOut, ARRAYSIZE(strOut), L"    Regions found: %d\n", regions.Size());
+            StringCchPrintf(strOut, ARRAYSIZE(strOut), L"    Regions found: %d\n", (int)(regions.Size()));
             OutputDebugString(strOut);
 
             // More than one region
