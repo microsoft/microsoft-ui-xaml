@@ -72,10 +72,6 @@ STDAPI  DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOI
     return Module<InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
 }
 
-// Workaround for:
-// Bug 18379704: C++/WinRT causes apps to fail WACK due to usage of CoIncrementMTAUsage 
-int32_t WINRT_CALL WINRT_CoIncrementMTAUsage(void**) noexcept { return S_OK; }
-
 // Microsoft.UI.Xaml.def includes this as an export, but it only applies to WUXC.
 // We'll stub it out for MUX to avoid the build error we get otherwise.
 #ifndef BUILD_WINDOWS

@@ -208,64 +208,7 @@ private:
     int64_t m_token{};
 };
 
-// This type is a helper for types like Composition that don't support C++/WinRT's auto_revoke because
-// that relies on storing the object as a weak_ref. This holds a strong reference to the target, but
-// otherwise serves the same purpose.
-template <typename T, void(T::* RevokeMethod)(winrt::event_token const&) const>
-struct strong_event_revoker
-{
-    strong_event_revoker() noexcept = default;
-    strong_event_revoker(strong_event_revoker const&) = delete;
-    strong_event_revoker& operator=(strong_event_revoker const&) = delete;
 
-    strong_event_revoker(strong_event_revoker&&) noexcept = default;
-    strong_event_revoker& operator=(strong_event_revoker&& other) noexcept
-    {
-        strong_event_revoker(std::move(other)).swap(*this);
-        return *this;
-    }
-
-    strong_event_revoker(T const& object, winrt::event_token token)
-        : m_object(object)
-        , m_token(token)
-    {}
-
-    ~strong_event_revoker() noexcept
-    {
-        if (m_object)
-        {
-            revoke_impl(m_object);
-        }
-    }
-
-    void swap(strong_event_revoker& other) noexcept
-    {
-        std::swap(m_object, other.m_object);
-        std::swap(m_token, other.m_token);
-    }
-
-    void revoke() noexcept
-    {
-        revoke_impl(std::exchange(m_object, {nullptr}));
-    }
-
-    explicit operator bool() const noexcept
-    {
-        return bool{ m_object };
-    }
-
-private:
-    void revoke_impl(const T& object) noexcept
-    {
-        if (object)
-        {
-            (object.*RevokeMethod)(m_token);
-        }
-    }
-
-    T m_object{nullptr};
-    winrt::event_token m_token{};
-};
 
 inline PropertyChanged_revoker RegisterPropertyChanged(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, winrt::DependencyPropertyChangedCallback const& callback)
 {
@@ -317,7 +260,7 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 // which is the winrt::Foo type. Most times you will be using ReferenceTracker too so that pattern would look like:
 // class YourType : ReferenceTracker<YourType, DeriveFromPanelHelper_base, winrt::YourType>  <--- note the extra winrt::YourType here that's normally not needed.
 template <typename D, typename T, typename ... I>
-struct WINRT_EBO DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
+struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using class_type = typename T;
 
