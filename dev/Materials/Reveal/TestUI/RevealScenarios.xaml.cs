@@ -33,7 +33,11 @@ namespace MUXControlsTestApp
             listSource.Add(new RevealScenarioItem { Header = "Adjust Colors", SubHeader = "Click to adjust color props", Icon = "\uE105", Page = typeof(RevealScenarioColors) });
             listSource.Add(new RevealScenarioItem { Header = "Grid Test", SubHeader = "Click to see GridView tests", Icon = "\uE105", Page = typeof(RevealScenarioGrid) });
             listSource.Add(new RevealScenarioItem { Header = "List Test", SubHeader = "Click to see ListView", Icon = "\uE105", Page = typeof(RevealScenarioList) });
+#if (!BUILD_WINDOWS)
             listSource.Add(new RevealScenarioItem { Header = "Make another view", SubHeader = "Make secondary views", Icon = "\uE105", Page = typeof(RevealScenarioSecondaryView) });
+#endif
+            listSource.Add(new RevealScenarioItem { Header = "Test Item 4", SubHeader = "Click to do nothing", Icon = "\uE105" });
+
             themeSource = new ObservableCollection<RevealThemeItem>();
             foreach (ElementTheme theme in Enum.GetValues(typeof(ElementTheme)))
             {
@@ -60,7 +64,7 @@ namespace MUXControlsTestApp
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             ToggleSwitch toggle = (ToggleSwitch)sender;
-            if(toggle.IsOn)
+            if (toggle.IsOn)
             {
                 VisualStateManager.GoToState(this, "UseAcrylic", false);
             }

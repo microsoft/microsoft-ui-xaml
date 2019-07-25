@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
 using Common;
 
+#if !BUILD_WINDOWS
 using RevealBrushState = Microsoft.UI.Xaml.Media.RevealBrushState;
 using RevealBrush = Microsoft.UI.Xaml.Media.RevealBrush;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
@@ -24,6 +25,7 @@ using RevealTestApi = Microsoft.UI.Private.Media.RevealTestApi;
 using RevealBrushTestApi = Microsoft.UI.Private.Media.RevealBrushTestApi;
 using RevealBorderLight = Microsoft.UI.Private.Media.RevealBorderLight;
 using RevealHoverLight = Microsoft.UI.Private.Media.RevealHoverLight;
+#endif
 
 namespace MUXControlsTestApp
 {
@@ -142,7 +144,7 @@ namespace MUXControlsTestApp
                     lightTargetingResult = VerifyHoverBrushTargeting(revealHoverBrush);
                 }
                 logger.Verify(lightTargetingResult, "lightTargetingResult:" + lightTargetingResult);
-                
+
                 var lights = GetElementForHoverLight(target).Lights;
 
                 // No lights expected if we've never hovered over this Button
@@ -285,6 +287,30 @@ namespace MUXControlsTestApp
             }
         }
 
+#if BUILD_WINDOWS
+        private void AnotherListViewItem_Holding(object sender, Windows.UI.Xaml.Input.HoldingRoutedEventArgs e)
+        {
+            if (!ValidateEffectsPresent()) { return; }
+
+            using (var logger = new ResultsLogger("BorderLight_TapAndHold", TestResult))
+            {
+                if (FallbackToLocalLight())
+                {
+                    bool shouldBorderLightBeOn = ShouldBorderLightBeOn();
+                    logger.Verify(shouldBorderLightBeOn == true, "ShouldBorderLightBeOn: " + shouldBorderLightBeOn);
+                }
+                else if (SharedLight() != null)
+                {
+                    CompositionLight sharedLight = SharedLight();
+                    logger.Verify(sharedLight != null, "Shared Light Exists: " + sharedLight);
+                }
+                else
+                {
+                    logger.LogMessage("Neither shared nor local lights exist.");
+                }
+            }
+        }
+#else
         private void AnotherListViewItem_Holding(object sender, Windows.UI.Xaml.Input.HoldingRoutedEventArgs e)
         {
             if (!ValidateEffectsPresent()) { return; }
@@ -294,6 +320,7 @@ namespace MUXControlsTestApp
                 logger.Verify(shouldBorderLightBeOn == true, "ShouldBorderLightBeOn: " + shouldBorderLightBeOn);
             }
         }
+#endif
 
         private void NarrowButton_Holding(object sender, Windows.UI.Xaml.Input.HoldingRoutedEventArgs e)
         {
@@ -385,6 +412,22 @@ namespace MUXControlsTestApp
             return _revealTestApi.BorderLight_ShouldBeOn(borderLight);
         }
 
+#if BUILD_WINDOWS
+        CompositionLight SharedLight()
+        {
+            Windows.UI.Xaml.Media.XamlLight xamlLight = _revealTestApi.BorderLight;
+            RevealBorderLight borderLight = _revealTestApi.GetAsRevealBorderLight(xamlLight);
+            return _revealTestApi.GetSharedLight(borderLight);
+        }
+
+        bool FallbackToLocalLight()
+        {
+            Windows.UI.Xaml.Media.XamlLight xamlLight = _revealTestApi.BorderLight;
+            RevealBorderLight borderLight = _revealTestApi.GetAsRevealBorderLight(xamlLight);
+            return _revealTestApi.BorderLight_FallbackToLocalLight(borderLight);
+        }
+#endif
+
         private void SetState_Click(object sender, RoutedEventArgs e)
         {
             RevealBrushState state = RevealBrushState.Pressed;
@@ -437,7 +480,7 @@ namespace MUXControlsTestApp
         private void HoverLightStateValuesValidationHelper(
             float hoverLight_InnerConeIntensityExpected, float hoverLight_outerConeIntensityExpected, float hoverLight_outerConeAngleExpected,
             float pressLight_InnerConeIntensityExpected, float pressLight_outerConeIntensityExpected, float pressLight_outerConeAngleExpected,
-            string testName, 
+            string testName,
             string targetName)
         {
             if (!ValidateEffectsPresent()) { return; }

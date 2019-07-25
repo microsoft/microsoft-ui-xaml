@@ -28,7 +28,11 @@ winrt::CompositionBrush AcrylicTestApi::CompositionBrush()
 
 winrt::CompositionBrush AcrylicTestApi::NoiseBrush()
 {
+#if BUILD_WINDOWS
+    return (winrt::get_self<::AcrylicBrush>(m_acrylicBrush))->m_dpiScaledNoiseBrush;
+#else
     return (winrt::get_self<::AcrylicBrush>(m_acrylicBrush))->m_noiseBrush;
+#endif
 }
 
 void AcrylicTestApi::ForceCreateAcrylicBrush(bool useCrossFadeEffect)

@@ -10,8 +10,10 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 
+#if !BUILD_WINDOWS
 using RevealBrush = Microsoft.UI.Xaml.Media.RevealBrush;
 using RevealTestApi = Microsoft.UI.Private.Media.RevealTestApi;
+#endif
 
 namespace MUXControlsTestApp
 {
@@ -35,13 +37,13 @@ namespace MUXControlsTestApp
             get
             {
                 return new List<string>() {
-                    "SystemControlBackgroundBaseLowRevealBackgroundBrush",                    
+                    "SystemControlBackgroundBaseLowRevealBackgroundBrush",
                     "SystemControlTransparentRevealBackgroundBrush",
                     "SystemControlHighlightAccentRevealBackgroundBrush",
                     "SystemControlHighlightAccent3RevealBackgroundBrush",
                     "SystemControlHighlightAccent2RevealBackgroundBrush",
                     "SystemControlHighlightListMediumRevealBackgroundBrush",
-                    "SystemControlHighlightListLowRevealBackgroundBrush", 
+                    "SystemControlHighlightListLowRevealBackgroundBrush",
                     "SystemControlBackgroundBaseMediumLowRevealBaseLowBackgroundBrush",
                     "SystemControlHighlightBaseMediumLowRevealAccentBackgroundBrush",
                     "SystemControlHighlightListMediumRevealListLowBackgroundBrush",
@@ -173,20 +175,20 @@ namespace MUXControlsTestApp
                     // Choose the rs1 light keys as "truth" and check everyone else has those keys and doesn't have keys they shouldn't.
                     var expectedKeys = rs1light.Keys;
                     Action<string, Dictionary<object, object>> checkDictionary = (which, dict) =>
+                    {
+                        var unexpectedEntries = dict.Where(x => !expectedKeys.Contains(x.Key)).ToList();
+
+                        foreach (var unexpected in unexpectedEntries)
                         {
-                            var unexpectedEntries = dict.Where(x => !expectedKeys.Contains(x.Key)).ToList();
+                            BrushCheckFailed("Dictionary {0} has an entry it should not: {1}", which, unexpected.Key);
+                        }
 
-                            foreach (var unexpected in unexpectedEntries)
-                            {
-                                BrushCheckFailed("Dictionary {0} has an entry it should not: {1}", which, unexpected.Key);
-                            }
-
-                            var missingEntries = expectedKeys.Where(x => !dict.ContainsKey(x)).ToList();
-                            foreach (var missing in missingEntries)
-                            {
-                                BrushCheckFailed("Dictionary {0} should have had entry '{1}' but was missing", which, missing);
-                            }
-                        };
+                        var missingEntries = expectedKeys.Where(x => !dict.ContainsKey(x)).ToList();
+                        foreach (var missing in missingEntries)
+                        {
+                            BrushCheckFailed("Dictionary {0} should have had entry '{1}' but was missing", which, missing);
+                        }
+                    };
 
                     checkDictionary("rs1light", rs1light);
                     checkDictionary("rs2light", rs2light);

@@ -20,7 +20,11 @@ winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double
 double GetTintOpacityModifier(winrt::Color tintColor);
 
 class AcrylicBrush :
+#if BUILD_WINDOWS
+    public ReferenceTracker<AcrylicBrush, winrt::implementation::AcrylicBrushT, winrt::IXamlCompositionBrushBaseOverridesPrivate>,
+#else
     public ReferenceTracker<AcrylicBrush, winrt::implementation::AcrylicBrushT>,
+#endif
     public AcrylicBrushProperties
 {
     friend AcrylicTestApi;
@@ -36,8 +40,16 @@ public:
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender);
 
+#if BUILD_WINDOWS
+    void OnElementConnected(winrt::DependencyObject element) noexcept;
+    void OnIslandTransformChanged(const winrt::CompositionIsland& sender, const winrt::IInspectable& /*args*/);
+    void OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/);
+    void OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender);
+#else
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
     void OnWindowSizeChanged(const com_ptr<MaterialHelperBase>& sender, bool isFullScreenOrTabletMode);
+#endif
+
 
 public:
     // Default value on public DP - ok to be public
@@ -81,7 +93,7 @@ private:
         const winrt::Color initialLuminosityColor,
         std::vector<winrt::hstring>& animatedProperties);
 
-    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor &compositor,
+    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -90,7 +102,7 @@ private:
         winrt::Color initialFallbackColor);
 
     static winrt::CompositionEffectFactory GetOrCreateAcrylicBrushCompositionEffectFactory(
-        const winrt::Compositor &compositor,
+        const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -116,7 +128,7 @@ private:
         winrt::event_token& token,
         float acrylicStart,
         float acrylicEnd,
-        const winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> & handler);
+        const winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs>& handler);
 
     void CancelFallbackAnimationCompleteWait();
 
@@ -131,9 +143,13 @@ private:
 
     bool IsInFallbackMode() { return !m_isUsingAcrylicBrush; }
 
+#if BUILD_WINDOWS
+    void PolicyStatusChangedHelper(bool isDisabledByBackdropPolicy, bool isDisabledByHostBackdropPolicy);
+#else
     void PolicyStatusChangedHelper(bool isDisabledByMaterialPolicy);
     bool IsWindowActive(const winrt::CoreWindow& coreWindow);
     void UpdateWindowActivationStatus();
+#endif
 
     bool m_isConnected{};
     bool m_isUsingAcrylicBrush{};
@@ -142,19 +158,38 @@ private:
     bool m_isUsingOpaqueBrush{};
     bool m_isWaitingForFallbackAnimationComplete{};
 
+#if BUILD_WINDOWS
+    bool m_isDisabledByBackdropPolicy{};
+    bool m_isDisabledByHostBackdropPolicy{};
+    bool m_isInterIsland{};
+#else
     bool m_isActivated{ true };
     bool m_isFullScreenOrTabletMode{};
     bool m_isDisabledByMaterialPolicy{};
+#endif
 
     winrt::event_token m_fallbackColorChangedToken{};
     winrt::event_token m_waitingForFallbackAnimationCompleteToken{};
     winrt::CompositionScopedBatch m_waitingForFallbackAnimationCompleteBatch{ nullptr };
     winrt::CompositionBrush m_brush{ nullptr };
 
+#if BUILD_WINDOWS
+    float m_logicalDpi{};
+    winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};
+    winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
+    winrt::event_token m_islandTransformChangedToken{};
+    winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{ nullptr };
+    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::XamlIsland m_associatedIsland{ nullptr };
+    winrt::CompositionIsland m_associatedCompositionIsland{ nullptr };
+    winrt::event_token m_additionalMaterialPolicyChangedToken{};
+#else
     winrt::event_token m_windowActivatedToken{};
     winrt::event_token m_materialPolicyChangedToken{};
     winrt::event_token m_windowSizeChangedToken{};
     winrt::event_token m_noiseChangedToken{};
     tracker_ref<winrt::Window> m_currentWindow{ this };
     winrt::CompositionSurfaceBrush m_noiseBrush{ nullptr };
+#endif
 };

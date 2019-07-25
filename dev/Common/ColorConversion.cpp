@@ -16,14 +16,14 @@ Hsv::Hsv(double h, double s, double v) : h{ h }, s{ s }, v{ v }
 
 std::optional<unsigned long> TryParseInt(const wstring_view& s)
 {
-    return TryParseInt(s.data(), 10 /* base */);
+    return TryParseInt(s, 10 /* base */);
 }
 
-std::optional<unsigned long> TryParseInt(const PCWSTR& str, int base)
+std::optional<unsigned long> TryParseInt(const wstring_view& str, int base)
 {
     // If we have a zero-length string, then we can immediately know
     // that this is not a valid integer.
-    if (*str == '\0')
+    if (*str.data() == '\0')
     {
         return std::nullopt;
     }
@@ -33,7 +33,7 @@ std::optional<unsigned long> TryParseInt(const PCWSTR& str, int base)
     // wcstoll takes in a string and converts as much as it as it can to an integer value,
     // returning a pointer to the first element that it wasn't able to consider part of an integer.
     // If we got all the way to the end of the string, then the whole thing was a valid string.
-    auto result = wcstoul(str, &end, base);
+    auto result = wcstoul(str.data(), &end, base);
     if (*end == '\0')
     {
         return result;
@@ -249,7 +249,8 @@ Rgb HsvToRgb(const Hsv &hsv)
 
 Rgb HexToRgb(const wstring_view& input)
 {
-    return HexToRgba(input).rgb;
+    auto [rgb, a] = HexToRgba(input);
+    return rgb;
 }
 
 winrt::hstring RgbToHex(const Rgb &rgb)
@@ -266,9 +267,8 @@ winrt::hstring RgbToHex(const Rgb &rgb)
     return winrt::hstring(hexString);
 }
 
-Rgba HexToRgba(const wstring_view& input)
+std::tuple<Rgb, double> HexToRgba(const wstring_view& input)
 {
-    Rgba result{};
     // The input always begins with a #, so we'll move past that.
     auto ptr = input.data();
     ++ptr;
@@ -280,9 +280,7 @@ Rgba HexToRgba(const wstring_view& input)
     // to indicate that this value should not actually be used.
     if (!hexValue.has_value())
     {
-        result.rgb = Rgb(-1, -1, -1);
-        result.a = -1;
-        return result;
+        return { Rgb(-1, -1, -1), -1 };
     }
 
     auto hex = hexValue.value();
@@ -291,10 +289,7 @@ Rgba HexToRgba(const wstring_view& input)
     byte g = static_cast<byte>((hex & 0x0000ff00) >> 8);
     byte b = static_cast<byte>(hex & 0x000000ff);
 
-    result.rgb = Rgb(r / 255.0, g / 255.0, b / 255.0);
-    result.a = a / 255.0;
-
-    return result;
+    return { Rgb(r / 255.0, g / 255.0, b / 255.0), a / 255.0 };
 }
 
 winrt::hstring RgbaToHex(const Rgb &rgb, double alpha)

@@ -7,9 +7,11 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
+#if !BUILD_WINDOWS
 using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
 using AcrylicTestApi = Microsoft.UI.Private.Media.AcrylicTestApi;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
+#endif
 
 namespace MUXControlsTestApp
 {

@@ -18,6 +18,10 @@ runtimeclass RevealTestApi : Windows.UI.Xaml.DependencyObject
     RevealBorderLight GetAsRevealBorderLight(Windows.UI.Xaml.Media.XamlLight value);
     RevealHoverLight GetAsRevealHoverLight(Windows.UI.Xaml.Media.XamlLight value);
     Boolean BorderLight_ShouldBeOn(RevealBorderLight value);
+#ifdef BUILD_WINDOWS
+    Windows.UI.Composition.CompositionLight GetSharedLight(RevealBorderLight value);
+    Boolean BorderLight_FallbackToLocalLight(RevealBorderLight value);
+#endif
     Boolean HoverLight_ShouldBeOn(RevealHoverLight value);
     Boolean HoverLight_IsPressed(RevealHoverLight value);
     Boolean HoverLight_IsPointerOver(RevealHoverLight value);

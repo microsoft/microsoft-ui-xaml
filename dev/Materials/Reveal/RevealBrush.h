@@ -12,7 +12,11 @@
 
 
 class RevealBrush :
+#if BUILD_WINDOWS
+    public winrt::implementation::RevealBrushT<RevealBrush, winrt::IXamlCompositionBrushBaseOverridesPrivate>,
+#else
     public winrt::implementation::RevealBrushT<RevealBrush>,
+#endif
     public RevealBrushProperties
 {
     friend RevealBrushTestApi;
@@ -28,12 +32,20 @@ public:
     // Property changed handler
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+#if BUILD_WINDOWS
+    void OnElementConnected(winrt::DependencyObject element) noexcept;
+    void OnIslandTransformChanged(const winrt::CompositionIsland& sender, const winrt::IInspectable& /*args*/);
+    static void AttachLightsToIsland(const winrt::XamlIsland& island);
+    void OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/);
+    void OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender);
+#else
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
     void OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender);
 
     // On RS2, attaching lights to the tree is a multi-step process that happens over multiple frames. If lights are removed from the
     // tree before they're fully attached, then we should abort the rest of the process.
     static void StopAttachingLights();
+#endif
 
     static void AttachLights();
     static void AttachLightsToAncestor(const winrt::UIElement& root, bool trackRootToDisconnectFrom);
@@ -66,7 +78,20 @@ protected:
 
     bool IsInFallbackMode();
 
+#if BUILD_WINDOWS
+    float m_logicalDpi{};
+    winrt::DisplayInformation::DpiChanged_revoker m_dpiChangedRevoker{};
+    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
+    winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
+    winrt::event_token m_islandTransformChangedToken{};
+    winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{ nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::XamlIsland m_associatedIsland{ nullptr };
+    winrt::CompositionIsland m_associatedCompositionIsland{ nullptr };
+    winrt::event_token m_additionalMaterialPolicyChangedToken{};
+#else
     winrt::event_token m_materialPolicyChangedToken{};
+#endif
 
     bool m_isConnected{};
     bool m_isBorder{};
@@ -77,6 +102,10 @@ protected:
     bool m_noiseChanged{};
     bool m_hasBaseColor{};
     bool m_isDisabledByMaterialPolicy{};
+
+#if BUILD_WINDOWS
+    bool m_isInterIsland{};
+#endif
 
     winrt::CompositionBrush m_brush{ nullptr };
     winrt::event_token m_fallbackColorChangedToken{};
@@ -118,14 +147,14 @@ private:
     void PolicyStatusChangedHelper(bool isDisabledByMaterialPolicy);
 
     static bool ValidatePublicRootAncestor();
-    static winrt::UIElement GetAncestor(const winrt::UIElement & root);
-    static void AttachLightsToElement(const winrt::UIElement & element, bool trackAsRootToDisconnectFrom);
+    static winrt::UIElement GetAncestor(const winrt::UIElement& root);
+    static void AttachLightsToElement(const winrt::UIElement& element, bool trackAsRootToDisconnectFrom);
     static void AttachLightsImpl();
 
     winrt::CompositionSurfaceBrush m_noiseBrush{ nullptr };
 };
 
-class RevealBorderBrush : 
+class RevealBorderBrush :
     public ReferenceTracker<RevealBorderBrush, winrt::implementation::RevealBorderBrushT, RevealBrush>
 {
 public:

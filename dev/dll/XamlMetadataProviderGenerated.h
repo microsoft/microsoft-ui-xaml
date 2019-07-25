@@ -3,7 +3,7 @@
 
 #pragma once
 
-STDAPI DllGetActivationFactory(HSTRING activatibleClassId, IActivationFactory **factory);
+STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory** factory);
 
 class XamlMetadataProviderGenerated
 {
@@ -11,7 +11,7 @@ public:
     void RegisterTypes();
 
     template <typename Factory>
-    static winrt::IInspectable ActivateInstanceWithFactory(PCWSTR typeName)
+    static winrt::IInspectable ActivateInstanceWithFactory(_In_ PCWSTR typeName)
     {
         auto factory = GetFactory<Factory>(typeName);
         winrt::IInspectable inner;
@@ -19,12 +19,12 @@ public:
     }
 
     template <typename Factory>
-    static Factory GetFactory(PCWSTR typeName)
+    static Factory GetFactory(_In_ PCWSTR typeName)
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
-        
-        if (FAILED(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory**)winrt::put_abi(_activationFactory))))
+
+        if (FAILED(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory * *)winrt::put_abi(_activationFactory))))
         {
             return nullptr;
         }
@@ -34,13 +34,12 @@ public:
         }
     }
 
-    static winrt::IInspectable ActivateInstance(PCWSTR typeName)
+    static winrt::IInspectable ActivateInstance(_In_ PCWSTR typeName)
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
-        winrt::check_hresult(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory**)winrt::put_abi(_activationFactory)));
+        winrt::check_hresult(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory * *)winrt::put_abi(_activationFactory)));
 
         return _activationFactory.ActivateInstance<winrt::IInspectable>();
     }
 };
-

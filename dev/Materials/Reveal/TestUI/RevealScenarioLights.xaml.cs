@@ -20,7 +20,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Hosting;
 
+#if !BUILD_WINDOWS
 using RevealTestApi = Microsoft.UI.Private.Media.RevealTestApi;
+#endif
 
 namespace MUXControlsTestApp
 {
@@ -35,7 +37,7 @@ namespace MUXControlsTestApp
             _borderLight = Window.Current.Compositor.CreateSpotLight();
             _borderWideLight = Window.Current.Compositor.CreateSpotLight();
 
-            _borderLight.Offset = _borderWideLight.Offset = 
+            _borderLight.Offset = _borderWideLight.Offset =
             _backgroundLight.Offset = new Vector3((float)SwatchInnerGrid.Width / 2, (float)SwatchInnerGrid.Height / 2, 100);
 
             ExprBind(_backgroundLight, _revealTest.BackgroundLight, "InnerConeAngle");

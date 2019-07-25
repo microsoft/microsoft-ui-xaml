@@ -27,7 +27,11 @@ void MaterialHelperBase::SimulateDisabledByPolicy(bool value)
     if (oldValue != value)
     {
         instance->m_simulateDisabledByPolicy = value;
+#if BUILD_WINDOWS
+        instance->NotifyAdditionalPolicyChangedListeners();
+#else
         instance->UpdatePolicyStatus();
+#endif
     }
 }
 
@@ -46,7 +50,11 @@ void MaterialHelperBase::IgnoreAreEffectsFast(bool value)
     if (oldValue != value)
     {
         instance->m_ignoreAreEffectsFast = value;
+#if BUILD_WINDOWS
+        instance->NotifyAdditionalPolicyChangedListeners();
+#else
         instance->UpdatePolicyStatus();
+#endif
     }
 }
 
@@ -95,9 +103,11 @@ void MaterialHelperBase::OnRevealBrushDisconnected()
 
         instance->m_revealLightsToRemove.clear();
 
+#ifndef BUILD_WINDOWS
         // We just removed all lights from the tree. If we were still in the middle of multi-step process of attaching lights,
         // then don't finish attaching the rest. Otherwise we'll leave the tree in a partially-lit state.
         RevealBrush::StopAttachingLights();
+#endif
     }
 }
 
@@ -147,7 +157,7 @@ winrt::CompositionEffectFactory MaterialHelperBase::GetOrCreateAcrylicBrushCompo
 }
 
 /* static */
-winrt::CompositionEffectFactory 
+winrt::CompositionEffectFactory
 MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
     bool isBorder,
     bool isInverted,
@@ -161,7 +171,7 @@ MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
     key |= isInverted ? static_cast<int>(RevealBrushCacheFlags::IsInverted) : 0;
     key |= hasBaseColor ? static_cast<int>(RevealBrushCacheFlags::HasBaseColor) : 0;
 
-    winrt::ICompositionEffectFactory &factory =
+    winrt::ICompositionEffectFactory& factory =
         instance->m_revealBrushCompositionEffectFactoryCache[key];
 
     if (!factory)
@@ -237,6 +247,370 @@ template <typename T>
 template void MaterialHelperBase::LightPolicyChangedHelper<XamlAmbientLight>(XamlAmbientLight* instance, bool isDisabledByMaterialPolicy);
 template void MaterialHelperBase::LightPolicyChangedHelper<RevealBorderLight>(RevealBorderLight* instance, bool isDisabledByMaterialPolicy);
 template void MaterialHelperBase::LightPolicyChangedHelper<RevealHoverLight>(RevealHoverLight* instance, bool isDisabledByMaterialPolicy);
+
+#if BUILD_WINDOWS
+// ****************************************
+// **** WUXC version of MaterialHelper ****
+// ****************************************
+/* static */
+winrt::event_token MaterialHelper::AdditionalPolicyChanged(const std::function<void(const com_ptr<MaterialHelperBase>&)>& handler)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    handler(instance);
+    return instance->m_additionalPolicyChangedListeners.add(handler);
+}
+
+/* static */
+void MaterialHelper::AdditionalPolicyChanged(winrt::event_token removeToken)
+{
+    if (auto instance = LifetimeHandler::TryGetMaterialHelperInstance())
+    {
+        instance->m_additionalPolicyChangedListeners.remove(removeToken);
+    }
+}
+
+
+/* static */
+bool MaterialHelper::RevealBorderLightUnavailable()
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    return instance ? instance->m_revealBorderLightUnavailable : false;
+}
+
+/* static */
+void MaterialHelper::RevealBorderLightUnavailable(bool value)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    bool oldValue = instance->m_revealBorderLightUnavailable;
+    if (oldValue != value)
+    {
+        instance->m_revealBorderLightUnavailable = value;
+        instance->NotifyAdditionalPolicyChangedListeners();
+    }
+}
+
+/* static */
+winrt::CompositionSurfaceBrush MaterialHelper::GetNoiseBrush(int dpiScale)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    return instance->GetNoiseBrushImpl(dpiScale);
+}
+
+winrt::CompositionSurfaceBrush MaterialHelper::GetNoiseBrushImpl(int dpiScale)
+{
+    winrt::CompositionSurfaceBrush noiseBrush{ nullptr };
+
+    auto it = m_dpiScaledNoiseBrushes.find(dpiScale);
+    if (it != m_dpiScaledNoiseBrushes.end())
+    {
+        noiseBrush = it->second;
+    }
+    else
+    {
+        noiseBrush = CreateScaledBrush(dpiScale);
+        m_dpiScaledNoiseBrushes.emplace(dpiScale, noiseBrush);
+    }
+
+    return noiseBrush;
+}
+
+template <typename T>
+/*static*/
+void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(
+    const winrt::weak_ref<T> weakInstance,
+    const winrt::IMaterialProperties& materialProperties,
+    const winrt::DispatcherQueue& dispatcherQueue,
+    bool onUIThread)
+{
+    auto callback = [weakInstance, dispatcherQueue, materialProperties]() {
+        auto instance = weakInstance.get();
+        if (instance)
+        {
+            bool isDisabledByMaterialPolicy =
+                (materialProperties.InAppTransparencyPolicy() == winrt::Windows::UI::TransparencyPolicy::Opaque && !MaterialHelper::IgnoreAreEffectsFast()) || MaterialHelper::SimulateDisabledByPolicy();
+            LightPolicyChangedHelper(instance.get(), isDisabledByMaterialPolicy);
+        }
+    };
+
+    if (onUIThread)
+    {
+        callback();
+    }
+    else
+    {
+        if (dispatcherQueue) // We might have no dispatcher in XamlPresenter scenarios, in this case we will always be in the disabled state.
+        {
+            dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler(callback));
+        }
+    }
+}
+
+template class MaterialHelper::LightTemplates<XamlAmbientLight>;
+template class MaterialHelper::LightTemplates<RevealHoverLight>;
+template class MaterialHelper::LightTemplates<RevealBorderLight>;
+
+template <typename T>
+/*static*/ void MaterialHelper::BrushTemplates<T>::HookupWindowDpiChangedHandler(T* instance)
+{
+    if (!instance->m_dpiChangedRevoker)
+    {
+        try
+        {
+            // TODO_FluentIslands: Can we cache displayInformation? The GetForCurrentView() could be an expensive call...
+
+            // Capture strong instance of brush in the lambda in case we get called after being disconencted (and possibly destructed).
+            // This can happen if some other handler of DisplayInformation.DpiChanged gets invoked first and 
+            // causes this brush to leave the live tree, get disconnected and unregister from its DPIChanged handler - 
+            // that unregistration doesn't affect the current firing event because the DpiChanged event handler list is locked.
+            com_ptr<T> strongInstance = instance->get_strong();
+
+            winrt::DisplayInformation displayInformation = winrt::DisplayInformation::GetForCurrentView();
+            instance->m_dpiChangedRevoker = displayInformation.DpiChanged(winrt::auto_revoke, {
+                [strongInstance](const winrt::DisplayInformation& displayInformation, const winrt::IInspectable&)
+                {
+                    float previousLogicalDpi = strongInstance->m_logicalDpi;
+
+                    try
+                    {
+                        strongInstance->m_logicalDpi = displayInformation.LogicalDpi();
+                    }
+                    catch (winrt::hresult_error)
+                    {
+                        // Watson Bugs 12990478 and 13071055 suggest CDisplayInformation::get_LogicalDpi can fail with 
+                        // 0x80070578 : ERROR_INVALID_WINDOW_HANDLE  if the current view  is somehow not available.
+                        // This likely means the view has been closed and its logical DPI is no longer relevant. 
+                        // Ignore the error and do not notify subscriber materials in this case. 
+
+                        // TODO: Consider adding below assert to get data on whether we are swallowing other errors here.
+                        //_ASSERT(e.to_abi() == ERROR_INVALID_WINDOW_HANDLE);
+                    }
+
+                    // We also get here in case of (logical) Resolution change, ignore that case
+                    if (previousLogicalDpi != strongInstance->m_logicalDpi)
+                    {
+                        UpdateDpiScaledNoiseBrush(strongInstance.get());
+                    }
+                } });
+
+            instance->m_logicalDpi = displayInformation.LogicalDpi();
+        }
+        catch (winrt::hresult_error)
+        {
+            // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+            // Ignore the error and assume a DPI.
+
+            instance->m_logicalDpi = 96;  // This isn't correct. Xaml has internal code that handles XamlPresenter scenarios, but that isn't available through public APIs. We can fix this for WUXC but not MUX.
+        }
+    }
+}
+
+template <typename T>
+/*static*/ void  MaterialHelper::BrushTemplates<T>::UnhookWindowDpiChangedHandler(T* instance)
+{
+    instance->m_dpiChangedRevoker.revoke();
+}
+
+template <typename T>
+/*static*/ void MaterialHelper::BrushTemplates<T>::HookupIslandDpiChangedHandler(T* instance)
+{
+    if (!instance->m_islandTransformChangedToken.value)
+    {
+        instance->m_associatedCompositionIsland = (instance->m_associatedIsland.AppContent()).try_as<winrt::UIContentRoot>().Island();
+        instance->m_islandTransformChangedToken = instance->m_associatedCompositionIsland.StateChanged({ instance, &T::OnIslandTransformChanged });
+    }
+}
+
+template <typename T>
+/*static*/ void MaterialHelper::BrushTemplates<T>::UnhookIslandDpiChangedHandler(T* instance)
+{
+    if (instance->m_islandTransformChangedToken.value)
+    {
+        instance->m_associatedCompositionIsland.StateChanged(instance->m_islandTransformChangedToken);
+        instance->m_islandTransformChangedToken.value = 0;
+    }
+    instance->m_associatedCompositionIsland = nullptr;
+}
+
+template <typename T>
+/*static*/ void MaterialHelper::BrushTemplates<T>::OnIslandTransformChanged(T* instance)
+{
+    UpdateDpiScaledNoiseBrush(instance);
+}
+
+template <typename T>
+/*static*/ void MaterialHelper::BrushTemplates<T>::UpdateDpiScaledNoiseBrush(T* instance)
+{
+    // If we are using acrylic effect now, now we can refresh the existing one with new noise.
+    // Otherwise mark it so that new noise is used when the effect brush is created.
+
+    // Check for m_isConnected in case DpiChanged event unregistration no-oped (see comment in HookupWindowDpiChangedHandler() for details).
+    if (!instance->IsInFallbackMode() && instance->m_isConnected)
+    {
+        int resScaleInt = GetEffectiveDpi(instance);
+
+        if (resScaleInt != 0)
+        {
+            auto dpiScaledNoiseBrush = GetNoiseBrush(resScaleInt);
+            _ASSERT(dpiScaledNoiseBrush != instance->m_dpiScaledNoiseBrush);
+
+            winrt::CompositionEffectBrush effectBrush = instance->m_brush.try_as<winrt::CompositionEffectBrush>();
+            effectBrush.SetSourceParameter(L"Noise", dpiScaledNoiseBrush);
+            instance->m_dpiScaledNoiseBrush = dpiScaledNoiseBrush;
+        }
+    }
+    else
+    {
+        instance->m_noiseChanged = true;
+    }
+}
+
+template <typename T>
+/*static*/ int MaterialHelper::BrushTemplates<T>::GetEffectiveDpi(T* instance)
+{
+    int resolutionScale = 100;           // Use 100% scale if we can't get DisplayInformation.GetForCurrentView (eg XamlPresenter)
+
+    if (instance->m_associatedIsland)
+    {
+        winrt::CompositionIsland compIsland = (instance->m_associatedIsland.AppContent()).try_as<winrt::UIContentRoot>().Island();
+        resolutionScale = static_cast<int>(std::round(compIsland.RasterizationScale() * 100.0f));
+    }
+    else
+    {
+        try
+        {
+            resolutionScale = static_cast<int>(winrt::DisplayInformation::GetForCurrentView().ResolutionScale());
+        }
+        catch (winrt::hresult_error)
+        {
+            // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
+            // Assume 1.0 scaling and don't touch the noise brush.
+
+            // Assuming 1.0 scaling isn't correct. Xaml has internal code that handles XamlPresenter scenarios, but that isn't available through public APIs. We can fix this for WUXC but not MUX.
+        }
+    }
+
+    return resolutionScale;
+}
+
+template <typename T>
+/*static*/ bool MaterialHelper::BrushTemplates<T>::IsDisabledByInAppTransparencyPolicy(T* instance)
+{
+    bool isDisabledByInAppTransparencyPolicy = false;
+
+    if (instance->m_materialProperties)
+    {
+        isDisabledByInAppTransparencyPolicy = (instance->m_materialProperties.InAppTransparencyPolicy() == winrt::Windows::UI::TransparencyPolicy::Opaque && !IgnoreAreEffectsFast()) || SimulateDisabledByPolicy();
+    }
+    else
+    {
+        isDisabledByInAppTransparencyPolicy = SimulateDisabledByPolicy();
+    }
+
+    return isDisabledByInAppTransparencyPolicy;
+}
+
+/*static*/ bool MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(RevealBrush* instance)
+{
+    bool isDisabledByInAppTransparencyPolicy = false;
+
+    if (instance->m_materialProperties)
+    {
+        isDisabledByInAppTransparencyPolicy = (instance->m_materialProperties.InAppTransparencyPolicy() == winrt::Windows::UI::TransparencyPolicy::Opaque && !IgnoreAreEffectsFast()) || SimulateDisabledByPolicy() || RevealBorderLightUnavailable();
+    }
+    else
+    {
+        isDisabledByInAppTransparencyPolicy = SimulateDisabledByPolicy() || RevealBorderLightUnavailable();
+    }
+
+    return isDisabledByInAppTransparencyPolicy;
+}
+
+template <typename T>
+/*static*/ bool MaterialHelper::BrushTemplates<T>::IsDisabledByHostBackdropTransparencyPolicy(T* instance)
+{
+    bool isDisabledByHostBackdropPolicy = false;
+
+    if (instance->m_materialProperties)
+    {
+        isDisabledByHostBackdropPolicy = (instance->m_materialProperties.HostBackdropTransparencyPolicy() == winrt::Windows::UI::TransparencyPolicy::Opaque && !IgnoreAreEffectsFast()) || SimulateDisabledByPolicy();
+    }
+    else
+    {
+        isDisabledByHostBackdropPolicy = SimulateDisabledByPolicy();
+    }
+
+    return isDisabledByHostBackdropPolicy;
+}
+
+template class MaterialHelper::BrushTemplates<AcrylicBrush>;
+template class MaterialHelper::BrushTemplates<RevealBrush>;
+
+/* static */
+void MaterialHelper::OnRevealBrushConnectedIsland(const winrt::XamlIsland& island)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    auto it = instance->m_islandBorderLights.find(island);
+
+    if (it == instance->m_islandBorderLights.end())
+    {
+        IslandBorderLightInfo newBorderLightInfo;
+        newBorderLightInfo.m_revealBrushConnectedCount = 1;
+
+        instance->m_islandBorderLights.emplace(island, newBorderLightInfo);
+
+        // Ensure that ambient and border lights needed for reveal effects are set on IslandRoot
+        RevealBrush::AttachLightsToIsland(island);
+    }
+    else
+    {
+        it->second.m_revealBrushConnectedCount++;
+    }
+}
+
+/* static */
+void MaterialHelper::OnRevealBrushDisconnectedIsland(const winrt::XamlIsland& island)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    auto it = instance->m_islandBorderLights.find(island);
+    auto& islandBorderLightInfo = it->second;
+
+    _ASSERT(instance->m_revealBrushConnectedCount > 0);
+    islandBorderLightInfo.m_revealBrushConnectedCount--;
+
+    if (islandBorderLightInfo.m_revealBrushConnectedCount == 0)
+    {
+        // Remove all the lights we created/attached previously now that there's no RevealBrushes active.
+        auto& pair = islandBorderLightInfo.m_revealLightsToRemove;
+        for (auto lightToRemove : pair.second)
+        {
+            uint32_t index{};
+            if (pair.first.IndexOf(lightToRemove, index))
+            {
+                pair.first.RemoveAt(index);
+            }
+        }
+
+        pair.first = nullptr;
+        pair.second.clear();
+        instance->m_islandBorderLights.erase(island);
+    }
+}
+
+/* static */
+void MaterialHelper::TrackRevealLightsToRemoveIsland(const winrt::XamlIsland& island, const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>& revealLightsToRemove)
+{
+    auto instance = LifetimeHandler::GetMaterialHelperInstance();
+    auto it = instance->m_islandBorderLights.find(island);
+    it->second.m_revealLightsToRemove = std::make_pair(lights, revealLightsToRemove);
+}
+
+void MaterialHelper::NotifyAdditionalPolicyChangedListeners()
+{
+    auto strongThis = get_strong();
+    m_additionalPolicyChangedListeners(strongThis);
+}
+
+#else
 // *****************************************
 // ***** MUX version of MaterialHelper *****
 // *****************************************
@@ -312,7 +686,7 @@ MaterialHelper::MaterialHelper()
     {
         EnsureCompositionCapabilities();
         HookupDpiChangedHandler();
-        
+
         // For RS2 apps, we susbscribe to VisibilityChanged to work around bug 11159685.
         if (!SharedHelpers::IsRS3OrHigher())
         {
@@ -336,7 +710,7 @@ MaterialHelper::MaterialHelper()
             {
                 strongThis->HookupVisibilityChangedHandler();
             }
-        });
+            });
     }
 
     winrt::UISettings uiSettings; // Make an instance to be able to listen for changes.
@@ -710,3 +1084,4 @@ bool MaterialHelper::FailedToAttachLights()
 {
     return m_failedToAttachLightsCount > sc_maxFailedToAttachLightsCount;
 }
+#endif

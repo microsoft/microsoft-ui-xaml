@@ -17,8 +17,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
+#if !BUILD_WINDOWS
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
+#endif
 
 namespace MUXControlsTestApp
 {

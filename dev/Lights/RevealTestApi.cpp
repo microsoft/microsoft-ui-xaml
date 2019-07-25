@@ -9,7 +9,9 @@
 
 RevealTestApi::RevealTestApi()
 {
+#ifndef BUILD_WINDOWS
     MUXControlsFactory::EnsureInitialized(); // Just in case we are called earlier than app initialization.
+#endif
 }
 
 winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
@@ -120,6 +122,18 @@ bool RevealTestApi::BorderLight_ShouldBeOn(winrt::RevealBorderLight const& value
     return winrt::get_self<RevealBorderLight>(value)->GetShouldLightBeOn();
 }
 
+#ifdef BUILD_WINDOWS
+winrt::SharedLight RevealTestApi::GetSharedLight(winrt::RevealBorderLight const& value)
+{
+    return winrt::get_self<RevealBorderLight>(value)->GetSharedLight();
+}
+
+bool RevealTestApi::BorderLight_FallbackToLocalLight(winrt::RevealBorderLight const& value)
+{
+    return winrt::get_self<RevealBorderLight>(value)->GetFallbackToLocalLight();
+}
+#endif
+
 bool RevealTestApi::HoverLight_ShouldBeOn(winrt::RevealHoverLight const& value)
 {
     return winrt::get_self<RevealHoverLight>(value)->m_shouldLightBeOn;
@@ -156,10 +170,10 @@ winrt::SpotLight RevealTestApi::GetBackgroundSpotlightProxy(winrt::ApplicationTh
 
         s_pointerMovedRevoker = winrt::Window::Current().CoreWindow().PointerMoved(winrt::auto_revoke,
             [=](const winrt::CoreWindow&, const winrt::PointerEventArgs&)
-        {
-            RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value = light.InnerConeColor();
-            RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value = light.OuterConeColor();
-        });
+            {
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value = light.InnerConeColor();
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value = light.OuterConeColor();
+            });
     }
 
     return s_backgroundSpotlightProxy[index];

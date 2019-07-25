@@ -194,8 +194,8 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
 // Returns the inner ScrollViewer or Scroller if any.
 void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     const winrt::DependencyObject& rootElement,
-    winrt::Scroller* scroller,
-    winrt::FxScrollViewer* scrollViewer)
+    _Out_ winrt::Scroller* scroller,
+    _Out_ winrt::FxScrollViewer* scrollViewer)
 {
     *scroller = nullptr;
     *scrollViewer = nullptr;
@@ -548,7 +548,7 @@ void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
         SetScrollViewer(nullptr);
     }
 
-    if (allowSourceElementLoadedHookup && 
+    if (allowSourceElementLoadedHookup &&
         !scroller &&
         !m_scrollViewer)
     {
@@ -612,8 +612,7 @@ void ScrollInputHelper::UpdateIsTargetElementInSource()
                         }
                     }
                 }
-            }
-            while (parent);
+            } while (parent);
         }
     }
 
@@ -644,7 +643,7 @@ void ScrollInputHelper::UpdateManipulationAlignments()
 void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoChanged, bool verticalInfoChanged, bool zoomInfoChanged)
 {
     bool restartAnimations = false;
- 
+
     if (m_scrollViewer)
     {
         if (horizontalInfoChanged && m_internalTranslationXExpressionAnimation)
@@ -1079,7 +1078,7 @@ void ScrollInputHelper::OnSourceElementPropertyChanged(const winrt::DependencyOb
 void ScrollInputHelper::ProcessScrollViewerContentChange()
 {
     UnhookScrollViewerContentPropertyChanged();
-    
+
     m_sourceContent.set(nullptr);
 
     auto scrollViewer = m_scrollViewer.get();

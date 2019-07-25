@@ -89,7 +89,7 @@ winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSiz
                 GetAnchorElement(&anchorElementRelativeBounds);
 
             scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
-            
+
             m_pendingViewportShift = 0.0;
 
 
@@ -384,7 +384,7 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
     return pendingViewportShift;
 }
 
-winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(winrt::Rect* relativeBounds)
+winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds)
 {
     if (m_isAnchorElementDirty)
     {

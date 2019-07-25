@@ -32,7 +32,7 @@ public:
     winrt::UIElement CurrentAnchor();
 
     winrt::FxScrollViewer ScrollViewer();
-    
+
     void ScrollViewer(winrt::FxScrollViewer const& value);
 
 #pragma endregion
@@ -77,7 +77,7 @@ public:
 private:
     void ApplyPendingChangeView(const winrt::FxScrollViewer& scrollViewer);
     double TrackElement(const winrt::UIElement& element, winrt::Rect previousBounds, const winrt::FxScrollViewer& scrollViewer);
-    winrt::UIElement GetAnchorElement(winrt::Rect* relativeBounds = nullptr);
+    winrt::UIElement GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds = nullptr);
 
     void OnScrollViewerViewChanging(const winrt::IInspectable& sender, const winrt::ScrollViewerViewChangingEventArgs& args);
     void OnScrollViewerViewChanged(winrt::IInspectable const& sender, winrt::ScrollViewerViewChangedEventArgs const& args);

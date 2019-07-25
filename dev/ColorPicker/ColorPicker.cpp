@@ -955,19 +955,12 @@ void ColorPicker::OnHexTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
     bool isAlphaEnabled = IsAlphaEnabled();
-    Rgba rgba{};
-    if (isAlphaEnabled)
-    {
-        rgba = HexToRgba(m_hexTextBox.Text());
-    }
-    else
-    {
-        rgba.rgb = HexToRgb(m_hexTextBox.Text());
-        rgba.a = 1.0;
-    }
+    auto [rgbValue, alphaValue] = [this, isAlphaEnabled]() {
+        return isAlphaEnabled?
+            HexToRgba(m_hexTextBox.Text()):
+            std::make_tuple<Rgb, double>(HexToRgb(m_hexTextBox.Text()), 1.0);
+    }();
 
-    auto rgbValue = rgba.rgb;
-    auto alphaValue = rgba.a;
     if ((rgbValue.r == -1 && rgbValue.g == -1 && rgbValue.b == -1 && alphaValue == -1) || alphaValue < 0 || alphaValue > 1)
     {
         m_isFocusedTextBoxValid = false;
