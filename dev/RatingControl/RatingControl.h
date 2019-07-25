@@ -86,9 +86,9 @@ private:
     double CalculateStarCenter(int starIndex);
     double CalculateActualRatingWidth();
     void ApplyScaleExpressionAnimation(const winrt::UIElement& uiElement, int starIndex);
-    void PopulateStackPanelWithItems(wstring_view templateName, winrt::StackPanel stackPanel, RatingControlStates state);
-    void CustomizeRatingItem(winrt::UIElement ui, RatingControlStates type);
-    void CustomizeStackPanel(winrt::StackPanel stackPanel, RatingControlStates state);
+    void PopulateStackPanelWithItems(wstring_view templateName, const winrt::StackPanel& stackPanel, RatingControlStates state);
+    void CustomizeRatingItem(const winrt::UIElement& ui, RatingControlStates type);
+    void CustomizeStackPanel(const winrt::StackPanel& stackPanel, RatingControlStates state);
     inline bool IsItemInfoPresentAndFontInfo()
     {
         return m_infoType == RatingInfoType::Font;

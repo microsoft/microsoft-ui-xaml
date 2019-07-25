@@ -16,7 +16,6 @@ class RadioButtons :
 
 public:
     RadioButtons();
-    ~RadioButtons() {}
 
     // IFrameworkElement
     void OnApplyTemplate();

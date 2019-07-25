@@ -12,7 +12,6 @@ class TabViewAutomationPeer :
 
 public:
     TabViewAutomationPeer(winrt::TabView const& owner);
-    ~TabViewAutomationPeer() {}
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);

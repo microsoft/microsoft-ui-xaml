@@ -20,9 +20,6 @@ class RevealHoverLight :
 public:
     static winrt::hstring& GetLightIdStatic();
 
-    RevealHoverLight();
-    ~RevealHoverLight();
-
     // IXamlLightOverrides
     winrt::hstring GetId();
     void OnConnected(winrt::UIElement const& newElement);

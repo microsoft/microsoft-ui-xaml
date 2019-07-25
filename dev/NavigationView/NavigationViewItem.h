@@ -18,7 +18,6 @@ public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
     NavigationViewItem();
-    virtual ~NavigationViewItem();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;

@@ -13,7 +13,7 @@ namespace MUXControls { namespace Common {
     class AutoHandle
     {
     public:
-        typedef typename THandlePolicy::THandleType THandleType;
+        using THandleType = typename THandlePolicy::THandleType;
 
         AutoHandle();
         explicit AutoHandle(THandleType handle); // Conversion constructor
@@ -140,7 +140,7 @@ namespace MUXControls { namespace Common {
     class HandlePolicy
     {
     public:
-        typedef HANDLE THandleType;
+        using THandleType = HANDLE;
 
         static void Close(HANDLE& handle)
         {

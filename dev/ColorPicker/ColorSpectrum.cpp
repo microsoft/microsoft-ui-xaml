@@ -486,7 +486,7 @@ void ColorSpectrum::UpdateColor(Hsv newHsv)
     RaiseColorChanged();
 }
 
-void ColorSpectrum::UpdateColorFromPoint(winrt::PointerPoint point)
+void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 {
     // If we haven't initialized our HSV value array yet, then we should just ignore any user input -
     // we don't yet know what to do with it.
@@ -886,7 +886,7 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
     shared_ptr<vector<::byte>> bgraMaxPixelData = make_shared<vector<::byte>>();
     shared_ptr<vector<Hsv>> newHsvValues = make_shared<vector<Hsv>>();
 
-    size_t pixelCount = static_cast<size_t>(round(minDimension) * round(minDimension));
+    auto pixelCount = static_cast<size_t>(round(minDimension) * round(minDimension));
     size_t pixelDataSize = pixelCount * 4;
     bgraMinPixelData->reserve(pixelDataSize);
 

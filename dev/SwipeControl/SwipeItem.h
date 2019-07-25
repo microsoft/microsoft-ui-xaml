@@ -12,12 +12,10 @@ class SwipeItem :
 {
 public:
     SwipeItem();
-    virtual ~SwipeItem();
-
     // Property changed handler.
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style swipeItemStyle);
+    void GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style& swipeItemStyle);
 
     void InvokeSwipe(const winrt::SwipeControl& content);
 
@@ -30,7 +28,7 @@ private:
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
-    void OnCommandChanged(winrt::ICommand oldCommand, winrt::ICommand newCommand);
+    void OnCommandChanged(const winrt::ICommand& oldCommand, const winrt::ICommand& newCommand);
     
     void AttachEventHandlers(const winrt::AppBarButton& appBarButton);
 };

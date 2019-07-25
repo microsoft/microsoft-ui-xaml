@@ -27,10 +27,6 @@ NavigationViewItem::NavigationViewItem()
     SetDefaultStyleKey(this);
 }
 
-NavigationViewItem::~NavigationViewItem()
-{
-}
-
 void NavigationViewItem::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visual may not the same as we expect

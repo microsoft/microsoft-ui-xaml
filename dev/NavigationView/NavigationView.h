@@ -62,7 +62,7 @@ public:
 
     winrt::UIElement FindSelectionIndicator(const winrt::IInspectable& item);
 
-    static void CreateAndAttachHeaderAnimation(winrt::Visual visual);
+    static void CreateAndAttachHeaderAnimation(const winrt::Visual& visual);
 
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 

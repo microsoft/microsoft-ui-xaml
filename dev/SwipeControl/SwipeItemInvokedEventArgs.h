@@ -8,9 +8,7 @@
 class SwipeItemInvokedEventArgs
     : public winrt::implementation::SwipeItemInvokedEventArgsT<SwipeItemInvokedEventArgs>
 {
-public:
-    SwipeItemInvokedEventArgs();
-
+public:    
 #pragma region ISwipeItemInvokedEventArgs
     winrt::SwipeControl SwipeControl();
 #pragma endregion

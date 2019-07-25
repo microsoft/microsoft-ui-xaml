@@ -24,10 +24,6 @@ SwipeItem::SwipeItem()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_SwipeItem);
 }
 
-SwipeItem::~SwipeItem()
-{
-}
-
 #pragma endregion
 
 
@@ -63,7 +59,7 @@ void SwipeItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
     }
 }
 
-void SwipeItem::OnCommandChanged(winrt::ICommand /*oldCommand*/, winrt::ICommand newCommand)
+void SwipeItem::OnCommandChanged(const winrt::ICommand& /*oldCommand*/, const winrt::ICommand& newCommand)
 {
     if (auto newUICommand = safe_try_cast<winrt::XamlUICommand>(newCommand))
     {
@@ -72,7 +68,7 @@ void SwipeItem::OnCommandChanged(winrt::ICommand /*oldCommand*/, winrt::ICommand
     }
 }
 
-void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style swipeItemStyle)
+void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style& swipeItemStyle)
 {
     appBarButton.Style(swipeItemStyle);
     if (Background())

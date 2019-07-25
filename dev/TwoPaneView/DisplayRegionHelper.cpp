@@ -8,14 +8,6 @@
 #include "DisplayRegionHelper.h"
 #include "LifetimeHandler.h"
 
-DisplayRegionHelper::DisplayRegionHelper() 
-{
-};
-
-DisplayRegionHelper::~DisplayRegionHelper()
-{
-}
-
 /* static */
 DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
 {

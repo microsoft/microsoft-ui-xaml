@@ -13,7 +13,7 @@ public:
     double r{};
     double g{};
     double b{};
-    Rgb() {}
+    Rgb() = default;
     Rgb(double r, double g, double b);
 };
 
@@ -23,7 +23,7 @@ public:
     double h{};
     double s{};
     double v{};
-    Hsv() {}
+    Hsv() = default;
     Hsv(double h, double s, double v);
 };
 

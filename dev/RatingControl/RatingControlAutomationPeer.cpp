@@ -184,7 +184,7 @@ int RatingControlAutomationPeer::DetermineSignificantDigits(double value, int fr
     return length + fractionDigits;
 }
 
-winrt::hstring RatingControlAutomationPeer::GenerateValue_ValueString(winrt::hstring resourceString, double ratingValue)
+winrt::hstring RatingControlAutomationPeer::GenerateValue_ValueString(const winrt::hstring& resourceString, double ratingValue)
 {
     winrt::DecimalFormatter formatter;
     winrt::SignificantDigitsNumberRounder rounder;
