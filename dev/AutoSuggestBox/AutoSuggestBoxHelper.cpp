@@ -117,7 +117,7 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
 
     if (isPopupOpen)
     {
-        bool isOpenDown = IsPopupOpenDown(autoSuggestBox);
+        auto const isOpenDown = IsPopupOpenDown(autoSuggestBox);
         auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
         auto popupRadiusFilter = isOpenDown ? CornerRadiusFilterType::Bottom : CornerRadiusFilterType::Top;
