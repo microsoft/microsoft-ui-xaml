@@ -187,7 +187,7 @@ private:
 };
 
 template<typename Factory>
-inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(_In_ unsigned int *flags, _In_ const ::Microsoft::WRL::Details::CreatorMap* entry, REFIID riid, _Outptr_ IUnknown **ppFactory) throw()
+inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(unsigned int *flags, const ::Microsoft::WRL::Details::CreatorMap* entry, REFIID riid, IUnknown **ppFactory) throw()
 {
     try
     {

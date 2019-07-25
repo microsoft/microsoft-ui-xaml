@@ -41,12 +41,12 @@ public:
     static void Initialize();
 
     static bool RegisterXamlType(
-        _In_ PCWSTR typeName,
+        PCWSTR typeName,
         std::function<winrt::IXamlType()> createXamlTypeCallback
         );
 
     static winrt::IXamlType GetXamlType(
-        _In_ const wstring_view& typeName
+        const wstring_view& typeName
         );
 
     // IXamlMetadataProvider

@@ -34,7 +34,7 @@ public:
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
 #endif
 
-    void GoToState(_In_ winrt::RevealBrushState newState);
+    void GoToState(winrt::RevealBrushState newState);
 
     void SetIsPressLight(bool isPressLight) { m_isPressLight = isPressLight; }
     bool GetIsPressLight() { return m_isPressLight; }
@@ -63,7 +63,7 @@ public:
 
     // For AggregableComObject
 protected:
-    void InitializeImpl(_In_opt_ IInspectable* outer);
+    void InitializeImpl(IInspectable* outer);
 
 private:
     enum class LightStates { Off, AnimToHover, AnimToOff, Hover, Pressing, FastRelease, SlowRelease };

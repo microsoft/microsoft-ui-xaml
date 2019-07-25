@@ -111,8 +111,8 @@ namespace Private {
 
 _Check_return_ HRESULT
 XamlRuntimeType::ActivateInstance(
-    _In_ UINT16 typeLabel,
-    _Outptr_ IInspectable** abiInstance) const try
+    UINT16 typeLabel,
+    IInspectable** abiInstance) const try
 {
     auto& instance{ to_winrt(*abiInstance) };
     switch(typeLabel)
@@ -150,9 +150,9 @@ XamlRuntimeType::ActivateInstance(
 
 _Check_return_ HRESULT
 XamlRuntimeType::SetValue(
-    _In_ UINT16 typeLabel,
-    _In_ IInspectable* abiInstance,
-    _In_ IInspectable* abiValue) const try
+    UINT16 typeLabel,
+    IInspectable* abiInstance,
+    IInspectable* abiValue) const try
 {
     auto const& instance{ to_winrt(abiInstance) };
     auto const& value{ to_winrt(abiValue) };
@@ -183,8 +183,8 @@ XamlRuntimeType::SetValue(
 
 _Check_return_ HRESULT
 XamlRuntimeType::GetValue(
-    _In_ UINT16 typeLabel,
-    _In_ IInspectable* abiInstance,
+    UINT16 typeLabel,
+    IInspectable* abiInstance,
     _Outptr_result_maybenull_ IInspectable** abiValue) const try
 {
     auto const& instance{ to_winrt(abiInstance) };
@@ -224,9 +224,9 @@ XamlRuntimeType::GetValue(
 
 _Check_return_ HRESULT
 XamlRuntimeType::BoxEnum(
-    _In_ UINT16 typeLabel,
-    _In_ UINT32 enumValue,
-    _Outptr_ IInspectable **abiBoxedEnum) const try
+    UINT16 typeLabel,
+    UINT32 enumValue,
+    IInspectable **abiBoxedEnum) const try
 {
     auto& value{ to_winrt(*abiBoxedEnum) };
     switch (typeLabel)
@@ -255,9 +255,9 @@ XamlRuntimeType::BoxEnum(
 
 _Check_return_ HRESULT
 XamlRuntimeType::AddToVector(
-    _In_ UINT16 addToVectorId,
-    _In_ IInspectable* abiInstance,
-    _In_ IInspectable* abiValue) const try
+    UINT16 addToVectorId,
+    IInspectable* abiInstance,
+    IInspectable* abiValue) const try
 {
     auto const& instance{ to_winrt(abiInstance) };
     auto const& value{ to_winrt(abiValue) };
@@ -300,10 +300,10 @@ XamlRuntimeType::AddToVector(
 
 _Check_return_ HRESULT
 XamlRuntimeType::AddToMap(
-    _In_ UINT16 addToMapId,
-    _In_ IInspectable* abiInstance,
-    _In_ IInspectable* abiKey,
-    _In_ IInspectable* abiValue) const try
+    UINT16 addToMapId,
+    IInspectable* abiInstance,
+    IInspectable* abiKey,
+    IInspectable* abiValue) const try
 {
     auto const& instance{ to_winrt(abiInstance) };
     auto const& key{ to_winrt(abiKey) };
@@ -366,7 +366,7 @@ XamlRuntimeType::ResetDependencyProperties() const
 
 // Called from XamlType::RunInitializer rather than relying on the factories RuntimeClassInitialize to do the registration
 HRESULT
-XamlRuntimeType::EnsureDependencyProperties(_In_ UINT16 typeLabel) const try
+XamlRuntimeType::EnsureDependencyProperties(UINT16 typeLabel) const try
 {
     switch(typeLabel)
     {

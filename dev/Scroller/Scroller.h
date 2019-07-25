@@ -293,7 +293,7 @@ private:
     float ComputeContentLayoutOffsetDelta(ScrollerDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
-    void ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition);
+    void ComputeMinMaxPositions(float zoomFactor, winrt::float2* minPosition, winrt::float2* maxPosition);
     winrt::float2 ComputePositionFromOffsets(double zoomedHorizontalOffset, double zoomedVerticalOffset);
     template <typename T> double ComputeValueAfterSnapPoints(double value, std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>> const& snapPointsSet);
     winrt::float2 ComputeCenterPointerForMouseWheelZooming(const winrt::UIElement& content, const winrt::Point& pointerPosition) const;
@@ -301,11 +301,11 @@ private:
         const winrt::UIElement& content,
         const winrt::SnapPointsMode& snapPointsMode,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        _Out_ double* targetZoomedHorizontalOffset,
-        _Out_ double* targetZoomedVerticalOffset,
-        _Out_ double* appliedOffsetX,
-        _Out_ double* appliedOffsetY,
-        _Out_ winrt::Rect* targetRect);
+        double* targetZoomedHorizontalOffset,
+        double* targetZoomedVerticalOffset,
+        double* appliedOffsetX,
+        double* appliedOffsetY,
+        winrt::Rect* targetRect);
 
     void EnsureExpressionAnimationSources();
     void EnsureInteractionTracker();
@@ -428,27 +428,27 @@ private:
         winrt::ScrollOptions const& options,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         int32_t existingViewChangeId,
-        _Out_opt_ int32_t* viewChangeId);
+        int32_t* viewChangeId);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
         winrt::float2 offsetsVelocity,
         winrt::float2 anticipatedOffsetsChange,
         winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        _Out_opt_ int32_t* viewChangeId);
+        int32_t* viewChangeId);
 
     void ChangeZoomFactorPrivate(
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
         ScrollerViewKind zoomFactorKind,
         winrt::ZoomOptions const& options,
-        _Out_opt_ int32_t* viewChangeId);
+        int32_t* viewChangeId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
         float zoomFactorVelocity,
         float anticipatedZoomFactorChange,
         winrt::IReference<winrt::float2> centerPoint,
         winrt::IReference<float> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        _Out_opt_ int32_t* viewChangeId);
+        int32_t* viewChangeId);
 
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
@@ -617,7 +617,7 @@ private:
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         int32_t offsetsChangeId,
-        _Inout_ winrt::SnapPointsMode* snapPointsMode);
+        winrt::SnapPointsMode* snapPointsMode);
 
     // Event handlers
     void OnDpiChanged(
@@ -700,23 +700,23 @@ private:
     void RaiseAnchorRequested();
 
     void IsAnchoring(
-        _Out_ bool* isAnchoringElementHorizontally,
-        _Out_ bool* isAnchoringElementVertically,
-        _Out_opt_ bool* isAnchoringFarEdgeHorizontally = nullptr,
-        _Out_opt_ bool* isAnchoringFarEdgeVertically = nullptr);
+        bool* isAnchoringElementHorizontally,
+        bool* isAnchoringElementVertically,
+        bool* isAnchoringFarEdgeHorizontally = nullptr,
+        bool* isAnchoringFarEdgeVertically = nullptr);
     void ComputeViewportAnchorPoint(
         double viewportWidth,
         double viewportHeight,
-        _Out_ double* viewportAnchorPointHorizontalOffset,
-        _Out_ double* viewportAnchorPointVerticalOffset);
+        double* viewportAnchorPointHorizontalOffset,
+        double* viewportAnchorPointVerticalOffset);
     void ComputeElementAnchorPoint(
         bool isForPreArrange,
-        _Out_ double* elementAnchorPointHorizontalOffset,
-        _Out_ double* elementAnchorPointVerticalOffset);
+        double* elementAnchorPointHorizontalOffset,
+        double* elementAnchorPointVerticalOffset);
     void ComputeAnchorPoint(
         const winrt::Rect& anchorBounds,
-        _Out_ double* anchorPointX,
-        _Out_ double* anchorPointY);
+        double* anchorPointX,
+        double* anchorPointY);
     winrt::Size ComputeViewportToElementAnchorPointsDistance(
         double viewportWidth,
         double viewportHeight,
@@ -731,9 +731,9 @@ private:
         const winrt::Rect& viewportAnchorBounds,
         double viewportAnchorPointHorizontalOffset,
         double viewportAnchorPointVerticalOffset,
-        _Inout_ double* bestAnchorCandidateDistance,
-        _Inout_ winrt::UIElement* bestAnchorCandidate,
-        _Inout_ winrt::Rect* bestAnchorCandidateBounds) const;
+        double* bestAnchorCandidateDistance,
+        winrt::UIElement* bestAnchorCandidate,
+        winrt::Rect* bestAnchorCandidateBounds) const;
 
     static winrt::Rect GetDescendantBounds(
         const winrt::UIElement& content,

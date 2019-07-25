@@ -14,12 +14,12 @@ Hsv::Hsv(double h, double s, double v) : h{ h }, s{ s }, v{ v }
 {
 }
 
-bool TryParseInt(const wstring_view& s, _Out_ unsigned long *outParam)
+bool TryParseInt(const wstring_view& s, unsigned long *outParam)
 {
     return TryParseInt(s.data(), outParam, 10 /* base */);
 }
 
-bool TryParseInt(_In_z_ PCWSTR str, _Out_ unsigned long *outParam, int base)
+bool TryParseInt(_In_z_ PCWSTR str, unsigned long *outParam, int base)
 {
     // If we have a zero-length string, then we can immediately know
     // that this is not a valid integer.
@@ -268,7 +268,7 @@ winrt::hstring RgbToHex(const Rgb &rgb)
     return winrt::hstring(hexString);
 }
 
-void HexToRgba(const wstring_view& input, _Out_ Rgb *rgb, _Out_ double *alpha)
+void HexToRgba(const wstring_view& input, Rgb *rgb, double *alpha)
 {
     // The input always begins with a #, so we'll move past that.
     auto ptr = input.data();

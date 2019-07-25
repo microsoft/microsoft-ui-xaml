@@ -14,15 +14,15 @@ void EnsureLibraryLoaded();
 void SetProcessMuiLanguages();
 
 void LoadStringResource(
-    _In_ HINSTANCE module,
+    HINSTANCE module,
     UINT stringId,
-    _Out_ HSTRING *pString
+    HSTRING *pString
     );
 
 HRSRC FindResourceExWithFallback(
-    _In_ HINSTANCE hModule,
-    _In_ LPCTSTR lpType,
-    _In_ LPCTSTR lpName,
+    HINSTANCE hModule,
+    LPCTSTR lpType,
+    LPCTSTR lpName,
     LANGID wLanguage);
 
 HINSTANCE g_hResource{ nullptr };
@@ -92,9 +92,9 @@ void SetProcessMuiLanguages()
 }
 
 void LoadStringResource(
-    _In_ HINSTANCE module,
+    HINSTANCE module,
     UINT stringId,
-    _Out_ HSTRING *pString
+    HSTRING *pString
     )
 {
     HRESULT hr = E_FAIL; // Initialize to E_FAIL so that's our default if we didn't find the string.
@@ -135,9 +135,9 @@ void LoadStringResource(
 }
 
 HRSRC FindResourceExWithFallback(
-    _In_ HINSTANCE hModule,
-    _In_ LPCTSTR lpType,
-    _In_ LPCTSTR lpName,
+    HINSTANCE hModule,
+    LPCTSTR lpType,
+    LPCTSTR lpName,
     LANGID wLanguage)
 {
     HRSRC hIncreaseDialogReference = NULL;

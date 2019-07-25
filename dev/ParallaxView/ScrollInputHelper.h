@@ -29,8 +29,8 @@ private:
     static winrt::RichEditBox GetRichEditBoxParent(const winrt::DependencyObject& childElement);
     static void GetChildScrollerOrScrollViewer(
         const winrt::DependencyObject& rootElement,
-        _Out_ winrt::Scroller* scroller,
-        _Out_ winrt::FxScrollViewer* scrollViewer);
+        winrt::Scroller* scroller,
+        winrt::FxScrollViewer* scrollViewer);
     winrt::UIElement GetScrollContentElement() const;
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
     winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;

@@ -384,7 +384,7 @@ double ItemsRepeaterScrollHost::TrackElement(const winrt::UIElement& element, wi
     return pendingViewportShift;
 }
 
-winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(_Out_opt_ winrt::Rect* relativeBounds)
+winrt::UIElement ItemsRepeaterScrollHost::GetAnchorElement(winrt::Rect* relativeBounds)
 {
     if (m_isAnchorElementDirty)
     {

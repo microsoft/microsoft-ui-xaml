@@ -361,7 +361,7 @@ void RevealHoverLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelpe
 }
 #endif
 
-void RevealHoverLight::GoToState(_In_ winrt::RevealBrushState newState)
+void RevealHoverLight::GoToState(winrt::RevealBrushState newState)
 {
     switch (newState)
     {

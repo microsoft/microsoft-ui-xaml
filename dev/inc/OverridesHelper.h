@@ -58,7 +58,7 @@ template <typename BASE,
 {
     virtual winrt::com_ptr<IInspectable> GetComposableInner() = 0;
 
-    IFACEMETHOD(OnCreateAutomationPeer)(_Outptr_ abi::IAutomationPeer** returnValue)
+    IFACEMETHOD(OnCreateAutomationPeer)(abi::IAutomationPeer** returnValue)
     {
         auto spOverrides = GetComposableInner().as<abi::IUIElementOverrides>();
         return spOverrides->OnCreateAutomationPeer(returnValue);
@@ -70,7 +70,7 @@ template <typename BASE,
         return spOverrides->OnDisconnectVisualChildren();
     }
 
-    IFACEMETHOD(FindSubElementsForTouchTargeting)(_In_ abi::Point point, _In_ abi::Rect boundingRect, _Outptr_ abi::IIterable<abi::IIterable<::abi::Point>*>** ppReturnValue)
+    IFACEMETHOD(FindSubElementsForTouchTargeting)(abi::Point point, abi::Rect boundingRect, abi::IIterable<abi::IIterable<::abi::Point>*>** ppReturnValue)
     {
         auto spOverrides = GetComposableInner().as<abi::IUIElementOverrides>();
         return spOverrides->FindSubElementsForTouchTargeting(point, boundingRect, ppReturnValue);
@@ -90,14 +90,14 @@ template <typename BASE,
     virtual winrt::com_ptr<IInspectable> GetComposableInner() = 0;
 
     IFACEMETHOD(GetChildrenInTabFocusOrder)(
-        _Outptr_ abi::IIterable<abi::DependencyObject*>** returnValue) override
+        abi::IIterable<abi::DependencyObject*>** returnValue) override
     {
         auto overrides = GetComposableInner().as<abi::IUIElementOverrides7>();
         return overrides->GetChildrenInTabFocusOrder(returnValue);
     }
 
     IFACEMETHOD(OnProcessKeyboardAccelerators)(
-        _In_ abi::IProcessKeyboardAcceleratorEventArgs* args)
+        abi::IProcessKeyboardAcceleratorEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IUIElementOverrides7>();
         return overrides->OnProcessKeyboardAccelerators(args);
@@ -116,13 +116,13 @@ template <typename BASE,
 {
     virtual winrt::com_ptr<IInspectable> GetComposableInner() = 0;
 
-    IFACEMETHOD(OnKeyboardAcceleratorInvoked)(_In_ abi::IKeyboardAcceleratorInvokedEventArgs* e) override
+    IFACEMETHOD(OnKeyboardAcceleratorInvoked)(abi::IKeyboardAcceleratorInvokedEventArgs* e) override
     {
         auto overrides = GetComposableInner().as<abi::IUIElementOverrides8>();
         return overrides->OnKeyboardAcceleratorInvoked(e);
     }
 
-    IFACEMETHOD(OnBringIntoViewRequested)(_In_ abi::IBringIntoViewRequestedEventArgs* e) override
+    IFACEMETHOD(OnBringIntoViewRequested)(abi::IBringIntoViewRequestedEventArgs* e) override
     {
         auto overrides = GetComposableInner().as<abi::IUIElementOverrides8>();
         return overrides->OnBringIntoViewRequested(e);
@@ -671,115 +671,115 @@ template <typename BASE, typename OverridesInterface = abi::IInteractionBaseOver
 {
     virtual winrt::com_ptr<IInspectable> GetComposableInner() = 0;
 
-    IFACEMETHOD(GetSupportedEventsCore)(_Outptr_ abi::IVectorView<abi::RoutedEvent*>** result)
+    IFACEMETHOD(GetSupportedEventsCore)(abi::IVectorView<abi::RoutedEvent*>** result)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->GetSupportedEventsCore(result);
     }
 
-    IFACEMETHOD(OnKeyDown)(_In_ abi::IUIElement* sender, _In_ abi::IKeyRoutedEventArgs* args)
+    IFACEMETHOD(OnKeyDown)(abi::IUIElement* sender, abi::IKeyRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnKeyDown(sender, args);
     }
 
-    IFACEMETHOD(OnKeyUp)(_In_ abi::IUIElement* sender, _In_ abi::IKeyRoutedEventArgs* args)
+    IFACEMETHOD(OnKeyUp)(abi::IUIElement* sender, abi::IKeyRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnKeyUp(sender, args);
     }
 
-    IFACEMETHOD(OnPointerEntered)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerEntered)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerEntered(sender, args);
     }
 
-    IFACEMETHOD(OnPointerExited)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerExited)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerExited(sender, args);
     }
 
-    IFACEMETHOD(OnPointerMoved)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerMoved)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerMoved(sender, args);
     }
 
-    IFACEMETHOD(OnPointerPressed)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerPressed)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerPressed(sender, args);
     }
 
-    IFACEMETHOD(OnPointerReleased)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerReleased)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerReleased(sender, args);
     }
 
-    IFACEMETHOD(OnPointerCaptureLost)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerCaptureLost)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerCaptureLost(sender, args);
     }
 
-    IFACEMETHOD(OnPointerCanceled)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerCanceled)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerCanceled(sender, args);
     }
 
-    IFACEMETHOD(OnPointerWheelChanged)(_In_ abi::IUIElement* sender, _In_ abi::IPointerRoutedEventArgs* args)
+    IFACEMETHOD(OnPointerWheelChanged)(abi::IUIElement* sender, abi::IPointerRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnPointerWheelChanged(sender, args);
     }
 
-    IFACEMETHOD(OnTapped)(_In_ abi::IUIElement* sender, _In_ abi::ITappedRoutedEventArgs* args)
+    IFACEMETHOD(OnTapped)(abi::IUIElement* sender, abi::ITappedRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnTapped(sender, args);
     }
 
-    IFACEMETHOD(OnDoubleTapped)(_In_ abi::IUIElement* sender, _In_ abi::IDoubleTappedRoutedEventArgs* args)
+    IFACEMETHOD(OnDoubleTapped)(abi::IUIElement* sender, abi::IDoubleTappedRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnDoubleTapped(sender, args);
     }
 
-    IFACEMETHOD(OnHolding)(_In_ abi::IUIElement* sender, _In_ abi::IHoldingRoutedEventArgs* args)
+    IFACEMETHOD(OnHolding)(abi::IUIElement* sender, abi::IHoldingRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnHolding(sender, args);
     }
 
-    IFACEMETHOD(OnRightTapped)(_In_ abi::IUIElement* sender, _In_ abi::IRightTappedRoutedEventArgs* args)
+    IFACEMETHOD(OnRightTapped)(abi::IUIElement* sender, abi::IRightTappedRoutedEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnRightTapped(sender, args);
     }
 
-    IFACEMETHOD(OnDragEnter)(_In_ abi::IUIElement* sender, _In_ abi::IDragEventArgs* args)
+    IFACEMETHOD(OnDragEnter)(abi::IUIElement* sender, abi::IDragEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnDragEnter(sender, args);
     }
 
-    IFACEMETHOD(OnDragLeave)(_In_ abi::IUIElement* sender, _In_ abi::IDragEventArgs* args)
+    IFACEMETHOD(OnDragLeave)(abi::IUIElement* sender, abi::IDragEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnDragLeave(sender, args);
     }
 
-    IFACEMETHOD(OnDragOver)(_In_ abi::IUIElement* sender, _In_ abi::IDragEventArgs* args)
+    IFACEMETHOD(OnDragOver)(abi::IUIElement* sender, abi::IDragEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnDragOver(sender, args);
     }
 
-    IFACEMETHOD(OnDrop)(_In_ abi::IUIElement* sender, _In_ abi::IDragEventArgs* args)
+    IFACEMETHOD(OnDrop)(abi::IUIElement* sender, abi::IDragEventArgs* args)
     {
         auto overrides = GetComposableInner().as<abi::IInteractionBaseOverrides>();
         return overrides->OnDrop(sender, args);

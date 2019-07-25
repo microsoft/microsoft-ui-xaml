@@ -191,7 +191,7 @@ NTSTATUS
 ULONG
 #endif // _ETW_KM_
 EventSetInformation_ProviderTraits(
-    _In_ REGHANDLE RegHandle,
+    REGHANDLE RegHandle,
     _In_count_x_(*(UINT16*)Traits) UCHAR const* Traits
     )
 /*++
@@ -250,10 +250,10 @@ Return Value:
 #elif defined(_ETW_KM_)
 
     typedef NTSTATUS(NTAPI* PFEtwSetInformation)(
-        _In_ REGHANDLE RegHandle,
-        _In_ EVENT_INFO_CLASS InformationClass,
+        REGHANDLE RegHandle,
+        EVENT_INFO_CLASS InformationClass,
         _In_reads_bytes_opt_(InformationLength) PVOID EventInformation,
-        _In_ ULONG InformationLength);
+        ULONG InformationLength);
     static UNICODE_STRING strEtwSetInformation = {
         sizeof(L"EtwSetInformation") - 2,
         sizeof(L"EtwSetInformation") - 2,
@@ -280,10 +280,10 @@ Return Value:
         GetModuleHandleExW(0, L"advapi32", &hEventing))
     {
         typedef ULONG(WINAPI* PFEventSetInformation)(
-            _In_ REGHANDLE RegHandle,
-            _In_ EVENT_INFO_CLASS InformationClass,
+            REGHANDLE RegHandle,
+            EVENT_INFO_CLASS InformationClass,
             _In_reads_bytes_opt_(InformationLength) PVOID EventInformation,
-            _In_ ULONG InformationLength);
+            ULONG InformationLength);
         PFEventSetInformation pfEventSetInformation =
             (PFEventSetInformation)GetProcAddress(hEventing, "EventSetInformation");
         if (pfEventSetInformation) {
@@ -309,7 +309,7 @@ NTSTATUS
 ULONG
 #endif // _ETW_KM_
 EnableManifestedProviderForMicrosoftTelemetry(
-    _In_ REGHANDLE RegHandle
+    REGHANDLE RegHandle
     )
 /*++
 
@@ -368,7 +368,7 @@ NTSTATUS
 ULONG
 #endif // _ETW_KM_
 EnableManifestedProviderForMicrosoftWlanTelemetry(
-    _In_ REGHANDLE RegHandle
+    REGHANDLE RegHandle
     )
 /*++
 

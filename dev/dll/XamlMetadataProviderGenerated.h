@@ -3,7 +3,7 @@
 
 #pragma once
 
-STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory **factory);
+STDAPI DllGetActivationFactory(HSTRING activatibleClassId, IActivationFactory **factory);
 
 class XamlMetadataProviderGenerated
 {
@@ -11,7 +11,7 @@ public:
     void RegisterTypes();
 
     template <typename Factory>
-    static winrt::IInspectable ActivateInstanceWithFactory(_In_ PCWSTR typeName)
+    static winrt::IInspectable ActivateInstanceWithFactory(PCWSTR typeName)
     {
         auto factory = GetFactory<Factory>(typeName);
         winrt::IInspectable inner;
@@ -19,7 +19,7 @@ public:
     }
 
     template <typename Factory>
-    static Factory GetFactory(_In_ PCWSTR typeName)
+    static Factory GetFactory(PCWSTR typeName)
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
@@ -34,7 +34,7 @@ public:
         }
     }
 
-    static winrt::IInspectable ActivateInstance(_In_ PCWSTR typeName)
+    static winrt::IInspectable ActivateInstance(PCWSTR typeName)
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };

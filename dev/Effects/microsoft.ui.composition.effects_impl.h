@@ -75,31 +75,31 @@ namespace abi
 DECLARE_INTERFACE_IID_(IGraphicsEffectD2D1Interop, IUnknown, "2FC57384-A068-44D7-A331-30982FCF7177")
 {
     STDMETHOD(GetEffectId)(
-        _Out_ GUID * id
+        GUID * id
         ) PURE;
 
     STDMETHOD(GetNamedPropertyMapping)(
         LPCWSTR name,
-        _Out_ UINT * index,
-        _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping
+        UINT * index,
+        GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping
         ) PURE;
 
     STDMETHOD(GetPropertyCount)(
-        _Out_ UINT * count
+        UINT * count
         ) PURE;
 
     STDMETHOD(GetProperty)(
         UINT index,
-        _Outptr_ abi::IPropertyValue ** value
+        abi::IPropertyValue ** value
         ) PURE;
 
     STDMETHOD(GetSource)(
         UINT index,
-        _Outptr_ abi::IGraphicsEffectSource ** source
+        abi::IGraphicsEffectSource ** source
         ) PURE;
 
     STDMETHOD(GetSourceCount)(
-        _Out_ UINT * count
+        UINT * count
         ) PURE;
 };
 
@@ -138,28 +138,28 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
         void Name(winrt::hstring const& value) { m_Name = value; }
 
         // IGraphicsEffectD2D1Interop
-        IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 0; return S_OK; }
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT* count) override { *count = 0; return S_OK; }
+        IFACEMETHODIMP GetSourceCount(UINT * count) override { *count = 0; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT* count) override { *count = 0; return S_OK; }
 
-        IFACEMETHODIMP GetSource(UINT, _Outptr_ abi::IGraphicsEffectSource**) override
+        IFACEMETHODIMP GetSource(UINT, abi::IGraphicsEffectSource**) override
         {
             return E_INVALIDARG;
         }
 
-        IFACEMETHODIMP GetProperty(UINT, _Outptr_ abi::IPropertyValue**) override
+        IFACEMETHODIMP GetProperty(UINT, abi::IPropertyValue**) override
         {
             return E_INVALIDARG;
         }
 
-        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR, _Out_ UINT*,
-            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
+        IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR, UINT*,
+            GRAPHICS_EFFECT_PROPERTY_MAPPING*) override
         {
             return E_INVALIDARG;
         }
 
     protected:
         // Invokes a functor with the pointer to the property factory
-        static HRESULT UsePropertyFactory(_Outptr_ abi::IPropertyValue **value, std::function<winrt::IInspectable()> const& func) try
+        static HRESULT UsePropertyFactory(abi::IPropertyValue **value, std::function<winrt::IInspectable()> const& func) try
         {
             auto ret = func();
             auto propertyValue = ret.as<winrt::IPropertyValue>();
@@ -187,8 +187,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             _In_count_(mappingCount) const NamedProperty* namedProperties,
             UINT namedPropertyCount,
             LPCWSTR name,
-            _Out_ UINT * index,
-            _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping)
+            UINT * index,
+            GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping)
         {
             for (UINT i = 0; i < namedPropertyCount; ++i)
             {
@@ -217,7 +217,7 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #pragma push_macro("DECLARE_D2D_GUID")
 #undef DECLARE_D2D_GUID
 #define DECLARE_D2D_GUID(Guid) \
-    IFACEMETHODIMP GetEffectId(_Out_ GUID * id) override { *id = Guid; return S_OK; }
+    IFACEMETHODIMP GetEffectId(GUID * id) override { *id = Guid; return S_OK; }
 
 #pragma push_macro("DECLARE_POD_PROPERTY")
 #undef DECLARE_POD_PROPERTY
@@ -243,8 +243,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #undef DECLARE_SINGLE_SOURCE
 #define DECLARE_SINGLE_SOURCE(Name) \
     DECLARE_SOURCE(Name) \
-    IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 1; return S_OK; } \
-    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource ** source) override try \
+    IFACEMETHODIMP GetSourceCount(UINT * count) override { *count = 1; return S_OK; } \
+    IFACEMETHODIMP GetSource(UINT index, abi::IGraphicsEffectSource ** source) override try \
     { \
         if (index == 0) to_winrt(*source) = m_##Name; \
         else throw winrt::hresult_invalid_argument(); \
@@ -256,8 +256,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #define DECLARE_DUAL_SOURCES(Name1, Name2) \
     DECLARE_SOURCE(Name1) \
     DECLARE_SOURCE(Name2) \
-    IFACEMETHODIMP GetSourceCount(_Out_ UINT * count) override { *count = 2; return S_OK; } \
-    IFACEMETHODIMP GetSource(UINT index, _Outptr_ abi::IGraphicsEffectSource ** source) override try \
+    IFACEMETHODIMP GetSourceCount(UINT * count) override { *count = 2; return S_OK; } \
+    IFACEMETHODIMP GetSource(UINT index, abi::IGraphicsEffectSource ** source) override try \
     { \
         if (index == 0) to_winrt(*source) = m_##Name1; \
         else if (index == 1) to_winrt(*source) = m_##Name2; \
@@ -268,8 +268,8 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
 #pragma push_macro("DECLARE_NAMED_PROPERTY_MAPPING")
 #undef DECLARE_NAMED_PROPERTY_MAPPING
 #define DECLARE_NAMED_PROPERTY_MAPPING(...) \
-    IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR name, _Out_ UINT * index, \
-        _Out_ GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping) override \
+    IFACEMETHODIMP GetNamedPropertyMapping(LPCWSTR name, UINT * index, \
+        GRAPHICS_EFFECT_PROPERTY_MAPPING * mapping) override \
     { \
         static const NamedProperty s_Properties[] = { __VA_ARGS__ }; \
         return GetNamedPropertyMappingImpl(s_Properties, _countof(s_Properties), name, index, mapping); \
@@ -307,9 +307,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampOutput", D2D1_ARITHMETICCOMPOSITE_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -342,9 +342,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Mode", D2D1_BLEND_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -372,9 +372,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ExtendY", D2D1_BORDER_PROP_EDGE_MODE_Y, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -405,9 +405,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampOutput", D2D1_COLORMATRIX_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 3; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 3; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -444,9 +444,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Color", D2D1_FLOOD_PROP_COLOR, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLOR_TO_VECTOR4 });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -475,9 +475,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Mode", D2D1_COMPOSITE_PROP_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -505,9 +505,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampSource", D2D1_CONTRAST_PROP_CLAMP_INPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -534,9 +534,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Weight", D2D1_CROSSFADE_PROP_WEIGHT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -575,9 +575,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_DISTANTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT }, );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 7; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 7; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -625,9 +625,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_DISTANTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 8; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 8; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -661,9 +661,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Exposure", D2D1_EXPOSURE_PROP_EXPOSURE_VALUE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -721,9 +721,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampOutput", D2D1_GAMMATRANSFER_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 17; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 17; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -768,9 +768,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"BorderMode", D2D1_GAUSSIANBLUR_PROP_BORDER_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 3; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 3; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -808,9 +808,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Angle", D2D1_HUEROTATION_PROP_ANGLE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_RADIANS_TO_DEGREES });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -871,9 +871,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampOutput", D2D1_LINEARTRANSFER_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT } );
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 13; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 13; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -921,9 +921,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Opacity", D2D1_OPACITY_PROP_OPACITY, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -960,9 +960,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_POINTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 6; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 6; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1008,9 +1008,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_POINTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 7; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 7; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1048,9 +1048,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"BlueValueCount", D2D1_POSTERIZE_PROP_BLUE_VALUE_COUNT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1088,9 +1088,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Saturation", D2D1_SATURATION_PROP_SATURATION, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 1; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 1; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1118,9 +1118,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"AlphaMode", D2D1_SEPIA_PROP_ALPHA_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_COLORMATRIX_ALPHA_MODE });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1174,9 +1174,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_SPOTDIFFUSE_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 9; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 9; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1233,9 +1233,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"HeightMapInterpolationMode", D2D1_SPOTSPECULAR_PROP_SCALE_MODE, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT },);
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 10; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 10; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1276,9 +1276,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Tint", D2D1_TEMPERATUREANDTINT_PROP_TINT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1307,9 +1307,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"ClampOutput", D2D1_TINT_PROP_CLAMP_OUTPUT, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 2; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 2; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {
@@ -1342,9 +1342,9 @@ namespace Microsoft { namespace UI { namespace Composition { namespace Effects
             { L"Sharpness", D2D1_2DAFFINETRANSFORM_PROP_SHARPNESS, PropertyMapping::GRAPHICS_EFFECT_PROPERTY_MAPPING_DIRECT });
 
     public:
-        IFACEMETHODIMP GetPropertyCount(_Out_ UINT * count) override { *count = 4; return S_OK; }
+        IFACEMETHODIMP GetPropertyCount(UINT * count) override { *count = 4; return S_OK; }
 
-        IFACEMETHODIMP GetProperty(UINT index, _Outptr_ abi::IPropertyValue ** value) override
+        IFACEMETHODIMP GetProperty(UINT index, abi::IPropertyValue ** value) override
         {
             return UsePropertyFactory(value, [=]()
             {

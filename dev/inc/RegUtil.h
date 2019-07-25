@@ -14,11 +14,11 @@ WINADVAPI
 LSTATUS
 APIENTRY
 RegGetValueW(
-    _In_ HKEY hkey,
-    _In_opt_ LPCWSTR lpSubKey,
-    _In_opt_ LPCWSTR lpValue,
-    _In_ DWORD dwFlags,
-    _Out_opt_ LPDWORD pdwType,
+    HKEY hkey,
+    LPCWSTR lpSubKey,
+    LPCWSTR lpValue,
+    DWORD dwFlags,
+    LPDWORD pdwType,
     _When_((dwFlags & 0x7F) == RRF_RT_REG_SZ ||
     (dwFlags & 0x7F) == RRF_RT_REG_EXPAND_SZ ||
         (dwFlags & 0x7F) == (RRF_RT_REG_SZ | RRF_RT_REG_EXPAND_SZ) ||

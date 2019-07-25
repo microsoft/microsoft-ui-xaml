@@ -27,8 +27,8 @@ public:
     Hsv(double h, double s, double v);
 };
 
-bool TryParseInt(const wstring_view& s, _Out_ unsigned long *outParam);
-bool TryParseInt(_In_z_ PCWSTR str, _Out_ unsigned long *outParam, int base);
+bool TryParseInt(const wstring_view& s, unsigned long *outParam);
+bool TryParseInt(_In_z_ PCWSTR str, unsigned long *outParam, int base);
 
 Hsv RgbToHsv(const Rgb &rgb);
 Rgb HsvToRgb(const Hsv &hsv);
@@ -36,7 +36,7 @@ Rgb HsvToRgb(const Hsv &hsv);
 Rgb HexToRgb(const wstring_view& input);
 winrt::hstring RgbToHex(const Rgb &rgb);
 
-void HexToRgba(const wstring_view& input, _Out_ Rgb *rgb, _Out_ double *alpha);
+void HexToRgba(const wstring_view& input, Rgb *rgb, double *alpha);
 winrt::hstring RgbaToHex(const Rgb &rgb, double alpha);
 
 winrt::Color ColorFromRgba(const Rgb &rgb, double alpha = 1.0);

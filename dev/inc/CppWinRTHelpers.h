@@ -24,12 +24,12 @@ inline winrt::IInspectable& to_winrt(::IInspectable*& instance)
 }
 
 inline winrt::DependencyProperty InitializeDependencyProperty(
-    _In_ wstring_view const& propertyNameString,
-    _In_ wstring_view const& propertyTypeNameString,
-    _In_ wstring_view const& ownerTypeNameString,
+    wstring_view const& propertyNameString,
+    wstring_view const& propertyTypeNameString,
+    wstring_view const& ownerTypeNameString,
     bool isAttached,
-    _In_opt_ winrt::IInspectable defaultValue,
-    _In_opt_ winrt::PropertyChangedCallback propertyChangedCallback = nullptr)
+    winrt::IInspectable defaultValue,
+    winrt::PropertyChangedCallback propertyChangedCallback = nullptr)
 {
     auto propertyType = winrt::Interop::TypeName();
     propertyType.Name = propertyTypeNameString;

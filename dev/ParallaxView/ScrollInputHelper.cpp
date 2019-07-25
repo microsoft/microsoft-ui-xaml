@@ -194,8 +194,8 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
 // Returns the inner ScrollViewer or Scroller if any.
 void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     const winrt::DependencyObject& rootElement,
-    _Out_ winrt::Scroller* scroller,
-    _Out_ winrt::FxScrollViewer* scrollViewer)
+    winrt::Scroller* scroller,
+    winrt::FxScrollViewer* scrollViewer)
 {
     *scroller = nullptr;
     *scrollViewer = nullptr;
