@@ -61,10 +61,6 @@ public:
     static std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> s_revealHoverSpotlightStates;
     static std::array<RevealHoverSpotlightStateDesc, RevealHoverSpotlightState_StateCount> s_pressSpotLightStates;
 
-    // For AggregableComObject
-protected:
-    void InitializeImpl(IInspectable* outer);
-
 private:
     enum class LightStates { Off, AnimToHover, AnimToOff, Hover, Pressing, FastRelease, SlowRelease };
     enum class LightEvents { GotoNormal, GotoPointerOver, GotoPressed, AnimationComplete };

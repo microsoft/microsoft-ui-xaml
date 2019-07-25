@@ -9,7 +9,6 @@ class SelectTemplateEventArgs :
     public ReferenceTracker<SelectTemplateEventArgs, winrt::implementation::SelectTemplateEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    void InitializeImpl();
 
 #pragma region ISelectTemplateEventArgs
     winrt::hstring TemplateKey();

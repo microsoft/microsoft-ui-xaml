@@ -34,13 +34,13 @@ ULONGLONG g_TelemetryProviderMatchAnyKeyword{};
 GUID g_TelemetryProviderActivityId{};
 
 void WINAPI TelemetryProviderEnabledCallback(
-         LPCGUID /*sourceId*/,
-         ULONG isEnabled,
-         UCHAR level,
-         ULONGLONG matchAnyKeyword,
-         ULONGLONG /*matchAllKeywords*/,
-     PEVENT_FILTER_DESCRIPTOR /*filterData*/,
-     PVOID /*callbackContext*/)
+    _In_      LPCGUID /*sourceId*/,
+    _In_      ULONG isEnabled,
+    _In_      UCHAR level,
+    _In_      ULONGLONG matchAnyKeyword,
+    _In_      ULONGLONG /*matchAllKeywords*/,
+    _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
+    _In_opt_  PVOID /*callbackContext*/)
 {
     g_IsTelemetryProviderEnabled = !!isEnabled;
     g_TelemetryProviderLevel = level;
@@ -67,13 +67,13 @@ ULONGLONG g_PerfProviderMatchAnyKeyword{};
 GUID g_PerfProviderActivityId{};
 
 void WINAPI PerfProviderEnabledCallback(
-         LPCGUID /*sourceId*/,
-         ULONG isEnabled,
-         UCHAR level,
-         ULONGLONG matchAnyKeyword,
-         ULONGLONG /*matchAllKeywords*/,
-     PEVENT_FILTER_DESCRIPTOR /*filterData*/,
-     PVOID /*callbackContext*/)
+    _In_      LPCGUID /*sourceId*/,
+    _In_      ULONG isEnabled,
+    _In_      UCHAR level,
+    _In_      ULONGLONG matchAnyKeyword,
+    _In_      ULONGLONG /*matchAllKeywords*/,
+    _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
+    _In_opt_  PVOID /*callbackContext*/)
 {
     g_IsPerfProviderEnabled = !!isEnabled;
     g_PerfProviderLevel = level;
@@ -100,13 +100,13 @@ ULONGLONG g_LoggingProviderMatchAnyKeyword{};
 GUID g_LoggingProviderActivityId{};
 
 void WINAPI LoggingProviderEnabledCallback(
-         LPCGUID /*sourceId*/,
-         ULONG isEnabled,
-         UCHAR level,
-         ULONGLONG matchAnyKeyword,
-         ULONGLONG /*matchAllKeywords*/,
-     PEVENT_FILTER_DESCRIPTOR /*filterData*/,
-     PVOID /*callbackContext*/)
+    _In_      LPCGUID /*sourceId*/,
+    _In_      ULONG isEnabled,
+    _In_      UCHAR level,
+    _In_      ULONGLONG matchAnyKeyword,
+    _In_      ULONGLONG /*matchAllKeywords*/,
+    _In_opt_  PEVENT_FILTER_DESCRIPTOR /*filterData*/,
+    _In_opt_  PVOID /*callbackContext*/)
 {
     g_IsLoggingProviderEnabled = !!isEnabled;
     g_LoggingProviderLevel = level;
