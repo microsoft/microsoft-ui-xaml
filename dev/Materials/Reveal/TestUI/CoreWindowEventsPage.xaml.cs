@@ -11,9 +11,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Core;
 using System;
 
-#if !BUILD_WINDOWS
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

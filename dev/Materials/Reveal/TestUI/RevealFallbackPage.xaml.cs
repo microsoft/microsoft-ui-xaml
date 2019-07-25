@@ -9,13 +9,11 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Media;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using RevealBrush = Microsoft.UI.Xaml.Media.RevealBrush;
 using RevealBackgroundBrush = Microsoft.UI.Xaml.Media.RevealBackgroundBrush;
 using RevealBorderBrush = Microsoft.UI.Xaml.Media.RevealBorderBrush;
 using RevealTestApi = Microsoft.UI.Private.Media.RevealTestApi;
 using RevealBrushTestApi = Microsoft.UI.Private.Media.RevealBrushTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

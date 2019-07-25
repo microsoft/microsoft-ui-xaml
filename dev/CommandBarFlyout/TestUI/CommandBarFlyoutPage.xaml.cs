@@ -9,9 +9,7 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 
-#if !BUILD_WINDOWS
 using CommandBarFlyout = Microsoft.UI.Xaml.Controls.CommandBarFlyout;
-#endif
 
 namespace MUXControlsTestApp
 {

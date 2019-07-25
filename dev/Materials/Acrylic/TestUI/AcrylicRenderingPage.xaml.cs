@@ -13,11 +13,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
-#if !BUILD_WINDOWS
 using AcrylicBackgroundSource = Microsoft.UI.Xaml.Media.AcrylicBackgroundSource;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
-#endif
 
 namespace MUXControlsTestApp
 {

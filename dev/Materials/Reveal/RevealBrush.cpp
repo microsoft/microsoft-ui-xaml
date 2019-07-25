@@ -123,132 +123,18 @@ RevealBackgroundBrush::RevealBackgroundBrush()
 
 RevealBrush::~RevealBrush()
 {
-#ifndef BUILD_WINDOWS
     if (m_noiseChangedToken.value)
     {
         MaterialHelper::NoiseChanged(m_noiseChangedToken);
         m_noiseChangedToken.value = 0;
     }
-#endif
 }
-
-#if BUILD_WINDOWS
-void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
-{
-    // XCBB will use Fallback rendering, so do not run derived Brush code.
-    if (SharedHelpers::IsInDesignMode()) { return; }
-
-    bool hasNewMaterialPolicy = false;
-    winrt::XamlIsland xamlIsland = winrt::XamlIsland::GetIslandFromElement(element.try_as<winrt::UIElement>());
-
-    if (xamlIsland)
-    {
-        if (xamlIsland != m_associatedIsland)
-        {
-            if (m_associatedIsland) // Brush has already been connected to a different Island
-            {
-                m_isInterIsland = true;
-            }
-            else
-            {
-                // First time getting MP for island
-                if (m_materialProperties) // Brush has already been connected under a CoreWindow
-                {
-                    m_isInterIsland = true;
-                }
-                m_associatedIsland = xamlIsland;
-                winrt::IInspectable materialPropertiesInsp = xamlIsland.MaterialProperties();
-                m_materialProperties = materialPropertiesInsp.try_as<winrt::MaterialProperties>();
-                hasNewMaterialPolicy = true;
-            }
-        }
-
-        if (!m_isBorder && m_islandTransformChangedToken.value == 0)
-        {
-            MaterialHelper::BrushTemplates<RevealBrush>::HookupIslandDpiChangedHandler(this);
-        }
-    }
-    else
-    {
-        if (m_associatedIsland) // Brush has already been connected under an island
-        {
-            // Attempt to use brush in both an island and CoreWindow - not supported by AcrylicBrush in RS5.
-            // Put the brush in fallback mode.
-            m_isInterIsland = true;
-        }
-
-        // First time getting MP for CoreWindow
-        if (!m_materialProperties)
-        {
-            m_materialProperties = winrt::MaterialProperties::GetForCurrentView();
-            hasNewMaterialPolicy = true;
-        }
-
-        if (!m_isBorder)
-        {
-            MaterialHelper::BrushTemplates<RevealBrush>::HookupWindowDpiChangedHandler(this);
-        }
-    }
-    _ASSERT_EXPR(m_materialProperties, L"No MaterialProperties available in RevealBrush::OnElementConnected");
-
-    // Dispatcher needed as TransparencyPolicyChanged is raised off thread
-    if (!m_dispatcherQueue)
-    {
-        m_dispatcherQueue = winrt::DispatcherQueue::GetForCurrentThread();
-    }
-
-    if (hasNewMaterialPolicy)
-    {
-        // We might have no dispatcher in XamlPresenter scenarios (currenlty LogonUI/CredUI do not appear to use Acrylic).
-        // In these cases, we will honor the initial policy state but not get change notifications.
-        // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
-        if (m_dispatcherQueue)
-        {
-            m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
-                {
-                    dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
-                    {
-                        auto target = weakThis.get();
-                        if (target)
-                        {
-                            target->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(target.get()));
-                        }
-                    }));
-                }
-            });
-        }
-
-
-        m_additionalMaterialPolicyChangedToken = MaterialHelper::AdditionalPolicyChanged([this](auto sender) { OnAdditionalMaterialPolicyChanged(sender); });
-    }
-
-    m_isConnected = true;
-
-    // Apply initial policy state
-    PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(this));
-}
-#endif
 
 void RevealBrush::OnConnected()
 {
     // XCBB will use Fallback rendering, so do not run derived Brush code.
     if (SharedHelpers::IsInDesignMode()) { return; }
-
-#if BUILD_WINDOWS
-
-    if (m_associatedIsland)
-    {
-        MaterialHelper::OnRevealBrushConnectedIsland(m_associatedIsland);
-    }
-    else
-    {
-        MaterialHelper::OnRevealBrushConnected();
-    }
-    
-#else
     MaterialHelper::OnRevealBrushConnected();
-#endif
 
     if (!m_fallbackColorChangedToken.value)
     {
@@ -256,7 +142,6 @@ void RevealBrush::OnConnected()
             winrt::XamlCompositionBrushBase::FallbackColorProperty(), { this, &RevealBrush::OnFallbackColorChanged });
     }
 
-#ifndef BUILD_WINDOWS
     // Stay subscribed to NoiseChanged events when brush disconnected so that it gets marked to pick up new noise when (and if) it gets reconnected.
     if (!m_noiseChangedToken.value)
     {
@@ -268,7 +153,6 @@ void RevealBrush::OnConnected()
 
     UpdateLightTargets(true /* ambientToo */);
     UpdateRevealBrush();
-#endif
 }
 
 void RevealBrush::OnDisconnected()
@@ -296,42 +180,9 @@ void RevealBrush::OnDisconnected()
         m_fallbackColorChangedToken.value = 0;
     }
 
-#if BUILD_WINDOWS
-    if (m_associatedIsland)
-    {
-        MaterialHelper::OnRevealBrushDisconnectedIsland(m_associatedIsland);
-    }
-    else
-    {
-        MaterialHelper::OnRevealBrushDisconnected();
-    }
-#else
     MaterialHelper::OnRevealBrushDisconnected();
-#endif
-
-
-#if BUILD_WINDOWS
-    // Brushes can't be sared between islands, and their MaterialProperties has affinity to a given island.
-    // Drop MaterialProperties when Brush leaves the live tree in case it is moved to a different island.
-    MUX_ASSERT(m_materialProperties);
-    m_materialProperties = nullptr;
-    m_associatedIsland = nullptr;
-    m_isInterIsland = false;
-
-    m_transparencyPolicyChangedRevoker.revoke();
-
-    if (!m_isBorder)
-    {
-        MaterialHelper::BrushTemplates<RevealBrush>::UnhookWindowDpiChangedHandler(this);
-        MaterialHelper::BrushTemplates<RevealBrush>::UnhookIslandDpiChangedHandler(this);
-    }
-
-    MaterialHelper::AdditionalPolicyChanged(m_additionalMaterialPolicyChangedToken);
-    m_additionalMaterialPolicyChangedToken.value = 0;
-#else
     MaterialHelper::PolicyChanged(m_materialPolicyChangedToken);
     m_materialPolicyChangedToken.value = 0;
-#endif
 }
 
 void RevealBrush::OnFallbackColorChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
@@ -448,12 +299,6 @@ void RevealBrush::PolicyStatusChangedHelper(bool isDisabledByMaterialPolicy)
     }
 }
 
-#if BUILD_WINDOWS
-void RevealBrush::OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender)
-{
-    PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(this));
-}
-#else
 void RevealBrush::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy)
 {
     PolicyStatusChangedHelper(isDisabledByMaterialPolicy);
@@ -467,25 +312,15 @@ void RevealBrush::OnNoiseChanged(const com_ptr<MaterialHelperBase>& sender)
         UpdateRevealBrush();
     }
 }
-#endif
 
 void RevealBrush::EnsureNoiseBrush()
 {
-#if BUILD_WINDOWS
-    if (m_noiseChanged || !m_dpiScaledNoiseBrush)
-    {
-        int resScaleInt = MaterialHelper::BrushTemplates<RevealBrush>::GetEffectiveDpi(this);
-        m_dpiScaledNoiseBrush = MaterialHelper::GetNoiseBrush(resScaleInt);
-    }
-    m_noiseChanged = false;
-#else
     auto noiseBrush = MaterialHelper::GetNoiseBrush();
     if (noiseBrush != m_noiseBrush)
     {
         m_noiseBrush = noiseBrush;
     }
     m_noiseChanged = false;
-#endif
 }
 
 winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealHoverEffect()
@@ -678,13 +513,8 @@ void RevealBrush::CreateRevealBrush()
         if (!m_isBorder)
         {
             // Set noise image source. The border brush is only used for a few pixels, and does not show banding, so it doesn't get noise.
-#if BUILD_WINDOWS
-        MUX_ASSERT(m_dpiScaledNoiseBrush);
-        revealBrush.SetSourceParameter(L"Noise", m_dpiScaledNoiseBrush);
-#else
-        MUX_ASSERT(m_noiseBrush);
-        revealBrush.SetSourceParameter(L"Noise", m_noiseBrush);
-#endif
+            MUX_ASSERT(m_noiseBrush);
+            revealBrush.SetSourceParameter(L"Noise", m_noiseBrush);
         }
 
         m_brush = revealBrush;
@@ -704,48 +534,34 @@ void RevealBrush::CreateRevealBrush()
         }
     }
 
-#ifndef BUILD_WINDOWS
     if (m_brush)
     {
         m_brush.Properties().InsertScalar(L"ShouldRenderAsFallbackInIslands", 1.0f);
     }
-#endif
 }
 
 void RevealBrush::UpdateRevealBrush()
 {
-#ifndef BUILD_WINDOWS
     if (!MaterialHelper::RS2IsSafeToCreateNoise())
     {
         // No-op for now, we'll recreate noise (as well as the brush) on VisibilityChanged -> true event.
         MUX_ASSERT(!SharedHelpers::IsRS3OrHigher());
         return;
     }
-#endif
 
     if (m_isConnected)
     {
         CreateRevealBrush();
     }
     CompositionBrush(m_brush);
-
-#if BUILD_WINDOWS
-    if (false /*xamlroot*/)
-    {
-        auto strongThis = get_strong();
-        strongThis.as<winrt::IXamlCompositionBrushBasePrivates>().SetBrushForXamlRoot(nullptr /*xamlRoot*/, m_brush);
-    }
-#endif
 }
 
-#ifndef BUILD_WINDOWS
 void RevealBrush::StopAttachingLights()
 {
     MaterialHelper::SetShouldBeginAttachingLights(false);
     MaterialHelper::SetShouldContinueAttachingLights(false);
     MaterialHelper::ResetFailedToAttachLightsCount();
 }
-#endif
 
 void RevealBrush::AttachLights()
 {
@@ -758,7 +574,6 @@ void RevealBrush::AttachLights()
 
         RevealBrush::AttachLightsImpl();
     }
-#ifndef BUILD_WINDOWS
     else
     {
         // On MUX + RS4 or lower, Bug 18005612 is present. To work around, we defer hooking up the lights until we can verify the public root is reachable.
@@ -803,7 +618,6 @@ void RevealBrush::AttachLights()
             });
         }
     }
-#endif
 }
 
 void RevealBrush::AttachLightsImpl()
@@ -814,7 +628,6 @@ void RevealBrush::AttachLightsImpl()
 
     RevealBrush::AttachLightsToAncestor(windowRoot, true);
 
-#ifndef BUILD_WINDOWS
     if (!SharedHelpers::DoesXamlMoveRSVLightToRootVisual())
     {
         MaterialHelper::SetShouldContinueAttachingLights(true);
@@ -852,7 +665,6 @@ void RevealBrush::AttachLightsImpl()
             }
         });
     }
-#endif
 }
 
 winrt::UIElement RevealBrush::GetAncestor(const winrt::UIElement & root)
@@ -953,62 +765,6 @@ void RevealBrush::AttachLightsToAncestor(const winrt::UIElement & root, bool tra
     AttachLightsToElement(ancestor, trackAsRootToDisconnectFrom);
 }
 
-
-#if BUILD_WINDOWS
-void RevealBrush::AttachLightsToIsland(const winrt::XamlIsland& island)
-{
-    auto lights = island.Lights();
-
-    bool hasRevealBorderLights = false;
-    for (auto light : lights)
-    {
-        if (auto self = light.try_as<winrt::RevealBorderLight>())
-        {
-            hasRevealBorderLights = true;
-            break;
-        }
-    }
-
-    if (!hasRevealBorderLights)
-    {
-        //
-        // To achieve the reveal border effect we need two lights AND the configuration of those lights needs be different per-theme.
-        // In order to do this we attach 4 lights to the root in each combination -- ("normal", "wide") x ("light", "dark").
-        //
-        // When RevealBorderLight is in light theme it reports a different ID than in dark theme. RevealBorderBrush also has a
-        // theme property and it will select the RevealBorderLight "light theme" or "dark theme" ID as appropriate.
-        //
-        // In this way we can have the desired effect of different light configs in dark vs light theme but also support 
-        // subtrees that have different theme via FrameworkElement.RequestedTheme because the ThemeResource references to
-        // RevealBorderBrush resources will choose the right brush and then those brushes will choose the right light.
-        //
-        auto borderLightTheme = winrt::make_self<RevealBorderLight>();
-        borderLightTheme->SetIsLightTheme(true);
-        auto wideBorderLightTheme = winrt::make_self<RevealBorderLight>();
-        wideBorderLightTheme->SetIsWideLight(true);
-        wideBorderLightTheme->SetIsLightTheme(true);
-
-        auto borderDarkTheme = winrt::make_self<RevealBorderLight>();
-        auto wideBorderDarkTheme = winrt::make_self<RevealBorderLight>();
-        wideBorderDarkTheme->SetIsWideLight(true);
-
-        auto ambientLight = winrt::make_self<XamlAmbientLight>();
-
-        lights.Append(*borderLightTheme);
-        lights.Append(*wideBorderLightTheme);
-        lights.Append(*borderDarkTheme);
-        lights.Append(*wideBorderDarkTheme);
-        lights.Append(*ambientLight);
-
-        MaterialHelper::TrackRevealLightsToRemoveIsland(
-            island,
-            lights, 
-            {*borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight }
-            );
-    }
-}
-#endif
-
 // If Reveal is enabled, GridViewItem/ListViewItem add two additional layers: 
 //     RevealBackground and RevealBorderBrush
 // It has great performance degradation on Xbox
@@ -1022,36 +778,8 @@ bool RevealBrush::IsOnXboxAndNotMouseMode()
 
 bool RevealBrush::IsInFallbackMode()
 {
-#if BUILD_WINDOWS
-    return m_isInFallbackMode = m_isDisabledByMaterialPolicy || AlwaysUseFallback() || IsOnXboxAndNotMouseMode() || m_isInterIsland;
-#else
     return m_isInFallbackMode = m_isDisabledByMaterialPolicy || AlwaysUseFallback() || IsOnXboxAndNotMouseMode();
-#endif
 }
-
-
-#if BUILD_WINDOWS
-void RevealBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& sender, const winrt::IInspectable& /*args*/)
-{
-    // We might have no dispatcher in XamlPresenter scenarios (currently, LogonUI may use reveal via ListView).
-    // In these cases, we will honor the initial policy state but not get change notifications.
-    // This matches the legacy MaterialHelper behavior and should be sufficient for the special case of login screen.
-    if (m_dispatcherQueue)
-    {
-        com_ptr<RevealBrush> strongThis = get_strong();
-        m_dispatcherQueue.TryEnqueue(
-            winrt::Windows::System::DispatcherQueueHandler([strongThis, sender]()
-        {
-            strongThis->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()));
-        }));
-    }
-}
-
-void RevealBrush::OnIslandTransformChanged(const winrt::CompositionIsland& sender, const winrt::IInspectable& /*args*/)
-{
-    MaterialHelper::BrushTemplates<RevealBrush>::UpdateDpiScaledNoiseBrush(this);
-}
-#endif
 
 void RevealBrush::OnIsContainerPropertyChanged(
     const winrt::DependencyObject& sender,

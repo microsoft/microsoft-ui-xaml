@@ -24,7 +24,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using UniformGridLayoutItemsStretch = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
@@ -38,7 +37,6 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -873,11 +871,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         {
                             ItemsSource = Enumerable.Range(0, repeater1NumItems),
                             Layout = repeater1Layout,
-#if BUILD_WINDOWS
-                            ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                             ItemTemplate = elementFactory,
-#endif
                             HorizontalCacheLength = 0,
                             VerticalCacheLength = 0,
                         };
@@ -886,11 +880,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         {
                             ItemsSource = Enumerable.Range(0, repeater2NumItems),
                             Layout = repeater2Layout,
-#if BUILD_WINDOWS
-                            ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                             ItemTemplate = elementFactory,
-#endif
                             HorizontalCacheLength = 0,
                             VerticalCacheLength = 0,
                         };
@@ -965,11 +955,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                     var repeater = new ItemsRepeater();
                     repeater.ItemsSource = dataSource;
-#if BUILD_WINDOWS
-                    repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
                     repeater.ItemTemplate = elementFactory;
-#endif
 
                     var scrollViewer = new ScrollViewer();
                     scrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
@@ -1058,11 +1044,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         repeater.VerticalCacheLength = 3;
                         repeater.HorizontalCacheLength = 3;
                         repeater.ItemsSource = dataSource;
-#if BUILD_WINDOWS
-                        repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
                         repeater.ItemTemplate = elementFactory;
-#endif
                         repeater.Layout = layout;
 
                         var stack = new StackPanel();
@@ -1395,11 +1377,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsSource = itemsSource,
                 Layout = layout,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 HorizontalCacheLength = 0,
                 VerticalCacheLength = 0,
             };

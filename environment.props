@@ -30,7 +30,6 @@
     <AssemblyAttributeCLSCompliant>false</AssemblyAttributeCLSCompliant>
     <DisableXbfGeneration>false</DisableXbfGeneration>
     <UseOldXamlCompiler>false</UseOldXamlCompiler>
-    <DefineConstants>$(DefineConstants);BUILD_WINDOWS</DefineConstants>
     <PlatformToolset>v120</PlatformToolset>
     <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -80,7 +79,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_WINDOWS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
         $(PUBLIC_ROOT)\internal\sdk\inc;

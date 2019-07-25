@@ -30,12 +30,7 @@ public:
     winrt::hstring GetId();
     void OnConnected(winrt::UIElement const& newElement);
     void OnDisconnected(winrt::UIElement const& oldElement);
-
-#if BUILD_WINDOWS
-    void OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender);
-#else
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
-#endif
 
 private:
     winrt::SpotLight GetLight() { return m_compositionSpotLight; } // For test APIs
@@ -56,17 +51,6 @@ private:
     winrt::CompositionPropertySet m_colorsProxy{ nullptr };
     winrt::CompositionPropertySet m_offsetProps{ nullptr };
 
-#if BUILD_WINDOWS
-    winrt::SharedLight m_sharedLight{ nullptr };
-
-    //  Flag initialized as false so Reveal starts using the Global Shared Light.
-    bool m_fallbackToLocalLight{ false };
-
-    bool GetFallbackToLocalLight();
-    winrt::SharedLight GetSharedLight();
-
-#endif
-
     winrt::event_token m_PointerEnteredToken{};
     winrt::event_token m_PointerExitedToken{};
     winrt::event_token m_PointerMovedToken{};
@@ -80,15 +64,7 @@ private:
 
     bool m_isDisabledByMaterialPolicy{};
 
-#if BUILD_WINDOWS
-    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
-    winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
-    winrt::event_token m_additionalMaterialPolicyChangedToken{};
-#else
     winrt::event_token m_materialPolicyChangedToken{};
-#endif
-
     bool m_shouldLightBeOn{};
     bool m_setLightDisabledAfterTurnOffAnimation{ true };
 

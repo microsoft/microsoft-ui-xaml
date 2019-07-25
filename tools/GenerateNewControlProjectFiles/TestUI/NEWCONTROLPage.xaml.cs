@@ -10,9 +10,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI;
 using System.Windows.Input;
 
-#if !BUILD_WINDOWS
 using NEWCONTROL = Microsoft.UI.Xaml.Controls.NEWCONTROL;
-#endif
 
 namespace MUXControlsTestApp
 {

@@ -111,75 +111,6 @@ protected:
 
 };
 
-#if BUILD_WINDOWS
-// ************************************ WUXC version of MaterialHelper *****************************************
-
-struct IslandBorderLightInfo
-{
-    int m_revealBrushConnectedCount;
-    std::pair<winrt::IVector<winrt::XamlLight>, std::vector<winrt::XamlLight>> m_revealLightsToRemove;
-};
-
-class MaterialHelper : public winrt::implements<MaterialHelper, MaterialHelperBase>
-{
-public:
-    template <typename T>
-    class LightTemplates
-    {
-    public:
-        static void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(
-            const winrt::weak_ref<T> weakInstance,
-            const winrt::IMaterialProperties& materialProperties,
-            const winrt::DispatcherQueue& dispatcherQueue,
-            bool onUIThread);
-    };
-
-    template <typename T>
-    class BrushTemplates
-    {
-    public:
-        static void HookupWindowDpiChangedHandler(T* instance);
-        static void UnhookWindowDpiChangedHandler(T* instance);
-        static void HookupIslandDpiChangedHandler(T* instance);
-        static void UnhookIslandDpiChangedHandler(T* instance);
-        static void OnIslandTransformChanged(T* instance);
-        static void UpdateDpiScaledNoiseBrush(T* instance);
-        static int GetEffectiveDpi(T* instance);
-        static bool IsDisabledByInAppTransparencyPolicy(T* instance);
-        static bool IsDisabledByHostBackdropTransparencyPolicy(T* instance);
-    };
-
-    virtual ~MaterialHelper() {};
-
-    static winrt::CompositionSurfaceBrush GetNoiseBrush(int dpiScale);
-
-    static void RevealBorderLightUnavailable(bool value);
-    static bool RevealBorderLightUnavailable();
-
-    static void OnRevealBrushConnectedIsland(const winrt::XamlIsland& island);
-    static void OnRevealBrushDisconnectedIsland(const winrt::XamlIsland& island);
-    static void TrackRevealLightsToRemoveIsland(const winrt::XamlIsland& island, const winrt::IVector<winrt::XamlLight>& lights, const std::vector<winrt::XamlLight>& revealLightsToRemove);
-
-    // Notifies listeners of policy changes due to factors outside of materialProperties such, including test overrides or failure to create lights.
-    static winrt::event_token AdditionalPolicyChanged(const std::function<void(const com_ptr<MaterialHelperBase>&)>& handler);
-    static void  AdditionalPolicyChanged(winrt::event_token removeToken);
-    void NotifyAdditionalPolicyChangedListeners();
-
-protected:
-    bool m_revealBorderLightUnavailable;
-
-private:
-    winrt::CompositionSurfaceBrush GetNoiseBrushImpl(int dpiScale);
-
-private:
-    std::unordered_map<int, winrt::CompositionSurfaceBrush> m_dpiScaledNoiseBrushes;
-    // Number of connected RevealBrushes in the tree (i.e. # of brushes that need lights) and associated lights foreach XamlIsland.
-    std::map<winrt::XamlIsland, IslandBorderLightInfo> m_islandBorderLights;
-
-    event<std::function<void(com_ptr<MaterialHelperBase>)>> m_additionalPolicyChangedListeners;
-};
-
-#else
 // **************************************** MUX version of MaterialHelper *****************************************
 class MaterialHelper : public winrt::implements<MaterialHelper, MaterialHelperBase>
 {
@@ -278,4 +209,3 @@ private:
     static const unsigned int sc_maxFailedToAttachLightsCount = 100;
     unsigned int m_failedToAttachLightsCount{0};
 };
-#endif

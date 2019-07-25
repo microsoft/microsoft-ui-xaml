@@ -9,9 +9,7 @@
 
 RevealTestApi::RevealTestApi()
 {
-#ifndef BUILD_WINDOWS
     MUXControlsFactory::EnsureInitialized(); // Just in case we are called earlier than app initialization.
-#endif
 }
 
 RevealTestApi::~RevealTestApi()
@@ -125,18 +123,6 @@ bool RevealTestApi::BorderLight_ShouldBeOn(winrt::RevealBorderLight const& value
 {
     return winrt::get_self<RevealBorderLight>(value)->GetShouldLightBeOn();
 }
-
-#ifdef BUILD_WINDOWS
-winrt::SharedLight RevealTestApi::GetSharedLight(winrt::RevealBorderLight const& value)
-{
-    return winrt::get_self<RevealBorderLight>(value)->GetSharedLight();
-}
-
-bool RevealTestApi::BorderLight_FallbackToLocalLight(winrt::RevealBorderLight const& value)
-{
-    return winrt::get_self<RevealBorderLight>(value)->GetFallbackToLocalLight();
-}
-#endif
 
 bool RevealTestApi::HoverLight_ShouldBeOn(winrt::RevealHoverLight const& value)
 {

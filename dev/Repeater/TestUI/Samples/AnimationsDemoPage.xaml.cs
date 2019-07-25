@@ -10,10 +10,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
 using MUXControlsTestApp.Utils;
 
-#if BUILD_WINDOWS
-using ElementFactoryGetArgs = Windows.UI.Xaml.ElementFactoryGetArgs;
-using ElementFactoryRecycleArgs = Windows.UI.Xaml.ElementFactoryRecycleArgs;
-#else
 using ElementAnimator = Microsoft.UI.Xaml.Controls.ElementAnimator;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
@@ -24,7 +20,6 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
 using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
 using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -59,12 +54,7 @@ namespace MUXControlsTestApp.Samples
                 (DataTemplate)Resources["RecipeTemplate"],
                 (ElementAnimator)Resources["SharedAnimator"],
                 KeyFromIndexFunc);
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)generator;
-#else
             repeater.ItemTemplate = generator;
-#endif
-
             goBack.Click += delegate { Frame.GoBack(); };
 
             commands.KeyDown += (s, e) =>
@@ -192,12 +182,7 @@ namespace MUXControlsTestApp.Samples
             };
         }
 
-        private class AnimationElementFactory :
-#if BUILD_WINDOWS
-            Windows.UI.Xaml.IElementFactory
-#else
-            ElementFactory
-#endif
+        private class AnimationElementFactory : ElementFactory
         {
             private DataTemplate _groupTemplate;
             private DataTemplate _recipeTemplate;
@@ -233,11 +218,7 @@ namespace MUXControlsTestApp.Samples
                 _KeyFromIndexFunc = KeyFromIndexFunc;
             }
 
-#if BUILD_WINDOWS
-            public UIElement GetElement(ElementFactoryGetArgs args)
-#else
             protected override UIElement GetElementCore(ElementFactoryGetArgs args)
-#endif
             {
                 var key = (args.Data is RecipeGroup) ? "Group" : "Recipe";
                 var element = (FrameworkElement)_recyclePool.TryGetElement(key, args.Parent);
@@ -285,11 +266,7 @@ namespace MUXControlsTestApp.Samples
                 return element;
             }
 
-#if BUILD_WINDOWS
-            public void RecycleElement(ElementFactoryRecycleArgs args)
-#else
             protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
-#endif
             {
                 var repeater = (ItemsRepeater)((FrameworkElement)args.Element).FindName("groupLayout");
                 if (repeater != null)

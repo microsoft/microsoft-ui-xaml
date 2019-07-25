@@ -6,9 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
-#if !BUILD_WINDOWS
 using MenuBarItem = Microsoft.UI.Xaml.Controls.MenuBarItem;
-#endif
 
 namespace MUXControlsTestApp
 {

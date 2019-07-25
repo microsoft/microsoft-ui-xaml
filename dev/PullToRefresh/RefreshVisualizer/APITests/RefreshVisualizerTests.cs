@@ -27,7 +27,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using RefreshVisualizer = Microsoft.UI.Xaml.Controls.RefreshVisualizer;
 using RefreshRequestedEventArgs = Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs;
 using RefreshInteractionRatioChangedEventArgs = Microsoft.UI.Xaml.Controls.RefreshInteractionRatioChangedEventArgs;
@@ -35,7 +34,6 @@ using RefreshStateChangedEventArgs = Microsoft.UI.Xaml.Controls.RefreshStateChan
 using IRefreshVisualizerPrivate = Microsoft.UI.Private.Controls.IRefreshVisualizerPrivate;
 using IRefreshInfoProvider = Microsoft.UI.Private.Controls.IRefreshInfoProvider;
 using PullToRefreshHelperTestApi = Microsoft.UI.Private.Controls.PullToRefreshHelperTestApi;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

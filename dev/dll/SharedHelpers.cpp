@@ -3,11 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif
-
 #include "SharedHelpers.h"
 
 bool SharedHelpers::s_isOnXboxInitialized{ false };
@@ -265,7 +261,6 @@ bool SharedHelpers::IsAPIContractV3Available()
 
 bool SharedHelpers::IsInFrameworkPackage()
 {
-#ifndef BUILD_WINDOWS
     static bool isInFrameworkPackage = []() {
         if (!IsSystemDll())
         {
@@ -284,9 +279,6 @@ bool SharedHelpers::IsInFrameworkPackage()
     }();
 
     return isInFrameworkPackage;
-#else
-    return false;
-#endif
 }
 
 // Platform scale helpers
@@ -294,11 +286,7 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
 {
     try
     {
-#if defined(BUILD_WINDOWS)
-        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
-#else
         const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-#endif
         return winrt::Rect
         {
             dipsRect.X * scaleFactor,
@@ -320,11 +308,7 @@ winrt::Rect SharedHelpers::ConvertPhysicalToDips(winrt::UIElement const& xamlRoo
 {
     try
     {
-#if defined(BUILD_WINDOWS)
-        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
-#else
         const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-#endif
         return winrt::Rect
         {
             physicalRect.X / scaleFactor,

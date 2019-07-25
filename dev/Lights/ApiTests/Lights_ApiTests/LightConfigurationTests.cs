@@ -22,9 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

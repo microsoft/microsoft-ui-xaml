@@ -22,12 +22,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -129,11 +127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     ItemsSource = dataSource,
                     Layout = layout,
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)new RecyclingElementFactoryDerived()
-#else
                     ItemTemplate = new RecyclingElementFactoryDerived()
-#endif
                     {
                         Templates = { { "key", itemTemplate } },
                         RecyclePool = recyclePool,
@@ -145,11 +139,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 {
                     ItemsSource = dataSource,
                     Layout = layout,
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)new RecyclingElementFactoryDerived()
-#else
                     ItemTemplate = new RecyclingElementFactoryDerived()
-#endif
                     {
                         Templates = { { "key", itemTemplate } },
                         RecyclePool = recyclePool,

@@ -10,10 +10,8 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Controls;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using RevealBrush = Microsoft.UI.Xaml.Media.RevealBrush;
 using RevealTestApi = Microsoft.UI.Private.Media.RevealTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

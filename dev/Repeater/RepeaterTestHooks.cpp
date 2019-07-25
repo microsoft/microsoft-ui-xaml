@@ -5,13 +5,8 @@
 #include "common.h"
 #include "RepeaterTestHooksFactory.h"
 #include "layout.h"
-#ifdef BUILD_WINDOWS
-#include "ElementFactoryGetArgsDownlevel.h"
-#include "ElementFactoryRecycleArgsDownlevel.h"
-#else
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
-#endif
 
 
 winrt::event_token RepeaterTestHooks::BuildTreeCompletedImpl(
@@ -36,33 +31,21 @@ void RepeaterTestHooks::NotifyBuildTreeCompletedImpl()
 /* static */
 int RepeaterTestHooks::GetElementFactoryElementIndex(winrt::IInspectable const& getArgs)
 {
-#ifdef BUILD_WINDOWS
-    auto args = getArgs.as<ElementFactoryGetArgsDownlevel>();
-#else
     auto args = getArgs.as<ElementFactoryGetArgs>();
-#endif
     return args->Index();
 }
 
 /* static */
 winrt::IInspectable RepeaterTestHooks::CreateRepeaterElementFactoryGetArgs()
 {
-#ifdef BUILD_WINDOWS
-    auto instance = winrt::make_self<ElementFactoryGetArgsDownlevel>();
-#else
     auto instance = winrt::make_self<ElementFactoryGetArgs>();
-#endif
     return *instance;
 }
 
 /* static */
 winrt::IInspectable RepeaterTestHooks::CreateRepeaterElementFactoryRecycleArgs()
 {
-#ifdef BUILD_WINDOWS
-    auto instance = winrt::make_self<ElementFactoryRecycleArgsDownlevel>();
-#else
     auto instance = winrt::make_self<ElementFactoryRecycleArgs>();
-#endif
     return *instance;
 }
 

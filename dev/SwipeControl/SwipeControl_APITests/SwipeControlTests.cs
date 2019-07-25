@@ -19,13 +19,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using SwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 using SwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using SwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
 using SwipeControl = Microsoft.UI.Xaml.Controls.SwipeControl;
 using FontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

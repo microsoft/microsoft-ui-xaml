@@ -28,12 +28,7 @@ public:
     void OnConnected(winrt::UIElement const& newElement);
     void OnDisconnected(winrt::UIElement const& oldElement);
 
-#if BUILD_WINDOWS
-    void OnAdditionalMaterialPolicyChanged(const com_ptr<MaterialHelperBase>& sender);
-#else
     void OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelperBase>& sender, bool isDisabledByMaterialPolicy);
-#endif
-
     void GoToState(winrt::RevealBrushState newState);
 
     void SetIsPressLight(bool isPressLight) { m_isPressLight = isPressLight; }
@@ -90,16 +85,7 @@ private:
     winrt::SpotLight m_compositionSpotLight{ nullptr };
     winrt::CompositionPropertySet m_colorsProxy{ nullptr };
     bool m_isDisabledByMaterialPolicy{};
-
-#if BUILD_WINDOWS
-    winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
-    winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
-    winrt::event_token m_additionalMaterialPolicyChangedToken{};
-#else
     winrt::event_token m_materialPolicyChangedToken{};
-#endif
-
     std::function<void()> m_cancelCurrentPressStateContinuation;
     bool m_isPressed{};
     bool m_isPointerOver{};

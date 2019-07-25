@@ -65,12 +65,7 @@ public:
 
 #pragma endregion
 
-#ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim ItemTemplateShim() { return m_itemTemplateWrapper; };
-#else
-    winrt::IElementFactory ItemTemplateShim() { return ItemTemplate(); };
-#endif
-
     ViewManager& ViewManager() { return m_viewManager; }
     AnimationManager& AnimationManager() { return m_animationManager; }
 
@@ -146,9 +141,7 @@ private:
 
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
-#ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
-#endif
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
     tracker_ref<winrt::IInspectable> m_layoutState{ this };

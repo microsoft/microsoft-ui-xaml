@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
 using AcrylicBackgroundSource = Microsoft.UI.Xaml.Media.AcrylicBackgroundSource;
@@ -26,7 +25,6 @@ using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
 using AcrylicTestApi = Microsoft.UI.Private.Media.AcrylicTestApi;
 using IAcrylicBrushStaticsPrivate = Microsoft.UI.Private.Media.IAcrylicBrushStaticsPrivate;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -343,11 +341,7 @@ namespace MUXControlsTestApp
                 {
                     // Validate that on MUX Brush is recreated following Suspend/Resume, while in WUXC it is not.
                     CompositionBrush currentComposotionBrush = UpdateCompositionBrush();
-#if BUILD_WINDOWS
-                    result = Object.ReferenceEquals(_previousCompositionBrush, currentComposotionBrush);
-#else
                     result = !Object.ReferenceEquals(_previousCompositionBrush, currentComposotionBrush);
-#endif
                 }
 
                 // Unset all override flags to avoid impacting subsequent tests

@@ -3,9 +3,7 @@
 
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
-#endif
 
 namespace MUXControlsTestApp
 {

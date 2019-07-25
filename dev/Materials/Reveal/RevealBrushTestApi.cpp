@@ -43,9 +43,5 @@ winrt::CompositionBrush RevealBrushTestApi::CompositionBrush()
 
 winrt::CompositionBrush RevealBrushTestApi::NoiseBrush()
 {
-#if BUILD_WINDOWS
-    return (winrt::get_self<::RevealBrush>(m_revealBrush))->m_dpiScaledNoiseBrush;
-#else
     return (winrt::get_self<::RevealBrush>(m_revealBrush))->m_noiseBrush;
-#endif
 }

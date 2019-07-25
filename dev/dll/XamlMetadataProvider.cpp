@@ -5,25 +5,18 @@
 #include "common.h"
 #include "XamlMetadataProvider.h"
 #include "XamlType.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif
 
 std::vector<XamlMetadataProvider::Entry>* XamlMetadataProvider::s_types{ nullptr };
 
 XamlMetadataProvider::XamlMetadataProvider()
 {
-#ifndef BUILD_WINDOWS
     RegisterTypes();
-#endif
 }
 
 void XamlMetadataProvider::Initialize()
 {
-#ifndef BUILD_WINDOWS
     MUXControlsFactory::EnsureInitialized();
-#endif
 }
 
 bool XamlMetadataProvider::RegisterXamlType(

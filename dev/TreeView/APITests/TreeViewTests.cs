@@ -25,13 +25,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using TreeView = Microsoft.UI.Xaml.Controls.TreeView;
 using TreeViewItem = Microsoft.UI.Xaml.Controls.TreeViewItem;
 using TreeViewList = Microsoft.UI.Xaml.Controls.TreeViewList;
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 using TreeViewSelectionMode = Microsoft.UI.Xaml.Controls.TreeViewSelectionMode;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

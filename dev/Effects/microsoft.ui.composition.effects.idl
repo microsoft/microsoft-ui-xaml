@@ -1,21 +1,8 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 
-#ifndef BUILD_WINDOWS
 #define MUXCONTROLS_VERSION_PARAM 1.0
 #define MUXCONTROLS_VERSION_ATTRIBUTE version(MUXCONTROLS_VERSION_PARAM)
 #define MUXCONTROLS_VERSION_ATTRIBUTE_NOINTERNAL version(MUXCONTROLS_VERSION_PARAM)
-#else
-namespace MUXControls
-{
-    [internal]
-    [contractversion(1)]
-    apicontract EffectsContract{};
-}
-
-#define MUXCONTROLS_VERSION_PARAM MUXControls.EffectsContract, 1
-#define MUXCONTROLS_VERSION_ATTRIBUTE  internal, contract(MUXCONTROLS_VERSION_PARAM)
-#define MUXCONTROLS_VERSION_ATTRIBUTE_NOINTERNAL  contract(MUXCONTROLS_VERSION_PARAM)
-#endif
 
 #define EFFECT_ENUM_ATTRIBUTES \
     [MUXCONTROLS_VERSION_ATTRIBUTE] \

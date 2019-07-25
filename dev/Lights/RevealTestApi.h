@@ -29,10 +29,6 @@ public:
     bool HoverLight_ShouldBeOn(winrt::RevealHoverLight const& value);
     bool HoverLight_IsPressed(winrt::RevealHoverLight const& value);
     bool HoverLight_IsPointerOver(winrt::RevealHoverLight const& value);
-#ifdef BUILD_WINDOWS
-    winrt::SharedLight GetSharedLight(winrt::RevealBorderLight const& value);
-    bool BorderLight_FallbackToLocalLight(winrt::RevealBorderLight const& value);
-#endif
 
     RevealTestApi();
     ~RevealTestApi();

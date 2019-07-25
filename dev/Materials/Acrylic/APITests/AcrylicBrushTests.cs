@@ -24,10 +24,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using AcrylicBackgroundSource = Microsoft.UI.Xaml.Media.AcrylicBackgroundSource;
 using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -79,9 +77,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         /// Disabled in the OS repo since we don't have app merged dictionaries in that location.
         /// </summary>
         ///
-#if !BUILD_WINDOWS
         [TestMethod]
-#endif
         public void VerifyAcrylicBrushHasCorrectFallbackColor()
         {
             RunOnUIThread.Execute(() =>
