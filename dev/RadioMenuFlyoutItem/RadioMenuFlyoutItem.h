@@ -12,7 +12,7 @@
 
 // This type exists for RadioMenuFlyoutItem to derive publically from MenuFlyoutItem, but secretly from ToggleMenuFlyoutItem.
 template <typename D, typename T, typename ... I>
-struct WINRT_EBO DeriveFromToggleMenuFlyoutItemHelper_base : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
+struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base : winrt::Windows::UI::Xaml::Controls::ToggleMenuFlyoutItemT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
     using class_type = typename T;
 
