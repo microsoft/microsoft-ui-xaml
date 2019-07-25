@@ -66,10 +66,10 @@ void Scroller::RaiseAnchorRequested()
 // the current offsets, zoomFactor, viewport size, content size and state.
 // When all 4 returned booleans are False, no element anchoring is performed, no far edge anchoring is performed. There may still be anchoring at near edges.
 void Scroller::IsAnchoring(
-    bool* isAnchoringElementHorizontally,
-    bool* isAnchoringElementVertically,
-    bool* isAnchoringFarEdgeHorizontally,
-    bool* isAnchoringFarEdgeVertically)
+    _Out_ bool* isAnchoringElementHorizontally,
+    _Out_ bool* isAnchoringElementVertically,
+    _Out_opt_ bool* isAnchoringFarEdgeHorizontally,
+    _Out_opt_ bool* isAnchoringFarEdgeVertically)
 {
     *isAnchoringElementHorizontally = false;
     *isAnchoringElementVertically = false;
@@ -156,8 +156,8 @@ void Scroller::IsAnchoring(
 void Scroller::ComputeViewportAnchorPoint(
     double viewportWidth,
     double viewportHeight,
-    double* viewportAnchorPointHorizontalOffset,
-    double* viewportAnchorPointVerticalOffset)
+    _Out_ double* viewportAnchorPointHorizontalOffset,
+    _Out_ double* viewportAnchorPointVerticalOffset)
 {
     *viewportAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *viewportAnchorPointVerticalOffset = DoubleUtil::NaN;
@@ -179,8 +179,8 @@ void Scroller::ComputeViewportAnchorPoint(
 // - elementAnchorPointVerticalOffset: unzoomed vertical offset of the anchor element's point within the Scroller.Content. NaN if there is no vertical anchoring.
 void Scroller::ComputeElementAnchorPoint(
     bool isForPreArrange,
-    double* elementAnchorPointHorizontalOffset,
-    double* elementAnchorPointVerticalOffset)
+    _Out_ double* elementAnchorPointHorizontalOffset,
+    _Out_ double* elementAnchorPointVerticalOffset)
 {
     *elementAnchorPointHorizontalOffset = DoubleUtil::NaN;
     *elementAnchorPointVerticalOffset = DoubleUtil::NaN;
@@ -199,8 +199,8 @@ void Scroller::ComputeElementAnchorPoint(
 
 void Scroller::ComputeAnchorPoint(
     const winrt::Rect& anchorBounds,
-    double* anchorPointX,
-    double* anchorPointY)
+    _Out_ double* anchorPointX,
+    _Out_ double* anchorPointY)
 {
     if (isnan(HorizontalAnchorRatio()))
     {
@@ -426,9 +426,9 @@ void Scroller::ProcessAnchorCandidate(
     const winrt::Rect& viewportAnchorBounds,
     double viewportAnchorPointHorizontalOffset,
     double viewportAnchorPointVerticalOffset,
-    double* bestAnchorCandidateDistance,
-    winrt::UIElement* bestAnchorCandidate,
-    winrt::Rect* bestAnchorCandidateBounds) const
+    _Inout_ double* bestAnchorCandidateDistance,
+    _Inout_ winrt::UIElement* bestAnchorCandidate,
+    _Inout_ winrt::Rect* bestAnchorCandidateBounds) const
 {
     MUX_ASSERT(anchorCandidate);
     MUX_ASSERT(content);

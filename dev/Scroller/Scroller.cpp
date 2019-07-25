@@ -1342,7 +1342,7 @@ winrt::float2 Scroller::ComputeEndOfInertiaPosition()
 
 // Returns zoomed vectors corresponding to InteractionTracker.MinPosition and InteractionTracker.MaxPosition
 // Determines the min and max positions of the Scroller.Content based on its size and alignment, and the Scroller size.
-void Scroller::ComputeMinMaxPositions(float zoomFactor, winrt::float2* minPosition, winrt::float2* maxPosition)
+void Scroller::ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition)
 {
     MUX_ASSERT(minPosition || maxPosition);
 
@@ -1578,11 +1578,11 @@ void Scroller::ComputeBringIntoViewTargetOffsets(
     const winrt::UIElement& content,
     const winrt::SnapPointsMode& snapPointsMode,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-    double* targetZoomedHorizontalOffset,
-    double* targetZoomedVerticalOffset,
-    double* appliedOffsetX,
-    double* appliedOffsetY,
-    winrt::Rect* targetRect)
+    _Out_ double* targetZoomedHorizontalOffset,
+    _Out_ double* targetZoomedVerticalOffset,
+    _Out_ double* appliedOffsetX,
+    _Out_ double* appliedOffsetY,
+    _Out_ winrt::Rect* targetRect)
 {
     *targetZoomedHorizontalOffset = 0.0;
     *targetZoomedVerticalOffset = 0.0;
@@ -5823,7 +5823,7 @@ void Scroller::ChangeOffsetsPrivate(
     winrt::ScrollOptions const& options,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     int32_t existingViewChangeId,
-    int32_t* viewChangeId)
+    _Out_opt_ int32_t* viewChangeId)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         zoomedHorizontalOffset,
@@ -5987,7 +5987,7 @@ void Scroller::ChangeOffsetsWithAdditionalVelocityPrivate(
     winrt::float2 anticipatedOffsetsChange,
     winrt::IReference<winrt::float2> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    int32_t* viewChangeId)
+    _Out_opt_ int32_t* viewChangeId)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(),
@@ -6054,7 +6054,7 @@ void Scroller::ChangeZoomFactorPrivate(
     winrt::IReference<winrt::float2> centerPoint,
     ScrollerViewKind zoomFactorKind,
     winrt::ZoomOptions const& options,
-    int32_t* viewChangeId)
+    _Out_opt_ int32_t* viewChangeId)
 {
     SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -6194,7 +6194,7 @@ void Scroller::ChangeZoomFactorWithAdditionalVelocityPrivate(
     winrt::IReference<winrt::float2> centerPoint,
     winrt::IReference<float> inertiaDecayRate,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
-    int32_t* viewChangeId)
+    _Out_opt_ int32_t* viewChangeId)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
         zoomFactorVelocity,
@@ -7878,7 +7878,7 @@ bool Scroller::RaiseBringingIntoView(
     double targetZoomedVerticalOffset,
     const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
     int32_t offsetsChangeId,
-    winrt::SnapPointsMode* snapPointsMode)
+    _Inout_ winrt::SnapPointsMode* snapPointsMode)
 {
     if (m_bringingIntoViewEventSource)
     {
