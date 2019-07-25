@@ -12,10 +12,6 @@ RevealTestApi::RevealTestApi()
     MUXControlsFactory::EnsureInitialized(); // Just in case we are called earlier than app initialization.
 }
 
-RevealTestApi::~RevealTestApi()
-{
-}
-
 winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
 {
     if (auto root = winrt::Window::Current().Content())

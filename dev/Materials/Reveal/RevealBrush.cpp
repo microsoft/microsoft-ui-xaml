@@ -116,11 +116,6 @@ RevealBorderBrush::RevealBorderBrush()
     m_isBorder = true;
 }
 
-RevealBackgroundBrush::RevealBackgroundBrush()
-{
-}
-
-
 RevealBrush::~RevealBrush()
 {
     if (m_noiseChangedToken.value)

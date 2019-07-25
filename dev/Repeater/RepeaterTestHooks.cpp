@@ -61,7 +61,7 @@ hstring RepeaterTestHooks::GetLayoutId(winrt::IInspectable const& layout)
 }
 
 /* static */
-void RepeaterTestHooks::SetLayoutId(winrt::IInspectable const& layout, hstring id)
+void RepeaterTestHooks::SetLayoutId(winrt::IInspectable const& layout, const hstring& id)
 {
     if (auto instance = layout.as<Layout>())
     {

@@ -560,8 +560,8 @@ winrt::Size AnimatedVisualPlayer::ArrangeOverride(winrt::Size const& finalSize)
 winrt::DependencyProperty InitializeDp(
     wstring_view const& propertyNameString,
     wstring_view const& propertyTypeNameString,
-    winrt::IInspectable defaultValue,
-    winrt::PropertyChangedCallback propertyChangedCallback = nullptr)
+    winrt::IInspectable const& defaultValue,
+    winrt::PropertyChangedCallback const& propertyChangedCallback = nullptr)
 {
     // There are no attached properties.
     auto isAttached = false;

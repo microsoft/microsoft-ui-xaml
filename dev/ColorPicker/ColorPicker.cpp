@@ -1219,7 +1219,7 @@ void ColorPicker::CreateAlphaSliderCheckeredBackground()
     }
 }
 
-void ColorPicker::AddGradientStop(winrt::LinearGradientBrush brush, double offset, Hsv hsvColor, double alpha)
+void ColorPicker::AddGradientStop(const winrt::LinearGradientBrush& brush, double offset, Hsv hsvColor, double alpha)
 {
     winrt::GradientStop stop;
 

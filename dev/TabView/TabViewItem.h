@@ -17,7 +17,6 @@ class TabViewItem :
 
 public:
     TabViewItem();
-    ~TabViewItem() {}
 
     // IFrameworkElement
     void OnApplyTemplate();

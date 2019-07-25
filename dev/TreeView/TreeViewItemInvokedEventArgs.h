@@ -9,7 +9,6 @@ class TreeViewItemInvokedEventArgs :
     public ReferenceTracker<TreeViewItemInvokedEventArgs, winrt::implementation::TreeViewItemInvokedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TreeViewItemInvokedEventArgs();
     winrt::IInspectable InvokedItem();
     bool Handled();
     void Handled(bool value); 

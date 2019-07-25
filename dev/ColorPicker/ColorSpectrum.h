@@ -62,7 +62,7 @@ private:
 
     void UpdateVisualState(bool useTransitions);
     void UpdateColor(Hsv newHsv);
-    void UpdateColorFromPoint(winrt::PointerPoint point);
+    void UpdateColorFromPoint(const winrt::PointerPoint& point);
     void UpdateEllipse();
 
     void CreateBitmapsAndColorMap();

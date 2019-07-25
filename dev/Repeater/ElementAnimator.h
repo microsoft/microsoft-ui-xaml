@@ -126,7 +126,7 @@ private:
     {
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context) :
             m_element(owner, element),
@@ -138,7 +138,7 @@ private:
 
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context,
             winrt::Rect oldBounds,

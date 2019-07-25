@@ -312,7 +312,7 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
     winrt::ExpressionAnimation ea = comp.CreateExpressionAnimation(
         L"max( (-0.0005 * sharedPropertySet.pointerScalar * ((starCenterX - sharedPropertySet.starsScaleFocalPoint)*(starCenterX - sharedPropertySet.starsScaleFocalPoint))) + 1.0*sharedPropertySet.pointerScalar, 0.5)"
     );
-    float starCenter = static_cast<float>(CalculateStarCenter(starIndex));
+    auto starCenter = static_cast<float>(CalculateStarCenter(starIndex));
     ea.SetScalarParameter(L"starCenterX", starCenter);
     ea.SetReferenceParameter(L"sharedPropertySet", m_sharedPointerPropertySet);
 
@@ -324,7 +324,7 @@ void RatingControl::ApplyScaleExpressionAnimation(const winrt::UIElement& uiElem
     uiElementVisual.CenterPoint(winrt::float3(c_defaultRatingFontSizeForRendering * c_horizontalScaleAnimationCenterPoint, c_defaultRatingFontSizeForRendering * c_verticalScaleAnimationCenterPoint, 0.0f));
 }
 
-void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, winrt::StackPanel stackPanel, RatingControlStates state)
+void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const winrt::StackPanel& stackPanel, RatingControlStates state)
 {
     winrt::IInspectable lookup = winrt::Application::Current().Resources().Lookup(box_value(templateName));
     auto dt = lookup.as<winrt::DataTemplate>();
@@ -340,7 +340,7 @@ void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, winrt
     }
 }
 
-void RatingControl::CustomizeRatingItem(winrt::UIElement ui, RatingControlStates type)
+void RatingControl::CustomizeRatingItem(const winrt::UIElement& ui, RatingControlStates type)
 {
     if (IsItemInfoPresentAndFontInfo())
     {
@@ -366,7 +366,7 @@ void RatingControl::CustomizeRatingItem(winrt::UIElement ui, RatingControlStates
 
 }
 
-void RatingControl::CustomizeStackPanel(winrt::StackPanel stackPanel, RatingControlStates state)
+void RatingControl::CustomizeStackPanel(const winrt::StackPanel& stackPanel, RatingControlStates state)
 {
     for (winrt::UIElement child : stackPanel.Children())
     {

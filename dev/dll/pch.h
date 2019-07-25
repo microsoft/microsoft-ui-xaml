@@ -51,7 +51,9 @@
 #include <functional>
 
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
+#define M_PI       3.14159265358979323846   // pi
+#define M_PI_2     1.57079632679489661923   // pi/2
 
 #define WI_IS_FEATURE_PRESENT(FeatureName) 1
 

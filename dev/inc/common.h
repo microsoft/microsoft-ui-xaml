@@ -13,7 +13,7 @@ using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace std::chrono_literals;
 
-typedef winrt::hstring const& ResourceIdType;
+using ResourceIdType = const winrt::hstring &;
 
 #include "ErrorHandling.h"
 #include "CppWinRTHelpers.h"

@@ -14,7 +14,6 @@ class DropDownButton :
 
 public:
     DropDownButton();
-    ~DropDownButton();
 
     // IFrameworkElement
     void OnApplyTemplate();

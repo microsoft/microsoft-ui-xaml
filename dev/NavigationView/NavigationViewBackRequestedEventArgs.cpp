@@ -4,8 +4,3 @@
 #include "pch.h"
 #include "common.h"
 #include "NavigationViewBackRequestedEventArgs.h"
-
-NavigationViewBackRequestedEventArgs::NavigationViewBackRequestedEventArgs()
-{
-
-}

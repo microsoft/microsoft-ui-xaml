@@ -15,10 +15,6 @@ DropDownButton::DropDownButton()
     SetDefaultStyleKey(this);
 }
 
-DropDownButton::~DropDownButton()
-{
-}
-
 void DropDownButton::OnApplyTemplate()
 {
     m_flyoutPropertyChangedRevoker = RegisterPropertyChanged(*this, winrt::Button::FlyoutProperty(), { this, &DropDownButton::OnFlyoutPropertyChanged });

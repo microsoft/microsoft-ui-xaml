@@ -28,10 +28,10 @@ struct RoutedEventHandler_revoker
         return *this;
     }
 
-    RoutedEventHandler_revoker(winrt::UIElement const& object, winrt::RoutedEvent const& event, winrt::IInspectable const& handler) :
+    RoutedEventHandler_revoker(winrt::UIElement const& object, winrt::RoutedEvent event, winrt::IInspectable handler) :
         m_object(object),
-        m_event(event),
-        m_handler(handler)
+        m_event(std::move(event)),
+        m_handler(std::move(handler))
     {}
 
     ~RoutedEventHandler_revoker() noexcept

@@ -9,7 +9,7 @@ winrt::hstring StringUtil::FormatString(std::wstring_view formatString, ...)
     va_list pArgs;
     va_start(pArgs, formatString);
     
-    LPVOID formattedString = NULL;
+    LPVOID formattedString = nullptr;
 
     // Format the string
     FormatMessage(

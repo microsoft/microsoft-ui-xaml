@@ -9,7 +9,7 @@
 
 using namespace Microsoft::WRL;
 
-HINSTANCE g_hInstance = NULL;
+HINSTANCE g_hInstance = nullptr;
 
 STDAPI_(void) SendTelemetryOnSuspend();
 

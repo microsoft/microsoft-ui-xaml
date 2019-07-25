@@ -31,7 +31,6 @@ public:
     bool HoverLight_IsPointerOver(winrt::RevealHoverLight const& value);
 
     RevealTestApi();
-    ~RevealTestApi();
 
     static winrt::SpotLight GetBackgroundSpotlightProxy(winrt::ApplicationTheme theme);
 

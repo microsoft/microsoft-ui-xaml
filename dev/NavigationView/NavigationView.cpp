@@ -1336,7 +1336,7 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                     auto selectedItem = SelectedItem();
                     if (nextActualItem != selectedItem)
                     {
-                        auto invokedItem = nextActualItem;
+                        const auto& invokedItem = nextActualItem;
                         nextActualItem = selectedItem;
                         isSettingsItem = IsSettingsItem(nextActualItem);
                         recommendedDirection = NavigationRecommendedTransitionDirection::Default;
@@ -1535,7 +1535,7 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
 
 void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
-    auto eventArgs = e;
+    const auto& eventArgs = e;
     auto key = eventArgs.Key();
 
     bool handled = false;
@@ -1646,7 +1646,7 @@ bool NavigationView::BumperNavigation(int offset)
 
 winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObject const& container)
 {
-    if (auto nvi = container)
+    if (const auto& nvi = container)
     {
         if (IsTopNavigationView())
         {
@@ -1682,7 +1682,7 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 
 winrt::DependencyObject NavigationView::ContainerFromMenuItem(winrt::IInspectable const& item)
 {
-    if (auto data = item)
+    if (const auto& data = item)
     {
         return NavigationViewItemBaseOrSettingsContentFromData(item);
     }
@@ -3413,7 +3413,7 @@ void NavigationView::RaiseDisplayModeChanged(const winrt::NavigationViewDisplayM
 
 // This method attaches the series of animations which are fired off dependent upon the amount 
 // of space give and the length of the strings involved. It occurs upon re-rendering.
-void NavigationView::CreateAndAttachHeaderAnimation(winrt::Visual visual) 
+void NavigationView::CreateAndAttachHeaderAnimation(const winrt::Visual& visual) 
 {
     auto compositor = visual.Compositor();
     auto cubicFunction = compositor.CreateCubicBezierEasingFunction({ 0.0f, 0.35f }, { 0.15f, 1.0f });

@@ -134,7 +134,4 @@ public:
 
 class RevealBackgroundBrush :
     public ReferenceTracker<RevealBackgroundBrush, winrt::implementation::RevealBackgroundBrushT, RevealBrush>
-{
-public:
-    RevealBackgroundBrush();
-};
+{};

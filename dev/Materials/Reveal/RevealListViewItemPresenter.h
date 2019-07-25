@@ -9,8 +9,6 @@ class RevealListViewItemPresenter :
     public ReferenceTracker<RevealListViewItemPresenter, winrt::implementation::RevealListViewItemPresenterT>
 {
 public:
-    RevealListViewItemPresenter();
-
     bool GoToElementStateCore(winrt::hstring const& stateName, bool useTransitions);
 };
 

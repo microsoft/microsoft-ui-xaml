@@ -47,5 +47,5 @@ class DownlevelHelper
     DOWNLEVEL_API_OPERATION(ADD_DOWNLEVEL_API)
 
 private:
-    DownlevelHelper() {}
+    DownlevelHelper() = default;
 };

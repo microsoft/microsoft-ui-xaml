@@ -7,7 +7,4 @@
 
 class NavigationViewBackRequestedEventArgs :
     public winrt::implementation::NavigationViewBackRequestedEventArgsT<NavigationViewBackRequestedEventArgs>
-{
-public:
-    NavigationViewBackRequestedEventArgs();
-};
+{};

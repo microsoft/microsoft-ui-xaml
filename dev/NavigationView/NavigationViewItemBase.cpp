@@ -25,10 +25,6 @@ struct NavigationViewItemBaseFactory :
 
 CppWinRTActivatableClassWithFactory(NavigationViewItemBase, NavigationViewItemBaseFactory);
 
-NavigationViewItemBase::NavigationViewItemBase()
-{
-}
-
 NavigationViewListPosition NavigationViewItemBase::Position()
 {
     return m_position;

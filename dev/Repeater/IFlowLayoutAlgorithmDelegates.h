@@ -6,7 +6,7 @@
 class IFlowLayoutAlgorithmDelegates
 {
 public:
-    virtual ~IFlowLayoutAlgorithmDelegates() {}
+    virtual ~IFlowLayoutAlgorithmDelegates() = default;
 
     virtual winrt::Size Algorithm_GetMeasureSize(int index, const winrt::Size& availableSize, const winrt::VirtualizingLayoutContext& context) = 0;
     virtual winrt::Size Algorithm_GetProvisionalArrangeSize(int index, const winrt::Size& measureSize, winrt::Size const& desiredSize, const winrt::VirtualizingLayoutContext& context) = 0;

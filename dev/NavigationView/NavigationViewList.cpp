@@ -10,10 +10,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 
-NavigationViewList::NavigationViewList()
-{
-}
-
 // IItemsControlOverrides
 
 winrt::DependencyObject NavigationViewList::GetContainerForItemOverride()

@@ -12,7 +12,6 @@ class MenuBar :
 {
 public:
     MenuBar();
-    virtual ~MenuBar();
 
     void OnApplyTemplate();
 

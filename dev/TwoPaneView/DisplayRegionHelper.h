@@ -16,9 +16,6 @@ class DisplayRegionHelper:
     public winrt::implements<DisplayRegionHelper, winrt::IInspectable>
 {
 public:
-    DisplayRegionHelper();
-    ~DisplayRegionHelper();
-
     static DisplayRegionHelperInfo GetRegionInfo();
 
     static winrt::Rect WindowRect();
