@@ -161,9 +161,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             UIObject coreWindow = null;
 
-            // When running from MUXControls repo we want to install the app.
-            // When running in TestMD we also want to install the app.
-            // In CatGates, we install the test app as part of the deploy script, so we don't need to do anything here.
             Log.Comment("Launching app {0}", _appName);
 
             coreWindow = LaunchApp(_packageName);

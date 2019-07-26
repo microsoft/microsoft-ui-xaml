@@ -69,7 +69,7 @@ public:
     // Returns true if this is a system dll (i.e. windows.ui.xaml.controls.dll)
     static constexpr bool IsSystemDll()
     {
-        return true;
+        return false;
     }
 
     // Platform scale helpers

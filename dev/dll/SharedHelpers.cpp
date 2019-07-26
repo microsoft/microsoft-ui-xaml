@@ -286,7 +286,11 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
 {
     try
     {
+#if defined(BUILD_WINDOWS)
+        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
+#else
         const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
+#endif
         return winrt::Rect
         {
             dipsRect.X * scaleFactor,
@@ -300,7 +304,7 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
         // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
         // In this circumstance, we'll just always expand down, since we can't get bounds information.
     }
-    
+
     return dipsRect;
 }
 
