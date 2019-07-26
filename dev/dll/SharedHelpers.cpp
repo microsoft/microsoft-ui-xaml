@@ -93,7 +93,7 @@ bool SharedHelpers::DoesXamlMoveRSVLightToRootVisual()
 {
     // In RS3 we made a change where WUX internally sets lights on the RootScrollViewer on the RootVisual instead. If that
     // happens, then we don't need to attach lights to the other roots.
-    static bool s_movesLightFromRSVToRootVisual = IsSystemDll() || IsRS3OrHigher();
+    static bool s_movesLightFromRSVToRootVisual = IsRS3OrHigher();
     return s_movesLightFromRSVToRootVisual;
 }
 
@@ -101,7 +101,7 @@ bool SharedHelpers::DoesListViewItemPresenterVSMWork()
 {
     // The fix to make ListViewItemPresenter's VSM work was done at the same time as when the RevealListViewItemPresenter type was *removed* from windows.
     // Also check if RevealBorderBrush was present because RS3 was around for a bit before we added Reveal in.
-    static bool s_isAvailable = IsSystemDll() || IsRS3OrHigher();
+    static bool s_isAvailable = IsRS3OrHigher();
     return s_isAvailable;
 }
 
@@ -109,14 +109,13 @@ bool SharedHelpers::IsCoreWindowActivationModeAvailable()
 {
     // In RS3 we got CoreWindow.ActivationMode API which can be queried for window activation state,
     // and particularly in a Component UI host appto check if the compoenent is active (while host isn't).
-    static bool s_isAvailable = IsSystemDll() || IsRS3OrHigher();
+    static bool s_isAvailable = IsRS3OrHigher();
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsFlyoutShowOptionsAvailable()
 {
     static bool s_isFlyoutShowOptionsAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
@@ -125,7 +124,6 @@ bool SharedHelpers::IsFlyoutShowOptionsAvailable()
 bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
 {
     static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
     return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
@@ -134,7 +132,6 @@ bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvaila
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
 {
     static bool s_isScrollContentPresenterSizesContentToTemplatedParentAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollContentPresenter", L"SizesContentToTemplatedParent");
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
@@ -142,7 +139,7 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
 
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
-    static bool s_isFrameworkElementInvalidateViewportAvailable = IsSystemDll() || IsRS5OrHigher();
+    static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
@@ -157,7 +154,6 @@ bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         (IsRS5OrHigher() && winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.Control", L"CornerRadius"));
     return s_isControlCornerRadiusAvailable;
@@ -172,7 +168,6 @@ bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element
 bool SharedHelpers::IsIconSourceElementAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.IconSourceElement");
     return s_isAvailable;
@@ -181,7 +176,6 @@ bool SharedHelpers::IsIconSourceElementAvailable()
 bool SharedHelpers::IsStandardUICommandAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         (winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.XamlUICommand") &&
             winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.StandardUICommand"));
@@ -191,7 +185,6 @@ bool SharedHelpers::IsStandardUICommandAvailable()
 bool SharedHelpers::IsDispatcherQueueAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         IsRS4OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
     return s_isAvailable;
@@ -200,8 +193,7 @@ bool SharedHelpers::IsDispatcherQueueAvailable()
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
+         IsVanadiumOrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
 }
@@ -213,10 +205,7 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
     if (!isAPIContractVxAvailableInitialized)
     {
         isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable =
-            IsSystemDll() ?
-            true :
-            winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+        isAPIContractVxAvailable = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;
@@ -262,17 +251,14 @@ bool SharedHelpers::IsAPIContractV3Available()
 bool SharedHelpers::IsInFrameworkPackage()
 {
     static bool isInFrameworkPackage = []() {
-        if (!IsSystemDll())
+        // Special type that we manually list here which is not part of the Nuget dll distribution package. 
+        // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
+        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
+        Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
+        winrt::com_ptr<IActivationFactory> activationFactory;
+        if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
         {
-            // Special type that we manually list here which is not part of the Nuget dll distribution package. 
-            // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-            // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-            Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
-            winrt::com_ptr<IActivationFactory> activationFactory;
-            if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
@@ -286,11 +272,9 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
 {
     try
     {
-#if defined(BUILD_WINDOWS)
-        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
-#else
-        const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-#endif
+        const auto scaleFactor = Is19H1OrHigher()?
+                                    static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale()):
+                                    static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
         return winrt::Rect
         {
             dipsRect.X * scaleFactor,
@@ -537,7 +521,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
             bitmapIcon.UriSource(bitmapIconSource.UriSource());
         }
 
-        if (SharedHelpers::IsSystemDll() || winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
+        if (winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
         {
             bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
         }

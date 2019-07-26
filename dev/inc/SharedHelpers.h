@@ -66,12 +66,6 @@ public:
 
     static bool IsInFrameworkPackage();
 
-    // Returns true if this is a system dll (i.e. windows.ui.xaml.controls.dll)
-    static constexpr bool IsSystemDll()
-    {
-        return false;
-    }
-
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
     static winrt::Rect ConvertPhysicalToDips(winrt::UIElement const& xamlRootReference, const winrt::Rect& physicalRect);
