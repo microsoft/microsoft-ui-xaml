@@ -58,7 +58,7 @@ void AutoSuggestBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
         if (shouldMonitorAutoSuggestEvents)
         {
             auto revokersInspectable = winrt::make<AutoSuggestEventRevokers>();
-            auto revokers = revokersInspectable.try_as<AutoSuggestEventRevokers>();
+            auto revokers = revokersInspectable.as<AutoSuggestEventRevokers>();
 
             revokers->m_autoSuggestBoxLoadedRevoker = autoSuggestBox.Loaded(winrt::auto_revoke, AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded);
             autoSuggestBox.SetValue(AutoSuggestEventRevokersProperty(), revokersInspectable);
@@ -72,35 +72,32 @@ void AutoSuggestBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
 
 void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
-    if (auto autoSuggestBox = sender.try_as<winrt::AutoSuggestBox>())
+    auto autoSuggestBox = sender.as<winrt::AutoSuggestBox>();
+    auto revokers = autoSuggestBox.GetValue(AutoSuggestEventRevokersProperty()).as<AutoSuggestEventRevokers>();
+
+    if (!revokers->m_popupOpenedRevoker || !revokers->m_popupClosedRevoker)
     {
-        if (auto revokers = autoSuggestBox.GetValue(AutoSuggestEventRevokersProperty()).try_as<AutoSuggestEventRevokers>())
+        if (auto popup = GetTemplateChildT<winrt::Popup>(c_popupName, autoSuggestBox))
         {
-            if (!revokers->m_popupOpenedRevoker || !revokers->m_popupClosedRevoker)
-            {
-                if (auto popup = GetTemplateChildT<winrt::Popup>(c_popupName, autoSuggestBox))
+            auto autoSuggestBoxWeakRef = winrt::make_weak(autoSuggestBox);
+
+            revokers->m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke,
+                [autoSuggestBoxWeakRef](const winrt::IInspectable& sender, const winrt::IInspectable& args)
                 {
-                    auto autoSuggestBoxWeakRef = winrt::make_weak(autoSuggestBox);
+                    if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
+                    {
+                        UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/true);
+                    }
+                });
 
-                    revokers->m_popupOpenedRevoker = popup.Opened(winrt::auto_revoke,
-                        [autoSuggestBoxWeakRef](const winrt::IInspectable& sender, const winrt::IInspectable& args)
-                        {
-                            if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
-                            {
-                                UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/true);
-                            }
-                        });
-
-                    revokers->m_popupClosedRevoker = popup.Closed(winrt::auto_revoke,
-                        [autoSuggestBoxWeakRef](const winrt::IInspectable& sender, const winrt::IInspectable& args)
-                        {
-                            if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
-                            {
-                                UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/false);
-                            }
-                        });
-                }
-            }
+            revokers->m_popupClosedRevoker = popup.Closed(winrt::auto_revoke,
+                [autoSuggestBoxWeakRef](const winrt::IInspectable& sender, const winrt::IInspectable& args)
+                {
+                    if (auto autoSuggestBox = autoSuggestBoxWeakRef.get())
+                    {
+                        UpdateCornerRadius(autoSuggestBox, /*IsDropDownOpen=*/false);
+                    }
+                });
         }
     }
 }
@@ -109,7 +106,7 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
 {
     winrt::CornerRadius popupRadius{ 0 };
     winrt::CornerRadius textBoxRadius{ 0 };
-    if (auto autoSuggextBoxControl7 = autoSuggestBox.try_as<winrt::IControl7>())
+    if (winrt::IControl7 autoSuggextBoxControl7 = autoSuggestBox)
     {
         popupRadius = autoSuggextBoxControl7.CornerRadius();
         textBoxRadius = autoSuggextBoxControl7.CornerRadius();
@@ -134,7 +131,7 @@ void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoS
 
     if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_textBoxName, autoSuggestBox))
     {
-        if (auto textBoxControl7 = textBox.try_as<winrt::IControl7>())
+        if (winrt::IControl7 textBoxControl7 = textBox)
         {
             textBoxControl7.CornerRadius(textBoxRadius);
         }
@@ -160,5 +157,5 @@ bool AutoSuggestBoxHelper::IsPopupOpenDown(const winrt::AutoSuggestBox& autoSugg
             verticalOffset = popupTop.Y;
         }
     }
-    return verticalOffset > 0;
+    return verticalOffset >= 0;
 }
