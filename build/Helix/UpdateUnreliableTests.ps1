@@ -1,7 +1,13 @@
 [CmdLetBinding()]
 Param(
     [Parameter(Mandatory = $true)] 
-    [int]$RerunPassesRequiredToAvoidFailure
+    [int]$RerunPassesRequiredToAvoidFailure,
+
+    [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
+    [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
+    [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
+    [string]$BuildUri = $env:BUILD_BUILDURI,
+    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT
 )
 
 . "$PSScriptRoot/AzurePipelinesHelperScripts.ps1"
@@ -9,19 +15,36 @@ Param(
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
-    "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
+    "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$AccessToken")))"
 }
 
-$queryUri = GetQueryTestRunsUri
+$queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $TeamProject -BuildUri $BuildUri
 Write-Host "queryUri = $queryUri"
 
 # To account for unreliable tests, we'll iterate through all of the tests associated with this build, check to see any tests that were unreliable
 # (denoted by being marked as "skipped"), and if so, we'll instead mark those tests with a warning and enumerate all of the attempted runs
 # with their pass/fail states as well as any relevant error messages for failed attempts.
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
+
+$timesSeenByRunName = @{}
       
 foreach ($testRun in $testRuns.value)
 {
+    if (-not $timesSeenByRunName.ContainsKey($testRun.name))
+    {
+        $timesSeenByRunName[$testRun.name] = 0
+    }
+    
+    $timesSeen = $timesSeenByRunName[$testRun.name] + 1
+    $timesSeenByRunName[$testRun.name] = $timesSeen
+
+    # The same build can have multiple test runs associated with it if the build owner opted to re-run a test run.
+    # We should only pay attention to the current attempt version.
+    if ($timesSeen -ne $JobAttempt)
+    {
+        continue
+    }
+
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
         
     Write-Host "Marking test run `"$($testRun.name)`" as in progress so we can change its results to account for unreliable tests."
@@ -46,7 +69,7 @@ foreach ($testRun in $testRuns.value)
             foreach ($rerun in $rerunResults.results)
             {
                 $rerunData = @{
-                    "displayName" = "Attempt #$($attemptCount) - $($testResult.testCaseTitle)";
+                    "displayName" = "Attempt #$($attemptCount + 1) - $($testResult.testCaseTitle)";
                     "durationInMs" = $rerun.duration;
                     "outcome" = $rerun.outcome;
                 }

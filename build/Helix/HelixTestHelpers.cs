@@ -20,7 +20,6 @@ namespace HelixTestHelpers
         public string Name { get; set; }
         public string SourceWttFile { get; set; }
         public bool Passed { get; set; }
-        public bool PassedOnRerun { get; set; }
         public bool CleanupPassed { get; set; }
         public TimeSpan ExecutionTime { get; set; }
         public string Details { get; set; }
@@ -30,18 +29,17 @@ namespace HelixTestHelpers
     }
     
     //
-    // Azure DevOps doesn't currently provide a way to directly report sub-results for unreliable tests
+    // Azure DevOps doesn't currently provide a way to directly report sub-results for tests that failed at least once
     // that were run multiple times.  To get around that limitation, we'll mark the test as "Skip" since
     // that's the only non-pass/fail result we can return, and will then report the information about the
-    // runs in the "reason" category for the skipped test.  The Azure DevOps REST API enforces a restriction
-    // on the maximum length that that string value can be, so in order to ensure that we don't exceed that
-    // length, we'll make the following space optimizations:
+    // runs in the "reason" category for the skipped test.  In order to save space, we'll make the following
+    // optimizations for size:
     //
-    //   1. Serializing as JSON, which is more compact than XML;
+    //   1. Serialize as JSON, which is more compact than XML;
     //   2. Don't serialize values that we don't need;
     //   3. Store the URL prefix and suffix for the blob storage URL only once instead of
     //      storing every log and screenshot URL in its entirety; and
-    //   4. Storing a list of unique error messages and then indexing into that instead of
+    //   4. Store a list of unique error messages and then index into that instead of
     //      storing every error message in its entirety.
     //
     // #4 is motivated by the fact that if a test fails multiple times, it probably failed for the same reason
@@ -355,13 +353,8 @@ namespace HelixTestHelpers
             foreach (TestResult failedTestResult in testPass.TestResults.Where(r => !r.Passed))
             {
                 failedTestResult.RerunResults.AddRange(rerunTestResults.Where(r => r.Name == failedTestResult.Name));
-                
-                if (rerunTestResults.Where(r => r.Name == failedTestResult.Name && r.Passed).Count() > 0)
-                {
-                    failedTestResult.PassedOnRerun = true;
-                }
             }
-            
+
             return testPass;
         }
 
@@ -441,45 +434,42 @@ namespace HelixTestHelpers
 
                 if (!result.Passed)
                 {
-                    // If the test failed but then passed on rerun, then we'll add metadata to report the results of each run.
-                    // Otherwise, we'll mark down the failure information.
-                    if (result.PassedOnRerun)
+                    // If a test failed, we'll have rerun it multiple times.  We'll record the results of each run
+                    // formatted as JSON.
+                    JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
+                    serializableResults.blobPrefix = helixResultsContainerUri;
+                    serializableResults.blobSuffix = helixResultsContainerRsas;
+
+                    List<string> errorList = new List<string>();
+                    errorList.Add(result.Details);
+
+                    foreach (TestResult rerunResult in result.RerunResults)
                     {
-                        JsonSerializableTestResults serializableResults = new JsonSerializableTestResults();
-                        serializableResults.blobPrefix = helixResultsContainerUri;
-                        serializableResults.blobSuffix = helixResultsContainerRsas;
+                        errorList.Add(rerunResult.Details);
+                    }
 
-                        List<string> errorList = new List<string>();
-                        errorList.Add(result.Details);
+                    serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
 
-                        foreach (TestResult rerunResult in result.RerunResults)
+                    var reason = new XElement("reason");
+                    List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
+                    serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
+
+                    foreach (TestResult rerunResult in result.RerunResults)
+                    {
+                        serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
+                    }
+
+                    serializableResults.results = serializableResultList.ToArray();
+
+                    using (MemoryStream stream = new MemoryStream())
+                    {
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
+                        serializer.WriteObject(stream, serializableResults);
+                        stream.Position = 0;
+
+                        using (StreamReader streamReader = new StreamReader(stream))
                         {
-                            errorList.Add(rerunResult.Details);
-                        }
-
-                        serializableResults.errors = errorList.Distinct().Where(s => s != null).ToArray();
-
-                        var reason = new XElement("reason");
-                        List<JsonSerializableTestResult> serializableResultList = new List<JsonSerializableTestResult>();
-                        serializableResultList.Add(ConvertToSerializableResult(result, serializableResults.errors));
-
-                        foreach (TestResult rerunResult in result.RerunResults)
-                        {
-                            serializableResultList.Add(ConvertToSerializableResult(rerunResult, serializableResults.errors));
-                        }
-
-                        serializableResults.results = serializableResultList.ToArray();
-
-                        using (MemoryStream stream = new MemoryStream())
-                        {
-                            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(JsonSerializableTestResults));
-                            serializer.WriteObject(stream, serializableResults);
-                            stream.Position = 0;
-
-                            using (StreamReader streamReader = new StreamReader(stream))
-                            {
-                                subResultsJsonByMethod.Add(methodName, streamReader.ReadToEnd());
-                            }
+                            subResultsJsonByMethod.Add(methodName, streamReader.ReadToEnd());
                         }
                     }
                 }
@@ -495,8 +485,11 @@ namespace HelixTestHelpers
 
             int resultCount = results.Count;
             int passedCount = results.Where(r => r.Passed).Count();
-            int passedOnRerunCount = results.Where(r => r.PassedOnRerun).Count();
-            int failedCount = resultCount - passedCount;
+            
+            // Since we re-run tests on failure, we'll mark every test that failed at least once as "skipped" rather than "failed".
+            // If the test failed sufficiently often enough for it to count as a failed test (determined by a property on the
+            // Azure DevOps job), we'll later mark it as failed during test results processing.
+            int skippedCount = resultCount - passedCount;
 
             var root = new XElement("assemblies");
 
@@ -512,8 +505,8 @@ namespace HelixTestHelpers
             
             assembly.SetAttributeValue("total", resultCount);
             assembly.SetAttributeValue("passed", passedCount);
-            assembly.SetAttributeValue("failed", failedCount);
-            assembly.SetAttributeValue("skipped", passedOnRerunCount);
+            assembly.SetAttributeValue("failed", 0);
+            assembly.SetAttributeValue("skipped", skippedCount);
             
             assembly.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
             assembly.SetAttributeValue("errors", 0);
@@ -522,8 +515,8 @@ namespace HelixTestHelpers
             var collection = new XElement("collection");
             collection.SetAttributeValue("total", resultCount);
             collection.SetAttributeValue("passed", passedCount);
-            collection.SetAttributeValue("failed", failedCount);
-            collection.SetAttributeValue("skipped", passedOnRerunCount);
+            collection.SetAttributeValue("failed", 0);
+            collection.SetAttributeValue("skipped", skippedCount);
             collection.SetAttributeValue("name", "Test collection");
             collection.SetAttributeValue("time", (int)testPass.TestPassExecutionTime.TotalSeconds);
             assembly.Add(collection);
@@ -546,62 +539,24 @@ namespace HelixTestHelpers
                 {
                     resultString = "Pass";
                 }
-                else if (result.PassedOnRerun)
-                {
-                    resultString = "Skip";
-                }
                 else
                 {
-                    resultString = "Fail";
+                    resultString = "Skip";
                 }
                 
                 test.SetAttributeValue("result", resultString);
 
                 if (!result.Passed)
                 {
-                    // If the test failed but then passed on rerun, then we'll add metadata to report the results of each run.
-                    // Otherwise, we'll mark down the failure information.
-                    if (result.PassedOnRerun)
-                    {
-                        // We'll save the subresults to a JSON text file that we'll upload to the helix results container -
-                        // this allows it to be as long as we want, whereas the reason field in Azure DevOps has a 4000 character limit.
-                        string subResultsFileName = methodName + "_subresults.json";
-                        string subResultsFilePath = Path.Combine(Path.GetDirectoryName(wttInputPath), subResultsFileName);
+                    // If a test failed, we'll have rerun it multiple times.
+                    // We'll save the subresults to a JSON text file that we'll upload to the helix results container -
+                    // this allows it to be as long as we want, whereas the reason field in Azure DevOps has a 4000 character limit.
+                    string subResultsFileName = methodName + "_subresults.json";
+                    string subResultsFilePath = Path.Combine(Path.GetDirectoryName(wttInputPath), subResultsFileName);
 
-                        var reason = new XElement("reason");
-                        reason.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
-                        test.Add(reason);
-                    }
-                    else
-                    {
-                        var failure = new XElement("failure");
-                        failure.SetAttributeValue("exception-type", "Exception");
-
-                        var message = new XElement("message");
-
-                        StringBuilder errorMessage = new StringBuilder();
-
-                        errorMessage.AppendLine("Log: " + GetUploadedFileUrl(result.SourceWttFile, helixResultsContainerUri, helixResultsContainerRsas));
-                        errorMessage.AppendLine();
-                        
-                        if(result.Screenshots.Any())
-                        {
-                            errorMessage.AppendLine("Screenshots:");
-                            foreach(var screenshot in result.Screenshots)
-                            {
-                                errorMessage.AppendLine(GetUploadedFileUrl(screenshot, helixResultsContainerUri, helixResultsContainerRsas));
-                                errorMessage.AppendLine();
-                            }
-                        }
-
-                        errorMessage.AppendLine("Error Log: ");
-                        errorMessage.AppendLine(result.Details);
-
-                        message.Add(new XCData(errorMessage.ToString()));
-                        failure.Add(message);
-
-                        test.Add(failure);
-                    }
+                    var reason = new XElement("reason");
+                    reason.Add(new XCData(GetUploadedFileUrl(subResultsFileName, helixResultsContainerUri, helixResultsContainerRsas)));
+                    test.Add(reason);
                 }
                 collection.Add(test);
             }
