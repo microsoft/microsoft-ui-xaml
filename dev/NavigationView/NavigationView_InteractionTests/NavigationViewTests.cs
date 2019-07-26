@@ -558,6 +558,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     headerVisibilityCheckbox.Check();
                     Wait.ForIdle();
                     VerifyElement.Found("Home as header", FindBy.Name);
+
+                    // PaneDisplayMode and Top option were added on RS5, so just run the next tests if we are not using RS4 Style
+                    if (!testScenario.IsUsingRS4Style)
+                    {
+                        var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                        Log.Comment("Set PaneDisplayMode to Top");
+                        panelDisplayModeComboBox.SelectItemByName("Top");
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that header is visible in Top display mode when AlwaysShowHeader == true");
+                        VerifyElement.Found("Home as header", FindBy.Name);
+
+                        Log.Comment("Verify that header is not visible in Top display mode when AlwaysShowHeader == false");
+                        headerVisibilityCheckbox.Uncheck();
+                        Wait.ForIdle();
+                        VerifyElement.NotFound("Home as header", FindBy.Name);
+                    }
                 }
             }
         }
