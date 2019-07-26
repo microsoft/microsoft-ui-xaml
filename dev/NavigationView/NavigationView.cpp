@@ -900,7 +900,7 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
             const auto first = SetPaneTitleFrameworkElementParent(m_paneToggleButton.get(), paneTitleFrameworkElement, isTopNavigationView || !isPaneToggleButtonVisible);
             const auto second = SetPaneTitleFrameworkElementParent(m_paneTitlePresenter.get(), paneTitleFrameworkElement, isTopNavigationView || isPaneToggleButtonVisible);
             const auto third = SetPaneTitleFrameworkElementParent(m_paneTitleOnTopPane.get(), paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
-            first ? first() : second ? second() : third ? third() : 0;
+            first ? first() : second ? second() : third ? third() : []() {}();
         }
     }
 }

@@ -861,7 +861,7 @@ winrt::UIElement RevealBrush::GetAncestor(const winrt::UIElement & root)
     do
     {
         current = parent;
-        parent = safe_cast<winrt::UIElement>(winrt::VisualTreeHelper::GetParent(current));
+        parent = winrt::VisualTreeHelper::GetParent(current).as<winrt::UIElement>();
     } while (parent != nullptr);
 
     return current;

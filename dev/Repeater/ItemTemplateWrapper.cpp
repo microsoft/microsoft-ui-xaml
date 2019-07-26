@@ -47,7 +47,7 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
     if (recyclePool)
     {
         // try to get an element from the recycle pool.
-        element = safe_cast<winrt::FrameworkElement>(recyclePool.TryGetElement(L"" /* key */, args.Parent()));
+        element = recyclePool.TryGetElement(L"" /* key */, args.Parent().as<winrt::FrameworkElement>());
     }
 
     if (!element)

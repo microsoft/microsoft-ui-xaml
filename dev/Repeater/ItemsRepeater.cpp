@@ -363,7 +363,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     if (property == s_ItemsSourceProperty)
     {
         auto newValue = args.NewValue();
-        auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(newValue);
+        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
         if (newValue && !newDataSource)
         {
             newDataSource = winrt::ItemsSourceView(newValue);
@@ -373,15 +373,15 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_ItemTemplateProperty)
     {
-        OnItemTemplateChanged(safe_cast<winrt::IElementFactory>(args.OldValue()), safe_cast<winrt::IElementFactory>(args.NewValue()));
+        OnItemTemplateChanged(args.OldValue().as<winrt::IElementFactory>(), args.NewValue().as<winrt::IElementFactory>());
     }
     else if (property == s_LayoutProperty)
     {
-        OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
+        OnLayoutChanged(args.OldValue().as<winrt::Layout>(), args.NewValue().as<winrt::Layout>());
     }
     else if (property == s_AnimatorProperty)
     {
-        OnAnimatorChanged(safe_cast<winrt::ElementAnimator>(args.OldValue()), safe_cast<winrt::ElementAnimator>(args.NewValue()));
+        OnAnimatorChanged(args.OldValue().as<winrt::ElementAnimator>(), args.NewValue().as<winrt::ElementAnimator>());
     }
     else if (property == s_HorizontalCacheLengthProperty)
     {

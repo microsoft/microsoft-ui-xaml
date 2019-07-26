@@ -331,7 +331,7 @@ void RatingControl::PopulateStackPanelWithItems(wstring_view templateName, const
 
     for (int i = 0; i < MaxRating(); i++)
     {
-        if (auto ui = safe_cast<winrt::UIElement>(dt.LoadContent()))
+        if (auto ui = dt.LoadContent().as<winrt::UIElement>())
         {
             CustomizeRatingItem(ui, state);
             stackPanel.Children().Append(ui);
@@ -639,12 +639,12 @@ void RatingControl::OnFontFamilyChanged(const winrt::DependencyObject& /*sender*
         for (int i = 0; i < MaxRating(); i++)
         {
             // FUTURE: handle image rating items
-            if (auto backgroundTB = safe_cast<winrt::TextBlock>(m_backgroundStackPanel.get().Children().GetAt(i)))
+            if (auto backgroundTB = m_backgroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(backgroundTB, RatingControlStates::Unset);
             }
 
-            if (auto foregroundTB = safe_cast<winrt::TextBlock>(m_foregroundStackPanel.get().Children().GetAt(i)))
+            if (auto foregroundTB = m_foregroundStackPanel.get().Children().GetAt(i).as<winrt::TextBlock>())
             {
                 CustomizeRatingItem(foregroundTB, RatingControlStates::Set);
             }

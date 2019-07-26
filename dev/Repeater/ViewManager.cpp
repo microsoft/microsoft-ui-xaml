@@ -756,7 +756,7 @@ void ViewManager::UpdateFocusedElement()
 {
     winrt::UIElement focusedElement = nullptr;
 
-    auto child = safe_cast<winrt::DependencyObject>(winrt::FocusManager::GetFocusedElement());
+    auto child = winrt::FocusManager::GetFocusedElement().as<winrt::DependencyObject>();
 
     if (child)
     {
