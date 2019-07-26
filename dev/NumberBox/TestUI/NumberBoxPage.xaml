@@ -30,11 +30,18 @@
                 <x:String>InvalidInputOverwritten</x:String>
                 <x:String>Disabled</x:String>
             </ComboBox>
+
+            <CheckBox x:Name="calculations"
+                IsChecked="False"
+                Content="AcceptsCalculations"
+                RelativePanel.Below="validationmode"
+                />
+
             <ComboBox x:Name="Spinmode"
                 SelectedValue="Hidden"
                       SelectionChanged="SpinMode_Changed"
                 Header="SpinButtonMode"
-                RelativePanel.Below="validationmode">
+                RelativePanel.Below="calculations">
                     <x:String>Hidden</x:String>
                     <x:String>Inline</x:String>
                 </ComboBox>
@@ -129,7 +136,7 @@
                 RoundingAlgorithm="{x:Bind algo.SelectedValue, Converter={StaticResource RoundingConverter}, Mode=OneWay}"
                 IncrementPrecision="{x:Bind increment.Value, Mode=OneWay}"
                 SignificantDigitPrecision="{x:Bind sigprec.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
-                   AcceptsCalculation="True"
+                AcceptsCalculation="{x:Bind calculations.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
 
                 />
 
