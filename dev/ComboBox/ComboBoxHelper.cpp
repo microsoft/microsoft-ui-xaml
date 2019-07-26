@@ -12,6 +12,7 @@ using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
 
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
+static constexpr auto c_editableTextBorderName = L"BorderElement"sv;
 GlobalDependencyProperty ComboBoxHelper::s_DropDownEventRevokersProperty{ nullptr };
 
 ComboBoxHelper::ComboBoxHelper()
@@ -127,9 +128,20 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
         {
             popupBorder.CornerRadius(popupRadius);
         }
+
         if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_editableTextName, comboBox))
         {
-            textBox.CornerRadius(textBoxRadius);
+            if (auto textBoxControl7 = textBox.try_as<winrt::IControl7>())
+            {
+                textBoxControl7.CornerRadius(textBoxRadius);
+            }
+            else
+            {
+                if (auto textBorder = GetTemplateChildT<winrt::Border>(c_editableTextBorderName, textBox))
+                {
+                    textBorder.CornerRadius(textBoxRadius);
+                }
+            }
         }
     }
 }

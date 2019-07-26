@@ -54,7 +54,8 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonStyles\APITests\CommonStyles_ApiTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CheckBox\TestUI\CheckBox_TestUI.projitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\DatePicker\TestUI\DatePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureDatePickerEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Slider\TestUI\Slider_TestUI.projitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
