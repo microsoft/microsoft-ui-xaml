@@ -14,7 +14,7 @@ private:
     /// <summary>
     /// Declare a private constructor to prevent instance creation.
     /// </summary>
-    ResourceAccessor();
+    ResourceAccessor() = delete;
 
     /// <summary>
     /// String containing the resource location

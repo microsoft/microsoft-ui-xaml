@@ -5,10 +5,6 @@
 #include "common.h"
 #include "TreeViewCollapsedEventArgs.h"
 
-TreeViewCollapsedEventArgs::TreeViewCollapsedEventArgs()
-{
-}
-
 winrt::TreeViewNode TreeViewCollapsedEventArgs::Node()
 {
     return m_node.get();

@@ -5,11 +5,6 @@
 #include "common.h"
 #include "TreeViewItemInvokedEventArgs.h"
 
-
-TreeViewItemInvokedEventArgs::TreeViewItemInvokedEventArgs()
-{
-}
-
 winrt::IInspectable TreeViewItemInvokedEventArgs::InvokedItem()
 {
     return m_invokedItem.get();

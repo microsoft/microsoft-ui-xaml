@@ -16,8 +16,6 @@ public:
         Bottom
     };
 
-    CornerRadiusFilterConverter();
-
     winrt::CornerRadius Convert(
         winrt::CornerRadius const& radius,
         FilterType const& filter);

@@ -36,7 +36,7 @@ namespace MUXControlsTestApp.Samples
             _data = new ObservableCollection<Person>();
             repeater.ItemsSource = new PersonDataSource(_data);
 #if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)new PersonElementFactory((DataTemplate)Resources["PersonTemplate"]);;
+            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)new PersonElementFactory((DataTemplate)Resources["PersonTemplate"]);
 #else
             repeater.ItemTemplate = new PersonElementFactory((DataTemplate)Resources["PersonTemplate"]); ;
 #endif

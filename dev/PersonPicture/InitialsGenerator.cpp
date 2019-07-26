@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "InitialsGenerator.h"
-#include <wctype.h>
+#include <cwctype>
 #include <sstream>
 #include <algorithm>
 

@@ -58,7 +58,7 @@ private:
     int DetermineFractionDigits(double value);
     int DetermineSignificantDigits(double value, int fractionDigits);
 
-    winrt::hstring GenerateValue_ValueString(winrt::hstring resourceString, double ratingValue);
+    winrt::hstring GenerateValue_ValueString(const winrt::hstring& resourceString, double ratingValue);
 };
 
 CppWinRTActivatableClassWithBasicFactory(RatingControlAutomationPeer)

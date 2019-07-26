@@ -261,7 +261,7 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
     }
 }
 
-void MenuBarItem::AddPassThroughElement(winrt::DependencyObject element)
+void MenuBarItem::AddPassThroughElement(const winrt::DependencyObject& element)
 {
     m_passThroughElement = winrt::make_weak(element);
 }

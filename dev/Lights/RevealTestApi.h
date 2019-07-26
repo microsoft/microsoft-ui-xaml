@@ -35,7 +35,6 @@ public:
 #endif
 
     RevealTestApi();
-    ~RevealTestApi();
 
     static winrt::SpotLight GetBackgroundSpotlightProxy(winrt::ApplicationTheme theme);
 

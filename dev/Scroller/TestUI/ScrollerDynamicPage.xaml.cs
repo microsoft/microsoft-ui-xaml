@@ -2396,6 +2396,45 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void BtnGetArrangeRenderSizesDelta_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                txtArrangeRenderSizesDelta.Text = ScrollerTestHooks.GetArrangeRenderSizesDelta(scroller).ToString();
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private void BtnGetMinPosition_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                txtMinPosition.Text = ScrollerTestHooks.GetMinPosition(scroller).ToString();
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private void BtnGetMaxPosition_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                txtMaxPosition.Text = ScrollerTestHooks.GetMaxPosition(scroller).ToString();
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollerEvents.Items.Add(ex.ToString());
+            }
+        }
+
         private void UseScroller(Scroller s)
         {
             if (scroller == s || s == null)

@@ -13,7 +13,6 @@ public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
     NavigationViewItemHeader();
-    virtual ~NavigationViewItemHeader();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;

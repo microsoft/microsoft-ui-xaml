@@ -7,7 +7,7 @@
 struct IndexRange
 {
 public:
-    IndexRange() {}
+    IndexRange() = default;
     IndexRange(int begin, int end);
     int Begin() const;
     int End() const;

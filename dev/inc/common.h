@@ -14,7 +14,7 @@ using namespace std::string_view_literals;
 using namespace std::chrono_literals;
 
 #ifndef BUILD_WINDOWS
-typedef winrt::hstring const& ResourceIdType;
+using ResourceIdType = const winrt::hstring &;
 #else
 typedef int ResourceIdType;
 #endif
