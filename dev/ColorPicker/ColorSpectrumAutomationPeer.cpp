@@ -107,9 +107,9 @@ void ColorSpectrumAutomationPeer::RaisePropertyChangedEvent(winrt::Color oldColo
 
 winrt::hstring ColorSpectrumAutomationPeer::GetValueString(winrt::Color color, winrt::float4 hsvColor)
 {
-    unsigned int hue = static_cast<unsigned int>(round(hsv::GetHue(hsvColor)));
-    unsigned int saturation = static_cast<unsigned int>(round(hsv::GetSaturation(hsvColor) * 100));
-    unsigned int value = static_cast<unsigned int>(round(hsv::GetValue(hsvColor) * 100));
+    auto hue = static_cast<unsigned int>(round(hsv::GetHue(hsvColor)));
+    auto saturation = static_cast<unsigned int>(round(hsv::GetSaturation(hsvColor) * 100));
+    auto value = static_cast<unsigned int>(round(hsv::GetValue(hsvColor) * 100));
 
     if (DownlevelHelper::ToDisplayNameExists())
     {

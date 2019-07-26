@@ -20,9 +20,6 @@ public:
     static winrt::hstring& GetLightThemeIdStatic();
     static winrt::hstring& GetDarkThemeIdStatic();
 
-    RevealBorderLight();
-    ~RevealBorderLight();
-
     void SetIsWideLight(bool isWideLight) { m_isWideLight = isWideLight; }
     void SetIsLightTheme(bool isLightTheme) { m_isLightTheme = isLightTheme; }
 

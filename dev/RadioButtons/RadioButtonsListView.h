@@ -8,7 +8,6 @@ class RadioButtonsListView :
     public ReferenceTracker<RadioButtonsListView, winrt::implementation::RadioButtonsListViewT>
 {
 public:
-    RadioButtonsListView() {};
 
     // IItemsControlOverrides
     winrt::DependencyObject GetContainerForItemOverride();

@@ -492,7 +492,7 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     bmpData.push_back(0);
 
     // Offset of the pixel data from the start.  Since our header is 14 + 12 bytes long, it starts after that.
-    uint32_t pixelDataOffset = static_cast<uint32_t>(headerSize);
+    auto pixelDataOffset = static_cast<uint32_t>(headerSize);
     bmpData.push_back(static_cast<byte>(pixelDataOffset & 0x000000FF));
     bmpData.push_back(static_cast<byte>((pixelDataOffset & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((pixelDataOffset & 0x00FF0000) >> 16));
@@ -505,14 +505,14 @@ winrt::LoadedImageSurface CreateSurfaceFromPixelData(
     bmpData.push_back(static_cast<byte>((dibHeaderSize & 0xFF000000) >> 24));
 
     // Bitmap width in pixels (32-bit).
-    uint32_t bitmapWidth = static_cast<uint32_t>(pixelWidth);
+    auto bitmapWidth = static_cast<uint32_t>(pixelWidth);
     bmpData.push_back(static_cast<byte>(bitmapWidth & 0x000000FF));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0x00FF0000) >> 16));
     bmpData.push_back(static_cast<byte>((bitmapWidth & 0xFF000000) >> 24));
 
     // Bitmap height in pixels (32-bit).
-    uint32_t bitmapHeight = static_cast<uint32_t>(pixelHeight);
+    auto bitmapHeight = static_cast<uint32_t>(pixelHeight);
     bmpData.push_back(static_cast<byte>(bitmapHeight & 0x000000FF));
     bmpData.push_back(static_cast<byte>((bitmapHeight & 0x0000FF00) >> 8));
     bmpData.push_back(static_cast<byte>((bitmapHeight & 0x00FF0000) >> 16));

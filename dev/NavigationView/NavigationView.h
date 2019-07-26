@@ -62,7 +62,7 @@ public:
 
     winrt::UIElement FindSelectionIndicator(const winrt::IInspectable& item);
 
-    static void CreateAndAttachHeaderAnimation(winrt::Visual visual);
+    static void CreateAndAttachHeaderAnimation(const winrt::Visual& visual);
 
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
@@ -135,6 +135,8 @@ private:
     void UpdateTopNavigationWidthCache();
 
     int GetSelectedItemIndex();
+    double GetPaneToggleButtonWidth();
+    double GetPaneToggleButtonHeight();
 
     bool BumperNavigation(int offset);
 
@@ -175,6 +177,7 @@ private:
     void OnSettingsKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSettingsKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
     void RaiseItemInvoked(winrt::IInspectable const& item, 
@@ -240,10 +243,11 @@ private:
     void OpenPane();
     void ClosePane();
     bool AttemptClosePaneLightly();
-    void ClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
+    void UpdatePaneTitleFrameworkElementParents();
+    std::function<void ()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSplitViewPaneClosed(const winrt::DependencyObject& sender, const winrt::IInspectable& obj);
@@ -272,10 +276,11 @@ private:
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
+    tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
+    tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::TextBlock> m_paneTitleTextBlock{ this };
     tracker_ref<winrt::ListView> m_leftNavListView{ this };
     tracker_ref<winrt::ListView> m_topNavListView{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
@@ -288,8 +293,7 @@ private:
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
     tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_topPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_headerContent{ this };
+    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{ this };
 
     tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
 
@@ -301,9 +305,15 @@ private:
     tracker_ref<winrt::ContentControl> m_leftNavFooterContentBorder{ this };
 
     tracker_ref<winrt::ContentControl> m_paneHeaderOnTopPane{ this };
+    tracker_ref<winrt::ContentControl> m_paneTitleOnTopPane{ this };
     tracker_ref<winrt::ContentControl> m_paneCustomContentOnTopPane{ this };
     tracker_ref<winrt::ContentControl> m_paneFooterOnTopPane{ this };
-    
+    tracker_ref<winrt::ContentControl> m_paneTitlePresenter{ this };
+
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
+    tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+
     int m_indexOfLastSelectedItemInTopNav{ 0 };
     tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
     std::vector<int> m_itemsRemovedFromMenuFlyout{};
@@ -333,6 +343,7 @@ private:
     winrt::SplitView::PaneOpening_revoker m_splitViewPaneOpeningRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };

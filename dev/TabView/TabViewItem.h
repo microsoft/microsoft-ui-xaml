@@ -8,6 +8,7 @@
 
 #include "TabViewItem.g.h"
 #include "TabViewItem.properties.h"
+#include "TabViewItemAutomationPeer.h"
 
 class TabViewItem :
     public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
@@ -16,10 +17,12 @@ class TabViewItem :
 
 public:
     TabViewItem();
-    ~TabViewItem() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
+
+    // IUIElement
+    winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 

@@ -111,14 +111,14 @@ public:
         return oppositeDirection;
     }
 
-    static winrt::UIElement GetUIElementForFocusCandidate(winrt::DependencyObject dobj)
+    static winrt::UIElement GetUIElementForFocusCandidate(const winrt::DependencyObject& dobj)
     {
         auto uielement = dobj.try_as<winrt::UIElement>();
-
-        while (uielement == nullptr && dobj != nullptr)
+        auto parent = dobj;
+        while (uielement == nullptr && parent != nullptr)
         {
-            dobj = winrt::VisualTreeHelper::GetParent(dobj);
-            if (dobj)
+            parent = winrt::VisualTreeHelper::GetParent(dobj);
+            if (parent)
             {
                 uielement = dobj.try_as<winrt::UIElement>();
             }

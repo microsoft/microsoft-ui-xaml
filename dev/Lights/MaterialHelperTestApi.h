@@ -9,8 +9,6 @@ class MaterialHelperTestApi :
     public ReferenceTracker<MaterialHelperTestApi, winrt::implementation::MaterialHelperTestApiT, winrt::composable>
 {
 public:
-    MaterialHelperTestApi();
-
     static bool SimulateDisabledByPolicy();
     static void SimulateDisabledByPolicy(bool value);
     static bool IgnoreAreEffectsFast();

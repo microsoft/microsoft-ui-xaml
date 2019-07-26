@@ -2,11 +2,6 @@
 #include "common.h"
 #include "TeachingTipClosingEventArgs.h"
 
-
-TeachingTipClosingEventArgs::TeachingTipClosingEventArgs()
-{
-}
-
 winrt::TeachingTipCloseReason TeachingTipClosingEventArgs::Reason()
 {
     return m_reason;

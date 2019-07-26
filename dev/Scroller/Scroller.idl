@@ -22,6 +22,7 @@ enum ContentOrientation
     Vertical = 0,
     Horizontal = 1,
     None = 2,
+    Both = 3,
 };
 
 [WUXC_VERSION_PREVIEW]

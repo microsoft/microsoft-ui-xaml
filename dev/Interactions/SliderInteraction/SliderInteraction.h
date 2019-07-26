@@ -42,7 +42,7 @@ public:
     void OnPointerCaptureLost(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args);
 
 private:
-    void ConfigureTargetElement(winrt::UIElement target);
+    void ConfigureTargetElement(const winrt::UIElement& target);
     void UpdatePosition(double delta);
     void UpdateTransform();
 

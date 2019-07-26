@@ -217,6 +217,7 @@
                 <ComboBoxItem>Vertical</ComboBoxItem>
                 <ComboBoxItem>Horizontal</ComboBoxItem>
                 <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Both</ComboBoxItem>
             </ComboBox>
             <Button x:Name="btnGetContentOrientation" Content="G" Margin="1" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetContentOrientation_Click"/>
             <Button x:Name="btnSetContentOrientation" Content="S" Margin="1" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetContentOrientation_Click"/>
