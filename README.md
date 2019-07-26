@@ -8,8 +8,60 @@ WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.c
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
-## :pizza: Achievement unlocked: 1000 Contributions! :pizza:
-We recently hit our 1000th community contribution!  ([**#1000**](https://github.com/microsoft/microsoft-ui-xaml/issues/1000) by [@eugenegff](https://github.com/eugenegff))  This is a wonderful milestone for WinUI.  To celebrate, on July 26th we’ll randomly draw 10 people from the community that follow/contribute to our repo.  These 10 people will receive a small special thank you gift.  **Make sure you’re [watching](https://github.com/microsoft/microsoft-ui-xaml/watchers) our repo to be included in the draw on the 26th!**
+## :pizza: Achievement unlocked: "1000 Contributions" Winners! :pizza:
+
+As a thank you to all of you and in celebration of hitting our 1000th community contribution (submitted by [@eugenegff](https://github.com/eugenegff)), we have selected [@eugenegff](https://github.com/eugenegff)  + nine other community members who watch our repo and follow us on Twitter to receive a special thank you: 
+
+
+[@sonnemaf](https://github.com/sonnemaf)
+
+
+[@Felix-Dev](https://github.com/Felix-Dev)
+
+
+[@vgromfeld](https://github.com/vgromfeld)
+
+
+[@Niels9001](https://github.com/Niels9001)
+
+
+[@navarro_mael](https://twitter.com/navarro_mael)
+
+
+[@erossetto](https://github.com/erossetto)
+
+
+[@gvhung](https://github.com/gvhung)
+
+
+[@myokeeh](https://github.com/myokeeh)
+
+
+[@MartinZikmund](https://github.com/MartinZikmund)
+
+
+
+
+### We also want to thank some of our most involved repo rockstars a special gift as well: 
+
+
+[@mdtauk](https://github.com/mdtauk)
+
+
+[@mrlacey](https://github.com/mrlacey)
+
+
+[@Knightmeister](https://github.com/Knightmeister)
+
+
+[@Poopooracoocoo](https://github.com/Poopooracoocoo)
+
+
+[@dotMorten](https://github.com/dotMorten)
+
+
+
+#### Winners, keep an eye out for an email coming next week. We’re excited to keep working with you and evolving WinUI as your premiere UI framework on Windows!
 
 ## WinUI 3.0 Announcement
 
