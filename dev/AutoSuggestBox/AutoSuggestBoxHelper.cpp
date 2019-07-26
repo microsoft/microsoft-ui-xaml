@@ -104,8 +104,10 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
 
 void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoSuggestBox, bool isPopupOpen)
 {
-    winrt::CornerRadius popupRadius{ 0 };
-    winrt::CornerRadius textBoxRadius{ 0 };
+    auto const res = winrt::Application::Current().Resources();
+    auto textBoxRadius = unbox_value<winrt::CornerRadius>(res.Lookup(box_value(L"ControlCornerRadius")));
+    auto popupRadius = unbox_value<winrt::CornerRadius>(res.Lookup(box_value(L"OverlayCornerRadius")));
+
     if (winrt::IControl7 autoSuggextBoxControl7 = autoSuggestBox)
     {
         popupRadius = autoSuggextBoxControl7.CornerRadius();
