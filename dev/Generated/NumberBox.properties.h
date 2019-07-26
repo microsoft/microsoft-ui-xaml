@@ -9,6 +9,9 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
+    void AcceptsCalculation(bool value);
+    bool AcceptsCalculation();
+
     void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
     winrt::NumberBoxBasicValidationMode BasicValidationMode();
 
@@ -69,6 +72,7 @@ public:
     void Value(double value);
     double Value();
 
+    static winrt::DependencyProperty AcceptsCalculationProperty() { return s_AcceptsCalculationProperty; }
     static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
     static winrt::DependencyProperty FractionDigitsProperty() { return s_FractionDigitsProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
@@ -90,6 +94,7 @@ public:
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
+    static GlobalDependencyProperty s_AcceptsCalculationProperty;
     static GlobalDependencyProperty s_BasicValidationModeProperty;
     static GlobalDependencyProperty s_FractionDigitsProperty;
     static GlobalDependencyProperty s_HeaderProperty;

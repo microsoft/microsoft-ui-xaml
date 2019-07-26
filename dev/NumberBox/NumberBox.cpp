@@ -21,7 +21,6 @@ void NumberBox::OnApplyTemplate()
     m_TextBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
     m_SpinDown = GetTemplateChildT<winrt::Button>(L"DownSpinButton", controlProtected);
     m_SpinUp = GetTemplateChildT<winrt::Button>(L"UpSpinButton", controlProtected);
-
     // Initializations - Visual States
     SetSpinButtonVisualState();
     SetHeader();
@@ -126,13 +125,17 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 // Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
 void NumberBox::ValidateInput()
 {
-    std::string InputAsString = winrt::to_string(m_TextBox.Text());
     // Handles Empty TextBox Case, current behavior is to set Value to default (0)
-    if (InputAsString == "")
+    if (m_TextBox.Text() == L"")
     {
         Value(0);
         m_hasError = false;
         return;
+    }
+
+    if (AcceptsCalculation() && IsFormulaic(m_TextBox.Text()))
+    {
+            EvaluateInput();   
     }
 
     winrt::IReference<double> parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
@@ -152,7 +155,6 @@ void NumberBox::ValidateInput()
             UpdateTextToValue();
             return;
         }
-        Value(parsedNum.Value());
         SetErrorState(true);
     }
 }
@@ -246,6 +248,30 @@ void NumberBox::StepValue(bool sign)
     ValidateInput();
 }
 
+// Check if text resembles formulaic input to determine if parser should be executed
+bool NumberBox::IsFormulaic(winrt::hstring in)
+{
+    std::regex r("^([0-9()\\s]*[+-/*^]+[0-9()\\s]*)+$");
+    return (std::regex_match(winrt::to_string(in), r));
+}
+
+void NumberBox::EvaluateInput()
+{
+    double val;
+
+    try
+    {
+        val = NumberBoxParser::Compute(m_TextBox.Text());
+    }
+    catch (std::exception e)
+    {
+        // User probably entered a malformed expression. Cancel evaluation and invalidate. 
+        return;
+    }
+   Value(val);
+   UpdateTextToValue(); 
+}
+
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
@@ -258,7 +284,7 @@ void NumberBox::UpdateTextToValue()
 // TODO: Implement final visual states in spec
 void NumberBox::SetErrorState(bool state)
 {
-    if (state)
+    if (state && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::Disabled)
     {
         m_hasError = true;
         winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
@@ -275,7 +301,6 @@ void NumberBox::SetErrorState(bool state)
 // TODO: Styling for buttons
 void NumberBox::SetSpinButtonVisualState()
 {
-
     if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline )
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
@@ -336,7 +361,7 @@ void NumberBox::UpdateRounder()
         return;
     }
 
-    if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder) {
+    else if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder) {
         m_iRounder.Increment(IncrementPrecision());
         m_iRounder.RoundingAlgorithm(RoundingAlgorithm());
         m_formatter.NumberRounder(m_iRounder);
@@ -352,7 +377,7 @@ void NumberBox::UpdateRounder()
 
 void NumberBox::SetHeader()
 {
-    /* TODO: Header Code
+    /* TODO: Header Code currently disabled
     winrt::TextBox headerbox;
     headerbox.Text(Header());
     m_TextBox.Header(headerbox);

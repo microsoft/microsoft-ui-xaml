@@ -3,9 +3,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NumberBox.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NumberBox.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NumberBoxParser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)NumberBox.idl" />
@@ -13,5 +11,9 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NumberBox.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)NumberBox_themeresources.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)NumberBox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NumberBoxParser.h" />
   </ItemGroup>
 </Project>

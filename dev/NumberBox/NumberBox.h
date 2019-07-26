@@ -5,16 +5,17 @@
 
 #include "pch.h"
 #include "common.h"
-
 #include "NumberBox.g.h"
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
+#include "NumberBoxParser.h"
+#include <regex>
 
 class NumberBox :
     public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
     public NumberBoxProperties
 {
-
+    
 public:
     NumberBox();
 
@@ -36,7 +37,7 @@ public:
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-
+    void OnAcceptsCalculationsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaxValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -64,6 +65,8 @@ private:
     void UpdateRounder();
     void SetHeader();
     void SetPlaceHolderText();
+    void EvaluateInput();
+    bool IsFormulaic(winrt::hstring in);
     winrt::DecimalFormatter m_formatter;
     winrt::IncrementNumberRounder m_iRounder;
     winrt::SignificantDigitsNumberRounder m_sRounder;

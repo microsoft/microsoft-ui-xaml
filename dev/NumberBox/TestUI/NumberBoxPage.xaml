@@ -82,7 +82,7 @@
                 <CheckBox x:Name="dec" RelativePanel.Below="sigdig" Content="IsDecimalPointAlwaysDisplayed" />
                 <CheckBox x:Name="zerosign" RelativePanel.Below="dec" Content="IsZeroSigned" />
 
-                <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="IncrementNumberRounder" >
+                <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="None" >
                     <x:String>IncrementNumberRounder</x:String>
                     <x:String>SignificantDigitsNumberRounder</x:String>
                     <x:String>None</x:String>
@@ -129,6 +129,7 @@
                 RoundingAlgorithm="{x:Bind algo.SelectedValue, Converter={StaticResource RoundingConverter}, Mode=OneWay}"
                 IncrementPrecision="{x:Bind increment.Value, Mode=OneWay}"
                 SignificantDigitPrecision="{x:Bind sigprec.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                   AcceptsCalculation="True"
 
                 />
 
