@@ -6,6 +6,7 @@
 #include "tracker_ref.h"
 #include "DispatcherHelper.h"
 
+#include <winrt\Windows.UI.Xaml.h>
 
 // This type is a helper to make ReferenceTracker work with winrt::implements intead of a concrete implementation type
 template <typename D, typename WinRTClassType, template <typename, typename ...> class ImplT, typename ... I>
@@ -165,7 +166,8 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         if (!this->m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
         {
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
-            winrt::try_get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+            winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
+            //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
         }
         if (this->m_inner)
         {

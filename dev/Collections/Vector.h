@@ -610,7 +610,7 @@ class Vector :
 {
 public:
     Vector() {}
-    Vector(uint32_t capacity) : VectorBase(capacity) {}
+    Vector(uint32_t capacity) : VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>(capacity) {}
 
     // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to provide multiple datasource for controls.
     // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. 

@@ -5932,12 +5932,12 @@ void Scroller::ChangeOffsetsPrivate(
         }
     }
 
-    std::shared_ptr<ViewChange> offsetsChange = 
+    std::shared_ptr<ViewChange> offsetsChange =
         std::make_shared<OffsetsChange>(
             zoomedHorizontalOffset,
             zoomedVerticalOffset,
             offsetsKind,
-            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            optionsClone ? static_cast<winrt::IInspectable>(*optionsClone) : static_cast<winrt::IInspectable>(options));
 
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(
@@ -6158,7 +6158,7 @@ void Scroller::ChangeZoomFactorPrivate(
             zoomFactor,
             centerPoint,
             zoomFactorKind, 
-            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            optionsClone ? static_cast<winrt::IInspectable>(*optionsClone) : static_cast<winrt::IInspectable>(options));
 
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(
