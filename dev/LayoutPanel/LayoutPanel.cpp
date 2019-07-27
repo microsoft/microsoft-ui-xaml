@@ -248,7 +248,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
         {
             for (winrt::UIElement const& child: Children())
             {
-                if (auto childAsFe = child.as<winrt::FrameworkElement>())
+                if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
                 {
                     auto layoutSlot = winrt::LayoutInformation::GetLayoutSlot(childAsFe);
                     layoutSlot.X += leftAdjustment;

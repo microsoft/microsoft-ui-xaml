@@ -316,7 +316,7 @@ T TreeViewItem::GetAncestorView()
     while (treeViewItemAncestor && !ancestorView)
     {
         treeViewItemAncestor = winrt::VisualTreeHelper::GetParent(treeViewItemAncestor);
-        ancestorView = treeViewItemAncestor.as<T>();
+        ancestorView = treeViewItemAncestor.try_as<T>();
     }
     return ancestorView;
 }

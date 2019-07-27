@@ -47,8 +47,8 @@ void TextCommandBarFlyout::InitializeButtonWithProperties(
     ResourceIdType descriptionResourceId,
     std::function<void()> const& executeFunc)
 {
-    winrt::AppBarButton elementAsButton = button.as<winrt::AppBarButton>();
-    winrt::AppBarToggleButton elementAsToggleButton = button.as<winrt::AppBarToggleButton>();
+    winrt::AppBarButton elementAsButton = button.try_as<winrt::AppBarButton>();
+    winrt::AppBarToggleButton elementAsToggleButton = button.try_as<winrt::AppBarToggleButton>();
 
     MUX_ASSERT(elementAsButton || elementAsToggleButton);
 
@@ -123,8 +123,8 @@ void TextCommandBarFlyout::InitializeButtonWithProperties(
         descriptionResourceId,
         executeFunc);
 
-    winrt::AppBarButton elementAsButton = button.as<winrt::AppBarButton>();
-    winrt::AppBarToggleButton elementAsToggleButton = button.as<winrt::AppBarToggleButton>();
+    winrt::AppBarButton elementAsButton = button.try_as<winrt::AppBarButton>();
+    winrt::AppBarToggleButton elementAsToggleButton = button.try_as<winrt::AppBarToggleButton>();
 
     MUX_ASSERT(elementAsButton || elementAsToggleButton);
 
@@ -159,7 +159,7 @@ void TextCommandBarFlyout::UpdateButtons()
         {
             if ((buttonsToAdd & buttonType) != TextControlButtons::None)
             {
-                auto richEditBoxTarget = Target().as<winrt::RichEditBox>();
+                auto richEditBoxTarget = Target().try_as<winrt::RichEditBox>();
                 auto toggleButton{ GetButton(buttonType).as<winrt::AppBarToggleButton>() };
                 auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -179,16 +179,16 @@ void TextCommandBarFlyout::UpdateButtons()
         
     winrt::FlyoutBase proofingFlyout{ nullptr };
     
-    if (auto textBoxTarget = Target().as<winrt::ITextBox8>())
+    if (auto textBoxTarget = Target().try_as<winrt::ITextBox8>())
     {
         proofingFlyout = textBoxTarget.ProofingMenuFlyout();
     }
-    else if (auto richEditBoxTarget = Target().as<winrt::IRichEditBox8>())
+    else if (auto richEditBoxTarget = Target().try_as<winrt::IRichEditBox8>())
     {
         proofingFlyout = richEditBoxTarget.ProofingMenuFlyout();
     }
     
-    winrt::MenuFlyout proofingMenuFlyout = proofingFlyout.as<winrt::MenuFlyout>();
+    winrt::MenuFlyout proofingMenuFlyout = proofingFlyout.try_as<winrt::MenuFlyout>();
     
     bool shouldIncludeProofingMenu =
         static_cast<bool>(proofingFlyout) &&
@@ -264,15 +264,15 @@ void TextCommandBarFlyout::UpdateButtons()
 
                 for (uint32_t i = 0; i < currentItems.Size(); i++)
                 {
-                    if (auto menuFlyoutItem = currentItems.GetAt(i).as<winrt::MenuFlyoutItem>())
+                    if (auto menuFlyoutItem = currentItems.GetAt(i).try_as<winrt::MenuFlyoutItem>())
                     {
                         m_proofingMenuItemClickRevokers.push_back(menuFlyoutItem.Click(winrt::auto_revoke, closeFlyoutFunc));
                     }
-                    else if (auto toggleMenuFlyoutItem = currentItems.GetAt(i).as<winrt::ToggleMenuFlyoutItem>())
+                    else if (auto toggleMenuFlyoutItem = currentItems.GetAt(i).try_as<winrt::ToggleMenuFlyoutItem>())
                     {
                         m_proofingMenuToggleItemClickRevokers.push_back(toggleMenuFlyoutItem.Click(winrt::auto_revoke, closeFlyoutFunc));
                     }
-                    else if (auto menuFlyoutSubItem = currentItems.GetAt(i).as<winrt::MenuFlyoutSubItem>())
+                    else if (auto menuFlyoutSubItem = currentItems.GetAt(i).try_as<winrt::MenuFlyoutSubItem>())
                     {
                         itemsList.push_back(menuFlyoutSubItem.Items());
                     }
@@ -319,30 +319,30 @@ TextControlButtons TextCommandBarFlyout::GetButtonsToAdd()
     TextControlButtons buttonsToAdd = TextControlButtons::None;
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         buttonsToAdd = GetTextBoxButtonsToAdd(textBoxTarget);
     }
-    else if (auto textBlockTarget = target.as<winrt::TextBlock>())
+    else if (auto textBlockTarget = target.try_as<winrt::TextBlock>())
     {
         buttonsToAdd = GetTextBlockButtonsToAdd(textBlockTarget);
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         buttonsToAdd = GetRichEditBoxButtonsToAdd(richEditBoxTarget);
     }
-    else if (auto richTextBlockTarget = target.as<winrt::RichTextBlock>())
+    else if (auto richTextBlockTarget = target.try_as<winrt::RichTextBlock>())
     {
         buttonsToAdd = GetRichTextBlockButtonsToAdd(richTextBlockTarget);
     }
-    else if (auto richTextBlockOverflowTarget = target.as<winrt::RichTextBlockOverflow>())
+    else if (auto richTextBlockOverflowTarget = target.try_as<winrt::RichTextBlockOverflow>())
     {
         if (auto richTextBlockSource = richTextBlockOverflowTarget.ContentSource())
         {
             buttonsToAdd = GetRichTextBlockButtonsToAdd(richTextBlockSource);
         }
     }
-    else if (auto passwordBoxTarget = target.as<winrt::PasswordBox>())
+    else if (auto passwordBoxTarget = target.try_as<winrt::PasswordBox>())
     {
         buttonsToAdd = GetPasswordBoxButtonsToAdd(passwordBoxTarget);
     }
@@ -545,7 +545,7 @@ void TextCommandBarFlyout::ExecuteCutCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
         {
@@ -563,7 +563,7 @@ void TextCommandBarFlyout::ExecuteCutCommand()
             textBoxTarget.SelectedText(L"");
         }
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -600,7 +600,7 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
             }
         };
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
         {
@@ -616,7 +616,7 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
             winrt::Clipboard::SetContent(copyPackage);
         }
     }
-    else if (auto textBlockTarget = target.as<winrt::TextBlock>())
+    else if (auto textBlockTarget = target.try_as<winrt::TextBlock>())
     {
         if (auto textBlock7 = textBlockTarget.try_as<winrt::ITextBlock7>())
         {
@@ -632,7 +632,7 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
             winrt::Clipboard::SetContent(copyPackage);
         }
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -641,11 +641,11 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
             selection.Copy();
         }
     }
-    else if (auto richTextBlockTarget = target.as<winrt::RichTextBlock>())
+    else if (auto richTextBlockTarget = target.try_as<winrt::RichTextBlock>())
     {
         executeRichTextBlockCopyCommand(richTextBlockTarget);
     }
-    else if (auto richTextBlockOverflowTarget = target.as<winrt::RichTextBlockOverflow>())
+    else if (auto richTextBlockOverflowTarget = target.try_as<winrt::RichTextBlockOverflow>())
     {
         if (auto richTextBoxSource = richTextBlockOverflowTarget.ContentSource())
         {
@@ -663,7 +663,7 @@ void TextCommandBarFlyout::ExecutePasteCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
         {
@@ -695,7 +695,7 @@ void TextCommandBarFlyout::ExecutePasteCommand()
                 }));
         }
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -704,7 +704,7 @@ void TextCommandBarFlyout::ExecutePasteCommand()
             selection.Paste(0);
         }
     }
-    else if (auto passwordBoxTarget = target.as<winrt::PasswordBox>())
+    else if (auto passwordBoxTarget = target.try_as<winrt::PasswordBox>())
     {
         passwordBoxTarget.PasteFromClipboard();
     }
@@ -721,7 +721,7 @@ void TextCommandBarFlyout::ExecuteBoldCommand()
     {
         auto target = Target();
 
-        if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+        if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
         {
             auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -747,7 +747,7 @@ void TextCommandBarFlyout::ExecuteItalicCommand()
     {
         auto target = Target();
 
-        if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+        if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
         {
             auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -773,7 +773,7 @@ void TextCommandBarFlyout::ExecuteUnderlineCommand()
     {
         auto target = Target();
 
-        if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+        if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
         {
             auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -797,11 +797,11 @@ void TextCommandBarFlyout::ExecuteUndoCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         textBoxTarget.Undo();
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         richEditBoxTarget.Document().Undo();
     }
@@ -816,11 +816,11 @@ void TextCommandBarFlyout::ExecuteRedoCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         textBoxTarget.Redo();
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         richEditBoxTarget.Document().Redo();
     }
@@ -835,15 +835,15 @@ void TextCommandBarFlyout::ExecuteSelectAllCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.as<winrt::TextBox>())
+    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
     {
         textBoxTarget.SelectAll();
     }
-    else if (auto textBlockTarget = target.as<winrt::TextBlock>())
+    else if (auto textBlockTarget = target.try_as<winrt::TextBlock>())
     {
         textBlockTarget.SelectAll();
     }
-    else if (auto richEditBoxTarget = target.as<winrt::RichEditBox>())
+    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
     {
         auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
@@ -852,18 +852,18 @@ void TextCommandBarFlyout::ExecuteSelectAllCommand()
             selection.Expand(winrt::TextRangeUnit::Story);
         }
     }
-    else if (auto richTextBlockTarget = target.as<winrt::RichTextBlock>())
+    else if (auto richTextBlockTarget = target.try_as<winrt::RichTextBlock>())
     {
         richTextBlockTarget.SelectAll();
     }
-    else if (auto richTextBlockOverflowTarget = target.as<winrt::RichTextBlockOverflow>())
+    else if (auto richTextBlockOverflowTarget = target.try_as<winrt::RichTextBlockOverflow>())
     {
         if (auto richTextBlockSource = richTextBlockOverflowTarget.ContentSource())
         {
             richTextBlockSource.SelectAll();
         }
     }
-    else if (auto passwordBoxTarget = target.as<winrt::PasswordBox>())
+    else if (auto passwordBoxTarget = target.try_as<winrt::PasswordBox>())
     {
         passwordBoxTarget.SelectAll();
     }

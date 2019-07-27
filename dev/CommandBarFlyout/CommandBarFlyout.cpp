@@ -60,8 +60,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemChanged:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = element.as<winrt::AppBarButton>();
-                    auto toggleButton = element.as<winrt::AppBarToggleButton>();
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -86,8 +86,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemInserted:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = element.as<winrt::AppBarButton>();
-                    auto toggleButton = element.as<winrt::AppBarToggleButton>();
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -261,8 +261,8 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
     for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
     {
         auto element = SecondaryCommands().GetAt(i);
-        auto button = element.as<winrt::AppBarButton>();
-        auto toggleButton = element.as<winrt::AppBarToggleButton>();
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
         if (button)
         {
