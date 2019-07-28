@@ -674,7 +674,7 @@
                                 Margin="0,-1,0,-1"
                                 Padding="{ThemeResource ComboBoxDropdownBorderPadding}"
                                 HorizontalAlignment="Stretch"
-                                CornerRadius="{StaticResource ControlCornerRadius}">
+                                CornerRadius="{StaticResource OverlayCornerRadius}">
                                 <ScrollViewer x:Name="ScrollViewer"
                                     Foreground="{ThemeResource ComboBoxDropDownForeground}"
                                     MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownContentMinWidth}"
