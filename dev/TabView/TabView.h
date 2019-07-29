@@ -31,12 +31,14 @@ class TabViewTabDraggedOutsideEventArgs :
     public winrt::implementation::TabViewTabDraggedOutsideEventArgsT<TabViewTabDraggedOutsideEventArgs>
 {
 public:
-    TabViewTabDraggedOutsideEventArgs(winrt::IInspectable const& item) { m_item = item; }
+    TabViewTabDraggedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) { m_item = item; m_tab = tab; }
 
     winrt::IInspectable Item() { return m_item; }
+    winrt::TabViewItem Tab() { return m_tab; }
 
 private:
     winrt::IInspectable m_item{};
+    winrt::TabViewItem m_tab{};
 };
 
 class TabView :
@@ -78,8 +80,11 @@ private:
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
+
     void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
     void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
+    void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
@@ -104,12 +109,13 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
 
-    //bool m_isDragging{ false };
-
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
+
     winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
+    winrt::UIElement::DragOver_revoker m_listViewDragOverRevoker{};
+    winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
 

@@ -23,6 +23,7 @@ runtimeclass TabViewTabClosingEventArgs
 runtimeclass TabViewTabDraggedOutsideEventArgs
 {
     Object Item { get; };
+    TabViewItem Tab { get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -79,6 +80,11 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.DependencyObject ContainerFromIndex(Int32 index);
 
     event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
+
+    event Windows.UI.Xaml.Controls.DragItemsStartingEventHandler TabStripDragItemsStarting;
+    event Windows.Foundation.TypedEventHandler<TabView, Windows.UI.Xaml.Controls.DragItemsCompletedEventArgs> TabStripDragItemsCompleted;
+    event Windows.UI.Xaml.DragEventHandler TabStripDragOver;
+    event Windows.UI.Xaml.DragEventHandler TabStripDrop;
 
     static Windows.UI.Xaml.DependencyProperty TabWidthModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanCloseTabsProperty{ get; };
