@@ -6,7 +6,8 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT
+    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT,
+    [string]$BuildReason = $env:BUILD_REASON
 )
 
 $azureDevOpsRestApiHeaders = @{
@@ -30,19 +31,22 @@ $totalTestsExecutedCount = 0
 
 foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
 {
-    if (-not $timesSeenByRunName.ContainsKey($testRun.name))
-    {
-        $timesSeenByRunName[$testRun.name] = 0
-    }
-    
-    $timesSeen = $timesSeenByRunName[$testRun.name] + 1
-    $timesSeenByRunName[$testRun.name] = $timesSeen
-
-    # The same build can have multiple test runs associated with it if the build owner opted to re-run a test run.
+    # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
     # We should only pay attention to the current attempt version.
-    if ($timesSeen -ne $JobAttempt)
+    if ($BuildReason -ieq "PullRequest")
     {
-        continue
+        if (-not $timesSeenByRunName.ContainsKey($testRun.name))
+        {
+            $timesSeenByRunName[$testRun.name] = 0
+        }
+    
+        $timesSeen = $timesSeenByRunName[$testRun.name] + 1
+        $timesSeenByRunName[$testRun.name] = $timesSeen
+
+        if ($timesSeen -ne $JobAttempt)
+        {
+            continue
+        }
     }
 
     $totalTestsExecutedCount += $testRun.totalTests
