@@ -39,7 +39,8 @@ void NumberBox::OnApplyTemplate()
     UpdateFormatter();
     UpdateRounder();
     // Set Text to reflect preset Value
-    if (s_ValueProperty != 0.0 && m_TextBox) {
+    if (s_ValueProperty != 0.0 && m_TextBox)
+    {
         UpdateTextToValue();
     }
 
@@ -55,10 +56,12 @@ void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEv
 {
     SetHeader();
 }
+
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetSpinButtonVisualState();
 }
+
 void NumberBox::OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetPlaceHolderText();
@@ -66,20 +69,25 @@ void NumberBox::OnPlaceholderTextPropertyChanged(const winrt::DependencyProperty
 
 void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    m_formatter.FractionDigits(FractionDigits());
+
+ m_formatter.FractionDigits(FractionDigits());
 }
+
 void NumberBox::OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_formatter.IntegerDigits(IntegerDigits());
 }
+
 void NumberBox::OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_formatter.SignificantDigits(SignificantDigits());
 }
+
 void NumberBox::OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
 }
+
 void NumberBox::OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     m_formatter.IsZeroSigned(IsZeroSigned());
@@ -89,14 +97,17 @@ void NumberBox::OnRoundingAlgorithmPropertyChanged(const winrt::DependencyProper
 {
     UpdateRounder();
 }
+
 void NumberBox::OnNumberRounderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRounder();
 }
+
 void NumberBox::OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRounder();
 }
+
 void NumberBox::OnSignificantDigitPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRounder();
@@ -138,7 +149,7 @@ void NumberBox::ValidateInput()
             EvaluateInput();   
     }
 
-    winrt::IReference<double> parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
+    auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
 
     if (parsedNum && IsInBounds(parsedNum.Value()) )
     {
@@ -164,10 +175,12 @@ void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::Route
 {
     StepValue(false);
 }
+
 void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     StepValue(true);
 }
+
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     switch (args.Key()) {
@@ -181,19 +194,18 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
             break;
     }
 }
-void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args) {
-    if (!HyperScrollEnabled()) {
-        return;
-    }
-    int delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
 
-    if (delta > 0)
-    {
-        StepValue(true);
-    }
-    else if (delta < 0)
-    {
-        StepValue(false);
+void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args) {
+    if (HyperScrollEnabled()) {
+        int delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
+        if (delta > 0)
+        {
+            StepValue(true);
+        }
+        else if (delta < 0)
+        {
+            StepValue(false);
+        }
     }
 }
 
@@ -383,6 +395,8 @@ void NumberBox::SetHeader()
     m_TextBox.Header(headerbox);
     */
 }
+
+// Sets TextBox placeholder text
 void NumberBox::SetPlaceHolderText()
 {
     m_TextBox.PlaceholderText(PlaceholderText());

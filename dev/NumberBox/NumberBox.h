@@ -70,9 +70,9 @@ private:
     winrt::DecimalFormatter m_formatter;
     winrt::IncrementNumberRounder m_iRounder;
     winrt::SignificantDigitsNumberRounder m_sRounder;
-    winrt::TextBox m_TextBox{ nullptr };
-    winrt::Button m_SpinDown{ nullptr };
-    winrt::Button m_SpinUp{ nullptr };
+    winrt::TextBox m_TextBox;
+    winrt::Button m_SpinDown;
+    winrt::Button m_SpinUp;
     bool m_hasError{ false };
 
 

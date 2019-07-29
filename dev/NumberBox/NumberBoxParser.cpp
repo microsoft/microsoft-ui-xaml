@@ -2,8 +2,6 @@
 #include "NumberBoxParser.h"
 
 
-
-
 MathToken::MathToken(TokenType t, std::string s)
 {
     this->type = t;
@@ -86,7 +84,7 @@ bool MathTokenizer::IsOperator(std::string strin)
     return (std::regex_match(strin, r));
 }
 
-
+// Returns 1 for op1 higher precedence, -1 for lower, -2 for error
 int NumberBoxParser::CmpPrecedence(char op1, char op2)
 {
     const std::string ops = "-+/*^";

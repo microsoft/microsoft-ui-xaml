@@ -62,6 +62,4 @@ class NumberBoxParser
                 return "Mathematical Expression Malformed. No Evaluation Performed";
             }
         };
-
-
 };
