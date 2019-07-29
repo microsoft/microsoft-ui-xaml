@@ -185,6 +185,10 @@ namespace MUXControlsTestApp
                         wuxScrollViewer.HorizontalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollViewer.HorizontalScrollBarVisibility);
                         wuxScrollViewer.VerticalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollViewer.VerticalScrollBarVisibility);
                         break;
+                    case ContentOrientation.Both:
+                        wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+                        wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
+                        break;
                 }
             }
             catch (Exception ex)
@@ -704,6 +708,7 @@ namespace MUXControlsTestApp
                 switch (co)
                 {
                     case ContentOrientation.Vertical:
+                    case ContentOrientation.Both:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:
@@ -728,6 +733,7 @@ namespace MUXControlsTestApp
                 switch (co)
                 {
                     case ContentOrientation.Horizontal:
+                    case ContentOrientation.Both:
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:
@@ -1164,6 +1170,7 @@ namespace MUXControlsTestApp
 
                 if (wuxScrollViewer.Content is FrameworkElement)
                 {
+                    wuxScrollViewer.HorizontalContentAlignment =
                     ((FrameworkElement)wuxScrollViewer.Content).HorizontalAlignment = (HorizontalAlignment)cmbContentHorizontalAlignment.SelectedIndex;
                 }
             }
@@ -1185,6 +1192,7 @@ namespace MUXControlsTestApp
 
                 if (wuxScrollViewer.Content is FrameworkElement)
                 {
+                    wuxScrollViewer.VerticalContentAlignment =
                     ((FrameworkElement)wuxScrollViewer.Content).VerticalAlignment = (VerticalAlignment)cmbContentVerticalAlignment.SelectedIndex;
                 }
             }

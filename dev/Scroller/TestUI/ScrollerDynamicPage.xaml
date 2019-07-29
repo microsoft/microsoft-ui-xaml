@@ -125,6 +125,7 @@
                     <ComboBoxItem>Vertical</ComboBoxItem>
                     <ComboBoxItem>Horizontal</ComboBoxItem>
                     <ComboBoxItem>None</ComboBoxItem>
+                    <ComboBoxItem>Both</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="HorizontalScrollMode:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
@@ -712,6 +713,9 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -731,6 +735,18 @@
             <TextBox x:Name="txtContentLayoutOffsetY" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             <Button x:Name="btnGetContentLayoutOffsetY" Content="G" Margin="1" Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetContentLayoutOffsetY_Click"/>
             <Button x:Name="btnSetContentLayoutOffsetY" Content="S" Margin="1" Grid.Row="2" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetContentLayoutOffsetY_Click"/>
+
+            <TextBlock Text="Arrange/Render Sizes Delta:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtArrangeRenderSizesDelta" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetArrangeRenderSizesDelta" Content="G" Margin="1" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetArrangeRenderSizesDelta_Click"/>
+
+            <TextBlock Text="MinPosition:" Grid.Row="4" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtMinPosition" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetMinPosition" Content="G" Margin="1" Grid.Row="4" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMinPosition_Click"/>
+
+            <TextBlock Text="MaxPosition:" Grid.Row="5" Grid.Column="0" VerticalAlignment="Center"/>
+            <TextBox x:Name="txtMaxPosition" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+            <Button x:Name="btnGetMaxPosition" Content="G" Margin="1" Grid.Row="5" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetMaxPosition_Click"/>
         </Grid>
 
         <StackPanel Orientation="Horizontal" Grid.Row="2" Grid.ColumnSpan="7">

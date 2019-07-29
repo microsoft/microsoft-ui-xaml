@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\TestAppUtils\TestAppUtils.projitems" Label="Shared" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
@@ -75,4 +74,6 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
 </Project>

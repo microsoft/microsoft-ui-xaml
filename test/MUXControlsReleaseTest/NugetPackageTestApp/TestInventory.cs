@@ -27,6 +27,16 @@ namespace NugetPackageTestApp
                     Name = "Repeater Tests",
                     PageType = typeof(RepeaterTestPage),
                 },
+                new TestDeclaration()
+                {
+                    Name = "NavigationView Tests",
+                    PageType = typeof(NavigationViewTestPage),
+                },
+                new TestDeclaration()
+                {
+                    Name = "NavigationView with custom resources Tests",
+                    PageType = typeof(NavigationViewWithCustomResourcesTestPage),
+                },
             };
         }
 

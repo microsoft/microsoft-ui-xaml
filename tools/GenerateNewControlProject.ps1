@@ -47,9 +47,10 @@ Get-ChildItem -Path $controlDir -Filter "*NEWCONTROL*" -Recurse | Rename-Item -N
 $files = Get-ChildItem -Path $controlDir -Recurse -File
 foreach ($file in $files)
 {
-    (Get-Content $file.PSPath) |
-    Foreach-Object { $_ -replace "NEWCONTROL", $controlName } |
-    Set-Content $file.PSPath
+    (Get-Content $file.PSPath) | Foreach-Object { 
+        $_ -replace "NEWCONTROLUPPERCASE", $controlName.ToUpper() `
+           -replace "NEWCONTROL", $controlName
+    } | Set-Content $file.PSPath
 }
 
 # Add project to FeatureAreas.props

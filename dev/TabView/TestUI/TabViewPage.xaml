@@ -51,7 +51,15 @@
                 AddButtonClick="AddButtonClick">
 
                 <controls:TabView.RightCustomContent>
-                    <TextBlock Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                    </Grid>
                 </controls:TabView.RightCustomContent>
 
                 <controls:TabView.Items>

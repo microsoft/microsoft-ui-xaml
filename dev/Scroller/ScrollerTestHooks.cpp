@@ -202,6 +202,33 @@ void ScrollerTestHooks::SetContentLayoutOffsetY(const winrt::Scroller& scroller,
     }
 }
 
+winrt::float2 ScrollerTestHooks::GetArrangeRenderSizesDelta(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetArrangeRenderSizesDelta();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMinPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMinPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMaxPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMaxPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
 winrt::ScrollerViewChangeResult ScrollerTestHooks::GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs)
 {
     if (scrollCompletedEventArgs)

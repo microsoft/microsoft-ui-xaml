@@ -32,7 +32,7 @@
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
@@ -69,7 +69,7 @@
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
@@ -107,7 +107,7 @@
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackground" ResourceKey="SystemControlTransparentRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPointerOver" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundPressed" ResourceKey="SystemControlHighlightAccentRevealBackgroundBrush" />
-            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightAccent3RevealBackgroundBrush" />
+            <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundSubMenuOpened" ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBackgroundDisabled" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrush" ResourceKey="SystemControlTransparentBrush" />
             <StaticResource x:Key="MenuFlyoutSubItemRevealBorderBrushPressed" ResourceKey="SystemControlTransparentRevealBorderBrush" />
