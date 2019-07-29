@@ -33,6 +33,7 @@ foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
 {
     # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
     # We should only pay attention to the current attempt version.
+    # NB: If in the future we have pull request builds do multiple test runs as part of the same build definition, we'll need to revisit this.
     if ($BuildReason -ieq "PullRequest")
     {
         if (-not $timesSeenByRunName.ContainsKey($testRun.name))
