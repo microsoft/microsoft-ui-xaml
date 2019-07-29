@@ -19,10 +19,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using RefreshPullDirection = Microsoft.UI.Xaml.Controls.RefreshPullDirection;
 using ScrollViewerIRefreshInfoProviderAdapter = Microsoft.UI.Private.Controls.ScrollViewerIRefreshInfoProviderAdapter;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

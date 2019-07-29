@@ -6,10 +6,8 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingLayoutContext;
 using NonVirtualizingLayout = Microsoft.UI.Xaml.Controls.NonVirtualizingLayout;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {

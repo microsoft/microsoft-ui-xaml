@@ -89,7 +89,7 @@ winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSiz
                 GetAnchorElement(&anchorElementRelativeBounds);
 
             scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
-            
+
             m_pendingViewportShift = 0.0;
 
 

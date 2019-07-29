@@ -5,11 +5,9 @@ using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
-#endif
 
 namespace MUXControlsTestApp
 {

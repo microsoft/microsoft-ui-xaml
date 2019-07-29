@@ -12,10 +12,7 @@
 #include "ViewportManagerWithPlatformFeatures.h"
 #include "ViewportManagerDownlevel.h"
 #include "RuntimeProfiler.h"
-
-#ifndef BUILD_WINDOWS
 #include "ItemTemplateWrapper.h"
-#endif
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool RepeaterTrace::s_IsDebugOutputEnabled{ false };
@@ -593,7 +590,6 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         m_itemTemplate = newValue;
     }
 
-#ifndef BUILD_WINDOWS
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
@@ -612,7 +608,6 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
             throw winrt::hresult_invalid_argument(L"ItemTemplate");
         }
     }
-#endif
 
     InvalidateMeasure();
 }

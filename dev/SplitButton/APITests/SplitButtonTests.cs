@@ -18,9 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using SplitButton = Microsoft.UI.Xaml.Controls.SplitButton;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

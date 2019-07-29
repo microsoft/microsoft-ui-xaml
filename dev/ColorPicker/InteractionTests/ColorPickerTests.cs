@@ -19,19 +19,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -1214,7 +1206,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // As a result, we can't test localization there.  The functionality that this is testing is just whether ColorPicker is properly
         // loading resources instead of having any hard-coded strings, so running this test only in the MUXControls repo should be OK -
         // we don't have any OS repo-specific code in what this is testing, so nothing should change between the two repos.
-#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyStringsAreLocalizedCorrectly()
         {
@@ -1296,7 +1287,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             stringList.Add(FindElement.ById(AlphaLabelAutomationId).Name);
         }
-#endif
 
         private ColorPickerTestSetupHelper SetupColorPickerTest(TestOptions options = TestOptions.None)
         {

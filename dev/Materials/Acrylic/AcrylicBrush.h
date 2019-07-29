@@ -93,7 +93,7 @@ private:
         const winrt::Color initialLuminosityColor,
         std::vector<winrt::hstring>& animatedProperties);
 
-    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor &compositor,
+    static winrt::CompositionEffectFactory CreateAcrylicBrushCompositionEffectFactory(const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -102,7 +102,7 @@ private:
         winrt::Color initialFallbackColor);
 
     static winrt::CompositionEffectFactory GetOrCreateAcrylicBrushCompositionEffectFactory(
-        const winrt::Compositor &compositor,
+        const winrt::Compositor& compositor,
         bool shouldBrushBeOpaque,
         bool useWindowAcrylic,
         bool useCrossFadeEffect,
@@ -128,7 +128,7 @@ private:
         winrt::event_token& token,
         float acrylicStart,
         float acrylicEnd,
-        const winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs> & handler);
+        const winrt::TypedEventHandler<winrt::IInspectable, winrt::CompositionBatchCompletedEventArgs>& handler);
 
     void CancelFallbackAnimationCompleteWait();
 
@@ -180,9 +180,9 @@ private:
     winrt::event_token m_islandTransformChangedToken{};
     winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{ nullptr };
     winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
-    winrt::XamlIsland m_associatedIsland { nullptr };
-    winrt::CompositionIsland m_associatedCompositionIsland { nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::XamlIsland m_associatedIsland{ nullptr };
+    winrt::CompositionIsland m_associatedCompositionIsland{ nullptr };
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else
     winrt::event_token m_windowActivatedToken{};

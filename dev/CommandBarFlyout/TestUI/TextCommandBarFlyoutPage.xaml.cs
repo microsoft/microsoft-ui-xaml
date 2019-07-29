@@ -15,9 +15,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 
-#if !BUILD_WINDOWS
 using TextCommandBarFlyout = Microsoft.UI.Xaml.Controls.TextCommandBarFlyout;
-#endif
 
 namespace MUXControlsTestApp
 {

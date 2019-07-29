@@ -11,9 +11,7 @@ using Windows.UI;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
 
-#if !BUILD_WINDOWS
 using RadioButtons = Microsoft.UI.Xaml.Controls.RadioButtons;
-#endif
 
 namespace MUXControlsTestApp
 {

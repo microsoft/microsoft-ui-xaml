@@ -29,7 +29,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
@@ -48,7 +47,6 @@ using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrolli
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
 using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHandler;
 using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChangedEventHandler;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {

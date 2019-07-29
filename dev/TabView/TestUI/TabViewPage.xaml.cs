@@ -11,11 +11,9 @@ using Windows.UI;
 using System.Windows.Input;
 using Windows.UI.Xaml.Automation;
 
-#if !BUILD_WINDOWS
 using TabView = Microsoft.UI.Xaml.Controls.TabView;
 using TabViewItem = Microsoft.UI.Xaml.Controls.TabViewItem;
 using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {

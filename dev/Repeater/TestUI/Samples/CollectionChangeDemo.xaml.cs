@@ -9,11 +9,9 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -29,11 +27,7 @@ namespace MUXControlsTestApp.Samples
             replaceButton.Click += delegate { _dataSource.Replace(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
             resetButton.Click += delegate { _dataSource.Reset(); };
 
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = _dataSource;
         }
 

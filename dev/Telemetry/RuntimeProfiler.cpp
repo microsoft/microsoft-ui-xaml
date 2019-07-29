@@ -257,13 +257,11 @@ namespace RuntimeProfiler {
         
         //  Since MUX doesn't piggyback the WUX Extension suspend handler,
         //  we sign up for suspension notifications.
-#ifndef BUILD_WINDOWS
         winrt::Application::Current().Suspending(([](auto &, auto &)
             {
                 FireEvent(true);
             }
         ));
-#endif
 
         return ((nullptr != g_pTimer)?TRUE:FALSE);
     }

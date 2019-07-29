@@ -20,9 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
-#endif
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
@@ -74,13 +72,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var scroller = new Scroller();
                 objects["Scroller"] = new WeakReference(scroller);
 
-#if !BUILD_WINDOWS
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                 {
                     var scrollViewer = new ScrollViewer();
                     objects["ScrollViewer"] = new WeakReference(scrollViewer);
                 }
-#endif
             });
             IdleSynchronizer.Wait();
             GC.Collect();

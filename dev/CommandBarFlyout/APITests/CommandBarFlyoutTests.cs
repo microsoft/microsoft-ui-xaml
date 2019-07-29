@@ -23,9 +23,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using CommandBarFlyout = Microsoft.UI.Xaml.Controls.CommandBarFlyout;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

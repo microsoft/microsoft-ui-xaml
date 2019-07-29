@@ -37,8 +37,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private Rectangle _rectangle1 = null;
         private StackPanel _rootSP = null;
         private static string pattern = @"SystemControl(.*)(AcrylicWindow|AcrylicElement).*Brush";
-        private static  Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
-        private Color unknownColor = Color.FromArgb(111,112,113,114);
+        private static Regex rgx = new Regex(pattern, RegexOptions.IgnoreCase);
+        private Color unknownColor = Color.FromArgb(111, 112, 113, 114);
 
         private bool OnRS2OrGreater()
         {
@@ -152,7 +152,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Log.Comment("Setting window content");
             MUXControlsTestApp.App.TestContentRoot = _rootSP;
         }
-        
+
         private Color GetColorByName(string name, ResourceDictionary dict)
         {
             object color;
@@ -204,7 +204,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (!String.IsNullOrEmpty(name))
             {
-                switch(name)
+                switch (name)
                 {
                     case "AccentDark1": name = "SystemAccentColorDark1"; break;
                     case "AccentDark2": name = "SystemAccentColorDark2"; break;

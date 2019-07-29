@@ -13,11 +13,7 @@ using namespace std::chrono_literals;
 using namespace std::string_view_literals;
 using namespace std::chrono_literals;
 
-#ifndef BUILD_WINDOWS
 using ResourceIdType = const winrt::hstring &;
-#else
-typedef int ResourceIdType;
-#endif
 
 #include "ErrorHandling.h"
 #include "CppWinRTHelpers.h"
@@ -31,7 +27,4 @@ typedef int ResourceIdType;
 #include "GlobalDependencyProperty.h"
 #include "CollectionHelper.h"
 #include "RoutedEventHelpers.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif

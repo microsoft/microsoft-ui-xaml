@@ -12,9 +12,7 @@
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
-#ifndef BUILD_WINDOWS
 #include "IconSource.h"
-#endif
 
 static const double s_swipeItemWidth = 68.0;
 static const double s_swipeItemHeight = 60.0;

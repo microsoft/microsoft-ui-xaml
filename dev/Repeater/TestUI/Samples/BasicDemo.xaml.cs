@@ -4,10 +4,8 @@
 using System.Linq;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -17,11 +15,7 @@ namespace MUXControlsTestApp.Samples
         {
             this.InitializeComponent();
             goBackButton.Click += delegate { Frame.GoBack(); };
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = Enumerable.Range(0, 10000).Select(x => x.ToString());
         }
 

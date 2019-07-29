@@ -48,7 +48,7 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
         if (m_dispatcherQueue)
         {
             m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
                 {
                     MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
                         weakThis,
@@ -56,7 +56,7 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
                         dispatcherQueue,
                         false /* onUIThread */);
                 }
-            });
+                });
         }
     }
 

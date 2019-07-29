@@ -32,7 +32,7 @@ public:
     winrt::UIElement CurrentAnchor();
 
     winrt::FxScrollViewer ScrollViewer();
-    
+
     void ScrollViewer(winrt::FxScrollViewer const& value);
 
 #pragma endregion

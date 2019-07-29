@@ -11,8 +11,8 @@ class MenuBarItemFlyout :
 public:
     // Property changed event handler.
     static void OnPropertyChanged(
-        _In_ winrt::DependencyObject const& sender,
-        _In_ winrt::DependencyPropertyChangedEventArgs const& args) {}
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args) {}
 
     winrt::Control CreatePresenter();
 

@@ -7,31 +7,6 @@
 
 PCWSTR ResourceAccessor::c_resourceLoc{ L"Microsoft.UI.Xaml/Resources" };
 
-#ifdef BUILD_WINDOWS
-
-#include "ResourceHelper.h"
-
-winrt::hstring ResourceAccessor::GetLocalizedStringResource(int resourceId)
-{
-    // On the Windows side, we get localized strings from a MUI file instead of from a PRI file.
-    // To accomplish this, we have a windows specific header MuiHelper.h that defines this method,
-    // meaning that this function won't be found in the Git repository.
-    return GetLocalizedStringResourceFromMui(resourceId);
-}
-
-winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(int assetId, winrt::Size imageSize)
-{
-
-    // On the Windows side, we get images from the DLL file instead of from a PRI file.
-    // To accomplish this, we have a Windows-specific header MuiHelper.h that defines this method,
-    // meaning that this function won't be found in the WinUI repository.
-    winrt::array_view<const byte> imageArrayView = GetImageBytesFromDll(assetId);
-    winrt::InMemoryRandomAccessStream imageStream = SharedHelpers::CreateStreamFromBytes(imageArrayView);
-    return winrt::LoadedImageSurface::StartLoadFromStream(imageStream, imageSize);
-}
-
-#else
-
 winrt::ResourceMap ResourceAccessor::GetResourceMap()
 {
     auto packageResourceMap = []() {
@@ -71,5 +46,3 @@ winrt::LoadedImageSurface ResourceAccessor::GetImageSurface(const wstring_view &
     }();
     return winrt::LoadedImageSurface::StartLoadFromUri(imageUri, imageSize);
 }
-
-#endif
