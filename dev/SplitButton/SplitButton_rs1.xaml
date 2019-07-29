@@ -20,7 +20,7 @@
         <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="IsTabStop" Value="True"/>
         <Setter Property="Padding" Value="{ThemeResource ButtonPadding}"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:SplitButton">
@@ -28,7 +28,7 @@
                         x:Name="RootGrid"
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
                         <Grid.Resources>
                             <!-- Override the style of the inner buttons so that they don't affect background/foreground/border colors -->

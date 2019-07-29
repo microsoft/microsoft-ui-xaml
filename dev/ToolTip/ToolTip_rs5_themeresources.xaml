@@ -29,7 +29,7 @@
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource ToolTipContentThemeFontSize}" />
         <Setter Property="Padding" Value="{ThemeResource ToolTipBorderThemePadding}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToolTip">
@@ -45,7 +45,7 @@
                         Padding="{TemplateBinding Padding}"
                         TextWrapping="Wrap"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="OpenStates">

@@ -81,7 +81,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CalendarDatePicker">
@@ -185,7 +185,7 @@
                                         <Setter Property="Padding" Value="0" />
                                         <Setter Property="BorderThickness" Value="0" />
                                         <contract8Present:Setter Property="IsDefaultShadowEnabled" Value="True" />
-                                        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+                                        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="FlyoutPresenter">
@@ -199,7 +199,7 @@
                                                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                        contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}"/>
+                                                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
                                                 </ControlTemplate>
                                             </Setter.Value>
                                         </Setter>
@@ -249,7 +249,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             Background="{TemplateBinding Background}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Control.IsTemplateFocusTarget="True"
                             MinHeight="32"/>
                         <TextBlock x:Name="DateText"

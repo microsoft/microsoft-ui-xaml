@@ -68,8 +68,8 @@
                             <Rectangle x:Name="SpectrumRectangle" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                             <Rectangle x:Name="SpectrumOverlayRectangle" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"/>
@@ -88,8 +88,8 @@
                             <Rectangle x:Name="RectangleBorder" Style="{StaticResource ColorPickerBorderStyle}" IsHitTestVisible="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                             <Ellipse x:Name="EllipseBorder" Style="{StaticResource ColorPickerBorderStyle}" IsHitTestVisible="False" Visibility="Collapsed" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="-0.5,-0.5,-1.5,-1.5"/>
                         </Grid>
                     </Grid>

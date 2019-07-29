@@ -9,7 +9,7 @@
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TeachingTip">
@@ -502,7 +502,7 @@
                                       Grid.ColumnSpan="3"
                                       Grid.RowSpan="3"
                                       contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                      contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}">
+                                      contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="*"/>

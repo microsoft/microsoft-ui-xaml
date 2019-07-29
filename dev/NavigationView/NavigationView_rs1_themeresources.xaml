@@ -580,8 +580,8 @@
                                 Opacity="0.0"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
                         </Grid>
 
                         <Border
@@ -684,8 +684,8 @@
                                 Opacity="0.0"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
                         </Grid>
 
                         <Grid 
@@ -950,8 +950,8 @@
                                 Opacity="0"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1051,8 +1051,8 @@
                                 Opacity="0"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

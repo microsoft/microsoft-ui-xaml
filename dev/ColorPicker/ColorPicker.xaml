@@ -10,7 +10,7 @@
         <Setter Property="MaxWidth" Value="392" />
         <Setter Property="MinWidth" Value="312" />
         <Setter Property="IsTabStop" Value="False" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:ColorPicker">
@@ -92,8 +92,8 @@
                                                         <Rectangle x:Name="HorizontalTrackRect" Grid.ColumnSpan="3" Fill="Transparent" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Opacity="0"
                                                             contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                                             contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                                            contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                                            contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                                                         <Rectangle x:Name="HorizontalDecreaseRect" Fill="Transparent" Grid.Row="1" Opacity="0" />
                                                         <Thumb x:Name="HorizontalThumb" AutomationProperties.AccessibilityView="Raw" Grid.Column="1" DataContext="{TemplateBinding Value}" Height="{ThemeResource SliderHorizontalThumbHeight}" Grid.Row="0" Grid.RowSpan="3" Style="{StaticResource SliderThumbStyle}" Width="{ThemeResource SliderHorizontalThumbWidth}">
                                                             <ToolTipService.ToolTip>
@@ -268,8 +268,8 @@
                                     <Rectangle VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2"
                                         contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                         contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}">
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}">
                                         <Rectangle.Fill>
                                             <ImageBrush x:Name="ColorPreviewRectangleCheckeredBackgroundImageBrush" />
                                         </Rectangle.Fill>
@@ -277,26 +277,26 @@
                                     <Rectangle x:Name="ColorPreviewRectangle" VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.RowSpan="2"
                                         contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                         contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                                     <Rectangle x:Name="PreviousColorRectangle" VerticalAlignment="Stretch" Grid.ColumnSpan="2" Grid.Row="1" Visibility="Collapsed"
                                         contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                         contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                                     <Rectangle x:Name="BorderRectangle" Style="{StaticResource ColorPickerBorderStyle}" Grid.RowSpan="2" Grid.ColumnSpan="2"
                                         contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                         contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                        contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                        contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
                                 </Grid>
                             </Grid>
                             <Grid Margin="0,12,0,0" x:Name="ThirdDimensionSliderGrid">
                                 <Rectangle Height="11" VerticalAlignment="Center"
                                     contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                     contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                    contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                    contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}">
+                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush x:Name="ThirdDimensionSliderGradientBrush" />
                                     </Rectangle.Fill>
@@ -307,8 +307,8 @@
                                 <Rectangle Height="11" VerticalAlignment="Center"
                                     contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                     contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                    contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                    contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}">
+                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}">
                                     <Rectangle.Fill>
                                         <ImageBrush x:Name="AlphaSliderCheckeredBackgroundImageBrush" />
                                     </Rectangle.Fill>
@@ -316,8 +316,8 @@
                                 <Rectangle x:Name="AlphaSliderBackgroundRectangle" Height="11" VerticalAlignment="Center"
                                     contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                     contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                    contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                    contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}">
+                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}">
                                     <Rectangle.Fill>
                                         <LinearGradientBrush x:Name="AlphaSliderGradientBrush" />
                                     </Rectangle.Fill>

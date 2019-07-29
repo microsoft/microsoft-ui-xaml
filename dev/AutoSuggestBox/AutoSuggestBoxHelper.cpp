@@ -14,6 +14,8 @@ static constexpr auto c_popupName = L"SuggestionsPopup"sv;
 static constexpr auto c_popupBorderName = L"SuggestionsContainer"sv;
 static constexpr auto c_textBoxName = L"TextBox"sv;
 static constexpr auto c_textBoxBorderName = L"BorderElement"sv;
+static constexpr auto c_controlCornerRadiusKey = L"ControlCornerRadius"sv;
+static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
 GlobalDependencyProperty AutoSuggestBoxHelper::s_AutoSuggestEventRevokersProperty{ nullptr };
 
 AutoSuggestBoxHelper::AutoSuggestBoxHelper()
@@ -104,14 +106,13 @@ void AutoSuggestBoxHelper::OnAutoSuggestBoxLoaded(const winrt::IInspectable& sen
 
 void AutoSuggestBoxHelper::UpdateCornerRadius(const winrt::AutoSuggestBox& autoSuggestBox, bool isPopupOpen)
 {
-    auto const res = winrt::Application::Current().Resources();
-    auto textBoxRadius = unbox_value<winrt::CornerRadius>(res.Lookup(box_value(L"ControlCornerRadius")));
-    auto popupRadius = unbox_value<winrt::CornerRadius>(res.Lookup(box_value(L"OverlayCornerRadius")));
+    auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(autoSuggestBox, box_value(c_controlCornerRadiusKey)));
+    auto popupRadius = textBoxRadius;
 
     if (winrt::IControl7 autoSuggextBoxControl7 = autoSuggestBox)
     {
-        popupRadius = autoSuggextBoxControl7.CornerRadius();
         textBoxRadius = autoSuggextBoxControl7.CornerRadius();
+        popupRadius = autoSuggextBoxControl7.CornerRadius();
     }
 
     if (isPopupOpen)
@@ -160,4 +161,9 @@ bool AutoSuggestBoxHelper::IsPopupOpenDown(const winrt::AutoSuggestBox& autoSugg
         }
     }
     return verticalOffset >= 0;
+}
+
+winrt::IInspectable AutoSuggestBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
+{
+    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }

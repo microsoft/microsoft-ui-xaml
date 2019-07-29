@@ -93,7 +93,7 @@
         <Setter Property="Background" Value="{ThemeResource ContentDialogBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ContentDialogBorderBrush}" />
         <Setter Property="IsTabStop" Value="False" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ContentDialog">
@@ -264,7 +264,7 @@
                                 BorderThickness="{ThemeResource ContentDialogBorderWidth}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
                                 MinWidth="{ThemeResource ContentDialogMinWidth}"
                                 MaxWidth="{ThemeResource ContentDialogMaxWidth}"
                                 MinHeight="{ThemeResource ContentDialogMinHeight}"

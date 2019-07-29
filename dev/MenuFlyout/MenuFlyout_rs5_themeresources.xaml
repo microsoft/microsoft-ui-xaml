@@ -590,13 +590,13 @@
         <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
         <Setter Property="MaxWidth" Value="{ThemeResource FlyoutThemeMaxWidth}" />
         <Setter Property="MinHeight" Value="{ThemeResource MenuFlyoutThemeMinHeight}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="MenuFlyoutPresenter">
                     <Grid Background="{TemplateBinding Background}"
                           contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                          contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}">
+                          contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                         <ScrollViewer x:Name="MenuFlyoutPresenterScrollViewer"
                             Margin="{TemplateBinding Padding}"
                             MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.FlyoutContentMinWidth}"
@@ -615,7 +615,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}" />
+                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}" />
 
                     </Grid>
 

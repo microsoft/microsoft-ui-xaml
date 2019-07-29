@@ -132,7 +132,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="DatePicker">
@@ -218,7 +218,7 @@
                                                     VerticalContentAlignment="Stretch"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                    contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"/>
+                                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -363,7 +363,8 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        CornerRadius="{StaticResource OverlayCornerRadius}"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
                         Padding="{ThemeResource DateTimeFlyoutBorderPadding}"
                         MaxHeight="398">
                         <Grid x:Name="ContentPanel">

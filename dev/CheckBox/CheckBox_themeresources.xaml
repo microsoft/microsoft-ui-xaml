@@ -292,7 +292,7 @@
         <Setter Property="MinHeight" Value="32" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-7,-3,-7,-3" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CheckBox">
@@ -301,7 +301,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CombinedStates">
@@ -657,8 +657,8 @@
                                 Width="20"
                                 contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                 contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
                             <FontIcon x:Name="CheckGlyph"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Glyph="&#xE001;"

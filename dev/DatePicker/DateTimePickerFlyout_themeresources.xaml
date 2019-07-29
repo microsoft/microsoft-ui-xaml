@@ -42,7 +42,7 @@
         <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="0" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ButtonBase">
@@ -97,7 +97,7 @@
                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                             AutomationProperties.AccessibilityView="Raw"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"/>
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

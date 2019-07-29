@@ -384,7 +384,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <Setter Property="primitives:ComboBoxHelper.ApplyDynamicCornerRadius" Value="true"/>
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
@@ -593,7 +593,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Control.IsTemplateFocusTarget="True"
                             MinWidth="{ThemeResource ComboBoxThemeMinWidth}" />
                         <Border x:Name="HighlightBackground"
@@ -604,7 +604,7 @@
                             BorderBrush="{ThemeResource ComboBoxBackgroundBorderBrushUnfocused}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Opacity="0" />
                         <ContentPresenter x:Name="ContentPresenter"
                             Grid.Row="1"
@@ -635,7 +635,7 @@
                             AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                             x:Load="False"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}" />
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}" />
                         <contract7Present:Border x:Name="DropDownOverlay"
                             Grid.Row="1"
                             Grid.Column="1"
@@ -674,7 +674,8 @@
                                 Margin="0,-1,0,-1"
                                 Padding="{ThemeResource ComboBoxDropdownBorderPadding}"
                                 HorizontalAlignment="Stretch"
-                                CornerRadius="{StaticResource OverlayCornerRadius}">
+                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 <ScrollViewer x:Name="ScrollViewer"
                                     Foreground="{ThemeResource ComboBoxDropDownForeground}"
                                     MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownContentMinWidth}"
@@ -905,7 +906,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"/>
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"/>
                         <ScrollViewer x:Name="ContentElement"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"

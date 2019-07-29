@@ -43,7 +43,7 @@
         <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="FlyoutPresenter">
@@ -53,7 +53,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
                         Padding="{ThemeResource FlyoutBorderThemePadding}">
                         <ScrollViewer x:Name="ScrollViewer"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"

@@ -87,7 +87,7 @@
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <contract7Present:Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -280,7 +280,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Control.IsTemplateFocusTarget="True"
                             MinWidth="{ThemeResource TextControlThemeMinWidth}"
                             MinHeight="{ThemeResource TextControlThemeMinHeight}" />

@@ -528,7 +528,7 @@
                         Background="{TemplateBinding Background}"
                         Padding="{TemplateBinding Padding}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisplayModeStates">
                                 <VisualState x:Name="DisplayModeDefault" />
@@ -540,7 +540,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}"/>
+                            contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"/>
                         <ScrollViewer
                             Margin="{TemplateBinding BorderThickness}"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"

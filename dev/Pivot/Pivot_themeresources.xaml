@@ -504,7 +504,7 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="UseSystemFocusVisuals" Value="False" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="PivotHeaderItem">
@@ -621,8 +621,8 @@
                         <Rectangle x:Name="SelectedPipe" Fill="{ThemeResource PivotHeaderItemSelectedPipeFill}" Height="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="0,0,0,2"
                                    contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
                                    contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                   contract7NotPresent:RadiusX="{Binding Source={StaticResource ControlCornerRadius}, Path=TopLeft}"
-                                   contract7NotPresent:RadiusY="{Binding Source={StaticResource ControlCornerRadius}, Path=BottomRight}" />
+                                   contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
+                                   contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
 
                     </Grid>
                 </ControlTemplate>

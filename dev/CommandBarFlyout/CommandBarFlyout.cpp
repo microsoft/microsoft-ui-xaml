@@ -238,8 +238,7 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
     if (winrt::IControl7 presenterControl7 = presenter)
     {
-        winrt::CornerRadius radius{ 0 };
-        presenterControl7.CornerRadius(radius);
+        presenterControl7.CornerRadius({ 0 });
     }
 
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.

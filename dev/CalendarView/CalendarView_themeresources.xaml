@@ -138,7 +138,7 @@
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CalendarView">
@@ -147,7 +147,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         Background="{TemplateBinding Background}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <Border.Resources>
                             <Style TargetType="TextBlock" x:Key="WeekDayNameStyle" BasedOn="{StaticResource CaptionTextBlockStyle}">
                                 <Setter Property="HorizontalAlignment" Value="Center" />

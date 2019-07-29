@@ -128,7 +128,7 @@
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TimePicker">
@@ -215,7 +215,7 @@
                                                     VerticalContentAlignment="Stretch"
                                                     AutomationProperties.AccessibilityView="Raw"
                                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                                    contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}" />
+                                                    contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}" />
                                             </Grid>
                                         </ControlTemplate>
                                     </Setter.Value>
@@ -354,7 +354,7 @@
         <Setter Property="AutomationProperties.AutomationId" Value="TimePickerFlyoutPresenter" />
         <Setter Property="BorderBrush" Value="{ThemeResource TimePickerFlyoutPresenterBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource DateTimeFlyoutBorderThickness}" />
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource OverlayCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TimePickerFlyoutPresenter">
@@ -363,7 +363,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource OverlayCornerRadius}"
+                        contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}"
                         Padding="{ThemeResource DateTimeFlyoutBorderPadding}"
                         MaxHeight="398">
                         <Grid x:Name="ContentPanel">

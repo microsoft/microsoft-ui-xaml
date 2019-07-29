@@ -99,7 +99,7 @@
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
-        <contract7Present:Setter Property="CornerRadius" Value="{StaticResource ControlCornerRadius}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="FlipView">
@@ -108,7 +108,7 @@
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        contract7NotPresent:CornerRadius="{StaticResource ControlCornerRadius}">
+                        contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
                         <Grid.Resources>
                             <ControlTemplate x:Key="HorizontalNextTemplate" TargetType="Button">
                                 <Border x:Name="Root"
@@ -116,7 +116,7 @@
                                     BorderThickness="{ThemeResource FlipViewButtonBorderThemeThickness}"
                                     BorderBrush="{ThemeResource FlipViewNextPreviousButtonBorderBrush}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                    contract7NotPresent:CornerRadius="{Binding Source={StaticResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Left}">
+                                    contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Left}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -165,7 +165,7 @@
                                     BorderThickness="{ThemeResource FlipViewButtonBorderThemeThickness}"
                                     BorderBrush="{ThemeResource FlipViewNextPreviousButtonBorderBrush}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                    contract7NotPresent:CornerRadius="{Binding Source={StaticResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Right}">
+                                    contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Right}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -214,7 +214,7 @@
                                         BorderThickness="{ThemeResource FlipViewButtonBorderThemeThickness}"
                                         BorderBrush="{ThemeResource FlipViewNextPreviousButtonBorderBrush}"
                                         contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                        contract7NotPresent:CornerRadius="{Binding Source={StaticResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Top}">
+                                        contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Top}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
@@ -262,7 +262,7 @@
                                     BorderThickness="{ThemeResource FlipViewButtonBorderThemeThickness}"
                                     BorderBrush="{ThemeResource FlipViewNextPreviousButtonBorderBrush}"
                                     contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                    contract7NotPresent:CornerRadius="{Binding Source={StaticResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Bottom}">
+                                    contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Bottom}">
                                     <VisualStateManager.VisualStateGroups>
                                         <VisualStateGroup x:Name="CommonStates">
                                             <VisualState x:Name="Normal" />
