@@ -28,17 +28,17 @@ private:
 };
 
 class TabViewTabDraggedOutsideEventArgs :
-    public winrt::implementation::TabViewTabDraggedOutsideEventArgsT<TabViewTabDraggedOutsideEventArgs>
+    public ReferenceTracker<TabViewTabDraggedOutsideEventArgs, winrt::implementation::TabViewTabDraggedOutsideEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TabViewTabDraggedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) { m_item = item; m_tab = tab; }
+    TabViewTabDraggedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) { m_item = item; m_tab.set(tab); }
 
     winrt::IInspectable Item() { return m_item; }
-    winrt::TabViewItem Tab() { return m_tab; }
+    winrt::TabViewItem Tab() { return m_tab.get(); }
 
 private:
     winrt::IInspectable m_item{};
-    winrt::TabViewItem m_tab{};
+    tracker_ref<winrt::TabViewItem> m_tab{ this };
 };
 
 class TabView :

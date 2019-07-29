@@ -283,7 +283,7 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
     // None means it's outside of the tab strip area
     if (args.DropResult() == winrt::DataPackageOperation::None)
     {
-        auto item = args.Items().GetAt(0);
+        const auto item = args.Items().GetAt(0);
         auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
 
         if (!tab)
@@ -297,7 +297,7 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
         if (!tab)
         {
             // This is a fallback scenario for tabs without a data context
-            int numItems = static_cast<int>(Items().Size());
+            auto numItems = static_cast<int>(Items().Size());
             for (int i = 0; i < numItems; i++)
             {
                 auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();

@@ -217,7 +217,7 @@
 
                     <Grid x:Name="LayoutRoot"
                         Padding="{TemplateBinding Padding}"
-                        Margin="-1,0,0,0">
+                        Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
