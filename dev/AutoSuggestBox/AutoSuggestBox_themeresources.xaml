@@ -410,6 +410,9 @@
                                     BorderBrush="{ThemeResource AutoSuggestBoxSuggestionsListBorderBrush}"
                                     Background="{ThemeResource AutoSuggestBoxSuggestionsListBackground}"
                                     CornerRadius="{TemplateBinding CornerRadius}">
+                                <Border.RenderTransform>
+                                    <contract7NotPresent:TranslateTransform x:Name="UpwardTransform" />
+                                </Border.RenderTransform>
                                 <ListView
                                     x:Name="SuggestionsList"
                                     DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
@@ -418,7 +421,11 @@
                                     ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                     ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
                                     MaxHeight="{ThemeResource AutoSuggestListMaxHeight}"
-                                    Margin="{ThemeResource AutoSuggestListPadding}" />
+                                    Margin="{ThemeResource AutoSuggestListPadding}">
+                                    <ListView.ItemContainerTransitions>
+                                        <contract7NotPresent:TransitionCollection />
+                                    </ListView.ItemContainerTransitions>
+                                </ListView>
                             </Border>
                         </Popup>
 
