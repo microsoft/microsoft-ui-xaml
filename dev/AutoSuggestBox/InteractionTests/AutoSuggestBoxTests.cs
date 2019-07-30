@@ -16,13 +16,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Microsoft.Windows.Apps.Test.Automation;
-using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
-using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-using Image = Microsoft.Windows.Apps.Test.Foundation.Controls.Image;
-using Point = System.Drawing.Point;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
