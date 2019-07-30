@@ -55,12 +55,10 @@ void TabViewItem::UpdateCloseButton()
         bool canClose = IsCloseable();
         if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
         {
-            if (!tabView.CanCloseTabs())
+            // IsCloseable defaults to true, but if it hasn't been set then CanCloseTabs should override it.
+            if (!tabView.CanCloseTabs() && ReadLocalValue(IsCloseableProperty()) == winrt::DependencyProperty::UnsetValue())
             {
-                if (!canClose || ReadLocalValue(IsCloseableProperty()) == winrt::DependencyProperty::UnsetValue())
-                {
-                    canClose = false;
-                }
+                canClose = false;
             }
         }
 
