@@ -109,5 +109,14 @@ namespace MUXControlsTestApp
                 e.Cancel = true;
             }
         }
+
+        private void TabViewTabDraggedOutside(object sender, Microsoft.UI.Xaml.Controls.TabViewTabDraggedOutsideEventArgs e)
+        {
+            TabViewItem tab = e.Tab;
+            if (tab != null)
+            {
+                TabDraggedOutsideTextBlock.Text = tab.Header.ToString();
+            }
+        }
     }
 }

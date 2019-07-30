@@ -263,6 +263,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void DragOutsideTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                TextBlock dragOutsideTextBlock = FindElement.ByName<TextBlock>("TabDraggedOutsideTextBlock");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "");
+
+                Log.Comment("Drag tab out");
+                UIObject firstTab = TryFindElement.ByName("FirstTab");
+                InputHelper.DragDistance(firstTab, 50, Direction.South);
+                Wait.ForIdle();
+
+                Log.Comment("Verify event fired");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
+            }
+        }
+
         Button FindCloseButton(UIObject tabItem)
         {
             foreach (UIObject elem in tabItem.Children)
