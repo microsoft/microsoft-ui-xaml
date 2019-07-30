@@ -24,7 +24,7 @@ public:
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
 
-        if (FAILED(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory * *)winrt::put_abi(_activationFactory))))
+        if (FAILED(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory**)winrt::put_abi(_activationFactory))))
         {
             return nullptr;
         }
