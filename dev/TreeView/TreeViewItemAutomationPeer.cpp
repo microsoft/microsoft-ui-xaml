@@ -263,22 +263,9 @@ winrt::TreeViewNode TreeViewItemAutomationPeer::GetTreeViewNode()
 
 void TreeViewItemAutomationPeer::UpdateSelection(bool select)
 {
-    if (auto treeView = GetParentTreeView())
+    if (auto treeItem = safe_try_cast<winrt::TreeViewItem>(Owner()))
     {
-        auto node = GetTreeViewNode();
-        auto selectedNodes = treeView.SelectedNodes();
-        if (select)
-        {
-            selectedNodes.Append(node);
-        }
-        else
-        {
-            uint32_t index;
-            if (selectedNodes.IndexOf(node, index))
-            {
-                treeView.SelectedNodes().RemoveAt(index);
-            }
-        }
+        auto impl = winrt::get_self<TreeViewItem>(treeItem);
+        impl->UpdateSelection(select);
     }
-   
 }

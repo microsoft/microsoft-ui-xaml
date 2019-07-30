@@ -787,7 +787,7 @@ void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targ
         if (container)
         {
             winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
-            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(selectionState);
+            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelectionVisual(selectionState);
         }
     }
 }
