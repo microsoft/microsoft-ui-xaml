@@ -25,6 +25,7 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };

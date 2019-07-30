@@ -45,6 +45,7 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
 void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     UpdateCloseButton();
+    OnHeaderPropertyChanged(nullptr);
 }
 
 void TabViewItem::UpdateCloseButton()
@@ -54,7 +55,13 @@ void TabViewItem::UpdateCloseButton()
         bool canClose = IsCloseable();
         if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
         {
-            canClose = canClose && tabView.CanCloseTabs();
+            if (!tabView.CanCloseTabs())
+            {
+                if (!canClose || ReadLocalValue(IsCloseableProperty()) == winrt::DependencyProperty::UnsetValue())
+                {
+                    canClose = false;
+                }
+            }
         }
 
         closeButton.Visibility(canClose ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
@@ -65,8 +72,14 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::Ro
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
-        auto internalTabView = winrt::get_self<TabView>(tabView);
-        internalTabView->CloseTab(*this);
+        auto args = winrt::make_self<TabViewTabClosingEventArgs>(*this);
+        m_tabClosingEventSource(*this, *args);
+
+        if (!args->Cancel())
+        {
+            auto internalTabView = winrt::get_self<TabView>(tabView);
+            internalTabView->CloseTab(*this);
+        }
     }
 }
 
@@ -78,4 +91,25 @@ void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject&, c
 void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateCloseButton();
+}
+
+void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    auto toolTipContent = winrt::ToolTipService::GetToolTip(*this);
+    if (!toolTipContent)
+    {
+        // App author has not specified a tooltip; use our own
+        auto headerContent = Header();
+        auto potentialString = safe_try_cast<winrt::IPropertyValue>(headerContent);
+
+        if (potentialString && potentialString.Type() == winrt::PropertyType::String)
+        {
+            winrt::ToolTipService::SetToolTip(*this, headerContent);
+            winrt::ToolTipService::SetPlacement(*this, winrt::Controls::Primitives::PlacementMode::Mouse);
+        }
+        else
+        {
+            winrt::ToolTipService::SetToolTip(*this, nullptr);
+        }
+    }
 }

@@ -31,6 +31,11 @@ public:
     static GlobalDependencyProperty s_IconProperty;
     static GlobalDependencyProperty s_IsCloseableProperty;
 
+    winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value);
+    void TabClosing(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs>> m_tabClosingEventSource;
+
     static void EnsureProperties();
     static void ClearProperties();
 

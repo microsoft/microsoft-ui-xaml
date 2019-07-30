@@ -14,6 +14,7 @@ GlobalDependencyProperty TabViewItemProperties::s_IconProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_IsCloseableProperty{ nullptr };
 
 TabViewItemProperties::TabViewItemProperties()
+    : m_tabClosingEventSource{static_cast<TabViewItem*>(this)}
 {
     EnsureProperties();
 }
@@ -120,4 +121,14 @@ void TabViewItemProperties::IsCloseable(bool value)
 bool TabViewItemProperties::IsCloseable()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsCloseableProperty));
+}
+
+winrt::event_token TabViewItemProperties::TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value)
+{
+    return m_tabClosingEventSource.add(value);
+}
+
+void TabViewItemProperties::TabClosing(winrt::event_token const& token)
+{
+    m_tabClosingEventSource.remove(token);
 }

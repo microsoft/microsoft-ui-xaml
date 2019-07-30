@@ -21,6 +21,7 @@
                 <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
+                <CheckBox x:Name="CancelItemCloseCheckBox" AutomationProperties.Name="CancelItemCloseCheckBox" Content="Cancel Closing on first item"/>
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddButtonVisible, Mode=TwoWay}"/>
 
                 <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
@@ -70,14 +71,14 @@
 
                 <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" TabClosing="FirstTab_TabClosing">
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
                             <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop">
+                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop" IsCloseable="True">
                         <TextBlock Padding="16">Shop text</TextBlock>
                     </controls:TabViewItem>
 

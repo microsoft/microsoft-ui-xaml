@@ -110,6 +110,14 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void FirstTab_TabClosing(object sender, Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs e)
+        {
+            if (CancelItemCloseCheckBox.IsChecked == true)
+            {
+                e.Cancel = true;
+            }
+        }
+
         private void TabViewTabDraggedOutside(object sender, Microsoft.UI.Xaml.Controls.TabViewTabDraggedOutsideEventArgs e)
         {
             TabViewItem tab = e.Tab;
