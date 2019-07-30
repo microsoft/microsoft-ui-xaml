@@ -2,6 +2,7 @@ parameters:
   dependsOn: ''
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
+  checkJobAttempt: false
 
 jobs:
 - job: ProcessTestResults
@@ -30,4 +31,4 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\OutputTestResults.ps1
-      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}'
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt '${{ parameters.checkJobAttempt }}'

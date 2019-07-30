@@ -7,7 +7,7 @@ Param(
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
     [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT,
-    [string]$BuildReason = $env:BUILD_REASON
+    [bool]$CheckJobAttempt
 )
 
 $azureDevOpsRestApiHeaders = @{
@@ -34,7 +34,7 @@ foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
     # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
     # We should only pay attention to the current attempt version.
     # NB: If in the future we have pull request builds do multiple test runs as part of the same build definition, we'll need to revisit this.
-    if ($BuildReason -ieq "PullRequest")
+    if ($CheckJobAttempt)
     {
         if (-not $timesSeenByRunName.ContainsKey($testRun.name))
         {
