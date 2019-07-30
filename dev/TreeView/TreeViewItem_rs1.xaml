@@ -121,6 +121,7 @@
                                     <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
                                     <Setter Property="MinWidth" Value="32" />
                                     <Setter Property="MinHeight" Value="{ThemeResource TreeViewItemMinHeight}" />
+                                    <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="CheckBox">
@@ -271,8 +272,7 @@
                                             Style="{StaticResource TreeViewMultiSelectCheckBox}"
                                             Visibility="Collapsed"
                                             IsTabStop="False"
-                                            AutomationProperties.AccessibilityView="Raw"
-                                            contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}" />
+                                            AutomationProperties.AccessibilityView="Raw" />
                                 <Border x:Name="MultiArrangeOverlayTextBorder"
                                     Visibility="Collapsed"
                                     IsHitTestVisible="False"
