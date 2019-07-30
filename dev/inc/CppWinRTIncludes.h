@@ -114,7 +114,6 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Media::Imaging;
     using namespace ::winrt::Windows::UI::Xaml::Shapes;
     using namespace ::winrt::Windows::System::Profile;
-#ifndef BUILD_WINDOWS
     using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo;
     namespace Microsoft::UI::Private::Controls {}
     using namespace ::winrt::Microsoft::UI::Private::Controls;
@@ -166,36 +165,6 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
     }
-#else
-    using namespace ::winrt::Windows::UI::Xaml::Controls;
-    using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives;
-    using namespace ::winrt::Windows::UI::Xaml::Media;
-    using namespace ::winrt::Windows::UI::Xaml::Automation::Peers;
-
-    namespace Windows::UI::Xaml::Controls::implementation {}
-    namespace Windows::UI::Xaml::Controls::Primitives::implementation {}
-    namespace Windows::UI::Xaml::Media::implementation {}
-    namespace Windows::UI::Xaml::Automation::Peers::implementation {}
-    namespace implementation
-    {
-        using namespace ::winrt::Windows::UI::Xaml::Controls::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Media::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Automation::Peers::implementation;
-    }
-
-    namespace Windows::UI::Xaml::Controls::factory_implementation {}
-    namespace Windows::UI::Xaml::Controls::Primitives::factory_implementation {}
-    namespace Windows::UI::Xaml::Media::factory_implementation {}
-    namespace Windows::UI::Xaml::Automation::Peers::factory_implementation {}
-    namespace factory_implementation
-    {
-        using namespace ::winrt::Windows::UI::Xaml::Controls::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Media::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Automation::Peers::factory_implementation;
-    }
-#endif
 
 #ifdef EFFECTS_INCLUDED
     using namespace ::winrt::Microsoft::UI::Composition::Effects;

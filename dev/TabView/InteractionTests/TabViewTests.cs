@@ -16,19 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -268,6 +260,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ElementCache.Refresh();
                 UIObject firstTab = TryFindElement.ByName("FirstTab");
                 Verify.IsNull(firstTab);
+            }
+        }
+
+        [TestMethod]
+        public void DragOutsideTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                TextBlock dragOutsideTextBlock = FindElement.ByName<TextBlock>("TabDraggedOutsideTextBlock");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "");
+
+                Log.Comment("Drag tab out");
+                UIObject firstTab = TryFindElement.ByName("FirstTab");
+                InputHelper.DragDistance(firstTab, 50, Direction.South);
+                Wait.ForIdle();
+
+                Log.Comment("Verify event fired");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
             }
         }
 

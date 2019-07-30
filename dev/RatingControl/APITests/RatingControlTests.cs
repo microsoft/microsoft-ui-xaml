@@ -23,11 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using RatingItemFontInfo = Microsoft.UI.Xaml.Controls.RatingItemFontInfo;
 using RatingItemImageInfo = Microsoft.UI.Xaml.Controls.RatingItemImageInfo;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

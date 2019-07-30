@@ -64,10 +64,8 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     __super::OnKeyDown(e);
 }
 
-void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
-
     if (args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
     {
         winrt::TreeViewItem droppedOnItem = *this;
@@ -123,14 +121,12 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDrop(e);
+    __super::OnDrop(args);
 }
 
-void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     auto treeView = AncestorTreeView();
-    
     if (treeView)
     {
         auto treeViewList = treeView->ListControl();
@@ -172,12 +168,11 @@ void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDragOver(e);
+    __super::OnDragOver(args);
 }
 
-void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     winrt::TreeViewItem draggedOverItem = *this;
 
     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
@@ -230,12 +225,11 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDragEnter(e);
+    __super::OnDragEnter(args);
 }
 
-void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     if (auto treeView = AncestorTreeView())
     {
         auto treeViewList = treeView->ListControl();
@@ -247,7 +241,7 @@ void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& e)
         m_expandContentTimer.get().Stop();
     }
 
-    __super::OnDragLeave(e);
+    __super::OnDragLeave(args);
 }
 
 // IUIElementOverrides
@@ -312,7 +306,6 @@ com_ptr<TreeView> TreeViewItem::AncestorTreeView()
 void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-
     if (auto node = TreeNode()) 
     {
         if (property == s_IsExpandedProperty)
@@ -350,7 +343,6 @@ void TreeViewItem::OnExpandContentTimerTick(const winrt::IInspectable& /*sender*
     {
         m_expandContentTimer.get().Stop();
     }
-
     
     if (auto draggedOverNode = TreeNode())
     {

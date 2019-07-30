@@ -8,10 +8,8 @@ using System.Collections.Specialized;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-#if !BUILD_WINDOWS
     using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
-#endif
 
     class CustomItemsSource : CustomItemsSourceView
     {

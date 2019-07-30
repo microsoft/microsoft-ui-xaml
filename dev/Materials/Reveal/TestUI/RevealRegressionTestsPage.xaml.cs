@@ -65,7 +65,7 @@ namespace MUXControlsTestApp
         private void AddBackRevealButton_Click(object sender, RoutedEventArgs e)
         {
             Test1_RevealButtonContainer.Children.Add(_test1_RevealButton);
-            
+
             // Add handler for validation
             _test1_RevealButton.Click += RevealButton_Click;
         }
@@ -91,7 +91,7 @@ namespace MUXControlsTestApp
                 logger.Verify(lightCountResult, "lightCountResult:" + lightCountResult);
             }
         }
- 
+
         private void SimluateDisabledByPolicyToggleButton_Checked(object sender, RoutedEventArgs e)
         {
             MaterialHelperTestApi.SimulateDisabledByPolicy = true;

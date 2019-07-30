@@ -26,10 +26,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
-#if !BUILD_WINDOWS
     using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
-#endif
 
     [TestClass]
     public class InspectingDataSourceTests: TestsBase

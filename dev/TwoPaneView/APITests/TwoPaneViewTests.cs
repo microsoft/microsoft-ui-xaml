@@ -26,20 +26,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using TwoPaneView = Microsoft.UI.Xaml.Controls.TwoPaneView;
 using TwoPaneViewPriority = Microsoft.UI.Xaml.Controls.TwoPaneViewPriority;
 using TwoPaneViewMode = Microsoft.UI.Xaml.Controls.TwoPaneViewMode;
 using TwoPaneViewWideModeConfiguration = Microsoft.UI.Xaml.Controls.TwoPaneViewWideModeConfiguration;
 using TwoPaneViewTallModeConfiguration = Microsoft.UI.Xaml.Controls.TwoPaneViewTallModeConfiguration;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-#if BUILD_WINDOWS
-    [TestProperty("Ignore", "True")] // TODO 19594287: Re-enable after investigating and fixing the test failures.
-#endif
     public class TwoPaneViewTests
     {
         private const double c_defaultMinWideModeWidth = 641.0;

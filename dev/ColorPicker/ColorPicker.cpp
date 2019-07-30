@@ -805,9 +805,10 @@ void ColorPicker::OnRgbTextChanging(winrt::TextBox const& sender, winrt::TextBox
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    unsigned long componentValue;
-
-    if (TryParseInt(sender.Text(), &componentValue) == false || componentValue < 0 || componentValue > 255)
+    auto componentValue = TryParseInt(sender.Text());
+    if (!componentValue.has_value() || 
+        componentValue.value() < 0 || 
+        componentValue.value() > 255)
     {
         m_isFocusedTextBoxValid = false;
     }
@@ -830,12 +831,10 @@ void ColorPicker::OnHueTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    unsigned long hueValue;
-
-    int minHue = MinHue();
-    int maxHue = MaxHue();
-
-    if (TryParseInt(m_hueTextBox.Text(), &hueValue) == false || hueValue < static_cast<unsigned long>(minHue) || hueValue > static_cast<unsigned long>(maxHue))
+    auto hueValue = TryParseInt(m_hueTextBox.Text());
+    if (!hueValue.has_value() ||
+        hueValue.value() < static_cast<unsigned long>(MinHue()) || 
+        hueValue.value() > static_cast<unsigned long>(MaxHue()))
     {
         m_isFocusedTextBoxValid = false;
     }
@@ -858,12 +857,10 @@ void ColorPicker::OnSaturationTextChanging(winrt::TextBox const& /*sender*/, win
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    unsigned long saturationValue;
-
-    int minSaturation = MinSaturation();
-    int maxSaturation = MaxSaturation();
-
-    if (TryParseInt(m_saturationTextBox.Text(), &saturationValue) == false || saturationValue < static_cast<unsigned long>(minSaturation) || saturationValue > static_cast<unsigned long>(maxSaturation))
+    auto saturationValue = TryParseInt(m_saturationTextBox.Text());
+    if (!saturationValue.has_value() ||
+        saturationValue.value() < static_cast<unsigned long>(MinSaturation()) || 
+        saturationValue.value() > static_cast<unsigned long>(MaxSaturation()))
     {
         m_isFocusedTextBoxValid = false;
     }
@@ -886,12 +883,10 @@ void ColorPicker::OnValueTextChanging(winrt::TextBox const& /*sender*/, winrt::T
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    unsigned long valueValue;
-
-    int minValue = MinValue();
-    int maxValue = MaxValue();
-
-    if (TryParseInt(m_valueTextBox.Text(), &valueValue) == false || valueValue < static_cast<unsigned long>(minValue) || valueValue > static_cast<unsigned long>(maxValue))
+    auto value = TryParseInt(m_valueTextBox.Text());
+    if (!value.has_value() ||
+        value.value() < static_cast<unsigned long>(MinValue()) ||
+        value.value() > static_cast<unsigned long>(MaxValue()))
     {
         m_isFocusedTextBoxValid = false;
     }
@@ -926,17 +921,16 @@ void ColorPicker::OnAlphaTextChanging(winrt::TextBox const& /*sender*/, winrt::T
 
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
-    unsigned long alphaValue;
     winrt::hstring alphaString{ static_cast<wstring>(m_alphaTextBox.Text()).substr(0, m_alphaTextBox.Text().size() - 1) };
-
-    if (TryParseInt(alphaString, &alphaValue) == false || alphaValue < 0 || alphaValue > 100)
+    auto alphaValue = TryParseInt(alphaString);
+    if (!alphaValue.has_value() || alphaValue.value() < 0 || alphaValue.value() > 100)
     {
         m_isFocusedTextBoxValid = false;
     }
     else
     {
         m_isFocusedTextBoxValid = true;
-        UpdateColor(alphaValue / 100.0, ColorUpdateReason::AlphaTextBoxChanged);
+        UpdateColor(alphaValue.value() / 100.0, ColorUpdateReason::AlphaTextBoxChanged);
     }
 }
 
@@ -961,17 +955,11 @@ void ColorPicker::OnHexTextChanging(winrt::TextBox const& /*sender*/, winrt::Tex
     // We'll respond to the text change if the user has entered a valid value.
     // Otherwise, we'll do nothing except mark the text box's contents as invalid.
     bool isAlphaEnabled = IsAlphaEnabled();
-    Rgb rgbValue;
-    double alphaValue = 1.0;
-
-    if (isAlphaEnabled)
-    {
-        HexToRgba(m_hexTextBox.Text(), &rgbValue, &alphaValue);
-    }
-    else
-    {
-        rgbValue = HexToRgb(m_hexTextBox.Text());
-    }
+    auto [rgbValue, alphaValue] = [this, isAlphaEnabled]() {
+        return isAlphaEnabled?
+            HexToRgba(m_hexTextBox.Text()):
+            std::make_tuple<Rgb, double>(HexToRgb(m_hexTextBox.Text()), 1.0);
+    }();
 
     if ((rgbValue.r == -1 && rgbValue.g == -1 && rgbValue.b == -1 && alphaValue == -1) || alphaValue < 0 || alphaValue > 1)
     {
@@ -1224,7 +1212,7 @@ void ColorPicker::CreateAlphaSliderCheckeredBackground()
     }
 }
 
-void ColorPicker::AddGradientStop(winrt::LinearGradientBrush brush, double offset, Hsv hsvColor, double alpha)
+void ColorPicker::AddGradientStop(const winrt::LinearGradientBrush& brush, double offset, Hsv hsvColor, double alpha)
 {
     winrt::GradientStop stop;
 

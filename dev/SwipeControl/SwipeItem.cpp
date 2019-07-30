@@ -12,9 +12,7 @@
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
-#ifndef BUILD_WINDOWS
 #include "IconSource.h"
-#endif
 
 static const double s_swipeItemWidth = 68.0;
 static const double s_swipeItemHeight = 60.0;
@@ -22,10 +20,6 @@ static const double s_swipeItemHeight = 60.0;
 SwipeItem::SwipeItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_SwipeItem);
-}
-
-SwipeItem::~SwipeItem()
-{
 }
 
 #pragma endregion
@@ -63,7 +57,7 @@ void SwipeItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
     }
 }
 
-void SwipeItem::OnCommandChanged(winrt::ICommand /*oldCommand*/, winrt::ICommand newCommand)
+void SwipeItem::OnCommandChanged(const winrt::ICommand& /*oldCommand*/, const winrt::ICommand& newCommand)
 {
     if (auto newUICommand = safe_try_cast<winrt::XamlUICommand>(newCommand))
     {
@@ -72,7 +66,7 @@ void SwipeItem::OnCommandChanged(winrt::ICommand /*oldCommand*/, winrt::ICommand
     }
 }
 
-void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style swipeItemStyle)
+void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style& swipeItemStyle)
 {
     appBarButton.Style(swipeItemStyle);
     if (Background())

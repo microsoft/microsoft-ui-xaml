@@ -12,13 +12,11 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
 
-#if !BUILD_WINDOWS
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -78,11 +76,7 @@ namespace MUXControlsTestApp.Samples
                         (DataTemplate)Resources["YearTemplateHorizontal"], _pageInfo);
 
                 generator.RecyclePool = new RecyclePool();
-#if BUILD_WINDOWS
-                rootRepeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)generator;
-#else
                 rootRepeater.ItemTemplate = generator;
-#endif
                 rootRepeater.Layout = _pageInfo.Level0Layout;
                 RepeaterTestHooks.SetLayoutId(rootRepeater.Layout, "Root");
 

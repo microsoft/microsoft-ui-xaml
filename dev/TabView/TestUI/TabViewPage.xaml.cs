@@ -11,11 +11,9 @@ using Windows.UI;
 using System.Windows.Input;
 using Windows.UI.Xaml.Automation;
 
-#if !BUILD_WINDOWS
 using TabView = Microsoft.UI.Xaml.Controls.TabView;
 using TabViewItem = Microsoft.UI.Xaml.Controls.TabViewItem;
 using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -109,6 +107,15 @@ namespace MUXControlsTestApp
             if (CancelCloseCheckBox.IsChecked == true)
             {
                 e.Cancel = true;
+            }
+        }
+
+        private void TabViewTabDraggedOutside(object sender, Microsoft.UI.Xaml.Controls.TabViewTabDraggedOutsideEventArgs e)
+        {
+            TabViewItem tab = e.Tab;
+            if (tab != null)
+            {
+                TabDraggedOutsideTextBlock.Text = tab.Header.ToString();
             }
         }
     }

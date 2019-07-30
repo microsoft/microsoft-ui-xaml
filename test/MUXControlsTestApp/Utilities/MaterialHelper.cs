@@ -8,9 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media;
 
-#if !BUILD_WINDOWS
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp.Utilities
 {

@@ -67,8 +67,8 @@ public:
     void SelectRange(winrt::IndexPath const& start, winrt::IndexPath const& end);
     void DeselectRange(winrt::IndexPath const& start, winrt::IndexPath const& end);
 
-    void SelectAll(void);
-    void ClearSelection(void);
+    void SelectAll();
+    void ClearSelection();
 
 #pragma endregion
 

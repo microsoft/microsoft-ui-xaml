@@ -108,7 +108,7 @@ int InspectingDataSource::IndexOf(winrt::IInspectable const& value)
     int index = -1;
     if (m_vector && value)
     {
-        uint32_t v = static_cast<uint32_t>(-1);
+        auto v = static_cast<uint32_t>(-1);
         if (m_vector.get().IndexOf(value, v))
         {
             index = static_cast<int>(v);

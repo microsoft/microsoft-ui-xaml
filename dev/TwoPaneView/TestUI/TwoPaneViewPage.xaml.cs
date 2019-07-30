@@ -9,14 +9,12 @@ using Windows.UI.Xaml.Media;
 using Windows.Foundation;
 using Windows.Graphics.Display;
 
-#if !BUILD_WINDOWS
 using TwoPaneView = Microsoft.UI.Xaml.Controls.TwoPaneView;
 using TwoPaneViewMode = Microsoft.UI.Xaml.Controls.TwoPaneViewMode;
 using TwoPaneViewPriority = Microsoft.UI.Xaml.Controls.TwoPaneViewPriority;
 using TwoPaneViewWideModeConfiguration = Microsoft.UI.Xaml.Controls.TwoPaneViewWideModeConfiguration;
 using TwoPaneViewTallModeConfiguration = Microsoft.UI.Xaml.Controls.TwoPaneViewTallModeConfiguration;
 using DisplayRegionHelperTestApi = Microsoft.UI.Private.Controls.DisplayRegionHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

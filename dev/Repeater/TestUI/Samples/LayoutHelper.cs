@@ -4,7 +4,6 @@
 using System;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using Layout = Microsoft.UI.Xaml.Controls.Layout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
@@ -12,7 +11,6 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using UniformGridLayoutItemsStretch = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {

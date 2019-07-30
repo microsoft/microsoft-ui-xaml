@@ -253,13 +253,3 @@ namespace CppWinRTTemp
     { \
         return baseClass##::QueryInterface(id, object); \
     } \
-    \
-    unsigned long WINRT_CALL AddRef() noexcept override \
-    { \
-        return baseClass##::AddRef(); \
-    } \
-    \
-    unsigned long WINRT_CALL Release() noexcept override \
-    { \
-        return baseClass##::Release(); \
-    }

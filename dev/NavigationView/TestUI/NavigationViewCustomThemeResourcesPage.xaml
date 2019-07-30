@@ -12,6 +12,10 @@
     <Page.Resources>
         <Thickness x:Key="NavigationViewHeaderMargin">16,3,0,7</Thickness>
         <Thickness x:Key="NavigationViewMinimalHeaderMargin">18,1,0,0</Thickness>
+
+        <Style x:Key="NavigationViewPaneTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource NavigationViewItemHeaderTextStyle}">
+            <Setter Property="FontSize" Value="24" />
+        </Style>
     </Page.Resources>
 
     <Grid>
@@ -120,7 +124,8 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <Button x:Name="ChangePaneTitle" AutomationProperties.Name="ChangePaneTitleButton" Content="Change PaneTitle" Click="ChangePaneTitle_Click"/>
+                        <Button x:Name="ChangePaneTitleText" AutomationProperties.Name="ChangePaneTitleTextButton" Content="Change PaneTitle Text" Margin="0,0,2,0" Click="ChangePaneTitleText_Click"/>
+                        <Button x:Name="ChangePaneTitleStyle" AutomationProperties.Name="ChangePaneTitleStyleButton" Content="Change PaneTitle Style" Margin="0,0,2,0" Click="ChangePaneTitleStyle_Click"/>
                         <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
                         <ComboBox x:Name="PaneDisplayModeCombobox"
                                 AutomationProperties.Name="PaneDisplayModeCombobox"

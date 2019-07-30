@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
-#if !BUILD_WINDOWS
     using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
     using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
@@ -36,7 +35,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
     using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
     using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
-#endif
 
     [TestClass]
     public class ItemTemplateTests : TestsBase
@@ -69,11 +67,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 ItemsRepeater repeater = new ItemsRepeater()
                 {
                     ItemsSource = Enumerable.Range(0, numItems),
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                     ItemTemplate = elementFactory,
-#endif
                 };
 
 
@@ -502,11 +496,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsSource = itemsSource,
                 Layout = layout,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
             };
 
             return new ItemsRepeaterScrollHost()

@@ -5044,7 +5044,7 @@ void Scroller::OnScrollControllerScrollFromRequested(
                     else
                     {
                         winrt::IInspectable newInertiaDecayRateAsInsp =
-                            box_value(winrt::float2({ c_scrollerDefaultInertiaDecayRate, inertiaDecayRate.Value().y }));;
+                            box_value(winrt::float2({ c_scrollerDefaultInertiaDecayRate, inertiaDecayRate.Value().y }));
                         winrt::IReference<winrt::float2> newInertiaDecayRate =
                             newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 
@@ -5088,7 +5088,7 @@ void Scroller::OnScrollControllerScrollFromRequested(
                     else
                     {
                         winrt::IInspectable newInertiaDecayRateAsInsp =
-                            box_value(winrt::float2({ inertiaDecayRate.Value().x, c_scrollerDefaultInertiaDecayRate }));;
+                            box_value(winrt::float2({ inertiaDecayRate.Value().x, c_scrollerDefaultInertiaDecayRate }));
                         winrt::IReference<winrt::float2> newInertiaDecayRate =
                             newInertiaDecayRateAsInsp.as<winrt::IReference<winrt::float2>>();
 

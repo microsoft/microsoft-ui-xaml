@@ -5,10 +5,7 @@
 
 #include "XamlType.h"
 #include "XamlMetadataProviderGenerated.h"
-
-#ifndef BUILD_WINDOWS
 #include "XamlControlsXamlMetaDataProvider.g.h"
-#endif
 
 //
 // XamlMetadataProvider
@@ -28,11 +25,7 @@
 
 class XamlMetadataProvider : 
     // NOTE: Runtime class name is different than the implementation but we're just doing this to hide our IXMP implementation
-#ifndef BUILD_WINDOWS
     public winrt::implementation::XamlControlsXamlMetaDataProviderT<XamlMetadataProvider>,
-#else
-    public winrt::implements<XamlMetadataProvider, winrt::IXamlMetadataProvider>,
-#endif
     public XamlMetadataProviderGenerated
 {
 public:
@@ -41,12 +34,12 @@ public:
     static void Initialize();
 
     static bool RegisterXamlType(
-        _In_ PCWSTR typeName,
+        PCWSTR typeName,
         std::function<winrt::IXamlType()> createXamlTypeCallback
         );
 
     static winrt::IXamlType GetXamlType(
-        _In_ const wstring_view& typeName
+        const wstring_view& typeName
         );
 
     // IXamlMetadataProvider

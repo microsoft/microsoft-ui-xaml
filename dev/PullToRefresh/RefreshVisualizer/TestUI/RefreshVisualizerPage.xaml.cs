@@ -27,13 +27,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using RefreshVisualizer = Microsoft.UI.Xaml.Controls.RefreshVisualizer;
 using RefreshRequestedEventArgs = Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs;
 using RefreshStateChangedEventArgs = Microsoft.UI.Xaml.Controls.RefreshStateChangedEventArgs;
 using RefreshVisualizerOrientation = Microsoft.UI.Xaml.Controls.RefreshVisualizerOrientation;
 using IRefreshVisualizerPrivate = Microsoft.UI.Private.Controls.IRefreshVisualizerPrivate;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -77,9 +75,7 @@ namespace MUXControlsTestApp
             grid.Height = 30;
             grid.Width = 30;
 
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)

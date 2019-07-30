@@ -21,11 +21,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

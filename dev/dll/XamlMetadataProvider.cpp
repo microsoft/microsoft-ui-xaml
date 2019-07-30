@@ -5,29 +5,22 @@
 #include "common.h"
 #include "XamlMetadataProvider.h"
 #include "XamlType.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif
 
 std::vector<XamlMetadataProvider::Entry>* XamlMetadataProvider::s_types{ nullptr };
 
 XamlMetadataProvider::XamlMetadataProvider()
 {
-#ifndef BUILD_WINDOWS
     RegisterTypes();
-#endif
 }
 
 void XamlMetadataProvider::Initialize()
 {
-#ifndef BUILD_WINDOWS
     MUXControlsFactory::EnsureInitialized();
-#endif
 }
 
 bool XamlMetadataProvider::RegisterXamlType(
-    _In_ PCWSTR typeName,
+    PCWSTR typeName,
     std::function<winrt::IXamlType()> createXamlTypeCallback
     )
 {
@@ -43,7 +36,7 @@ bool XamlMetadataProvider::RegisterXamlType(
 }
 
 winrt::IXamlType XamlMetadataProvider::GetXamlType(
-    _In_ const wstring_view& typeName)
+    const wstring_view& typeName)
 {
     if (s_types)
     {

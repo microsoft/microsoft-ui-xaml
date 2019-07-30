@@ -20,9 +20,6 @@ class RevealHoverLight :
 public:
     static winrt::hstring& GetLightIdStatic();
 
-    RevealHoverLight();
-    ~RevealHoverLight();
-
     // IXamlLightOverrides
     winrt::hstring GetId();
     void OnConnected(winrt::UIElement const& newElement);
@@ -97,7 +94,7 @@ private:
 
 #if BUILD_WINDOWS
     winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else

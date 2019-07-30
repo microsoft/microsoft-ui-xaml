@@ -7,9 +7,7 @@ using System.Collections.Specialized;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {

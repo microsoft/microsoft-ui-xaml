@@ -8,8 +8,6 @@ class TeachingTipTestHooks :
     public winrt::implementation::TeachingTipTestHooksT<TeachingTipTestHooks>
 {
 public:
-    TeachingTipTestHooks();
-
     static com_ptr<TeachingTipTestHooks> GetGlobalTestHooks()
     {
         return s_testHooks;

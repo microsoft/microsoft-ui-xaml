@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 
-#if !BUILD_WINDOWS
 using TreeViewSelectionMode = Microsoft.UI.Xaml.Controls.TreeViewSelectionMode;
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 using TreeView = Microsoft.UI.Xaml.Controls.TreeView;
@@ -25,7 +24,6 @@ using TreeViewDragItemsCompletedEventArgs = Microsoft.UI.Xaml.Controls.TreeViewD
 using TreeViewList = Microsoft.UI.Xaml.Controls.TreeViewList;
 using TreeViewItem = Microsoft.UI.Xaml.Controls.TreeViewItem;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

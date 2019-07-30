@@ -40,7 +40,7 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
-    void SetSize(winrt::UIElement UIElement,
+    void SetSize(const winrt::UIElement& UIElement,
         const double itemWidth,
         const double itemHeight,
         const winrt::Size availableSize,

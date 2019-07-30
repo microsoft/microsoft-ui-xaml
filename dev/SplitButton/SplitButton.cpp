@@ -20,10 +20,6 @@ SplitButton::SplitButton()
     m_keyUpRevoker = KeyUp(winrt::auto_revoke, { this, &SplitButton::OnSplitButtonKeyUp });
 }
 
-SplitButton::~SplitButton()
-{
-}
-
 void SplitButton::OnApplyTemplate()
 {
     UnregisterEvents();

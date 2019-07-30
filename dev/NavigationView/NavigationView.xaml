@@ -42,11 +42,7 @@
 
                             <VisualStateGroup x:Name="TogglePaneGroup">
                                 <VisualState x:Name="TogglePaneButtonVisible" />
-                                <VisualState x:Name="TogglePaneButtonCollapsed">
-                                    <VisualState.Setters>
-                                        <Setter Target="PaneContentGridToggleButtonRow.Height" Value="4" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="TogglePaneButtonCollapsed" />
                             </VisualStateGroup>
 
                             <VisualStateGroup x:Name="HeaderGroup">
@@ -196,6 +192,16 @@
                                         VerticalAlignment="Center"
                                         Style="{StaticResource NavigationViewItemHeaderTextStyle}"/>
                                 </Button>
+                                <Grid
+                                    x:Name="PaneTitleHolder"
+                                    Visibility="Collapsed">
+                                    <ContentControl
+                                        x:Name="PaneTitlePresenter"
+                                        Margin="{ThemeResource NavigationViewPaneTitlePresenterMargin}"
+                                        IsTabStop="False"
+                                        HorizontalContentAlignment="Stretch"
+                                        VerticalContentAlignment="Stretch"/>
+                                </Grid>
                             </Grid>
                         </Grid>
 
@@ -240,6 +246,13 @@
 
                                     <ContentControl
                                         x:Name="PaneHeaderOnTopPane"
+                                        IsTabStop="False"
+                                        VerticalContentAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        Grid.Column="2"/>
+
+                                    <ContentControl
+                                        x:Name="PaneTitleOnTopPane"
                                         IsTabStop="False"
                                         VerticalContentAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
@@ -362,23 +375,28 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->
-                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->                                            
+                                            <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
-                                            <RowDefinition Height="*" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="Auto" />
-                                            <RowDefinition Height="8" />
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="8"/>
                                         </Grid.RowDefinitions>
 
                                         <Grid x:Name="ContentPaneTopPadding"
                                               Height="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.TopPadding}"/>
 
-                                        <Grid Grid.Row="2" Height="{StaticResource PaneToggleButtonHeight}">
+                                        <Grid Grid.Row="2">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition x:Name="PaneHeaderContentBorderRow"/>
+                                            </Grid.RowDefinitions>
+
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="{ThemeResource PaneToggleButtonWidth}"/>
+                                                <ColumnDefinition x:Name="PaneHeaderCloseButtonColumn"/>
+                                                <ColumnDefinition x:Name="PaneHeaderToggleButtonColumn"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
 
@@ -387,7 +405,7 @@
                                                 IsTabStop="False"
                                                 VerticalContentAlignment="Stretch"
                                                 HorizontalContentAlignment="Stretch"
-                                                Grid.Column="1" />
+                                                Grid.Column="2" />
                                         </Grid>
 
                                         <Grid
@@ -507,6 +525,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="True" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
@@ -633,12 +652,12 @@
                         </VisualStateManager.VisualStateGroups>
                         <Grid x:Name="InnerHeaderGrid" Height="40" HorizontalAlignment="Left" Margin="{ThemeResource NavigationViewItemInnerHeaderMargin}">
                             <TextBlock
-                            x:Name="HeaderText"
-                            VerticalAlignment="Center"
-                            Margin="0,-1,0,-1"
-                            Style="{StaticResource NavigationViewItemHeaderTextStyle}"
-                            Text="{TemplateBinding Content}"
-                            TextWrapping="NoWrap"/>
+                                x:Name="HeaderText"
+                                VerticalAlignment="Center"
+                                Margin="0,-1,0,-1"
+                                Style="{StaticResource NavigationViewItemHeaderTextStyle}"
+                                Text="{TemplateBinding Content}"
+                                TextWrapping="NoWrap"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

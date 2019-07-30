@@ -670,6 +670,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SplitView_TestUI", "dev\Spl
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ComboBox_APITests", "dev\ComboBox\APITests\ComboBox_APITests.shproj", "{CA704A8C-2624-4630-89A0-D86CB1EE409A}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutoSuggestBox_APITests", "dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.shproj", "{84673739-208C-427E-A19E-E090EC3733CE}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -771,6 +773,7 @@ Global
 		dev\Common\Common.vcxitems*{80ad7f51-8997-47b9-bb41-078b81cff9b0}*SharedItemsImports = 9
 		dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems*{80f1f883-d49b-407d-9e77-c9b0e62b61a9}*SharedItemsImports = 13
 		dev\RadioButtons\TestUI\RadioButtons_TestUI.projitems*{833a6892-a079-469a-81c7-54d4cd88029b}*SharedItemsImports = 13
+		dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems*{84673739-208c-427e-a19e-e090ec3733ce}*SharedItemsImports = 13
 		dev\TestHooks\TestHooks.vcxitems*{848448d5-f717-4f88-8f99-311cd60587fa}*SharedItemsImports = 9
 		dev\CommonManaged\CommonManaged.projitems*{85a134e5-c83f-44a4-80df-59f6ebf6c60d}*SharedItemsImports = 13
 		dev\DropDownButton\DropDownButton.vcxitems*{8613ed91-ade3-4c5c-a09a-041187841eb3}*SharedItemsImports = 9
@@ -886,12 +889,14 @@ Global
 		dev\TreeView\APITests\TreeView_APITests.projitems*{de885c66-929c-464e-bac4-3e076ec46483}*SharedItemsImports = 13
 		dev\Pivot\TestUI\Pivot_TestUI.projitems*{deb3fa60-e4a7-4735-89f2-363c7c56b428}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CalendarView\TestUI\CalendarView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CheckBox\TestUI\CheckBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\ComboBox\APITests\ComboBox_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\ComboBox\TestUI\ComboBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -967,12 +972,14 @@ Global
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
 		test\TestAppUtils\TestAppUtils.projitems*{fb0d3053-3135-403f-b542-977f3b781673}*SharedItemsImports = 13
 		dev\AnimatedVisualPlayer\TestUI\AnimatedVisualPlayer_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\AutoSuggestBox\APITests\AutoSuggestBox_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\AutoSuggestBox\TestUI\AutoSuggestBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CalendarDatePicker\TestUI\CalendarDatePicker_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CalendarView\TestUI\CalendarView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CheckBox\TestUI\CheckBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ColorPicker\APITests\ColorPicker_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ColorPicker\TestUI\ColorPicker_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\ComboBox\APITests\ComboBox_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\ComboBox\TestUI\ComboBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CommandBarFlyout\APITests\CommandBarFlyout_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1661,6 +1668,7 @@ Global
 		{F567D0A2-9C61-4793-AE79-12DA915AC11F} = {7DAE09F6-69EB-4FB3-9F52-AF746CA84DC9}
 		{D8CEA3B7-0012-4F74-B50F-B46E9A93C979} = {7DAE09F6-69EB-4FB3-9F52-AF746CA84DC9}
 		{CA704A8C-2624-4630-89A0-D86CB1EE409A} = {4C9CEC92-77C8-4B7B-8595-6C736A660F93}
+		{84673739-208C-427E-A19E-E090EC3733CE} = {CFAFD6A7-FC7B-4C96-B292-A440C7C65D89}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

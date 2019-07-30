@@ -20,9 +20,6 @@ public:
     static winrt::hstring& GetLightThemeIdStatic();
     static winrt::hstring& GetDarkThemeIdStatic();
 
-    RevealBorderLight();
-    ~RevealBorderLight();
-
     void SetIsWideLight(bool isWideLight) { m_isWideLight = isWideLight; }
     void SetIsLightTheme(bool isLightTheme) { m_isLightTheme = isLightTheme; }
 
@@ -82,7 +79,7 @@ private:
 
 #if BUILD_WINDOWS
     winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else

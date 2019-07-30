@@ -20,4 +20,14 @@
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)AutoSuggestBoxHelper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\AutoSuggestBoxHelper.properties.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)AutoSuggestBoxHelper.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)AutoSuggestBoxHelper.idl" />
+  </ItemGroup>
 </Project>

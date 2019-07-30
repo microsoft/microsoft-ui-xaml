@@ -24,10 +24,7 @@ namespace MUXControlsTestApp
     {
         public ScrollViewerPage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
-
             this.InitializeComponent();
 
             navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewersWithSimpleContentsPage), 0); };
