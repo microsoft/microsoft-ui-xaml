@@ -77,10 +77,6 @@
       <Version>RS2</Version>
       <Type>ThemeResources</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs5_themeresources.xaml">
-      <Version>RS5</Version>
-      <Type>ThemeResources</Type>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-US\Resources.resw" />

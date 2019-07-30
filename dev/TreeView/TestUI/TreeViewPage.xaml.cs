@@ -80,28 +80,41 @@ namespace MUXControlsTestApp
             base.OnNavigatedFrom(e);
         }
 
-        private String GetSelection(TreeView tree)
+        private string GetSelection(TreeView tree)
         {
-            String result="";
-            if (TestTreeView.SelectionMode == TreeViewSelectionMode.Single)
+            int count = tree.SelectedNodes.Count;
+
+            if (count != tree.SelectedItems.Count)
             {
-                var listControl = FindVisualChildByName(tree, "ListControl") as TreeViewList;
-                if (IsInContentMode())
+                return "SelectedNodes.Count != SelectedItems.Count";
+            }
+
+            List<string> result = new List<string>();
+            for (int i = 0; i < count; i++)
+            {
+                // Make sure selectedNodes and SelectedItems are in sync
+                var node = tree.SelectedNodes[i];
+                var item = IsInContentMode() ? node.Content : node;
+                if (item != tree.SelectedItems[i])
                 {
-                    result = "ItemSelected:" + ((TreeViewItemSource)listControl.SelectedItem).Content;
+                    return "$SelectedNodes[{i}] != SelectedItems[{i}]";
                 }
-                else
+
+                result.Add(GetNodeContent(node));
+            }
+
+            result.Sort();
+
+            // Verify SelectedItem and SelectedNode for single selection
+            if(tree.SelectionMode == TreeViewSelectionMode.Single && result.Count > 0)
+            {
+                if(tree.SelectedItem != tree.SelectedItems[0] || tree.SelectedNode != tree.SelectedNodes[0])
                 {
-                    result = "ItemSelected:" + ((TreeViewNode)listControl.SelectedItem).Content.ToString();
+                    return "SelectedItem!=SelectedItems[0] || SelectedNode!=SelectedNodes[0]";
                 }
             }
-            else if (TestTreeView.SelectionMode == TreeViewSelectionMode.Multiple)
-            {
-                var items = tree.SelectedNodes;
-                int count = items.Count;
-                result = "Num. Selected: " + count;
-            }
-            return result;
+
+            return result.Count > 0 ? "Selected: " + string.Join(", ", result) : "Nothing selected";
         }
 
         private void GetSelected_Click(object sender, RoutedEventArgs e)
@@ -817,19 +830,39 @@ namespace MUXControlsTestApp
 
         private void ToggleSelectedNodes_Click(object sender, RoutedEventArgs e)
         {
-            TestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
-            var root0 = TestTreeView.RootNodes[0].Children[0];
-            var root2 = TestTreeView.RootNodes[0].Children[2];
-            var selectedNodes = TestTreeView.SelectedNodes;
-            if (selectedNodes.Contains(root0))
+            if (IsInContentMode())
             {
-                selectedNodes.Remove(root0);
-                selectedNodes.Remove(root2);
+                ContentModeTestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                var item0 = TestTreeViewItemsSource[0].Children[0];
+                var item2 = TestTreeViewItemsSource[0].Children[2];
+                var selectedItems = ContentModeTestTreeView.SelectedItems;
+                if (selectedItems.Contains(item0))
+                {
+                    selectedItems.Remove(item0);
+                    selectedItems.Remove(item2);
+                }
+                else
+                {
+                    selectedItems.Add(item0);
+                    selectedItems.Add(item2);
+                }
             }
             else
             {
-                selectedNodes.Add(root0);
-                selectedNodes.Add(root2);
+                TestTreeView.SelectionMode = TreeViewSelectionMode.Multiple;
+                var node0 = TestTreeView.RootNodes[0].Children[0];
+                var node2 = TestTreeView.RootNodes[0].Children[2];
+                var selectedNodes = TestTreeView.SelectedNodes;
+                if (selectedNodes.Contains(node0))
+                {
+                    selectedNodes.Remove(node0);
+                    selectedNodes.Remove(node2);
+                }
+                else
+                {
+                    selectedNodes.Add(node0);
+                    selectedNodes.Add(node2);
+                }
             }
         }
 
@@ -899,6 +932,12 @@ namespace MUXControlsTestApp
         private void TreeViewLateDataInitTestPage_Click(object sender, RoutedEventArgs e)
         {
             Frame.NavigateWithoutAnimation(typeof(TreeViewLateDataInitTest));
+        }
+
+        private void ToggleRoot0Selection_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedNode = TestTreeView.SelectedNode == null ? TestTreeView.RootNodes[0].Children[0] : null;
+            ContentModeTestTreeView.SelectedItem = ContentModeTestTreeView.SelectedItem==null ? TestTreeViewItemsSource[0].Children[0] : null;
         }
 
         private void TreeViewNodeInMarkupTestPage_Click(object sender, RoutedEventArgs e)

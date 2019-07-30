@@ -42,7 +42,8 @@ public:
 public:
     // IFrameworkElementOverrides
     void OnApplyTemplate();
-    void UpdateSelection(TreeNodeSelectionState const& state);
+    void UpdateSelection(bool isSelected);
+    void UpdateSelectionVisual(TreeNodeSelectionState const& state);
 
 private:
     template <typename T> T GetAncestorView();

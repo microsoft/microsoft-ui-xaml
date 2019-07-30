@@ -38,23 +38,43 @@ TreeViewList* TreeView::ListControl()
 
 winrt::IInspectable TreeView::ItemFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->ItemFromContainer(container);
+    return ListControl() ? ListControl()->ItemFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromItem(winrt::IInspectable const& item)
 {
-    return ListControl()->ContainerFromItem(item);
+    return ListControl() ? ListControl()->ContainerFromItem(item) : nullptr;
 }
 
 winrt::TreeViewNode TreeView::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->NodeFromContainer(container);
+    return ListControl() ? ListControl()->NodeFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    return ListControl()->ContainerFromNode(node);
+    return ListControl() ? ListControl()->ContainerFromNode(node) : nullptr;
 }
+
+void TreeView::SelectedNode(winrt::TreeViewNode const& node)
+{
+    auto selectedNodes = SelectedNodes();
+    if (selectedNodes.Size() > 0)
+    {
+        selectedNodes.Clear();
+    }
+    if (node)
+    {
+        selectedNodes.Append(node);
+    }
+}
+
+winrt::TreeViewNode TreeView::SelectedNode()
+{
+    auto nodes = SelectedNodes();
+    return nodes.Size() > 0 ? nodes.GetAt(0) : nullptr;
+}
+
 
 winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
 {
@@ -68,6 +88,38 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
     
     // we'll treat the pending selected nodes as SelectedNodes value if we don't have a list control or a view model
     return m_pendingSelectedNodes.get();
+}
+
+void TreeView::SelectedItem(winrt::IInspectable const& item)
+{
+    auto selectedItems = SelectedItems();
+    if (selectedItems.Size() > 0)
+    {
+        selectedItems.Clear();
+    }
+    if (item)
+    {
+        selectedItems.Append(item);
+    }
+}
+
+winrt::IInspectable TreeView::SelectedItem()
+{
+    auto items = SelectedItems();
+    return items.Size() > 0 ? items.GetAt(0) : nullptr;
+}
+
+winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()
+{
+    if (auto listControl = ListControl())
+    {
+        if (auto viewModel = listControl->ListViewModel())
+        {
+            return viewModel->GetSelectedItems();
+        }
+    }
+
+    return nullptr;
 }
 
 void TreeView::Expand(winrt::TreeViewNode const& value)
