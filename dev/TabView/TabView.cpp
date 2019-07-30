@@ -53,6 +53,11 @@ void TabView::OnApplyTemplate()
         {
             m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
             m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
+
+            m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
+            m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
+            m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
+            m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
         }
         return listView;
     }());
@@ -253,6 +258,60 @@ void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, cons
     UpdateTabContent();
 
     m_selectionChangedEventSource(sender, args);
+}
+
+
+void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
+{
+    m_tabStripDragItemsStartingEventSource(*this, args);
+}
+
+void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    m_tabStripDragOverEventSource(*this, args);
+}
+
+void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    m_tabStripDropEventSource(*this, args);
+}
+
+void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
+{
+    m_tabStripDragItemsCompletedEventSource(*this, args);
+
+    // None means it's outside of the tab strip area
+    if (args.DropResult() == winrt::DataPackageOperation::None)
+    {
+        const auto item = args.Items().GetAt(0);
+        auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
+
+        if (!tab)
+        {
+            if (auto fe = item.try_as<winrt::FrameworkElement>())
+            {
+                tab = winrt::VisualTreeHelper::GetParent(fe).try_as<winrt::TabViewItem>();
+            }
+        }
+
+        if (!tab)
+        {
+            // This is a fallback scenario for tabs without a data context
+            auto numItems = static_cast<int>(Items().Size());
+            for (int i = 0; i < numItems; i++)
+            {
+                auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
+                if (tabItem.Content() == item)
+                {
+                    tab = tabItem;
+                    break;
+                }
+            }
+        }
+
+        auto myArgs = winrt::make_self<TabViewTabDraggedOutsideEventArgs>(item, tab);
+        m_tabDraggedOutsideEventSource(*this, *myArgs);
+    }
 }
 
 void TabView::UpdateTabContent()

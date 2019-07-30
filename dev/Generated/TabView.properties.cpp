@@ -29,6 +29,11 @@ TabViewProperties::TabViewProperties()
     : m_addButtonClickEventSource{static_cast<TabView*>(this)}
     , m_selectionChangedEventSource{static_cast<TabView*>(this)}
     , m_tabClosingEventSource{static_cast<TabView*>(this)}
+    , m_tabDraggedOutsideEventSource{static_cast<TabView*>(this)}
+    , m_tabStripDragItemsCompletedEventSource{static_cast<TabView*>(this)}
+    , m_tabStripDragItemsStartingEventSource{static_cast<TabView*>(this)}
+    , m_tabStripDragOverEventSource{static_cast<TabView*>(this)}
+    , m_tabStripDropEventSource{static_cast<TabView*>(this)}
 {
     EnsureProperties();
 }
@@ -461,4 +466,54 @@ winrt::event_token TabViewProperties::TabClosing(winrt::TypedEventHandler<winrt:
 void TabViewProperties::TabClosing(winrt::event_token const& token)
 {
     m_tabClosingEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabDraggedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs> const& value)
+{
+    return m_tabDraggedOutsideEventSource.add(value);
+}
+
+void TabViewProperties::TabDraggedOutside(winrt::event_token const& token)
+{
+    m_tabDraggedOutsideEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabStripDragItemsCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::DragItemsCompletedEventArgs> const& value)
+{
+    return m_tabStripDragItemsCompletedEventSource.add(value);
+}
+
+void TabViewProperties::TabStripDragItemsCompleted(winrt::event_token const& token)
+{
+    m_tabStripDragItemsCompletedEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabStripDragItemsStarting(winrt::DragItemsStartingEventHandler const& value)
+{
+    return m_tabStripDragItemsStartingEventSource.add(value);
+}
+
+void TabViewProperties::TabStripDragItemsStarting(winrt::event_token const& token)
+{
+    m_tabStripDragItemsStartingEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabStripDragOver(winrt::DragEventHandler const& value)
+{
+    return m_tabStripDragOverEventSource.add(value);
+}
+
+void TabViewProperties::TabStripDragOver(winrt::event_token const& token)
+{
+    m_tabStripDragOverEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabStripDrop(winrt::DragEventHandler const& value)
+{
+    return m_tabStripDropEventSource.add(value);
+}
+
+void TabViewProperties::TabStripDrop(winrt::event_token const& token)
+{
+    m_tabStripDropEventSource.remove(token);
 }

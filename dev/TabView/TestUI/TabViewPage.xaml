@@ -39,6 +39,11 @@
                     <TextBlock>Selected Index:</TextBlock>
                     <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Margin="4,0,0,0" Text="0"/>
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock>Tab dragged out:</TextBlock>
+                    <TextBlock x:Name="TabDraggedOutsideTextBlock" AutomationProperties.Name="TabDraggedOutsideTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
             </StackPanel>
 
             <controls:TabView
@@ -48,6 +53,7 @@
                 SelectedIndex="0"
                 SelectionChanged="TabViewSelectionChanged"
                 TabClosing="TabViewTabClosing"
+                TabDraggedOutside="TabViewTabDraggedOutside"
                 AddButtonClick="AddButtonClick">
 
                 <controls:TabView.RightCustomContent>

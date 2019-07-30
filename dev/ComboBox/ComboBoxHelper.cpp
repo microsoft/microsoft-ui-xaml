@@ -13,6 +13,8 @@ using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
 static constexpr auto c_editableTextBorderName = L"BorderElement"sv;
+static constexpr auto c_controlCornerRadiusKey = L"ControlCornerRadius"sv;
+static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
 GlobalDependencyProperty ComboBoxHelper::s_DropDownEventRevokersProperty{ nullptr };
 
 ComboBoxHelper::ComboBoxHelper()
@@ -53,62 +55,52 @@ void ComboBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
 {
     if (auto comboBox = sender.try_as<winrt::ComboBox>())
     {
-        if (auto revokersInspectable = comboBox.GetValue(DropDownEventRevokersProperty()))
-        {
-            if (auto revokers = revokersInspectable.try_as<ComboBoxDropDownEventRevokers>())
-            {
-                revokers->RevokeAll();
-            }
-        }
-        
         bool shouldMonitorDropDownState = unbox_value<bool>(args.NewValue());
         if (shouldMonitorDropDownState)
         {
             auto revokersInspectable = winrt::make<ComboBoxDropDownEventRevokers>();
-            auto revokers = revokersInspectable.try_as<ComboBoxDropDownEventRevokers>();
+            auto revokers = revokersInspectable.as<ComboBoxDropDownEventRevokers>();
 
             revokers->m_dropDownOpenedRevoker = comboBox.DropDownOpened(winrt::auto_revoke, ComboBoxHelper::OnDropDownOpened);
             revokers->m_dropDownClosedRevoker = comboBox.DropDownClosed(winrt::auto_revoke, ComboBoxHelper::OnDropDownClosed);
 
             comboBox.SetValue(DropDownEventRevokersProperty(), revokersInspectable);
         }
+        else
+        {
+            comboBox.SetValue(DropDownEventRevokersProperty(), nullptr);
+        }
     }
 }
 
 void ComboBoxHelper::OnDropDownOpened(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
-    if (auto comboBox = sender.try_as<winrt::ComboBox>())
-    {
-        // We need to know whether the dropDown opens above or below the ComboBox in order to update corner radius correctly.
+    auto comboBox = sender.as<winrt::ComboBox>();
+    // We need to know whether the dropDown opens above or below the ComboBox in order to update corner radius correctly.
         // Sometimes TransformToPoint value is incorrect because popup is not fully opened when this function gets called.
         // Use dispatcher to make sure we get correct VerticalOffset.
-        DispatcherHelper dispatcherHelper;
-        dispatcherHelper.RunAsync([comboBox]()
-            {
-                UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/true);
-            });
-    }
+    DispatcherHelper dispatcherHelper;
+    dispatcherHelper.RunAsync([comboBox]()
+        {
+            UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/true);
+        });
 }
 
 void ComboBoxHelper::OnDropDownClosed(const winrt::IInspectable& sender, const winrt::IInspectable& args)
 {
-    if (auto comboBox = sender.try_as<winrt::ComboBox>())
-    {
-        UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/false);
-    }
+    auto comboBox = sender.as<winrt::ComboBox>();
+    UpdateCornerRadius(comboBox, /*IsDropDownOpen=*/false);
 }
 
 void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool isDropDownOpen)
 {
     if (comboBox.IsEditable())
     {
-        // TODO, read default values from theme resource once we have them
-        winrt::CornerRadius popupRadius { 0 };
-        winrt::CornerRadius textBoxRadius{ 0 };
+        auto textBoxRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_controlCornerRadiusKey)));
+        auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(comboBox, box_value(c_overlayCornerRadiusKey)));
 
-        if (auto comboBoxControl7 = comboBox.try_as<winrt::IControl7>())
+        if (winrt::IControl7 comboBoxControl7 = comboBox)
         {
-            popupRadius = comboBoxControl7.CornerRadius();
             textBoxRadius = comboBoxControl7.CornerRadius();
         }
 
@@ -118,7 +110,7 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
             auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
             auto popupRadiusFilter = isOpenDown ? CornerRadiusFilterType::Bottom : CornerRadiusFilterType::Top;
-            popupRadius = cornerRadiusConverter->Convert(popupRadius, popupRadiusFilter);
+            popupRadius = cornerRadiusConverter->Convert(textBoxRadius, popupRadiusFilter);
 
             auto textBoxRadiusFilter = isOpenDown ? CornerRadiusFilterType::Top : CornerRadiusFilterType::Bottom;
             textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
@@ -131,7 +123,7 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
 
         if (auto textBox = GetTemplateChildT<winrt::TextBox>(c_editableTextName, comboBox))
         {
-            if (auto textBoxControl7 = textBox.try_as<winrt::IControl7>())
+            if (winrt::IControl7 textBoxControl7 = textBox)
             {
                 textBoxControl7.CornerRadius(textBoxRadius);
             }
@@ -159,4 +151,9 @@ bool ComboBoxHelper::IsPopupOpenDown(const winrt::ComboBox& comboBox)
         }
     }
     return verticalOffset > 0;
+}
+
+winrt::IInspectable ComboBoxHelper::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
+{
+    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }

@@ -204,6 +204,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ScrollBarForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ScrollBarBorderBrush}" />
         <Setter Property="IsTabStop" Value="False" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollBar">
