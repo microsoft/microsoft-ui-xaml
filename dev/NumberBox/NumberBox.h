@@ -73,8 +73,6 @@ private:
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
-    void OnErrorMouseEnter(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
-    void OnErrorIconMouseExit(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
@@ -92,7 +90,8 @@ private:
     winrt::Button m_SpinDown;
     winrt::Button m_SpinUp;
     winrt::FontIcon m_WarningIcon;
-    winrt::TextBlock m_ErrorFlyoutMessage;
+    winrt::ToolTip m_ErrorToolTip;
+    winrt::TextBlock m_ErrorToolTipTextBlock;
     winrt::TextBlock m_ErrorTextMessage;
     winrt::hstring m_ValidationMessage;
     bool m_hasError{ false };

@@ -22,18 +22,16 @@ void NumberBox::OnApplyTemplate()
     m_SpinDown = GetTemplateChildT<winrt::Button>(L"DownSpinButton", controlProtected);
     m_SpinUp = GetTemplateChildT<winrt::Button>(L"UpSpinButton", controlProtected);
     m_WarningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected);
-    m_ErrorFlyoutMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorFlyoutMessage", controlProtected);
     m_ErrorTextMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected);
 
     // Initializations - Visual States
     SetSpinButtonVisualState();
     SetHeader();
     SetPlaceHolderText();
-    m_ErrorFlyoutMessage.Text(m_ValidationMessage);
-
+    
     // Initializations - Interactions
-    m_WarningIcon.PointerEntered({ this, &NumberBox::OnErrorMouseEnter });
-    m_WarningIcon.PointerExited({ this, &NumberBox::OnErrorIconMouseExit });
+    m_ErrorToolTip.Content(m_ErrorToolTipTextBlock);
+    winrt::ToolTipService::SetToolTip(m_WarningIcon, m_ErrorToolTip);
 
     m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
     m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
@@ -224,18 +222,6 @@ void NumberBox::ValidateInput()
     }
 }
 
-void NumberBox::OnErrorMouseEnter(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
-{
-    auto icon = unbox_value<winrt::FrameworkElement>(sender);
-    winrt::FlyoutBase::ShowAttachedFlyout((winrt::Windows::UI::Xaml::FrameworkElement) icon);
-}
-
-void NumberBox::OnErrorIconMouseExit(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
-{
-    auto icon = unbox_value<winrt::FrameworkElement>(sender);
-    winrt::FlyoutBase::GetAttachedFlyout((winrt::Windows::UI::Xaml::FrameworkElement) icon).Hide();
-}
-
 // SpinClicks call to decrement or increment, 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
@@ -404,7 +390,7 @@ void NumberBox::SetErrorState(ValidationState state)
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
-        m_ErrorFlyoutMessage.Text(msg.str());
+        m_ErrorToolTipTextBlock.Text(msg.str());
     }
     else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
     {

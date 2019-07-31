@@ -88,14 +88,7 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Content="&#xE70E;" />
                         <!-- TODO: Export Color to ThemeResource -->
-                            <FontIcon x:Name="ValidationIcon" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" Foreground="#C50500" Margin="10,0,0,0" Visibility="Collapsed">
-                                <FlyoutBase.AttachedFlyout>
-                                    <Flyout x:Name="ErrorFlyout">
-                                        <TextBlock x:Name="ErrorFlyoutMessage" Text="Invalid Value" />
-                                    </Flyout>
-                                </FlyoutBase.AttachedFlyout>
-                            </FontIcon>
-
+                        <FontIcon x:Name="ValidationIcon" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" Foreground="#C50500" Margin="10,0,0,0" Visibility="Collapsed" ToolTipService.ToolTip="Invalid Input" />
                     </StackPanel>
                 </ControlTemplate>
             </Setter.Value>
