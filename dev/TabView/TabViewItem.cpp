@@ -45,24 +45,22 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
 void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
 {
     UpdateCloseButton();
-    OnHeaderPropertyChanged(nullptr);
 }
 
 void TabViewItem::UpdateCloseButton()
 {
     if (auto&& closeButton = m_closeButton.get())
     {
-        bool canClose = IsCloseable();
         if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
         {
             // IsCloseable defaults to true, but if it hasn't been set then CanCloseTabs should override it.
-            if (!tabView.CanCloseTabs() && ReadLocalValue(IsCloseableProperty()) == winrt::DependencyProperty::UnsetValue())
-            {
-                canClose = false;
-            }
-        }
+            bool canClose =
+                IsCloseable()
+                && (ReadLocalValue(IsCloseableProperty()) != winrt::DependencyProperty::UnsetValue()
+                   || tabView.CanCloseTabs());
 
-        closeButton.Visibility(canClose ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+            closeButton.Visibility(canClose ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+        }
     }
 }
 
@@ -93,21 +91,35 @@ void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyCh
 
 void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto toolTipContent = winrt::ToolTipService::GetToolTip(*this);
-    if (!toolTipContent)
+    if (m_firstTimeSettingToolTip)
     {
-        // App author has not specified a tooltip; use our own
+        m_firstTimeSettingToolTip = false;
+
+        if (!winrt::ToolTipService::GetToolTip(*this))
+        {
+            // App author has not specified a tooltip; use our own
+            m_toolTip.set([this]() {
+                auto toolTip = winrt::ToolTip();
+                toolTip.Placement(winrt::Controls::Primitives::PlacementMode::Mouse);
+                winrt::ToolTipService::SetToolTip(*this, toolTip);
+                return toolTip;
+            }());
+        }
+    }
+
+    if (auto toolTip = m_toolTip.get())
+    {
+        // Update tooltip text to new header text
         auto headerContent = Header();
         auto potentialString = safe_try_cast<winrt::IPropertyValue>(headerContent);
 
         if (potentialString && potentialString.Type() == winrt::PropertyType::String)
         {
-            winrt::ToolTipService::SetToolTip(*this, headerContent);
-            winrt::ToolTipService::SetPlacement(*this, winrt::Controls::Primitives::PlacementMode::Mouse);
+            toolTip.Content(headerContent);
         }
         else
         {
-            winrt::ToolTipService::SetToolTip(*this, nullptr);
+            toolTip.Content(nullptr);
         }
     }
 }

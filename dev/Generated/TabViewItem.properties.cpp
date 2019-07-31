@@ -30,7 +30,7 @@ void TabViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -73,6 +73,14 @@ void TabViewItemProperties::ClearProperties()
     s_HeaderTemplateProperty = nullptr;
     s_IconProperty = nullptr;
     s_IsCloseableProperty = nullptr;
+}
+
+void TabViewItemProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabViewItem>();
+    winrt::get_self<TabViewItem>(owner)->OnHeaderPropertyChanged(args);
 }
 
 void TabViewItemProperties::OnIsCloseablePropertyChanged(

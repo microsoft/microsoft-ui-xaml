@@ -190,7 +190,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(closeButton);
 
                 tab = FindElement.ByName("LongHeaderTab");
-                Log.Comment("Third close button should be visible because IsCloseable is still unset");
+                Log.Comment("Third close button should not be visible because IsCloseable is still unset");
                 closeButton = FindCloseButton(tab);
                 Verify.IsNull(closeButton);
             }
@@ -304,6 +304,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify event fired");
                 Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
             }
+        }
+
+        [TestMethod]
+        public void ToolTipDefaultTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("If the app sets custom tooltip text, it should be preserved.");
+                VerifyTooltipText("GetTab0ToolTipButton", "Tab0ToolTipTextBlock", "Custom Tooltip");
+
+                Log.Comment("If the app does not set a custom tooltip, it should be the same as the header text.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Shop");
+
+                Button changeShopTextButton = FindElement.ByName<Button>("ChangeShopTextButton");
+                changeShopTextButton.InvokeAndWait();
+
+                Log.Comment("If the tab's header changes, the tooltip should update.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Changed");
+            }
+        }
+
+        [TestMethod]
+        public void ToolTipUpdateTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button customTooltipButton = FindElement.ByName<Button>("CustomTooltipButton");
+                customTooltipButton.InvokeAndWait();
+
+                Log.Comment("If the app updates the tooltip, it should change to their custom one.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Custom");
+
+                Button changeShopTextButton = FindElement.ByName<Button>("ChangeShopTextButton");
+                changeShopTextButton.InvokeAndWait();
+
+                Log.Comment("The tooltip should not update if the header changes.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Custom");
+            }
+        }
+
+        public void VerifyTooltipText(String buttonName, String textBlockName, String expectedText)
+        {
+            Button button = FindElement.ByName<Button>(buttonName);
+            button.InvokeAndWait();
+
+            TextBlock textBlock = FindElement.ByName<TextBlock>(textBlockName);
+            Verify.AreEqual(textBlock.DocumentText, expectedText);
         }
 
         Button FindCloseButton(UIObject tabItem)

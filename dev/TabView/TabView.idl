@@ -111,6 +111,7 @@ unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
 {
     TabViewItem();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object Header{ get; set; };
 
     Windows.UI.Xaml.DataTemplate HeaderTemplate{ get; set; };
