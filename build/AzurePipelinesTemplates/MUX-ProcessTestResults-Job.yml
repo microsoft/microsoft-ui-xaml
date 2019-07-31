@@ -31,4 +31,4 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\OutputTestResults.ps1
-      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $$${{ parameters.checkJobAttempt }}
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
