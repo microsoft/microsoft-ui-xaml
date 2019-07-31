@@ -79,6 +79,7 @@ namespace MUXControlsTestApp
             }
             return false;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is NumberBoxMinMaxMode)
@@ -154,6 +155,7 @@ namespace MUXControlsTestApp
             }
             return false;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is RoundingAlgorithm)
@@ -209,6 +211,7 @@ namespace MUXControlsTestApp
             }
             return false;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is NumberBoxMinMaxMode)
@@ -250,6 +253,7 @@ namespace MUXControlsTestApp
             }
             return false;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is NumberBoxMinMaxMode)

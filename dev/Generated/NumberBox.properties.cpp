@@ -58,7 +58,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnBasicValidationModePropertyChanged));
     }
     if (!s_FractionDigitsProperty)
     {
@@ -294,6 +294,14 @@ void NumberBoxProperties::ClearProperties()
     s_StepFrequencyProperty = nullptr;
     s_TextProperty = nullptr;
     s_ValueProperty = nullptr;
+}
+
+void NumberBoxProperties::OnBasicValidationModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnBasicValidationModePropertyChanged(args);
 }
 
 void NumberBoxProperties::OnFractionDigitsPropertyChanged(

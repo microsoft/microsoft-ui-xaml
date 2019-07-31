@@ -66,7 +66,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    String PlaceholderText; 
+    String PlaceholderText;
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxBasicValidationMode BasicValidationMode;
     [MUX_DEFAULT_VALUE("false")]
     Boolean AcceptsCalculation;

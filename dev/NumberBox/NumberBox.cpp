@@ -21,12 +21,20 @@ void NumberBox::OnApplyTemplate()
     m_TextBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
     m_SpinDown = GetTemplateChildT<winrt::Button>(L"DownSpinButton", controlProtected);
     m_SpinUp = GetTemplateChildT<winrt::Button>(L"UpSpinButton", controlProtected);
+    m_WarningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected);
+    m_ErrorFlyoutMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorFlyoutMessage", controlProtected);
+    m_ErrorTextMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected);
+
     // Initializations - Visual States
     SetSpinButtonVisualState();
     SetHeader();
     SetPlaceHolderText();
+    m_ErrorFlyoutMessage.Text(m_ValidationMessage);
 
     // Initializations - Interactions
+    m_WarningIcon.PointerEntered({ this, &NumberBox::OnErrorMouseEnter });
+    m_WarningIcon.PointerExited({ this, &NumberBox::OnErrorIconMouseExit });
+
     m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
     m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
     m_TextBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
@@ -127,6 +135,19 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
     }
 }
 
+void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
+        {
+            SetErrorState(ValidationState::Valid);
+        }
+        else
+        {
+            // Revalidate input if it's changed
+            ValidateInput();
+        }
+}
+
 // Trigger any validation, rounding, and processing done onLostFocus
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
@@ -151,23 +172,66 @@ void NumberBox::ValidateInput()
 
     auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
 
-    if (parsedNum && IsInBounds(parsedNum.Value()) )
+    // Valid, in bounds value
+    if (parsedNum && GetBoundState(parsedNum.Value()) == BoundState::InBounds )
     {
-        SetErrorState(false);
+        SetErrorState(ValidationState::Valid);
         Value(parsedNum.Value());
         UpdateTextToValue();
     }
     else
     {
+        // No parsable value
+        if (!parsedNum)
+        {
+            SetErrorState(ValidationState::InvalidInput);
+            return;
+        }
+
+        // Parsable value that is not in bounds
+        double a = parsedNum.Value();
+        BoundState invalidState = GetBoundState(parsedNum.Value());
+
         if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
         {
             // Revert to previous value
-            SetErrorState(false);
+            SetErrorState(ValidationState::Valid);
             UpdateTextToValue();
             return;
         }
-        SetErrorState(true);
+        else if (invalidState == BoundState::OverMax)
+        {
+            SetErrorState(ValidationState::InvalidMax);
+            Value(parsedNum.Value());
+            UpdateTextToValue();
+            return;
+        }
+        else if (invalidState == BoundState::UnderMin)
+        {
+            SetErrorState(ValidationState::InvalidMin);
+            Value(parsedNum.Value());
+            UpdateTextToValue();
+            return;
+        }
+        else
+        {
+            SetErrorState(ValidationState::Invalid);
+            Value(parsedNum.Value());
+            UpdateTextToValue();
+        }
     }
+}
+
+void NumberBox::OnErrorMouseEnter(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+{
+    auto icon = unbox_value<winrt::FrameworkElement>(sender);
+    winrt::FlyoutBase::ShowAttachedFlyout((winrt::Windows::UI::Xaml::FrameworkElement) icon);
+}
+
+void NumberBox::OnErrorIconMouseExit(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+{
+    auto icon = unbox_value<winrt::FrameworkElement>(sender);
+    winrt::FlyoutBase::GetAttachedFlyout((winrt::Windows::UI::Xaml::FrameworkElement) icon).Hide();
 }
 
 // SpinClicks call to decrement or increment, 
@@ -226,7 +290,7 @@ void NumberBox::StepValue(bool sign)
     }
 
     // MinMaxMode Wrapping
-    if (MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && !IsInBounds(newVal))
+    if (MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && GetBoundState(newVal) != BoundState::InBounds)
     {
         while ( newVal > MaxValue() )
         {
@@ -242,7 +306,7 @@ void NumberBox::StepValue(bool sign)
     }
 
     // Input Overwriting - Coerce to min or max
-    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && !IsInBounds(newVal) )
+    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds )
     {
         if (newVal > MaxValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled) )
         {
@@ -294,19 +358,58 @@ void NumberBox::UpdateTextToValue()
 
 // Handlder for swapping visual states of textbox
 // TODO: Implement final visual states in spec
-void NumberBox::SetErrorState(bool state)
+void NumberBox::SetErrorState(ValidationState state)
 {
-    if (state && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::Disabled)
-    {
-        m_hasError = true;
-        winrt::VisualStateManager::GoToState(*this, L"Invalid", false);
-    }
-    else
+    // No Error Raised
+    if (state == ValidationState::Valid || BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
     {
         m_hasError = false;
         winrt::VisualStateManager::GoToState(*this, L"Valid", false);
+        return;
     }
 
+    // Build Validation message based on error that user made
+    std::wstringstream msg;
+    switch (state)
+    {
+        case ValidationState::InvalidInput:
+            if (AcceptsCalculation())
+            {
+                msg << "Only use numbers and ()+-*/^.";
+            }
+            else
+            {
+                msg << "Only use numbers.";
+            }
+            m_ValidationMessage = msg.str();
+            break;
+        case ValidationState::InvalidMin:
+            msg << "Min is " << MinValue() << ".";
+            m_ValidationMessage = msg.str();
+            break;
+        case ValidationState::InvalidMax:
+            msg << "Max is " << MaxValue() << ".";
+            m_ValidationMessage = msg.str();
+            break;
+        case ValidationState::InvalidDivide:
+            m_ValidationMessage = L"Division by 0 unsupported";
+            break;
+        case ValidationState::Invalid:
+            m_ValidationMessage = L"Invalid Input";
+        }
+
+
+    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
+        m_ErrorFlyoutMessage.Text(msg.str());
+    }
+    else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"InvalidText", false);
+        m_ErrorTextMessage.Text(msg.str());
+    }
+    m_hasError = true;
 }
 
 // Enables or Disables Spin Buttons
@@ -324,35 +427,39 @@ void NumberBox::SetSpinButtonVisualState()
 }
 
 // checks if val is in Min/Max bounds based on user's MinMax mode setting
-bool NumberBox::IsInBounds(double val)
+NumberBox::BoundState NumberBox::GetBoundState(double val)
 {
     double min = MinValue();
     double max = MaxValue();
     switch (  MinMaxMode() )
     {
         case winrt::NumberBoxMinMaxMode::None:
-            return true;
+            return BoundState::InBounds;
         case winrt::NumberBoxMinMaxMode::WrapEnabled:
         case winrt::NumberBoxMinMaxMode::MinAndMaxEnabled:
-            if (val < min || val > max)
+            if (val < min)
             {
-                return false;
+                return BoundState::UnderMin;
+            }
+            else if (val > max)
+            {
+                return BoundState::OverMax;
             }
             break;
         case winrt::NumberBoxMinMaxMode::MinEnabled:
             if (val < min)
             {
-                return false;
+                return BoundState::UnderMin;
             }
             break;
         case winrt::NumberBoxMinMaxMode::MaxEnabled:
             if (val > max)
             {
-                return false;
+                return BoundState::OverMax;
             }
             break;
     }
-    return true;
+    return BoundState::InBounds;
 }
 
 void NumberBox::UpdateFormatter()
@@ -382,9 +489,8 @@ void NumberBox::UpdateRounder()
     {
         m_sRounder.SignificantDigits( (uint32_t) abs(SignificantDigitPrecision()));
         m_sRounder.RoundingAlgorithm(RoundingAlgorithm());
-        m_formatter.NumberRounder(m_sRounder);
+        m_formatter.NumberRounder(m_sRounder); 
     }
-
 }
 
 void NumberBox::SetHeader()

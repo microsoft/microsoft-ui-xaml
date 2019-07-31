@@ -33,7 +33,7 @@ MathToken MathTokenizer::GetToken()
     {
         return MathToken(MathToken::TokenType::EOFToken, "");
     }
-
+ 
     std::stringstream ss;
     ss << inputString[index];
 

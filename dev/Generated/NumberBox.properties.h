@@ -124,6 +124,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnBasicValidationModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnFractionDigitsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

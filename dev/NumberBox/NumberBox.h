@@ -17,6 +17,24 @@ class NumberBox :
 {
     
 public:
+
+    enum ValidationState
+    {
+        Valid = 0,
+        Invalid = 1,
+        InvalidMax = 2,
+        InvalidMin = 3,
+        InvalidInput = 4,
+        InvalidDivide = 5
+    };
+
+    enum BoundState
+    {
+        InBounds = 0,
+        OverMax = 1,
+        UnderMin = 2
+    };
+
     NumberBox();
 
     // IFrameworkElement
@@ -45,22 +63,22 @@ public:
     void OnMinValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-
-
-
 private:
 
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void ValidateInput();
     void UpdateTextToValue();
-    void SetErrorState(bool state);
+    void SetErrorState(ValidationState state);
     void SetSpinButtonVisualState();
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
+    void OnErrorMouseEnter(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnErrorIconMouseExit(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
-    bool IsInBounds(double val);
+    BoundState GetBoundState(double val);
     void UpdateFormatter();
     void UpdateRounder();
     void SetHeader();
@@ -73,7 +91,10 @@ private:
     winrt::TextBox m_TextBox;
     winrt::Button m_SpinDown;
     winrt::Button m_SpinUp;
+    winrt::FontIcon m_WarningIcon;
+    winrt::TextBlock m_ErrorFlyoutMessage;
+    winrt::TextBlock m_ErrorTextMessage;
+    winrt::hstring m_ValidationMessage;
     bool m_hasError{ false };
-
 
 };
