@@ -182,16 +182,13 @@ void NumberBox::ValidateInput()
     else
     {
         // No parsable value
-        if (!parsedNum)
+        if (!parsedNum && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
         {
             SetErrorState(ValidationState::InvalidInput);
             return;
         }
 
-        // Parsable value that is not in bounds
-        double a = parsedNum.Value();
-        BoundState invalidState = GetBoundState(parsedNum.Value());
-
+        // Value needs to be overwritten
         if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
         {
             // Revert to previous value
@@ -199,7 +196,12 @@ void NumberBox::ValidateInput()
             UpdateTextToValue();
             return;
         }
-        else if (invalidState == BoundState::OverMax)
+
+        // Parsable value that is not in bounds
+        double a = parsedNum.Value();
+        BoundState invalidState = GetBoundState(parsedNum.Value());
+
+        if (invalidState == BoundState::OverMax)
         {
             SetErrorState(ValidationState::InvalidMax);
             Value(parsedNum.Value());
