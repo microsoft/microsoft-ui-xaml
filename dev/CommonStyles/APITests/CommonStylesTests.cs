@@ -92,19 +92,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var bottomRadiusGrid = (Grid)root.FindName("BottomRadiusGrid");
                 var leftRadiusGrid = (Grid)root.FindName("LeftRadiusGrid");
 
-                VerifyCornerRadius(topRadiusGrid.CornerRadius, new[] { 6, 6, 0, 0 });
-                VerifyCornerRadius(rightRadiusGrid.CornerRadius, new[] { 0, 6, 6, 0 });
-                VerifyCornerRadius(bottomRadiusGrid.CornerRadius, new[] { 0, 0, 6, 6 });
-                VerifyCornerRadius(leftRadiusGrid.CornerRadius, new[] { 6, 0, 0, 6 });
+                Verify.AreEqual(new CornerRadius(6, 6, 0, 0), topRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 6, 6, 0), rightRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 0, 6, 6), bottomRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);
             });
         }
 
-        private void VerifyCornerRadius(CornerRadius radius, int[] expectedValue)
+        [TestMethod]
+        public void VerifyVisualTreeForControls()
         {
-            Verify.AreEqual(expectedValue[0], radius.TopLeft, "Verify CornerRadius.TopLeft");
-            Verify.AreEqual(expectedValue[1], radius.TopRight, "Verify CornerRadius.TopRight");
-            Verify.AreEqual(expectedValue[2], radius.BottomRight, "Verify CornerRadius.BottomRight");
-            Verify.AreEqual(expectedValue[3], radius.BottomLeft, "Verify CornerRadius.BottomLeft");
+            if(PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                return;
+            }
+
+            var controlsToVerify = new List<string> {
+               "AppBarButton", "AppBarToggleButton", "AutoSuggestBox", "Button", "CalendarDatePicker", "CalendarView",
+               "CheckBox", "ColorPicker", "ComboBox", "ComboBoxItem", "ContentDialog", "DatePicker", "DropDownButton",
+               "FlipView", "ListViewItem", "MenuBar", "NavigationView", "NavigationViewItem", "ParallaxView", "PasswordBox",
+               "PersonPicture", "Pivot", "PivotItem", "RadioButton", "RadioMenuFlyoutItem", "RatingControl", "RefreshContainer",
+               "RichEditBox", "Scroller", "Slider", "SplitButton", "SplitView", "SwipeControl", "TextBox", "TimePicker",
+               "ToggleButton", "ToggleSwitch", "ToolTip", "TreeView", "TreeViewItem", "TwoPaneView"};
+
+            foreach (var control in controlsToVerify)
+            {
+                Log.Comment($"Verify visual tree for {control}");
+                VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+            }
+        }
+
+        private string XamlStringForControl(string controlName)
+        {
+            return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                          <{controlName}/>
+                   </Grid>";
         }
     }
 

@@ -1,0 +1,22 @@
+[Windows.UI.Xaml.Controls.Grid]
+    Padding=0,0,0,0
+    BorderThickness=0,0,0,0
+    BorderBrush=[NULL]
+    Background=[NULL]
+    Name=
+    Margin=0,0,0,0
+    FocusVisualSecondaryThickness=1,1,1,1
+    FocusVisualSecondaryBrush=#99FFFFFF
+    FocusVisualPrimaryThickness=2,2,2,2
+    FocusVisualPrimaryBrush=#FF000000
+    Visibility=Visible
+    RenderSize=400,400
+  [Windows.UI.Xaml.Controls.ParallaxView]
+      Name=
+      Margin=0,0,0,0
+      FocusVisualSecondaryThickness=1,1,1,1
+      FocusVisualSecondaryBrush=#99FFFFFF
+      FocusVisualPrimaryThickness=2,2,2,2
+      FocusVisualPrimaryBrush=#FF000000
+      Visibility=Visible
+      RenderSize=400,400
