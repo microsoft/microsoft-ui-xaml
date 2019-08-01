@@ -84,6 +84,39 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void ChangeShopTextButton_Click(object sender, RoutedEventArgs e)
+        {
+            SecondTab.Header = "Changed";
+        }
+
+        public void CustomTooltipButton_Click(object sender, RoutedEventArgs e)
+        {
+            ToolTipService.SetToolTip(SecondTab, "Custom");
+        }
+
+        public void GetTab0ToolTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            GetToolTipStringForTab(FirstTab, Tab0ToolTipTextBlock);
+        }
+
+        public void GetTab1ToolTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            GetToolTipStringForTab(SecondTab, Tab1ToolTipTextBlock);
+        }
+
+        public void GetToolTipStringForTab(TabViewItem item, TextBlock textBlock)
+        {
+            var tooltip = ToolTipService.GetToolTip(item);
+            if (tooltip is ToolTip)
+            {
+                textBlock.Text = (tooltip as ToolTip).Content.ToString();
+            }
+            else
+            {
+                textBlock.Text = tooltip.ToString();
+            }
+        }
+
         private void TabWidthComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (Tabs != null)
@@ -104,10 +137,12 @@ namespace MUXControlsTestApp
 
         private void TabViewTabClosing(object sender, Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs e)
         {
-            if (CancelCloseCheckBox.IsChecked == true)
-            {
-                e.Cancel = true;
-            }
+            e.Cancel = (bool)CancelCloseCheckBox.IsChecked;
+        }
+
+        private void FirstTab_TabClosing(object sender, Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs e)
+        {
+            e.Cancel = (bool)CancelItemCloseCheckBox.IsChecked;
         }
 
         private void TabViewTabDraggedOutside(object sender, Microsoft.UI.Xaml.Controls.TabViewTabDraggedOutsideEventArgs e)

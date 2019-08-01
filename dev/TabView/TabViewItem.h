@@ -25,11 +25,15 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
+    tracker_ref<winrt::ToolTip> m_toolTip{ this };
 
     void UpdateCloseButton();
+
+    bool m_firstTimeSettingToolTip{ true };
 
     PropertyChanged_revoker m_CanCloseTabsChangedRevoker{};
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
