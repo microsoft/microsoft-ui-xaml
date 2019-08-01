@@ -4,7 +4,7 @@
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
-    CornerRadius=Exception when read CornerRadius
+    CornerRadius=0,0,0,0
     Name=HeaderContent
     Margin=12,5,0,11
     FocusVisualSecondaryThickness=1,1,1,1

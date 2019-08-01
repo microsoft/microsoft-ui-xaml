@@ -97,6 +97,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                return;
+            }
+
+            var comboBox = SetupComboBox();
+            RunOnUIThread.Execute(() =>
+            {
+                comboBox.IsDropDownOpen = true;
+            });
+            IdleSynchronizer.Wait();
+
+            VisualTreeTestHelper.VerifyVisualTree(root: comboBox, masterFilePrefix: "ComboBox");
+        }
+
         private ComboBox SetupComboBox()
         {
             ComboBox comboBox = null;

@@ -1,5 +1,6 @@
 [Windows.UI.Xaml.Controls.Grid]
     Padding=0,0,0,0
+    CornerRadius=0,0,0,0
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]

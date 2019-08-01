@@ -46,6 +46,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.ExpandedModeThresholdWidth = 600.0;
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
+                navView.Height = 600.0;
                 navView.Content = "This is a simple test";
                 MUXControlsTestApp.App.TestContentRoot = navView;
             });
@@ -384,6 +385,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyVerifyHeaderContentMarginOnMinimalNav()
         {
             VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
+        }
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                return;
+            }
+
+            var navigationView = SetupNavigationView();
+            VisualTreeTestHelper.VerifyVisualTree(root: navigationView, masterFilePrefix: "NavigationView");
         }
 
         private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)

@@ -142,7 +142,7 @@ namespace MUXControls.TestAppUtils
         public class DefaultFilter : IFilter
         {
             private static readonly string[] _propertyNamePostfixWhiteList = new string[] {"Brush", "Thickness"};
-            private static readonly string[] _propertyNameWhiteList = new string[] {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name"};
+            private static readonly string[] _propertyNameWhiteList = new string[] {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name", "CornerRadius"};
             public virtual bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
                 return true;

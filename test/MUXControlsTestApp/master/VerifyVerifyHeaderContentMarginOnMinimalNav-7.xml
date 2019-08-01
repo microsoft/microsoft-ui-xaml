@@ -4,15 +4,15 @@
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
-    CornerRadius=Exception when read CornerRadius
+    CornerRadius=0,0,0,0
     Name=HeaderContent
-    Margin=12,5,0,11
+    Margin=8,5,0,0
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
     FocusVisualPrimaryBrush=#FF000000
     Visibility=Visible
-    RenderSize=388,40
+    RenderSize=312,40
   [Windows.UI.Xaml.Controls.ContentPresenter]
       Foreground=#FF000000
       Padding=0,0,0,0
@@ -27,7 +27,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#FF000000
       Visibility=Visible
-      RenderSize=388,40
+      RenderSize=312,40
     [Windows.UI.Xaml.Controls.TextBlock]
         Padding=0,0,0,0
         Foreground=#FF000000

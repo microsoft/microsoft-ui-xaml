@@ -47,6 +47,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class TreeViewTests
     {
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestUtilities.ClearVisualTreeRoot();
+        }
+
         [TestMethod]
         public void TreeViewNodeTest()
         {
@@ -574,6 +581,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 MUXControlsTestApp.App.TestContentRoot = null;
             });
+        }
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                return;
+            }
+
+            TreeView treeView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                treeView = new TreeView() { Width = 400, Height = 400 };
+                var node1 = new TreeViewNode() { Content = "Node1" };
+                treeView.RootNodes.Add(node1);
+            });
+            TestUtilities.SetAsVisualTreeRoot(treeView);
+
+            VisualTreeTestHelper.VerifyVisualTree(root: treeView, masterFilePrefix: "TreeView");
         }
 
         private bool IsMultiSelectCheckBoxChecked(TreeView tree, TreeViewNode node)
