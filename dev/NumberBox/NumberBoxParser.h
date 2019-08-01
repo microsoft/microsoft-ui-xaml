@@ -24,37 +24,39 @@ public:
         EOFToken = 6
     };
     TokenType type;
-    std::string str;
+    std::wstring str;
     MathToken();
-    MathToken(TokenType t, std::string s);
+    MathToken(TokenType t, std::wstring s);
+    MathToken(TokenType t, std::wstring& s);
+
 };
 
 // Handles tokenizing strings
 class MathTokenizer
 {
     private:
-        std::string inputString;
-        int inputLength;
-        int index;
-        bool IsNumeric(std::string in);
-        bool IsOperator(std::string ss);
+        std::wstring m_inputString;
+        int m_inputLength;
+        int m_index;
+        bool IsNumeric(std::wstring_view in);
+        bool IsOperator(std::wstring_view in);
 
     public:
-        MathTokenizer(std::string input);
+        MathTokenizer(std::wstring input);
         MathToken GetToken();
 };
 
-
+// Handles parsing and evaluating mathematical strings
 class NumberBoxParser
 {
     private:
-        static int NumberBoxParser::CmpPrecedence(char op1, char op2);
-        static std::string ConvertInfixToPostFix(const std::string& infix);
-        static double ComputeRpn(const std::string& expr);
+        static int NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2);
+        static std::wstring ConvertInfixToPostFix(const std::wstring& infix);
+        static double ComputeRpn(const std::wstring& expr);
 
     public:
         static double Compute(const winrt::hstring& expr);
-        static double Compute(const std::string&& expr);
+        static double Compute(const std::wstring&& expr);
         struct MalformedExpressionException : public std::exception
         {
             virtual const char* what() const throw()

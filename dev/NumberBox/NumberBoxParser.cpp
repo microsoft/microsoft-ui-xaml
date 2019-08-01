@@ -1,96 +1,104 @@
 ﻿#include "pch.h"
 #include "NumberBoxParser.h"
 
-
-MathToken::MathToken(TokenType t, std::string s)
+// Pass by reference
+MathToken::MathToken(TokenType t, std::wstring& s)
 {
     this->type = t;
     this->str = s;
 }
 
+// Pass directly
+MathToken::MathToken(TokenType t, std::wstring s)
+{
+    this->type = t;
+    this->str = s;
+}
+
+// Empty Token
 MathToken::MathToken()
 {
     this->type = MathToken::TokenType::EOFToken;
-    this->str = "";
+    this->str = L"";
 }
 
-MathTokenizer::MathTokenizer(std::string input)
+MathTokenizer::MathTokenizer(std::wstring input)
 {
-    inputString = input;
-    inputLength = (int) inputString.size();
-    index = 0;
+    m_inputString = input;
+    m_inputLength = (int) m_inputString.size();
+    m_index = 0;
 }
 
 MathToken MathTokenizer::GetToken()
 {
     // Skip Whitespaces
-    while (inputString[index] == ' ' && index <= inputLength)
+    while (m_inputString[m_index] == ' ' && m_index <= m_inputLength)
     {
-        index++;
+        m_index++;
     }
 
-    if (index >= inputLength)
+    if (m_index >= m_inputLength)
     {
-        return MathToken(MathToken::TokenType::EOFToken, "");
+        return MathToken(MathToken::TokenType::EOFToken, L"");
     }
  
-    std::stringstream ss;
-    ss << inputString[index];
+    std::wstringstream ss;
+    ss << m_inputString[m_index];
 
     // Return token that is +,-,*,^,/
     if (IsOperator(ss.str()))
     {
-        index++;
+        m_index++;
         return MathToken(MathToken::TokenType::Operator, ss.str());
     }
     // Return parenth token
-    else if (inputString[index] == '(')
+    else if (m_inputString[m_index] == '(')
     {
-        index++;
+        m_index++;
         return MathToken(MathToken::TokenType::ParenLeft, ss.str());
     }
-    else if (inputString[index] == ')')
+    else if (m_inputString[m_index] == ')')
     {
-        index++;
+        m_index++;
         return MathToken(MathToken::TokenType::ParenRight, ss.str());
     }
     // Numeric Tokens
-    else if (IsNumeric(ss.str()))
+    else if (IsNumeric(std::wstring_view(ss.str())))
     {
         // Keep Reading until all of number is parsed
-        while (IsNumeric(ss.str()) && index <= inputLength)
+        while (IsNumeric(std::wstring_view(ss.str())) && m_index < m_inputLength)
         {
-            ss << inputString[++index];
+            ss << m_inputString[++m_index];
         }
         return MathToken(MathToken::TokenType::Numeric, ss.str().substr(0, ss.str().size() - 1));
     }
     else
     {
-        index++;
+        m_index++;
         return MathToken(MathToken::TokenType::Invalid, ss.str());
     }
 }
 
 
-bool MathTokenizer::IsNumeric(std::string in)
+bool MathTokenizer::IsNumeric(std::wstring_view in)
 {
-    std::regex r("^-?(\\d?)+(\\.)?(\\d?)+?$");
-    return (std::regex_match(in, r));
+    std::wregex r(L"^-?(\\d?)+(\\.)?(\\d?)+?$");
+    return (std::regex_match(in.data(), r));
 }
 
-bool MathTokenizer::IsOperator(std::string strin)
+bool MathTokenizer::IsOperator(std::wstring_view in)
 {
-    std::regex r("^\\+|-|\\*|\\/|\\^$");
-    return (std::regex_match(strin, r));
+    std::wregex r(L"^\\+|-|\\*|\\/|\\^$");
+    return (std::regex_match(in.data(), r));
 }
 
 // Returns 1 for op1 higher precedence, -1 for lower, -2 for error
-int NumberBoxParser::CmpPrecedence(char op1, char op2)
+int NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
 {
-    const std::string ops = "-+/*^";
+    const std::wstring ops = L"-+/*^";
     int op1prec = (int) ops.find(op1) / 2;
     int op2prec = (int) ops.find(op2) / 2;
-    if (op1prec == std::string::npos || op2prec == std::string::npos)
+    if (op1prec == std::wstring::npos || op2prec == std::wstring::npos)
     {
         return -2;
     }
@@ -109,12 +117,12 @@ int NumberBoxParser::CmpPrecedence(char op1, char op2)
 }
 
 // Converts an infix mathematical expression into a postfix one, whitespace separation.
-std::string NumberBoxParser::ConvertInfixToPostFix(const std::string& infix)
+std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
 {
-    const std::string ops = "-+/*^";
+    const std::wstring ops = L"-+/*^";
 
-    std::stringstream out;
-    std::stack<char> opstack;
+    std::wstringstream out;
+    std::stack<wchar_t> opstack;
     MathTokenizer input(infix);
 
     MathToken token;
@@ -180,7 +188,7 @@ std::string NumberBoxParser::ConvertInfixToPostFix(const std::string& infix)
 }
 
 // Evaluates a postfix expression
-double NumberBoxParser::ComputeRpn(const std::string& expr)
+double NumberBoxParser::ComputeRpn(const std::wstring& expr)
 {
     std::stack<double> stack;
     MathTokenizer input(expr);
@@ -228,20 +236,23 @@ double NumberBoxParser::ComputeRpn(const std::string& expr)
             stack.push(res);
         }
         else if (token.type == MathToken::TokenType::Numeric) {
-            stack.push(atof(token.str.c_str()));
+            // Convert to double and push to stack
+            std::wstringstream wss(token.str);
+            double parsed;
+            wss >> parsed;
+            stack.push(parsed);
         }
     }
     return stack.top();
 }
 
-
 double NumberBoxParser::Compute(const winrt::hstring& expr)
 {
-    std::string InputAsString = winrt::to_string(expr);
-    return ComputeRpn(ConvertInfixToPostFix(InputAsString));
+    std::wstring_view InputAsString = std::wstring_view(expr);
+    return ComputeRpn(ConvertInfixToPostFix(InputAsString.data()));
 }
 
-double NumberBoxParser::Compute(const std::string&& expr)
+double NumberBoxParser::Compute(const std::wstring&& expr)
 {
     return ComputeRpn(ConvertInfixToPostFix(expr));
 }
