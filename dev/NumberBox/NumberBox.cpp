@@ -165,6 +165,7 @@ void NumberBox::ValidateInput()
 
     if (AcceptsCalculation() && IsFormulaic(m_TextBox.Text()))
     {
+            NormalizeShorthandOperations();
             EvaluateInput();
 
             // Divide by 0 error state
@@ -232,7 +233,7 @@ void NumberBox::ValidateInput()
 // SpinClicks call to decrement or increment, 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
-    StepValue(false);
+StepValue(false);
 }
 
 void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -243,14 +244,14 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     switch (args.Key()) {
-        case winrt::VirtualKey::Up:
-        case winrt::VirtualKey::GamepadDPadUp:
-            StepValue(true);
-            break;
-        case winrt::VirtualKey::Down:
-        case winrt::VirtualKey::GamepadDPadDown:
-            StepValue(false);
-            break;
+    case winrt::VirtualKey::Up:
+    case winrt::VirtualKey::GamepadDPadUp:
+        StepValue(true);
+        break;
+    case winrt::VirtualKey::Down:
+    case winrt::VirtualKey::GamepadDPadDown:
+        StepValue(false);
+        break;
     }
 }
 
@@ -287,11 +288,11 @@ void NumberBox::StepValue(bool sign)
     // MinMaxMode Wrapping
     if (MinMaxMode() == winrt::NumberBoxMinMaxMode::WrapEnabled && GetBoundState(newVal) != BoundState::InBounds)
     {
-        while ( newVal > MaxValue() )
+        while (newVal > MaxValue())
         {
             newVal = MinValue() + (newVal - MaxValue()) - 1;
         }
-        while ( newVal < MinValue() )
+        while (newVal < MinValue())
         {
             newVal = MaxValue() - abs(newVal - MinValue()) + 1;
         }
@@ -301,9 +302,9 @@ void NumberBox::StepValue(bool sign)
     }
 
     // Input Overwriting - Coerce to min or max
-    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds )
+    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
     {
-        if (newVal > MaxValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled) )
+        if (newVal > MaxValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled))
         {
             newVal = MaxValue();
         }
@@ -319,11 +320,23 @@ void NumberBox::StepValue(bool sign)
     ValidateInput();
 }
 
+
 // Check if text resembles formulaic input to determine if parser should be executed
 bool NumberBox::IsFormulaic(winrt::hstring in)
 {
-    std::regex r("^([0-9()\\s]*[+-/*^]+[0-9()\\s]*)+$");
+    std::regex r("^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
     return (std::regex_match(winrt::to_string(in), r));
+}
+
+void NumberBox::NormalizeShorthandOperations()
+{
+    std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");
+    if (std::regex_match(m_TextBox.Text().data(), r))
+    {
+        std::wstringstream ss;
+        ss << Value() << m_TextBox.Text().data();
+        m_TextBox.Text(ss.str());
+    }
 }
 
 // Run value entered through NumberParser
@@ -392,8 +405,6 @@ void NumberBox::SetErrorState(ValidationState state)
         }
     m_ValidationMessage = msg.str();
 
-
-
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
@@ -408,7 +419,6 @@ void NumberBox::SetErrorState(ValidationState state)
 }
 
 // Enables or Disables Spin Buttons
-// TODO: Styling for buttons
 void NumberBox::SetSpinButtonVisualState()
 {
     if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline )

@@ -55,22 +55,23 @@ MathToken MathTokenizer::GetToken()
             ss << m_inputString[m_index];
         }
     }
+
     // Return token that is +,-,*,^,/
     if (IsOperator(ss.str()))
     {
         m_index++;
-        return MathToken(MathToken::TokenType::Operator, ss.str());
+        m_lastToken = MathToken(MathToken::TokenType::Operator, ss.str());
     }
     // Return parenth token
     else if (m_inputString[m_index] == '(')
     {
         m_index++;
-        return MathToken(MathToken::TokenType::ParenLeft, ss.str());
+        m_lastToken = MathToken(MathToken::TokenType::ParenLeft, ss.str());;
     }
     else if (m_inputString[m_index] == ')')
     {
         m_index++;
-        return MathToken(MathToken::TokenType::ParenRight, ss.str());
+        m_lastToken = MathToken(MathToken::TokenType::ParenRight, ss.str());
     }
     // Numeric Tokens
     else if (IsNumeric(std::wstring_view(ss.str())))
@@ -80,21 +81,27 @@ MathToken MathTokenizer::GetToken()
         {
             ss << m_inputString[++m_index];
         }
-        return MathToken(MathToken::TokenType::Numeric, ss.str().substr(0, ss.str().size() - 1));
+        m_lastToken = MathToken(MathToken::TokenType::Numeric, ss.str().substr(0, ss.str().size() - 1));
     }
     else
     {
         m_index++;
-        return MathToken(MathToken::TokenType::Invalid, ss.str());
+        m_lastToken = MathToken(MathToken::TokenType::Invalid, ss.str());
     }
+    return m_lastToken;
+
 }
 
 // Peek at the next token that will be returned. Used for negative checks.
 MathToken MathTokenizer::PeekNextToken()
 {
+    // Save statics that need to be restored
+    MathToken oldLastToken = m_lastToken;
     int oldIndex = m_index++;
     MathToken nextToken = GetToken();
+    // Restore statics
     m_index = oldIndex;
+    m_lastToken = oldLastToken;
     return nextToken;
 }
 

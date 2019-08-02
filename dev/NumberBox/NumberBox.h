@@ -83,6 +83,7 @@ private:
     void SetPlaceHolderText();
     void EvaluateInput();
     bool IsFormulaic(winrt::hstring in);
+    void NormalizeShorthandOperations();
     winrt::DecimalFormatter m_formatter;
     winrt::IncrementNumberRounder m_iRounder;
     winrt::SignificantDigitsNumberRounder m_sRounder;
