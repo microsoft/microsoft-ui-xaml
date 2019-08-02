@@ -165,7 +165,14 @@ void NumberBox::ValidateInput()
 
     if (AcceptsCalculation() && IsFormulaic(m_TextBox.Text()))
     {
-            EvaluateInput();   
+            EvaluateInput();
+
+            // Divide by 0 error state
+            if (fpclassify(Value()) == FP_NAN)
+            {
+                SetErrorState(ValidationState::InvalidDivide);
+                return;
+            }
     }
 
     auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
@@ -324,9 +331,14 @@ void NumberBox::EvaluateInput()
 {
     std::optional<double> val;
     val = NumberBoxParser::Compute(m_TextBox.Text());
+    // No calculation could be done
     if (val == std::nullopt)
     {
         return;
+    }
+    if (std::fpclassify(val.value()) == FP_NAN)
+    {
+        Value(val.value());
     }
    Value(val.value());
    UpdateTextToValue(); 
@@ -365,22 +377,21 @@ void NumberBox::SetErrorState(ValidationState state)
             {
                 msg << "Only use numbers.";
             }
-            m_ValidationMessage = msg.str();
             break;
         case ValidationState::InvalidMin:
             msg << "Min is " << MinValue() << ".";
-            m_ValidationMessage = msg.str();
             break;
         case ValidationState::InvalidMax:
             msg << "Max is " << MaxValue() << ".";
-            m_ValidationMessage = msg.str();
             break;
         case ValidationState::InvalidDivide:
-            m_ValidationMessage = L"Division by 0 unsupported";
+            msg << "Division by 0 unsupported.";
             break;
         case ValidationState::Invalid:
-            m_ValidationMessage = L"Invalid Input";
+            msg << "Invalid Input.";
         }
+    m_ValidationMessage = msg.str();
+
 
 
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
