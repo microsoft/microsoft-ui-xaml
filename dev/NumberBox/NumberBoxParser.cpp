@@ -167,7 +167,7 @@ std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
             }
             // Broken Parentheses. Don't Resolve
             if (opstack.empty())
-                throw MalformedExpressionException();
+                return L"Malformed";
             // Pop LeftParen and discard
             opstack.pop();
         }
@@ -178,7 +178,7 @@ std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
     {
         if (opstack.top() == '(' || opstack.top() == ')')
         {
-           throw MalformedExpressionException();
+            return L"Malformed";
         }
         out << opstack.top() << ' ';
         opstack.pop();
@@ -188,8 +188,12 @@ std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
 }
 
 // Evaluates a postfix expression
-double NumberBoxParser::ComputeRpn(const std::wstring& expr)
+std::optional<double> NumberBoxParser::ComputeRpn(const std::wstring& expr)
 {
+    if (expr == L"Malformed")
+    {
+        return {};
+    }
     std::stack<double> stack;
     MathTokenizer input(expr);
     MathToken token;
@@ -198,12 +202,12 @@ double NumberBoxParser::ComputeRpn(const std::wstring& expr)
         if (token.type == MathToken::TokenType::Operator)
         {
             if (stack.empty())
-                throw MalformedExpressionException();
+                return {};
             double op1 = stack.top();
             stack.pop();
 
             if (stack.empty())
-                throw MalformedExpressionException();
+                return {};
             double op2 = stack.top();
             stack.pop();
 
@@ -231,7 +235,7 @@ double NumberBoxParser::ComputeRpn(const std::wstring& expr)
                     res = std::pow(op2, op1);
                     break;
                 default: //uh-oh
-                    throw MalformedExpressionException();
+                    return {};
             }
             stack.push(res);
         }
@@ -246,13 +250,14 @@ double NumberBoxParser::ComputeRpn(const std::wstring& expr)
     return stack.top();
 }
 
-double NumberBoxParser::Compute(const winrt::hstring& expr)
+std::optional<double> NumberBoxParser::Compute(const winrt::hstring& expr)
 {
     std::wstring_view InputAsString = std::wstring_view(expr);
     return ComputeRpn(ConvertInfixToPostFix(InputAsString.data()));
 }
 
-double NumberBoxParser::Compute(const std::wstring&& expr)
+std::optional<double> NumberBoxParser::Compute(const std::wstring&& expr)
 {
     return ComputeRpn(ConvertInfixToPostFix(expr));
 }
+

@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <regex>
 #include <stack>
+#include <optional>
 
 // Represents a token in a mathematic expression. This can be a simple operator (+-*/^), a decimal number, or parentheses. 
 class MathToken
@@ -52,11 +53,11 @@ class NumberBoxParser
     private:
         static int NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2);
         static std::wstring ConvertInfixToPostFix(const std::wstring& infix);
-        static double ComputeRpn(const std::wstring& expr);
+        static std::optional<double> ComputeRpn(const std::wstring& expr);
 
     public:
-        static double Compute(const winrt::hstring& expr);
-        static double Compute(const std::wstring&& expr);
+        static std::optional<double> Compute(const winrt::hstring& expr);
+        static std::optional<double> Compute(const std::wstring&& expr);
         struct MalformedExpressionException : public std::exception
         {
             virtual const char* what() const throw()

@@ -319,20 +319,16 @@ bool NumberBox::IsFormulaic(winrt::hstring in)
     return (std::regex_match(winrt::to_string(in), r));
 }
 
+// Run value entered through NumberParser
 void NumberBox::EvaluateInput()
 {
-    double val;
-
-    try
+    std::optional<double> val;
+    val = NumberBoxParser::Compute(m_TextBox.Text());
+    if (val == std::nullopt)
     {
-        val = NumberBoxParser::Compute(m_TextBox.Text());
-    }
-    catch (std::exception e)
-    {
-        // User probably entered a malformed expression. Cancel evaluation and invalidate. 
         return;
     }
-   Value(val);
+   Value(val.value());
    UpdateTextToValue(); 
 }
 
