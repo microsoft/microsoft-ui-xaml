@@ -27,15 +27,13 @@ MathTokenizer::MathTokenizer(std::wstring input)
     m_inputString = input;
     m_inputLength = (int) m_inputString.size();
     m_index = 0;
+    m_lastToken = MathToken(MathToken::TokenType::EOFToken, L"");
 }
 
 MathToken MathTokenizer::GetToken()
 {
     // Skip Whitespaces
-    while (m_inputString[m_index] == ' ' && m_index <= m_inputLength)
-    {
-        m_index++;
-    }
+    SkipWhiteSpace();
 
     if (m_index >= m_inputLength)
     {
@@ -45,6 +43,18 @@ MathToken MathTokenizer::GetToken()
     std::wstringstream ss;
     ss << m_inputString[m_index];
 
+    // Check for a negative number. Next Token must be numeric and previous token must not be numeric.
+    if (m_inputString[m_index] == '-')
+    {
+        
+        if (PeekNextToken().type == MathToken::TokenType::Numeric && m_lastToken.type != MathToken::TokenType::Numeric)
+        {
+            // Read next token so that the string is parsed as a numeric token.
+            m_index++;
+            SkipWhiteSpace();
+            ss << m_inputString[m_index];
+        }
+    }
     // Return token that is +,-,*,^,/
     if (IsOperator(ss.str()))
     {
@@ -79,6 +89,22 @@ MathToken MathTokenizer::GetToken()
     }
 }
 
+// Peek at the next token that will be returned. Used for negative checks.
+MathToken MathTokenizer::PeekNextToken()
+{
+    int oldIndex = m_index++;
+    MathToken nextToken = GetToken();
+    m_index = oldIndex;
+    return nextToken;
+}
+
+void MathTokenizer::SkipWhiteSpace()
+{
+    while (m_inputString[m_index] == ' ' && m_index <= m_inputLength)
+    {
+        m_index++;
+    }
+}
 
 bool MathTokenizer::IsNumeric(std::wstring_view in)
 {

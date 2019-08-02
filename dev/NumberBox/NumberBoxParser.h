@@ -39,12 +39,15 @@ class MathTokenizer
         std::wstring m_inputString;
         int m_inputLength;
         int m_index;
+        MathToken m_lastToken;
         bool IsNumeric(std::wstring_view in);
         bool IsOperator(std::wstring_view in);
+        void SkipWhiteSpace();
 
     public:
         MathTokenizer(std::wstring input);
         MathToken GetToken();
+        MathToken MathTokenizer::PeekNextToken();
 };
 
 // Handles parsing and evaluating mathematical strings
