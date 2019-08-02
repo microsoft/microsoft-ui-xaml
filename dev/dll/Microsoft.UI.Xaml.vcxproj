@@ -386,9 +386,6 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
-    <ClCompile Update="C:\Users\t-ketaha\source\repos\microsoft-ui-xaml\dev\NumberBox\..\..\..\..\..\Code\tinyexpr\NumberBoxExpressionEvaluator.c">
-      <FileType>CppCode</FileType>
-    </ClCompile>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
