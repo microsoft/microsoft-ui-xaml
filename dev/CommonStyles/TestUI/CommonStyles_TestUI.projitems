@@ -10,6 +10,11 @@
     <Import_RootNamespace>CommonStyles_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)BorderThicknessPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)CommonStylesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -22,6 +27,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BorderThicknessPage.xaml.cs">
+      <DependentUpon>BorderThicknessPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CommonStylesPage.xaml.cs">
       <DependentUpon>CommonStylesPage.xaml</DependentUpon>
     </Compile>
@@ -29,7 +37,7 @@
       <DependentUpon>CornerRadiusPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
-    <ItemGroup>
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)CompactPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
