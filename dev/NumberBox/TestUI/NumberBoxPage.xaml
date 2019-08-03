@@ -66,12 +66,14 @@
                 </ComboBox>
 
 
-
-
-
-                <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="boundbox" />
-                <controls:NumberBox x:Name="min"
+            <controls:NumberBox x:Name="step"
                 RelativePanel.Below="boundbox"/>
+            <TextBlock Text="StepFrequency" RelativePanel.RightOf="step" RelativePanel.Below="boundbox" />
+
+
+            <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="step" />
+                <controls:NumberBox x:Name="min"
+                RelativePanel.Below="step"/>
                 <TextBlock Text="Max" RelativePanel.RightOf="max" RelativePanel.Below="min" />
 
                 <controls:NumberBox x:Name="max"
@@ -111,8 +113,6 @@
                     <x:String>RoundUp</x:String>
                 </ComboBox>
 
-
-
                 <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="algo" RelativePanel.Below="algo" />
                 <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
 
@@ -137,6 +137,7 @@
                 IncrementPrecision="{x:Bind increment.Value, Mode=OneWay}"
                 SignificantDigitPrecision="{x:Bind sigprec.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
                 AcceptsCalculation="{x:Bind calculations.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                StepFrequency="{x:Bind step.Value, Mode=OneWay}"
 
                 />
 
