@@ -833,6 +833,9 @@ void TeachingTip::IsOpenChangedToOpen()
     }
 
     m_acceleratorKeyActivatedRevoker = Dispatcher().AcceleratorKeyActivated(winrt::auto_revoke, { this, &TeachingTip::OnF6AcceleratorKeyClicked });
+
+    // Make sure we are in the correct VSM state after ApplyTemplate and moving the template content from the Control to the Popup:
+    OnIsLightDismissEnabledChanged();
 }
 
 void TeachingTip::IsOpenChangedToClose()
