@@ -55,7 +55,7 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <RelativePanel x:Name="relpan">
-                            <TextBox x:Name="InputBox"/>
+                            <TextBox x:Name="InputBox" Header=""/>
                             <TextBlock Visibility="Collapsed" x:Name="ErrorTextMessage" Foreground="#C50500" IsColorFontEnabled="True" Text="Invalid Value" RelativePanel.Below="InputBox" />
 
                         </RelativePanel>

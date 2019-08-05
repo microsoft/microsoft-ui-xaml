@@ -113,7 +113,7 @@
                     <x:String>RoundUp</x:String>
                 </ComboBox>
 
-                <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="algo" RelativePanel.Below="algo" />
+                <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="increment" RelativePanel.Below="algo" />
                 <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
 
                 <TextBlock Text="SignificantDigitPrecision (For sig rounder)" RelativePanel.RightOf="sigprec" RelativePanel.Below="increment" />
@@ -121,9 +121,8 @@
 
                 <controls:NumberBox
                 x:Name="numBox"
-                Margin="0,50,0,0"
+                Margin="0,100,0,0"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
-                
                 MinValue="{x:Bind min.Value, Mode=OneWay}"
                 MaxValue="{x:Bind max.Value, Mode=OneWay}"
                 BasicValidationMode="{x:Bind validationmode.SelectedValue, Converter={StaticResource ValidationConverter}, Mode=OneWay}"

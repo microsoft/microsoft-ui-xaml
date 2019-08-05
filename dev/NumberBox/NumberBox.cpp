@@ -321,6 +321,7 @@ void NumberBox::StepValue(bool isPositive)
         }
     }
 
+    // Safeguard for floating point imprecision errors
     int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
     m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);
     newVal = m_stepPrecisionRounder.RoundDouble(newVal);
@@ -339,6 +340,7 @@ bool NumberBox::IsFormulaic(winrt::hstring in)
     return (std::regex_match(winrt::to_string(in), r));
 }
 
+// Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
 int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 {
     double oldVal = Value();
@@ -499,6 +501,7 @@ NumberBox::BoundState NumberBox::GetBoundState(double val)
     return BoundState::InBounds;
 }
 
+// Builds number formatter based on properties set
 void NumberBox::UpdateFormatter()
 {
     m_formatter.IntegerDigits(IntegerDigits());
@@ -508,6 +511,7 @@ void NumberBox::UpdateFormatter()
     m_formatter.IsZeroSigned(IsZeroSigned());
 }
 
+// Initializes NumberRounder based on properties set.
 void NumberBox::UpdateRounder()
 {
     // Setting a number rounder's RoundingAlgorithm to None can cause a crash because it's not a true value - safer to set Rounder to a null pointer instead
@@ -532,11 +536,10 @@ void NumberBox::UpdateRounder()
 
 void NumberBox::SetHeader()
 {
-    /* TODO: Header Code currently disabled
+    /*
     winrt::TextBox headerbox;
-    headerbox.Text(Header());
-    m_TextBox.Header(headerbox);
-    */
+    headerbox.Text(L"Hello World");
+    m_TextBox.Header(headerbox);   */
 }
 
 // Sets TextBox placeholder text
