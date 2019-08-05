@@ -67,8 +67,8 @@
 
 
             <controls:NumberBox x:Name="step"
-                RelativePanel.Below="boundbox"/>
-            <TextBlock Text="StepFrequency" RelativePanel.RightOf="step" RelativePanel.Below="boundbox" />
+                RelativePanel.Below="boundbox" Value="1"/>
+            <TextBlock Text="StepFrequency" RelativePanel.RightOf="step" RelativePanel.Below="boundbox"/>
 
 
             <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="step" />

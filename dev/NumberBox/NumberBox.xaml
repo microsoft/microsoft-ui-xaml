@@ -23,7 +23,7 @@
                                 <VisualState x:Name="InvalidIcon">
                                     <VisualState.Setters>
                                         <!-- TODO: Export Color to ThemeResource -->
-                                        <Setter Target="InputBox.BorderBrush" Value="#C50500" />
+                                        <Setter Target="InputBox.BorderBrush" Value="#C50500"/>
                                         <Setter Target="ValidationIcon.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>

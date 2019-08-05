@@ -44,6 +44,13 @@ void NumberBox::OnApplyTemplate()
     m_sRounder = winrt::SignificantDigitsNumberRounder();
     UpdateFormatter();
     UpdateRounder();
+
+    // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
+    m_stepPrecisionFormatter.FractionDigits(0);
+    m_stepPrecisionFormatter.IntegerDigits(1);
+    m_stepPrecisionFormatter.NumberRounder(nullptr);
+    m_stepPrecisionRounder.RoundingAlgorithm(winrt::RoundingAlgorithm::RoundHalfAwayFromZero);
+
     // Set Text to reflect preset Value
     if (s_ValueProperty != 0.0 && m_TextBox)
     {
@@ -270,13 +277,14 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
 }
 
 // Increments or decrements value by StepFrequency, wrapping if necessary
-void NumberBox::StepValue(bool sign)
+void NumberBox::StepValue(bool isPositive)
 {
     // Validating input before and after
     ValidateInput();
-    double newVal = Value();
+    double oldVal = Value();
+    double newVal = oldVal;
 
-    if (sign)
+    if (isPositive)
     {
         newVal += StepFrequency();
     }
@@ -300,9 +308,8 @@ void NumberBox::StepValue(bool sign)
         UpdateTextToValue();
         return;
     }
-
     // Input Overwriting - Coerce to min or max
-    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
+    else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
     {
         if (newVal > MaxValue() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled))
         {
@@ -313,6 +320,10 @@ void NumberBox::StepValue(bool sign)
             newVal = MinValue();
         }
     }
+
+    int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
+    m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);
+    newVal = m_stepPrecisionRounder.RoundDouble(newVal);
 
     // Update Text and Revalidate new value
     Value(newVal);
@@ -326,6 +337,27 @@ bool NumberBox::IsFormulaic(winrt::hstring in)
 {
     std::regex r("^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
     return (std::regex_match(winrt::to_string(in), r));
+}
+
+int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
+{
+    double oldVal = Value();
+    double stepFreq = StepFrequency();
+
+    // Run formatter on both values to discard trailing and leading 0's.
+    std::wstring formattedVal(m_stepPrecisionFormatter.Format(oldVal));
+    std::wstring formattedStep(m_stepPrecisionFormatter.Format(stepFreq));
+    std::wstring formattedNew(m_stepPrecisionFormatter.Format(newVal));
+
+    // Get size of only decimal portion of both old numbers. 
+    int oldValSig = (int) formattedVal.substr(formattedVal.find_first_of('.') + 1).size();
+    int StepSig = (int) formattedStep.substr(formattedStep.find_first_of('.') + 1).size();
+
+    // Pick bigger of two decimal sigDigits
+    int result = std::max(oldValSig, StepSig);
+    // append # of integer digits from new value
+    result += (int) formattedNew.substr(0, formattedNew.find_first_of('.')).size();
+    return result;
 }
 
 void NumberBox::NormalizeShorthandOperations()

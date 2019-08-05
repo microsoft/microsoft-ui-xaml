@@ -73,7 +73,7 @@ private:
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
-
+    int ComputePrecisionRounderSigDigits(double newVal);
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
     BoundState GetBoundState(double val);
@@ -87,6 +87,8 @@ private:
     winrt::DecimalFormatter m_formatter;
     winrt::IncrementNumberRounder m_iRounder;
     winrt::SignificantDigitsNumberRounder m_sRounder;
+    winrt::DecimalFormatter m_stepPrecisionFormatter;
+    winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder;
     winrt::TextBox m_TextBox;
     winrt::Button m_SpinDown;
     winrt::Button m_SpinUp;
