@@ -40,6 +40,7 @@ namespace MUXControlsTestApp
             }
             return false;
         }
+
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             if (value is NumberBoxSpinButtonPlacementMode)
@@ -293,10 +294,4 @@ namespace MUXControlsTestApp
             return false;
         }
     }
-
-
-
-
-
-
 }
