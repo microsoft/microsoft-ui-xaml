@@ -11,8 +11,6 @@ class SwipeTestHooks :
     public winrt::implementation::SwipeTestHooksT<SwipeTestHooks>
 {
 public:
-    SwipeTestHooks();
-
     static com_ptr<SwipeTestHooks> GetGlobalTestHooks()
     {
         return s_testHooks;

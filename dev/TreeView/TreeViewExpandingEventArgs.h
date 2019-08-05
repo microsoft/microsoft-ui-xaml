@@ -14,7 +14,6 @@ class TreeViewExpandingEventArgs :
         winrt::composable>
 {
 public:
-    TreeViewExpandingEventArgs();
     winrt::TreeViewNode Node();
     void Node(const winrt::TreeViewNode& value);
     winrt::IInspectable Item();

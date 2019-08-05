@@ -31,7 +31,7 @@ void ScrollerAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& val
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
-    const winrt::UIElement anchorElement{ value };
+    const winrt::UIElement& anchorElement{ value };
     com_ptr<Scroller> scroller = winrt::get_self<Scroller>(m_scroller.get())->get_strong();
 
     if (!anchorElement || scroller->IsElementValidAnchor(anchorElement))

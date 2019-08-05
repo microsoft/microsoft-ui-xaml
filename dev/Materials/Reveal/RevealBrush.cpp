@@ -31,18 +31,18 @@ const float RevealBrush::sc_specularAmountBorder{ 0.0f };
 const float RevealBrush::sc_specularShineBorder{ 0.0f };
 
 const winrt::Matrix5x4 RevealBrush::sc_colorToAlphaMatrix =
-    { 1.0f, 0.0f, 0.0f, 0.15f,
-      0.0f, 1.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 0.85f };
+{ 1.0f, 0.0f, 0.0f, 0.15f,
+  0.0f, 1.0f, 0.0f, 0.0f,
+  0.0f, 0.0f, 1.0f, 0.0f,
+  0.0f, 0.0f, 0.0f, 0.0f,
+  0.0f, 0.0f, 0.0f, 0.85f };
 
 const winrt::Matrix5x4 RevealBrush::sc_luminanceToAlphaMatrix
-    { 1.0f, 0.0f, 0.0f, 0.2125f,
-      0.0f, 1.0f, 0.0f, 0.7154f,
-      0.0f, 0.0f, 1.0f, 0.0721f,
-      0.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 0.0f };
+{ 1.0f, 0.0f, 0.0f, 0.2125f,
+  0.0f, 1.0f, 0.0f, 0.7154f,
+  0.0f, 0.0f, 1.0f, 0.0721f,
+  0.0f, 0.0f, 0.0f, 0.0f,
+  0.0f, 0.0f, 0.0f, 0.0f };
 
 // Originally the reveal border effect was built as:
 // 0) SceneLightingEffect input
@@ -64,19 +64,19 @@ const winrt::Matrix5x4 RevealBrush::sc_luminanceToAlphaMatrix
 
 // The reveal border matrix is the luminance to alpha matrix * 2
 const winrt::Matrix5x4 sc_revealBorderColorMatrix
-    { 2.0f, 0.0f, 0.0f, 2 * 0.2125f,
-        0.0f, 2.0f, 0.0f, 2 * 0.7154f,
-        0.0f, 0.0f, 2.0f, 2 * 0.0721f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f };
+{ 2.0f, 0.0f, 0.0f, 2 * 0.2125f,
+    0.0f, 2.0f, 0.0f, 2 * 0.7154f,
+    0.0f, 0.0f, 2.0f, 2 * 0.0721f,
+    0.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 0.0f };
 
 // The inverse border is the above but the colors are negated.
 const winrt::Matrix5x4 sc_revealInvertedBorderColorMatrix
-    { -2.0f,  0.0f,  0.0f,  2 * .2125f,
-        0.0f, -2.0f,  0.0f,  2 * .7154f,
-        0.0f,  0.0f, -2.0f,  2 * .0721f,
-        0.0f,  0.0f,  0.0f,  0.0f,
-        0.0f,  0.0f,  0.0f,  0.0f };
+{ -2.0f,  0.0f,  0.0f,  2 * .2125f,
+    0.0f, -2.0f,  0.0f,  2 * .7154f,
+    0.0f,  0.0f, -2.0f,  2 * .0721f,
+    0.0f,  0.0f,  0.0f,  0.0f,
+    0.0f,  0.0f,  0.0f,  0.0f };
 
 
 GlobalDependencyProperty RevealBrush::s_IsContainerProperty{ nullptr };
@@ -107,7 +107,7 @@ RevealBrush::RevealBrush()
 {
     //  Logging usage telemetry
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_Reveal);
-    
+
     EnsureProperties();
 }
 
@@ -115,11 +115,6 @@ RevealBorderBrush::RevealBorderBrush()
 {
     m_isBorder = true;
 }
-
-RevealBackgroundBrush::RevealBackgroundBrush()
-{
-}
-
 
 RevealBrush::~RevealBrush()
 {
@@ -205,7 +200,7 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
         if (m_dispatcherQueue)
         {
             m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
                 {
                     dispatcherQueue.TryEnqueue(winrt::Windows::System::DispatcherQueueHandler([weakThis]()
                     {
@@ -216,7 +211,7 @@ void RevealBrush::OnElementConnected(winrt::DependencyObject element) noexcept
                         }
                     }));
                 }
-            });
+                });
         }
 
 
@@ -245,7 +240,7 @@ void RevealBrush::OnConnected()
     {
         MaterialHelper::OnRevealBrushConnected();
     }
-    
+
 #else
     MaterialHelper::OnRevealBrushConnected();
 #endif
@@ -371,7 +366,7 @@ void RevealBrush::RemoveTargetBrush(const wstring_view& lightID)
     {
         winrt::XamlLight::RemoveTargetBrush(lightID, *this);
     }
-    catch (winrt::hresult_error &e)
+    catch (winrt::hresult_error& e)
     {
         // RemoveTargetBrush can fail with RPC_E_WRONG_THREAD if called while the Xaml Core is being shutdown, 
         // and there is evidence from Watson that such calls are made in real apps.
@@ -615,7 +610,7 @@ winrt::Windows::Graphics::Effects::IGraphicsEffect RevealBrush::CreateRevealBord
     }
 }
 
-winrt::CompositionEffectFactory 
+winrt::CompositionEffectFactory
 RevealBrush::GetOrCreateRevealBrushCompositionEffectFactory(
     bool isBorder,
     bool isInverted,
@@ -679,11 +674,11 @@ void RevealBrush::CreateRevealBrush()
         {
             // Set noise image source. The border brush is only used for a few pixels, and does not show banding, so it doesn't get noise.
 #if BUILD_WINDOWS
-        MUX_ASSERT(m_dpiScaledNoiseBrush);
-        revealBrush.SetSourceParameter(L"Noise", m_dpiScaledNoiseBrush);
+            MUX_ASSERT(m_dpiScaledNoiseBrush);
+            revealBrush.SetSourceParameter(L"Noise", m_dpiScaledNoiseBrush);
 #else
-        MUX_ASSERT(m_noiseBrush);
-        revealBrush.SetSourceParameter(L"Noise", m_noiseBrush);
+            MUX_ASSERT(m_noiseBrush);
+            revealBrush.SetSourceParameter(L"Noise", m_noiseBrush);
 #endif
         }
 
@@ -777,30 +772,30 @@ void RevealBrush::AttachLights()
             auto renderingEventForWindowRootToken = std::make_shared<winrt::event_token>();
             *renderingEventForWindowRootToken = winrt::Xaml::Media::CompositionTarget::Rendering(
                 [renderingEventForWindowRootToken](auto&, auto&) {
-                bool unsubscribeFromRenderingEvent = true;
-                if (MaterialHelper::ShouldBeginAttachingLights())
-                {
-                    if (ValidatePublicRootAncestor())
+                    bool unsubscribeFromRenderingEvent = true;
+                    if (MaterialHelper::ShouldBeginAttachingLights())
                     {
-                        RevealBrush::AttachLightsImpl();
+                        if (ValidatePublicRootAncestor())
+                        {
+                            RevealBrush::AttachLightsImpl();
+                        }
+                        else if (MaterialHelper::IncrementAndCheckFailedToAttachLightsCount())
+                        {
+                            // We've actually exceeded max failed to attach lights count - not clear if this is a valid scenario, get a record in Watson...
+                            MUX_ASSERT(FALSE);
+                        }
+                        else
+                        {
+                            // Keep trying...
+                            unsubscribeFromRenderingEvent = false;
+                        }
                     }
-                    else if (MaterialHelper::IncrementAndCheckFailedToAttachLightsCount())
-                    {
-                        // We've actually exceeded max failed to attach lights count - not clear if this is a valid scenario, get a record in Watson...
-                        MUX_ASSERT(FALSE);
-                    }
-                    else
-                    {
-                        // Keep trying...
-                        unsubscribeFromRenderingEvent = false;
-                    }
-                }
 
-                if (unsubscribeFromRenderingEvent)
-                {
-                    winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForWindowRootToken);
-                }
-            });
+                    if (unsubscribeFromRenderingEvent)
+                    {
+                        winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForWindowRootToken);
+                    }
+                });
         }
     }
 #endif
@@ -824,38 +819,38 @@ void RevealBrush::AttachLightsImpl()
         auto renderingEventForPopupToken = std::make_shared<winrt::event_token>();
         *renderingEventForPopupToken = winrt::Xaml::Media::CompositionTarget::Rendering(
             [renderingEventForPopupToken](auto&, auto&) {
-            // Detach event or Rendering will keep calling us back.
-            winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForPopupToken);
+                // Detach event or Rendering will keep calling us back.
+                winrt::Xaml::Media::CompositionTarget::Rendering(*renderingEventForPopupToken);
 
-            // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
-            if (MaterialHelper::ShouldContinueAttachingLights())
-            {
-                // Lights have been attached to the visual root, but there are still other places where the app can use
-                // reveal brushes. They need lights as well. One place is the popup root, which is the parent of the child
-                // elements of all open popups.
-                winrt::Popup popup;
-                winrt::Canvas popupChild;
-                popup.Child(popupChild);
-                auto popupOpenedToken = std::make_shared<winrt::event_token>();
-                *popupOpenedToken = popup.Opened([popup, popupChild, popupOpenedToken](auto&, auto&) {
-                    // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
-                    if (MaterialHelper::ShouldContinueAttachingLights())
-                    {
-                        // Attach lights to PopupRoot.
-                        RevealBrush::AttachLightsToAncestor(popupChild, true);
-                    }
-                    popup.IsOpen(false);
-                    popup.Opened(*popupOpenedToken);
-                });
+                // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
+                if (MaterialHelper::ShouldContinueAttachingLights())
+                {
+                    // Lights have been attached to the visual root, but there are still other places where the app can use
+                    // reveal brushes. They need lights as well. One place is the popup root, which is the parent of the child
+                    // elements of all open popups.
+                    winrt::Popup popup;
+                    winrt::Canvas popupChild;
+                    popup.Child(popupChild);
+                    auto popupOpenedToken = std::make_shared<winrt::event_token>();
+                    *popupOpenedToken = popup.Opened([popup, popupChild, popupOpenedToken](auto&, auto&) {
+                        // If we've removed all lights from the tree before we finished attaching all lights, then don't attach the rest.
+                        if (MaterialHelper::ShouldContinueAttachingLights())
+                        {
+                            // Attach lights to PopupRoot.
+                            RevealBrush::AttachLightsToAncestor(popupChild, true);
+                        }
+                        popup.IsOpen(false);
+                        popup.Opened(*popupOpenedToken);
+                        });
 
-                popup.IsOpen(true);
-            }
-        });
+                    popup.IsOpen(true);
+                }
+            });
     }
 #endif
 }
 
-winrt::UIElement RevealBrush::GetAncestor(const winrt::UIElement & root)
+winrt::UIElement RevealBrush::GetAncestor(const winrt::UIElement& root)
 {
     auto current = root;
     auto parent = current;
@@ -887,14 +882,14 @@ bool RevealBrush::ValidatePublicRootAncestor()
     // on it directly, or it isn't, in which case we should have walked up to the RootScrollViewer and set lights there.
     auto ancestor = GetAncestor(windowRoot);
     bool windowContentIsCanvas = static_cast<bool>(windowRoot.try_as<winrt::Canvas>());
-    bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) && 
-                                  static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
+    bool walkedUpToScrollViewer = winrt::VisualTreeHelper::GetParent(windowRoot) &&
+        static_cast<bool>(ancestor.try_as<winrt::FxScrollViewer>());
 
     // On MUX + RS3/RS4, it's possible XCB::OnConnected is called before visual tree is constructed and the ancestor walk returns a false elemenet.
     return windowContentIsCanvas || walkedUpToScrollViewer;
 }
 
-void RevealBrush::AttachLightsToElement(const winrt::UIElement & element, bool trackAsRootToDisconnectFrom)
+void RevealBrush::AttachLightsToElement(const winrt::UIElement& element, bool trackAsRootToDisconnectFrom)
 {
     auto lights = element.Lights();
 
@@ -947,7 +942,7 @@ void RevealBrush::AttachLightsToElement(const winrt::UIElement & element, bool t
     }
 }
 
-void RevealBrush::AttachLightsToAncestor(const winrt::UIElement & root, bool trackAsRootToDisconnectFrom)
+void RevealBrush::AttachLightsToAncestor(const winrt::UIElement& root, bool trackAsRootToDisconnectFrom)
 {
     auto ancestor = GetAncestor(root);
     AttachLightsToElement(ancestor, trackAsRootToDisconnectFrom);
@@ -1002,9 +997,9 @@ void RevealBrush::AttachLightsToIsland(const winrt::XamlIsland& island)
 
         MaterialHelper::TrackRevealLightsToRemoveIsland(
             island,
-            lights, 
-            {*borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight }
-            );
+            lights,
+            { *borderLightTheme, *wideBorderLightTheme, *borderDarkTheme, *wideBorderDarkTheme, *ambientLight }
+        );
     }
 }
 #endif
@@ -1041,9 +1036,9 @@ void RevealBrush::OnTransparencyPolicyChanged(const winrt::IMaterialProperties& 
         com_ptr<RevealBrush> strongThis = get_strong();
         m_dispatcherQueue.TryEnqueue(
             winrt::Windows::System::DispatcherQueueHandler([strongThis, sender]()
-        {
-            strongThis->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()));
-        }));
+                {
+                    strongThis->PolicyStatusChangedHelper(MaterialHelper::BrushTemplates<RevealBrush>::IsDisabledByInAppTransparencyPolicy(strongThis.get()));
+                }));
     }
 }
 

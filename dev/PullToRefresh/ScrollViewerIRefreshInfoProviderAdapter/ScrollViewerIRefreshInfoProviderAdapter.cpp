@@ -56,7 +56,7 @@ winrt::IRefreshInfoProvider ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTr
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    winrt::UIElement winrtRoot = root;
+    const winrt::UIElement& winrtRoot = root;
     winrt::FxScrollViewer rootAsSV = winrtRoot.try_as<winrt::FxScrollViewer>();
     int depth = 0;
     if (rootAsSV)
@@ -273,7 +273,7 @@ void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerDirectManipulationCo
     }
 }
 
-void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging(const winrt::IInspectable& /*sender*/, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs args)
+void ScrollViewerIRefreshInfoProviderAdapter::OnScrollViewerViewChanging(const winrt::IInspectable& /*sender*/, const winrt::Windows::UI::Xaml::Controls::ScrollViewerViewChangingEventArgs& args)
 {
     if (m_infoProvider.get() && m_infoProvider.get()->IsInteractingForRefresh())
     {
@@ -301,7 +301,7 @@ winrt::UIElement ScrollViewerIRefreshInfoProviderAdapter::GetScrollContent()
     return nullptr;
 }
 
-void ScrollViewerIRefreshInfoProviderAdapter::MakeInteractionSource(winrt::UIElement contentParent)
+void ScrollViewerIRefreshInfoProviderAdapter::MakeInteractionSource(const winrt::UIElement& contentParent)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     winrt::Visual contentParentVisual = winrt::ElementCompositionPreview::GetElementVisual(contentParent);
@@ -322,7 +322,7 @@ void ScrollViewerIRefreshInfoProviderAdapter::MakeInteractionSource(winrt::UIEle
     }
 }
 
-winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecursiveHelper(winrt::DependencyObject root, int depth)
+winrt::FxScrollViewer ScrollViewerIRefreshInfoProviderAdapter::AdaptFromTreeRecursiveHelper(const winrt::DependencyObject& root, int depth)
 {
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, depth);
     int numChildren = winrt::VisualTreeHelper::GetChildrenCount(root);

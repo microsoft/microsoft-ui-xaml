@@ -7,10 +7,8 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {

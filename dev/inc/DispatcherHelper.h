@@ -8,7 +8,7 @@ class DispatcherHelper
 {
 public:
 
-    DispatcherHelper(winrt::DependencyObject dependencyObject = nullptr)
+    DispatcherHelper(const winrt::DependencyObject& dependencyObject = nullptr)
     {
         if (SharedHelpers::IsDispatcherQueueAvailable())
         {

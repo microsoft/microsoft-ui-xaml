@@ -14,19 +14,18 @@ Hsv::Hsv(double h, double s, double v) : h{ h }, s{ s }, v{ v }
 {
 }
 
-bool TryParseInt(const wstring_view& s, _Out_ unsigned long *outParam)
+std::optional<unsigned long> TryParseInt(const wstring_view& s)
 {
-    return TryParseInt(s.data(), outParam, 10 /* base */);
+    return TryParseInt(s, 10 /* base */);
 }
 
-bool TryParseInt(_In_z_ PCWSTR str, _Out_ unsigned long *outParam, int base)
+std::optional<unsigned long> TryParseInt(const wstring_view& str, int base)
 {
     // If we have a zero-length string, then we can immediately know
     // that this is not a valid integer.
-    if (*str == '\0')
+    if (*str.data() == '\0')
     {
-        *outParam = 0;
-        return false;
+        return std::nullopt;
     }
 
     wchar_t *end;
@@ -34,9 +33,13 @@ bool TryParseInt(_In_z_ PCWSTR str, _Out_ unsigned long *outParam, int base)
     // wcstoll takes in a string and converts as much as it as it can to an integer value,
     // returning a pointer to the first element that it wasn't able to consider part of an integer.
     // If we got all the way to the end of the string, then the whole thing was a valid string.
-    *outParam = wcstoul(str, &end, base);
+    auto result = wcstoul(str.data(), &end, base);
+    if (*end == '\0')
+    {
+        return result;
+    }
 
-    return (*end == '\0');
+    return std::nullopt;
 }
 
 Hsv RgbToHsv(const Rgb &rgb)
@@ -246,12 +249,8 @@ Rgb HsvToRgb(const Hsv &hsv)
 
 Rgb HexToRgb(const wstring_view& input)
 {
-    Rgb rgbValue;
-    double ignored;
-
-    HexToRgba(input, &rgbValue, &ignored);
-
-    return rgbValue;
+    auto [rgb, a] = HexToRgba(input);
+    return rgb;
 }
 
 winrt::hstring RgbToHex(const Rgb &rgb)
@@ -268,31 +267,29 @@ winrt::hstring RgbToHex(const Rgb &rgb)
     return winrt::hstring(hexString);
 }
 
-void HexToRgba(const wstring_view& input, _Out_ Rgb *rgb, _Out_ double *alpha)
+std::tuple<Rgb, double> HexToRgba(const wstring_view& input)
 {
     // The input always begins with a #, so we'll move past that.
     auto ptr = input.data();
     ++ptr;
 
-    unsigned long hexValue;
+    auto hexValue = TryParseInt(ptr, 16);
 
     // If we failed to parse the string into an integer, then we'll return all -1's.
     // ARGB values can never be negative, so this is a convenient error state to use
     // to indicate that this value should not actually be used.
-    if (TryParseInt(ptr, &hexValue, 16) == false)
+    if (!hexValue.has_value())
     {
-        *rgb = Rgb(-1, -1, -1);
-        *alpha = -1;
-        return;
+        return { Rgb(-1, -1, -1), -1 };
     }
 
-    byte a = static_cast<byte>((hexValue & 0xff000000) >> 24);
-    byte r = static_cast<byte>((hexValue & 0x00ff0000) >> 16);
-    byte g = static_cast<byte>((hexValue & 0x0000ff00) >> 8);
-    byte b = static_cast<byte>(hexValue & 0x000000ff);
+    auto hex = hexValue.value();
+    byte a = static_cast<byte>((hex & 0xff000000) >> 24);
+    byte r = static_cast<byte>((hex & 0x00ff0000) >> 16);
+    byte g = static_cast<byte>((hex & 0x0000ff00) >> 8);
+    byte b = static_cast<byte>(hex & 0x000000ff);
 
-    *rgb = Rgb(r / 255.0, g / 255.0, b / 255.0);
-    *alpha = a / 255.0;
+    return { Rgb(r / 255.0, g / 255.0, b / 255.0), a / 255.0 };
 }
 
 winrt::hstring RgbaToHex(const Rgb &rgb, double alpha)

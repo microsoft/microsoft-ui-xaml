@@ -17,10 +17,6 @@ ToggleSplitButton::ToggleSplitButton()
     SetDefaultStyleKey(this);
 }
 
-ToggleSplitButton::~ToggleSplitButton()
-{
-}
-
 void ToggleSplitButton::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();

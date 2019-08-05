@@ -62,11 +62,10 @@ void TreeViewList::OnDragItemsStarting(const winrt::IInspectable& /*sender*/, co
                 // TreeViewList has no knowledge about item selections happened in TreeView, no matter how many items are actually selected, args.Items() always contains only one item that is currently being dragged by cursor.
                 // Here, we manually add selected nodes to args.Items in order to expose all selected (and dragged) items to outside handlers.
                 args.Items().Clear();
-                bool isContentMode = ListViewModel()->IsContentMode();
 
                 for (auto const& node : ListViewModel()->GetSelectedNodes())
                 {
-                    if (isContentMode)
+                    if (IsContentMode())
                     {
                         args.Items().Append(node.Content());
                     }
@@ -101,13 +100,9 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
     {
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
         auto targetNode = NodeFromContainer(targetItem);
-        winrt::get_self<TreeViewItem>(targetItem)->UpdateIndentation(targetNode.Depth());
-
-        if (m_isMultiselectEnabled)
-        {
-            auto node = winrt::get_self<TreeViewNode>(targetNode);
-            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelection(node->SelectionState());
-        }
+        auto treeViewItem = winrt::get_self<TreeViewItem>(targetItem);
+        treeViewItem->UpdateIndentation(targetNode.Depth());
+        treeViewItem->UpdateSelectionVisual(winrt::get_self<TreeViewNode>(targetNode)->SelectionState());
     }
 }
 
@@ -304,29 +299,35 @@ void TreeViewList::OnDragLeave(winrt::DragEventArgs const& args)
 // IItemsControlOverrides
 void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item)
 {
-    winrt::TreeViewNode itemNode = NodeFromContainer(element);
+    auto itemNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
     winrt::TreeViewItem itemContainer = element.as<winrt::TreeViewItem>();
+    auto selectionState = itemNode->SelectionState();
 
     //Set the expanded property to match that of the Node, and enable Drop by default
     itemContainer.AllowDrop(true);
 
-    if (ListViewModel()->IsContentMode())
+    if (IsContentMode())
     {
-        bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode.HasChildren();
+        bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
     }
     else
     {
-        itemContainer.IsExpanded(itemNode.IsExpanded());
-        itemContainer.GlyphOpacity(itemNode.HasChildren() ? 1.0 : 0.0);
+        itemContainer.IsExpanded(itemNode->IsExpanded());
+        itemContainer.GlyphOpacity(itemNode->HasChildren() ? 1.0 : 0.0);
     }
 
     //Set startup TemplateSettings properties
     auto templateSettings = winrt::get_self<TreeViewItemTemplateSettings>(itemContainer.TreeViewItemTemplateSettings());
-    templateSettings->ExpandedGlyphVisibility(itemNode.IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-    templateSettings->CollapsedGlyphVisibility(!itemNode.IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    templateSettings->ExpandedGlyphVisibility(itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    templateSettings->CollapsedGlyphVisibility(!itemNode->IsExpanded() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
 
     __super::PrepareContainerForItemOverride(element, item);
+
+    if (selectionState != itemNode->SelectionState())
+    {
+        ListViewModel()->UpdateSelection(*itemNode, selectionState);
+    }
 }
 
 winrt::DependencyObject TreeViewList::GetContainerForItemOverride()
@@ -642,7 +643,7 @@ winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& 
 
 winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    int index = IndexFromContainer(container);
+    int index = container ? IndexFromContainer(container) : -1;
     if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
     {
         return NodeAtFlatIndex(index);
@@ -652,9 +653,32 @@ winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject cons
 
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    if (ListViewModel()->IsContentMode())
+    if (!node)
     {
-        return ContainerFromItem(node.Content());
+        return nullptr;
     }
-    return ContainerFromItem(node);
+
+    return IsContentMode() ? ContainerFromItem(node.Content()) : ContainerFromItem(node);
+}
+
+winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
+{
+    return IsContentMode() ?
+        ListViewModel().get()->GetAssociatedNode(item) :
+        safe_try_cast<winrt::TreeViewNode>(item);
+}
+
+winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
+{
+    return (IsContentMode() && node) ? node.Content() : node;
+}
+
+bool TreeViewList::IsContentMode()
+{
+    if (auto viewModel = ListViewModel())
+    {
+        return viewModel->IsContentMode();
+    }
+
+    return false;
 }

@@ -2,8 +2,6 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-
-
 using winrt::com_ptr;
 using winrt::weak_ref;
 using winrt::hstring;
@@ -24,12 +22,12 @@ inline winrt::IInspectable& to_winrt(::IInspectable*& instance)
 }
 
 inline winrt::DependencyProperty InitializeDependencyProperty(
-    _In_ wstring_view const& propertyNameString,
-    _In_ wstring_view const& propertyTypeNameString,
-    _In_ wstring_view const& ownerTypeNameString,
+    wstring_view const& propertyNameString,
+    wstring_view const& propertyTypeNameString,
+    wstring_view const& ownerTypeNameString,
     bool isAttached,
-    _In_opt_ winrt::IInspectable defaultValue,
-    _In_opt_ winrt::PropertyChangedCallback propertyChangedCallback = nullptr)
+    winrt::IInspectable const& defaultValue,
+    winrt::PropertyChangedCallback const& propertyChangedCallback = nullptr)
 {
     auto propertyType = winrt::Interop::TypeName();
     propertyType.Name = propertyTypeNameString;
@@ -160,9 +158,9 @@ struct PropertyChanged_revoker
        return *this;
    }
 
-   PropertyChanged_revoker(winrt::DependencyObject const& object, winrt::DependencyProperty const& dp, int64_t token) :
+   PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty&  dp, int64_t token) :
         m_object(object),
-        m_property(dp),
+        m_property(std::move(dp)),
         m_token(token)
     {}
 

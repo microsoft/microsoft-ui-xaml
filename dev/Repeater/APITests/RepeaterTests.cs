@@ -19,7 +19,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
@@ -29,7 +28,6 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Collections.Generic;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -52,11 +50,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater = new ItemsRepeater()
                 {
                     ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                     ItemTemplate = elementFactory,
-#endif
                     // Default is StackLayout, so do not have to explicitly set.
                     // Layout = new StackLayout(),
                 };

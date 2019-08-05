@@ -23,7 +23,7 @@ public:
     void OnApplyTemplate();
 
 
-    void AddPassThroughElement(winrt::DependencyObject element);
+    void AddPassThroughElement(const winrt::DependencyObject& element);
     void ShowMenuFlyout();
     void CloseMenuFlyout();
     bool IsFlyoutOpen();

@@ -3,7 +3,7 @@
 
 #pragma once
 
-STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory **factory);
+STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory** factory);
 
 class XamlMetadataProviderGenerated
 {
@@ -23,7 +23,7 @@ public:
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
-        
+
         if (FAILED(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory**)winrt::put_abi(_activationFactory))))
         {
             return nullptr;
@@ -38,9 +38,8 @@ public:
     {
         winrt::IActivationFactory _activationFactory{ nullptr };
         Microsoft::WRL::Wrappers::HStringReference activatableClassId{ typeName };
-        winrt::check_hresult(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory**)winrt::put_abi(_activationFactory)));
+        winrt::check_hresult(DllGetActivationFactory(activatableClassId.Get(), (IActivationFactory * *)winrt::put_abi(_activationFactory)));
 
         return _activationFactory.ActivateInstance<winrt::IInspectable>();
     }
 };
-

@@ -12,10 +12,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 
-#if !BUILD_WINDOWS
 using RefreshPullDirection = Microsoft.UI.Xaml.Controls.RefreshPullDirection;
 using IAdapterAnimationHandler = Microsoft.UI.Private.Controls.IAdapterAnimationHandler;
-#endif
 
 namespace MUXControlsTestApp
 {

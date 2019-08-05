@@ -5,7 +5,7 @@
 
 struct __declspec(novtable) ITrackerHandleManager
 {
-    virtual ~ITrackerHandleManager() {};
+    virtual ~ITrackerHandleManager() = default;
 
     const ITrackerHandleManager* GetTrackerHandleManager() const
     {
@@ -34,7 +34,7 @@ struct __declspec(novtable) ITrackerHandleManager
     }
     catch (...) {}
 
-    void SetTrackerValue(::TrackerHandle handle, _In_opt_ IUnknown* value) const try
+    void SetTrackerValue(::TrackerHandle handle, IUnknown* value) const try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);

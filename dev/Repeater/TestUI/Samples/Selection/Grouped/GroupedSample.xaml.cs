@@ -7,14 +7,12 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
 using ItemsRepeaterElementPreparedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs;
 using ItemsRepeaterElementIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementIndexChangedEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples.Selection
 {

@@ -82,7 +82,7 @@ private:
     // Helper functions
     void UpdateVisualState(bool useTransitions);
 
-    static void AddGradientStop(winrt::LinearGradientBrush brush, double offset, Hsv hsvColor, double alpha);
+    static void AddGradientStop(const winrt::LinearGradientBrush& brush, double offset, Hsv hsvColor, double alpha);
 
     winrt::Color GetCheckerColor();
 

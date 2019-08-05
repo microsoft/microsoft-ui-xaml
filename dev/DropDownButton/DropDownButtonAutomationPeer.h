@@ -12,8 +12,7 @@ class DropDownButtonAutomationPeer :
 
 public:
     DropDownButtonAutomationPeer(winrt::DropDownButton const& owner);
-    ~DropDownButtonAutomationPeer() {}
-
+    
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     hstring GetClassNameCore();

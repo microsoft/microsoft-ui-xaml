@@ -19,8 +19,6 @@ class SpectrumBrush :
     public SpectrumBrushProperties
 {
 public:
-    SpectrumBrush();
-
     // IXamlCompositionBrushOverrides
     void OnConnected();
     void OnDisconnected();

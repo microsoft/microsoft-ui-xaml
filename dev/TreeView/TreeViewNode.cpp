@@ -220,6 +220,7 @@ void TreeViewNode::AddToChildrenNodes(int index, int count)
         winrt::get_self<TreeViewNodeVector>(Children())->InsertAt(index, *node, false /* updateItemsSource */);
     }
 }
+
 void TreeViewNode::RemoveFromChildrenNodes(int index, int count)
 {
     for (int i = 0; i < count; i++)

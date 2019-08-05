@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
@@ -40,7 +39,6 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using ElementRealizationOptions = Microsoft.UI.Xaml.Controls.ElementRealizationOptions;
 using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -205,11 +203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsSource = itemsSource,
                 Layout = layout,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 HorizontalCacheLength = 0,
                 VerticalCacheLength = 0,
             };

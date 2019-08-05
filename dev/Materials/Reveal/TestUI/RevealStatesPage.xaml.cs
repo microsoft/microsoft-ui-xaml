@@ -144,7 +144,7 @@ namespace MUXControlsTestApp
                     lightTargetingResult = VerifyHoverBrushTargeting(revealHoverBrush);
                 }
                 logger.Verify(lightTargetingResult, "lightTargetingResult:" + lightTargetingResult);
-                
+
                 var lights = GetElementForHoverLight(target).Lights;
 
                 // No lights expected if we've never hovered over this Button
@@ -322,7 +322,7 @@ namespace MUXControlsTestApp
         }
 #endif
 
-            private void NarrowButton_Holding(object sender, Windows.UI.Xaml.Input.HoldingRoutedEventArgs e)
+        private void NarrowButton_Holding(object sender, Windows.UI.Xaml.Input.HoldingRoutedEventArgs e)
         {
             if (!ValidateEffectsPresent()) { return; }
 
@@ -480,7 +480,7 @@ namespace MUXControlsTestApp
         private void HoverLightStateValuesValidationHelper(
             float hoverLight_InnerConeIntensityExpected, float hoverLight_outerConeIntensityExpected, float hoverLight_outerConeAngleExpected,
             float pressLight_InnerConeIntensityExpected, float pressLight_outerConeIntensityExpected, float pressLight_outerConeAngleExpected,
-            string testName, 
+            string testName,
             string targetName)
         {
             if (!ValidateEffectsPresent()) { return; }

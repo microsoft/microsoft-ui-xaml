@@ -7,10 +7,8 @@ using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;
-#endif
 
 namespace MUXControlsTestApp.Samples.Selection
 {

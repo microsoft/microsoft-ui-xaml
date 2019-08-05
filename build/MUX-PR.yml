@@ -83,3 +83,4 @@ jobs:
     dependsOn: RunTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+    checkJobAttempt: true

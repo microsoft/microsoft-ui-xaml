@@ -14,7 +14,7 @@ public:
     winrt::SpotLight BackgroundLight();
     winrt::XamlLight BorderLight();
     winrt::XamlLight BorderWideLight();
-   
+
     double BackgroundLightMinSize();
     void BackgroundLightMinSize(double value);
     double BackgroundLightMaxSize();
@@ -35,7 +35,6 @@ public:
 #endif
 
     RevealTestApi();
-    ~RevealTestApi();
 
     static winrt::SpotLight GetBackgroundSpotlightProxy(winrt::ApplicationTheme theme);
 

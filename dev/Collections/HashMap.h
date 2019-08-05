@@ -11,8 +11,8 @@ class HashMap :
         winrt::IMapView<K, V>,
         winrt::IIterable<winrt::IKeyValuePair<K, V>>>
 {
-    typedef typename tracker_ref<K> K_storage;
-    typedef typename tracker_ref<V> V_storage;
+    using K_storage = tracker_ref<K>;
+    using V_storage = tracker_ref<V>;
     typedef typename winrt::IKeyValuePair<K, V> KVP;
 
     typedef typename std::map<K_storage, V_storage>::const_iterator T_iterator;

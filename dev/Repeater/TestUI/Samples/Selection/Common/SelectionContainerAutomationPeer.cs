@@ -7,9 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Automation.Provider;
 
-#if !BUILD_WINDOWS
 using SelectionModelSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionModelSelectionChangedEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples.Selection
 {

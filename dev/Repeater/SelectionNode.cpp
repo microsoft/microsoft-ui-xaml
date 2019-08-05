@@ -683,11 +683,11 @@ winrt::IReference<bool> SelectionNode::ConvertToNullableBool(SelectionState isSe
     winrt::IReference<bool> result = nullptr; // PartialySelected
     if (isSelected == SelectionState::Selected)
     {
-        result = winrt::PropertyValue::CreateBoolean(true).as<winrt::IReference<bool>>();;
+        result = winrt::PropertyValue::CreateBoolean(true).as<winrt::IReference<bool>>();
     }
     else if (isSelected == SelectionState::NotSelected)
     {
-        result = winrt::PropertyValue::CreateBoolean(false).as<winrt::IReference<bool>>();;
+        result = winrt::PropertyValue::CreateBoolean(false).as<winrt::IReference<bool>>();
     }
 
     return result;

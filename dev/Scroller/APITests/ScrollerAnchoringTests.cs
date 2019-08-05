@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
@@ -36,7 +35,6 @@ using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -898,11 +896,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Name = "repeater",
                 ItemsSource = dataSource,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 Layout = new UniformGridLayout()
                 {
                     MinItemWidth = 125,

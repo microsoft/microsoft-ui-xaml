@@ -69,7 +69,7 @@ void UniformGridLayoutState::EnsureElementSize(
 }
 
 void UniformGridLayoutState::SetSize(
-    winrt::UIElement UIElement,
+    const winrt::UIElement& UIElement,
     const double layoutItemWidth,
     const double LayoutItemHeight,
     const winrt::Size availableSize,

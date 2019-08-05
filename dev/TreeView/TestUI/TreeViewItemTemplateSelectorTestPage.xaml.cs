@@ -4,10 +4,8 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 using TreeView = Microsoft.UI.Xaml.Controls.TreeView;
-#endif
 
 namespace MUXControlsTestApp
 {
