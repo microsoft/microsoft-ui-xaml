@@ -37,8 +37,8 @@ class MathTokenizer
 {
     private:
         std::wstring m_inputString;
-        int m_inputLength;
-        int m_index;
+        int m_inputLength{};
+        int m_index{0};
         MathToken m_lastToken;
         bool IsNumeric(std::wstring_view in);
         bool IsOperator(std::wstring_view in);
