@@ -6,10 +6,8 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using AnimationContext = Microsoft.UI.Xaml.Controls.AnimationContext;
 using ElementAnimator = Microsoft.UI.Xaml.Controls.ElementAnimator;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {

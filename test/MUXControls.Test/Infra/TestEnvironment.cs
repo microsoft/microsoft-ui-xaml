@@ -22,19 +22,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
@@ -94,11 +86,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         }
 
         [AssemblyInitialize]
-#if BUILD_WINDOWS
-        [TestProperty("CoreClrProfile", "TestNetv2.1")]
-#else
         [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
-#endif
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
         // Default value for tests is to not run on phone. Test Classes or Test Methods can override
@@ -133,10 +121,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // Install the test app certificate if we're deploying the MUXControlsTestApp from the NuGet package.
             // If this is the MUXControlsTestApp from the OS repo, then it'll have been signed with a test cert
             // that doesn't need installation.
-#if !BUILD_WINDOWS
             Log.Comment("Installing the certificate for the test app");
             TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, "MUXControlsTestApp");
-#endif
 #endif
         }
 
@@ -213,20 +199,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static void ScheduleAppRestartIfNeeded()
         {
-#if BUILD_WINDOWS
-            // In CatGates, our test app is automatically closed on phone after a certain time elapses
-            // if we don't close it ourselves. This leads to test instability, so to ensure we
-            // never run into this, we'll restart our application after every test.
-            // This increases test runtime, but is necessary to ensure stability.
-            // We'll use TestCleanupHelper.TestSetupHelperPendingDisposals == 0 to indicate that
-            // we're back on the main page and that therefore the test is complete,
-            // unless we're explicitly told it's not.
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-            {
-                Log.Comment("Queueing an app restart to ensure test stability on phone.");
-                TestEnvironment.ShouldRestartApplication = true;
-            }
-#endif
         }
 
         public static void LogDumpTree(UIObject root = null)

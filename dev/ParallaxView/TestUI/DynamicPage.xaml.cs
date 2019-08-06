@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 
-#if !BUILD_WINDOWS
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
@@ -24,7 +23,6 @@ using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-#endif
 
 namespace MUXControlsTestApp
 {

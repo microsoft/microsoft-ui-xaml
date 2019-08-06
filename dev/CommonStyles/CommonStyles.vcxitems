@@ -19,7 +19,7 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-     <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
@@ -73,6 +73,10 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadius_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>
 </Project>

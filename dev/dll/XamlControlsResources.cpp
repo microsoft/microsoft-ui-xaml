@@ -5,19 +5,14 @@
 #include "common.h"
 #include "XamlControlsResources.h"
 #include "RevealBrush.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif
 
 XamlControlsResources::XamlControlsResources()
 {
     // On Windows, we need to add theme resources manually.  We'll still add an instance of this element to get the rest of
     // what it does, though.
-#ifndef BUILD_WINDOWS
     MUXControlsFactory::EnsureInitialized();
     UpdateSource();
-#endif
 }
 
 void XamlControlsResources::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)

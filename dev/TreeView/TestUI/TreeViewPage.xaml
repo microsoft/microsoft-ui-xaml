@@ -62,6 +62,7 @@
                     <Button x:Name="ItemTemplateSelectorTestPage" AutomationProperties.Name="ItemTemplateSelectorTestPage" Content="ItemTemplateSelectorTestPage" HorizontalAlignment="Stretch" Margin="1" Click="ItemTemplateSelectorTestPage_Click"/>
                     <Button x:Name="AddNodeWithEmpyUnrealizedChildren" AutomationProperties.Name="AddNodeWithEmpyUnrealizedChildren" Content="AddNodeWithEmpyUnrealizedChildren" HorizontalAlignment="Stretch" Margin="1" Click="AddNodeWithEmpyUnrealizedChildren_Click"/>
                     <Button x:Name="GetMultiSelectCheckBoxStates" AutomationProperties.Name="GetMultiSelectCheckBoxStates" Content="GetMultiSelectCheckBoxStates" HorizontalAlignment="Stretch" Margin="1" Click="GetMultiSelectCheckBoxStates_Click"/>
+                    <Button x:Name="ToggleRoot0Selection" AutomationProperties.Name="ToggleRoot0Selection" Content="ToggleRoot0Selection" HorizontalAlignment="Stretch" Margin="1" Click="ToggleRoot0Selection_Click"/>
                     <Button x:Name="ToggleSelectedNodes" AutomationProperties.Name="ToggleSelectedNodes" Content="ToggleSelectedNodes" HorizontalAlignment="Stretch" Margin="1" Click="ToggleSelectedNodes_Click"/>
                     <Button x:Name="AddInheritedTreeViewNode" AutomationProperties.Name="AddInheritedTreeViewNode" Content="AddInheritedTreeViewNode" HorizontalAlignment="Stretch" Margin="1" Click="AddInheritedTreeViewNode_Click"/>
                     <Button x:Name="ClearNodes" AutomationProperties.Name="ClearNodes" Content="ClearNodes" HorizontalAlignment="Stretch" Margin="1" Click="ClearNodes_Click"/>
@@ -110,7 +111,6 @@
                                     ItemsSource="{x:Bind Children}"
                                     Content="{x:Bind Content}"
                                     IsExpanded="{x:Bind IsExpanded, Mode=TwoWay}"
-                                    IsSelected="{x:Bind IsSelected, Mode=TwoWay}"
                                     HasUnrealizedChildren="{x:Bind HasUnrealizedChildren, Mode=TwoWay}"/>
                             </DataTemplate>
                         </muxcontrols:TreeView.ItemTemplate>

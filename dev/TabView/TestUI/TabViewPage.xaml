@@ -21,11 +21,14 @@
                 <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
+                <CheckBox x:Name="CancelItemCloseCheckBox" AutomationProperties.Name="CancelItemCloseCheckBox" Content="Cancel Closing on first item"/>
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddButtonVisible, Mode=TwoWay}"/>
 
-                <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton"  Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
-                <Button x:Name="SelectItemButton" AutomationProperties.Name="SelectItemButton"  Content="Select Item 1" Margin="0,0,0,8" Click="SelectItemButton_Click"/>
-                <Button x:Name="SelectIndexButton" AutomationProperties.Name="SelectIndexButton"  Content="Select Index 2" Margin="0,0,0,8" Click="SelectIndexButton_Click"/>
+                <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton" Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
+                <Button x:Name="SelectItemButton" AutomationProperties.Name="SelectItemButton" Content="Select Item 1" Margin="0,0,0,8" Click="SelectItemButton_Click"/>
+                <Button x:Name="SelectIndexButton" AutomationProperties.Name="SelectIndexButton" Content="Select Index 2" Margin="0,0,0,8" Click="SelectIndexButton_Click"/>
+                <Button x:Name="ChangeShopTextButton" AutomationProperties.Name="ChangeShopTextButton" Content="Change Shop text" Margin="0,0,0,8" Click="ChangeShopTextButton_Click"/>
+                <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
@@ -39,6 +42,21 @@
                     <TextBlock>Selected Index:</TextBlock>
                     <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Margin="4,0,0,0" Text="0"/>
                 </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock>Tab dragged out:</TextBlock>
+                    <TextBlock x:Name="TabDraggedOutsideTextBlock" AutomationProperties.Name="TabDraggedOutsideTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetTab0ToolTipButton" AutomationProperties.Name="GetTab0ToolTipButton" Content="Tooltip0" Click="GetTab0ToolTipButton_Click"/>
+                    <TextBlock x:Name="Tab0ToolTipTextBlock" AutomationProperties.Name="Tab0ToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button x:Name="GetTab1ToolTipButton" AutomationProperties.Name="GetTab1ToolTipButton" Content="Tooltip1" Click="GetTab1ToolTipButton_Click"/>
+                    <TextBlock x:Name="Tab1ToolTipTextBlock" AutomationProperties.Name="Tab1ToolTipTextBlock" Margin="4,0,0,0" Text=""/>
+                </StackPanel>
             </StackPanel>
 
             <controls:TabView
@@ -48,6 +66,7 @@
                 SelectedIndex="0"
                 SelectionChanged="TabViewSelectionChanged"
                 TabClosing="TabViewTabClosing"
+                TabDraggedOutside="TabViewTabDraggedOutside"
                 AddButtonClick="AddButtonClick">
 
                 <controls:TabView.RightCustomContent>
@@ -64,14 +83,14 @@
 
                 <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home">
+                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" TabClosing="FirstTab_TabClosing" ToolTipService.ToolTip="Custom Tooltip">
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
                             <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
                         </StackPanel>
                     </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop">
+                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop" IsCloseable="True">
                         <TextBlock Padding="16">Shop text</TextBlock>
                     </controls:TabViewItem>
 

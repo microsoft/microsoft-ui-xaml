@@ -103,7 +103,7 @@
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" />
+                    <StackPanel Orientation="Horizontal" Padding="1,0,0,0" />
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
@@ -215,9 +215,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">
 
-                    <Grid
-                        Background="{ThemeResource TabViewItemHeaderBackground}"
-                        Padding="{TemplateBinding Padding}">
+                    <Grid x:Name="LayoutRoot"
+                        Padding="{TemplateBinding Padding}"
+                        Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
@@ -229,7 +229,7 @@
 
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
+                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
@@ -237,7 +237,7 @@
 
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
+                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
@@ -245,7 +245,7 @@
 
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                     </VisualState.Setters>
@@ -253,7 +253,7 @@
 
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
@@ -261,7 +261,7 @@
 
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
-                                        <Setter Target="LayoutRoot.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
+                                        <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
@@ -393,8 +393,16 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Grid x:Name="LayoutRoot"
-                            Background="{TemplateBinding Background}"
+                        <Border x:Name="TabSeparator"
+                            HorizontalAlignment="Right"
+                            Width="1"
+                            BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}"
+                            BorderThickness="1"
+                            Margin="0,6,0,6"/>
+
+                        <Grid x:Name="TabContainer"
+                            Grid.Column="1"
+                            Background="{ThemeResource TabViewItemHeaderBackground}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"

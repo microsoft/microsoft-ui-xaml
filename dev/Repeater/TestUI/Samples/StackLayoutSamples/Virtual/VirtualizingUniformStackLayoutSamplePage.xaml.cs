@@ -9,11 +9,9 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -24,11 +22,7 @@ namespace MUXControlsTestApp.Samples
         {
             this.InitializeComponent();
 
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = data;
             bringIntoView.Click += BringIntoView_Click;
             insert.Click += Insert_Click;

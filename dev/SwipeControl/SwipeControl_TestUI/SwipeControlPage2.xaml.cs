@@ -18,8 +18,6 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI;
 
-
-#if !BUILD_WINDOWS
 using IconSource = Microsoft.UI.Xaml.Controls.IconSource;
 using SwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using SwipeItems = Microsoft.UI.Xaml.Controls.SwipeItems;
@@ -27,7 +25,6 @@ using SwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 using SwipeBehaviorOnInvoked = Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked;
 using SwipeItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

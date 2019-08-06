@@ -188,14 +188,6 @@ namespace MUXControlsTestApp.Utilities
 
         public static string ProcessTestXamlForRepo(string xamlString)
         {
-#if BUILD_WINDOWS
-            // In the OS repo, MUX (or rather WUXC) types are under the
-            // Windows.UI.Xaml.* namespace rather than Microsoft.UI.Xaml.
-            // We need to convert one to the other to ensure that the XAML
-            // works correctly in both the MUX and the OS repos.
-            xamlString = xamlString.Replace("Microsoft.UI.Xaml", "Windows.UI.Xaml");
-#endif
-
             return xamlString;
         }
     }

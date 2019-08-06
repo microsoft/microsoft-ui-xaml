@@ -55,22 +55,12 @@
 #define M_PI       3.14159265358979323846   // pi
 #define M_PI_2     1.57079632679489661923   // pi/2
 
-#ifdef BUILD_WINDOWS
-#include <staging.h>
-#include <featurestaging-xaml.h>
-#include <featurestaging-comp.h>
-
-#undef CATCH_RETURN // See our implementation in ErrorHandling.h
-
-#else
 #define WI_IS_FEATURE_PRESENT(FeatureName) 1
-#endif
 
 #undef GetCurrentTime
 
 #include "CppWinRTIncludes.h"
 
-#ifndef BUILD_WINDOWS
 // This function is a compile time optimization. These GUID calculations are very expensive (each takes about .5-1s to compile)
 // and many appear in multiple compilation units so the work is duplicated across invocations of the compiler. I used the
 // MSVC compiler option "/d1reportTime" to get a dump of all the work and then searched for "pinterface_guid" invocations to
@@ -325,4 +315,3 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::AccessKeyInvokedEventArgs>>();
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Windows::UI::Xaml::UIElement,struct winrt::Windows::UI::Xaml::Input::GettingFocusEventArgs>>();
 }
-#endif

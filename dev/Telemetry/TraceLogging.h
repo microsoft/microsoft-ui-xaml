@@ -9,11 +9,7 @@
 // In the OS repo, we want to pick up the published version of MicrosoftTelemetry.h,
 // so we'll use the "telemetry/" prefix to differentiate that version from the one
 // in our repo.
-#ifdef BUILD_WINDOWS
-#include <telemetry/MicrosoftTelemetry.h>
-#else
 #include <MicrosoftTelemetry.h>
-#endif
 
 // Keywords
 #define KEYWORD_REPEATER         0x0000000000000001
@@ -65,11 +61,7 @@
 #define METH_NAME StringUtil::Utf8ToUtf16(__FUNCTION__).c_str()
 
 // TraceLogging provider name for telemetry.
-#ifndef BUILD_WINDOWS
 #define TELEMETRY_PROVIDER_NAME "Microsoft.UI.Xaml.Controls"
-#else
-#define TELEMETRY_PROVIDER_NAME "Windows.UI.Xaml.Controls"
-#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hTelemetryProvider);
 extern bool g_IsTelemetryProviderEnabled;
@@ -78,11 +70,7 @@ extern ULONGLONG g_TelemetryProviderMatchAnyKeyword;
 extern GUID g_TelemetryProviderActivityId;
 
 // TraceLogging provider name for performance.
-#ifndef BUILD_WINDOWS
 #define PERF_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Perf"
-#else
-#define PERF_PROVIDER_NAME "Windows.UI.Xaml.Controls.Perf"
-#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hPerfProvider);
 extern bool g_IsPerfProviderEnabled;
@@ -91,11 +79,7 @@ extern ULONGLONG g_PerfProviderMatchAnyKeyword;
 extern GUID g_PerfProviderActivityId;
 
 // TraceLogging provider name for debugging.
-#ifndef BUILD_WINDOWS
 #define DEBUG_PROVIDER_NAME "Microsoft.UI.Xaml.Controls.Debug"
-#else
-#define DEBUG_PROVIDER_NAME "Windows.UI.Xaml.Controls.Debug"
-#endif
 
 TRACELOGGING_DECLARE_PROVIDER(g_hLoggingProvider);
 extern bool g_IsLoggingProviderEnabled;

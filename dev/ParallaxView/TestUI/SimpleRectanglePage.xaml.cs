@@ -12,10 +12,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Common;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-#endif
 
 namespace MUXControlsTestApp
 {

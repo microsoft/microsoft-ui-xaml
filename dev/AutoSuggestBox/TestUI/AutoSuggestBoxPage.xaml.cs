@@ -6,9 +6,23 @@ namespace MUXControlsTestApp
     [TopLevelTestPage(Name = "AutoSuggestBox", Icon = "AutoSuggestBox.png")]
     public sealed partial class AutoSuggestBoxPage : TestPage
     {
+        string[] suggestions =
+        {
+            "Lorem",
+            "ipsum",
+            "dolor",
+            "sit",
+            "amet"
+        };
+
         public AutoSuggestBoxPage()
         {
             this.InitializeComponent();
+        }
+
+        private void AutoSuggestBox_QuerySubmitted(Windows.UI.Xaml.Controls.AutoSuggestBox sender, Windows.UI.Xaml.Controls.AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            sender.ItemsSource = string.IsNullOrWhiteSpace(args.QueryText) ? null : suggestions;
         }
     }
 }

@@ -8,12 +8,10 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 
-#if !BUILD_WINDOWS
 using ItemsRepeaterElementIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementIndexChangedEventArgs;
 using ItemsRepeaterElementPreparedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;
-#endif
 
 namespace MUXControlsTestApp.Samples.Selection
 {
@@ -23,11 +21,7 @@ namespace MUXControlsTestApp.Samples.Selection
         public FlatSample()
         {
             this.InitializeComponent();
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = _data;
             selectionModel.Source = _data;
             repeater.ElementPrepared += Repeater_ElementPrepared;

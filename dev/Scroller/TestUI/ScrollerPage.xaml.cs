@@ -25,9 +25,7 @@ namespace MUXControlsTestApp
     {
         public ScrollerPage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
 
             this.InitializeComponent();
 

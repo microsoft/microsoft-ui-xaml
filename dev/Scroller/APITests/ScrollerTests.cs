@@ -29,7 +29,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
@@ -40,7 +39,6 @@ using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {

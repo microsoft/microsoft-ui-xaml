@@ -10,13 +10,11 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
-#if !BUILD_WINDOWS
 using ColorSpectrumShape = Microsoft.UI.Xaml.Controls.ColorSpectrumShape;
 using ColorSpectrumComponents = Microsoft.UI.Xaml.Controls.ColorSpectrumComponents;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
 using ColorSpectrum = Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum;
-#endif
 
 namespace MUXControlsTestApp
 {

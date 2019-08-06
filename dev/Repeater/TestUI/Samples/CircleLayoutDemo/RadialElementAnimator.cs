@@ -11,10 +11,8 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
 
-#if !BUILD_WINDOWS
 using AnimationContext = Microsoft.UI.Xaml.Controls.AnimationContext;
 using ElementAnimator = Microsoft.UI.Xaml.Controls.ElementAnimator;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {

@@ -11,12 +11,10 @@ using Windows.UI;
 using System.Windows.Input;
 using System.Collections.Generic;
 
-#if !BUILD_WINDOWS
 using SplitButton = Microsoft.UI.Xaml.Controls.SplitButton;
 using SplitButtonTestApi = Microsoft.UI.Private.Controls.SplitButtonTestApi;
 using ToggleSplitButton = Microsoft.UI.Xaml.Controls.ToggleSplitButton;
 using ToggleSplitButtonIsCheckedChangedEventArgs = Microsoft.UI.Xaml.Controls.ToggleSplitButtonIsCheckedChangedEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {

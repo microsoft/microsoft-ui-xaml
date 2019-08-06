@@ -1,30 +1,55 @@
-[CmdLetBinding()]
 Param(
     [Parameter(Mandatory = $true)] 
-    [int]$MinimumExpectedTestsExecutedCount
-)
+    [int]$MinimumExpectedTestsExecutedCount,
 
+    [string]$AccessToken = $env:SYSTEM_ACCESSTOKEN,
+    [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
+    [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
+    [string]$BuildUri = $env:BUILD_BUILDURI,
+    [int]$JobAttempt = $env:SYSTEM_JOBATTEMPT,
+    [bool]$CheckJobAttempt
+)
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
-    "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$($env:SYSTEM_ACCESSTOKEN)")))"
+    "Authorization"="Basic $([System.Convert]::ToBase64String([System.Text.ASCIIEncoding]::ASCII.GetBytes(":$AccessToken")))"
 }
 
 . "$PSScriptRoot/AzurePipelinesHelperScripts.ps1"
 
 Write-Host "Checking test results..."
 
-$queryUri = GetQueryTestRunsUri
+$queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $TeamProject -BuildUri $BuildUri -IncludeRunDetails
 Write-Host "queryUri = $queryUri"
 
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
 [System.Collections.Generic.List[string]]$failingTests = @()
 [System.Collections.Generic.List[string]]$unreliableTests = @()
 
+$timesSeenByRunName = @{}
 $totalTestsExecutedCount = 0
 
-foreach ($testRun in $testRuns.value)
+foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
 {
+    # The same build for a pull request can have multiple test runs associated with it if the build owner opted to re-run a test run.
+    # We should only pay attention to the current attempt version.
+    # NB: If in the future we have pull request builds do multiple test runs as part of the same build definition, we'll need to revisit this.
+    if ($CheckJobAttempt)
+    {
+        if (-not $timesSeenByRunName.ContainsKey($testRun.name))
+        {
+            $timesSeenByRunName[$testRun.name] = 0
+        }
+    
+        $timesSeen = $timesSeenByRunName[$testRun.name] + 1
+        $timesSeenByRunName[$testRun.name] = $timesSeen
+
+        if ($timesSeen -ne $JobAttempt)
+        {
+            continue
+        }
+    }
+
     $totalTestsExecutedCount += $testRun.totalTests
 
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
@@ -83,7 +108,7 @@ elseif ($failingTests.Count -gt 0)
 elseif ($unreliableTests.Count -gt 0)
 {
     Write-Host "All tests eventually passed, but some initially failed."
-    Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+    Write-Host "##vso[task.complete result=Succeeded;]"
 }
 else
 {

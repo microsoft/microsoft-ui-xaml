@@ -235,6 +235,11 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
+    if (winrt::IControl7 presenterControl7 = presenter)
+    {
+        presenterControl7.CornerRadius({ 0 });
+    }
 
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far

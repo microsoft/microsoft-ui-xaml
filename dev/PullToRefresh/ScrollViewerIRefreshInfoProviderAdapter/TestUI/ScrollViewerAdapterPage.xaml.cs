@@ -71,7 +71,6 @@ namespace MUXControlsTestApp
 
         void CheckLeaks(Dictionary<string, WeakReference> objects)
         {
-#if !BUILD_WINDOWS
             foreach (var pair in objects)
             {
                 Log.Comment("Checking if object {0} has been collected", pair.Key);
@@ -83,7 +82,6 @@ namespace MUXControlsTestApp
                     Verify.DisableVerifyFailureExceptions = false;
                 }
             }
-#endif
             objects.Clear();
         }
     }
