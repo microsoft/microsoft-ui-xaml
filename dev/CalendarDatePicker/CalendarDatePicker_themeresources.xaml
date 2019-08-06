@@ -9,7 +9,7 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="CalendarDatePickerForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="CalendarDatePickerCalendarGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
@@ -48,10 +48,10 @@
             <StaticResource x:Key="CalendarDatePickerBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="CalendarDatePickerBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="CalendarDatePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
-            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="CalendarDatePickerBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="CalendarDatePickerForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="CalendarDatePickerForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
             <StaticResource x:Key="CalendarDatePickerCalendarGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
