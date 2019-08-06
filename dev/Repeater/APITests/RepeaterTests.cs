@@ -47,20 +47,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                           <TextBlock Text='{Binding}' Height='50' />
                       </DataTemplate>");
 
-                repeater = new ItemsRepeater()
-                {
+                repeater = new ItemsRepeater() {
                     ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
                     ItemTemplate = elementFactory,
                     // Default is StackLayout, so do not have to explicitly set.
                     // Layout = new StackLayout(),
                 };
 
-                Content = new ItemsRepeaterScrollHost()
-                {
+                Content = new ItemsRepeaterScrollHost() {
                     Width = 400,
                     Height = 800,
-                    ScrollViewer = new ScrollViewer
-                    {
+                    ScrollViewer = new ScrollViewer {
                         Content = repeater
                     }
                 };
@@ -84,8 +81,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater() 
-                {
+                var repeater = new ItemsRepeater() {
                     ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
                 };
 
@@ -239,7 +235,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         private void NestedRepeaterWithDataTemplateScenario(bool disableAnimation)
-        { 
+        {
             if (!disableAnimation && PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 Log.Warning("This test is showing consistent issues with not scrolling enough on RS5 and 19H1 when animations are enabled, tracked by microsoft-ui-xaml#779");
@@ -431,7 +427,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     </controls:ItemsRepeaterScrollHost>");
 
                 rootRepeater = (ItemsRepeater)scrollhost.FindName("rootRepeater");
-                
+
                 List<List<int>> items = new List<List<int>>();
                 for (int i = 0; i < 100; i++)
                 {
@@ -455,6 +451,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.IsNotNull(group2Repeater);
 
                 Verify.IsNotNull(group2Repeater.TryGetElement(0));
+            });
+        }
+
+
+        [TestMethod]
+        public void VerifyUIElementsInItemsSource()
+        {
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var scrollhost = (ItemsRepeaterScrollHost)XamlReader.Load(
+                  @"<controls:ItemsRepeaterScrollHost  
+                     xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
+                     xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                     xmlns:local='using:MUXControlsTestApp.Samples'
+                     xmlns:controls='using:Microsoft.UI.Xaml.Controls'>
+                        <ScrollViewer>
+                            <controls:ItemsRepeater x:Name='repeater'>
+                                <controls:ItemsRepeater.ItemsSource>
+                                    <local:UICollection>
+                                        <Button>0</Button>
+                                        <Button>1</Button>
+                                        <Button>2</Button>
+                                        <Button>3</Button>
+                                        <Button>4</Button>
+                                        <Button>5</Button>
+                                        <Button>6</Button>
+                                        <Button>7</Button>
+                                        <Button>8</Button>
+                                        <Button>9</Button>
+                                    </local:UICollection>
+                                </controls:ItemsRepeater.ItemsSource>
+                            </controls:ItemsRepeater>
+                        </ScrollViewer>
+                    </controls:ItemsRepeaterScrollHost>");
+
+                repeater = (ItemsRepeater)scrollhost.FindName("repeater");
+                Content = scrollhost;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                for(int i=0; i<10;i++)
+                {
+                    var element = repeater.TryGetElement(i) as Button;
+                    Verify.AreEqual(i.ToString(), element.Content);
+                }
             });
         }
     }

@@ -44,6 +44,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ElementsInItemsSourcePage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -115,6 +119,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Samples\Defaults.xaml.cs">
       <DependentUpon>Defaults.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ElementsInItemsSourcePage.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\FlowLayoutDemoPage.xaml.cs">
       <DependentUpon>FlowLayoutDemoPage.xaml</DependentUpon>
     </Compile>
@@ -194,6 +199,9 @@
   <ItemGroup>
     <Compile Update="S:\Source\GitRepos\microsoft-ui-xaml2\dev\Repeater\TestUI\Samples\ScaleAnimatedVerticalListDemo.xaml.cs">
       <DependentUpon>ScaleAnimatedVerticalListDemo.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="T:\repos\microsoft-ui-xaml\dev\Repeater\TestUI\Samples\ElementsInItemsSourcePage.xaml.cs">
+      <DependentUpon>ElementsInItemsSourcePage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>
