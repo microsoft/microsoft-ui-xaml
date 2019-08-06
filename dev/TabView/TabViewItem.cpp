@@ -111,7 +111,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
     {
         // Update tooltip text to new header text
         auto headerContent = Header();
-        auto potentialString = safe_try_cast<winrt::IPropertyValue>(headerContent);
+        auto potentialString = headerContent.try_as<winrt::IPropertyValue>();
 
         if (potentialString && potentialString.Type() == winrt::PropertyType::String)
         {
