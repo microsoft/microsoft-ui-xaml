@@ -215,7 +215,6 @@
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
-      <SpectreMitigation Condition="'$(Configuration)'=='Release'">Spectre</SpectreMitigation>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <EnablePREfast Condition="'$(Configuration)'=='Release'">true</EnablePREfast>
