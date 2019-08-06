@@ -36,7 +36,6 @@ public:
 class MathTokenizer
 {
     private:
-        std::wstring m_inputString;
         int m_inputLength{};
         int m_index{0};
         MathToken m_lastToken;
@@ -45,6 +44,7 @@ class MathTokenizer
         void SkipWhiteSpace();
 
     public:
+        std::wstring m_inputString;
         MathTokenizer(std::wstring input);
         MathToken GetToken();
         MathToken MathTokenizer::PeekNextToken();

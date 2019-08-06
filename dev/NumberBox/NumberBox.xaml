@@ -8,7 +8,11 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-                    <StackPanel Orientation="Horizontal" Name="panel">
+
+
+
+                    
+                    <RelativePanel x:Name="relpan">
                         <VisualStateManager.VisualStateGroups>
 
                             <VisualStateGroup x:Name="ValidationStates" >
@@ -53,14 +57,12 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+                        <StackPanel Orientation="Horizontal" Name="panel">
 
-                        <RelativePanel x:Name="relpan">
+
                             <TextBox x:Name="InputBox" Header=""/>
-                            <TextBlock Visibility="Collapsed" x:Name="ErrorTextMessage" Foreground="#C50500" IsColorFontEnabled="True" Text="Invalid Value" RelativePanel.Below="InputBox" />
-
-                        </RelativePanel>
-                        <!-- TODO: Export Border Thickness to ThemeResource -->
-                        <Button x:Name="DownSpinButton"
+                            <!-- TODO: Export Border Thickness to ThemeResource -->
+                            <Button x:Name="DownSpinButton"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw"
                                 BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}"
@@ -68,7 +70,7 @@
                                 VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}"
                                 BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Content="&#xE70D;" />
-                        <Button x:Name="UpSpinButton"
+                            <Button x:Name="UpSpinButton"
                                 Visibility="Collapsed"
                                 BorderThickness="0 2 2 2"
                                 FontSize="{TemplateBinding FontSize}"
@@ -80,9 +82,11 @@
                                 BorderBrush="{ThemeResource TextControlBorderBrush}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Content="&#xE70E;" />
-                        <!-- TODO: Export Color to ThemeResource -->
-                        <FontIcon x:Name="ValidationIcon" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" Foreground="#C50500" Margin="10,0,0,0" Visibility="Collapsed" ToolTipService.ToolTip="Invalid Input" />
-                    </StackPanel>
+                            <!-- TODO: Export Color to ThemeResource -->
+                            <FontIcon x:Name="ValidationIcon" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" Foreground="#C50500" Margin="10,0,0,0" Visibility="Collapsed" ToolTipService.ToolTip="Invalid Input" />
+                        </StackPanel>
+                        <TextBlock Visibility="Collapsed" x:Name="ErrorTextMessage" Foreground="#C50500" IsColorFontEnabled="True" Text="Invalid Value" RelativePanel.Below="panel" />
+                    </RelativePanel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
