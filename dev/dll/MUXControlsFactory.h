@@ -26,8 +26,6 @@ private:
 
 CppWinRTActivatableClassWithFactory(XamlMetadataProvider, MUXControlsFactory)
 
-#ifndef BUILD_WINDOWS
-
 // This class is a breadcrumb to help us detect if we're running in a framework package.
 // The way this works is that our WinMD does not contain this type so attempting to activate it
 // will fail. However our framework package AppX contains an activatable class registration for
@@ -59,5 +57,3 @@ CppWinRTInternalWrlCreateCreatorMap(\
     &CppWinRTTemp::GetTrustLevel_BaseTrust, \
     CppWinRTCreateActivationFactory<FrameworkPackageDetectorFactory>, \
     "minATL$__r")
-
-#endif

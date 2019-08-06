@@ -88,7 +88,7 @@ void RefreshVisualizer::RequestRefresh()
 winrt::IRefreshInfoProvider RefreshVisualizer::InfoProvider()
 {
     winrt::IInspectable valueAsII = GetValue(s_InfoProviderProperty);
-    return safe_cast<winrt::IRefreshInfoProvider>(valueAsII);
+    return valueAsII.as<winrt::IRefreshInfoProvider>();
 }
 
 void RefreshVisualizer::InfoProvider(winrt::IRefreshInfoProvider const& value)

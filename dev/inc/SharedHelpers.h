@@ -66,16 +66,6 @@ public:
 
     static bool IsInFrameworkPackage();
 
-    // Returns true if this is a system dll (i.e. windows.ui.xaml.controls.dll)
-    static constexpr bool IsSystemDll()
-    {
-#ifdef BUILD_WINDOWS
-        return true;
-#else
-        return false;
-#endif
-    }
-
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
     static winrt::Rect ConvertPhysicalToDips(winrt::UIElement const& xamlRootReference, const winrt::Rect& physicalRect);
@@ -300,8 +290,8 @@ public:
         {
             peer.RaisePropertyChangedEvent(
                 winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-                box_value(oldValue),
-                box_value(newValue));
+                winrt::box_value(oldValue),
+                winrt::box_value(newValue));
         }
     }
 

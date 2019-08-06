@@ -85,9 +85,9 @@ protected:
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_islandTransformChangedToken{};
     winrt::CompositionSurfaceBrush m_dpiScaledNoiseBrush{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
-    winrt::XamlIsland m_associatedIsland { nullptr };
-    winrt::CompositionIsland m_associatedCompositionIsland { nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
+    winrt::XamlIsland m_associatedIsland{ nullptr };
+    winrt::CompositionIsland m_associatedCompositionIsland{ nullptr };
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else
     winrt::event_token m_materialPolicyChangedToken{};
@@ -147,14 +147,14 @@ private:
     void PolicyStatusChangedHelper(bool isDisabledByMaterialPolicy);
 
     static bool ValidatePublicRootAncestor();
-    static winrt::UIElement GetAncestor(const winrt::UIElement & root);
-    static void AttachLightsToElement(const winrt::UIElement & element, bool trackAsRootToDisconnectFrom);
+    static winrt::UIElement GetAncestor(const winrt::UIElement& root);
+    static void AttachLightsToElement(const winrt::UIElement& element, bool trackAsRootToDisconnectFrom);
     static void AttachLightsImpl();
 
     winrt::CompositionSurfaceBrush m_noiseBrush{ nullptr };
 };
 
-class RevealBorderBrush : 
+class RevealBorderBrush :
     public ReferenceTracker<RevealBorderBrush, winrt::implementation::RevealBorderBrushT, RevealBrush>
 {
 public:

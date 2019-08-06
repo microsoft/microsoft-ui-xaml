@@ -75,7 +75,7 @@ foreach ($file in $files)
 
 foreach ($error in $apiInformationErrors)
 {
-    Write-ErrorInFile "Usage of winrt::ApiInformation should never occur outside of SharedHelpers.cpp, and should be OR'd after a check for IsSystemDll(). Otherwise, we can incur an unnecessary load of WinMD files." $error.FilePath $error.LineNumber $error.ColumnNumber
+    Write-ErrorInFile "Usage of winrt::ApiInformation should never occur outside of SharedHelpers.cpp. Otherwise, we can incur an unnecessary load of WinMD files." $error.FilePath $error.LineNumber $error.ColumnNumber
 }
 
 [System.Collections.Generic.List[Compatibility.Error]]$versionUsages = @()

@@ -130,7 +130,7 @@ void ScrollerTestHooks::MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayR
     hooks->m_mouseWheelInertiaDecayRate = mouseWheelInertiaDecayRate;
 }
 
-void ScrollerTestHooks::GetOffsetsChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds)
+void ScrollerTestHooks::GetOffsetsChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_offsetsChangeMsPerUnit;
@@ -146,7 +146,7 @@ void ScrollerTestHooks::SetOffsetsChangeVelocityParameters(int millisecondsPerUn
     hooks->m_offsetsChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollerTestHooks::GetZoomFactorChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds)
+void ScrollerTestHooks::GetZoomFactorChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_zoomFactorChangeMsPerUnit;
@@ -162,7 +162,7 @@ void ScrollerTestHooks::SetZoomFactorChangeVelocityParameters(int millisecondsPe
     hooks->m_zoomFactorChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollerTestHooks::GetContentLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetX)
+void ScrollerTestHooks::GetContentLayoutOffsetX(const winrt::Scroller& scroller, float& contentLayoutOffsetX)
 {
     if (scroller)
     {
@@ -182,7 +182,7 @@ void ScrollerTestHooks::SetContentLayoutOffsetX(const winrt::Scroller& scroller,
     }
 }
 
-void ScrollerTestHooks::GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY)
+void ScrollerTestHooks::GetContentLayoutOffsetY(const winrt::Scroller& scroller, float& contentLayoutOffsetY)
 {
     if (scroller)
     {

@@ -41,13 +41,13 @@ public:
     static void MouseWheelScrollChars(int mouseWheelScrollChars);
     static float MouseWheelInertiaDecayRate();
     static void MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayRate);
-    static void GetOffsetsChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds);
+    static void GetOffsetsChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds);
     static void SetOffsetsChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds);
-    static void GetZoomFactorChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds);
+    static void GetZoomFactorChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds);
     static void SetZoomFactorChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds);
-    static void GetContentLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetX);
+    static void GetContentLayoutOffsetX(const winrt::Scroller& scroller, float& contentLayoutOffsetX);
     static void SetContentLayoutOffsetX(const winrt::Scroller& scroller, float contentLayoutOffsetX);
-    static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY);
+    static void GetContentLayoutOffsetY(const winrt::Scroller& scroller, float& contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(const winrt::Scroller& scroller, float contentLayoutOffsetY);
     static winrt::float2 GetArrangeRenderSizesDelta(const winrt::Scroller& scroller);
     static winrt::float2 GetMinPosition(const winrt::Scroller& scroller);

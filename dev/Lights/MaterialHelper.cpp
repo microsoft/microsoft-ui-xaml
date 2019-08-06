@@ -157,7 +157,7 @@ winrt::CompositionEffectFactory MaterialHelperBase::GetOrCreateAcrylicBrushCompo
 }
 
 /* static */
-winrt::CompositionEffectFactory 
+winrt::CompositionEffectFactory
 MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
     bool isBorder,
     bool isInverted,
@@ -171,7 +171,7 @@ MaterialHelperBase::GetOrCreateRevealBrushCompositionEffectFactoryFromCache(
     key |= isInverted ? static_cast<int>(RevealBrushCacheFlags::IsInverted) : 0;
     key |= hasBaseColor ? static_cast<int>(RevealBrushCacheFlags::HasBaseColor) : 0;
 
-    winrt::ICompositionEffectFactory &factory =
+    winrt::ICompositionEffectFactory& factory =
         instance->m_revealBrushCompositionEffectFactoryCache[key];
 
     if (!factory)
@@ -322,7 +322,7 @@ void MaterialHelper::LightTemplates<T>::OnLightTransparencyPolicyChanged(
     const winrt::DispatcherQueue& dispatcherQueue,
     bool onUIThread)
 {
-    auto callback = [weakInstance, dispatcherQueue, materialProperties](){
+    auto callback = [weakInstance, dispatcherQueue, materialProperties]() {
         auto instance = weakInstance.get();
         if (instance)
         {
@@ -390,7 +390,7 @@ template <typename T>
                     {
                         UpdateDpiScaledNoiseBrush(strongInstance.get());
                     }
-                }});
+                } });
 
             instance->m_logicalDpi = displayInformation.LogicalDpi();
         }
@@ -486,7 +486,7 @@ template <typename T>
             // Assume 1.0 scaling and don't touch the noise brush.
 
             // Assuming 1.0 scaling isn't correct. Xaml has internal code that handles XamlPresenter scenarios, but that isn't available through public APIs. We can fix this for WUXC but not MUX.
-         }
+        }
     }
 
     return resolutionScale;
@@ -601,7 +601,7 @@ void MaterialHelper::TrackRevealLightsToRemoveIsland(const winrt::XamlIsland& is
 {
     auto instance = LifetimeHandler::GetMaterialHelperInstance();
     auto it = instance->m_islandBorderLights.find(island);
-    it->second.m_revealLightsToRemove = std::make_pair (lights, revealLightsToRemove);
+    it->second.m_revealLightsToRemove = std::make_pair(lights, revealLightsToRemove);
 }
 
 void MaterialHelper::NotifyAdditionalPolicyChangedListeners()
@@ -686,7 +686,7 @@ MaterialHelper::MaterialHelper()
     {
         EnsureCompositionCapabilities();
         HookupDpiChangedHandler();
-        
+
         // For RS2 apps, we susbscribe to VisibilityChanged to work around bug 11159685.
         if (!SharedHelpers::IsRS3OrHigher())
         {
@@ -710,7 +710,7 @@ MaterialHelper::MaterialHelper()
             {
                 strongThis->HookupVisibilityChangedHandler();
             }
-        });
+            });
     }
 
     winrt::UISettings uiSettings; // Make an instance to be able to listen for changes.

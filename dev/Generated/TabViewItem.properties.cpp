@@ -14,6 +14,7 @@ GlobalDependencyProperty TabViewItemProperties::s_IconProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_IsCloseableProperty{ nullptr };
 
 TabViewItemProperties::TabViewItemProperties()
+    : m_tabClosingEventSource{static_cast<TabViewItem*>(this)}
 {
     EnsureProperties();
 }
@@ -29,7 +30,7 @@ void TabViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -72,6 +73,14 @@ void TabViewItemProperties::ClearProperties()
     s_HeaderTemplateProperty = nullptr;
     s_IconProperty = nullptr;
     s_IsCloseableProperty = nullptr;
+}
+
+void TabViewItemProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabViewItem>();
+    winrt::get_self<TabViewItem>(owner)->OnHeaderPropertyChanged(args);
 }
 
 void TabViewItemProperties::OnIsCloseablePropertyChanged(
@@ -120,4 +129,14 @@ void TabViewItemProperties::IsCloseable(bool value)
 bool TabViewItemProperties::IsCloseable()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsCloseableProperty));
+}
+
+winrt::event_token TabViewItemProperties::TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value)
+{
+    return m_tabClosingEventSource.add(value);
+}
+
+void TabViewItemProperties::TabClosing(winrt::event_token const& token)
+{
+    m_tabClosingEventSource.remove(token);
 }

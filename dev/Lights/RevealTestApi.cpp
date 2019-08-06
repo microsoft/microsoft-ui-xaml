@@ -24,7 +24,7 @@ winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
         do
         {
             current = parent;
-            parent = safe_cast<winrt::UIElement>(winrt::VisualTreeHelper::GetParent(current));
+            parent = winrt::VisualTreeHelper::GetParent(current).as<winrt::UIElement>();
         } while (parent != nullptr);
 
         winrt::XamlLight light = nullptr;
@@ -170,10 +170,10 @@ winrt::SpotLight RevealTestApi::GetBackgroundSpotlightProxy(winrt::ApplicationTh
 
         s_pointerMovedRevoker = winrt::Window::Current().CoreWindow().PointerMoved(winrt::auto_revoke,
             [=](const winrt::CoreWindow&, const winrt::PointerEventArgs&)
-        {
-            RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value = light.InnerConeColor();
-            RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value = light.OuterConeColor();
-        });
+            {
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].InnerConeColor.Value = light.InnerConeColor();
+                RevealHoverLight::s_revealHoverSpotlightStates[RevealHoverSpotlightState_AnimToOff].OuterConeColor.Value = light.OuterConeColor();
+            });
     }
 
     return s_backgroundSpotlightProxy[index];

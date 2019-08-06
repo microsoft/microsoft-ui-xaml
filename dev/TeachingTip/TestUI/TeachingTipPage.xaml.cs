@@ -18,8 +18,6 @@ using Windows.UI.Xaml.Automation;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-
-#if !BUILD_WINDOWS
 using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
@@ -28,7 +26,6 @@ using TeachingTipTailVisibility = Microsoft.UI.Xaml.Controls.TeachingTipTailVisi
 using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
-#endif
 
 namespace MUXControlsTestApp
 {

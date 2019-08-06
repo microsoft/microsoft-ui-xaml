@@ -121,11 +121,7 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     ItemsSourceView ItemsSourceView { get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-#ifdef BUILD_WINDOWS
-    Windows.UI.Xaml.IElementFactory ItemTemplate { get; set; };
- #else
     Object ItemTemplate { get; set; };
- #endif
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
@@ -162,7 +158,6 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
 }
 
-#ifndef BUILD_WINDOWS
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ElementFactoryGetArgs
@@ -189,26 +184,14 @@ interface IElementFactoryShim
     void RecycleElement(ElementFactoryRecycleArgs args);
 }
 
-#endif
-
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject
-#ifndef BUILD_WINDOWS
-, IElementFactoryShim
-#else
-, Windows.UI.Xaml.IElementFactory
-#endif
+unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject, IElementFactoryShim
 {
     ElementFactory();
 
-#ifdef BUILD_WINDOWS
-    overridable Windows.UI.Xaml.UIElement GetElementCore(Windows.UI.Xaml.ElementFactoryGetArgs args);
-    overridable void RecycleElementCore(Windows.UI.Xaml.ElementFactoryRecycleArgs args);
-#else
     overridable Windows.UI.Xaml.UIElement GetElementCore(ElementFactoryGetArgs args);
     overridable void RecycleElementCore(ElementFactoryRecycleArgs args);
-#endif
 }
 
 [WUXC_VERSION_MUXONLY]

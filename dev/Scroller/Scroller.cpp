@@ -925,7 +925,7 @@ winrt::Size Scroller::ArrangeOverride(winrt::Size const& finalSize)
 
     // Set a rectangular clip on this Scroller the same size as the arrange
     // rectangle so the content does not render beyond it.
-    winrt::RectangleGeometry rectangleGeometry = safe_cast<winrt::RectangleGeometry>(Clip());
+    auto rectangleGeometry = Clip().as<winrt::RectangleGeometry>();
 
     if (!rectangleGeometry)
     {
@@ -3919,7 +3919,7 @@ SnapPointWrapper<winrt::ScrollSnapPointBase>* Scroller::GetScrollSnapPointWrappe
 
     for (std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>> snapPointWrapper : snapPointsSet)
     {
-        winrt::ScrollSnapPointBase winrtScrollSnapPoint = safe_cast<winrt::ScrollSnapPointBase>(snapPointWrapper->SnapPoint());
+        winrt::ScrollSnapPointBase winrtScrollSnapPoint = snapPointWrapper->SnapPoint().as<winrt::ScrollSnapPointBase>();
 
         if (winrtScrollSnapPoint == scrollSnapPoint)
         {
@@ -3934,7 +3934,7 @@ SnapPointWrapper<winrt::ZoomSnapPointBase>* Scroller::GetZoomSnapPointWrapper(wi
 {
     for (std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>> snapPointWrapper : m_sortedConsolidatedZoomSnapPoints)
     {
-        winrt::ZoomSnapPointBase winrtZoomSnapPoint = safe_cast<winrt::ZoomSnapPointBase>(snapPointWrapper->SnapPoint());
+        winrt::ZoomSnapPointBase winrtZoomSnapPoint = snapPointWrapper->SnapPoint().as<winrt::ZoomSnapPointBase>();
 
         if (winrtZoomSnapPoint == zoomSnapPoint)
         {
@@ -3959,13 +3959,13 @@ void Scroller::OnPropertyChanged(
     {
         const winrt::IInspectable oldContent = args.OldValue();
         const winrt::IInspectable newContent = args.NewValue();
-        UpdateContent(safe_cast<winrt::UIElement>(oldContent), safe_cast<winrt::UIElement>(newContent));
+        UpdateContent(oldContent.as<winrt::UIElement>(), newContent.as<winrt::UIElement>());
     }
     else if (dependencyProperty == s_BackgroundProperty)
     {
         winrt::Panel thisAsPanel = *this;
 
-        thisAsPanel.Background(safe_cast<winrt::Brush>(args.NewValue()));
+        thisAsPanel.Background(args.NewValue().as<winrt::Brush>());
     }
     else if (dependencyProperty == s_MinZoomFactorProperty || dependencyProperty == s_MaxZoomFactorProperty)
     {
@@ -5152,7 +5152,7 @@ bool Scroller::SnapPointsViewportChangedHelper(
 
     for (T snapPoint : snapPoints)
     {
-        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>(snapPoint);
+        winrt::SnapPointBase winrtSnapPointBase = snapPoint.as<winrt::SnapPointBase>();
         SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
         snapPointsNeedViewportUpdates |= snapPointBase->OnUpdateViewport(viewport);
@@ -5183,7 +5183,7 @@ void Scroller::SnapPointsVectorChangedHelper(
         {
             insertedItem = snapPoints.GetAt(args.Index());
 
-            winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>(insertedItem);
+            winrt::SnapPointBase winrtSnapPointBase = insertedItem.as<winrt::SnapPointBase>();
             SnapPointBase* snapPointBase = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
             // Newly inserted scroll snap point is provided the viewport size, for the case it's not near-aligned.
@@ -5258,12 +5258,12 @@ void Scroller::SnapPointsVectorItemInsertedHelper(
         return;
     }
 
-    winrt::SnapPointBase winrtInsertedItem = safe_cast<winrt::SnapPointBase>(insertedItem->SnapPoint());
+    winrt::SnapPointBase winrtInsertedItem = insertedItem->SnapPoint().as<winrt::SnapPointBase>();
     auto lowerBound = snapPointsSet->lower_bound(insertedItem);
 
     if (lowerBound != snapPointsSet->end())
     {
-        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>((*lowerBound)->SnapPoint());
+        winrt::SnapPointBase winrtSnapPointBase = (*lowerBound)->SnapPoint().as<winrt::SnapPointBase>();
         SnapPointBase* lowerSnapPoint = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
         if (*lowerSnapPoint == winrt::get_self<SnapPointBase>(winrtInsertedItem))
@@ -5275,7 +5275,7 @@ void Scroller::SnapPointsVectorItemInsertedHelper(
     }
     if (lowerBound != snapPointsSet->end())
     {
-        winrt::SnapPointBase winrtSnapPointBase = safe_cast<winrt::SnapPointBase>((*lowerBound)->SnapPoint());
+        winrt::SnapPointBase winrtSnapPointBase = (*lowerBound)->SnapPoint().as<winrt::SnapPointBase>();
         SnapPointBase* upperSnapPoint = winrt::get_self<SnapPointBase>(winrtSnapPointBase);
 
         if (*upperSnapPoint == winrt::get_self<SnapPointBase>(winrtInsertedItem))
@@ -5932,12 +5932,12 @@ void Scroller::ChangeOffsetsPrivate(
         }
     }
 
-    std::shared_ptr<ViewChange> offsetsChange = 
+    std::shared_ptr<ViewChange> offsetsChange =
         std::make_shared<OffsetsChange>(
             zoomedHorizontalOffset,
             zoomedVerticalOffset,
             offsetsKind,
-            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            optionsClone ? static_cast<winrt::IInspectable>(*optionsClone) : static_cast<winrt::IInspectable>(options));
 
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(
@@ -6158,7 +6158,7 @@ void Scroller::ChangeZoomFactorPrivate(
             zoomFactor,
             centerPoint,
             zoomFactorKind, 
-            optionsClone ? winrt::IInspectable{ *optionsClone } : options); // NOTE: Using explicit cast to winrt::IInspectable to work around 17532876
+            optionsClone ? static_cast<winrt::IInspectable>(*optionsClone) : static_cast<winrt::IInspectable>(options));
 
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
         std::make_shared<InteractionTrackerAsyncOperation>(

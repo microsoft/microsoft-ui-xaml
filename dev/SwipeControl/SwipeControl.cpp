@@ -1367,7 +1367,7 @@ void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem& swipeIte
 
     if (m_swipeContentStackPanel.get().Children().Size() > 0)
     {
-        if (auto appBarButton = safe_cast<winrt::AppBarButton>(m_swipeContentStackPanel.get().Children().GetAt(0)))
+        if (auto appBarButton = m_swipeContentStackPanel.get().Children().GetAt(0).as<winrt::AppBarButton>())
         {
             winrt::Brush foreground = nullptr;
             auto resources = winrt::Application::Current().Resources();

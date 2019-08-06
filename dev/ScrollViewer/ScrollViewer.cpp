@@ -776,7 +776,7 @@ void ScrollViewer::ScrollControllersAutoHidingChanged()
 
 winrt::Scroller ScrollViewer::GetScrollerPart() const
 {
-    return safe_cast<winrt::Scroller>(m_scroller.get());
+    return m_scroller.get().as<winrt::Scroller>();
 }
 
 void ScrollViewer::ValidateAnchorRatio(double value)

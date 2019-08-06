@@ -263,10 +263,9 @@ winrt::TreeViewNode TreeViewItemAutomationPeer::GetTreeViewNode()
 
 void TreeViewItemAutomationPeer::UpdateSelection(bool select)
 {
-    if (auto treeItem = safe_try_cast<winrt::TreeViewItem>(Owner()))
+    if (auto treeItem = Owner().try_as<winrt::TreeViewItem>())
     {
         auto impl = winrt::get_self<TreeViewItem>(treeItem);
-        auto state = select ? TreeNodeSelectionState::Selected : TreeNodeSelectionState::UnSelected;
-        impl->UpdateSelection(state);
+        impl->UpdateSelection(select);
     }
 }

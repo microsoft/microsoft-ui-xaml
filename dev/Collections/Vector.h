@@ -19,13 +19,22 @@ enum class VectorFlag {
     NoTrackerRef = 8
 };
 
+template <VectorFlag ...all>
+constexpr int MakeVectorParam();
+
 template <VectorFlag first, VectorFlag ...others>
-constexpr int  MakeVectorParam()
+constexpr int  MakeVectorParamImpl()
 {
     return static_cast<int>(first) | MakeVectorParam<others...>();
 };
 
-template <class none = void>
+template <VectorFlag ...all>
+constexpr int MakeVectorParam()
+{
+    return MakeVectorParamImpl<all...>();
+};
+
+template <>
 constexpr int MakeVectorParam()
 {
     return 0;
@@ -428,12 +437,12 @@ struct VectorOptionsFromFlag :
     public: \
         winrt::event_token VectorChanged(typename Options##::EventHandler const& value) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->AddEventHandler(value); \
         } \
         void VectorChanged(typename Options##::EventToken const& token) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             inner->RemoveEventHandler(token); \
         } \
     private:
@@ -447,12 +456,12 @@ struct VectorOptionsFromFlag :
         } \
         uint32_t Size() \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->Size(); \
         } \
         typename Options##::T_type GetAt(uint32_t index) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->GetAt(index); \
         } \
         bool IndexOf(typename Options##::T_type const& value, uint32_t& index) \
@@ -463,13 +472,13 @@ struct VectorOptionsFromFlag :
             } \
             else \
             { \
-                auto inner = GetVectorInnerImpl(); \
+                auto inner = this->GetVectorInnerImpl(); \
                 return inner->IndexOf(value, index); \
             } \
         } \
         uint32_t GetMany(uint32_t const startIndex, winrt::array_view<typename Options##::T_type> values) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->GetMany(startIndex, values); \
         } \
     private:
@@ -479,37 +488,37 @@ struct VectorOptionsFromFlag :
     public: \
         void SetAt(uint32_t const index, typename Options##::T_type const& value) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             inner->SetAt(index, value); \
         } \
         void Append(typename Options##::T_type const& value) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->Append(value); \
         } \
         void InsertAt(uint32_t index, typename Options##::T_type const& value) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->InsertAt(index, value); \
         } \
         void RemoveAt(uint32_t index) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->RemoveAt(index); \
         } \
         void RemoveAtEnd() \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->RemoveAtEnd(); \
         } \
         void Clear() \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->Clear(); \
         } \
         void ReplaceAll(winrt::array_view<typename Options##::T_type const> value) \
         { \
-            auto inner = GetVectorInnerImpl(); \
+            auto inner = this->GetVectorInnerImpl(); \
             return inner->ReplaceAll(value); \
         } \
         private:
@@ -601,7 +610,7 @@ class Vector :
 {
 public:
     Vector() {}
-    Vector(uint32_t capacity) : VectorBase(capacity) {}
+    Vector(uint32_t capacity) : VectorBase<T, Helper::isObservable, Helper::isBindable, Helper::isDependencyObjectBase, Helper::isNoTrackerRef>(capacity) {}
 
     // The same copy of data for NavigationView split into two parts in top navigationview. So two or more vectors are created to provide multiple datasource for controls.
     // InspectingDataSource is converting C# collections to Vector<winrt::IInspectable>. When GetAt(index) for things like string, a new IInspectable is always returned by C# projection. 
@@ -620,7 +629,7 @@ public:
     {
         if (m_indexOfFunction)
         {
-            SetCustomIndexOfFunction(
+            this->SetCustomIndexOfFunction(
                 [this](T const& value, uint32_t& index) {
                 return CustomIndexOf(value, index);
             });
@@ -690,19 +699,19 @@ struct ObservableVector :
 
     uint32_t Size()
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->Size();
     }
 
     winrt::IInspectable GetAt(uint32_t index)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->GetAt(index);
     }
 
     bool IndexOf(winrt::IInspectable const& value, uint32_t& index)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->IndexOf(value.as<T>(), index);
     }
 
@@ -713,32 +722,32 @@ struct ObservableVector :
 
     void SetAt(uint32_t const index, winrt::IInspectable const& value)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         inner->SetAt(index, value.as<T>());
     }
     void Append(winrt::IInspectable const& value)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->Append(value.as<T>());
     }
     void InsertAt(uint32_t index, winrt::IInspectable const& value)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->InsertAt(index, value.as<T>());
     }
     void RemoveAt(uint32_t index)
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->RemoveAt(index);
     }
     void RemoveAtEnd()
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->RemoveAtEnd();
     }
     void Clear()
     {
-        auto inner = GetVectorInnerImpl();
+        auto inner = this->GetVectorInnerImpl();
         return inner->Clear();
     }
     void ReplaceAll(winrt::array_view<winrt::IInspectable const> value)

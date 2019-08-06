@@ -11,11 +11,7 @@ namespace MUXControlsTestApp.Samples
         public ActivityFeedSamplePage()
         {
             this.InitializeComponent();
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = Enumerable.Range(0, 500);
         }
     }

@@ -6,13 +6,8 @@
 #include "ItemsRepeater.common.h"
 #include "ViewManager.h"
 #include "ItemsRepeater.h"
-#ifdef BUILD_WINDOWS
-#include "ElementFactoryGetArgsDownlevel.h"
-#include "ElementFactoryRecycleArgsDownlevel.h"
-#else
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
-#endif
 
 ViewManager::ViewManager(ItemsRepeater* owner) :
     m_owner(owner),
@@ -111,11 +106,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
     if (!m_ElementFactoryRecycleArgs)
     {
         // Create one.
-#ifdef BUILD_WINDOWS
-        m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgsDownlevel>());
-#else
         m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
-#endif
     }
 
     auto context = m_ElementFactoryRecycleArgs.get();
@@ -607,22 +598,13 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     if (!m_ElementFactoryGetArgs)
     {
         // Create one.
-#ifdef BUILD_WINDOWS
-        m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgsDownlevel>());
-#else
         m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
-#endif
     }
 
     auto args = m_ElementFactoryGetArgs.get();
     args.Data(data);
     args.Parent(*m_owner);
-
-#ifdef BUILD_WINDOWS
-    args.as<ElementFactoryGetArgsDownlevel>()->Index(index);
-#else
     args.as<ElementFactoryGetArgs>()->Index(index);
-#endif
 
     winrt::UIElement element = itemTemplateFactory.GetElement(args);
 
@@ -756,7 +738,7 @@ void ViewManager::UpdateFocusedElement()
 {
     winrt::UIElement focusedElement = nullptr;
 
-    auto child = safe_cast<winrt::DependencyObject>(winrt::FocusManager::GetFocusedElement());
+    auto child = winrt::FocusManager::GetFocusedElement().as<winrt::DependencyObject>();
 
     if (child)
     {

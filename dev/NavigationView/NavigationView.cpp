@@ -596,6 +596,7 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     if (previousMode == winrt::NavigationViewDisplayMode::Expanded
         && displayMode == winrt::NavigationViewDisplayMode::Compact)
     {
+        m_initialListSizeStateSet = false;
         ClosePane();
     }
 }
@@ -900,7 +901,7 @@ void NavigationView::UpdatePaneTitleFrameworkElementParents()
             const auto first = SetPaneTitleFrameworkElementParent(m_paneToggleButton.get(), paneTitleFrameworkElement, isTopNavigationView || !isPaneToggleButtonVisible);
             const auto second = SetPaneTitleFrameworkElementParent(m_paneTitlePresenter.get(), paneTitleFrameworkElement, isTopNavigationView || isPaneToggleButtonVisible);
             const auto third = SetPaneTitleFrameworkElementParent(m_paneTitleOnTopPane.get(), paneTitleFrameworkElement, !isTopNavigationView || isPaneToggleButtonVisible);
-            first ? first() : second ? second() : third ? third() : 0;
+            first ? first() : second ? second() : third ? third() : []() {}();
         }
     }
 }
@@ -3020,7 +3021,9 @@ void NavigationView::UpdateHeaderVisibility()
 
 void NavigationView::UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode)
 {
-    bool showHeader = AlwaysShowHeader() || displayMode == winrt::NavigationViewDisplayMode::Minimal;
+    // Ignore AlwaysShowHeader property in case DisplayMode is Minimal and it's not Top NavigationView
+    bool showHeader = AlwaysShowHeader() || (!IsTopNavigationView() && displayMode == winrt::NavigationViewDisplayMode::Minimal);
+
     // Like bug 17517627, Customer like WallPaper Studio 10 expects a HeaderContent visual even if Header() is null. 
     // App crashes when they have dependency on that visual, but the crash is not directly state that it's a header problem.   
     // NavigationView doesn't use quirk, but we determine the version by themeresource.

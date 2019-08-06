@@ -10,15 +10,6 @@ In particular:
 * **/build/NuSpecs** enables .nupkg generation
 * **/build/FrameworkPackage** enables .appx generation
 
-Note that here and in various parts of the codebase you will see references to 
-`BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is 
-also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) 
-as part of the Windows build system. The places where the WinUI source needs to 
-differ for this different environment are specified under `BUILD_WINDOWS`. It's 
-expected that it is the responsibility of the Microsoft team members to 
-maintain this part of WinUI, and other community members should be able to 
-ignore it.
-
 #### /dev
 
 Under dev is a separate folder for each of our controls.

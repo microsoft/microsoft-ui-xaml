@@ -21,9 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using PersonPicture = Microsoft.UI.Xaml.Controls.PersonPicture;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -123,7 +121,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
         // so we can't execute this test as authored there.
-#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyContactPropertyMetadata()
         {
@@ -136,7 +133,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(memberType.BaseType.FullName, "Object");
             });
         }
-#endif
 
         [TestMethod]
         public void VerifySmallWidthAndHeightDoNotCrash()

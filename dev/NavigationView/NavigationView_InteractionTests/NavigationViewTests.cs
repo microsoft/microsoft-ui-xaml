@@ -558,6 +558,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     headerVisibilityCheckbox.Check();
                     Wait.ForIdle();
                     VerifyElement.Found("Home as header", FindBy.Name);
+
+                    // PaneDisplayMode and Top option were added on RS5, so just run the next tests if we are not using RS4 Style
+                    if (!testScenario.IsUsingRS4Style)
+                    {
+                        var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                        Log.Comment("Set PaneDisplayMode to Top");
+                        panelDisplayModeComboBox.SelectItemByName("Top");
+                        Wait.ForIdle();
+
+                        Log.Comment("Verify that header is visible in Top display mode when AlwaysShowHeader == true");
+                        VerifyElement.Found("Home as header", FindBy.Name);
+
+                        Log.Comment("Verify that header is not visible in Top display mode when AlwaysShowHeader == false");
+                        headerVisibilityCheckbox.Uncheck();
+                        Wait.ForIdle();
+                        VerifyElement.NotFound("Home as header", FindBy.Name);
+                    }
                 }
             }
         }
@@ -3867,6 +3884,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
                 Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
+
+                var getVisualStateButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
+                getVisualStateButton.Invoke();
+                Wait.ForIdle();
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsTrue(result.GetText().Contains("ListSizeCompact"), "Verify pane list is in ListSizeCompact state");
 
                 // Maximize the window
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Windows, 1);

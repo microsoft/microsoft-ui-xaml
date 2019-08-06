@@ -13,14 +13,12 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-#if !BUILD_WINDOWS
 using RefreshPullDirection = Microsoft.UI.Xaml.Controls.RefreshPullDirection;
 using RefreshInteractionRatioChangedEventArgs = Microsoft.UI.Xaml.Controls.RefreshInteractionRatioChangedEventArgs;
 using IAdapterAnimationHandler = Microsoft.UI.Private.Controls.IAdapterAnimationHandler;
 using IRefreshInfoProvider = Microsoft.UI.Private.Controls.IRefreshInfoProvider;
 using IRefreshInfoProviderAdapter = Microsoft.UI.Private.Controls.IRefreshInfoProviderAdapter;
 using PullToRefreshHelperTestApi = Microsoft.UI.Private.Controls.PullToRefreshHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

@@ -25,9 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -196,10 +194,6 @@ namespace MUXControlsTestApp
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             _isRootCreated = false;
-#if BUILD_WINDOWS
-            AppendResourceToMergedDictionaries("DEPControls.xaml");
-#endif
-
 #if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
 #endif
@@ -325,11 +319,7 @@ namespace MUXControlsTestApp
         {
             ResourceDictionary resourceDictionary = new ResourceDictionary();
             Application.LoadComponent(resourceDictionary, new Uri(
-#if BUILD_WINDOWS
-                "ms-appx:///"
-#else
                 "ms-appx:///Themes/"
-#endif
                 + resource), ComponentResourceLocation.Nested);
             (targetDictionary ?? Application.Current.Resources).MergedDictionaries.Add(resourceDictionary);
         }

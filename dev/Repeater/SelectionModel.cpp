@@ -542,10 +542,10 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data)
         // auto-resolve that as the child. If not, then we consider the value as a leaf. This is to 
         // avoid having to provide the event handler for the most common scenarios. If the app dev does
         // not want this default behavior, they can provide the handler to override.
-        if (safe_try_cast<winrt::ItemsSourceView>(data) || 
-            safe_try_cast<winrt::IBindableVector>(data) ||
-            safe_try_cast<winrt::IIterable<winrt::IInspectable>>(data) || 
-            safe_try_cast<winrt::IBindableIterable>(data))
+        if (data.try_as<winrt::ItemsSourceView>() || 
+            data.try_as<winrt::IBindableVector>() ||
+            data.try_as<winrt::IIterable<winrt::IInspectable>>() ||
+            data.try_as<winrt::IBindableIterable>())
         {
             resolved = data;
         }

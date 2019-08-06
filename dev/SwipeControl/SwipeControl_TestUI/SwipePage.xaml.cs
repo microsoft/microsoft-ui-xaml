@@ -15,9 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -26,9 +24,7 @@ namespace MUXControlsTestApp
     {
         public SwipePage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
 
             this.InitializeComponent();
 

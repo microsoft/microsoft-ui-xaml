@@ -48,7 +48,7 @@ private:
     bool m_isDisabledByMaterialPolicy{};
 #if BUILD_WINDOWS
     winrt::DispatcherQueue m_dispatcherQueue{ nullptr };
-    winrt::MaterialProperties m_materialProperties { nullptr };
+    winrt::MaterialProperties m_materialProperties{ nullptr };
     winrt::MaterialProperties::TransparencyPolicyChanged_revoker m_transparencyPolicyChangedRevoker{};
     winrt::event_token m_additionalMaterialPolicyChangedToken{};
 #else

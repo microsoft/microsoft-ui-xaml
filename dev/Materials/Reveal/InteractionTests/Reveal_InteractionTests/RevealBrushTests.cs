@@ -275,7 +275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     waiter.Wait();
                 }
                 LogResult(result, "BorderLight_TapAndHold");
-                
+
             }
         }
 

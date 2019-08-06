@@ -266,8 +266,6 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient1.png" />

@@ -96,7 +96,7 @@ void LayoutPanel::OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs co
 
     if (dependencyProperty == s_layoutProperty)
     {
-        OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
+        OnLayoutChanged(args.OldValue().as<winrt::Layout>(), args.NewValue().as<winrt::Layout>());
     }
 #ifdef USE_INTERNAL_SDK
     else if (dependencyProperty == s_borderBrushProperty)
@@ -139,7 +139,7 @@ void LayoutPanel::Layout(winrt::Layout const& value)
 
 winrt::Brush LayoutPanel::BorderBrush()
 {
-    return safe_cast<winrt::Brush>(GetValue(s_borderBrushProperty));
+    return GetValue(s_borderBrushProperty).as<winrt::Brush>();
 }
 
 void LayoutPanel::BorderBrush(winrt::Brush const& value)
@@ -248,7 +248,7 @@ winrt::Size LayoutPanel::ArrangeOverride(winrt::Size const& finalSize)
         {
             for (winrt::UIElement const& child: Children())
             {
-                if (auto childAsFe = safe_try_cast<winrt::FrameworkElement>(child))
+                if (auto childAsFe = child.try_as<winrt::FrameworkElement>())
                 {
                     auto layoutSlot = winrt::LayoutInformation::GetLayoutSlot(childAsFe);
                     layoutSlot.X += leftAdjustment;

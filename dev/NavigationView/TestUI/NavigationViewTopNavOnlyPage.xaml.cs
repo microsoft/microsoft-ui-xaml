@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Media.Animation;
 using System.Text;
 using System;
 
-#if !BUILD_WINDOWS
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
@@ -22,7 +21,6 @@ using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHe
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewOverflowLabelMode = Microsoft.UI.Xaml.Controls.NavigationViewOverflowLabelMode;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
-#endif
 
 namespace MUXControlsTestApp
 {

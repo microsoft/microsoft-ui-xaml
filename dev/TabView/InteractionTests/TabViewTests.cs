@@ -16,19 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -187,7 +179,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 ElementCache.Refresh();
+
+                Log.Comment("First close button should be visible because IsCloseable was set to true");
                 closeButton = FindCloseButton(firstTab);
+                Verify.IsNotNull(closeButton);
+
+                UIObject tab = FindElement.ByName("SecondTab");
+                Log.Comment("Second close button should be visible because IsCloseable was set to true in xaml");
+                closeButton = FindCloseButton(tab);
+                Verify.IsNotNull(closeButton);
+
+                tab = FindElement.ByName("LongHeaderTab");
+                Log.Comment("Third close button should not be visible because IsCloseable is still unset");
+                closeButton = FindCloseButton(tab);
                 Verify.IsNull(closeButton);
             }
         }
@@ -213,9 +217,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(firstTab);
 
                 cancelCloseCheckBox.Uncheck();
+
+                CheckBox cancelItemCloseCheckBox = FindElement.ByName<CheckBox>("CancelItemCloseCheckBox");
+                cancelCloseCheckBox.Check();
                 Wait.ForIdle();
 
-                Log.Comment("Clicking close button should close tab if app doesn't handle TabClosing event.");
+                Log.Comment("Clicking close button should not close tab if the tab item returns cancel = true.");
+                closeButton.InvokeAndWait();
+
+                ElementCache.Refresh();
+                firstTab = TryFindElement.ByName("FirstTab");
+                Verify.IsNotNull(firstTab);
+
+                cancelCloseCheckBox.Uncheck();
+                Wait.ForIdle();
+
+                Log.Comment("Clicking close button should close tab if app doesn't handle either TabClosing event.");
                 closeButton.InvokeAndWait();
 
                 ElementCache.Refresh();
@@ -269,6 +286,71 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject firstTab = TryFindElement.ByName("FirstTab");
                 Verify.IsNull(firstTab);
             }
+        }
+
+        [TestMethod]
+        public void DragOutsideTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                TextBlock dragOutsideTextBlock = FindElement.ByName<TextBlock>("TabDraggedOutsideTextBlock");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "");
+
+                Log.Comment("Drag tab out");
+                UIObject firstTab = TryFindElement.ByName("FirstTab");
+                InputHelper.DragDistance(firstTab, 50, Direction.South);
+                Wait.ForIdle();
+
+                Log.Comment("Verify event fired");
+                Verify.AreEqual(dragOutsideTextBlock.DocumentText, "Home");
+            }
+        }
+
+        [TestMethod]
+        public void ToolTipDefaultTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Log.Comment("If the app sets custom tooltip text, it should be preserved.");
+                VerifyTooltipText("GetTab0ToolTipButton", "Tab0ToolTipTextBlock", "Custom Tooltip");
+
+                Log.Comment("If the app does not set a custom tooltip, it should be the same as the header text.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Shop");
+
+                Button changeShopTextButton = FindElement.ByName<Button>("ChangeShopTextButton");
+                changeShopTextButton.InvokeAndWait();
+
+                Log.Comment("If the tab's header changes, the tooltip should update.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Changed");
+            }
+        }
+
+        [TestMethod]
+        public void ToolTipUpdateTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button customTooltipButton = FindElement.ByName<Button>("CustomTooltipButton");
+                customTooltipButton.InvokeAndWait();
+
+                Log.Comment("If the app updates the tooltip, it should change to their custom one.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Custom");
+
+                Button changeShopTextButton = FindElement.ByName<Button>("ChangeShopTextButton");
+                changeShopTextButton.InvokeAndWait();
+
+                Log.Comment("The tooltip should not update if the header changes.");
+                VerifyTooltipText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Custom");
+            }
+        }
+
+        public void VerifyTooltipText(String buttonName, String textBlockName, String expectedText)
+        {
+            Button button = FindElement.ByName<Button>(buttonName);
+            button.InvokeAndWait();
+
+            TextBlock textBlock = FindElement.ByName<TextBlock>(textBlockName);
+            Verify.AreEqual(textBlock.DocumentText, expectedText);
         }
 
         Button FindCloseButton(UIObject tabItem)

@@ -93,14 +93,14 @@ namespace MUXControlsTestApp
 
                 // Validate brushes
                 bool fallbackBackgroundBrushResult = VerifyFallbackColor(largeButtonBackgroundBrush, Colors.Orange);
-                bool fallbackBorderBrushResult     = VerifyFallbackColor(largeButtonBorderBrush, Colors.Transparent);
+                bool fallbackBorderBrushResult = VerifyFallbackColor(largeButtonBorderBrush, Colors.Transparent);
 
                 // Validate lights
-                bool fallbackBackroundLightResult  = VerifyAmbientLight(largeButtonBackgroundBrush, true) &&
+                bool fallbackBackroundLightResult = VerifyAmbientLight(largeButtonBackgroundBrush, true) &&
                                                      VerifyBorderLight(largeButtonBackgroundBrush, false) &&
                                                      VerifyHoverLight(largeButtonBackgroundBrush, false);
 
-                bool fallbackBorderLightResult     = VerifyAmbientLight(largeButtonBorderBrush, true) &&
+                bool fallbackBorderLightResult = VerifyAmbientLight(largeButtonBorderBrush, true) &&
                                                      VerifyBorderLight(largeButtonBorderBrush, false) &&
                                                      VerifyHoverLight(largeButtonBorderBrush, false);
 
@@ -108,15 +108,15 @@ namespace MUXControlsTestApp
                 AlwaysUseFallbackHelper(false);
 
                 // Validate brushes
-                bool backgroundBrushResult         = VerifyRevealBrush(largeButtonBackgroundBrush);
-                bool borderBrushResult             = VerifyRevealBrush(largeButtonBorderBrush);
+                bool backgroundBrushResult = VerifyRevealBrush(largeButtonBackgroundBrush);
+                bool borderBrushResult = VerifyRevealBrush(largeButtonBorderBrush);
 
                 // Validate lights
-                bool backroundLightResult          = VerifyAmbientLight(largeButtonBackgroundBrush, true) &&
+                bool backroundLightResult = VerifyAmbientLight(largeButtonBackgroundBrush, true) &&
                                                      VerifyBorderLight(largeButtonBackgroundBrush, false) &&
                                                      VerifyHoverLight(largeButtonBackgroundBrush, true);
 
-                bool borderLightResult             = VerifyAmbientLight(largeButtonBorderBrush, true) &&
+                bool borderLightResult = VerifyAmbientLight(largeButtonBorderBrush, true) &&
                                                      VerifyBorderLight(largeButtonBorderBrush, true) &&
                                                      VerifyHoverLight(largeButtonBorderBrush, false);
 
@@ -174,7 +174,7 @@ namespace MUXControlsTestApp
                 return compositionBrush == null;
             }
 
-            return isInFallbackMode && 
+            return isInFallbackMode &&
                    (compositionBrush != null && compositionBrush is CompositionColorBrush) &&
                    (compositionBrush as CompositionColorBrush).Color.Equals(fallbackColor);
         }

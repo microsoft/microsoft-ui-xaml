@@ -1,6 +1,6 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 variables:
-  minimumExpectedTestsExecutedCount: 50  # Sanity check for minimum expected tests to be reported
+  minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
 - job: ComponentDetection
   pool:

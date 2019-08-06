@@ -25,6 +25,7 @@ private:
 
     static void UpdateCornerRadius(const winrt::ComboBox& comboBox, bool isDropDownOpen);
     static bool IsPopupOpenDown(const winrt::ComboBox& comboBox);
+    static winrt::IInspectable ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
 };
 
 class ComboBoxDropDownEventRevokers

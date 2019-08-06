@@ -24,6 +24,7 @@
         <Setter Property="MaxZoomFactor" Value="10.0"/>
         <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
         <Setter Property="VerticalAnchorRatio" Value="0.0"/>
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ScrollViewer">
