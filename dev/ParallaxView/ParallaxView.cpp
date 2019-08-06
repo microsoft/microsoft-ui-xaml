@@ -155,7 +155,7 @@ winrt::Size ParallaxView::ArrangeOverride(winrt::Size const& finalSize)
 
         // Set a rectangular clip on this ParallaxView the same size as the arrange
         // rectangle so the child does not render beyond it.
-        winrt::RectangleGeometry rectangleGeometry = safe_cast<winrt::RectangleGeometry>(Clip());
+        auto rectangleGeometry = Clip().as<winrt::RectangleGeometry>();
 
         if (!rectangleGeometry)
         {
@@ -211,7 +211,7 @@ void ParallaxView::OnPropertyChanged(
     {
         winrt::IInspectable oldChild = args.OldValue();
         winrt::IInspectable newChild = args.NewValue();
-        UpdateChild(safe_cast<winrt::UIElement>(oldChild), safe_cast<winrt::UIElement>(newChild));
+        UpdateChild(oldChild.as<winrt::UIElement>(), newChild.as<winrt::UIElement>());
     }
     else if (dependencyProperty == s_IsHorizontalShiftClampedProperty ||
              dependencyProperty == s_HorizontalSourceOffsetKindProperty ||
@@ -231,7 +231,7 @@ void ParallaxView::OnPropertyChanged(
         if (m_scrollInputHelper)
         {
             winrt::IInspectable newSource = args.NewValue();
-            m_scrollInputHelper->SetSourceElement(safe_cast<winrt::UIElement>(newSource));
+            m_scrollInputHelper->SetSourceElement(newSource.as<winrt::UIElement>());
         }
     }
     else if (dependencyProperty == s_IsVerticalShiftClampedProperty || 

@@ -290,8 +290,8 @@ public:
         {
             peer.RaisePropertyChangedEvent(
                 winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-                box_value(oldValue),
-                box_value(newValue));
+                winrt::box_value(oldValue),
+                winrt::box_value(newValue));
         }
     }
 

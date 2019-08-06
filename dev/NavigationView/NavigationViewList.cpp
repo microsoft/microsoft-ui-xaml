@@ -119,7 +119,7 @@ winrt::NavigationViewItemBase NavigationViewList::GetLastItemCalledInIsItemItsOw
 }
 
 template<typename T> 
-void NavigationViewList::PropagateChangeToAllContainers(std::function<void(typename T& container)> function)
+void NavigationViewList::PropagateChangeToAllContainers(std::function<void(T& container)> function)
 {
     if (auto items = Items())
     {
@@ -129,7 +129,7 @@ void NavigationViewList::PropagateChangeToAllContainers(std::function<void(typen
             auto container = ContainerFromIndex(i);
             if (container)
             {
-                auto itemContainer = container.try_as<typename T>();
+                auto itemContainer = container.try_as<T>();
                 if (itemContainer)
                 {
                     function(itemContainer);

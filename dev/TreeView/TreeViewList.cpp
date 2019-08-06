@@ -665,12 +665,12 @@ winrt::TreeViewNode TreeViewList::NodeFromItem(winrt::IInspectable const& item)
 {
     return IsContentMode() ?
         ListViewModel().get()->GetAssociatedNode(item) :
-        safe_try_cast<winrt::TreeViewNode>(item);
+        item.try_as<winrt::TreeViewNode>();
 }
 
 winrt::IInspectable TreeViewList::ItemFromNode(winrt::TreeViewNode const& node)
 {
-    return (IsContentMode() && node) ? node.Content() : node;
+    return (IsContentMode() && node) ? node.Content() : static_cast<winrt::IInspectable>(node);
 }
 
 bool TreeViewList::IsContentMode()

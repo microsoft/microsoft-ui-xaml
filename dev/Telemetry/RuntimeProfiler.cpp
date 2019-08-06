@@ -183,7 +183,7 @@ namespace RuntimeProfiler {
     struct ProfileGroupInfo
     {
         CMethodProfileGroupBase    *pGroup;
-        char                       *pszGroupName;
+        const char                 *pszGroupName;
     } gProfileGroups[] = 
     {
         { static_cast<CMethodProfileGroupBase*>(&gGroupClasses), "Classes" },

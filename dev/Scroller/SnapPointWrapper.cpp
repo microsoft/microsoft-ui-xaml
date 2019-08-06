@@ -185,7 +185,7 @@ SnapPointBase* SnapPointWrapper<T>::GetSnapPointFromWrapper(const SnapPointWrapp
 {
     if (snapPointWrapper)
     {
-        winrt::SnapPointBase winrtPreviousSnapPoint = safe_cast<winrt::SnapPointBase>(snapPointWrapper->SnapPoint());
+        winrt::SnapPointBase winrtPreviousSnapPoint = snapPointWrapper->SnapPoint().as<winrt::SnapPointBase>();
         return winrt::get_self<SnapPointBase>(winrtPreviousSnapPoint);
     }
     return nullptr;

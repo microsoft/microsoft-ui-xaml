@@ -39,7 +39,7 @@ com_ptr<SplitButton> SplitButtonAutomationPeer::GetImpl()
 {
     com_ptr<SplitButton> impl = nullptr;
 
-    if (auto splitButton = safe_try_cast<winrt::SplitButton>(Owner()))
+    if (auto splitButton = Owner().try_as<winrt::SplitButton>())
     {
         impl = winrt::get_self<SplitButton>(splitButton)->get_strong();
     }

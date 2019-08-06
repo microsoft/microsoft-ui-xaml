@@ -52,7 +52,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
     winrt::IInspectable const& parameter,
     winrt::hstring const& language)
 {
-    if (auto bitmapIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>(value))
+    if (auto bitmapIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>())
     {
         winrt::BitmapIconSource returnValue;
 
@@ -62,7 +62,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto fontIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::FontIconSource>(value))
+    else if (auto fontIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::FontIconSource>())
     {
         winrt::FontIconSource returnValue;
 
@@ -77,7 +77,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto pathIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::PathIconSource>(value))
+    else if (auto pathIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::PathIconSource>())
     {
         winrt::PathIconSource returnValue;
 
@@ -86,7 +86,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto symbolIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::SymbolIconSource>(value))
+    else if (auto symbolIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::SymbolIconSource>())
     {
         winrt::SymbolIconSource returnValue;
 
@@ -114,7 +114,7 @@ void CommandingHelpers::BindToIconSourcePropertyIfUnset(
     winrt::DependencyObject const& target,
     winrt::DependencyProperty const& iconSourceProperty)
 {
-    winrt::IconSource localIconSource = safe_try_cast<winrt::IconSource>(target.ReadLocalValue(iconSourceProperty));
+    winrt::IconSource localIconSource = target.ReadLocalValue(iconSourceProperty).try_as<winrt::IconSource>();
 
     if (!localIconSource)
     {
@@ -127,7 +127,7 @@ void CommandingHelpers::BindToIconPropertyIfUnset(
     winrt::DependencyObject const& target,
     winrt::DependencyProperty const& iconProperty)
 {
-    if (!safe_try_cast<winrt::IconElement>(target.ReadLocalValue(iconProperty)))
+    if (!target.ReadLocalValue(iconProperty).try_as<winrt::IconElement>())
     {
         SharedHelpers::SetBinding(uiCommand, L"Icon", target, iconProperty, IconSourceToIconSourceElementConverter());
     }
@@ -140,7 +140,7 @@ void CommandingHelpers::BindToLabelPropertyIfUnset(
     winrt::DependencyObject const& target,
     winrt::DependencyProperty const& labelProperty)
 {
-    auto labelReference = safe_try_cast<winrt::IReference<winrt::hstring>>(target.ReadLocalValue(labelProperty));
+    auto labelReference = target.ReadLocalValue(labelProperty).try_as<winrt::IReference<winrt::hstring>>();
 
     if (!labelReference || labelReference.Value().empty())
     {
@@ -193,9 +193,9 @@ void CommandingHelpers::BindToDescriptionPropertiesIfUnset(
     }
 
     winrt::IInspectable localToolTipAsI = winrt::ToolTipService::GetToolTip(target);
-    auto localToolTipAsString = safe_try_cast<winrt::IReference<winrt::hstring>>(localToolTipAsI);
+    auto localToolTipAsString = localToolTipAsI.try_as<winrt::IReference<winrt::hstring>>();
 
-    if ((!localToolTipAsString || localToolTipAsString.Value().empty()) && !safe_try_cast<winrt::ToolTip>(localToolTipAsI))
+    if ((!localToolTipAsString || localToolTipAsString.Value().empty()) && !localToolTipAsI.try_as<winrt::ToolTip>())
     {
         SharedHelpers::SetBinding(uiCommand, L"Description", target, winrt::ToolTipService::ToolTipProperty());
     }
