@@ -8,13 +8,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-
-
-
-                    
                     <RelativePanel x:Name="relpan">
                         <VisualStateManager.VisualStateGroups>
-
                             <VisualStateGroup x:Name="ValidationStates" >
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
@@ -31,7 +26,6 @@
                                         <Setter Target="ValidationIcon.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-
                                 <VisualState x:Name="InvalidText">
                                     <VisualState.Setters>
                                         <!-- TODO: Export Color to ThemeResource -->
@@ -41,7 +35,6 @@
                                 </VisualState>
 
                             </VisualStateGroup>
-
                             <VisualStateGroup x:Name="SpinButtonStates">
                                 <VisualState x:Name="SpinButtonsVisible">
                                     <VisualState.Setters>
@@ -58,8 +51,6 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel Orientation="Horizontal" Name="panel">
-
-
                             <TextBox x:Name="InputBox" Header=""/>
                             <!-- TODO: Export Border Thickness to ThemeResource -->
                             <Button x:Name="DownSpinButton"
@@ -91,5 +82,4 @@
             </Setter.Value>
         </Setter>
     </Style>
-
 </ResourceDictionary>
