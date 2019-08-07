@@ -11,12 +11,13 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.UI.Xaml.Design</RootNamespace>
     <AssemblyName>Microsoft.UI.Xaml.Design</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <!-- This design-time dll depends on an x86-only reference and should be built x86 no matter the solution configuration. -->
     <PlatformTarget>x86</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <!-- These configurations are all the same because we always build x86, but VS wants them there 
        to show them as options in the configuration manager. -->

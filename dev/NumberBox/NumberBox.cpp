@@ -33,8 +33,14 @@ void NumberBox::OnApplyTemplate()
     m_ErrorToolTip.Content(m_ErrorToolTipTextBlock);
     winrt::ToolTipService::SetToolTip(m_WarningIcon, m_ErrorToolTip);
 
-    m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
-    m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
+    if (m_SpinDown)
+    {
+        m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
+    }
+    if (m_SpinUp)
+    {
+        m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
+    }
     m_TextBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
     PointerWheelChanged({ this, &NumberBox::OnScroll });
 
@@ -136,7 +142,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 {
     if (m_TextBox)
     {
-       // UpdateTextToValue(); Causing bugs currently, disabled. 
+        UpdateTextToValue(); 
     }
 }
 
@@ -172,15 +178,15 @@ void NumberBox::ValidateInput()
 
     if (AcceptsCalculation() && IsFormulaic(m_TextBox.Text()))
     {
-            NormalizeShorthandOperations();
-            EvaluateInput();
+        NormalizeShorthandOperations();
+        EvaluateInput();
 
-            // Divide by 0 error state
-            if (fpclassify(Value()) == FP_NAN)
-            {
-                SetErrorState(ValidationState::InvalidDivide);
-                return;
-            }
+        // Divide by 0 error state
+        if (fpclassify(Value()) == FP_NAN)
+        {
+            SetErrorState(ValidationState::InvalidDivide);
+            return;
+        }
     }
 
     auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
@@ -211,29 +217,22 @@ void NumberBox::ValidateInput()
         }
 
         // Parsable value that is not in bounds
-        double a = parsedNum.Value();
         BoundState invalidState = GetBoundState(parsedNum.Value());
 
-        if (invalidState == BoundState::OverMax)
+        switch (invalidState)
         {
-            SetErrorState(ValidationState::InvalidMax);
-            Value(parsedNum.Value());
-            UpdateTextToValue();
-            return;
+            case BoundState::OverMax:
+                SetErrorState(ValidationState::InvalidMax);
+                break;
+            case BoundState::UnderMin:
+                SetErrorState(ValidationState::InvalidMin);
+                break;
+            default:
+                SetErrorState(ValidationState::Invalid);
         }
-        else if (invalidState == BoundState::UnderMin)
-        {
-            SetErrorState(ValidationState::InvalidMin);
-            Value(parsedNum.Value());
-            UpdateTextToValue();
-            return;
-        }
-        else
-        {
-            SetErrorState(ValidationState::Invalid);
-            Value(parsedNum.Value());
-            UpdateTextToValue();
-        }
+
+        Value(parsedNum.Value());
+        UpdateTextToValue();
     }
 }
 
@@ -334,17 +333,19 @@ void NumberBox::StepValue(bool isPositive)
 
 
 // Check if text resembles formulaic input to determine if parser should be executed
-bool NumberBox::IsFormulaic(winrt::hstring in)
+bool NumberBox::IsFormulaic(const winrt::hstring& in)
 {
-    std::regex r("^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
-    return (std::regex_match(winrt::to_string(in), r));
+    std::wstring input(in);
+    std::wregex formula(L"^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
+    std::wregex negval(L"^-([0-9])+(.([0-9])+)?$");
+    return (std::regex_match(input, formula) && !std::regex_match(input, negval));
 }
 
 // Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
 int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 {
-    double oldVal = Value();
-    double stepFreq = StepFrequency();
+    auto const oldVal = Value();
+    auto const stepFreq = StepFrequency();
 
     // Run formatter on both values to discard trailing and leading 0's.
     std::wstring formattedVal(m_stepPrecisionFormatter.Format(oldVal));
@@ -352,8 +353,8 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
     std::wstring formattedNew(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
-    int oldValSig = (int) formattedVal.substr(formattedVal.find_first_of('.') + 1).size();
-    int StepSig = (int) formattedStep.substr(formattedStep.find_first_of('.') + 1).size();
+    int oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
+    int StepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
 
     // Pick bigger of two decimal sigDigits
     int result = std::max(oldValSig, StepSig);
@@ -399,8 +400,7 @@ void NumberBox::UpdateTextToValue()
         m_TextBox.Text(formattedValue);
 }
 
-// Handlder for swapping visual states of textbox
-// TODO: Implement final visual states in spec
+// Handler for swapping visual states of textbox
 void NumberBox::SetErrorState(ValidationState state)
 {
     // No Error Raised
@@ -468,31 +468,29 @@ void NumberBox::SetSpinButtonVisualState()
 // checks if val is in Min/Max bounds based on user's MinMax mode setting
 NumberBox::BoundState NumberBox::GetBoundState(double val)
 {
-    double min = MinValue();
-    double max = MaxValue();
     switch (  MinMaxMode() )
     {
         case winrt::NumberBoxMinMaxMode::None:
             return BoundState::InBounds;
         case winrt::NumberBoxMinMaxMode::WrapEnabled:
         case winrt::NumberBoxMinMaxMode::MinAndMaxEnabled:
-            if (val < min)
+            if (val < MinValue())
             {
                 return BoundState::UnderMin;
             }
-            else if (val > max)
+            else if (val > MaxValue())
             {
                 return BoundState::OverMax;
             }
             break;
         case winrt::NumberBoxMinMaxMode::MinEnabled:
-            if (val < min)
+            if (val < MinValue())
             {
                 return BoundState::UnderMin;
             }
             break;
         case winrt::NumberBoxMinMaxMode::MaxEnabled:
-            if (val > max)
+            if (val > MaxValue())
             {
                 return BoundState::OverMax;
             }
@@ -528,7 +526,7 @@ void NumberBox::UpdateRounder()
     }
     else
     {
-        m_sRounder.SignificantDigits( (uint32_t) abs(SignificantDigitPrecision()));
+        m_sRounder.SignificantDigits(static_cast<int>(abs(SignificantDigitPrecision())));
         m_sRounder.RoundingAlgorithm(RoundingAlgorithm());
         m_formatter.NumberRounder(m_sRounder); 
     }
