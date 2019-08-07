@@ -90,8 +90,8 @@ private:
     winrt::DecimalFormatter m_stepPrecisionFormatter{};
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
     winrt::TextBox m_TextBox{};
-    winrt::Button m_SpinDown{};
-    winrt::Button m_SpinUp{};
+    winrt::RepeatButton m_SpinDown{};
+    winrt::RepeatButton m_SpinUp{};
     winrt::FontIcon m_WarningIcon{};
     winrt::ToolTip m_ErrorToolTip{};
     winrt::TextBlock m_ErrorToolTipTextBlock{};

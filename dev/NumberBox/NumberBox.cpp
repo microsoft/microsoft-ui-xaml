@@ -19,8 +19,8 @@ void NumberBox::OnApplyTemplate()
     // Initializations - Visual Components
     winrt::IControlProtected controlProtected = *this;
     m_TextBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
-    m_SpinDown = GetTemplateChildT<winrt::Button>(L"DownSpinButton", controlProtected);
-    m_SpinUp = GetTemplateChildT<winrt::Button>(L"UpSpinButton", controlProtected);
+    m_SpinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected);
+    m_SpinUp = GetTemplateChildT<winrt::RepeatButton>(L"UpSpinButton", controlProtected);
     m_WarningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected);
     m_ErrorTextMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected);
 
@@ -303,9 +303,6 @@ void NumberBox::StepValue(bool isPositive)
         {
             newVal = MaxValue() - abs(newVal - MinValue()) + 1;
         }
-        Value(newVal);
-        UpdateTextToValue();
-        return;
     }
     // Input Overwriting - Coerce to min or max
     else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
@@ -319,7 +316,7 @@ void NumberBox::StepValue(bool isPositive)
             newVal = MinValue();
         }
     }
-
+    
     // Safeguard for floating point imprecision errors
     int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
     m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);

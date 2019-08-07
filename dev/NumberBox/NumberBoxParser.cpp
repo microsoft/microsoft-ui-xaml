@@ -25,8 +25,7 @@ MathToken::MathToken()
 MathTokenizer::MathTokenizer(std::wstring input)
 {
     m_inputString = input;
-    m_inputLength = (int) m_inputString.size();
-    m_index = 0;
+    m_inputLength = static_cast<int>(m_inputString.size());
     m_lastToken = MathToken(MathToken::TokenType::EOFToken, L"");
 }
 
@@ -126,26 +125,26 @@ bool MathTokenizer::IsOperator(std::wstring_view in)
 }
 
 // Returns 1 for op1 higher precedence, -1 for lower, -2 for error
-int NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
+NumberBoxParser::OperatorPrecedence NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
 {
     const std::wstring ops = L"-+/*^";
     int op1prec = (int) ops.find(op1) / 2;
     int op2prec = (int) ops.find(op2) / 2;
     if (op1prec == std::wstring::npos || op2prec == std::wstring::npos)
     {
-        return -2;
+        return OperatorPrecedence::Error;
     }
     if (op1prec > op2prec)
     {
-        return 1;
+        return OperatorPrecedence::Higher;
     }
     else if (op2prec > op1prec)
     {
-        return -1;
+        return OperatorPrecedence::Lower;
     }
     else
     {
-        return 0;
+        return OperatorPrecedence::Equal;
     }
 }
 
@@ -171,9 +170,9 @@ std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
         {
             while (!opstack.empty())
             {
-                int prec = CmpPrecedence(opstack.top(), token.str[0]);
+                OperatorPrecedence prec = CmpPrecedence(opstack.top(), token.str[0]);
                 // operator at top of opstack with greater precendence or equal precedence and left associative should be popped
-                if ( (prec > 0 || (prec == 0 && opstack.top() != '^')) && opstack.top() != '(' )
+                if ( (prec == OperatorPrecedence::Higher || (prec == OperatorPrecedence::Equal && opstack.top() != '^')) && opstack.top() != '(' )
                 {
                     out << opstack.top() << ' ';
                     opstack.pop();

@@ -53,7 +53,7 @@
                         <StackPanel Orientation="Horizontal" Name="panel">
                             <TextBox x:Name="InputBox" Header=""/>
                             <!-- TODO: Export Border Thickness to ThemeResource -->
-                            <Button x:Name="DownSpinButton"
+                            <RepeatButton x:Name="DownSpinButton"
                                 Visibility="Collapsed"
                                 AutomationProperties.AccessibilityView="Raw"
                                 BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}"
@@ -61,7 +61,7 @@
                                 VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}"
                                 BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Content="&#xE70D;" />
-                            <Button x:Name="UpSpinButton"
+                            <RepeatButton x:Name="UpSpinButton"
                                 Visibility="Collapsed"
                                 BorderThickness="0 2 2 2"
                                 FontSize="{TemplateBinding FontSize}"
