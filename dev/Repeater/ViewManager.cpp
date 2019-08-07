@@ -99,17 +99,15 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 
 void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
-    
+    m_owner->OnElementClearing(element);
+
     if (m_owner->ItemTemplateShim())
     {
-        m_owner->OnElementClearing(element);
-
         if (!m_ElementFactoryRecycleArgs)
         {
             // Create one.
             m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
         }
-
 
         auto context = m_ElementFactoryRecycleArgs.get();
         context.Element(element);
@@ -690,9 +688,10 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
 
     repeater->AnimationManager().OnElementPrepared(element);
 
+    repeater->OnElementPrepared(element, index);
+
     if (!itemsSourceContainsElements)
     {
-        repeater->OnElementPrepared(element, index);
         m_phaser.PhaseElement(element, virtInfo);
     }
 
