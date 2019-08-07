@@ -46,7 +46,7 @@ MathToken MathTokenizer::GetToken()
     if (m_inputString[m_index] == '-')
     {
         
-        if (PeekNextToken().type == MathToken::TokenType::Numeric && m_lastToken.type != MathToken::TokenType::Numeric)
+        if (PeekNextToken().type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
         {
             // Read next token so that the string is parsed as a numeric token.
             m_index++;
