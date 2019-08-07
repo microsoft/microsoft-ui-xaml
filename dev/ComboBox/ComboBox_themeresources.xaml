@@ -14,7 +14,7 @@
             <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
-            <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
@@ -184,7 +184,7 @@
             <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
-            <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
@@ -242,7 +242,7 @@
             <x:Double x:Key="ComboBoxThemeMinWidth">64</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeMinWidth">80</x:Double>
             <x:Double x:Key="ComboBoxPopupThemeTouchMinWidth">240</x:Double>
-            <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ComboBoxBorderThemeThickness">1</Thickness>
             <Thickness x:Key="ComboBoxDropdownBorderThickness">1</Thickness>
             <Thickness x:Key="ComboBoxHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="ComboBoxPopupBorderThemeThickness">2</Thickness>
@@ -358,7 +358,7 @@
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
-    <Thickness x:Key="ComboBoxEditableTextPadding">10,3,30,5</Thickness>
+    <Thickness x:Key="ComboBoxEditableTextPadding">10,4,30,5</Thickness>
     <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
 
     <Style TargetType="ComboBox">
@@ -515,17 +515,17 @@
                                 <VisualState x:Name="Opened">
                                     <Storyboard>
                                         <SplitOpenThemeAnimation OpenedTargetName="PopupBorder"
-                                        ClosedTargetName="ContentPresenter"
-                                        OffsetFromCenter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOffset}"
-                                        OpenedLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOpenedHeight}" />
+                                            ClosedTargetName="ContentPresenter"
+                                            OffsetFromCenter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOffset}"
+                                            OpenedLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOpenedHeight}" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Closed">
                                     <Storyboard>
                                         <SplitCloseThemeAnimation OpenedTargetName="PopupBorder"
-                                        ClosedTargetName="ContentPresenter"
-                                        OffsetFromCenter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOffset}"
-                                        OpenedLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOpenedHeight}" />
+                                            ClosedTargetName="ContentPresenter"
+                                            OffsetFromCenter="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOffset}"
+                                            OpenedLength="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.DropDownOpenedHeight}" />
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>
@@ -533,21 +533,21 @@
                                 <VisualState x:Name="TextBoxFocused">
                                     <VisualState.Setters>
                                         <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
-                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,2,2,2" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TextBoxFocusedOverlayPointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
                                         <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerOver}" />
-                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,2,2,2" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TextBoxFocusedOverlayPressed">
                                     <VisualState.Setters>
                                         <Setter Target="DropDownGlyph.Foreground" Value="{ThemeResource ComboBoxEditableDropDownGlyphForeground}" />
                                         <Setter Target="DropDownOverlay.Background" Value="{ThemeResource ComboBoxFocusedDropDownBackgroundPointerPressed}" />
-                                        <Setter Target="DropDownOverlay.Margin" Value="0,3,2,2" />
+                                        <Setter Target="DropDownOverlay.Margin" Value="0,2,2,2" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="TextBoxOverlayPointerOver">
