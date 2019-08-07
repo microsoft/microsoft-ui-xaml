@@ -86,6 +86,10 @@ private:
     void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
     void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
+    void OnRepeaterElementPrepared(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
+    void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
+    void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);
+
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
     void UpdateItemsSource();
@@ -100,7 +104,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{ this };
 
-    tracker_ref<winrt::ListView> m_listView{ this };
+    tracker_ref<winrt::ItemsRepeater> m_itemsRepeater{ this };
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
     tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
@@ -123,4 +127,9 @@ private:
 
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
+    winrt::SelectionModel m_selectionModel{};
+
+    winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_repeaterElementIndexChangedRevoker{};
+    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
 };

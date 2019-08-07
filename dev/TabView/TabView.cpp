@@ -10,6 +10,7 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
+#include "TabViewItem.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -31,6 +32,7 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
+    m_selectionModel.SingleSelect(true);
 }
 
 void TabView::OnApplyTemplate()
@@ -46,21 +48,29 @@ void TabView::OnApplyTemplate()
     m_rightContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"RightContentColumn", controlProtected));
 
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
+    m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
 
-    m_listView.set([this, controlProtected]() {
-        auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
-        if (listView)
+    m_scrollViewerLoadedRevoker = m_scrollViewer.get().Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
+
+    m_itemsRepeater.set([this, controlProtected]() {
+        auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(L"TabItemsRepeater", controlProtected);
+        if (repeater)
         {
-            m_listViewLoadedRevoker = listView.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
-            m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
+            m_listViewLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
+            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
+            m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
 
-            m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
-            m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
-            m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
-            m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
+           // m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
+
+           // m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
+          //  m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
+          //  m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
+          //  m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
         }
-        return listView;
+        return repeater;
     }());
+
+    m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnSelectionChanged });
 
     m_addButton.set([this, controlProtected]() {
         auto addButton = GetTemplateChildT<winrt::Button>(L"AddButton", controlProtected);
@@ -101,15 +111,17 @@ void TabView::OnApplyTemplate()
 
 void TabView::UpdateItemsSource()
 {
-    if (auto listView = m_listView.get())
+    if (auto repeater = m_itemsRepeater.get())
     {
         if (ItemsSource())
         {
-            listView.ItemsSource(ItemsSource());
+            repeater.ItemsSource(ItemsSource());
+            m_selectionModel.Source(ItemsSource());
         }
         else
         {
-            listView.ItemsSource(Items());
+            repeater.ItemsSource(Items());
+            m_selectionModel.Source(Items());
         }
     }
 }
@@ -165,19 +177,13 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         UpdateSelectedItem();
     }
 
-    if (auto listView = m_listView.get())
+    if (auto repeater = m_itemsRepeater.get())
     {
-        SelectedIndex(listView.SelectedIndex());
-        SelectedItem(listView.SelectedItem());
-
-        m_scrollViewer.set([this, listView]() {
-            auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
-            if (scrollViewer)
-            {
-                m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
-            }
-            return scrollViewer;
-        }());
+        if (auto selectedIndex = m_selectionModel.SelectedIndex())
+        {
+            SelectedIndex(selectedIndex.GetAt(0));
+            SelectedItem(m_selectionModel.SelectedItem());
+        }
     }
 }
 
@@ -249,17 +255,23 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-    if (auto listView = m_listView.get())
+   /* if (auto listView = m_listView.get())
     {
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
     }
+    */
 
     UpdateTabContent();
-
     m_selectionChangedEventSource(sender, args);
 }
 
+void TabView::OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args)
+{
+    SelectedItem(sender.SelectedItem());
+    UpdateTabContent();
+//    m_selectionChangedEventSource(sender, args);
+}
 
 void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
 {
@@ -326,7 +338,7 @@ void TabView::UpdateTabContent()
         }
         else
         {
-            if (auto container = ContainerFromItem(SelectedItem()).as<winrt::ListViewItem>())
+            if (auto container = ContainerFromItem(SelectedItem()).as<winrt::TabViewItem>())
             {
                 tabContentPresenter.Content(container.Content());
                 tabContentPresenter.ContentTemplate(container.ContentTemplate());
@@ -338,22 +350,15 @@ void TabView::UpdateTabContent()
 
 void TabView::CloseTab(winrt::TabViewItem const& container)
 {
-    if (auto listView = m_listView.get())
+    if (auto repeater = m_itemsRepeater.get())
     {
-        if (auto item = listView.ItemFromContainer(container))
+        int index = repeater.GetElementIndex(container);
+        auto args = winrt::make_self<TabViewTabClosingEventArgs>(repeater.ItemsSourceView().GetAt(index));
+        m_tabClosingEventSource(*this, *args);
+
+        if (!args->Cancel())
         {
-            uint32_t index = 0;
-            if (Items().IndexOf(item, index))
-            {
-                auto args = winrt::make_self<TabViewTabClosingEventArgs>(item);
-
-                m_tabClosingEventSource(*this, *args);
-
-                if (!args->Cancel())
-                {
-                    Items().RemoveAt(index);
-                }
-            }
+            Items().RemoveAt(index);
         }
     }
 }
@@ -456,7 +461,7 @@ void TabView::UpdateTabWidths()
     for (auto item : Items())
     {
         // Set the calculated width on each tab.
-        if (auto container = ContainerFromItem(item).as<winrt::ListViewItem>())
+        if (auto container = ContainerFromItem(item).as<winrt::TabViewItem>())
         {
             container.Width(tabWidth);
         }
@@ -466,40 +471,46 @@ void TabView::UpdateTabWidths()
 
 void TabView::UpdateSelectedItem()
 {
-    if (auto listView = m_listView.get())
+    //if (auto listView = m_listView.get())
+    //{
+    //    // Setting ListView.SelectedItem will not work here in all cases.
+    //    // The reason why that doesn't work but this does is unknown.
+    //    auto container = listView.ContainerFromItem(SelectedItem());
+    //    if (auto lvi = container.as<winrt::ListViewItem>())
+    //    {
+    //        lvi.IsSelected(true);
+    //    }
+    //}
+    uint32_t index;
+    if (Items().IndexOf(SelectedItem(), index))
     {
-        // Setting ListView.SelectedItem will not work here in all cases.
-        // The reason why that doesn't work but this does is unknown.
-        auto container = listView.ContainerFromItem(SelectedItem());
-        if (auto lvi = container.as<winrt::ListViewItem>())
-        {
-            lvi.IsSelected(true);
-        }
+        m_selectionModel.Select(index);
     }
 }
 
 void TabView::UpdateSelectedIndex()
 {
-    if (auto listView = m_listView.get())
-    {
-        listView.SelectedIndex(SelectedIndex());
-    }
+    m_selectionModel.Select(SelectedIndex());
 }
 
 winrt::DependencyObject TabView::ContainerFromItem(winrt::IInspectable const& item)
 {
-    if (auto listView = m_listView.get())
+    if (auto repeater = m_itemsRepeater.get())
     {
-        return listView.ContainerFromItem(item);
+        uint32_t index;
+        if (Items().IndexOf(item, index))
+        {
+            return repeater.TryGetElement(index);
+        }
     }
     return nullptr;
 }
 
 winrt::DependencyObject TabView::ContainerFromIndex(int index)
 {
-    if (auto listView = m_listView.get())
+    if (auto repeater = m_itemsRepeater.get())
     {
-        return listView.ContainerFromIndex(index);
+        return repeater.TryGetElement(index);
     }
     return nullptr;
 }
@@ -514,5 +525,24 @@ void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const wi
             CloseTab(selectedTab);
             args.Handled(true);
         }
+    }
+}
+
+void TabView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
+{
+    if (auto item = args.Element().try_as<winrt::TabViewItem>())
+    {
+        auto tabItem = winrt::get_self<TabViewItem>(item);
+        tabItem->RepeatedIndex(args.Index());
+        tabItem->SelectionModel(m_selectionModel);
+    }
+}
+
+void TabView::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args)
+{
+    if (auto item = args.Element().try_as<winrt::TabViewItem>())
+    {
+        auto tabItem = winrt::get_self<TabViewItem>(item);
+        tabItem->RepeatedIndex(args.NewIndex());
     }
 }

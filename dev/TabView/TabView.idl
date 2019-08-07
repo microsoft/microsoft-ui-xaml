@@ -107,7 +107,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
+unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ContentControl
 {
     TabViewItem();
 
@@ -156,7 +156,7 @@ unsealed runtimeclass TabViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.F
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TabViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer
+unsealed runtimeclass TabViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     TabViewItemAutomationPeer(MU_XC_NAMESPACE.TabViewItem owner);
 }

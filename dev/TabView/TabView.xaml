@@ -35,15 +35,18 @@
                                 Content="{TemplateBinding LeftCustomContent}"
                                 ContentTemplate="{TemplateBinding LeftCustomContentTemplate}"/>
 
-                            <primitives:TabViewListView
-                                Grid.Column="1"
-                                x:Name="TabListView"
-                                CanReorderItems="{TemplateBinding CanDragDropTabs}"
-                                CanDragItems="{TemplateBinding CanDragDropTabs}"
-                                AllowDrop="{TemplateBinding CanDragDropTabs}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
-
+                            <local:ItemsRepeaterScrollHost Grid.Column="1">
+                                <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
+                                    <local:ItemsRepeater
+                                        x:Name="TabItemsRepeater"
+                                        ItemTemplate="{TemplateBinding ItemTemplate}">
+                                        <local:ItemsRepeater.Layout>
+                                            <local:StackLayout Orientation="Horizontal" />
+                                        </local:ItemsRepeater.Layout>
+                                    </local:ItemsRepeater>
+                                </ScrollViewer>
+                            </local:ItemsRepeaterScrollHost>
+                            
                             <Button
                                 Grid.Column="2"
                                 x:Name="AddButton"
@@ -141,6 +144,15 @@
     </Style>
 
     <Style x:Name="TabScrollViewerStyle" TargetType="ScrollViewer">
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
+        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Enabled" />
+        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
+        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
+        <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
+        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
+        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollViewer">
