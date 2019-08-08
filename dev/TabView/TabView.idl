@@ -107,7 +107,20 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ContentControl
+unsealed runtimeclass ItemContainer : Windows.UI.Xaml.Controls.ContentControl
+{
+    ItemContainer();
+
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsSelected{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty IsSelectedProperty { get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass TabViewItem : ItemContainer
 {
     TabViewItem();
 

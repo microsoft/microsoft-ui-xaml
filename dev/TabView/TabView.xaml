@@ -35,18 +35,22 @@
                                 Content="{TemplateBinding LeftCustomContent}"
                                 ContentTemplate="{TemplateBinding LeftCustomContentTemplate}"/>
 
-                            <local:ItemsRepeaterScrollHost Grid.Column="1">
+                            <local:ItemsRepeaterScrollHost Grid.Column="1" >
                                 <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
-                                    <local:ItemsRepeater
+                                    <Border Padding="{ThemeResource TabViewHeaderPadding}" BorderThickness="0">
+                                        <local:ItemsRepeater
                                         x:Name="TabItemsRepeater"
-                                        ItemTemplate="{TemplateBinding ItemTemplate}">
-                                        <local:ItemsRepeater.Layout>
-                                            <local:StackLayout Orientation="Horizontal" />
-                                        </local:ItemsRepeater.Layout>
-                                    </local:ItemsRepeater>
+                                        ItemTemplate="{TemplateBinding ItemTemplate}"
+                                        VerticalAlignment="Top"
+                                        TabFocusNavigation="Local">
+                                            <local:ItemsRepeater.Layout>
+                                                <local:StackLayout Orientation="Horizontal" />
+                                            </local:ItemsRepeater.Layout>
+                                        </local:ItemsRepeater>
+                                    </Border>
                                 </ScrollViewer>
                             </local:ItemsRepeaterScrollHost>
-                            
+
                             <Button
                                 Grid.Column="2"
                                 x:Name="AddButton"
@@ -229,7 +233,8 @@
 
                     <Grid x:Name="LayoutRoot"
                         Padding="{TemplateBinding Padding}"
-                        Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
+                        Margin="-1,0,0,0">
+                        <!-- This item will cover the separator on its left side. -->
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />

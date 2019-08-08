@@ -123,36 +123,3 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         }
     }
 }
-
-void TabViewItem::RepeatedIndex(int index)
-{
-    m_repeatedIndex = index;
-}
-
-int TabViewItem::RepeatedIndex()
-{
-    return m_repeatedIndex;
-}
-
-void TabViewItem::SelectionModel(const winrt::SelectionModel& value)
-{
-    m_selectionModel = value;
-    m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &TabViewItem::OnSelectionChanged });
-}
-
-void TabViewItem::OnPointerPressed(const winrt::PointerRoutedEventArgs& args)
-{
-    m_selectionModel.Select(RepeatedIndex());   
-}
-
-void TabViewItem::OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args)
-{
-    if (sender.IsSelected(RepeatedIndex()).Value())
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Selected", true);
-    }
-    else
-    {
-        winrt::VisualStateManager::GoToState(*this, L"Normal", true);
-    }
-}
