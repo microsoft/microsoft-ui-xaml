@@ -17,6 +17,12 @@ using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingE
 
 namespace MUXControlsTestApp
 {
+    public class TabDataItem
+    {
+        public string Header { get; set; }
+        public string Content { get; set; }
+    }
+
     [TopLevelTestPage(Name = "TabView")]
     public sealed partial class TabViewPage : TestPage
     {
@@ -25,6 +31,25 @@ namespace MUXControlsTestApp
         public TabViewPage()
         {
             this.InitializeComponent();
+            
+            this.innerTabView.ItemsSource = new []
+            {
+                new TabDataItem 
+                {
+                    Header = "Header 1",
+                    Content = "Content 1"
+                },
+                new TabDataItem
+                {
+                    Header = "Header 2",
+                    Content = "Content 2"
+                },
+                new TabDataItem
+                {
+                    Header = "Header 3",
+                    Content = "Content 3"
+                }
+            };
         }
 
         public void CanCloseCheckBox_CheckChanged(object sender, RoutedEventArgs e)

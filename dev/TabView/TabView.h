@@ -59,6 +59,9 @@ public:
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
 
+    // Control
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+
     // Internal
     void OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -87,6 +90,12 @@ private:
     void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+
+    bool SelectNextTab();
+    bool SelectPreviousTab();
+    bool CloseCurrentTab();
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
@@ -94,6 +103,10 @@ private:
 
     void UpdateTabContent();
     void UpdateTabWidths();
+
+    void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+
+    int GetItemCount();
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -111,6 +124,7 @@ private:
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
+    winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
     winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
