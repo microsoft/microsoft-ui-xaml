@@ -62,6 +62,8 @@ public:
     void OnMinMaxModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    bool m_hasError{ false };
+
 
 private:
 
@@ -97,6 +99,5 @@ private:
     winrt::TextBlock m_ErrorToolTipTextBlock{};
     winrt::TextBlock m_ErrorTextMessage{};
     winrt::hstring m_ValidationMessage{};
-    bool m_hasError{ false };
 
 };

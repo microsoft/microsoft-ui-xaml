@@ -191,6 +191,15 @@ void NumberBox::ValidateInput()
 
     auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
 
+    // Rounding separately because rounding affects Value property while formatting does not
+    if (parsedNum && NumberRounder() != winrt::NumberBoxNumberRounder::None)
+    {
+        if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder)
+            parsedNum = m_iRounder.RoundDouble(parsedNum.Value());
+        else
+            parsedNum = m_sRounder.RoundDouble(parsedNum.Value());
+    }
+
     // Valid, in bounds value
     if (parsedNum && GetBoundState(parsedNum.Value()) == BoundState::InBounds )
     {
@@ -393,7 +402,6 @@ void NumberBox::EvaluateInput()
 void NumberBox::UpdateTextToValue()
 {
         winrt::hstring formattedValue(m_formatter.Format(Value()));
-        Value( (m_formatter.ParseDouble(formattedValue)).Value() );
         m_TextBox.Text(formattedValue);
 }
 

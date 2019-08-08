@@ -140,7 +140,10 @@
 
                 />
 
-            </RelativePanel>
+            <TextBlock x:Name="valtext" RelativePanel.RightOf="numBox" Margin="10,50,0,0" Text="Value: " />
+            <TextBlock RelativePanel.RightOf="valtext" Margin="5,50,0,0" Text="{x:Bind numBox.Value, Mode=OneWay}" />
+
+        </RelativePanel>
 
 
 
