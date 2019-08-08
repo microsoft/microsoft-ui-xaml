@@ -21,7 +21,8 @@
                         </Grid.RowDefinitions>
 
                         <Grid x:Name="TabContainerGrid"
-                            Background="{ThemeResource TabViewBackground}">
+                            Background="{ThemeResource TabViewBackground}"
+                            XYFocusKeyboardNavigation="Enabled" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
@@ -77,7 +78,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Local" />
+        <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="IsSwipeEnabled" Value="False" />
         <Setter Property="SingleSelectionFollowsFocus" Value="False"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
@@ -111,7 +112,6 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:TabViewListView">
-
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
                         <ScrollViewer x:Name="ScrollViewer"
                             Grid.Column="1"

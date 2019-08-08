@@ -87,15 +87,30 @@
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
                             <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
+
+                            <ListView>
+                                <ListViewItem>One</ListViewItem>
+                                <ListViewItem IsSelected="True">Two</ListViewItem>
+                                <ListViewItem>Three</ListViewItem>
+                                <ListViewItem>Four</ListViewItem>
+                            </ListView>
                         </StackPanel>
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop" IsCloseable="True">
-                        <TextBlock Padding="16">Shop text</TextBlock>
+                        <StackPanel>
+                            <TextBlock Padding="16">Shop text</TextBlock>
+                            <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton" />
+                        </StackPanel>
+                        
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Icon="Emoji" Header="Longer Header">
-                        <TextBlock Padding="16">Emoji text</TextBlock>
+                        <StackPanel>
+                            <TextBlock Padding="16">Emoji text</TextBlock>
+                            <Button Content="Button 3" />
+                        </StackPanel>
+                        
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="NotCloseableTab" AutomationProperties.Name="NotCloseableTab" Icon="Video" Header="Video" IsCloseable="False">

@@ -264,17 +264,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void KeyboardTest()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-            {
-                Log.Warning("This test requires RS3+ functionality (specifically, KeyboardAccelerators)");
-                return;
-            }
-
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Log.Comment("Set focus inside the TabView");
                 UIObject tabContent = FindElement.ByName("FirstTabContent");
                 tabContent.SetFocus();
+
+                TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
+                TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
+                TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
+
+                Verify.IsTrue(firstTab.IsSelected, "First Tab should be selected initially");
+                Button firstTabButton = FindElement.ByName<Button>("FirstTabButton");
+                Verify.IsTrue(firstTabButton.HasKeyboardFocus, "Focus should start in the First Tab");
+
+                // Ctrl+Tab to the second tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Verify.IsTrue(secondTab.IsSelected, "Ctrl+Tab should move selection to Second Tab");
+                Button secondTabButton = FindElement.ByName<Button>("SecondTabButton");
+                Verify.IsTrue(secondTabButton.HasKeyboardFocus, "Focus should move to the content of the Second Tab");
+
+                // Ctrl+Shift+Tab to the first tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control | ModifierKey.Shift);
+                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Shift+Tab should move selection to First Tab");
+                Verify.IsTrue(firstTabButton.HasKeyboardFocus, "Focus should move to the content of the First Tab");
+
+                // Ctrl+Shift+Tab to the last tab:
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control | ModifierKey.Shift);
+                Verify.IsTrue(lastTab.IsSelected, "Ctrl+Shift+Tab should move selection to Last Tab");
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab (since it has no focusable content)");
+
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
+                Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to First Tab");
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "Focus should move to the first tab");
 
                 Log.Comment("Verify that pressing ctrl-f4 closes the tab");
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
@@ -283,8 +305,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 ElementCache.Refresh();
-                UIObject firstTab = TryFindElement.ByName("FirstTab");
-                Verify.IsNull(firstTab);
+                UIObject firstTab2 = TryFindElement.ByName("FirstTab");
+                Verify.IsNull(firstTab2);
             }
         }
 

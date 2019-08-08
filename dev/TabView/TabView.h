@@ -59,6 +59,9 @@ public:
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
 
+    // Control
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+
     // Internal
     void OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -86,7 +89,10 @@ private:
     void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
     void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
-    void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void SelectNextTab();
+    void SelectPreviousTab();
+
+    void TabContentPresenterLosingFocus(const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args);
 
     void UpdateItemsSource();
     void UpdateSelectedItem();

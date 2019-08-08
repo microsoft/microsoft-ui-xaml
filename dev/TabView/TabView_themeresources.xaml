@@ -34,7 +34,7 @@
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="TabViewBackground"                        ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackground"              ResourceKey="SystemControlTransparentBrush" />
-            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"      ResourceKey="SystemControlBackgroundAltHighBrush" />
+            <StaticResource x:Key="TabViewItemHeaderBackgroundSelected"      ResourceKey="SystemControlHighlightBaseHighBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPointerOver"   ResourceKey="SystemControlHighlightListLowBrush" />
             <StaticResource x:Key="TabViewItemHeaderBackgroundPressed"       ResourceKey="SystemControlHighlightListMediumBrush" />
             <StaticResource x:Key="TabViewItemHeaderForeground"              ResourceKey="SystemControlForegroundBaseMediumBrush" />

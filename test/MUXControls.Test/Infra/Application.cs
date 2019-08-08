@@ -166,7 +166,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #if USING_TAEF
             TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
 #else
-            BuildAndInstallTestAppIfNeeded();
+            //BuildAndInstallTestAppIfNeeded();
 #endif
 
 
