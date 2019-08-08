@@ -34,6 +34,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
             };
 
+            itemsSourceDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));
+            };
+
             itemTemplateDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ItemTemplateDemo));
