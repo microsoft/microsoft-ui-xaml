@@ -8,7 +8,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-                    <RelativePanel x:Name="relpan">
+                    <RelativePanel>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ValidationStates" >
                                 <VisualState x:Name="Invalid">

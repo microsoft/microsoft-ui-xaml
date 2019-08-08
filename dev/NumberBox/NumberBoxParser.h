@@ -42,12 +42,18 @@ class MathTokenizer
         bool IsNumeric(std::wstring_view in);
         bool IsOperator(std::wstring_view in);
         void SkipWhiteSpace();
+        bool m_negVal{ false };
 
     public:
+        enum ExpressionType
+        {
+            Infix,
+            Postfix
+        };
         std::wstring m_inputString;
-        MathTokenizer(std::wstring input);
-        MathToken GetToken();
-        MathToken MathTokenizer::PeekNextToken();
+        MathTokenizer(std::wstring_view input);
+        MathToken GetToken(ExpressionType type);
+        MathToken PeekNextToken(ExpressionType type);
 };
 
 // Handles parsing and evaluating mathematical strings
@@ -61,7 +67,7 @@ class NumberBoxParser
             Equal = 0,
             Higher = 1
         };
-        static OperatorPrecedence NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2);
+        static OperatorPrecedence CmpPrecedence(wchar_t op1, wchar_t op2);
         static std::wstring ConvertInfixToPostFix(const std::wstring& infix);
         static std::optional<double> ComputeRpn(const std::wstring& expr);
 

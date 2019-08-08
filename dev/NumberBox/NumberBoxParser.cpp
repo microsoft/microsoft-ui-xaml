@@ -22,14 +22,14 @@ MathToken::MathToken()
     this->str = L"";
 }
 
-MathTokenizer::MathTokenizer(std::wstring input)
+MathTokenizer::MathTokenizer(std::wstring_view input)
 {
     m_inputString = input;
     m_inputLength = static_cast<int>(m_inputString.size());
     m_lastToken = MathToken(MathToken::TokenType::EOFToken, L"");
 }
 
-MathToken MathTokenizer::GetToken()
+MathToken MathTokenizer::GetToken(ExpressionType type)
 {
     // Skip Whitespaces
     SkipWhiteSpace();
@@ -45,8 +45,8 @@ MathToken MathTokenizer::GetToken()
     // Check for a negative number. Next Token must be numeric and previous token must not be numeric.
     if (m_inputString[m_index] == '-')
     {
-        
-        if (PeekNextToken().type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
+
+        if (PeekNextToken(ExpressionType::Infix).type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
         {
             // Read next token so that the string is parsed as a numeric token.
             m_index++;
@@ -92,12 +92,12 @@ MathToken MathTokenizer::GetToken()
 }
 
 // Peek at the next token that will be returned. Used for negative checks.
-MathToken MathTokenizer::PeekNextToken()
+MathToken MathTokenizer::PeekNextToken(ExpressionType type)
 {
     // Save statics that need to be restored
     MathToken oldLastToken = m_lastToken;
     int oldIndex = m_index++;
-    MathToken nextToken = GetToken();
+    MathToken nextToken = GetToken(type);
     // Restore statics
     m_index = oldIndex;
     m_lastToken = oldLastToken;
@@ -122,9 +122,26 @@ bool MathTokenizer::IsOperator(std::wstring_view in)
 {
     std::wregex r(L"^\\+|-|\\*|\\/|\\^$");
     return (std::regex_match(in.data(), r));
+    /*
+    if (in.data() == L"-" || in == "+" || in == "*" || in == "/") {
+    }
+    wchar_t op = in.data()[0];
+    switch (op)
+    {
+    case '-':
+        if (in.data() != "-")
+            return false;
+    case '+':
+    case '*':
+    case '/':
+    case '^':
+        return true;
+    default:
+        return false;
+    } */
 }
 
-// Returns 1 for op1 higher precedence, -1 for lower, -2 for error
+// Determines the mathematical precedence of an operator
 NumberBoxParser::OperatorPrecedence NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
 {
     const std::wstring ops = L"-+/*^";
@@ -157,8 +174,8 @@ std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
     std::stack<wchar_t> opstack;
     MathTokenizer input(infix);
 
-    MathToken token;
-    while ((token = input.GetToken()).type != MathToken::TokenType::EOFToken)
+    MathToken token; 
+    while ((token = input.GetToken(MathTokenizer::ExpressionType::Infix)).type != MathToken::TokenType::EOFToken)
     {
         // Numeric Tokens push directly to output queue
         if (token.type == MathToken::TokenType::Numeric)
@@ -229,7 +246,7 @@ std::optional<double> NumberBoxParser::ComputeRpn(const std::wstring& expr)
     std::stack<double> stack;
     MathTokenizer input(expr);
     MathToken token;
-    while ((token = input.GetToken()).type != MathToken::TokenType::EOFToken)
+    while ((token = input.GetToken(MathTokenizer::ExpressionType::Postfix)).type != MathToken::TokenType::EOFToken)
     {
         if (token.type == MathToken::TokenType::Operator)
         {

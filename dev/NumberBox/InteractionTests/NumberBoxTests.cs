@@ -42,9 +42,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicTest()
+        public void DefaultStateTest()
         {
-            Log.Comment("NumberBox Basic Test");
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                Log.Comment("Verify NumberBox exists");
+                UIObject Numbox = FindElement.ByName("numBox");
+                Verify.IsNotNull(Numbox);
+
+                Log.Comment("Verifying Default Text is 0");
+                Verify.AreEqual("0", Numbox.GetText());
+            }
         }
     }
 }

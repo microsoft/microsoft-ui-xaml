@@ -258,7 +258,8 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
 
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    switch (args.Key()) {
+    //Gamepad Interactions still untested
+    switch (args.OriginalKey()) {
     case winrt::VirtualKey::Up:
     case winrt::VirtualKey::GamepadDPadUp:
         StepValue(true);
