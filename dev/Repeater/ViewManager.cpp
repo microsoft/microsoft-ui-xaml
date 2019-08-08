@@ -99,25 +99,27 @@ void ViewManager::ClearElement(const winrt::UIElement& element, bool isClearedDu
 
 void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
 {
-    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-    const int clearedIndex = virtInfo->Index();
     m_owner->OnElementClearing(element);
 
-    if (!m_ElementFactoryRecycleArgs)
+    if (m_owner->ItemTemplateShim())
     {
-        // Create one.
-        m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
+        if (!m_ElementFactoryRecycleArgs)
+        {
+            // Create one.
+            m_ElementFactoryRecycleArgs = tracker_ref<winrt::ElementFactoryRecycleArgs>(m_owner, *winrt::make_self<ElementFactoryRecycleArgs>());
+        }
+
+        auto context = m_ElementFactoryRecycleArgs.get();
+        context.Element(element);
+        context.Parent(*m_owner);
+
+        m_owner->ItemTemplateShim().RecycleElement(context);
+
+        context.Element(nullptr);
+        context.Parent(nullptr);
     }
 
-    auto context = m_ElementFactoryRecycleArgs.get();
-    context.Element(element);
-    context.Parent(*m_owner);
-
-    m_owner->ItemTemplateShim().RecycleElement(context);
-
-    context.Element(nullptr);
-    context.Parent(nullptr);
-
+    auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);    
     virtInfo->MoveOwnershipToElementFactory();
     m_phaser.StopPhasing(element, virtInfo);
     if (m_lastFocusedElement == element)
@@ -125,6 +127,7 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         // Focused element is going away. Remove the tracked last focused element
         // and pick a reasonable next focus if we can find one within the layout 
         // realized elements.
+        const int clearedIndex = virtInfo->Index();
         MoveFocusFromClearedIndex(clearedIndex);
     }
 
@@ -583,33 +586,46 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
 winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
 {
     // The view generator is the provider of last resort.
-
+    auto data = m_owner->ItemsSourceView().GetAt(index);
+    
     auto itemTemplateFactory = m_owner->ItemTemplateShim();
+
+    winrt::UIElement element = nullptr;
+    bool itemsSourceContainsElements = false;
     if (!itemTemplateFactory)
     {
-        // If no ItemTemplate was provided, use a default 
-        auto factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
-        m_owner->ItemTemplate(factory);
-        itemTemplateFactory = m_owner->ItemTemplateShim();
+        element = data.try_as<winrt::UIElement>();
+        // No item template provided and ItemsSource contains objects derived from UIElement.
+        // In this case, just use the data directly as elements.
+        itemsSourceContainsElements = element != nullptr;
     }
 
-    auto data = m_owner->ItemsSourceView().GetAt(index);
-
-    if (!m_ElementFactoryGetArgs)
+    if (!element)
     {
-        // Create one.
-        m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
+        if (!itemTemplateFactory)
+        {
+            // If no ItemTemplate was provided, use a default 
+            auto factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
+            m_owner->ItemTemplate(factory);
+            itemTemplateFactory = m_owner->ItemTemplateShim();
+        }
+
+        if (!m_ElementFactoryGetArgs)
+        {
+            // Create one.
+            m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
+        }
+
+        auto args = m_ElementFactoryGetArgs.get();
+        args.Data(data);
+        args.Parent(*m_owner);
+        args.as<ElementFactoryGetArgs>()->Index(index);
+
+        element = itemTemplateFactory.GetElement(args);
+
+        args.Data(nullptr);
+        args.Parent(nullptr);
     }
-
-    auto args = m_ElementFactoryGetArgs.get();
-    args.Data(data);
-    args.Parent(*m_owner);
-    args.as<ElementFactoryGetArgs>()->Index(index);
-
-    winrt::UIElement element = itemTemplateFactory.GetElement(args);
-
-    args.Data(nullptr);
-    args.Parent(nullptr);
 
     auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(element);
     if (!virtInfo)
@@ -624,28 +640,31 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         REPEATER_TRACE_PERF(L"ElementRecycled");
     }
 
-    // Prepare the element
-    // If we are phasing, run phase 0 before setting DataContext. If phase 0 is not 
-    // run before setting DataContext, when setting DataContext all the phases will be
-    // run in the OnDataContextChanged handler in code generated by the xaml compiler (code-gen).
-    auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(element);
-    if (extension)
+    if (!itemsSourceContainsElements)
     {
-        // Clear out old data. 
-        extension.Recycle();
-        int nextPhase = VirtualizationInfo::PhaseReachedEnd;
-        // Run Phase 0
-        extension.ProcessBindings(data, index, 0 /* currentPhase */, nextPhase);
+        // Prepare the element
+        // If we are phasing, run phase 0 before setting DataContext. If phase 0 is not 
+        // run before setting DataContext, when setting DataContext all the phases will be
+        // run in the OnDataContextChanged handler in code generated by the xaml compiler (code-gen).
+        auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(element);
+        if (extension)
+        {
+            // Clear out old data. 
+            extension.Recycle();
+            int nextPhase = VirtualizationInfo::PhaseReachedEnd;
+            // Run Phase 0
+            extension.ProcessBindings(data, index, 0 /* currentPhase */, nextPhase);
 
-        // Setup phasing information, so that Phaser can pick up any pending phases left.
-        // Update phase on virtInfo. Set data and templateComponent only if x:Phase was used.
-        virtInfo->UpdatePhasingInfo(nextPhase, nextPhase > 0 ? data : nullptr, nextPhase > 0 ? extension : nullptr);
-    }
-    else
-    {
-        // Set data context only if no x:Bind was used. ie. No data template component on the root.
-        auto elementAsFE = element.try_as<winrt::FrameworkElement>();
-        elementAsFE.DataContext(data);
+            // Setup phasing information, so that Phaser can pick up any pending phases left.
+            // Update phase on virtInfo. Set data and templateComponent only if x:Phase was used.
+            virtInfo->UpdatePhasingInfo(nextPhase, nextPhase > 0 ? data : nullptr, nextPhase > 0 ? extension : nullptr);
+        }
+        else
+        {
+            // Set data context only if no x:Bind was used. ie. No data template component on the root.
+            auto elementAsFE = element.try_as<winrt::FrameworkElement>();
+            elementAsFE.DataContext(data);
+        }
     }
 
     virtInfo->MoveOwnershipToLayoutFromElementFactory(
@@ -668,8 +687,13 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     }
 
     repeater->AnimationManager().OnElementPrepared(element);
+
     repeater->OnElementPrepared(element, index);
-    m_phaser.PhaseElement(element, virtInfo);
+
+    if (!itemsSourceContainsElements)
+    {
+        m_phaser.PhaseElement(element, virtInfo);
+    }
 
     // Update realized indices
     m_firstRealizedElementIndexHeldByLayout = std::min(m_firstRealizedElementIndexHeldByLayout, index);
