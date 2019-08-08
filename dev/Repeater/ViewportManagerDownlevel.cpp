@@ -48,7 +48,7 @@ winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
             // from anchorElement to figure out what child of ours (if any) to use as the suggested element.
 
             auto child = anchorElement;
-            auto parent = safe_cast<winrt::UIElement>(CachedVisualTreeHelpers::GetParent(child));
+            auto parent = CachedVisualTreeHelpers::GetParent(child).as<winrt::UIElement>();
             while (parent)
             {
                 if (parent == owner)
@@ -58,7 +58,7 @@ winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
                 }
 
                 child = parent;
-                parent = safe_cast<winrt::UIElement>(CachedVisualTreeHelpers::GetParent(parent));
+                parent = CachedVisualTreeHelpers::GetParent(parent).as<winrt::UIElement>();
             }
         }
     }

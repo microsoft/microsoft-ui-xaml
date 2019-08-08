@@ -6,6 +6,7 @@
 #include "tracker_ref.h"
 #include "DispatcherHelper.h"
 
+#include <winrt\Windows.UI.Xaml.h>
 
 // This type is a helper to make ReferenceTracker work with winrt::implements intead of a concrete implementation type
 template <typename D, typename WinRTClassType, template <typename, typename ...> class ImplT, typename ... I>
@@ -68,14 +69,14 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
     template <typename BaseType>
     auto GetBase()
     {
-        return m_inner.as<BaseType>();
+        return this->m_inner.as<BaseType>();
     }
 
     // Generally callers should use This(), but inner is a non-delegating inspectable so
     // it is necessary to use for calling through to base methods in Override situations.
     winrt::IInspectable GetInner()
     {
-        return m_inner;
+        return this->m_inner;
     }
 
     HRESULT __stdcall NonDelegatingQueryInterface(GUID const& riid, void** value) noexcept
@@ -84,9 +85,9 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
         // implementation of IWeakReferenceSource. However there are some bugs on RS2 where XAML calls
         // back out to the outer during initialization for IWeakReferenceSource and so our m_inner is null.
         // In that case we allow our "self" implementation to leak out (if we returned null, XAML would crash).
-        if (InlineIsEqualGUID(riid, __uuidof(::IWeakReferenceSource)) && m_inner)
+        if (InlineIsEqualGUID(riid, __uuidof(::IWeakReferenceSource)) && this->m_inner)
         {
-            return winrt::get_unknown(m_inner)->QueryInterface(riid, value);
+            return winrt::get_unknown(this->m_inner)->QueryInterface(riid, value);
         }
         else
         {
@@ -94,7 +95,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
             // by another class; this interface has to be implemented by the controlling unknown,
             // because that's the object that controls the ref count.  Implementing this interface
             // communicates that you return valid ref counts from Release().
-            if (InlineIsEqualGUID(riid, __uuidof(::IReferenceTrackerExtension)) && !outer())
+            if (InlineIsEqualGUID(riid, __uuidof(::IReferenceTrackerExtension)) && !this->outer())
             {
                 *value = static_cast<::IReferenceTrackerExtension*>(this);
                 static_cast<IUnknown*>(*value)->AddRef();
@@ -162,14 +163,15 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 #if _DEBUG
         MUX_ASSERT_NOASSUME(!m_wasEnsureCalled);
 #endif
-        if (!m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
+        if (!this->m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
         {
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
-            winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+            winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
+            //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
         }
-        if (m_inner)
+        if (this->m_inner)
         {
-            if (auto trackerOwnerInner = m_inner.try_as<::ITrackerOwner>()) // Only exists on RS2+
+            if (auto trackerOwnerInner = this->m_inner.try_as<::ITrackerOwner>()) // Only exists on RS2+
             {
                 m_trackerOwnerInnerNoRef = static_cast<::ITrackerOwner*>(winrt::get_abi(trackerOwnerInner));
             }

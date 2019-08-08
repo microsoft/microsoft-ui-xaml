@@ -24,7 +24,7 @@ winrt::XamlLight RevealTestApi::GetWindowLightAt(uint32_t i)
         do
         {
             current = parent;
-            parent = safe_cast<winrt::UIElement>(winrt::VisualTreeHelper::GetParent(current));
+            parent = winrt::VisualTreeHelper::GetParent(current).as<winrt::UIElement>();
         } while (parent != nullptr);
 
         winrt::XamlLight light = nullptr;

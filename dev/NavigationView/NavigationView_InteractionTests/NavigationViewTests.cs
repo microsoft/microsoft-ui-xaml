@@ -3885,6 +3885,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
                 Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False");
 
+                var getVisualStateButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
+                getVisualStateButton.Invoke();
+                Wait.ForIdle();
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsTrue(result.GetText().Contains("ListSizeCompact"), "Verify pane list is in ListSizeCompact state");
+
                 // Maximize the window
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Windows, 1);
                 KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows, 1);

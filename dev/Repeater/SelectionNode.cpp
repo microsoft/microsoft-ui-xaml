@@ -34,7 +34,7 @@ void SelectionNode::Source(const winrt::IInspectable& value)
         m_source.set(value);
 
         // Setup ItemsSourceView
-        auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(value);
+        auto newDataSource = value.try_as<winrt::ItemsSourceView>();
         if (value && !newDataSource)
         {
             newDataSource = winrt::ItemsSourceView(value);

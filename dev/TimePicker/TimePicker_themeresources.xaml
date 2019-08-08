@@ -8,6 +8,8 @@
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
             <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
+            <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
+            <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="TimePickerFirstHostThemeMargin">0,0,20,0</Thickness>
             <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
@@ -68,6 +70,8 @@
             <StaticResource x:Key="TimePickerLightDismissOverlayBackground" ResourceKey="SystemControlPageBackgroundMediumAltMediumBrush" />
             <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
             <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
+            <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
+            <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TimePickerFirstHostThemeMargin">0,0,20,0</Thickness>
             <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
             <FontWeight x:Key="TimePickerHeaderThemeFontWeight">Normal</FontWeight>
@@ -76,6 +80,8 @@
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <x:Double x:Key="TimePickerSelectorThemeMinWidth">80</x:Double>
+            <x:Double x:Key="TimePickerSpacerThemeWidth">1</x:Double>
+            <Thickness x:Key="TimePickerBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TimePickerHeaderThemeMargin">0,0,0,4</Thickness>
             <Thickness x:Key="TimePickerFirstHostThemeMargin">0,0,20,0</Thickness>
             <Thickness x:Key="TimePickerThirdHostThemeMargin">20,0,0,0</Thickness>
@@ -208,7 +214,7 @@
                                                 <ContentPresenter x:Name="ContentPresenter"
                                                     BorderBrush="{ThemeResource TimePickerButtonBorderBrush}"
                                                     Background="{ThemeResource TimePickerButtonBackground}"
-                                                    BorderThickness="2"
+                                                    BorderThickness="{ThemeResource TimePickerBorderThemeThickness}"
                                                     Content="{TemplateBinding Content}"
                                                     Foreground="{TemplateBinding Foreground}"
                                                     HorizontalContentAlignment="Stretch"
@@ -308,7 +314,7 @@
                                 <Rectangle x:Name="FirstColumnDivider"
                                     Fill="{ThemeResource TimePickerSpacerFill}"
                                     HorizontalAlignment="Center"
-                                    Width="2"
+                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
                                 <Border x:Name="SecondPickerHost" Grid.Column="2">
                                     <TextBlock x:Name="MinuteTextBlock"
@@ -322,7 +328,7 @@
                                 <Rectangle x:Name="SecondColumnDivider"
                                     Fill="{ThemeResource TimePickerSpacerFill}"
                                     HorizontalAlignment="Center"
-                                    Width="2"
+                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
                                 <Border x:Name="ThirdPickerHost" Grid.Column="4">
                                     <TextBlock x:Name="PeriodTextBlock"
@@ -391,13 +397,13 @@
                                 <Rectangle x:Name="FirstPickerSpacing"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
-                                    Width="2"
+                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="1" />
                                 <Border x:Name="SecondPickerHost" Grid.Column="2" />
                                 <Rectangle x:Name="SecondPickerSpacing"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     HorizontalAlignment="Center"
-                                    Width="2"
+                                    Width="{ThemeResource TimePickerSpacerThemeWidth}"
                                     Grid.Column="3" />
                                 <Border x:Name="ThirdPickerHost" Grid.Column="4" />
                             </Grid>
@@ -407,7 +413,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-                                <Rectangle Height="2"
+                                <Rectangle Height="{ThemeResource TimePickerSpacerThemeWidth}"
                                     VerticalAlignment="Top"
                                     Fill="{ThemeResource TimePickerFlyoutPresenterSpacerFill}"
                                     Grid.ColumnSpan="2" />

@@ -65,8 +65,8 @@ struct SnapPointWrapperComparator
 {
     inline bool operator()(std::shared_ptr<SnapPointWrapper<T>> left, std::shared_ptr<SnapPointWrapper<T>> right) const
     {
-        winrt::SnapPointBase winrtLeftSnapPoint = safe_cast<winrt::SnapPointBase>(left->SnapPoint());
-        winrt::SnapPointBase winrtRightSnapPoint = safe_cast<winrt::SnapPointBase>(right->SnapPoint());
+        winrt::SnapPointBase winrtLeftSnapPoint = left->SnapPoint().as<winrt::SnapPointBase>();
+        winrt::SnapPointBase winrtRightSnapPoint = right->SnapPoint().as<winrt::SnapPointBase>();
         SnapPointBase* leftSnapPoint = winrt::get_self<SnapPointBase>(winrtLeftSnapPoint);
         SnapPointBase* rightSnapPoint = winrt::get_self<SnapPointBase>(winrtRightSnapPoint);
 

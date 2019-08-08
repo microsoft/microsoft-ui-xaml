@@ -272,7 +272,7 @@ public:
 
             // Check if the pointers are identical or, if not, that their IUnknowns QI to the same thing
             MUX_ASSERT(
-                safe_cast<winrt::IUnknown>(unknown) == safe_cast<winrt::IUnknown>(reinterpret_cast<const T&>(m_valueNoRef)));
+                unknown.as<winrt::IUnknown>() == (reinterpret_cast<const T&>(m_valueNoRef)).as<winrt::IUnknown>());
         }
 #endif
         return reinterpret_cast<const T &>(m_valueNoRef);
@@ -292,7 +292,7 @@ public:
                 com_ptr<IUnknown> unknown;
                 if (m_owner->GetTrackerValue(m_handle, unknown.put()))
                 {
-                    auto value = safe_cast<V>(unknown);
+                    auto value = unknown.as<V>();
                     return value;
                 }
 

@@ -121,7 +121,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile  Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml.cs">
+    <Compile Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml.cs">
       <DependentUpon>CommandBarFlyoutPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainPage.xaml.cs">
@@ -153,7 +153,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page  Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml">
+    <Page Include="CommandBarFlyoutPages\CommandBarFlyoutPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -168,7 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
-      <Version>6.0.8</Version>
+      <Version>6.2.8</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
