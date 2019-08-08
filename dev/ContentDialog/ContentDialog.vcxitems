@@ -13,7 +13,7 @@
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
     <Page Include="$(MSBuildThisFileDirectory)ContentDialog_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
