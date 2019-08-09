@@ -70,20 +70,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                              xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'> 
                             <StackPanel.Resources>
-                                <primitives:CornerRadiusFilterConverter x:Key='CornerRadiusFilterConverter' />
+                                <primitives:CornerRadiusFilterConverter x:Key='TopCornerRadiusFilterConverter' Filter='Top'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='RightCornerRadiusFilterConverter' Filter='Right'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='BottomCornerRadiusFilterConverter' Filter='Bottom'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='LeftCornerRadiusFilterConverter' Filter='Left'/>
                                 <CornerRadius x:Key='testCornerRadius'>6,6,6,6</CornerRadius>
                             </StackPanel.Resources>
                             <Grid x:Name='TopRadiusGrid'
-                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Top}'>
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}'>
                             </Grid>
                             <Grid x:Name='RightRadiusGrid'
-                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Right}'>
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}'>
                             </Grid>
                             <Grid x:Name='BottomRadiusGrid'
-                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Bottom}'>
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}'>
                             </Grid>
                             <Grid x:Name='LeftRadiusGrid'
-                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource CornerRadiusFilterConverter}, ConverterParameter=Left}'>
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}'>
                             </Grid>
                        </StackPanel>");
 
