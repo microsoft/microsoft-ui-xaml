@@ -19,12 +19,9 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-                        
-<!-- XYFocusKeyboardNavigation="Enabled" -->
                         <Grid x:Name="TabContainerGrid"
                             Background="{ThemeResource TabViewBackground}"
-                              XYFocusKeyboardNavigation="Enabled"
-                            >
+                            XYFocusKeyboardNavigation="Enabled" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
@@ -220,9 +217,7 @@
 
                     <Grid x:Name="LayoutRoot"
                         Padding="{TemplateBinding Padding}"
-                           Margin="-1,0,0,0"
-                        > <!-- This item will cover the separator on its left side. -->
-                        <!---->
+                        Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
 
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />

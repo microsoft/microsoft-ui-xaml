@@ -47,11 +47,6 @@ void TabView::OnApplyTemplate()
 
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
 
-    if (auto tabContainerGrid = m_tabContainerGrid.get())
-    {
-        m_tabContainerGridKeyDownRevoker = tabContainerGrid.KeyDown(winrt::auto_revoke, { this, &TabView::OnTabContainerGridKeyDown });
-    }
-
     m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
         if (listView)
@@ -63,7 +58,6 @@ void TabView::OnApplyTemplate()
             m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
             m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
             m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
-            m_listViewKeyDownRevoker = listView.KeyDown(winrt::auto_revoke, { this, &TabView::OnListViewKeyDown });
 
             m_listViewGettingFocusRevoker = listView.GettingFocus(winrt::auto_revoke, { this, &TabView::OnListViewGettingFocus });
         }
@@ -90,7 +84,6 @@ void TabView::OnApplyTemplate()
             }
 
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
-            m_addButtonKeyDownRevoker = addButton.KeyDown(winrt::auto_revoke, { this, &TabView::OnAddButtonKeyDown });
         }
         return addButton;
     }());
@@ -167,48 +160,6 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
             }
         }
     }
-}
-
-void TabView::OnTabContainerGridKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e)
-{
-    /*auto key = e.OriginalKey();
-    if (key == winrt::VirtualKey::Up || key == winrt::VirtualKey::Down)
-    {
-        e.Handled(true);
-    }*/
-}
-
-void TabView::OnListViewKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e)
-{
-    /*auto key = e.Key();
-    if (key == winrt::VirtualKey::Right)
-    {
-        if (auto addbutton = m_addButton.get())
-        {
-            addbutton.Focus(winrt::FocusState::Programmatic);
-            e.Handled(true);
-        }
-    }*/
-}
-
-void TabView::OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e)
-{
-    //auto key = e.Key();
-    //if (key == winrt::VirtualKey::Left)
-    //{
-    //    
-    //    //ContainerFromIndex()
-    //    if (auto container = ContainerFromItem(SelectedItem()).as<winrt::ListViewItem>())
-    //    {
-
-    //    }
-    //    if (auto listView = m_listView.get())
-    //    {
-    //        listView.Items().Size();
-    //        listView.Focus(winrt::FocusState::Programmatic);
-    //        e.Handled(true);
-    //    }
-    //}
 }
 
 void TabView::UpdateItemsSource()
