@@ -3,22 +3,16 @@
 
 #pragma once
 #include "CornerRadiusFilterConverter.g.h"
+#include "CornerRadiusFilterConverter.properties.h"
 
 class CornerRadiusFilterConverter :
-    public winrt::implementation::CornerRadiusFilterConverterT<CornerRadiusFilterConverter>
+    public winrt::implementation::CornerRadiusFilterConverterT<CornerRadiusFilterConverter>,
+    public CornerRadiusFilterConverterProperties
 {
 public:
-    enum class FilterType
-    {
-        Top,
-        Right,
-        Left,
-        Bottom
-    };
-
     winrt::CornerRadius Convert(
         winrt::CornerRadius const& radius,
-        FilterType const& filter);
+        winrt::CornerRadiusFilterKind const& filterKind);
 
     winrt::IInspectable Convert(
         winrt::IInspectable const& value,

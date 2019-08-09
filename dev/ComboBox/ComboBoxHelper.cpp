@@ -4,11 +4,8 @@
 #include <pch.h>
 #include <common.h>
 #include "ComboBoxHelper.h"
-#include "ComboBoxHelper.properties.h"
 #include "DispatcherHelper.h"
-#include "Converters.h"
-
-using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
+#include "CornerRadiusFilterConverter.h"
 
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
@@ -109,10 +106,10 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
             bool isOpenDown = IsPopupOpenDown(comboBox);
             auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
-            auto popupRadiusFilter = isOpenDown ? CornerRadiusFilterType::Bottom : CornerRadiusFilterType::Top;
+            auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
             popupRadius = cornerRadiusConverter->Convert(textBoxRadius, popupRadiusFilter);
 
-            auto textBoxRadiusFilter = isOpenDown ? CornerRadiusFilterType::Top : CornerRadiusFilterType::Bottom;
+            auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
             textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
         }
 

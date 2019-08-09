@@ -15,13 +15,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ColorConversion.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)Converters.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusFilterConverter.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)Converters.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +33,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)Converters.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverters.idl" />
   </ItemGroup>
 </Project>
