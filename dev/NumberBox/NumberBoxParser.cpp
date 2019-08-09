@@ -15,13 +15,6 @@ MathToken::MathToken(TokenType t, std::wstring s)
     this->str = s;
 }
 
-// Empty Token
-MathToken::MathToken()
-{
-    this->type = MathToken::TokenType::EOFToken;
-    this->str = L"";
-}
-
 MathTokenizer::MathTokenizer(std::wstring_view input)
 {
     m_inputString = input;
@@ -149,7 +142,7 @@ bool MathTokenizer::IsOperator(std::wstring_view in)
 // Determines the mathematical precedence of an operator
 NumberBoxParser::OperatorPrecedence NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
 {
-    const std::wstring ops = L"-+/*^";
+    const std::wstring_view ops = L"-+/*^";
     int op1prec = (int) ops.find(op1) / 2;
     int op2prec = (int) ops.find(op2) / 2;
     if (op1prec == std::wstring::npos || op2prec == std::wstring::npos)
@@ -304,14 +297,10 @@ std::optional<double> NumberBoxParser::ComputeRpn(const std::wstring& expr)
     return stack.top();
 }
 
-std::optional<double> NumberBoxParser::Compute(const winrt::hstring& expr)
+std::optional<double> NumberBoxParser::Compute(const std::wstring_view expr)
 {
     std::wstring_view InputAsString = std::wstring_view(expr);
     return ComputeRpn(ConvertInfixToPostFix(InputAsString.data()));
 }
 
-std::optional<double> NumberBoxParser::Compute(const std::wstring&& expr)
-{
-    return ComputeRpn(ConvertInfixToPostFix(expr));
-}
 

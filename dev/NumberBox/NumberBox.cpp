@@ -370,6 +370,7 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
     return result;
 }
 
+// appends current value to start of special shorthand functions in form "(Operation Operand)*"
 void NumberBox::NormalizeShorthandOperations()
 {
     std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");

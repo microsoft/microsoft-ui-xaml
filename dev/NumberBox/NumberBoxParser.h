@@ -17,48 +17,52 @@ class MathToken
 public:
     enum TokenType
     {
-        Invalid = 0,
-        Numeric = 1,
-        Operator = 2,
-        ParenLeft = 3,
-        ParenRight = 4,
-        EOFToken = 6
+        Invalid,
+        Numeric,
+        Operator,
+        ParenLeft,
+        ParenRight,
+        EOFToken
     };
-    TokenType type;
-    std::wstring str;
-    MathToken();
     MathToken(TokenType t, std::wstring s);
     MathToken(TokenType t, std::wstring& s);
+    MathToken() = default;
+    TokenType type{};
+    std::wstring str;
 
 };
 
 // Handles tokenizing strings
 class MathTokenizer
 {
-    private:
-        int m_inputLength{};
-        int m_index{0};
-        MathToken m_lastToken;
-        bool IsNumeric(std::wstring_view in);
-        bool IsOperator(std::wstring_view in);
-        void SkipWhiteSpace();
-        bool m_negVal{ false };
-
     public:
         enum ExpressionType
         {
             Infix,
             Postfix
         };
-        std::wstring m_inputString;
         MathTokenizer(std::wstring_view input);
         MathToken GetToken(ExpressionType type);
         MathToken PeekNextToken(ExpressionType type);
+        std::wstring m_inputString;
+
+    private:
+        bool IsNumeric(std::wstring_view in);
+        bool IsOperator(std::wstring_view in);
+        void SkipWhiteSpace();
+        int m_index{0};
+        int m_inputLength{};
+        bool m_negVal{ false };
+        MathToken m_lastToken{};
+
 };
 
 // Handles parsing and evaluating mathematical strings
 class NumberBoxParser
 {
+    public:
+        static std::optional<double> Compute(const std::wstring_view expr);
+
     private:
         enum OperatorPrecedence
         {
@@ -70,15 +74,4 @@ class NumberBoxParser
         static OperatorPrecedence CmpPrecedence(wchar_t op1, wchar_t op2);
         static std::wstring ConvertInfixToPostFix(const std::wstring& infix);
         static std::optional<double> ComputeRpn(const std::wstring& expr);
-
-    public:
-        static std::optional<double> Compute(const winrt::hstring& expr);
-        static std::optional<double> Compute(const std::wstring&& expr);
-        struct MalformedExpressionException : public std::exception
-        {
-            virtual const char* what() const throw()
-            {
-                return "Mathematical Expression Malformed. No Evaluation Performed";
-            }
-        };
 };

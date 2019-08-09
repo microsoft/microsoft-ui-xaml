@@ -20,19 +20,19 @@ public:
 
     enum ValidationState
     {
-        Valid = 0,
-        Invalid = 1,
-        InvalidMax = 2,
-        InvalidMin = 3,
-        InvalidInput = 4,
-        InvalidDivide = 5
+        Valid,
+        Invalid,
+        InvalidMax,
+        InvalidMin,
+        InvalidInput,
+        InvalidDivide
     };
 
     enum BoundState
     {
-        InBounds = 0,
-        OverMax = 1,
-        UnderMin = 2
+        InBounds,
+        OverMax,
+        UnderMin
     };
 
     NumberBox();
@@ -78,7 +78,6 @@ private:
     int ComputePrecisionRounderSigDigits(double newVal);
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
     void StepValue(bool sign);
-    BoundState GetBoundState(double val);
     void UpdateFormatter();
     void UpdateRounder();
     void SetHeader();
@@ -86,6 +85,7 @@ private:
     void EvaluateInput();
     bool IsFormulaic(const winrt::hstring& in);
     void NormalizeShorthandOperations();
+    BoundState GetBoundState(double val);
     winrt::DecimalFormatter m_formatter{};
     winrt::IncrementNumberRounder m_iRounder{};
     winrt::SignificantDigitsNumberRounder m_sRounder{};
