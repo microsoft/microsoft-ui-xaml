@@ -120,6 +120,7 @@
                 <controls:NumberBox x:Name="sigprec" RelativePanel.Below="increment" Value="1"/>
 
                 <controls:NumberBox
+                AutomationProperties.Name="NumBox"
                 x:Name="numBox"
                 Margin="0,100,0,0"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"

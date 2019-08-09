@@ -41,17 +41,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
+        public string GetTextBoxString()
+        {
+            UIObject Numbox = FindElement.ByName("NumBox");
+            foreach (UIObject elem in Numbox.Children)
+            {
+                if (elem.ClassName.Equals("TextBox"))
+                {
+                    return elem.GetText();
+                }
+            }
+            return null;
+        }
+
         [TestMethod]
         public void DefaultStateTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 Log.Comment("Verify NumberBox exists");
-                UIObject Numbox = FindElement.ByName("numBox");
+                UIObject Numbox = FindElement.ByName("NumBox");
                 Verify.IsNotNull(Numbox);
+                Log.Comment("NumberBox Exists");
 
                 Log.Comment("Verifying Default Text is 0");
-                Verify.AreEqual("0", Numbox.GetText());
+                Verify.AreEqual("0", GetTextBoxString());
+                Log.Comment("Text is 0");
             }
         }
     }

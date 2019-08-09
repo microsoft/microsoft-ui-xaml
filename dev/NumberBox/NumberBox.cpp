@@ -45,9 +45,6 @@ void NumberBox::OnApplyTemplate()
     PointerWheelChanged({ this, &NumberBox::OnScroll });
 
     // Initializations - Tools, etc.
-    m_formatter = winrt::DecimalFormatter();
-    m_iRounder = winrt::IncrementNumberRounder();
-    m_sRounder = winrt::SignificantDigitsNumberRounder();
     UpdateFormatter();
     UpdateRounder();
 
