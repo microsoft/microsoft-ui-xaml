@@ -89,10 +89,13 @@ private:
     void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
     void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
 
-    void SelectNextTab();
-    void SelectPreviousTab();
+    void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
-    void TabContentPresenterLosingFocus(const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args);
+    bool SelectNextTab();
+    bool SelectPreviousTab();
+    bool CloseCurrentTab();
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
@@ -100,6 +103,11 @@ private:
 
     void UpdateTabContent();
     void UpdateTabWidths();
+
+    void OnListViewKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e);
+    void OnAddButtonKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e);
+    void OnTabContainerGridKeyDown(const winrt::IInspectable& sender, winrt::KeyRoutedEventArgs const& e);
+    void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
@@ -122,10 +130,16 @@ private:
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
     winrt::UIElement::DragOver_revoker m_listViewDragOverRevoker{};
     winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
+    winrt::UIElement::KeyDown_revoker m_listViewKeyDownRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
 
     winrt::Button::Click_revoker m_addButtonClickRevoker{};
+    winrt::UIElement::KeyDown_revoker m_addButtonKeyDownRevoker{};
+
+    winrt::UIElement::KeyDown_revoker m_tabContainerGridKeyDownRevoker{};
+
+    winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
 
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};

@@ -274,6 +274,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
 
+                Button addButton = FindElement.ById<Button>("AddButton");
+
                 Verify.IsTrue(firstTab.IsSelected, "First Tab should be selected initially");
                 Button firstTabButton = FindElement.ByName<Button>("FirstTabButton");
                 Verify.IsTrue(firstTabButton.HasKeyboardFocus, "Focus should start in the First Tab");
@@ -294,19 +296,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(lastTab.IsSelected, "Ctrl+Shift+Tab should move selection to Last Tab");
                 Verify.IsTrue(lastTab.HasKeyboardFocus, "Focus should move to the last tab (since it has no focusable content)");
 
+                // Ctrl+Tab to the first tab:
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Control);
                 Verify.IsTrue(firstTab.IsSelected, "Ctrl+Tab should move selection to First Tab");
                 Verify.IsTrue(firstTab.HasKeyboardFocus, "Focus should move to the first tab");
 
+                KeyboardHelper.PressKey(Key.Up);
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "Up key should not move focus");
+
+                KeyboardHelper.PressKey(Key.Down);
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "Down key should not move focus");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(secondTab.HasKeyboardFocus, "Right Key should move focus to the second tab");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "Left Key should move focus to the first tab");
+
+                addButton.SetFocus();
+                Verify.IsTrue(addButton.HasKeyboardFocus, "AddButton should have keyboard focus");
+
+                KeyboardHelper.PressKey(Key.Left);
+                Verify.IsTrue(lastTab.HasKeyboardFocus, "Left Key from AddButton should move focus to last tab");
+
+                KeyboardHelper.PressKey(Key.Right);
+                Verify.IsTrue(addButton.HasKeyboardFocus, "Right Key from Last Tab should move focus to Add Button");
+
+                firstTab.SetFocus();
+
+                // Ctrl+f4 to close the tab:
                 Log.Comment("Verify that pressing ctrl-f4 closes the tab");
-                KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                TextInput.SendText("{F4}");
-                KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                KeyboardHelper.PressKey(Key.F4, ModifierKey.Control);
                 Wait.ForIdle();
 
                 ElementCache.Refresh();
                 UIObject firstTab2 = TryFindElement.ByName("FirstTab");
                 Verify.IsNull(firstTab2);
+            }
+        }
+
+        [TestMethod]
+        public void GamePadTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button tabContent = FindElement.ByName<Button>("FirstTabButton");
+                Button backButton = FindElement.ById<Button>("__BackButton");
+                TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
+                TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
+                TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
+                Button addButton = FindElement.ById<Button>("AddButton");
+
+                firstTab.SetFocus();
+
+                GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickRight);
+                Wait.ForIdle();
+                Verify.IsTrue(secondTab.HasKeyboardFocus, "GamePad Right should move focus to second tab");
+
+                GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickLeft);
+                Wait.ForIdle();
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "GamePad Left should move focus to first tab");
+
+                GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickDown);
+                Wait.ForIdle();
+                Verify.IsTrue(tabContent.HasKeyboardFocus, "GamePad Down should move focus to tab content");
+
+                GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickUp);
+                Wait.ForIdle();
+                Verify.IsTrue(firstTab.HasKeyboardFocus, "GamePad Up should move focus to tabs");
+
+                GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickUp);
+                Wait.ForIdle();
+                Verify.IsTrue(backButton.HasKeyboardFocus, "GamePad Up should move to back button");
             }
         }
 
