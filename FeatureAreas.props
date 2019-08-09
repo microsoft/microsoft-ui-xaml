@@ -10,7 +10,6 @@
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
-    
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -22,10 +21,8 @@
     <FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
     <FeatureIconSourceEnabled>false</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
-    
-    <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
-    <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
-    
+    <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
+    <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
     <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
@@ -36,11 +33,9 @@
     <FeatureRadioButtonsEnabled>false</FeatureRadioButtonsEnabled>
     <FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
-    
-    <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
-    <FeatureScrollerEnabled>true</FeatureScrollerEnabled>
-    <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
-    
+    <FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
+    <FeatureScrollerEnabled>false</FeatureScrollerEnabled>
+    <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>false</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
@@ -49,9 +44,7 @@
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
-    
-    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
-    
+    <FeatureCommonStylesEnabled>false</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
     <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
