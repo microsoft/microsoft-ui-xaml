@@ -10,6 +10,7 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
+#include "InspectingDataSource.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -420,7 +421,7 @@ void TabView::UpdateTabContent()
 
                     if (focusable)
                     {
-                        auto ignore = winrt::FocusManager::TryFocusAsync(focusable, winrt::FocusState::Programmatic);
+                        auto ignored = winrt::FocusManager::TryFocusAsync(focusable, winrt::FocusState::Programmatic);
                     }
                 }
             }
@@ -596,10 +597,22 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
     return nullptr;
 }
 
+int TabView::GetItemCount()
+{
+    if (auto itemssource = ItemsSource())
+    {
+        return winrt::make<InspectingDataSource>(ItemsSource()).Count();
+    }
+    else
+    {
+        return static_cast<int>(Items().Size());
+    }
+}
+
 bool TabView::SelectNextTab()
 {
     bool handled = false;
-    const auto itemsSize = static_cast<int>(Items().Size());
+    const int itemsSize = GetItemCount();
     if (itemsSize > 1)
     {
         auto index = SelectedIndex();
@@ -617,7 +630,7 @@ bool TabView::SelectNextTab()
 bool TabView::SelectPreviousTab()
 {
     bool handled = false;
-    const auto itemsSize = static_cast<int>(Items().Size());
+    const int itemsSize = GetItemCount();
     if (itemsSize > 1)
     {
         auto index = SelectedIndex();

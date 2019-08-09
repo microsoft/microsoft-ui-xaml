@@ -106,6 +106,8 @@ private:
 
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
+    int GetItemCount();
+
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };

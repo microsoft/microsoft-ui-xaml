@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Padding="12" Background="LightGray" Width="250" >
+            <StackPanel Padding="12" Background="LightGray" Width="250">
                 <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
@@ -87,13 +87,6 @@
                         <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                             <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
                             <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
-
-                            <ListView HorizontalAlignment="Left">
-                                <ListViewItem>One</ListViewItem>
-                                <ListViewItem IsSelected="True">Two</ListViewItem>
-                                <ListViewItem>Three</ListViewItem>
-                                <ListViewItem>Four</ListViewItem>
-                            </ListView>
                         </StackPanel>
                     </controls:TabViewItem>
 
@@ -114,7 +107,17 @@
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="NotCloseableTab" AutomationProperties.Name="NotCloseableTab" Icon="Video" Header="Video" IsCloseable="False">
-                        <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                        <StackPanel>
+                            <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                            <controls:TabView x:Name="innerTabView" >
+                                <controls:TabView.ItemTemplate>
+                                    <DataTemplate x:DataType="local:TabDataItem">
+                                        <controls:TabViewItem Header="{x:Bind Header}" Content="{x:Bind Content}" Icon="Accept" />
+                                    </DataTemplate>
+                                </controls:TabView.ItemTemplate>
+                            </controls:TabView>
+                        </StackPanel>
+                        
                     </controls:TabViewItem>
 
                     <controls:TabViewItem x:Name="LastTab" AutomationProperties.Name="LastTab" Icon="Contact" Header="Contact">
