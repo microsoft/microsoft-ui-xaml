@@ -46,7 +46,17 @@ MathToken MathTokenizer::GetToken(ExpressionType type)
     if (m_inputString[m_index] == '-')
     {
 
-        if (PeekNextToken(ExpressionType::Infix).type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
+        // Negative numbers are already parsed and space separated in postfix expressions, must check for them seperately.
+        if (type == ExpressionType::Postfix)
+        {
+            if (m_inputString[m_index + 1] != ' ')
+            {
+                // Parse as a negative number
+                m_index++;
+                ss << m_inputString[m_index];
+            }
+        }
+        else if (PeekNextToken(ExpressionType::Infix).type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
         {
             // Read next token so that the string is parsed as a numeric token.
             m_index++;
