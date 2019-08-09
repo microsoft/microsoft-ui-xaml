@@ -130,17 +130,12 @@ bool MathTokenizer::IsNumeric(std::wstring_view in)
 
 bool MathTokenizer::IsOperator(std::wstring_view in)
 {
-    std::wregex r(L"^\\+|-|\\*|\\/|\\^$");
-    return (std::regex_match(in.data(), r));
-    /*
-    if (in.data() == L"-" || in == "+" || in == "*" || in == "/") {
-    }
+    if (in.size() > 1)
+        return false;
     wchar_t op = in.data()[0];
     switch (op)
     {
     case '-':
-        if (in.data() != "-")
-            return false;
     case '+':
     case '*':
     case '/':
@@ -148,7 +143,7 @@ bool MathTokenizer::IsOperator(std::wstring_view in)
         return true;
     default:
         return false;
-    } */
+    } 
 }
 
 // Determines the mathematical precedence of an operator
