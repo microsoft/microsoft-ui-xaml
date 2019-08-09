@@ -367,7 +367,7 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
     return result;
 }
 
-// appends current value to start of special shorthand functions in form "(Operation Operand)*"
+// Appends current value to start of special shorthand functions in form "(Operation Operand)*"
 void NumberBox::NormalizeShorthandOperations()
 {
     std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");
@@ -382,14 +382,13 @@ void NumberBox::NormalizeShorthandOperations()
 // Run value entered through NumberParser
 void NumberBox::EvaluateInput()
 {
-    std::optional<double> val;
-    val = NumberBoxParser::Compute(m_TextBox.Text());
+    auto val = NumberBoxParser::Compute(m_TextBox.Text());
     // No calculation could be done
     if (val == std::nullopt)
     {
         return;
     }
-    if (std::fpclassify(val.value()) == FP_NAN)
+    if (std::isnan(val.value()))
     {
         Value(val.value());
     }
@@ -400,7 +399,7 @@ void NumberBox::EvaluateInput()
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
-        winrt::hstring formattedValue(m_formatter.Format(Value()));
+        auto formattedValue = m_formatter.Format(Value());
         m_TextBox.Text(formattedValue);
 }
 
@@ -538,10 +537,13 @@ void NumberBox::UpdateRounder()
 
 void NumberBox::SetHeader()
 {
-    /*
-    winrt::TextBox headerbox;
-    headerbox.Text(L"Hello World");
-    m_TextBox.Header(headerbox);   */
+    winrt::hstring a = Header();
+    if (Header() != L"" )
+    {
+        winrt::TextBlock headerbox;
+        headerbox.Text(Header());
+        m_TextBox.Header(headerbox); 
+    }
 }
 
 // Sets TextBox placeholder text

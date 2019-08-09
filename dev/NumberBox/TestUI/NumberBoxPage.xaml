@@ -123,6 +123,7 @@
                 AutomationProperties.Name="NumBox"
                 x:Name="numBox"
                 Margin="0,100,0,0"
+                Header="NumberBox"
                 RelativePanel.AlignHorizontalCenterWithPanel="True"
                 MinValue="{x:Bind min.Value, Mode=OneWay}"
                 MaxValue="{x:Bind max.Value, Mode=OneWay}"
