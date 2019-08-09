@@ -2,7 +2,7 @@
 {
 
 [bindable]
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [default_interface]
 runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Windows.UI.Xaml.Data.IValueConverter
@@ -15,7 +15,7 @@ runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Win
     static Windows.UI.Xaml.DependencyProperty FilterProperty{ get; };
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum CornerRadiusFilterKind
 {
