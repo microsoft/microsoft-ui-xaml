@@ -10,6 +10,7 @@
 #include "TabView.properties.h"
 #include "TabViewTabClosingEventArgs.g.h"
 #include "TabViewTabDraggedOutsideEventArgs.g.h"
+#include "DispatcherHelper.h"
 
 class TabViewTabClosingEventArgs :
     public winrt::implementation::TabViewTabClosingEventArgsT<TabViewTabClosingEventArgs>
@@ -137,4 +138,6 @@ private:
 
     winrt::RepeatButton::Click_revoker m_scrollDecreaseClickRevoker{};
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
+
+    DispatcherHelper m_dispatcherHelper{ *this };
 };

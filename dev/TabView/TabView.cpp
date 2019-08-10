@@ -89,6 +89,7 @@ void TabView::OnApplyTemplate()
         return addButton;
     }());
 
+    // KeyboardAccelerator is only available on RS3+
     if (SharedHelpers::IsRS3OrHigher())
     {
         winrt::KeyboardAccelerator ctrlf4Accel;
@@ -97,7 +98,11 @@ void TabView::OnApplyTemplate()
         ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
         ctrlf4Accel.ScopeOwner(*this);
         KeyboardAccelerators().Append(ctrlf4Accel);
+    }
 
+    // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
+    if(SharedHelpers::Is19H1OrHigher())
+    {
         winrt::KeyboardAccelerator ctrlTabAccel;
         ctrlTabAccel.Key(winrt::VirtualKey::Tab);
         ctrlTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control);
@@ -149,7 +154,18 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
                         winrt::FindNextElementOptions options;
                         options.ExclusionRect(listViewBounds);
                         auto next = winrt::FocusManager::FindNextElement(direction, options);
-                        args.TrySetNewFocusedElement(next);
+                        if(auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        {
+                            args2.TrySetNewFocusedElement(next);
+                        }
+                        else
+                        {
+                            // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                            m_dispatcherHelper.RunAsync([next]()
+                            {
+                                SetFocus(next, winrt::FocusState::Programmatic);
+                            });
+                        }
                         args.Handled(true);
                     }
                     else
@@ -421,7 +437,7 @@ void TabView::UpdateTabContent()
 
                     if (focusable)
                     {
-                        auto ignored = winrt::FocusManager::TryFocusAsync(focusable, winrt::FocusState::Programmatic);
+                        SetFocus(focusable, winrt::FocusState::Programmatic);
                     }
                 }
             }
@@ -663,13 +679,26 @@ bool TabView::CloseCurrentTab()
 
 void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 {
-    // On RS3 and higher we use KeyboardAccelerators
-    // On RS2, we directly handle the KeyDown events:
-    if (!SharedHelpers::IsRS3OrHigher())
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
     {
-        if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+        if (args.Key() == winrt::VirtualKey::F4)
         {
-            if (args.Key() == winrt::VirtualKey::Tab)
+            // Handle Ctrl+F4 on RS2 and lower
+            // On RS3+, it is handled by a KeyboardAccelerator
+            if (!SharedHelpers::IsRS3OrHigher())
+            {
+                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                if (isCtrlDown)
+                {
+                    args.Handled(CloseCurrentTab());
+                }
+            }
+        }
+        else if (args.Key() == winrt::VirtualKey::Tab)
+        {
+            // Handle Ctrl+Tab/Ctrl+Shift+Tab on RS5 and lower
+            // On 19H1+, it is handled by a KeyboardAccelerator
+            if (!SharedHelpers::Is19H1OrHigher())
             {
                 auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
                 auto isShiftDown = (coreWindow.GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
@@ -681,14 +710,6 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
                 else if (isCtrlDown && isShiftDown)
                 {
                     args.Handled(SelectPreviousTab());
-                }
-            }
-            else if (args.Key() == winrt::VirtualKey::F4)
-            {
-                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
-                if (isCtrlDown)
-                {
-                    args.Handled(CloseCurrentTab());
                 }
             }
         }
