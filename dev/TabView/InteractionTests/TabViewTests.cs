@@ -130,6 +130,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
 
                 Log.Comment("When the selected tab is closed, selection should move to the next one.");
+                // Use Tab's close button:
                 closeButton.InvokeAndWait();
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
 
@@ -140,9 +141,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "3");
 
                 Log.Comment("When the selected tab is last and is closed, selection should move to the previous item.");
-                closeButton = FindCloseButton(lastTab);
-                Verify.IsNotNull(closeButton);
-                closeButton.InvokeAndWait();
+
+                // Use Middle Click to close the tab:
+                lastTab.Click(PointerButtons.Middle);
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
             }
         }
