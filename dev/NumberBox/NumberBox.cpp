@@ -537,13 +537,14 @@ void NumberBox::UpdateRounder()
 
 void NumberBox::SetHeader()
 {
+    /*
     winrt::hstring a = Header();
     if (Header() != L"" )
     {
         winrt::TextBlock headerbox;
         headerbox.Text(Header());
         m_TextBox.Header(headerbox); 
-    }
+    } */
 }
 
 // Sets TextBox placeholder text
