@@ -1,7 +1,6 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-[bindable]
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [default_interface]
