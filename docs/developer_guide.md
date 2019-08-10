@@ -93,7 +93,7 @@ public void TestCleanup()
     TestEnvironment.AssemblyCleanup(TestType.Nuget);
 }
 ```
-The test apps are using released versions of MUX NuGet package locally. In CI, 
+The test apps are using released versions of MUX NuGet package locally. In [CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20), 
 the test pipeline will generate a NuGet package for each build, and there’s a 
 separate pipeline configured to consume the generated package from latest 
 build and run MUXControl.ReleaseTest.
