@@ -17,6 +17,7 @@ using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingE
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 using System.Collections.ObjectModel;
 using Windows.Devices.PointOfService;
+using MUXControlsTestApp.Utilities;
 
 namespace MUXControlsTestApp
 {
@@ -167,6 +168,29 @@ namespace MUXControlsTestApp
             if (tab != null)
             {
                 TabDraggedOutsideTextBlock.Text = tab.Header.ToString();
+            }
+        }
+
+        public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
+        {
+            Tabs.Width = 700;
+        }
+
+        public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)
+        {
+            var scrollDecrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollDecreaseButton") as FrameworkElement;
+            var scrollIncrease = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollIncreaseButton") as FrameworkElement;
+            if(scrollDecrease.Visibility == Visibility.Visible && scrollIncrease.Visibility == Visibility.Visible)
+            {
+                ScrollButtonsVisible.Text = "True";
+            }
+            else if(scrollIncrease.Visibility == Visibility.Collapsed && scrollDecrease.Visibility == Visibility.Collapsed)
+            {
+                ScrollButtonsVisible.Text = "False";
+            }
+            else
+            {
+                ScrollButtonsVisible.Text = "Unexpected";
             }
         }
     }
