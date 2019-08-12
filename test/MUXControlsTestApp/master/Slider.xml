@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -20,11 +19,7 @@
       BorderThickness=0,0,0,0
       BorderBrush=[NULL]
       Background=#66000000
-      CornerRadius=Exception when read CornerRadius
-      Width=NaN
-      Name=
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -37,10 +32,7 @@
         BorderThickness=0,0,0,0
         BorderBrush=[NULL]
         Background=[NULL]
-        Width=NaN
-        Name=
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
@@ -53,10 +45,8 @@
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=#00FFFFFF
-          Width=NaN
           Name=SliderContainer
           Margin=0,0,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
@@ -69,10 +59,9 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
-            Width=NaN
             Name=HorizontalTemplate
+            MinHeight=32
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -81,7 +70,6 @@
             RenderSize=400,400
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
-              Width=NaN
               Name=HorizontalTrackRect
               Margin=0,0,0,0
               Height=2
@@ -96,7 +84,6 @@
               Width=0
               Name=HorizontalDecreaseRect
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -104,7 +91,6 @@
               Visibility=Visible
               RenderSize=0,2
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
-              Width=NaN
               Name=TopTickBar
               Margin=0,0,0,4
               Height=4
@@ -115,7 +101,6 @@
               Visibility=Collapsed
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
-              Width=NaN
               Name=HorizontalInlineTickBar
               Margin=0,0,0,0
               Height=2
@@ -126,7 +111,6 @@
               Visibility=Visible
               RenderSize=0,0
           [Windows.UI.Xaml.Controls.Primitives.TickBar]
-              Width=NaN
               Name=BottomTickBar
               Margin=0,4,0,0
               Height=4
@@ -142,7 +126,6 @@
               BorderThickness=0,0,0,0
               BorderBrush=#00FFFFFF
               Background=#FF0078D7
-              CornerRadius=Exception when read CornerRadius
               Width=8
               Name=HorizontalThumb
               Margin=0,0,0,0
@@ -159,10 +142,7 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#FF0078D7
-                Width=NaN
-                Name=
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -175,10 +155,9 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
-            Width=NaN
             Name=VerticalTemplate
+            MinWidth=32
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -190,7 +169,6 @@
               Width=2
               Name=VerticalTrackRect
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -199,10 +177,8 @@
               RenderSize=0,0
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
-              Width=NaN
               Name=VerticalDecreaseRect
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -213,7 +189,6 @@
               Width=4
               Name=LeftTickBar
               Margin=0,0,4,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -224,7 +199,6 @@
               Width=2
               Name=VerticalInlineTickBar
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -235,7 +209,6 @@
               Width=4
               Name=RightTickBar
               Margin=4,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -248,7 +221,6 @@
               BorderThickness=0,0,0,0
               BorderBrush=#00FFFFFF
               Background=#FF0078D7
-              CornerRadius=Exception when read CornerRadius
               Width=24
               Name=VerticalThumb
               Margin=0,0,0,0

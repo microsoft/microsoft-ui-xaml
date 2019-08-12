@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -21,10 +20,7 @@
       BorderBrush=#FF000000
       Background=#FFF2F2F2
       CornerRadius=0,0,0,0
-      Width=NaN
-      Name=
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -38,10 +34,9 @@
         BorderThickness=1,1,1,1
         BorderBrush=#FF000000
         Background=#FFF2F2F2
-        Width=NaN
         Name=LayoutRoot
+        MaxWidth=320
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2

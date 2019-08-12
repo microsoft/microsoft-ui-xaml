@@ -6,9 +6,7 @@
     Background=[NULL]
     CornerRadius=0,0,0,0
     Width=400
-    Name=
     Margin=0,0,0,0
-    Height=NaN
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
@@ -21,10 +19,8 @@
       BorderThickness=0,0,0,0
       BorderBrush=[NULL]
       Background=[NULL]
-      Width=NaN
       Name=LayoutRoot
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -40,8 +36,9 @@
         CornerRadius=0,0,0,0
         Width=400
         Name=TextBox
+        MinWidth=64
+        MinHeight=32
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
@@ -54,10 +51,7 @@
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=[NULL]
-          Width=NaN
-          Name=
           Margin=0,0,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
@@ -70,10 +64,8 @@
             BorderThickness=2,2,2,2
             BorderBrush=#66000000
             Background=#66FFFFFF
-            Width=NaN
             Name=BorderElement
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -87,10 +79,8 @@
             BorderBrush=#00FFFFFF
             Background=#00FFFFFF
             CornerRadius=0,0,0,0
-            Width=NaN
             Name=ContentElement
             Margin=2,2,2,2
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -103,10 +93,8 @@
               BorderThickness=0,0,0,0
               BorderBrush=#00FFFFFF
               Background=[NULL]
-              Width=NaN
               Name=Root
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -119,10 +107,7 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=#00FFFFFF
-                Width=NaN
-                Name=
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -136,10 +121,8 @@
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
                   Background=[NULL]
-                  Width=NaN
                   Name=ScrollContentPresenter
                   Margin=10,3,6,6
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -147,10 +130,7 @@
                   Visibility=Visible
                   RenderSize=380,19
                 [Windows.UI.Xaml.FrameworkElement]
-                    Width=NaN
-                    Name=
                     Margin=0,0,0,0
-                    Height=NaN
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
@@ -163,10 +143,7 @@
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
                   Background=[NULL]
-                  Width=NaN
-                  Name=
                   Margin=0,0,0,0
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -180,10 +157,10 @@
                   BorderBrush=#00FFFFFF
                   Background=#00FFFFFF
                   CornerRadius=0,0,0,0
-                  Width=NaN
                   Name=VerticalScrollBar
+                  MinWidth=16
+                  MinHeight=16
                   Margin=0,0,0,0
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -197,10 +174,10 @@
                   BorderBrush=#00FFFFFF
                   Background=#00FFFFFF
                   CornerRadius=0,0,0,0
-                  Width=NaN
                   Name=HorizontalScrollBar
+                  MinWidth=16
+                  MinHeight=16
                   Margin=0,0,0,0
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -213,10 +190,8 @@
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
                   Background=#FFE6E6E6
-                  Width=NaN
                   Name=ScrollBarSeparator
                   Margin=0,0,0,0
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -230,10 +205,8 @@
             BorderBrush=[NULL]
             Background=[NULL]
             CornerRadius=0,0,0,0
-            Width=NaN
             Name=PlaceholderTextContentPresenter
             Margin=2,2,2,2
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -247,10 +220,7 @@
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=[NULL]
-              Width=NaN
-              Name=
               Margin=10,3,6,6
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -264,10 +234,9 @@
             BorderBrush=#00FFFFFF
             Background=#33000000
             CornerRadius=0,0,0,0
-            Width=NaN
             Name=DeleteButton
+            MinWidth=34
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -281,10 +250,9 @@
             BorderBrush=#00FFFFFF
             Background=#33000000
             CornerRadius=0,0,0,0
-            Width=NaN
             Name=QueryButton
+            MinWidth=34
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -298,10 +266,8 @@
               BorderThickness=2,2,2,2
               BorderBrush=#00FFFFFF
               Background=#00FFFFFF
-              Width=NaN
               Name=ContentPresenter
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -315,10 +281,8 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
-            Width=NaN
             Name=DescriptionPresenter
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -326,10 +290,8 @@
             Visibility=Visible
             RenderSize=400,0
     [Windows.UI.Xaml.Controls.Primitives.Popup]
-        Width=NaN
         Name=SuggestionsPopup
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2

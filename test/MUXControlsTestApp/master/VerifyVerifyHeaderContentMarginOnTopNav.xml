@@ -4,11 +4,9 @@
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
-    CornerRadius=Exception when read CornerRadius
-    Width=NaN
     Name=HeaderContent
+    MinHeight=40
     Margin=12,5,0,11
-    Height=NaN
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
@@ -22,10 +20,7 @@
       BorderThickness=0,0,0,0
       BorderBrush=[NULL]
       Background=[NULL]
-      Width=NaN
-      Name=
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -35,10 +30,7 @@
     [Windows.UI.Xaml.Controls.TextBlock]
         Padding=0,0,0,0
         Foreground=#FF000000
-        Width=NaN
-        Name=
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2

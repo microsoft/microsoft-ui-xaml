@@ -6,6 +6,10 @@
     Background=MyValue[NULL]
     Width=MyValue400
     Name=MyValue
+    MinWidth=MyValue0
+    MinHeight=MyValue0
+    MaxWidth=MyValue∞
+    MaxHeight=MyValue∞
     Margin=MyValue0,0,0,0
     Height=MyValue400
     FocusVisualSecondaryThickness=MyValue1,1,1,1
@@ -19,6 +23,10 @@
       Foreground=MyValue#FF000000
       Width=MyValueNaN
       Name=MyValue
+      MinWidth=MyValue0
+      MinHeight=MyValue0
+      MaxWidth=MyValue∞
+      MaxHeight=MyValue∞
       Margin=MyValue0,0,0,0
       Height=MyValueNaN
       FocusVisualSecondaryThickness=MyValue1,1,1,1

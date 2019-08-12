@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -20,11 +19,9 @@
       BorderThickness=0,0,0,0
       BorderBrush=#00FFFFFF
       Background=#00FFFFFF
-      CornerRadius=Exception when read CornerRadius
-      Width=NaN
-      Name=
+      MinWidth=120
+      MinHeight=32
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -37,10 +34,8 @@
         BorderThickness=0,0,0,0
         BorderBrush=#00FFFFFF
         Background=#00FFFFFF
-        Width=NaN
         Name=RootGrid
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
@@ -53,8 +48,6 @@
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=[NULL]
-          Width=NaN
-          Name=
           Margin=0,0,0,0
           Height=32
           FocusVisualSecondaryThickness=1,1,1,1
@@ -77,10 +70,8 @@
             RenderSize=20,20
         [Windows.UI.Xaml.Controls.FontIcon]
             Foreground=#FFFFFFFF
-            Width=NaN
             Name=CheckGlyph
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -93,10 +84,7 @@
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=#00000000
-              Width=NaN
-              Name=
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -106,10 +94,7 @@
             [Windows.UI.Xaml.Controls.TextBlock]
                 Padding=0,0,0,0
                 Foreground=#FFFFFFFF
-                Width=NaN
-                Name=
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -123,10 +108,8 @@
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=[NULL]
-          Width=NaN
           Name=ContentPresenter
           Margin=8,5,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2

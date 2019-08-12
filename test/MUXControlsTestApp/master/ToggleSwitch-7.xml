@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -21,10 +20,7 @@
       BorderBrush=[NULL]
       Background=[NULL]
       CornerRadius=0,0,0,0
-      Width=NaN
-      Name=
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -37,10 +33,7 @@
         BorderThickness=0,0,0,0
         BorderBrush=[NULL]
         Background=[NULL]
-        Width=NaN
-        Name=
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
@@ -53,10 +46,8 @@
           BorderThickness=0,0,0,0
           BorderBrush=[NULL]
           Background=[NULL]
-          Width=NaN
-          Name=
+          MinWidth=154
           Margin=0,0,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
@@ -69,10 +60,8 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=#00FFFFFF
-            Width=NaN
             Name=SwitchAreaGrid
             Margin=0,5,0,5
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -86,10 +75,8 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
-            Width=NaN
             Name=OffContentPresenter
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -99,10 +86,7 @@
           [Windows.UI.Xaml.Controls.TextBlock]
               Padding=0,0,0,0
               Foreground=#FF000000
-              Width=NaN
-              Name=
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -116,10 +100,8 @@
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
-            Width=NaN
             Name=OnContentPresenter
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -129,10 +111,7 @@
           [Windows.UI.Xaml.Controls.TextBlock]
               Padding=0,0,0,0
               Foreground=#FF000000
-              Width=NaN
-              Name=
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -210,10 +189,8 @@
             BorderBrush=#00FFFFFF
             Background=#33000000
             CornerRadius=0,0,0,0
-            Width=NaN
             Name=SwitchThumb
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -222,10 +199,7 @@
             RenderSize=72,32
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
-              Width=NaN
-              Name=
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2

@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -21,10 +20,9 @@
       BorderBrush=[NULL]
       Background=#00FFFFFF
       CornerRadius=0,0,0,0
-      Width=NaN
-      Name=
+      MinWidth=88
+      MinHeight=40
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -48,10 +46,8 @@
         BorderThickness=0,0,0,0
         BorderBrush=[NULL]
         Background=[NULL]
-        Width=NaN
         Name=Root
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2

@@ -5,7 +5,6 @@
     BorderBrush=[NULL]
     Background=[NULL]
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -20,11 +19,9 @@
       BorderThickness=0,0,0,0
       BorderBrush=#FF0078D7
       Background=#FFFFFFFF
-      CornerRadius=Exception when read CornerRadius
-      Width=NaN
-      Name=
+      MaxWidth=548
+      MaxHeight=756
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -48,10 +45,7 @@
         Visibility=Visible
         RenderSize=0,0
       [Windows.UI.Xaml.Controls.Primitives.Popup]
-          Width=NaN
-          Name=
           Margin=0,0,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2

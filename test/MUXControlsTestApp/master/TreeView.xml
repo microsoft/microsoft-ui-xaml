@@ -4,9 +4,7 @@
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
-    CornerRadius=Exception when read CornerRadius
     Width=400
-    Name=
     Margin=0,0,0,0
     Height=400
     FocusVisualSecondaryThickness=1,1,1,1
@@ -21,11 +19,8 @@
       BorderThickness=0,0,0,0
       BorderBrush=[NULL]
       Background=[NULL]
-      CornerRadius=Exception when read CornerRadius
-      Width=NaN
       Name=ListControl
       Margin=0,0,0,0
-      Height=NaN
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
       FocusVisualPrimaryThickness=2,2,2,2
@@ -38,10 +33,7 @@
         BorderThickness=0,0,0,0
         BorderBrush=[NULL]
         Background=[NULL]
-        Width=NaN
-        Name=
         Margin=0,0,0,0
-        Height=NaN
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
@@ -54,11 +46,8 @@
           BorderThickness=0,0,0,0
           BorderBrush=#00FFFFFF
           Background=#00FFFFFF
-          CornerRadius=Exception when read CornerRadius
-          Width=NaN
           Name=ScrollViewer
           Margin=0,0,0,0
-          Height=NaN
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF
           FocusVisualPrimaryThickness=2,2,2,2
@@ -71,10 +60,8 @@
             BorderThickness=0,0,0,0
             BorderBrush=#00FFFFFF
             Background=[NULL]
-            Width=NaN
             Name=Root
             Margin=0,0,0,0
-            Height=NaN
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
@@ -87,10 +74,7 @@
               BorderThickness=0,0,0,0
               BorderBrush=[NULL]
               Background=#00FFFFFF
-              Width=NaN
-              Name=
               Margin=0,0,0,0
-              Height=NaN
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -104,10 +88,8 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
-                Width=NaN
                 Name=ScrollContentPresenter
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -116,10 +98,7 @@
                 RenderSize=400,400
               [Windows.UI.Xaml.Controls.ItemsPresenter]
                   Padding=0,0,0,0
-                  Width=NaN
-                  Name=
                   Margin=0,0,0,0
-                  Height=NaN
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -132,11 +111,7 @@
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
                     Background=[NULL]
-                    CornerRadius=Exception when read CornerRadius
-                    Width=NaN
-                    Name=
                     Margin=0,0,0,0
-                    Height=NaN
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
@@ -145,10 +120,7 @@
                     RenderSize=0,0
                 [Windows.UI.Xaml.Controls.ItemsStackPanel]
                     Background=[NULL]
-                    Width=NaN
-                    Name=
                     Margin=0,0,0,0
-                    Height=NaN
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
@@ -162,11 +134,9 @@
                       BorderThickness=1,1,1,1
                       BorderBrush=#00FFFFFF
                       Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                      CornerRadius=Exception when read CornerRadius
-                      Width=NaN
-                      Name=
+                      MinWidth=88
+                      MinHeight=32
                       Margin=0,0,0,0
-                      Height=NaN
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
@@ -179,10 +149,8 @@
                         BorderThickness=1,1,1,1
                         BorderBrush=#00FFFFFF
                         Background=Microsoft.UI.Xaml.Media.RevealBackgroundBrush
-                        Width=NaN
                         Name=ContentPresenterGrid
                         Margin=0,0,0,0
-                        Height=NaN
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#99FFFFFF
                         FocusVisualPrimaryThickness=2,2,2,2
@@ -195,10 +163,8 @@
                           BorderThickness=0,0,0,0
                           BorderBrush=[NULL]
                           Background=[NULL]
-                          Width=NaN
                           Name=MultiSelectGrid
                           Margin=0,0,0,0
-                          Height=NaN
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#99FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
@@ -211,10 +177,7 @@
                             BorderThickness=0,0,0,0
                             BorderBrush=[NULL]
                             Background=[NULL]
-                            Width=NaN
-                            Name=
                             Margin=0,0,0,0
-                            Height=NaN
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#99FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
@@ -227,11 +190,11 @@
                               BorderThickness=0,0,0,0
                               BorderBrush=#00FFFFFF
                               Background=#00FFFFFF
-                              CornerRadius=Exception when read CornerRadius
                               Width=32
                               Name=MultiSelectCheckBox
+                              MinWidth=32
+                              MinHeight=32
                               Margin=0,0,0,0
-                              Height=NaN
                               FocusVisualSecondaryThickness=1,1,1,1
                               FocusVisualSecondaryBrush=#99FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
@@ -244,8 +207,8 @@
                               BorderThickness=2,2,2,2
                               BorderBrush=#FFFFFFFF
                               Background=#FF0078D7
-                              Width=NaN
                               Name=MultiArrangeOverlayTextBorder
+                              MinWidth=20
                               Margin=0,0,0,0
                               Height=20
                               FocusVisualSecondaryThickness=1,1,1,1
@@ -257,10 +220,8 @@
                             [Windows.UI.Xaml.Controls.TextBlock]
                                 Padding=0,0,0,0
                                 Foreground=#FF000000
-                                Width=NaN
                                 Name=MultiArrangeOverlayText
                                 Margin=0,0,0,0
-                                Height=NaN
                                 FocusVisualSecondaryThickness=1,1,1,1
                                 FocusVisualSecondaryBrush=#99FFFFFF
                                 FocusVisualPrimaryThickness=2,2,2,2
@@ -273,10 +234,8 @@
                             BorderThickness=0,0,0,0
                             BorderBrush=[NULL]
                             Background=#00FFFFFF
-                            Width=NaN
                             Name=ExpandCollapseChevron
                             Margin=0,0,0,0
-                            Height=NaN
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#99FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
@@ -287,7 +246,6 @@
                               Padding=0,0,0,0
                               Foreground=#FF000000
                               Width=12
-                              Name=
                               Margin=0,0,0,0
                               Height=12
                               FocusVisualSecondaryThickness=1,1,1,1
@@ -300,7 +258,6 @@
                               Padding=0,0,0,0
                               Foreground=#FF000000
                               Width=12
-                              Name=
                               Margin=0,0,0,0
                               Height=12
                               FocusVisualSecondaryThickness=1,1,1,1
@@ -316,10 +273,8 @@
                             BorderThickness=0,0,0,0
                             BorderBrush=[NULL]
                             Background=[NULL]
-                            Width=NaN
                             Name=ContentPresenter
                             Margin=0,0,0,0
-                            Height=NaN
                             FocusVisualSecondaryThickness=1,1,1,1
                             FocusVisualSecondaryBrush=#99FFFFFF
                             FocusVisualPrimaryThickness=2,2,2,2
@@ -329,10 +284,7 @@
                           [Windows.UI.Xaml.Controls.TextBlock]
                               Padding=0,0,0,0
                               Foreground=#FF000000
-                              Width=NaN
-                              Name=
                               Margin=0,0,0,0
-                              Height=NaN
                               FocusVisualSecondaryThickness=1,1,1,1
                               FocusVisualSecondaryBrush=#99FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
@@ -345,11 +297,7 @@
                     BorderThickness=0,0,0,0
                     BorderBrush=[NULL]
                     Background=[NULL]
-                    CornerRadius=Exception when read CornerRadius
-                    Width=NaN
-                    Name=
                     Margin=0,0,0,0
-                    Height=NaN
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
@@ -362,10 +310,7 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
-                Width=NaN
-                Name=
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -378,11 +323,10 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#00FFFFFF
-                CornerRadius=Exception when read CornerRadius
-                Width=NaN
                 Name=VerticalScrollBar
+                MinWidth=16
+                MinHeight=16
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -395,11 +339,10 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
                 Background=#00FFFFFF
-                CornerRadius=Exception when read CornerRadius
-                Width=NaN
                 Name=HorizontalScrollBar
+                MinWidth=16
+                MinHeight=16
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
@@ -412,10 +355,8 @@
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=#FFE6E6E6
-                Width=NaN
                 Name=ScrollBarSeparator
                 Margin=0,0,0,0
-                Height=NaN
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
