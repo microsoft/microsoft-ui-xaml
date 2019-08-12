@@ -38,6 +38,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         Space,
         Backspace,
         F10,
+        F4,
         F6
     }
 
@@ -69,6 +70,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             { Key.Space, "{SPACE}" },
             { Key.Backspace, "{BACKSPACE}" },
             { Key.F10, "{F10}" },
+            { Key.F4, "{F4}" },
             { Key.F6, "{F6}" },
         };
 
