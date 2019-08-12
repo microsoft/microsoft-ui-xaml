@@ -282,11 +282,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
-            {
-                return;
-            }
-
             ColorPicker colorPicker = null;
             RunOnUIThread.Execute(() =>
             {

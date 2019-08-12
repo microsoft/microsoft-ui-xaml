@@ -100,11 +100,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
-            {
-                return;
-            }
-
             var comboBox = SetupComboBox();
             RunOnUIThread.Execute(() =>
             {

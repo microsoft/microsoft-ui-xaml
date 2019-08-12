@@ -586,11 +586,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
-            {
-                return;
-            }
-
             TreeView treeView = null;
             RunOnUIThread.Execute(() =>
             {

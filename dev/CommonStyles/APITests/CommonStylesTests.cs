@@ -111,11 +111,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTreeForControlsInCommonStyles()
         {
-            if(PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
-            {
-                return;
-            }
-
             var controlsToVerify = new List<string> {
                 "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
                 "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
