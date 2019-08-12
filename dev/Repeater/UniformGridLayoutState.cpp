@@ -97,12 +97,17 @@ void UniformGridLayoutState::SetSize(
     auto minorItemSpacing = orientation == winrt::Orientation::Vertical ? minRowSpacing : minColumnSpacing;
 
     auto itemSizeMinor = orientation == winrt::Orientation::Horizontal ? m_effectiveItemWidth : m_effectiveItemHeight;
-    itemSizeMinor += minorItemSpacing;
 
-    auto numItemsPerColumn = std::min(maxItemsPerLine, static_cast<unsigned int>(std::max(1.0, availableSizeMinor / itemSizeMinor)));
-    auto usedSpace = (numItemsPerColumn * itemSizeMinor) - minorItemSpacing;
-    auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
-    auto extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
+    double extraMinorPixelsForEachItem = 0.0;
+    if (std::isfinite(availableSizeMinor))
+    {
+        auto numItemsPerColumn = std::min(
+            maxItemsPerLine,
+            static_cast<unsigned int>(std::max(1.0, availableSizeMinor / (itemSizeMinor + minorItemSpacing))));
+        auto usedSpace = (numItemsPerColumn * (itemSizeMinor + minorItemSpacing)) - minorItemSpacing;
+        auto remainingSpace = ((int)(availableSizeMinor - usedSpace));
+        extraMinorPixelsForEachItem = remainingSpace / ((int)numItemsPerColumn);
+    }
 
     if (stretch == winrt::UniformGridLayoutItemsStretch::Fill)
     {
