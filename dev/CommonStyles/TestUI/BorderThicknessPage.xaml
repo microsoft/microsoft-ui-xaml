@@ -6,345 +6,472 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid
+    <ScrollViewer>
+        <Grid
         contract5Present:RowSpacing="10"
         contract5Present:ColumnSpacing="10">
-        <Grid.Resources>
-            <Style x:Key="SideHeader" TargetType="TextBlock">
-                <Setter Property="HorizontalAlignment" Value="Right"/>
-                <Setter Property="Grid.Column" Value="0"/>
-            </Style>
-            <Style x:Key="LeftColumn" TargetType="Grid">
-                <Setter Property="HorizontalAlignment" Value="Left"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="Grid.Column" Value="1"/>
-            </Style>
-            <Style x:Key="RightColumn" TargetType="Grid">
-                <Setter Property="HorizontalAlignment" Value="Left"/>
-                <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="Grid.Column" Value="2"/>
-            </Style>
-        </Grid.Resources>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
-            <ColumnDefinition />
-            <ColumnDefinition />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+            <Grid.Resources>
+                <Style x:Key="SideHeader" TargetType="TextBlock">
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                    <Setter Property="Grid.Column" Value="0"/>
+                </Style>
+                <Style x:Key="LeftColumn" TargetType="Grid">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="Grid.Column" Value="1"/>
+                </Style>
+                <Style x:Key="RightColumn" TargetType="Grid">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="Grid.Column" Value="2"/>
+                </Style>
+            </Grid.Resources>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="ComboBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="0" Style="{StaticResource LeftColumn}">
-            <StackPanel>
-                <StackPanel.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </StackPanel.Resources>
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem Content="Item 1"/>
-                    <ComboBoxItem Content="Item 2"/>
-                    <ComboBoxItem Content="Item 3"/>
-                </ComboBox>
+            <TextBlock Grid.Row="0" Text="ComboBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="0" Style="{StaticResource LeftColumn}">
+                <StackPanel>
+                    <StackPanel.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="ComboBoxBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </StackPanel.Resources>
+                    <ComboBox SelectedIndex="0">
+                        <ComboBoxItem Content="Item 1"/>
+                        <ComboBoxItem Content="Item 2"/>
+                        <ComboBoxItem Content="Item 3"/>
+                    </ComboBox>
 
-                <TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
-                <ComboBox SelectedIndex="0" IsEditable="True">
-                    <ComboBoxItem Content="Item 1"/>
-                    <ComboBoxItem Content="Item 2"/>
-                    <ComboBoxItem Content="Item 3"/>
-                </ComboBox>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="0" Style="{StaticResource RightColumn}">
-            <StackPanel Grid.Column="2" Grid.Row="0">
-                <ComboBox SelectedIndex="0">
-                    <ComboBoxItem Content="Item 1"/>
-                    <ComboBoxItem Content="Item 2"/>
-                    <ComboBoxItem Content="Item 3"/>
-                </ComboBox>
+                    <TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
+                    <ComboBox SelectedIndex="0" IsEditable="True">
+                        <ComboBoxItem Content="Item 1"/>
+                        <ComboBoxItem Content="Item 2"/>
+                        <ComboBoxItem Content="Item 3"/>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="0" Style="{StaticResource RightColumn}">
+                <StackPanel Grid.Column="2" Grid.Row="0">
+                    <ComboBox SelectedIndex="0">
+                        <ComboBoxItem Content="Item 1"/>
+                        <ComboBoxItem Content="Item 2"/>
+                        <ComboBoxItem Content="Item 3"/>
+                    </ComboBox>
 
-                <TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
-                <ComboBox SelectedIndex="0" IsEditable="True">
-                    <ComboBoxItem Content="Item 1"/>
-                    <ComboBoxItem Content="Item 2"/>
-                    <ComboBoxItem Content="Item 3"/>
-                </ComboBox>
-            </StackPanel>
-        </Grid>
+                    <TextBlock Text="ComboBox IsEditable==true:" Margin="0,20,0,0"/>
+                    <ComboBox SelectedIndex="0" IsEditable="True">
+                        <ComboBoxItem Content="Item 1"/>
+                        <ComboBoxItem Content="Item 2"/>
+                        <ComboBoxItem Content="Item 3"/>
+                    </ComboBox>
+                </StackPanel>
+            </Grid>
 
-        <TextBlock Grid.Row="1" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource LeftColumn}">
-            <CalendarDatePicker>
-                <CalendarDatePicker.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </CalendarDatePicker.Resources>
-            </CalendarDatePicker>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="1" Style="{StaticResource RightColumn}">
-            <CalendarDatePicker />
-        </Grid>
+            <TextBlock Grid.Row="1" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="1" Style="{StaticResource LeftColumn}">
+                <CalendarDatePicker>
+                    <CalendarDatePicker.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="CalendarDatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </CalendarDatePicker.Resources>
+                </CalendarDatePicker>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="1" Style="{StaticResource RightColumn}">
+                <CalendarDatePicker />
+            </Grid>
 
-        <TextBlock Grid.Row="2" Text="DatePicker" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="2" Style="{StaticResource LeftColumn}">
-            <DatePicker>
-                <DatePicker.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </DatePicker.Resources>
-            </DatePicker>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="2" Style="{StaticResource RightColumn}">
-            <DatePicker/>
-        </Grid>
+            <TextBlock Grid.Row="2" Text="DatePicker" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="2" Style="{StaticResource LeftColumn}">
+                <DatePicker>
+                    <DatePicker.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="DatePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="DatePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </DatePicker.Resources>
+                </DatePicker>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="2" Style="{StaticResource RightColumn}">
+                <DatePicker/>
+            </Grid>
 
-        <TextBlock Grid.Row="3" Text="TimePicker" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="3" Style="{StaticResource LeftColumn}">
-            <TimePicker>
-                <TimePicker.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
-                                <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </TimePicker.Resources>
-            </TimePicker>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="3" Style="{StaticResource RightColumn}">
-            <TimePicker/>
-        </Grid>
+            <TextBlock Grid.Row="3" Text="TimePicker" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="3" Style="{StaticResource LeftColumn}">
+                <TimePicker>
+                    <TimePicker.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="TimePickerSpacerThemeWidth">2</x:Double>
+                                    <Thickness x:Key="TimePickerBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </TimePicker.Resources>
+                </TimePicker>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="3" Style="{StaticResource RightColumn}">
+                <TimePicker/>
+            </Grid>
 
-        <TextBlock Grid.Row="4" Text="CheckBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="4" Style="{StaticResource LeftColumn}">
-            <CheckBox Content="CheckBox">
-                <CheckBox.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
-                                <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
-                                <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
-                                <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </CheckBox.Resources>
-            </CheckBox>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="4" Style="{StaticResource RightColumn}">
-            <CheckBox/>
-        </Grid>
+            <TextBlock Grid.Row="4" Text="CheckBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="4" Style="{StaticResource LeftColumn}">
+                <CheckBox Content="CheckBox">
+                    <CheckBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
+                                    <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
+                                    <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="CheckBoxBorderThemeThickness">2</x:Double>
+                                    <Thickness x:Key="CheckBoxCheckedStrokeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </CheckBox.Resources>
+                </CheckBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="4" Style="{StaticResource RightColumn}">
+                <CheckBox/>
+            </Grid>
 
-        <TextBlock Grid.Row="5" Text="RadioButton" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="5" Style="{StaticResource LeftColumn}">
-            <RadioButton Content="RadioButton">
-                <RadioButton.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </RadioButton.Resources>
-            </RadioButton>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="5" Style="{StaticResource RightColumn}">
-            <RadioButton/>
-        </Grid>
+            <TextBlock Grid.Row="5" Text="RadioButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="5" Style="{StaticResource LeftColumn}">
+                <RadioButton Content="RadioButton">
+                    <RadioButton.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="RadioButtonBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </RadioButton.Resources>
+                </RadioButton>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="5" Style="{StaticResource RightColumn}">
+                <RadioButton/>
+            </Grid>
 
-        <TextBlock Grid.Row="6" Text="ToggleSwitch" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="6" Style="{StaticResource LeftColumn}">
-            <ToggleSwitch>
-                <ToggleSwitch.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </ToggleSwitch.Resources>
-            </ToggleSwitch>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="6" Style="{StaticResource RightColumn}">
-            <ToggleSwitch/>
-        </Grid>
+            <TextBlock Grid.Row="6" Text="ToggleSwitch" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="6" Style="{StaticResource LeftColumn}">
+                <ToggleSwitch>
+                    <ToggleSwitch.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="ToggleSwitchOuterBorderStrokeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </ToggleSwitch.Resources>
+                </ToggleSwitch>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="6" Style="{StaticResource RightColumn}">
+                <ToggleSwitch/>
+            </Grid>
 
-        <TextBlock Grid.Row="7" Text="TextBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="7" Style="{StaticResource LeftColumn}">
-            <TextBox Width="100">
-                <TextBox.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </TextBox.Resources>
-            </TextBox>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="7" Style="{StaticResource RightColumn}">
-            <TextBox Width="100"/>
-        </Grid>
+            <TextBlock Grid.Row="7" Text="TextBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="7" Style="{StaticResource LeftColumn}">
+                <TextBox Width="100">
+                    <TextBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </TextBox.Resources>
+                </TextBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="7" Style="{StaticResource RightColumn}">
+                <TextBox Width="100"/>
+            </Grid>
 
-        <TextBlock Grid.Row="8" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="8" Style="{StaticResource LeftColumn}">
-            <RichEditBox Width="100">
-                <RichEditBox.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </RichEditBox.Resources>
-            </RichEditBox>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="8" Style="{StaticResource RightColumn}">
-            <RichEditBox Width="100"/>
-        </Grid>
+            <TextBlock Grid.Row="8" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="8" Style="{StaticResource LeftColumn}">
+                <RichEditBox Width="100">
+                    <RichEditBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </RichEditBox.Resources>
+                </RichEditBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="8" Style="{StaticResource RightColumn}">
+                <RichEditBox Width="100"/>
+            </Grid>
 
-        <TextBlock Grid.Row="9" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="9" Style="{StaticResource LeftColumn}">
-            <PasswordBox Width="100">
-                <PasswordBox.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </PasswordBox.Resources>
-            </PasswordBox>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="9" Style="{StaticResource RightColumn}">
-            <PasswordBox Width="100"/>
-        </Grid>
+            <TextBlock Grid.Row="9" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="9" Style="{StaticResource LeftColumn}">
+                <PasswordBox Width="100">
+                    <PasswordBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </PasswordBox.Resources>
+                </PasswordBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="9" Style="{StaticResource RightColumn}">
+                <PasswordBox Width="100"/>
+            </Grid>
 
-        <TextBlock Grid.Row="10" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
-        <Grid Grid.Column="1" Grid.Row="10" Style="{StaticResource LeftColumn}">
-            <AutoSuggestBox Width="100">
-                <AutoSuggestBox.Resources>
-                    <ResourceDictionary>
-                        <ResourceDictionary.ThemeDictionaries>
-                            <ResourceDictionary x:Key="Default">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="HighContrast">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                            <ResourceDictionary x:Key="Light">
-                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
-                            </ResourceDictionary>
-                        </ResourceDictionary.ThemeDictionaries>
-                    </ResourceDictionary>
-                </AutoSuggestBox.Resources>
-            </AutoSuggestBox>
-        </Grid>
-        <Grid Grid.Column="2" Grid.Row="10" Style="{StaticResource RightColumn}">
-            <AutoSuggestBox Width="100"/>
-        </Grid>
+            <TextBlock Grid.Row="10" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="10" Style="{StaticResource LeftColumn}">
+                <AutoSuggestBox Width="100">
+                    <AutoSuggestBox.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </AutoSuggestBox.Resources>
+                </AutoSuggestBox>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="10" Style="{StaticResource RightColumn}">
+                <AutoSuggestBox Width="100"/>
+            </Grid>
 
-    </Grid>
+            <TextBlock Grid.Row="11" Text="Button" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="11" Style="{StaticResource LeftColumn}">
+                <Button Content="Button" MinWidth="100">
+                    <Button.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="11" Style="{StaticResource RightColumn}">
+                <Button Content="Button" MinWidth="100"/>
+            </Grid>
+
+            <TextBlock Grid.Row="12" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="12" Style="{StaticResource LeftColumn}">
+                <controls:DropDownButton Content="DropDownButton" MinWidth="100">
+                    <controls:DropDownButton.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="ButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </controls:DropDownButton.Resources>
+                </controls:DropDownButton>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="12" Style="{StaticResource RightColumn}">
+                <controls:DropDownButton Content="DropDownButton" MinWidth="100"/>
+            </Grid>
+
+            <TextBlock Grid.Row="13" Text="SplitButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="13" Style="{StaticResource LeftColumn}">
+                <controls:SplitButton Content="Button" MinWidth="100">
+                    <controls:SplitButton.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </controls:SplitButton.Resources>
+                </controls:SplitButton>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="13" Style="{StaticResource RightColumn}">
+                <controls:SplitButton Content="Button" MinWidth="100"/>
+            </Grid>
+
+            <TextBlock Grid.Row="14" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="14" Style="{StaticResource LeftColumn}">
+                <ToggleButton Content="ToggleButton" MinWidth="100">
+                    <ToggleButton.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="ToggleButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="ToggleButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="ToggleButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </ToggleButton.Resources>
+                </ToggleButton>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="14" Style="{StaticResource RightColumn}">
+                <ToggleButton Content="ToggleButton" MinWidth="100"/>
+            </Grid>
+
+            <TextBlock Grid.Row="15" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
+            <Grid Grid.Column="1" Grid.Row="15" Style="{StaticResource LeftColumn}">
+                <controls:ToggleSplitButton Content="ToggleSplitButton" MinWidth="100">
+                    <controls:ToggleSplitButton.Resources>
+                        <ResourceDictionary>
+                            <ResourceDictionary.ThemeDictionaries>
+                                <ResourceDictionary x:Key="Default">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="HighContrast">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                                <ResourceDictionary x:Key="Light">
+                                    <x:Double x:Key="SplitButtonBorderThemeThickness">2</x:Double>
+                                </ResourceDictionary>
+                            </ResourceDictionary.ThemeDictionaries>
+                        </ResourceDictionary>
+                    </controls:ToggleSplitButton.Resources>
+                </controls:ToggleSplitButton>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="15" Style="{StaticResource RightColumn}">
+                <controls:ToggleSplitButton Content="ToggleSplitButton" MinWidth="100"/>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
 </local:TestPage>
