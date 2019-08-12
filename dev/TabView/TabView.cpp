@@ -32,6 +32,35 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
+
+    // KeyboardAccelerator is only available on RS3+
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        winrt::KeyboardAccelerator ctrlf4Accel;
+        ctrlf4Accel.Key(winrt::VirtualKey::F4);
+        ctrlf4Accel.Modifiers(winrt::VirtualKeyModifiers::Control);
+        ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
+        ctrlf4Accel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlf4Accel);
+    }
+
+    // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
+    if (SharedHelpers::Is19H1OrHigher())
+    {
+        winrt::KeyboardAccelerator ctrlTabAccel;
+        ctrlTabAccel.Key(winrt::VirtualKey::Tab);
+        ctrlTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control);
+        ctrlTabAccel.Invoked({ this, &TabView::OnCtrlTabInvoked });
+        ctrlTabAccel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlTabAccel);
+
+        winrt::KeyboardAccelerator ctrlShiftTabAccel;
+        ctrlShiftTabAccel.Key(winrt::VirtualKey::Tab);
+        ctrlShiftTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control | winrt::VirtualKeyModifiers::Shift);
+        ctrlShiftTabAccel.Invoked({ this, &TabView::OnCtrlShiftTabInvoked });
+        ctrlShiftTabAccel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlShiftTabAccel);
+    }
 }
 
 void TabView::OnApplyTemplate()
@@ -88,35 +117,6 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
-
-    // KeyboardAccelerator is only available on RS3+
-    if (SharedHelpers::IsRS3OrHigher())
-    {
-        winrt::KeyboardAccelerator ctrlf4Accel;
-        ctrlf4Accel.Key(winrt::VirtualKey::F4);
-        ctrlf4Accel.Modifiers(winrt::VirtualKeyModifiers::Control);
-        ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
-        ctrlf4Accel.ScopeOwner(*this);
-        KeyboardAccelerators().Append(ctrlf4Accel);
-    }
-
-    // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
-    if(SharedHelpers::Is19H1OrHigher())
-    {
-        winrt::KeyboardAccelerator ctrlTabAccel;
-        ctrlTabAccel.Key(winrt::VirtualKey::Tab);
-        ctrlTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control);
-        ctrlTabAccel.Invoked({ this, &TabView::OnCtrlTabInvoked });
-        ctrlTabAccel.ScopeOwner(*this);
-        KeyboardAccelerators().Append(ctrlTabAccel);
-
-        winrt::KeyboardAccelerator ctrlShiftTabAccel;
-        ctrlShiftTabAccel.Key(winrt::VirtualKey::Tab);
-        ctrlShiftTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control | winrt::VirtualKeyModifiers::Shift);
-        ctrlShiftTabAccel.Invoked({ this, &TabView::OnCtrlShiftTabInvoked });
-        ctrlShiftTabAccel.ScopeOwner(*this);
-        KeyboardAccelerators().Append(ctrlShiftTabAccel);
-    }
 
     UpdateItemsSource();
 }
@@ -625,36 +625,14 @@ int TabView::GetItemCount()
     }
 }
 
-bool TabView::SelectNextTab()
+bool TabView::SelectNextTab(int increment)
 {
     bool handled = false;
     const int itemsSize = GetItemCount();
     if (itemsSize > 1)
     {
         auto index = SelectedIndex();
-        index++;
-        if (index >= itemsSize)
-        {
-            index = 0;
-        }
-        SelectedIndex(index);
-        handled = true;
-    }
-    return handled;
-}
-
-bool TabView::SelectPreviousTab()
-{
-    bool handled = false;
-    const int itemsSize = GetItemCount();
-    if (itemsSize > 1)
-    {
-        auto index = SelectedIndex();
-        index--;
-        if (index < 0)
-        {
-            index = itemsSize - 1;
-        }
+        index = (index + increment + itemsSize) % itemsSize;
         SelectedIndex(index);
         handled = true;
     }
@@ -705,11 +683,11 @@ void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 
                 if (isCtrlDown && !isShiftDown)
                 {
-                    args.Handled(SelectNextTab());
+                    args.Handled(SelectNextTab(1));
                 }
                 else if (isCtrlDown && isShiftDown)
                 {
-                    args.Handled(SelectPreviousTab());
+                    args.Handled(SelectNextTab(-1));
                 }
             }
         }
@@ -723,10 +701,10 @@ void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const wi
 
 void TabView::OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectNextTab());
+    args.Handled(SelectNextTab(1));
 }
 
 void TabView::OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
 {
-    args.Handled(SelectPreviousTab());
+    args.Handled(SelectNextTab(-1));
 }

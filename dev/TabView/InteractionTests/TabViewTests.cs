@@ -132,6 +132,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("When the selected tab is closed, selection should move to the next one.");
                 // Use Tab's close button:
                 closeButton.InvokeAndWait();
+                VerifyElement.NotFound("FirstTab", FindBy.Name);
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
 
                 Log.Comment("Select last tab.");
@@ -144,6 +145,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Use Middle Click to close the tab:
                 lastTab.Click(PointerButtons.Middle);
+                Wait.ForIdle();
+                VerifyElement.NotFound("LastTab", FindBy.Name);
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
             }
         }
@@ -330,9 +333,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.F4, ModifierKey.Control);
                 Wait.ForIdle();
 
-                ElementCache.Refresh();
-                UIObject firstTab2 = TryFindElement.ByName("FirstTab");
-                Verify.IsNull(firstTab2);
+                VerifyElement.NotFound("FirstTab", FindBy.Name);
             }
         }
 

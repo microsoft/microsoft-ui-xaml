@@ -94,9 +94,8 @@ private:
     void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
     void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
 
-    bool SelectNextTab();
-    bool SelectPreviousTab();
     bool CloseCurrentTab();
+    bool SelectNextTab(int increment);
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
