@@ -18,11 +18,13 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TabViewItemTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TabViewListView.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TabView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TabViewItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\TabViewItemTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabView.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TabViewAutomationPeer.cpp" />

@@ -9,6 +9,7 @@
 #include "TabViewItem.g.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemAutomationPeer.h"
+#include "TabViewItemTemplateSettings.h"
 
 class TabViewItem :
     public ReferenceTracker<TabViewItem, winrt::implementation::TabViewItemT>,
@@ -26,6 +27,7 @@ public:
 
     void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
     void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
@@ -38,17 +40,15 @@ public:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
 
-    bool CanClose();
     void UpdateCloseButton();
     void TryClose();
+    void OnIconSourceChanged();
 
     bool m_firstTimeSettingToolTip{ true };
 
-    PropertyChanged_revoker m_CanCloseTabsChangedRevoker{};
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnCloseButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     bool m_hasPointerCapture = false;

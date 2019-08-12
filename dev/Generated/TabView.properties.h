@@ -15,9 +15,6 @@ public:
     void AddButtonCommandParameter(winrt::IInspectable const& value);
     winrt::IInspectable AddButtonCommandParameter();
 
-    void CanCloseTabs(bool value);
-    bool CanCloseTabs();
-
     void CanDragDropTabs(bool value);
     bool CanDragDropTabs();
 
@@ -59,7 +56,6 @@ public:
 
     static winrt::DependencyProperty AddButtonCommandProperty() { return s_AddButtonCommandProperty; }
     static winrt::DependencyProperty AddButtonCommandParameterProperty() { return s_AddButtonCommandParameterProperty; }
-    static winrt::DependencyProperty CanCloseTabsProperty() { return s_CanCloseTabsProperty; }
     static winrt::DependencyProperty CanDragDropTabsProperty() { return s_CanDragDropTabsProperty; }
     static winrt::DependencyProperty IsAddButtonVisibleProperty() { return s_IsAddButtonVisibleProperty; }
     static winrt::DependencyProperty ItemsProperty() { return s_ItemsProperty; }
@@ -76,7 +72,6 @@ public:
 
     static GlobalDependencyProperty s_AddButtonCommandProperty;
     static GlobalDependencyProperty s_AddButtonCommandParameterProperty;
-    static GlobalDependencyProperty s_CanCloseTabsProperty;
     static GlobalDependencyProperty s_CanDragDropTabsProperty;
     static GlobalDependencyProperty s_IsAddButtonVisibleProperty;
     static GlobalDependencyProperty s_ItemsProperty;
@@ -119,14 +114,6 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
-
-    static void OnItemsPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
-
-    static void OnItemsSourcePropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSelectedIndexPropertyChanged(
         winrt::DependencyObject const& sender,

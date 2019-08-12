@@ -16,5 +16,6 @@ public:
     void OnItemsChanged(winrt::IInspectable const& item);
 
 private:
+    void OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::ContainerContentChangingEventArgs& args);
 };
 

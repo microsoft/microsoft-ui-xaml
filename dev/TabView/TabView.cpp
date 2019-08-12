@@ -25,7 +25,7 @@ TabView::TabView()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabView);
 
-    auto items = winrt::make<Vector<winrt::IInspectable>>();
+    auto items = winrt::make<Vector<winrt::IInspectable, MakeVectorParam<VectorFlag::Observable>()>>();
     SetValue(s_ItemsProperty, items);
 
     SetDefaultStyleKey(this);
@@ -117,8 +117,6 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
-
-    UpdateItemsSource();
 }
 
 void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
@@ -179,31 +177,6 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
     }
 }
 
-void TabView::UpdateItemsSource()
-{
-    if (auto listView = m_listView.get())
-    {
-        if (ItemsSource())
-        {
-            listView.ItemsSource(ItemsSource());
-        }
-        else
-        {
-            listView.ItemsSource(Items());
-        }
-    }
-}
-
-void TabView::OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateItemsSource();
-}
-
-void TabView::OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateItemsSource();
-}
-
 void TabView::OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSelectedIndex();
@@ -236,17 +209,30 @@ void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&
 
 void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
-    if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
-    {
-        UpdateSelectedIndex();
-    }
-    if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
-    {
-        UpdateSelectedItem();
-    }
-
     if (auto listView = m_listView.get())
     {
+        // Now that ListView exists, we can start using its Items collection.
+        auto items = Items();
+        auto numItemsToCopy = static_cast<int>(Items().Size());
+        if (auto lvItems = listView.Items())
+        {
+            for (int i = 0; i < numItemsToCopy; i++)
+            {
+                // App put items in our Items collection; copy them over to ListView.Items
+                lvItems.Append(items.GetAt(i));
+            }
+            Items(lvItems);
+        }
+
+        if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
+        {
+            UpdateSelectedIndex();
+        }
+        if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
+        {
+            UpdateSelectedItem();
+        }
+
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
@@ -293,7 +279,9 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
         int numItems = static_cast<int>(Items().Size());
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
         {
-            if (SelectedIndex() == static_cast<int32_t>(args.Index()))
+            // SelectedIndex might also already be -1
+            auto selectedIndex = SelectedIndex();
+            if (selectedIndex == -1 || selectedIndex == static_cast<int32_t>(args.Index()))
             {
                 // Find the closest tab to select instead.
                 int startIndex = static_cast<int>(args.Index());
@@ -406,7 +394,13 @@ void TabView::UpdateTabContent()
         }
         else
         {
-            if (auto container = ContainerFromItem(SelectedItem()).as<winrt::ListViewItem>())
+            auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
+            if (!tvi)
+            {
+                tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
+            }
+
+            if (tvi)
             {
                 // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
                 // We should move the focus to the new tab content.
@@ -418,9 +412,9 @@ void TabView::UpdateTabContent()
                     shouldMoveFocusToNewTab = true;
                 });
 
-                tabContentPresenter.Content(container.Content());
-                tabContentPresenter.ContentTemplate(container.ContentTemplate());
-                tabContentPresenter.ContentTemplateSelector(container.ContentTemplateSelector());
+                tabContentPresenter.Content(tvi.Content());
+                tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
+                tabContentPresenter.ContentTemplateSelector(tvi.ContentTemplateSelector());
 
                 // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
                 // into the live visual tree.
@@ -565,9 +559,15 @@ void TabView::UpdateTabWidths()
     for (auto item : Items())
     {
         // Set the calculated width on each tab.
-        if (auto container = ContainerFromItem(item).as<winrt::ListViewItem>())
+        auto tvi = item.try_as<winrt::TabViewItem>();
+        if (!tvi)
         {
-            container.Width(tabWidth);
+            tvi = ContainerFromItem(item).as<winrt::TabViewItem>();
+        }
+
+        if (tvi)
+        {
+            tvi.Width(tabWidth);
         }
     }
 }

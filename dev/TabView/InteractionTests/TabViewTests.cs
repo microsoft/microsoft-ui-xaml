@@ -21,6 +21,7 @@ using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
+using Windows.UI.Xaml.Media;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -105,7 +106,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
 
                 Log.Comment("Equal size tabs should all be the same size.");
-                Verify.AreEqual(smallerTab.BoundingRectangle.Width, largerTab.BoundingRectangle.Width);
+                int diff = Math.Abs(largerTab.BoundingRectangle.Width - smallerTab.BoundingRectangle.Width);
+                Verify.IsLessThanOrEqual(diff, 1);
 
                 Log.Comment("Changing tab width mode to SizeToContent.");
                 ComboBox tabWidthComboBox = FindElement.ByName<ComboBox>("TabWidthComboBox");
@@ -176,27 +178,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ElementCache.Refresh();
                 closeButton = FindCloseButton(firstTab);
                 Verify.IsNotNull(closeButton);
-
-                Log.Comment("Setting CanCloseTabs=false on the TabView.");
-                CheckBox canCloseCheckBox = FindElement.ByName<CheckBox>("CanCloseCheckBox");
-                canCloseCheckBox.Uncheck();
-                Wait.ForIdle();
-
-                ElementCache.Refresh();
-
-                Log.Comment("First close button should be visible because IsCloseable was set to true");
-                closeButton = FindCloseButton(firstTab);
-                Verify.IsNotNull(closeButton);
-
-                UIObject tab = FindElement.ByName("SecondTab");
-                Log.Comment("Second close button should be visible because IsCloseable was set to true in xaml");
-                closeButton = FindCloseButton(tab);
-                Verify.IsNotNull(closeButton);
-
-                tab = FindElement.ByName("LongHeaderTab");
-                Log.Comment("Third close button should not be visible because IsCloseable is still unset");
-                closeButton = FindCloseButton(tab);
-                Verify.IsNull(closeButton);
             }
         }
 

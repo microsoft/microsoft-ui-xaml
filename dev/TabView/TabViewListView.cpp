@@ -15,6 +15,8 @@ CppWinRTActivatableClassWithBasicFactory(TabViewListView);
 TabViewListView::TabViewListView()
 {
     SetDefaultStyleKey(this);
+
+    ContainerContentChanging({ this, &TabViewListView::OnContainerContentChanging });
 }
 
 // IItemsControlOverrides
@@ -36,9 +38,20 @@ bool TabViewListView::IsItemItsOwnContainerOverride(winrt::IInspectable const& a
 
 void TabViewListView::OnItemsChanged(winrt::IInspectable const& item)
 {
+    __super::OnItemsChanged(item);
+
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
         auto internalTabView = winrt::get_self<TabView>(tabView);
         internalTabView->OnItemsChanged(item);
+    }
+}
+
+void TabViewListView::OnContainerContentChanging(const winrt::IInspectable& sender, const winrt::Windows::UI::Xaml::Controls::ContainerContentChangingEventArgs& args)
+{
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    {
+        auto internalTabView = winrt::get_self<TabView>(tabView);
+        internalTabView->UpdateTabContent();
     }
 }

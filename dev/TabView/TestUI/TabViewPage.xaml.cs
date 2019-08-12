@@ -14,50 +14,42 @@ using Windows.UI.Xaml.Automation;
 using TabView = Microsoft.UI.Xaml.Controls.TabView;
 using TabViewItem = Microsoft.UI.Xaml.Controls.TabViewItem;
 using TabViewTabClosingEventArgs = Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs;
+using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
+using System.Collections.ObjectModel;
+using Windows.Devices.PointOfService;
 
 namespace MUXControlsTestApp
 {
-    public class TabDataItem
+    public class TabDataItem : DependencyObject
     {
-        public string Header { get; set; }
-        public string Content { get; set; }
+        public String Header { get; set; }
+        public SymbolIconSource IconSource { get; set; }
+        public String Content { get; set; }
     }
 
     [TopLevelTestPage(Name = "TabView")]
     public sealed partial class TabViewPage : TestPage
     {
         int _newTabNumber = 1;
+        SymbolIconSource _iconSource;
 
         public TabViewPage()
         {
             this.InitializeComponent();
-            
-            this.innerTabView.ItemsSource = new []
-            {
-                new TabDataItem 
-                {
-                    Header = "Header 1",
-                    Content = "Content 1"
-                },
-                new TabDataItem
-                {
-                    Header = "Header 2",
-                    Content = "Content 2"
-                },
-                new TabDataItem
-                {
-                    Header = "Header 3",
-                    Content = "Content 3"
-                }
-            };
-        }
 
-        public void CanCloseCheckBox_CheckChanged(object sender, RoutedEventArgs e)
-        {
-            if (Tabs != null)
+            _iconSource = new SymbolIconSource();
+            _iconSource.Symbol = Symbol.Placeholder;
+
+            ObservableCollection<TabDataItem> itemSource = new ObservableCollection<TabDataItem>();
+            for (int i = 0; i < 5; i++)
             {
-                Tabs.CanCloseTabs = (bool)CanCloseCheckBox.IsChecked;
+                var item = new TabDataItem();
+                item.IconSource = _iconSource;
+                item.Header = "Item " + i;
+                item.Content = "This is tab " + i + ".";
+                itemSource.Add(item);
             }
+            DataBindingTabView.ItemsSource = itemSource;
         }
 
         public void IsCloseableCheckBox_CheckChanged(object sender, RoutedEventArgs e)
@@ -73,7 +65,7 @@ namespace MUXControlsTestApp
             if (Tabs != null)
             {
                 TabViewItem item = new TabViewItem();
-                item.Icon = new SymbolIcon(Symbol.Calendar);
+                item.IconSource = _iconSource;
                 item.Header = "New Tab " + _newTabNumber;
                 item.Content = item.Header;
                 item.SetValue(AutomationProperties.NameProperty, item.Header);
@@ -158,7 +150,6 @@ namespace MUXControlsTestApp
         {
             SelectedIndexTextBlock.Text = Tabs.SelectedIndex.ToString();
         }
-
 
         private void TabViewTabClosing(object sender, Microsoft.UI.Xaml.Controls.TabViewTabClosingEventArgs e)
         {
