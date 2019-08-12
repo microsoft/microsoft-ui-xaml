@@ -10,7 +10,6 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
-#include "InspectingDataSource.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -511,6 +510,26 @@ void TabView::UpdateTabWidths()
             {
                 tabColumn.MaxWidth(availableWidth);
                 tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
+                if (auto listview = m_listView.get())
+                {
+                    listview.MaxWidth(availableWidth);
+                    auto decreaseButton = m_scrollDecreaseButton.get();
+                    auto increaseButton = m_scrollIncreaseButton.get();
+                    if (decreaseButton && increaseButton)
+                    {
+                        auto scrollviewer = m_scrollViewer.get();
+                        if (scrollviewer.ScrollableWidth() > 0)
+                        {
+                            decreaseButton.Visibility(winrt::Visibility::Visible);
+                            increaseButton.Visibility(winrt::Visibility::Visible);
+                        }
+                        else
+                        {
+                            decreaseButton.Visibility(winrt::Visibility::Collapsed);
+                            increaseButton.Visibility(winrt::Visibility::Collapsed);
+                        }
+                    }
+                }
             }
             else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
@@ -617,7 +636,17 @@ int TabView::GetItemCount()
 {
     if (auto itemssource = ItemsSource())
     {
-        return winrt::make<InspectingDataSource>(ItemsSource()).Count();
+        if (auto iterable = itemssource.try_as<winrt::IIterable<winrt::IInspectable>>())
+        {
+            int i = 1;
+            auto iter = iterable.First();
+            while (iter.MoveNext())
+            {
+                i++;
+            }
+            return i;
+        }
+        return 0;
     }
     else
     {
