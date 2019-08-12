@@ -16,6 +16,8 @@ TabViewItem::TabViewItem()
     SetDefaultStyleKey(this);
 
     Loaded({ this, &TabViewItem::OnLoaded });
+
+    CanDrag(true);
 }
 
 void TabViewItem::OnApplyTemplate()
@@ -35,7 +37,22 @@ void TabViewItem::OnApplyTemplate()
     {
         m_CanCloseTabsChangedRevoker = RegisterPropertyChanged(tabView, winrt::TabView::CanCloseTabsProperty(), { this, &TabViewItem::OnCloseButtonPropertyChanged });
     }
+
+    m_dragStartingRevoker = DragStarting(winrt::auto_revoke, { this, &TabViewItem::OnDragStarting });
+    m_dragOverRevoker = DragOver(winrt::auto_revoke, { this, &TabViewItem::OnDragOver });
+    m_dropRevoker = Drop(winrt::auto_revoke, { this, &TabViewItem::OnDrop });
 }
+
+void TabViewItem::OnDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    args.AcceptedOperation( winrt::DataPackageOperation::Move);
+}
+
+void TabViewItem::OnDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    
+}
+
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
 {
@@ -121,5 +138,14 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
         {
             toolTip.Content(nullptr);
         }
+    }
+}
+
+void TabViewItem::OnDragStarting(const winrt::UIElement& sender, const winrt::DragStartingEventArgs& args)
+{
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    {
+        auto internalTabView = winrt::get_self<TabView>(tabView);
+        internalTabView->OnItemDragStarting(*this, args);
     }
 }

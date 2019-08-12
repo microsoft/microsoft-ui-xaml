@@ -40,5 +40,14 @@ public:
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
-    void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);    
+    void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+
+    winrt::UIElement::DragStarting_revoker m_dragStartingRevoker{};
+    winrt::UIElement::DragOver_revoker m_dragOverRevoker{};
+    winrt::UIElement::Drop_revoker m_dropRevoker{};
+
+    void OnDragStarting(const winrt::UIElement& sender, const winrt::DragStartingEventArgs& args);
+    void OnDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    void OnDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+   
 };

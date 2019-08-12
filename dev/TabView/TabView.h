@@ -70,6 +70,14 @@ public:
 
     void CloseTab(winrt::TabViewItem const& item);
 
+    void OnItemDragStarting(const winrt::TabViewItem& item, const winrt::DragStartingEventArgs& args);
+    void OnRepeaterDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    void OnRepeaterDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    void StartDragAnimations(int dragItemIndex, double dragElementWidth);
+    void StopDragAnimations();
+    void OnDataPackageOperationCompleted(const winrt::DataPackage& sender, const winrt::OperationCompletedEventArgs& args);
+    int GetInsertionIndex(const winrt::Point& position, int droppedElementWidth);
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -81,16 +89,19 @@ private:
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
 
-    void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
-    void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
-    void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
-    void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    //void OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args);
+    //void OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args);
+    //void OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+    //void OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args);
+
 
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
     void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);
 
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+
+
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
@@ -112,14 +123,18 @@ private:
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
 
-    winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
-    winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
-    winrt::UIElement::DragOver_revoker m_listViewDragOverRevoker{};
-    winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
+    //winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
+    //winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
+    //winrt::UIElement::DragOver_revoker m_listViewDragOverRevoker{};
+    //winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
+
+    winrt::UIElement::DragOver_revoker m_repeaterDragOverRevoker{};
+    winrt::UIElement::Drop_revoker m_repeaterDropRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
 
@@ -132,4 +147,12 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_repeaterElementIndexChangedRevoker{};
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
+
+    winrt::ExpressionAnimation m_dragAnimation{ nullptr };
+
+    winrt::DataPackage::OperationCompleted_revoker m_dataPackageOperationCompletedRevoker{};
+    int m_draggedItemIndex{ -1 };
+    winrt::IInspectable m_draggedItem { nullptr };
+
+    winrt::IAsyncAction CloneDragVisual(const winrt::TabViewItem& item, const winrt::DragStartingEventArgs& args);
 };

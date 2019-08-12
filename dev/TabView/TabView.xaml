@@ -14,7 +14,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabView">
-                    <Grid>
+                    <Grid AllowDrop="True" x:Name="RootGrid">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -37,10 +37,11 @@
 
                             <local:ItemsRepeaterScrollHost Grid.Column="1" >
                                 <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
-                                    <Border Padding="{ThemeResource TabViewHeaderPadding}" BorderThickness="0">
+                                    <Border Padding="{ThemeResource TabViewHeaderPadding}" BorderThickness="0" >
                                         <local:ItemsRepeater
                                         x:Name="TabItemsRepeater"
                                         ItemTemplate="{TemplateBinding ItemTemplate}"
+                                        Background="Red" 
                                         VerticalAlignment="Top"
                                         TabFocusNavigation="Local">
                                             <local:ItemsRepeater.Layout>
@@ -227,6 +228,7 @@
     <Style TargetType="local:TabViewItem">
         <Setter Property="HorizontalContentAlignment" Value="Left"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="CanDrag" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabViewItem">

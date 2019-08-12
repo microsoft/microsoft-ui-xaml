@@ -41,7 +41,7 @@ void TabView::OnApplyTemplate()
 
     m_tabContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"TabContentPresenter", controlProtected));
     m_rightContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(L"RightContentPresenter", controlProtected));
-    
+
     m_leftContentColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"LeftContentColumn", controlProtected));
     m_tabColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"TabColumn", controlProtected));
     m_addButtonColumn.set(GetTemplateChildT<winrt::ColumnDefinition>(L"AddButtonColumn", controlProtected));
@@ -49,6 +49,10 @@ void TabView::OnApplyTemplate()
 
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
     m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
+
+    m_rootGrid.set(GetTemplateChildT<winrt::Grid>(L"RootGrid", controlProtected));
+    m_repeaterDragOverRevoker = m_rootGrid.get().DragOver(winrt::auto_revoke, { this, &TabView::OnRepeaterDragOver });
+    m_repeaterDropRevoker = m_rootGrid.get().Drop(winrt::auto_revoke, { this, &TabView::OnRepeaterDrop });
 
     m_scrollViewerLoadedRevoker = m_scrollViewer.get().Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
 
@@ -60,15 +64,9 @@ void TabView::OnApplyTemplate()
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
 
-           // m_listViewSelectionChangedRevoker = listView.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnListViewSelectionChanged });
-
-           // m_listViewDragItemsStartingRevoker = listView.DragItemsStarting(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsStarting });
-          //  m_listViewDragItemsCompletedRevoker = listView.DragItemsCompleted(winrt::auto_revoke, { this, &TabView::OnListViewDragItemsCompleted });
-          //  m_listViewDragOverRevoker = listView.DragOver(winrt::auto_revoke, { this, &TabView::OnListViewDragOver });
-          //  m_listViewDropRevoker = listView.Drop(winrt::auto_revoke, { this, &TabView::OnListViewDrop });
         }
         return repeater;
-    }());
+        }());
 
     m_selectionChangedRevoker = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &TabView::OnSelectionChanged });
 
@@ -94,7 +92,7 @@ void TabView::OnApplyTemplate()
             m_addButtonClickRevoker = addButton.Click(winrt::auto_revoke, { this, &TabView::OnAddButtonClick });
         }
         return addButton;
-    }());
+        }());
 
     if (SharedHelpers::IsRS3OrHigher())
     {
@@ -189,19 +187,19 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
 
 void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
-    if (auto&& scrollViewer = m_scrollViewer.get())
+    if (auto && scrollViewer = m_scrollViewer.get())
     {
         m_scrollDecreaseButton.set([this, scrollViewer]() {
             auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
             m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
             return decreaseButton;
-        }());
+            }());
 
         m_scrollIncreaseButton.set([this, scrollViewer]() {
             auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
             m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
             return increaseButton;
-        }());
+            }());
     }
 
     UpdateTabWidths();
@@ -255,13 +253,6 @@ void TabView::OnItemsChanged(winrt::IInspectable const& item)
 
 void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
 {
-   /* if (auto listView = m_listView.get())
-    {
-        SelectedIndex(listView.SelectedIndex());
-        SelectedItem(listView.SelectedItem());
-    }
-    */
-
     UpdateTabContent();
     m_selectionChangedEventSource(sender, args);
 }
@@ -270,60 +261,156 @@ void TabView::OnSelectionChanged(const winrt::SelectionModel& sender, const winr
 {
     SelectedItem(sender.SelectedItem());
     UpdateTabContent();
-//    m_selectionChangedEventSource(sender, args);
 }
 
-void TabView::OnListViewDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
+void TabView::StartDragAnimations(int dragItemIndex, double dragElementWidth)
 {
-    m_tabStripDragItemsStartingEventSource(*this, args);
-}
+    auto compositor = winrt::Window::Current().Compositor();
+    auto props = winrt::ElementCompositionPreview::GetPointerPositionPropertySet(m_itemsRepeater.get());
+    // yfactor * smoothStepFunction
+    constexpr auto expr = L"(Clamp((200 + (pointer.Position.Y - top)) / 200, 0, 1)) *  (halfDraggingElementWidth * (2 / Pi) * ATan((Pi / 2) * -(pointer.Position.X - center)) * (pointer.Position.X < center ? canInsertBefore : 1) * (pointer.Position.X > center ? canInsertAfter : 1))";
 
-void TabView::OnListViewDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
-{
-    m_tabStripDragOverEventSource(*this, args);
-}
-
-void TabView::OnListViewDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
-{
-    m_tabStripDropEventSource(*this, args);
-}
-
-void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
-{
-    m_tabStripDragItemsCompletedEventSource(*this, args);
-
-    // None means it's outside of the tab strip area
-    if (args.DropResult() == winrt::DataPackageOperation::None)
+    if (!m_dragAnimation)
     {
-        const auto item = args.Items().GetAt(0);
-        auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
+        m_dragAnimation = compositor.CreateExpressionAnimation();
 
-        if (!tab)
-        {
-            if (auto fe = item.try_as<winrt::FrameworkElement>())
-            {
-                tab = winrt::VisualTreeHelper::GetParent(fe).try_as<winrt::TabViewItem>();
-            }
-        }
-
-        if (!tab)
-        {
-            // This is a fallback scenario for tabs without a data context
-            auto numItems = static_cast<int>(Items().Size());
-            for (int i = 0; i < numItems; i++)
-            {
-                auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
-                if (tabItem.Content() == item)
-                {
-                    tab = tabItem;
-                    break;
-                }
-            }
-        }
-
-        auto myArgs = winrt::make_self<TabViewTabDraggedOutsideEventArgs>(item, tab);
-        m_tabDraggedOutsideEventSource(*this, *myArgs);
+        m_dragAnimation.SetReferenceParameter(L"pointer", props);
+        m_dragAnimation.Target(L"Translation.X");
     }
+
+    int startIndex = 0;
+    int count = m_itemsRepeater.get().ItemsSourceView().Count();
+    for (int i = 0; i < count; i++)
+    {
+        if (auto element = m_itemsRepeater.get().TryGetElement(i))
+        {
+            m_dragAnimation.Expression(expr);
+
+            winrt::ElementCompositionPreview::SetIsTranslationEnabled(element, true);
+            auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
+            bool canInsertBefore = i >= startIndex;
+            bool canInsertAfter = i <= startIndex + count;
+
+            m_dragAnimation.SetScalarParameter(L"canInsertBefore", canInsertBefore ? 1.0f : -1.0f);
+            m_dragAnimation.SetScalarParameter(L"canInsertAfter", canInsertAfter ? 1.0f : -1.0f);
+            m_dragAnimation.SetScalarParameter(L"top", (float)bounds.Y);
+            m_dragAnimation.SetScalarParameter(L"center", (float)(bounds.X + 0.5 * bounds.Width));
+            m_dragAnimation.SetScalarParameter(L"halfDraggingElementWidth", (float)(dragElementWidth * 0.4));
+            element.StartAnimation(m_dragAnimation);
+            element.as<winrt::FrameworkElement>().Tag(m_dragAnimation);
+        }
+    }
+}
+
+void TabView::StopDragAnimations()
+{
+    int count = m_itemsRepeater.get().ItemsSourceView().Count();
+    for (int i = 0; i < count; i++)
+    {
+        if (auto element = m_itemsRepeater.get().TryGetElement(i))
+        {
+            if (auto animation = element.as<winrt::FrameworkElement>().Tag().try_as<winrt::ExpressionAnimation>())
+            {
+                animation.Expression(L"0");
+                element.StartAnimation(animation);
+                // Stop animation does not seem to really stop the animation :/
+                //element.StopAnimation(animation);
+            }
+        }
+    }
+}
+
+void TabView::OnItemDragStarting(const winrt::TabViewItem& item, const winrt::DragStartingEventArgs& args)
+{
+    CloneDragVisual(item, args);
+}
+
+winrt::IAsyncAction TabView::CloneDragVisual(const winrt::TabViewItem& item, const winrt::DragStartingEventArgs& args)
+{
+    m_draggedItemIndex = m_itemsRepeater.get().GetElementIndex(item);
+
+    auto deferral = args.GetDeferral();
+    m_draggedItem = Items().GetAt(m_draggedItemIndex);
+
+    StartDragAnimations(m_draggedItemIndex, item.ActualWidth());
+
+    args.Data().RequestedOperation(winrt::DataPackageOperation::Move);
+    args.Data().SetText(L"ItemMoving..");
+    args.Data().Properties().Title(L"Hello world");
+
+    m_dataPackageOperationCompletedRevoker = args.Data().OperationCompleted(winrt::auto_revoke, { this, &TabView::OnDataPackageOperationCompleted });
+
+    // take a snapshot of the item because we are removing it from the source.
+    auto dragUI = args.DragUI();
+    auto renderTargetBitmap = winrt::RenderTargetBitmap();
+    co_await renderTargetBitmap.RenderAsync(item);
+    auto buffer = co_await renderTargetBitmap.GetPixelsAsync();
+    auto bitmap = winrt::SoftwareBitmap::CreateCopyFromBuffer(buffer,
+        winrt::BitmapPixelFormat::Bgra8,
+        renderTargetBitmap.PixelWidth(),
+        renderTargetBitmap.PixelHeight(),
+        winrt::BitmapAlphaMode::Premultiplied);
+    dragUI.SetContentFromSoftwareBitmap(bitmap);
+
+    Items().RemoveAt(m_draggedItemIndex);
+
+    deferral.Complete();
+}
+
+void TabView::OnRepeaterDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    args.AcceptedOperation(winrt::DataPackageOperation::Move);
+    args.DragUIOverride().IsGlyphVisible(true);
+    args.DragUIOverride().IsContentVisible(true);
+}
+
+void TabView::OnRepeaterDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+{
+    StopDragAnimations();
+    int index = GetInsertionIndex(args.GetPosition(m_itemsRepeater.get()), 100 /* dropped item width */);
+
+    if (index > 0)
+    {
+        Items().InsertAt(index, m_draggedItem);
+        m_draggedItemIndex = -1;
+        m_draggedItem = nullptr;
+    }
+}
+
+int TabView::GetInsertionIndex(const winrt::Point& position, int droppedElementWidth)
+{
+    int count = m_itemsRepeater.get().ItemsSourceView().Count();
+    auto dropBetweenScale = 0.5;
+    for (int i = 0; i < count; i++)
+    {
+        if (auto element = m_itemsRepeater.get().TryGetElement(i))
+        {
+            auto bounds = winrt::LayoutInformation::GetLayoutSlot(element.as<winrt::FrameworkElement>());
+            if (position.X < (bounds.X + dropBetweenScale * bounds.Width))
+            {
+                return i;
+            }
+        }
+    }
+
+    return -1;
+}
+
+void TabView::OnDataPackageOperationCompleted(const winrt::DataPackage& sender, const winrt::OperationCompletedEventArgs& args)
+{
+    DispatcherHelper dispatcherHelper(*this);
+    dispatcherHelper.RunAsync([this]()
+        {
+            if (m_draggedItemIndex >= 0)
+            {
+                // insert it back 
+                Items().InsertAt(m_draggedItemIndex, m_draggedItem);
+                m_draggedItemIndex = -1;
+                m_draggedItem = nullptr;
+            }
+
+            StopDragAnimations();
+        });
 }
 
 void TabView::UpdateTabContent()
@@ -395,7 +482,7 @@ void TabView::UpdateTabWidths()
         {
             widthTaken += addButtonColumn.ActualWidth();
         }
-        if (auto&& rightContentColumn = m_rightContentColumn.get())
+        if (auto && rightContentColumn = m_rightContentColumn.get())
         {
             if (auto rightContentPresenter = m_rightContentPresenter.get())
             {
