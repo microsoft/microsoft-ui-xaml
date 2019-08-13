@@ -51,8 +51,8 @@ void TabView::OnApplyTemplate()
     m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
 
     m_rootGrid.set(GetTemplateChildT<winrt::Grid>(L"RepeaterGrid", controlProtected));
-    m_repeaterDragOverRevoker = m_rootGrid.get().DragOver(winrt::auto_revoke, { this, &TabView::OnRepeaterDragOver });
-    m_repeaterDropRevoker = m_rootGrid.get().Drop(winrt::auto_revoke, { this, &TabView::OnRepeaterDrop });
+    m_gridDragOverRevoker = m_rootGrid.get().DragOver(winrt::auto_revoke, { this, &TabView::OnGridDragOver });
+    m_gridDropRevoker = m_rootGrid.get().Drop(winrt::auto_revoke, { this, &TabView::OnGridDrop });
 
     m_scrollViewerLoadedRevoker = m_scrollViewer.get().Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
 
@@ -60,7 +60,7 @@ void TabView::OnApplyTemplate()
         auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(L"TabItemsRepeater", controlProtected);
         if (repeater)
         {
-            m_listViewLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
+            m_repeaterLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnRepeaterLoaded });
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
         }
@@ -165,7 +165,7 @@ void TabView::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&
     UpdateTabContent();
 }
 
-void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+void TabView::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
     if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
     {
@@ -321,6 +321,8 @@ void TabView::StopDragAnimations()
 
 void TabView::OnItemDragStarting(const winrt::TabViewItem& item, const winrt::DragStartingEventArgs& args)
 {
+    // TODO: build args 
+    m_tabStripDragItemsStartingEventSource(*this, nullptr);
     CloneDragVisual(item, args);
 }
 
@@ -356,15 +358,19 @@ winrt::IAsyncAction TabView::CloneDragVisual(const winrt::TabViewItem& item, con
     deferral.Complete();
 }
 
-void TabView::OnRepeaterDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+void TabView::OnGridDragOver(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
 {
+    m_tabStripDragOverEventSource(*this, args);
+
     args.AcceptedOperation(winrt::DataPackageOperation::Move);
     args.DragUIOverride().IsGlyphVisible(true);
     args.DragUIOverride().IsContentVisible(true);
 }
 
-void TabView::OnRepeaterDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
+void TabView::OnGridDrop(const winrt::IInspectable& sender, const winrt::DragEventArgs& args)
 {
+    m_tabStripDropEventSource(*this, args);
+
     StopDragAnimations();
     int index = GetInsertionIndex(args.GetPosition(m_itemsRepeater.get()), 100 /* dropped item width */);
 

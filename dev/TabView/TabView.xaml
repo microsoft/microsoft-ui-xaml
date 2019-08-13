@@ -233,13 +233,7 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="DataVirtualizationStates">
-                                <VisualState x:Name="DataAvailable" />
-
-                                <VisualState x:Name="DataPlaceholder" />
-                            </VisualStateGroup>
-
-                            <VisualStateGroup x:Name="ReorderHintStates">
+                            <!--VisualStateGroup x:Name="ReorderHintStates">
                                 <VisualState x:Name="NoReorderHint" />
 
                                 <VisualState x:Name="BottomReorderHint">
@@ -278,9 +272,9 @@
                                     <VisualTransition GeneratedDuration="0:0:0.2"
                                           To="NoReorderHint" />
                                 </VisualStateGroup.Transitions>
-                            </VisualStateGroup>
+                            </-->
 
-                            <VisualStateGroup x:Name="DragStates">
+                            <!--VisualStateGroup x:Name="DragStates">
                                 <VisualState x:Name="NotDragging" />
 
                                 <VisualState x:Name="Dragging">
@@ -344,7 +338,7 @@
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition GeneratedDuration="0:0:0.2" To="NotDragging" />
                                 </VisualStateGroup.Transitions>
-                            </VisualStateGroup>
+                            </VisualStateGroup-->
                         </VisualStateManager.VisualStateGroups>
 
                         <Border x:Name="TabSeparator"
