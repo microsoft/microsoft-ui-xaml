@@ -42,6 +42,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" Text="ComboBox" Style="{StaticResource SideHeader}"/>
@@ -244,6 +248,102 @@
         </Grid>
         <Grid Grid.Column="2" Grid.Row="6" Style="{StaticResource RightColumn}">
             <ToggleSwitch/>
+        </Grid>
+
+        <TextBlock Grid.Row="7" Text="TextBox" Style="{StaticResource SideHeader}"/>
+        <Grid Grid.Column="1" Grid.Row="7" Style="{StaticResource LeftColumn}">
+            <TextBox Width="100">
+                <TextBox.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Default">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="HighContrast">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </TextBox.Resources>
+            </TextBox>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="7" Style="{StaticResource RightColumn}">
+            <TextBox Width="100"/>
+        </Grid>
+
+        <TextBlock Grid.Row="8" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
+        <Grid Grid.Column="1" Grid.Row="8" Style="{StaticResource LeftColumn}">
+            <RichEditBox Width="100">
+                <RichEditBox.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Default">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="HighContrast">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </RichEditBox.Resources>
+            </RichEditBox>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="8" Style="{StaticResource RightColumn}">
+            <RichEditBox Width="100"/>
+        </Grid>
+
+        <TextBlock Grid.Row="9" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
+        <Grid Grid.Column="1" Grid.Row="9" Style="{StaticResource LeftColumn}">
+            <PasswordBox Width="100">
+                <PasswordBox.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Default">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="HighContrast">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </PasswordBox.Resources>
+            </PasswordBox>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="9" Style="{StaticResource RightColumn}">
+            <PasswordBox Width="100"/>
+        </Grid>
+
+        <TextBlock Grid.Row="10" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
+        <Grid Grid.Column="1" Grid.Row="10" Style="{StaticResource LeftColumn}">
+            <AutoSuggestBox Width="100">
+                <AutoSuggestBox.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.ThemeDictionaries>
+                            <ResourceDictionary x:Key="Default">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="HighContrast">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                            <ResourceDictionary x:Key="Light">
+                                <Thickness x:Key="TextControlBorderThemeThickness">2</Thickness>
+                            </ResourceDictionary>
+                        </ResourceDictionary.ThemeDictionaries>
+                    </ResourceDictionary>
+                </AutoSuggestBox.Resources>
+            </AutoSuggestBox>
+        </Grid>
+        <Grid Grid.Column="2" Grid.Row="10" Style="{StaticResource RightColumn}">
+            <AutoSuggestBox Width="100"/>
         </Grid>
 
     </Grid>
