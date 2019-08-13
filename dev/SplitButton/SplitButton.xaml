@@ -273,7 +273,7 @@
                             VerticalContentAlignment="Stretch"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="0,0,8,0"
+                            Padding="0,0,9,0"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw">
                             <Button.Content>
