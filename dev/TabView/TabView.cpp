@@ -50,7 +50,7 @@ void TabView::OnApplyTemplate()
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
     m_scrollViewer.set(GetTemplateChildT<winrt::FxScrollViewer>(L"ScrollViewer", controlProtected));
 
-    m_rootGrid.set(GetTemplateChildT<winrt::Grid>(L"RootGrid", controlProtected));
+    m_rootGrid.set(GetTemplateChildT<winrt::Grid>(L"RepeaterGrid", controlProtected));
     m_repeaterDragOverRevoker = m_rootGrid.get().DragOver(winrt::auto_revoke, { this, &TabView::OnRepeaterDragOver });
     m_repeaterDropRevoker = m_rootGrid.get().Drop(winrt::auto_revoke, { this, &TabView::OnRepeaterDrop });
 
@@ -63,7 +63,6 @@ void TabView::OnApplyTemplate()
             m_listViewLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnListViewLoaded });
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
-
         }
         return repeater;
         }());
@@ -114,13 +113,15 @@ void TabView::UpdateItemsSource()
         if (ItemsSource())
         {
             repeater.ItemsSource(ItemsSource());
-            m_selectionModel.Source(ItemsSource());
+           
         }
         else
         {
             repeater.ItemsSource(Items());
-            m_selectionModel.Source(Items());
         }
+
+        m_selectionModel.Source(repeater.ItemsSourceView());
+        m_collectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &TabView::OnItemsChanged });               
     }
 }
 
@@ -210,57 +211,55 @@ void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChanged
     UpdateTabWidths();
 }
 
-void TabView::OnItemsChanged(winrt::IInspectable const& item)
+void TabView::OnItemsChanged(const winrt::IInspectable& dataSource, const winrt::NotifyCollectionChangedEventArgs& args)
 {
-    if (auto args = item.as< winrt::IVectorChangedEventArgs>())
+    int numItems = static_cast<int>(Items().Size());
+    if (args.Action() == winrt::NotifyCollectionChangedAction::Remove && numItems > 0)
     {
-        int numItems = static_cast<int>(Items().Size());
-        if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
+        if (SelectedIndex() == static_cast<int32_t>(args.OldStartingIndex()))
         {
-            if (SelectedIndex() == static_cast<int32_t>(args.Index()))
+            // Find the closest tab to select instead.
+            int startIndex = static_cast<int>(args.OldStartingIndex());
+            if (startIndex >= numItems)
             {
-                // Find the closest tab to select instead.
-                int startIndex = static_cast<int>(args.Index());
-                if (startIndex >= numItems)
-                {
-                    startIndex = numItems - 1;
-                }
-                int index = startIndex;
-
-                do
-                {
-                    auto nextItem = ContainerFromIndex(index).as<winrt::ListViewItem>();
-
-                    if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
-                    {
-                        SelectedItem(Items().GetAt(index));
-                        break;
-                    }
-
-                    // try the next item
-                    index++;
-                    if (index >= numItems)
-                    {
-                        index = 0;
-                    }
-                } while (index != startIndex);
+                startIndex = numItems - 1;
             }
+            int index = startIndex;
+
+            do
+            {
+                auto nextItem = ContainerFromIndex(index).as<winrt::TabViewItem>();
+
+                if (nextItem && nextItem.IsEnabled() && nextItem.Visibility() == winrt::Visibility::Visible)
+                {
+                    //SelectedItem(Items().GetAt(index));
+                    m_selectionModel.Select(index);
+                    break;
+                }
+
+                // try the next item
+                index++;
+                if (index >= numItems)
+                {
+                    index = 0;
+                }
+            } while (index != startIndex);
         }
     }
 
     UpdateTabWidths();
 }
 
-void TabView::OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args)
-{
-    UpdateTabContent();
-    m_selectionChangedEventSource(sender, args);
-}
-
 void TabView::OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args)
 {
     SelectedItem(sender.SelectedItem());
+    if (sender.SelectedIndex())
+    {
+        SelectedIndex(sender.SelectedIndex().GetAt(0));
+    }
     UpdateTabContent();
+    // TODO: Make a selection changed event args instance.
+    m_selectionChangedEventSource(*this, nullptr); 
 }
 
 void TabView::StartDragAnimations(int dragItemIndex, double dragElementWidth)
@@ -405,11 +404,45 @@ void TabView::OnDataPackageOperationCompleted(const winrt::DataPackage& sender, 
             {
                 // insert it back 
                 Items().InsertAt(m_draggedItemIndex, m_draggedItem);
+                UpdateLayout();
+
+                const auto item = m_draggedItem;
+                auto tab = ContainerFromItem(item).try_as<winrt::TabViewItem>();
+
+                if (!tab)
+                {
+                    if (auto fe = item.try_as<winrt::FrameworkElement>())
+                    {
+                        tab = winrt::VisualTreeHelper::GetParent(fe).try_as<winrt::TabViewItem>();
+                    }
+                }
+
+                if (!tab)
+                {
+                    // This is a fallback scenario for tabs without a data context
+                    auto numItems = static_cast<int>(Items().Size());
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        auto tabItem = ContainerFromIndex(i).try_as<winrt::TabViewItem>();
+                        if (tabItem.Content() == item)
+                        {
+                            tab = tabItem;
+                            break;
+                        }
+                    }
+                }
+
+                auto myArgs = winrt::make_self<TabViewTabDraggedOutsideEventArgs>(item, tab);
+                m_tabDraggedOutsideEventSource(*this, *myArgs);
+
+              
                 m_draggedItemIndex = -1;
                 m_draggedItem = nullptr;
             }
 
             StopDragAnimations();
+
+           
         });
 }
 
@@ -418,7 +451,7 @@ void TabView::UpdateTabContent()
     if (auto tabContentPresenter = m_tabContentPresenter.get())
     {
         if (!SelectedItem())
-        {
+        { 
             tabContentPresenter.Content(nullptr);
             tabContentPresenter.ContentTemplate(nullptr);
             tabContentPresenter.ContentTemplateSelector(nullptr);
@@ -558,16 +591,6 @@ void TabView::UpdateTabWidths()
 
 void TabView::UpdateSelectedItem()
 {
-    //if (auto listView = m_listView.get())
-    //{
-    //    // Setting ListView.SelectedItem will not work here in all cases.
-    //    // The reason why that doesn't work but this does is unknown.
-    //    auto container = listView.ContainerFromItem(SelectedItem());
-    //    if (auto lvi = container.as<winrt::ListViewItem>())
-    //    {
-    //        lvi.IsSelected(true);
-    //    }
-    //}
     uint32_t index;
     if (Items().IndexOf(SelectedItem(), index))
     {
@@ -577,7 +600,11 @@ void TabView::UpdateSelectedItem()
 
 void TabView::UpdateSelectedIndex()
 {
-    m_selectionModel.Select(SelectedIndex());
+    if (!m_selectionModel.SelectedIndex() ||
+        m_selectionModel.SelectedIndex().GetAt(0) != SelectedIndex())
+    {
+        m_selectionModel.Select(SelectedIndex());
+    }
 }
 
 winrt::DependencyObject TabView::ContainerFromItem(winrt::IInspectable const& item)

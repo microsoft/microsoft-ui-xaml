@@ -14,7 +14,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:TabView">
-                    <Grid AllowDrop="True" x:Name="RootGrid">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
@@ -37,7 +37,9 @@
 
                             <local:ItemsRepeaterScrollHost Grid.Column="1" >
                                 <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
-                                    <Border Padding="{ThemeResource TabViewHeaderPadding}" BorderThickness="0" >
+                                    <Grid Padding="{ThemeResource TabViewHeaderPadding}"
+                                          x:Name="RepeaterGrid"
+                                          AllowDrop="True">
                                         <local:ItemsRepeater
                                         x:Name="TabItemsRepeater"
                                         ItemTemplate="{TemplateBinding ItemTemplate}"
@@ -48,7 +50,7 @@
                                                 <local:StackLayout Orientation="Horizontal" />
                                             </local:ItemsRepeater.Layout>
                                         </local:ItemsRepeater>
-                                    </Border>
+                                    </Grid>
                                 </ScrollViewer>
                             </local:ItemsRepeaterScrollHost>
 
@@ -76,73 +78,6 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
                     </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="primitives:TabViewListView">
-        <Setter Property="VerticalAlignment" Value="Top" />
-        <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="TabNavigation" Value="Local" />
-        <Setter Property="IsSwipeEnabled" Value="False" />
-        <Setter Property="SingleSelectionFollowsFocus" Value="False"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Enabled" />
-        <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="False" />
-        <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True" />
-        <Setter Property="ItemContainerTransitions">
-            <Setter.Value>
-                <TransitionCollection>
-                    <AddDeleteThemeTransition />
-                    <ContentThemeTransition />
-                    <ReorderThemeTransition />
-                    <EntranceThemeTransition IsStaggeringEnabled="False" />
-                </TransitionCollection>
-            </Setter.Value>
-        </Setter>
-
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Padding="1,0,0,0" />
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
-
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="primitives:TabViewListView">
-
-                    <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
-                        <ScrollViewer x:Name="ScrollViewer"
-                            Grid.Column="1"
-                            AutomationProperties.AccessibilityView="Raw"
-                            BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
-                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                            IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
-                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                            IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
-                            TabNavigation="{TemplateBinding TabNavigation}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                            Style="{StaticResource TabScrollViewerStyle}">
-
-                            <ItemsPresenter x:Name="TabsItemsPresenter"
-                                Padding="{TemplateBinding Padding}" />
-
-                        </ScrollViewer>
-                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

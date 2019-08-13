@@ -59,7 +59,6 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<TabView, Object> AddButtonClick;
 
-    // From ListView
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource;
 
@@ -141,18 +140,6 @@ unsealed runtimeclass TabViewItem : ItemContainer
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsCloseableProperty{ get; };
-}
-
-}
-
-namespace MU_XCP_NAMESPACE
-{
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-unsealed runtimeclass TabViewListView : Windows.UI.Xaml.Controls.ListView
-{
-    TabViewListView();
 }
 
 }
