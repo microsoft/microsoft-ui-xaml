@@ -13,12 +13,12 @@ class ItemContainer :
 
 public:
     void OnIsSelectedPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
-    void OnPointerPressed(const winrt::PointerRoutedEventArgs& args);
-    void OnPointerReleased(const winrt::PointerRoutedEventArgs& args);
-    void OnPointerEntered(const winrt::PointerRoutedEventArgs& args);
-    void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
-    void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
-    void OnPointerCaptureLost(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerPressed(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerReleased(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerEntered(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerExited(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerCanceled(const winrt::PointerRoutedEventArgs& args);
+    virtual void OnPointerCaptureLost(const winrt::PointerRoutedEventArgs& args);
     virtual void OnApplyTemplate();
 
     void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);

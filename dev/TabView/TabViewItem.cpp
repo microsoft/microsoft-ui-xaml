@@ -151,7 +151,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerPressed(args);
+    ItemContainer::OnPointerPressed(args);
 
     if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonPressed)
     {
@@ -165,7 +165,7 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerReleased(args);
+    ItemContainer::OnPointerReleased(args);
 
     if (m_hasPointerCapture)
     {
@@ -188,7 +188,7 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerEntered(args);
+    ItemContainer::OnPointerEntered(args);
 
     if (m_hasPointerCapture)
     {
@@ -198,14 +198,14 @@ void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerExited(args);
+    ItemContainer::OnPointerExited(args);
 
     m_isMiddlePointerButtonPressed = false;
 }
 
 void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerCanceled(args);
+    ItemContainer::OnPointerCanceled(args);
 
     if (m_hasPointerCapture)
     {
@@ -216,7 +216,7 @@ void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerCaptureLost(args);
+    ItemContainer::OnPointerCaptureLost(args);
 
     m_hasPointerCapture = false;
     m_isMiddlePointerButtonPressed = false;

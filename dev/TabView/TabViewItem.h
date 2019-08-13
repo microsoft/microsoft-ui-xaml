@@ -27,12 +27,12 @@ public:
     void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnPointerEntered(winrt::PointerRoutedEventArgs const& args);
-    void OnPointerExited(winrt::PointerRoutedEventArgs const& args);
-    void OnPointerPressed(winrt::PointerRoutedEventArgs const& args);
-    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
-    void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
-    void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerEntered(winrt::PointerRoutedEventArgs const& args) override;
+    void OnPointerExited(winrt::PointerRoutedEventArgs const& args) override;
+    void OnPointerPressed(winrt::PointerRoutedEventArgs const& args) override;
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) override;
+    void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args) override;
+    void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args) override;
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };

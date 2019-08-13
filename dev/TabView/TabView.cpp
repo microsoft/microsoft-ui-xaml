@@ -11,6 +11,7 @@
 #include "SharedHelpers.h"
 #include <Vector.h>
 #include "InspectingDataSource.h"
+#include "TabViewItem.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -44,7 +45,6 @@ TabView::TabView()
         KeyboardAccelerators().Append(ctrlf4Accel);
     }
     m_selectionModel.SingleSelect(true);
-}
 
     // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
     if (SharedHelpers::Is19H1OrHigher())
@@ -146,17 +146,17 @@ void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const wi
         auto newItem = args.NewFocusedElement().try_as<winrt::TabViewItem>();
         if (oldItem && newItem)
         {
-            if (auto listView = m_listView.get())
+            if (auto repeater = m_itemsRepeater.get())
             {
-                bool oldItemIsFromThisTabView = listView.IndexFromContainer(oldItem) != -1;
-                bool newItemIsFromThisTabView = listView.IndexFromContainer(newItem) != -1;
+                bool oldItemIsFromThisTabView = repeater.GetElementIndex(oldItem) != -1;
+                bool newItemIsFromThisTabView = repeater.GetElementIndex(newItem) != -1;
                 if (oldItemIsFromThisTabView && newItemIsFromThisTabView)
                 {
                     auto inputDevice = args.InputDevice();
                     if (inputDevice == winrt::FocusInputDeviceKind::GameController)
                     {
-                        auto listViewBoundsLocal = winrt::Rect{ 0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight()) };
-                        auto listViewBounds = listView.TransformToVisual(nullptr).TransformBounds(listViewBoundsLocal);
+                        auto listViewBoundsLocal = winrt::Rect{ 0, 0, static_cast<float>(repeater.ActualWidth()), static_cast<float>(repeater.ActualHeight()) };
+                        auto listViewBounds = repeater.TransformToVisual(nullptr).TransformBounds(listViewBoundsLocal);
                         winrt::FindNextElementOptions options;
                         options.ExclusionRect(listViewBounds);
                         auto next = winrt::FocusManager::FindNextElement(direction, options);
