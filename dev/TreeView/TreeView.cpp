@@ -160,7 +160,7 @@ void TreeView::OnNodeExpanding(const winrt::TreeViewNode& sender, const winrt::I
 
     if (m_listControl)
     {
-        if (auto expandingTVI = safe_try_cast<winrt::TreeViewItem>(ContainerFromNode(sender)))
+        if (auto expandingTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
             //Update TVI properties
             if (!expandingTVI.IsExpanded())
@@ -184,7 +184,7 @@ void TreeView::OnNodeCollapsed(const winrt::TreeViewNode& sender, const winrt::I
 
     if (m_listControl)
     {
-        if (auto collapsedTVI = safe_try_cast<winrt::TreeViewItem>(ContainerFromNode(sender)))
+        if (auto collapsedTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
             //Update TVI properties
             if (collapsedTVI.IsExpanded())
@@ -271,7 +271,7 @@ void TreeView::UpdateItemsSelectionMode(bool isMultiSelect)
 
     for (int i = 0; i < size; i++)
     {
-        auto updateContainer = safe_cast<winrt::TreeViewItem>(listControl->ContainerFromIndex(i));
+        auto updateContainer = listControl->ContainerFromIndex(i).as<winrt::TreeViewItem>();
         if (updateContainer)
         {
             if (isMultiSelect)

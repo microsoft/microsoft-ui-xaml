@@ -16,8 +16,6 @@ TabViewItem::TabViewItem()
     SetDefaultStyleKey(this);
 
     Loaded({ this, &TabViewItem::OnLoaded });
-
-    CanDrag(true);
 }
 
 void TabViewItem::OnApplyTemplate()
@@ -64,24 +62,29 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
     UpdateCloseButton();
 }
 
+bool TabViewItem::CanClose()
+{
+    bool canClose = false;
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    {
+        // IsCloseable defaults to true, but if it hasn't been set then CanCloseTabs should override it.
+        canClose =
+            IsCloseable()
+            && (ReadLocalValue(IsCloseableProperty()) != winrt::DependencyProperty::UnsetValue()
+                || tabView.CanCloseTabs());
+    }
+    return canClose;
+}
+
 void TabViewItem::UpdateCloseButton()
 {
     if (auto&& closeButton = m_closeButton.get())
     {
-        if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
-        {
-            // IsCloseable defaults to true, but if it hasn't been set then CanCloseTabs should override it.
-            bool canClose =
-                IsCloseable()
-                && (ReadLocalValue(IsCloseableProperty()) != winrt::DependencyProperty::UnsetValue()
-                   || tabView.CanCloseTabs());
-
-            closeButton.Visibility(canClose ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
-        }
+        closeButton.Visibility(CanClose() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
 }
 
-void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void TabViewItem::TryClose()
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
@@ -94,6 +97,11 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::Ro
             internalTabView->CloseTab(*this);
         }
     }
+}
+
+void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    TryClose();
 }
 
 void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -128,7 +136,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
     {
         // Update tooltip text to new header text
         auto headerContent = Header();
-        auto potentialString = safe_try_cast<winrt::IPropertyValue>(headerContent);
+        auto potentialString = headerContent.try_as<winrt::IPropertyValue>();
 
         if (potentialString && potentialString.Type() == winrt::PropertyType::String)
         {
@@ -139,6 +147,79 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
             toolTip.Content(nullptr);
         }
     }
+}
+
+void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerPressed(args);
+
+    if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonPressed)
+    {
+        if (CapturePointer(args.Pointer()))
+        {
+            m_hasPointerCapture = true;
+            m_isMiddlePointerButtonPressed = true;
+        }
+    }
+}
+
+void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerReleased(args);
+
+    if (m_hasPointerCapture)
+    {
+        if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonReleased)
+        {
+            bool wasPressed = m_isMiddlePointerButtonPressed;
+            m_isMiddlePointerButtonPressed = false;
+            ReleasePointerCapture(args.Pointer());
+
+            if (wasPressed)
+            {
+                if (CanClose())
+                {
+                    TryClose();
+                }
+            }
+        }
+    }
+}
+
+void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerEntered(args);
+
+    if (m_hasPointerCapture)
+    {
+        m_isMiddlePointerButtonPressed = true;
+    }
+}
+
+void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerExited(args);
+
+    m_isMiddlePointerButtonPressed = false;
+}
+
+void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerCanceled(args);
+
+    if (m_hasPointerCapture)
+    {
+        ReleasePointerCapture(args.Pointer());
+        m_isMiddlePointerButtonPressed = false;
+    }
+}
+
+void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerCaptureLost(args);
+
+    m_hasPointerCapture = false;
+    m_isMiddlePointerButtonPressed = false;
 }
 
 void TabViewItem::OnDragStarting(const winrt::UIElement& sender, const winrt::DragStartingEventArgs& args)

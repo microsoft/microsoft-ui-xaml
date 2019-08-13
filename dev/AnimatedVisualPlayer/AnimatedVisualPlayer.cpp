@@ -751,7 +751,7 @@ void AnimatedVisualPlayer::OnFallbackContentPropertyChanged(
 void AnimatedVisualPlayer::OnSourcePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    auto newSource = safe_cast<winrt::IAnimatedVisualSource>(args.NewValue());
+    auto newSource = args.NewValue().as<winrt::IAnimatedVisualSource>();
 
     CompleteCurrentPlay();
 
@@ -913,7 +913,7 @@ void AnimatedVisualPlayer::LoadFallbackContent()
         // Load the content from the DataTemplate. It should be a UIElement tree root.
         winrt::DependencyObject fallbackContentObject = fallbackContentTemplate.LoadContent();
         // Get the content.
-        fallbackContentElement = safe_cast<winrt::UIElement>(fallbackContentObject);
+        fallbackContentElement = fallbackContentObject.as<winrt::UIElement>();
     }
 
     // Set the (possibly null) content. We allow null content so as to handle the

@@ -19,9 +19,9 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
-
                         <Grid x:Name="TabContainerGrid"
-                            Background="{ThemeResource TabViewBackground}">
+                            Background="{ThemeResource TabViewBackground}"
+                            XYFocusKeyboardNavigation="Enabled" >
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
@@ -55,6 +55,7 @@
                             </local:ItemsRepeaterScrollHost>
 
                             <Button
+                                
                                 Grid.Column="2"
                                 x:Name="AddButton"
                                 Content="&#xE710;"

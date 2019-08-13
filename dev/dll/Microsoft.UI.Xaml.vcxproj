@@ -51,6 +51,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,14 +73,12 @@
   <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
-
   <ImportGroup Label="Shared">
     <Import Project="..\TestHooks\TestHooks.vcxitems" Label="Shared" />
     <Import Project="..\Common\Common.vcxitems" Label="Shared" />
-
     <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
     <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
-    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared"  Condition="$(FeatureNavigationViewEnabled) == 'true'" />
+    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true'" />
     <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
     <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true'" />
     <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
@@ -93,7 +92,7 @@
     <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
     <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true'" />
     <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true'" />
-    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared"  />
+    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
     <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
     <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true'" />
     <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true'" />
@@ -128,7 +127,6 @@
     <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   </ImportGroup>
-
   <ItemGroup>
     <SharedPage Include="@(Page)" />
   </ItemGroup>
@@ -188,11 +186,13 @@
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Release'">DebugFull</GenerateDebugInformation>
       <AdditionalDependencies>mincore.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -224,15 +224,13 @@
       <ShowIncludes>false</ShowIncludes>
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);_HAS_STATIC_RTTI=0</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">%(PreprocessorDefinitions);_HAS_STATIC_RTTI=0</PreprocessorDefinitions>
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -470,15 +468,9 @@
   <PropertyGroup>
     <GenerateXamlFileBeforeTargets>BeforeBuildGenerateSources;CompileXaml;Prep_ComputeProcessXamlFiles;CompilePageRequiringCustomCompilation</GenerateXamlFileBeforeTargets>
   </PropertyGroup>
-  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" 
-          Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" 
-          Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
+  <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
     <Message Text="Generating generic resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" 
-                    N19H1Pages="@(NineteenH1StylePage)" 
-                    PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" 
-                    TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.read.1u.tlog"
-                    TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.write.1u.tlog" />
     <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
@@ -490,10 +482,7 @@
   </Target>
   <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" 
-                    RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" 
-                    TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.read.1u.tlog"
-                    TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
@@ -504,11 +493,7 @@
   </Target>
   <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" 
-                    RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" 
-                    N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" 
-                    TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.read.1u.tlog"
-                    TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.write.1u.tlog" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
@@ -697,5 +682,5 @@
   <PropertyGroup>
     <!-- Tell CreateLCGFile to use the LCE file from RC.EXE -->
     <LCEFile>$(_LceFile)</LCEFile>
-  </PropertyGroup>  
+  </PropertyGroup>
 </Project>

@@ -39,7 +39,7 @@ com_ptr<ToggleSplitButton> ToggleSplitButtonAutomationPeer::GetImpl()
 {
     com_ptr<ToggleSplitButton> impl = nullptr;
 
-    if (auto splitButton = safe_try_cast<winrt::ToggleSplitButton>(Owner()))
+    if (auto splitButton = Owner().try_as<winrt::ToggleSplitButton>())
     {
         impl = winrt::get_self<ToggleSplitButton>(splitButton)->get_strong();
     }

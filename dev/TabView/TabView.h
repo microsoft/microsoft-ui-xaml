@@ -10,6 +10,7 @@
 #include "TabView.properties.h"
 #include "TabViewTabClosingEventArgs.g.h"
 #include "TabViewTabDraggedOutsideEventArgs.g.h"
+#include "DispatcherHelper.h"
 
 class TabViewTabClosingEventArgs :
     public winrt::implementation::TabViewTabClosingEventArgsT<TabViewTabClosingEventArgs>
@@ -57,6 +58,9 @@ public:
     winrt::DependencyObject ContainerFromItem(winrt::IInspectable const& item);
     winrt::DependencyObject ContainerFromIndex(int index);
 
+    // Control
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
+
     // Internal
     void OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -80,6 +84,11 @@ private:
     void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);
     void OnItemsChanged(const winrt::IInspectable& dataSource, const winrt::NotifyCollectionChangedEventArgs& args);
     void OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+    void OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args);
+
+    bool CloseCurrentTab();
+    bool SelectNextTab(int increment);
 
     void UpdateItemsSource();
     void UpdateSelectedItem();
@@ -95,6 +104,10 @@ private:
     void OnDataPackageOperationCompleted(const winrt::DataPackage& sender, const winrt::OperationCompletedEventArgs& args);
     int GetInsertionIndex(const winrt::Point& position, int droppedElementWidth);
 
+    void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+
+    int GetItemCount();
+
     tracker_ref<winrt::ColumnDefinition> m_leftContentColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_tabColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };
@@ -109,7 +122,7 @@ private:
     tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
     tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
-
+	winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_repeaterLoadedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_collectionChangedRevoker{};
 
@@ -128,4 +141,6 @@ private:
     winrt::ExpressionAnimation m_dragAnimation{ nullptr };
     int m_draggedItemIndex{ -1 };
     winrt::IInspectable m_draggedItem { nullptr };
+
+    DispatcherHelper m_dispatcherHelper{ *this };
 };

@@ -10,7 +10,7 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
-#include "TabViewItem.h"
+#include "InspectingDataSource.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -32,7 +32,37 @@ TabView::TabView()
 
     Loaded({ this, &TabView::OnLoaded });
     SizeChanged({ this, &TabView::OnSizeChanged });
+
+    // KeyboardAccelerator is only available on RS3+
+    if (SharedHelpers::IsRS3OrHigher())
+    {
+        winrt::KeyboardAccelerator ctrlf4Accel;
+        ctrlf4Accel.Key(winrt::VirtualKey::F4);
+        ctrlf4Accel.Modifiers(winrt::VirtualKeyModifiers::Control);
+        ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
+        ctrlf4Accel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlf4Accel);
+    }
     m_selectionModel.SingleSelect(true);
+}
+
+    // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
+    if (SharedHelpers::Is19H1OrHigher())
+    {
+        winrt::KeyboardAccelerator ctrlTabAccel;
+        ctrlTabAccel.Key(winrt::VirtualKey::Tab);
+        ctrlTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control);
+        ctrlTabAccel.Invoked({ this, &TabView::OnCtrlTabInvoked });
+        ctrlTabAccel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlTabAccel);
+
+        winrt::KeyboardAccelerator ctrlShiftTabAccel;
+        ctrlShiftTabAccel.Key(winrt::VirtualKey::Tab);
+        ctrlShiftTabAccel.Modifiers(winrt::VirtualKeyModifiers::Control | winrt::VirtualKeyModifiers::Shift);
+        ctrlShiftTabAccel.Invoked({ this, &TabView::OnCtrlShiftTabInvoked });
+        ctrlShiftTabAccel.ScopeOwner(*this);
+        KeyboardAccelerators().Append(ctrlShiftTabAccel);
+    }
 }
 
 void TabView::OnApplyTemplate()
@@ -63,6 +93,7 @@ void TabView::OnApplyTemplate()
             m_repeaterLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnRepeaterLoaded });
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
+			m_listViewGettingFocusRevoker = repeater.GettingFocus(winrt::auto_revoke, { this, &TabView::OnListViewGettingFocus });
         }
         return repeater;
         }());
@@ -93,17 +124,65 @@ void TabView::OnApplyTemplate()
         return addButton;
         }());
 
-    if (SharedHelpers::IsRS3OrHigher())
-    {
-        winrt::KeyboardAccelerator keyboardAccelerator;
-        keyboardAccelerator.Key(winrt::VirtualKey::F4);
-        keyboardAccelerator.Modifiers(winrt::VirtualKeyModifiers::Control);
-        keyboardAccelerator.Invoked({ this, &TabView::OnCtrlF4Invoked });
-        keyboardAccelerator.ScopeOwner(*this);
-        KeyboardAccelerators().Append(keyboardAccelerator);
-    }
-
     UpdateItemsSource();
+}
+
+void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+{
+    // TabViewItems overlap each other by one pixel in order to get the desired visuals for the separator.
+    // This causes problems with 2d focus navigation. Because the items overlap, pressing Down or Up from a
+    // TabViewItem navigates to the overlapping item which is not desired.
+    //
+    // To resolve this issue, we detect the case where Up or Down focus navigation moves from one TabViewItem
+    // to another.
+    // How we handle it, depends on the input device.
+    // For GamePad, we want to move focus to something in the direction of movement (other than the overlapping item)
+    // For Keyboard, we cancel the focus movement.
+
+    auto direction = args.Direction();
+    if (direction == winrt::FocusNavigationDirection::Up || direction == winrt::FocusNavigationDirection::Down)
+    {
+        auto oldItem = args.OldFocusedElement().try_as<winrt::TabViewItem>();
+        auto newItem = args.NewFocusedElement().try_as<winrt::TabViewItem>();
+        if (oldItem && newItem)
+        {
+            if (auto listView = m_listView.get())
+            {
+                bool oldItemIsFromThisTabView = listView.IndexFromContainer(oldItem) != -1;
+                bool newItemIsFromThisTabView = listView.IndexFromContainer(newItem) != -1;
+                if (oldItemIsFromThisTabView && newItemIsFromThisTabView)
+                {
+                    auto inputDevice = args.InputDevice();
+                    if (inputDevice == winrt::FocusInputDeviceKind::GameController)
+                    {
+                        auto listViewBoundsLocal = winrt::Rect{ 0, 0, static_cast<float>(listView.ActualWidth()), static_cast<float>(listView.ActualHeight()) };
+                        auto listViewBounds = listView.TransformToVisual(nullptr).TransformBounds(listViewBoundsLocal);
+                        winrt::FindNextElementOptions options;
+                        options.ExclusionRect(listViewBounds);
+                        auto next = winrt::FocusManager::FindNextElement(direction, options);
+                        if(auto args2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                        {
+                            args2.TrySetNewFocusedElement(next);
+                        }
+                        else
+                        {
+                            // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                            m_dispatcherHelper.RunAsync([next]()
+                            {
+                                SetFocus(next, winrt::FocusState::Programmatic);
+                            });
+                        }
+                        args.Handled(true);
+                    }
+                    else
+                    {
+                        args.Cancel(true);
+                        args.Handled(true);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void TabView::UpdateItemsSource()
@@ -466,9 +545,38 @@ void TabView::UpdateTabContent()
         {
             if (auto container = ContainerFromItem(SelectedItem()).as<winrt::TabViewItem>())
             {
+                // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
+                // We should move the focus to the new tab content.
+                // The new tab content is not available at the time of the LosingFocus event, so we need to
+                // move focus later.
+                bool shouldMoveFocusToNewTab = false;
+                auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
+                {
+                    shouldMoveFocusToNewTab = true;
+                });
+
                 tabContentPresenter.Content(container.Content());
                 tabContentPresenter.ContentTemplate(container.ContentTemplate());
                 tabContentPresenter.ContentTemplateSelector(container.ContentTemplateSelector());
+
+                // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
+                // into the live visual tree.
+                tabContentPresenter.UpdateLayout();
+
+                if (shouldMoveFocusToNewTab)
+                {
+                    auto focusable = winrt::FocusManager::FindFirstFocusableElement(tabContentPresenter);
+                    if (!focusable)
+                    {
+                        // If there is nothing focusable in the new tab, just move focus to the TabView itself.
+                        focusable = winrt::FocusManager::FindFirstFocusableElement(*this);
+                    }
+
+                    if (focusable)
+                    {
+                        SetFocus(focusable, winrt::FocusState::Programmatic);
+                    }
+                }
             }
         }
     }
@@ -635,17 +743,100 @@ winrt::DependencyObject TabView::ContainerFromIndex(int index)
     return nullptr;
 }
 
-void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
+int TabView::GetItemCount()
 {
+    if (auto itemssource = ItemsSource())
+    {
+        return winrt::make<InspectingDataSource>(ItemsSource()).Count();
+    }
+    else
+    {
+        return static_cast<int>(Items().Size());
+    }
+}
+
+bool TabView::SelectNextTab(int increment)
+{
+    bool handled = false;
+    const int itemsSize = GetItemCount();
+    if (itemsSize > 1)
+    {
+        auto index = SelectedIndex();
+        index = (index + increment + itemsSize) % itemsSize;
+        SelectedIndex(index);
+        handled = true;
+    }
+    return handled;
+}
+
+bool TabView::CloseCurrentTab()
+{
+    bool handled = false;
     if (auto selectedTab = SelectedItem().try_as<winrt::TabViewItem>())
     {
         if (selectedTab.IsCloseable())
         {
             // Close the tab on ctrl + F4
             CloseTab(selectedTab);
-            args.Handled(true);
+            handled = true;
         }
     }
+
+    return handled;
+}
+
+void TabView::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    if (auto coreWindow = winrt::CoreWindow::GetForCurrentThread())
+    {
+        if (args.Key() == winrt::VirtualKey::F4)
+        {
+            // Handle Ctrl+F4 on RS2 and lower
+            // On RS3+, it is handled by a KeyboardAccelerator
+            if (!SharedHelpers::IsRS3OrHigher())
+            {
+                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                if (isCtrlDown)
+                {
+                    args.Handled(CloseCurrentTab());
+                }
+            }
+        }
+        else if (args.Key() == winrt::VirtualKey::Tab)
+        {
+            // Handle Ctrl+Tab/Ctrl+Shift+Tab on RS5 and lower
+            // On 19H1+, it is handled by a KeyboardAccelerator
+            if (!SharedHelpers::Is19H1OrHigher())
+            {
+                auto isCtrlDown = (coreWindow.GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+                auto isShiftDown = (coreWindow.GetKeyState(winrt::VirtualKey::Shift) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+
+                if (isCtrlDown && !isShiftDown)
+                {
+                    args.Handled(SelectNextTab(1));
+                }
+                else if (isCtrlDown && isShiftDown)
+                {
+                    args.Handled(SelectNextTab(-1));
+                }
+            }
+        }
+    }
+}
+
+void TabView::OnCtrlF4Invoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
+{
+    args.Handled(CloseCurrentTab());
+}
+
+void TabView::OnCtrlTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
+{
+    args.Handled(SelectNextTab(1));
+}
+
+void TabView::OnCtrlShiftTabInvoked(const winrt::KeyboardAccelerator& sender, const winrt::KeyboardAcceleratorInvokedEventArgs& args)
+{
+    args.Handled(SelectNextTab(-1));     
 }
 
 void TabView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementPreparedEventArgs& args)

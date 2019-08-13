@@ -28,12 +28,12 @@ struct __declspec(empty_bases) DeriveFromToggleMenuFlyoutItemHelper_base : winrt
 
     bool InternalIsChecked()
     {
-        return IsChecked();
+        return this->IsChecked();
     }
 
     void InternalIsChecked(bool value)
     {
-        IsChecked(value);
+        this->IsChecked(value);
     }
 };
 
