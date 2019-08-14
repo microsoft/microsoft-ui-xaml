@@ -370,7 +370,7 @@
         <Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxTextBoxStyle}" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
-        <Setter Property="primitives:AutoSuggestBoxHelper.ApplyDynamicCornerRadius" Value="true"/>
+        <Setter Property="primitives:AutoSuggestBoxHelper.KeepInteriorCornersSquare" Value="true"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="AutoSuggestBox">

@@ -46,7 +46,7 @@ void ComboBoxHelper::ClearProperties()
 // Normal ComboBox and editable ComboBox have different CornerRadius behaviors.
 // Xaml is not lifted yet when we implementing this feature so we don't have access to ComboBox code.
 // Creating this attached property to help us plug in some extra logic without touching the actual ComboBox code.
-void ComboBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
+void ComboBoxHelper::OnKeepInteriorCornersSquarePropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {

@@ -47,7 +47,7 @@ void AutoSuggestBoxHelper::ClearProperties()
 // The corner radius needs to be updated dynamically depending on whether the suggestion list is opening up or down.
 // Xaml is not lifted yet when we implementing this feature so we don't have access to AutoSuggestBox code.
 // Creating this attached property to help us plug in some extra logic without touching the actual code.
-void AutoSuggestBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
+void AutoSuggestBoxHelper::OnKeepInteriorCornersSquarePropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {

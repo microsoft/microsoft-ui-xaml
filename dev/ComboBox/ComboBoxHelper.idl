@@ -7,10 +7,10 @@
 runtimeclass ComboBoxHelper
 {
     [MUX_DEFAULT_VALUE("false")]
-    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnApplyDynamicCornerRadiusPropertyChanged")]
-    static Windows.UI.Xaml.DependencyProperty ApplyDynamicCornerRadiusProperty{ get; };
-    static void SetApplyDynamicCornerRadius(Windows.UI.Xaml.UIElement element, Boolean value);
-    static Boolean GetApplyDynamicCornerRadius(Windows.UI.Xaml.UIElement element);
+    [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnKeepInteriorCornersSquarePropertyChanged")]
+    static Windows.UI.Xaml.DependencyProperty KeepInteriorCornersSquareProperty{ get; };
+    static void SetKeepInteriorCornersSquare(Windows.UI.Xaml.Controls.ComboBox comboBox, Boolean value);
+    static Boolean GetKeepInteriorCornersSquare(Windows.UI.Xaml.Controls.ComboBox comboBox);
 };
 
 }

@@ -16,7 +16,7 @@ public:
     static void ClearProperties();
 
     static winrt::DependencyProperty DropDownEventRevokersProperty() { return s_DropDownEventRevokersProperty; }
-    static void OnApplyDynamicCornerRadiusPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
+    static void OnKeepInteriorCornersSquarePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyPropertyChangedEventArgs& args);
 
     static GlobalDependencyProperty s_DropDownEventRevokersProperty;
 private:
