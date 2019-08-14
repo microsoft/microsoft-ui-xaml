@@ -50,31 +50,33 @@ void TabViewItem::UpdateCloseButton()
 {
     if (auto && closeButton = m_closeButton.get())
     {
-        closeButton.Visibility(IsCloseable() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+        closeButton.Visibility(IsClosable() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
 }
 
-void TabViewItem::TryClose()
+void TabViewItem::RequestClose()
 {
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
-        auto args = winrt::make_self<TabViewTabClosingEventArgs>(*this);
-        m_tabClosingEventSource(*this, *args);
-
-        if (!args->Cancel())
+        if (auto internalTabView = winrt::get_self<TabView>(tabView))
         {
-            auto internalTabView = winrt::get_self<TabView>(tabView);
-            internalTabView->CloseTab(*this);
+            internalTabView->RequestCloseTab(*this);
         }
     }
 }
 
-void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+void TabViewItem::RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args)
 {
-    TryClose();
+    // This should only be called from TabView, to ensure that both this event and the TabView TabRequestedClose event are raised
+    m_closeRequestedEventSource(*this, args);
 }
 
-void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
+{
+    RequestClose();
+}
+
+void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateCloseButton();
 }
@@ -142,9 +144,9 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 
             if (wasPressed)
             {
-                if (IsCloseable())
+                if (IsClosable())
                 {
-                    TryClose();
+                    RequestClose();
                 }
             }
         }
