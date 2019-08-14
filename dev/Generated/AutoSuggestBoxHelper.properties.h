@@ -9,12 +9,12 @@ class AutoSuggestBoxHelperProperties
 public:
     AutoSuggestBoxHelperProperties();
 
-    static void SetApplyDynamicCornerRadius(winrt::UIElement const& target, bool value);
-    static bool GetApplyDynamicCornerRadius(winrt::UIElement const& target);
+    static void SetKeepInteriorCornersSquare(winrt::AutoSuggestBox const& target, bool value);
+    static bool GetKeepInteriorCornersSquare(winrt::AutoSuggestBox const& target);
 
-    static winrt::DependencyProperty ApplyDynamicCornerRadiusProperty() { return s_ApplyDynamicCornerRadiusProperty; }
+    static winrt::DependencyProperty KeepInteriorCornersSquareProperty() { return s_KeepInteriorCornersSquareProperty; }
 
-    static GlobalDependencyProperty s_ApplyDynamicCornerRadiusProperty;
+    static GlobalDependencyProperty s_KeepInteriorCornersSquareProperty;
 
     static void EnsureProperties();
     static void ClearProperties();

@@ -4,11 +4,8 @@
 #include <pch.h>
 #include <common.h>
 #include "ComboBoxHelper.h"
-#include "ComboBoxHelper.properties.h"
 #include "DispatcherHelper.h"
-#include "Converters.h"
-
-using CornerRadiusFilterType = CornerRadiusFilterConverter::FilterType;
+#include "CornerRadiusFilterConverter.h"
 
 static constexpr auto c_popupBorderName = L"PopupBorder"sv;
 static constexpr auto c_editableTextName = L"EditableText"sv;
@@ -49,7 +46,7 @@ void ComboBoxHelper::ClearProperties()
 // Normal ComboBox and editable ComboBox have different CornerRadius behaviors.
 // Xaml is not lifted yet when we implementing this feature so we don't have access to ComboBox code.
 // Creating this attached property to help us plug in some extra logic without touching the actual ComboBox code.
-void ComboBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged(
+void ComboBoxHelper::OnKeepInteriorCornersSquarePropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
@@ -109,10 +106,10 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
             bool isOpenDown = IsPopupOpenDown(comboBox);
             auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
-            auto popupRadiusFilter = isOpenDown ? CornerRadiusFilterType::Bottom : CornerRadiusFilterType::Top;
+            auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
             popupRadius = cornerRadiusConverter->Convert(textBoxRadius, popupRadiusFilter);
 
-            auto textBoxRadiusFilter = isOpenDown ? CornerRadiusFilterType::Top : CornerRadiusFilterType::Bottom;
+            auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
             textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
         }
 

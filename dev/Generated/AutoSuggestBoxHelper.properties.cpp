@@ -8,7 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(AutoSuggestBoxHelper)
 
-GlobalDependencyProperty AutoSuggestBoxHelperProperties::s_ApplyDynamicCornerRadiusProperty{ nullptr };
+GlobalDependencyProperty AutoSuggestBoxHelperProperties::s_KeepInteriorCornersSquareProperty{ nullptr };
 
 AutoSuggestBoxHelperProperties::AutoSuggestBoxHelperProperties()
 {
@@ -17,31 +17,31 @@ AutoSuggestBoxHelperProperties::AutoSuggestBoxHelperProperties()
 
 void AutoSuggestBoxHelperProperties::EnsureProperties()
 {
-    if (!s_ApplyDynamicCornerRadiusProperty)
+    if (!s_KeepInteriorCornersSquareProperty)
     {
-        s_ApplyDynamicCornerRadiusProperty =
+        s_KeepInteriorCornersSquareProperty =
             InitializeDependencyProperty(
-                L"ApplyDynamicCornerRadius",
+                L"KeepInteriorCornersSquare",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::AutoSuggestBoxHelper>(),
                 true /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                &AutoSuggestBoxHelper::OnApplyDynamicCornerRadiusPropertyChanged);
+                &AutoSuggestBoxHelper::OnKeepInteriorCornersSquarePropertyChanged);
     }
 }
 
 void AutoSuggestBoxHelperProperties::ClearProperties()
 {
-    s_ApplyDynamicCornerRadiusProperty = nullptr;
+    s_KeepInteriorCornersSquareProperty = nullptr;
 }
 
 
-void AutoSuggestBoxHelperProperties::SetApplyDynamicCornerRadius(winrt::UIElement const& target, bool value)
+void AutoSuggestBoxHelperProperties::SetKeepInteriorCornersSquare(winrt::AutoSuggestBox const& target, bool value)
 {
-    target.SetValue(s_ApplyDynamicCornerRadiusProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    target.SetValue(s_KeepInteriorCornersSquareProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool AutoSuggestBoxHelperProperties::GetApplyDynamicCornerRadius(winrt::UIElement const& target)
+bool AutoSuggestBoxHelperProperties::GetKeepInteriorCornersSquare(winrt::AutoSuggestBox const& target)
 {
-    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_ApplyDynamicCornerRadiusProperty));
+    return ValueHelper<bool>::CastOrUnbox(target.GetValue(s_KeepInteriorCornersSquareProperty));
 }
