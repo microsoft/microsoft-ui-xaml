@@ -18,7 +18,6 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Padding="12" Background="LightGray" Width="250">
-                <CheckBox x:Name="CanCloseCheckBox" AutomationProperties.Name="CanCloseCheckBox" Checked="CanCloseCheckBox_CheckChanged" Unchecked="CanCloseCheckBox_CheckChanged" IsChecked="True" Content="CanCloseTabs"/>
                 <CheckBox x:Name="IsCloseableCheckBox" AutomationProperties.Name="IsCloseableCheckBox" Checked="IsCloseableCheckBox_CheckChanged" Unchecked="IsCloseableCheckBox_CheckChanged" IsChecked="True" Content="IsCloseable on first tab"/>
                 <CheckBox x:Name="CancelCloseCheckBox" AutomationProperties.Name="CancelCloseCheckBox" Content="Cancel Closing event"/>
                 <CheckBox x:Name="CancelItemCloseCheckBox" AutomationProperties.Name="CancelItemCloseCheckBox" Content="Cancel Closing on first item"/>
@@ -59,73 +58,103 @@
                 </StackPanel>
             </StackPanel>
 
-            <controls:TabView
-                x:Name="Tabs"
-                Grid.Column="1"
-                TabWidthMode="Equal"
-                SelectedIndex="0"
-                SelectionChanged="TabViewSelectionChanged"
-                TabClosing="TabViewTabClosing"
-                TabDraggedOutside="TabViewTabDraggedOutside"
-                AddButtonClick="AddButtonClick">
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-                <controls:TabView.RightCustomContent>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
-                    </Grid>
-                </controls:TabView.RightCustomContent>
+                <controls:TabView
+                    x:Name="Tabs"
+                    TabWidthMode="Equal"
+                    SelectedIndex="0"
+                    SelectionChanged="TabViewSelectionChanged"
+                    TabClosing="TabViewTabClosing"
+                    TabDraggedOutside="TabViewTabDraggedOutside"
+                    AddButtonClick="AddButtonClick">
 
-                <controls:TabView.Items>
+                    <controls:TabView.RightCustomContent>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </controls:TabView.RightCustomContent>
 
-                    <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Icon="Home" Header="Home" TabClosing="FirstTab_TabClosing" ToolTipService.ToolTip="Custom Tooltip">
-                        <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
-                            <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
-                            <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
-                        </StackPanel>
-                    </controls:TabViewItem>
+                    <controls:TabView.Items>
 
-                    <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Icon="Shop" Header="Shop" IsCloseable="True">
-                        <StackPanel>
-                            <TextBlock Padding="16">Shop text</TextBlock>
-                            <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton" />
-                        </StackPanel>
-                        
-                    </controls:TabViewItem>
+                        <controls:TabViewItem x:Name="FirstTab" AutomationProperties.Name="FirstTab" Header="Home" TabClosing="FirstTab_TabClosing" ToolTipService.ToolTip="Custom Tooltip">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Home"/>
+                            </controls:TabViewItem.IconSource>
 
-                    <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Icon="Emoji" Header="Longer Header">
-                        <StackPanel>
-                            <TextBlock Padding="16">Emoji text</TextBlock>
-                            <Button Content="Button 3" />
-                        </StackPanel>
-                        
-                    </controls:TabViewItem>
+                            <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
+                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
+                                <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
+                            </StackPanel>
+                        </controls:TabViewItem>
 
-                    <controls:TabViewItem x:Name="NotCloseableTab" AutomationProperties.Name="NotCloseableTab" Icon="Video" Header="Video" IsCloseable="False">
-                        <StackPanel>
-                            <TextBlock Padding="16">This tab can't be closed.</TextBlock>
-                            <controls:TabView x:Name="innerTabView" >
-                                <controls:TabView.ItemTemplate>
-                                    <DataTemplate x:DataType="local:TabDataItem">
-                                        <controls:TabViewItem Header="{x:Bind Header}" Content="{x:Bind Content}" Icon="Accept" />
+                        <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Header="Shop" IsCloseable="True">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Shop"/>
+                            </controls:TabViewItem.IconSource>
+
+                            <StackPanel>
+                                <TextBlock Padding="16">Shop text</TextBlock>
+                                <Button Content="SecondTabButton" AutomationProperties.Name="SecondTabButton" />
+                            </StackPanel>
+                        </controls:TabViewItem>
+
+                        <controls:TabViewItem x:Name="LongHeaderTab" AutomationProperties.Name="LongHeaderTab" Header="Long Header No Icon">
+                            <StackPanel>
+                                <TextBlock Padding="16">Emoji text</TextBlock>
+                                <Button Content="Button 3" />
+                            </StackPanel>
+                        </controls:TabViewItem>
+
+                        <controls:TabViewItem x:Name="NotCloseableTab" AutomationProperties.Name="NotCloseableTab" Header="Video" IsCloseable="False">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Video"/>
+                            </controls:TabViewItem.IconSource>
+
+                            <StackPanel>
+                                <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                            </StackPanel>
+                        </controls:TabViewItem>
+
+                        <controls:TabViewItem x:Name="LastTab" AutomationProperties.Name="LastTab" Header="Contact">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Contact"/>
+                            </controls:TabViewItem.IconSource>
+
+                            <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
+                        </controls:TabViewItem>
+
+                    </controls:TabView.Items>
+                </controls:TabView>
+
+                <controls:TabView x:Name="DataBindingTabView" Grid.Row="1"
+                    IsAddButtonVisible="false">
+
+                    <controls:TabView.ItemTemplate>
+                        <DataTemplate x:DataType="local:TabDataItem">
+                            <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">
+                                <controls:TabViewItem.ContentTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="16">
+                                            <TextBlock Foreground="Purple" Text="{Binding}"/>
+                                        </Grid>
                                     </DataTemplate>
-                                </controls:TabView.ItemTemplate>
-                            </controls:TabView>
-                        </StackPanel>
-                        
-                    </controls:TabViewItem>
-
-                    <controls:TabViewItem x:Name="LastTab" AutomationProperties.Name="LastTab" Icon="Contact" Header="Contact">
-                        <TextBlock x:Name="LastTabContent" AutomationProperties.Name="LastTabContent" Padding="16">Contact text</TextBlock>
-                    </controls:TabViewItem>
-
-                </controls:TabView.Items>
-            </controls:TabView>
+                                </controls:TabViewItem.ContentTemplate>
+                            </controls:TabViewItem>
+                        </DataTemplate>
+                    </controls:TabView.ItemTemplate>
+                </controls:TabView>
+            </Grid>
         </Grid>
     </Grid>
 </local:TestPage>

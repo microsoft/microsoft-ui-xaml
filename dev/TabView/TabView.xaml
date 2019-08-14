@@ -19,9 +19,11 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
+
                         <Grid x:Name="TabContainerGrid"
                             Background="{ThemeResource TabViewBackground}"
-                            XYFocusKeyboardNavigation="Enabled" >
+                            XYFocusKeyboardNavigation="Enabled">
+
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" x:Name="LeftContentColumn"/>
                                 <ColumnDefinition Width="Auto" x:Name="TabColumn"/>
@@ -41,11 +43,11 @@
                                 CanReorderItems="{TemplateBinding CanDragDropTabs}"
                                 CanDragItems="{TemplateBinding CanDragDropTabs}"
                                 AllowDrop="{TemplateBinding CanDragDropTabs}"
+                                ItemsSource="{TemplateBinding ItemsSource}"
                                 ItemTemplate="{TemplateBinding ItemTemplate}"
                                 ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
 
                             <Button
-                                
                                 Grid.Column="2"
                                 x:Name="AddButton"
                                 Content="&#xE710;"
@@ -104,7 +106,7 @@
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" Padding="1,0,0,0" />
+                    <ItemsStackPanel Orientation="Horizontal"/>
                 </ItemsPanelTemplate>
             </Setter.Value>
         </Setter>
@@ -172,7 +174,7 @@
 
                             <ScrollContentPresenter x:Name="ScrollContentPresenter"
                                 Grid.Column="1"
-                                Padding="{TemplateBinding Padding}"
+                                Padding="1,0,0,0"
                                 contract4Present:TabFocusNavigation="Once" />
 
                             <RepeatButton x:Name="ScrollIncreaseButton"
@@ -230,7 +232,7 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -238,7 +240,7 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -246,7 +248,7 @@
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -254,7 +256,7 @@
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -262,7 +264,7 @@
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -273,7 +275,7 @@
 
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
-                                        <Setter Target="Icon.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
+                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundDisabled}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -391,6 +393,15 @@
                                     <VisualTransition GeneratedDuration="0:0:0.2" To="NotDragging" />
                                 </VisualStateGroup.Transitions>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="IconStates">
+                                <VisualState x:Name="Icon"/>
+                                <VisualState x:Name="NoIcon">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconBox.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Border x:Name="TabSeparator"
@@ -420,8 +431,9 @@
                                 MaxWidth="{ThemeResource TabViewItemHeaderIconSize}"
                                 MaxHeight="{ThemeResource TabViewItemHeaderIconSize}"
                                 Margin="{ThemeResource TabViewItemHeaderIconMargin}">
-                                <ContentPresenter x:Name="Icon"
-                                    Content="{TemplateBinding Icon}"
+                                <ContentControl x:Name="IconControl"
+                                    Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.IconElement}"
+                                    IsTabStop="False"
                                     Foreground="{TemplateBinding Foreground}" />
                             </Viewbox>
 

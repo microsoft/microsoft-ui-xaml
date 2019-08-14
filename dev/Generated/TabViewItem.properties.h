@@ -15,21 +15,26 @@ public:
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
 
-    void Icon(winrt::IconElement const& value);
-    winrt::IconElement Icon();
+    void IconSource(winrt::IconSource const& value);
+    winrt::IconSource IconSource();
 
     void IsCloseable(bool value);
     bool IsCloseable();
 
+    void TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value);
+    winrt::TabViewItemTemplateSettings TabViewTemplateSettings();
+
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
-    static winrt::DependencyProperty IconProperty() { return s_IconProperty; }
+    static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsCloseableProperty() { return s_IsCloseableProperty; }
+    static winrt::DependencyProperty TabViewTemplateSettingsProperty() { return s_TabViewTemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
-    static GlobalDependencyProperty s_IconProperty;
+    static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsCloseableProperty;
+    static GlobalDependencyProperty s_TabViewTemplateSettingsProperty;
 
     winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value);
     void TabClosing(winrt::event_token const& token);
@@ -40,6 +45,10 @@ public:
     static void ClearProperties();
 
     static void OnHeaderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIconSourcePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -15,6 +15,8 @@ TabViewItem::TabViewItem()
 
     SetDefaultStyleKey(this);
 
+    SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
+
     Loaded({ this, &TabViewItem::OnLoaded });
 }
 
@@ -31,10 +33,7 @@ void TabViewItem::OnApplyTemplate()
         return closeButton;
     }());
 
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
-    {
-        m_CanCloseTabsChangedRevoker = RegisterPropertyChanged(tabView, winrt::TabView::CanCloseTabsProperty(), { this, &TabViewItem::OnCloseButtonPropertyChanged });
-    }
+    OnIconSourceChanged();
 }
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
@@ -47,25 +46,11 @@ void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::Route
     UpdateCloseButton();
 }
 
-bool TabViewItem::CanClose()
-{
-    bool canClose = false;
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
-    {
-        // IsCloseable defaults to true, but if it hasn't been set then CanCloseTabs should override it.
-        canClose =
-            IsCloseable()
-            && (ReadLocalValue(IsCloseableProperty()) != winrt::DependencyProperty::UnsetValue()
-                || tabView.CanCloseTabs());
-    }
-    return canClose;
-}
-
 void TabViewItem::UpdateCloseButton()
 {
-    if (auto&& closeButton = m_closeButton.get())
+    if (auto && closeButton = m_closeButton.get())
     {
-        closeButton.Visibility(CanClose() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+        closeButton.Visibility(IsCloseable() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
 }
 
@@ -87,11 +72,6 @@ void TabViewItem::TryClose()
 void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
 {
     TryClose();
-}
-
-void TabViewItem::OnCloseButtonPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-{
-    UpdateCloseButton();
 }
 
 void TabViewItem::OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
@@ -162,7 +142,7 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 
             if (wasPressed)
             {
-                if (CanClose())
+                if (IsCloseable())
                 {
                     TryClose();
                 }
@@ -205,4 +185,24 @@ void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args
 
     m_hasPointerCapture = false;
     m_isMiddlePointerButtonPressed = false;
+}
+
+void TabViewItem::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    OnIconSourceChanged();
+}
+
+void TabViewItem::OnIconSourceChanged()
+{
+    auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
+    if (auto const source = IconSource())
+    {
+        templateSettings->IconElement(SharedHelpers::MakeIconElementFrom(source));
+        winrt::VisualStateManager::GoToState(*this, L"Icon"sv, false);
+    }
+    else
+    {
+        templateSettings->IconElement(nullptr);
+        winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
+    }
 }

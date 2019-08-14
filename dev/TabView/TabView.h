@@ -64,13 +64,12 @@ public:
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
     // Internal
-    void OnItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnItemsChanged(winrt::IInspectable const& item);
+    void UpdateTabContent();
 
     void CloseTab(winrt::TabViewItem const& item);
 
@@ -101,7 +100,6 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateTabContent();
     void UpdateTabWidths();
 
     void OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
