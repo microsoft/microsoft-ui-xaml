@@ -107,7 +107,7 @@ void ComboBoxHelper::UpdateCornerRadius(const winrt::ComboBox& comboBox, bool is
             auto cornerRadiusConverter = winrt::make_self<CornerRadiusFilterConverter>();
 
             auto popupRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Bottom : winrt::CornerRadiusFilterKind::Top;
-            popupRadius = cornerRadiusConverter->Convert(textBoxRadius, popupRadiusFilter);
+            popupRadius = cornerRadiusConverter->Convert(popupRadius, popupRadiusFilter);
 
             auto textBoxRadiusFilter = isOpenDown ? winrt::CornerRadiusFilterKind::Top : winrt::CornerRadiusFilterKind::Bottom;
             textBoxRadius = cornerRadiusConverter->Convert(textBoxRadius, textBoxRadiusFilter);
