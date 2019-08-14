@@ -73,6 +73,10 @@
                     TabDraggedOutside="TabViewTabDraggedOutside"
                     AddButtonClick="AddButtonClick">
 
+                    <controls:TabView.LeftCustomContent>
+                        <TextBlock Text="Left Content" />
+                    </controls:TabView.LeftCustomContent>
+
                     <controls:TabView.RightCustomContent>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -137,7 +141,7 @@
                     </controls:TabView.Items>
                 </controls:TabView>
 
-                <controls:TabView x:Name="DataBindingTabView" Grid.Row="1"
+                <!--<controls:TabView x:Name="DataBindingTabView" Grid.Row="1"
                     IsAddButtonVisible="false">
 
                     <controls:TabView.ItemTemplate>
@@ -153,7 +157,7 @@
                             </controls:TabViewItem>
                         </DataTemplate>
                     </controls:TabView.ItemTemplate>
-                </controls:TabView>
+                </controls:TabView>-->
             </Grid>
         </Grid>
     </Grid>

@@ -19,7 +19,7 @@
     <FeatureDatePickerEnabled>false</FeatureDatePickerEnabled>
     <FeatureDropDownButtonEnabled>false</FeatureDropDownButtonEnabled>
     <FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
-    <FeatureIconSourceEnabled>false</FeatureIconSourceEnabled>
+    <FeatureIconSourceEnabled>true</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
     <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>

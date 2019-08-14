@@ -247,7 +247,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         // TODO: Fix test
-        //[TestMethod]
+        [TestMethod]
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -321,7 +321,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
 
         // TODO: Fix test
-        //[TestMethod]
+        [TestMethod]
         public void GamePadTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))

@@ -49,7 +49,7 @@ namespace MUXControlsTestApp
                 item.Content = "This is tab " + i + ".";
                 itemSource.Add(item);
             }
-            DataBindingTabView.ItemsSource = itemSource;
+            //DataBindingTabView.ItemsSource = itemSource;
         }
 
         public void IsCloseableCheckBox_CheckChanged(object sender, RoutedEventArgs e)
