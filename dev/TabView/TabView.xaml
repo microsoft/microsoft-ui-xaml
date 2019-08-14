@@ -159,6 +159,7 @@
                             </Grid.ColumnDefinitions>
 
                             <RepeatButton x:Name="ScrollDecreaseButton"
+                                AutomationProperties.AutomationId="ScrollDecreaseButton"
                                 VerticalAlignment="Bottom"
                                 Width="{ThemeResource TabViewItemScrollButtonWidth}"
                                 Height="{ThemeResource TabViewItemScrollButtonHeight}"
@@ -178,6 +179,7 @@
                                 contract4Present:TabFocusNavigation="Once" />
 
                             <RepeatButton x:Name="ScrollIncreaseButton"
+                                AutomationProperties.AutomationId="ScrollIncreaseButton"
                                 Grid.Column="2"
                                 VerticalAlignment="Bottom"
                                 HorizontalAlignment="Center"

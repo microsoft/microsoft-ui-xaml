@@ -250,17 +250,11 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        m_scrollDecreaseButton.set([this, scrollViewer]() {
-            auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
-            m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
-            return decreaseButton;
-        }());
+        auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
+        m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
 
-        m_scrollIncreaseButton.set([this, scrollViewer]() {
-            auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
-            m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
-            return increaseButton;
-        }());
+        auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+        m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
     }
 
     UpdateTabWidths();
@@ -510,30 +504,11 @@ void TabView::UpdateTabWidths()
             {
                 tabColumn.MaxWidth(availableWidth);
                 tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
-                //if (auto listview = m_listView.get())
-                //{
-                //    auto desiredSize = listview.DesiredSize();
-                //    listview.MaxWidth(availableWidth);
-                //    auto decreaseButton = m_scrollDecreaseButton.get();
-                //    auto increaseButton = m_scrollIncreaseButton.get();
-                //    if (decreaseButton && increaseButton)
-                //    {
-                //        auto scrollviewer = m_scrollViewer.get();
-                //        auto viewportWidth = scrollviewer.ViewportWidth();
-                //        auto extentWidth = scrollviewer.ExtentWidth();
-
-                //        /*if (scrollviewer.ScrollableWidth() > 0)
-                //        {
-                //            decreaseButton.Visibility(winrt::Visibility::Visible);
-                //            increaseButton.Visibility(winrt::Visibility::Visible);
-                //        }
-                //        else
-                //        {
-                //            decreaseButton.Visibility(winrt::Visibility::Collapsed);
-                //            increaseButton.Visibility(winrt::Visibility::Collapsed);
-                //        }*/
-                //    }
-                //}
+                if (auto listview = m_listView.get())
+                {
+                    listview.MaxWidth(availableWidth);
+                    winrt::Windows::UI::Xaml::Controls::ScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
+                }
             }
             else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
@@ -547,33 +522,24 @@ void TabView::UpdateTabWidths()
 
                 tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
 
-                // If the min tab width causes the ScrollViewer to scroll, show the increase/decrease buttons.
-                //auto decreaseButton = m_scrollDecreaseButton.get();
-                //auto increaseButton = m_scrollIncreaseButton.get();
-                //if (decreaseButton && increaseButton)
-                //{
-                //    /*if (tabWidthForScroller < tabWidth)
-                //    {
-                //        decreaseButton.Visibility(winrt::Visibility::Visible);
-                //        increaseButton.Visibility(winrt::Visibility::Visible);
-                //    }
-                //    else
-                //    {
-                //        decreaseButton.Visibility(winrt::Visibility::Collapsed);
-                //        increaseButton.Visibility(winrt::Visibility::Collapsed);
-                //    }*/
-                //}
-
                 // Size tab column to needed size
                 tabColumn.MaxWidth(availableWidth);
                 auto requiredWidth = tabWidth * Items().Size();
                 if (requiredWidth >= availableWidth)
                 {
                     tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
+                    if (auto listview = m_listView.get())
+                    {
+                        winrt::Windows::UI::Xaml::Controls::ScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
+                    }
                 }
                 else
                 {
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
+                    if (auto listview = m_listView.get())
+                    {
+                        winrt::Windows::UI::Xaml::Controls::ScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                    }
                 }
             }
         }

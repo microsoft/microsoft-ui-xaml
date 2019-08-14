@@ -28,6 +28,13 @@
                 <Button x:Name="SelectIndexButton" AutomationProperties.Name="SelectIndexButton" Content="Select Index 2" Margin="0,0,0,8" Click="SelectIndexButton_Click"/>
                 <Button x:Name="ChangeShopTextButton" AutomationProperties.Name="ChangeShopTextButton" Content="Change Shop text" Margin="0,0,0,8" Click="ChangeShopTextButton_Click"/>
                 <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
+                <Button x:Name="SetTabViewWidth" AutomationProperties.Name="SetTabViewWidth" Content="Set Width" Margin="0,0,0,8" Click="SetTabViewWidth_Click" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="Scroll buttons visible: " />
+                    <TextBlock x:Name="ScrollButtonsVisible" AutomationProperties.Name="ScrollButtonsVisible" Text="False" />
+                    <Button x:Name="GetScrollButtonsVisible" AutomationProperties.Name="GetScrollButtonsVisible" Content="Get" Margin="4,0,0,0" Click="GetScrollButtonsVisible_Click" />
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
@@ -73,9 +80,9 @@
                     TabDraggedOutside="TabViewTabDraggedOutside"
                     AddButtonClick="AddButtonClick">
 
-                    <controls:TabView.LeftCustomContent>
+                    <!--<controls:TabView.LeftCustomContent>
                         <TextBlock Text="Left Content" />
-                    </controls:TabView.LeftCustomContent>
+                    </controls:TabView.LeftCustomContent>-->
 
                     <controls:TabView.RightCustomContent>
                         <Grid>
@@ -141,7 +148,7 @@
                     </controls:TabView.Items>
                 </controls:TabView>
 
-                <!--<controls:TabView x:Name="DataBindingTabView" Grid.Row="1"
+                <controls:TabView x:Name="DataBindingTabView" Grid.Row="1"
                     IsAddButtonVisible="false">
 
                     <controls:TabView.ItemTemplate>
@@ -157,7 +164,7 @@
                             </controls:TabViewItem>
                         </DataTemplate>
                     </controls:TabView.ItemTemplate>
-                </controls:TabView>-->
+                </controls:TabView>
             </Grid>
         </Grid>
     </Grid>
