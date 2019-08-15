@@ -98,12 +98,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void TabSizeTest()
+        public void TabSizeAndScrollButtonsTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 UIObject smallerTab = FindElement.ByName("FirstTab");
                 UIObject largerTab = FindElement.ByName("LongHeaderTab");
+
+                FindElement.ByName<Button>("SetTabViewWidth").InvokeAndWait();
+
+                Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should not be visible");
 
                 Log.Comment("Equal size tabs should all be the same size.");
                 int diff = Math.Abs(largerTab.BoundingRectangle.Width - smallerTab.BoundingRectangle.Width);
@@ -116,6 +120,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tab with larger content should be wider.");
                 Verify.IsGreaterThan(largerTab.BoundingRectangle.Width, smallerTab.BoundingRectangle.Width);
+
+                // With largerTab now rendering wider, the scroll buttons should appear:
+                Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
+
+                // Close a tab to make room. The scroll buttons should disappear:
+                Log.Comment("Closing a tab:");
+                Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                closeButton.InvokeAndWait();
+                VerifyElement.NotFound("LongHeaderTab", FindBy.Name);
+
+                Log.Comment("Scroll buttons should disappear");
+                Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");
+
+                // Make sure the scroll buttons can show up in 'Equal' sizing mode. 
+                Log.Comment("Changing tab width mode to Equal");
+                tabWidthComboBox.SelectItemByName("Equal");
+                Wait.ForIdle();
+                Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should not be visible");
+
+                var addButton = FindElement.ByName<Button>("Add New Tab");
+                Verify.IsNotNull(addButton, "addButton should be available");
+                Log.Comment("Adding a tab");
+                addButton.InvokeAndWait();
+                Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should not be visible");
+                Log.Comment("Adding another tab");
+                addButton.InvokeAndWait();
+
+                Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
+            }
+        }
+
+        private bool AreScrollButtonsVisible()
+        {
+            FindElement.ByName<Button>("GetScrollButtonsVisible").InvokeAndWait();
+            var scrollButtonsVisible = FindElement.ByName<TextBlock>("ScrollButtonsVisible").DocumentText;
+            if(scrollButtonsVisible == "True")
+            {
+                return true;
+            }
+            else if(scrollButtonsVisible == "False")
+            {
+                return false;
+            }
+            else
+            {
+                Verify.Fail(string.Format("Unexpected value for ScrollButtonsVisible: '{0}'", scrollButtonsVisible));
+                return false;
             }
         }
 
@@ -246,8 +297,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: Fix test
-        //[TestMethod]
+        [TestMethod]
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -320,8 +370,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
 
-        // TODO: Fix test
-        //[TestMethod]
+        [TestMethod]
         public void GamePadTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))

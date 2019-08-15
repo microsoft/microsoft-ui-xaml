@@ -117,8 +117,6 @@ private:
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
-    tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
-    tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
