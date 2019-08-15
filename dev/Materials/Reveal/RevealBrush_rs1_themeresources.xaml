@@ -76,9 +76,9 @@
             <SolidColorBrush x:Key="GridViewItemRevealBorderBrush" Color="Transparent" />
 
             <!-- Thicknesses -->
-            <Thickness x:Key="ButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">1</Thickness>
             <Thickness x:Key="AppBarEllipsisButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarToggleButtonRevealBorderThemeThickness">0</Thickness>
@@ -280,9 +280,9 @@
             <SolidColorBrush x:Key="GridViewItemRevealBorderBrush" Color="Transparent" />
 
             <!-- Thicknesses -->
-            <Thickness x:Key="ButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">1</Thickness>
             <Thickness x:Key="AppBarEllipsisButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarToggleButtonRevealBorderThemeThickness">0</Thickness>
@@ -484,9 +484,9 @@
             <SolidColorBrush x:Key="GridViewItemRevealBorderBrush" Color="Transparent" />
 
             <!-- Thicknesses -->
-            <Thickness x:Key="ButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">2</Thickness>
-            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="RepeatButtonRevealBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="ToggleButtonRevealBorderThemeThickness">1</Thickness>
             <Thickness x:Key="AppBarEllipsisButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarButtonRevealBorderThemeThickness">0</Thickness>
             <Thickness x:Key="AppBarToggleButtonRevealBorderThemeThickness">0</Thickness>
