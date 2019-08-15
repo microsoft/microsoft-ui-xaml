@@ -389,8 +389,8 @@ void TabView::OnListViewDragItemsCompleted(const winrt::IInspectable& sender, co
     // None means it's outside of the tab strip area
     if (args.DropResult() == winrt::DataPackageOperation::None)
     {
-        auto myArgs = winrt::make_self<TabViewTabDroppedOutsideEventArgs>(item, tab);
-        m_tabDroppedOutsideEventSource(*this, *myArgs);
+        auto tabDroppedArgs = winrt::make_self<TabViewTabDroppedOutsideEventArgs>(item, tab);
+        m_tabDroppedOutsideEventSource(*this, *tabDroppedArgs);
     }
 }
 
