@@ -126,10 +126,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Close a tab to make room. The scroll buttons should disappear:
                 Log.Comment("Closing a tab:");
-                UIObject secondTab = FindElement.ByName("SecondTab");
-                Button closeButton = FindCloseButton(secondTab);
+                Button closeButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 closeButton.InvokeAndWait();
-                VerifyElement.NotFound("SecondTab", FindBy.Name);
+                VerifyElement.NotFound("LongHeaderTab", FindBy.Name);
 
                 Log.Comment("Scroll buttons should disappear");
                 Verify.IsFalse(AreScrollButtonsVisible(), "Scroll buttons should disappear");

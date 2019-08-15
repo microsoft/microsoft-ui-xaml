@@ -100,8 +100,8 @@
                             </controls:TabViewItem.IconSource>
 
                             <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
-                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
-                                <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8">Another Button</Button>
+                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
+                                <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8" FontSize="20">Another Button</Button>
                             </StackPanel>
                         </controls:TabViewItem>
 
