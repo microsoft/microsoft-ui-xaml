@@ -208,6 +208,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void DragBetweenTabViewsTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                // TODO 19727004: Re-enable this on versions below RS5 after fixing the bug where mouse click-and-drag doesn't work.
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 UIObject firstTab = FindElement.ByName("FirstTab");

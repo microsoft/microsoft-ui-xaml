@@ -225,7 +225,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewWidthMode>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(winrt::TabViewWidthMode::SizeToContent),
+                ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(winrt::TabViewWidthMode::Equal),
                 winrt::PropertyChangedCallback(&OnTabWidthModePropertyChanged));
     }
 }

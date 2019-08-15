@@ -50,7 +50,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 {
     TabView();
 
-    [MUX_DEFAULT_VALUE("winrt::TabViewWidthMode::SizeToContent")]
+    [MUX_DEFAULT_VALUE("winrt::TabViewWidthMode::Equal")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     TabViewWidthMode TabWidthMode{ get; set; };
 
