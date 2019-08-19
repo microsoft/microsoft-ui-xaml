@@ -378,6 +378,7 @@ void NavigationView::OnApplyTemplate()
     UpdateSingleSelectionFollowsFocusTemplateSetting();
     UpdateNavigationViewUseSystemVisual();
     PropagateNavigationViewAsParent();
+    UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
 }
