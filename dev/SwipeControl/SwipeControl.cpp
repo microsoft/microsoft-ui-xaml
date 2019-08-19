@@ -719,18 +719,19 @@ void SwipeControl::DetachDismissingHandlers()
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
         {
-            auto xamlRootContent = xamlRoot.Content();
-
-            if (m_onXamlRootPointerPressedEventHandler)
+            if (auto xamlRootContent = xamlRoot.Content())
             {
-                xamlRootContent.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_onXamlRootPointerPressedEventHandler.get());
-                m_onXamlRootPointerPressedEventHandler.set(nullptr);
-            }
+                if (m_onXamlRootPointerPressedEventHandler)
+                {
+                    xamlRootContent.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_onXamlRootPointerPressedEventHandler.get());
+                    m_onXamlRootPointerPressedEventHandler.set(nullptr);
+                }
 
-            if (m_onXamlRootKeyDownEventHandler)
-            {
-                xamlRootContent.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get());
-                m_onXamlRootKeyDownEventHandler.set(nullptr);
+                if (m_onXamlRootKeyDownEventHandler)
+                {
+                    xamlRootContent.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get());
+                    m_onXamlRootKeyDownEventHandler.set(nullptr);
+                }
             }
         }
     }
