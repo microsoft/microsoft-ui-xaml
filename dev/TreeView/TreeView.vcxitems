@@ -64,8 +64,8 @@
       <Type>DefaultStyle</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs2_themeresources.xaml">
-      <Version>RS2</Version>
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources.xaml">
+      <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>
