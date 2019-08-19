@@ -106,6 +106,7 @@
                                 <VisualState x:Name="NotDragging" />
                                 <VisualState x:Name="MultipleDraggingPrimary">
                                     <VisualState.Setters>
+                                        <Setter Target="MultiSelectCheckBox.Opacity" Value="0" />
                                         <Setter Target="MultiArrangeOverlayTextBorder.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -136,12 +137,13 @@
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Center"
                                     Background="{ThemeResource SystemControlBackgroundAccentBrush}"
-                                    BorderThickness="2"
+                                    BorderThickness="1"
                                     BorderBrush="{ThemeResource SystemControlBackgroundChromeWhiteBrush}"
                                     CornerRadius="{ThemeResource ControlCornerRadius}">
                                     <TextBlock x:Name="MultiArrangeOverlayText"
                                         Text="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.DragItemsCount}"
                                         Style="{ThemeResource CaptionTextBlockStyle}"
+                                        Foreground="{ThemeResource SystemControlForegroundChromeWhiteBrush}"
                                         IsHitTestVisible="False"
                                         VerticalAlignment="Center"
                                         HorizontalAlignment="Center"
