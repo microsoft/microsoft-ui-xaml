@@ -5,8 +5,8 @@
 [webhosthidden]
 enum TabViewWidthMode
 {
-    SizeToContent = 0,
-    Equal = 1,
+    Equal = 0,
+    SizeToContent = 1,
 };
 
 [WUXC_VERSION_MUXONLY]

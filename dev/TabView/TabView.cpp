@@ -582,12 +582,19 @@ void TabView::UpdateSelectedItem()
 {
     if (auto listView = m_listView.get())
     {
-        // Setting ListView.SelectedItem will not work here in all cases.
-        // The reason why that doesn't work but this does is unknown.
-        auto container = listView.ContainerFromItem(SelectedItem());
-        if (auto lvi = container.as<winrt::ListViewItem>())
+        auto tvi = SelectedItem().try_as<winrt::TabViewItem>();
+        if (!tvi)
         {
-            lvi.IsSelected(true);
+            tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
+        }
+
+        if (tvi)
+        {
+            listView.SelectedItem(tvi);
+
+            // Setting ListView.SelectedItem will not work here in all cases.
+            // The reason why that doesn't work but this does is unknown.
+            tvi.IsSelected(true);
         }
     }
 }

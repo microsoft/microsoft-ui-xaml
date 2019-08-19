@@ -152,7 +152,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false">
+                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699">
                         <controls:TabView.TabItemTemplate>
                             <DataTemplate x:DataType="local:TabDataItem">
                                 <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">

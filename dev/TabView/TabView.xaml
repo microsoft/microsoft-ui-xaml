@@ -10,6 +10,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Background" Value="{ThemeResource TabViewBackground}" />
 
         <Setter Property="Template">
             <Setter.Value>
@@ -21,7 +22,7 @@
                         </Grid.RowDefinitions>
 
                         <Grid x:Name="TabContainerGrid"
-                            Background="{ThemeResource TabViewBackground}"
+                            Background="{TemplateBinding Background}"
                             XYFocusKeyboardNavigation="Enabled">
 
                             <Grid.ColumnDefinitions>
@@ -67,7 +68,6 @@
 
                         <ContentPresenter x:Name="TabContentPresenter"
                             Grid.Row="1"
-                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
                     </Grid>
