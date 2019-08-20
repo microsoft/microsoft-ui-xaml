@@ -11,7 +11,6 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 #include <Vector.h>
-#include "InspectingDataSource.h"
 
 static constexpr double c_tabMinimumWidth = 48.0;
 static constexpr double c_tabMaximumWidth = 200.0;
@@ -252,17 +251,11 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        m_scrollDecreaseButton.set([this, scrollViewer]() {
-            auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
-            m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
-            return decreaseButton;
-        }());
+        auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
+        m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
 
-        m_scrollIncreaseButton.set([this, scrollViewer]() {
-            auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
-            m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
-            return increaseButton;
-        }());
+        auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+        m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
     }
 
     UpdateTabWidths();
@@ -437,8 +430,8 @@ void TabView::UpdateTabContent()
                     auto focusable = winrt::FocusManager::FindFirstFocusableElement(tabContentPresenter);
                     if (!focusable)
                     {
-                        // If there is nothing focusable in the new tab, just move focus to the TabView itself.
-                        focusable = winrt::FocusManager::FindFirstFocusableElement(*this);
+                        // If there is nothing focusable in the new tab, just move focus to the TabViewItem itself.
+                        focusable = tvi;
                     }
 
                     if (focusable)
@@ -516,6 +509,11 @@ void TabView::UpdateTabWidths()
             {
                 tabColumn.MaxWidth(availableWidth);
                 tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
+                if (auto listview = m_listView.get())
+                {
+                    listview.MaxWidth(availableWidth);
+                    winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
+                }
             }
             else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
             {
@@ -529,33 +527,24 @@ void TabView::UpdateTabWidths()
 
                 tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
 
-                // If the min tab width causes the ScrollViewer to scroll, show the increase/decrease buttons.
-                auto decreaseButton = m_scrollDecreaseButton.get();
-                auto increaseButton = m_scrollIncreaseButton.get();
-                if (decreaseButton && increaseButton)
-                {
-                    if (tabWidthForScroller < tabWidth)
-                    {
-                        decreaseButton.Visibility(winrt::Visibility::Visible);
-                        increaseButton.Visibility(winrt::Visibility::Visible);
-                    }
-                    else
-                    {
-                        decreaseButton.Visibility(winrt::Visibility::Collapsed);
-                        increaseButton.Visibility(winrt::Visibility::Collapsed);
-                    }
-                }
-
                 // Size tab column to needed size
                 tabColumn.MaxWidth(availableWidth);
                 auto requiredWidth = tabWidth * TabItems().Size();
                 if (requiredWidth >= availableWidth)
                 {
                     tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
+                    if (auto listview = m_listView.get())
+                    {
+                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
+                    }
                 }
                 else
                 {
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
+                    if (auto listview = m_listView.get())
+                    {
+                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                    }
                 }
             }
         }
@@ -638,7 +627,17 @@ int TabView::GetItemCount()
 {
     if (auto itemssource = TabItemsSource())
     {
-        return winrt::make<InspectingDataSource>(TabItemsSource()).Count();
+        if (auto iterable = itemssource.try_as<winrt::IIterable<winrt::IInspectable>>())
+        {
+            int i = 1;
+            auto iter = iterable.First();
+            while (iter.MoveNext())
+            {
+                i++;
+            }
+            return i;
+        }
+        return 0;
     }
     else
     {

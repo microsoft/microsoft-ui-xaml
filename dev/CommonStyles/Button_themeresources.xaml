@@ -18,7 +18,7 @@
             <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -67,7 +67,7 @@
             <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
             <SolidColorBrush x:Key="ButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ButtonBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ButtonDisabledBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
@@ -92,7 +92,7 @@
             <StaticResource x:Key="AccentButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="AccentButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -118,7 +118,7 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Thickness x:Key="ButtonPadding">8,4,8,5</Thickness>
+    <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
 
     <Style TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
@@ -126,7 +126,7 @@
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ButtonBorderBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ButtonBorderThemeThickness}" />
-        <contract7NotPresent:Setter Property="Padding" Value="8,4,8,4" />
+        <contract7NotPresent:Setter Property="Padding" Value="8,5,8,5" />
         <contract7Present:Setter Property="Padding" Value="{StaticResource ButtonPadding}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
