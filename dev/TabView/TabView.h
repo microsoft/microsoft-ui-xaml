@@ -43,7 +43,7 @@ private:
 };
 
 class TabViewTabDragStartingEventArgs :
-    public ReferenceTracker<TabViewTabDragStartingEventArgs, winrt::implementation::TabViewTabDragStartingEventArgsT, winrt::composing, winrt::composable>
+    public winrt::implementation::TabViewTabDragStartingEventArgsT<TabViewTabDragStartingEventArgs>
 {
 public:
     TabViewTabDragStartingEventArgs(winrt::DragItemsStartingEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) : m_args(args), m_item(item), m_tab(tab) {}
@@ -61,7 +61,7 @@ private:
 };
 
 class TabViewTabDragCompletedEventArgs :
-    public ReferenceTracker<TabViewTabDragCompletedEventArgs, winrt::implementation::TabViewTabDragCompletedEventArgsT, winrt::composing, winrt::composable>
+    public winrt::implementation::TabViewTabDragCompletedEventArgsT<TabViewTabDragCompletedEventArgs>
 {
 public:
     TabViewTabDragCompletedEventArgs(winrt::DragItemsCompletedEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) : m_args(args), m_item(item), m_tab(tab) {}
