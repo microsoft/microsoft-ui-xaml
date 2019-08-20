@@ -6,7 +6,7 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <Thickness x:Key="ToggleButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -99,7 +99,7 @@
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminatePressed" ResourceKey="SystemControlHighlightTransparentBrush" />
             <StaticResource x:Key="ToggleButtonBorderBrushIndeterminateDisabled" ResourceKey="SystemControlDisabledTransparentBrush" />
-            <Thickness x:Key="ToggleButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
             <SolidColorBrush x:Key="ToggleButtonBackgroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
             <SolidColorBrush x:Key="ToggleButtonBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="ToggleButtonCheckedBackgroundThemeBrush" Color="{ThemeResource SystemColorHighlightColor}" />
@@ -120,7 +120,7 @@
             <SolidColorBrush x:Key="ToggleButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <Thickness x:Key="ToggleButtonBorderThemeThickness">2</Thickness>
+            <Thickness x:Key="ToggleButtonBorderThemeThickness">1</Thickness>
             <StaticResource x:Key="ToggleButtonBackground" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPointerOver" ResourceKey="SystemControlBackgroundBaseLowBrush" />
             <StaticResource x:Key="ToggleButtonBackgroundPressed" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />

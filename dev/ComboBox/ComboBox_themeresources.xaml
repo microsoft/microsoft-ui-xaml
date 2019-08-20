@@ -358,7 +358,7 @@
     <x:Int32 x:Key="ComboBoxPopupMaxNumberOfItemsThatCanBeShownOnOneSide">7</x:Int32>
 
     <Thickness x:Key="ComboBoxPadding">12,5,0,7</Thickness>
-    <Thickness x:Key="ComboBoxEditableTextPadding">10,4,30,5</Thickness>
+    <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
     <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
 
     <Style TargetType="ComboBox">
@@ -892,6 +892,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="BorderElement.Background" Value="{ThemeResource TextControlBackgroundFocused}" />
                                         <Setter Target="BorderElement.BorderBrush" Value="{ThemeResource TextControlBorderBrushFocused}" />
+                                        <Setter Target="BorderElement.BorderThickness" Value="{ThemeResource TextControlBorderThemeThicknessFocused}" />
                                         <Setter Target="ContentElement.Foreground" Value="{ThemeResource TextControlForegroundFocused}" />
                                         <Setter Target="ContentElement.RequestedTheme" Value="Light" />
                                         <Setter Target="PlaceholderTextContentPresenter.Foreground" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />

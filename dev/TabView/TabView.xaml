@@ -83,7 +83,7 @@
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="IsSwipeEnabled" Value="False" />
         <Setter Property="SingleSelectionFollowsFocus" Value="False"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
         <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Enabled" />
         <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
@@ -169,7 +169,7 @@
                                 FontFamily="Segoe MDL2 Assets"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
-                                Visibility="Collapsed"
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 Content="&#xE76B;"/>
 
                             <ScrollContentPresenter x:Name="ScrollContentPresenter"
@@ -190,7 +190,7 @@
                                 FontFamily="Segoe MDL2 Assets"
                                 Interval="100"
                                 Style="{StaticResource RepeatButtonRevealStyle}"
-                                Visibility="Collapsed"
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
                                 Content="&#xE76C;"/>
                         </Grid>
                     </Border>
