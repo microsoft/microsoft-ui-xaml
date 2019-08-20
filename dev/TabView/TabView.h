@@ -18,7 +18,10 @@ class TabViewTabCloseRequestedEventArgs :
     public ReferenceTracker<TabViewTabCloseRequestedEventArgs, winrt::implementation::TabViewTabCloseRequestedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TabViewTabCloseRequestedEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) { m_item = item; m_tab.set(tab); }
+    TabViewTabCloseRequestedEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item)
+    {
+        m_tab.set(tab);
+    }
 
     winrt::IInspectable Item() { return m_item; }
     winrt::TabViewItem Tab() { return m_tab.get(); }
@@ -32,7 +35,10 @@ class TabViewTabDroppedOutsideEventArgs :
     public ReferenceTracker<TabViewTabDroppedOutsideEventArgs, winrt::implementation::TabViewTabDroppedOutsideEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TabViewTabDroppedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) { m_item = item; m_tab.set(tab); }
+    TabViewTabDroppedOutsideEventArgs(winrt::IInspectable const& item, winrt::TabViewItem tab) : m_item(item)
+    {
+        m_tab.set(tab);
+    }
 
     winrt::IInspectable Item() { return m_item; }
     winrt::TabViewItem Tab() { return m_tab.get(); }
@@ -46,7 +52,10 @@ class TabViewTabDragStartingEventArgs :
     public ReferenceTracker<TabViewTabDragStartingEventArgs, winrt::implementation::TabViewTabDragStartingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    TabViewTabDragStartingEventArgs(winrt::DragItemsStartingEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) { m_args = args; m_item = item; m_tab.set(tab); }
+    TabViewTabDragStartingEventArgs(winrt::DragItemsStartingEventArgs const& args, winrt::IInspectable const& item, winrt::TabViewItem tab) : m_args(args), m_item(item)
+    {
+        m_tab.set(tab);
+    }
 
     bool Cancel() { return m_args.Cancel(); }
     void Cancel(bool value) { m_args.Cancel(value); }
