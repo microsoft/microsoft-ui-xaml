@@ -697,6 +697,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void VerifyPaneVisibleOnInit()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
+            {
+                Log.Comment("Verify PaneIsVisibleItem is invisible");
+                VerifyElement.NotFound("PaneIsVisibleItem", FindBy.Name);
+
+                FindElement.ByName<Button>("ChangePaneVisible").Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Verify PaneIsVisibleItem is visible");
+                VerifyElement.Found("PaneIsVisibleItem", FindBy.Name);
+
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void VerifyNavigationViewItemResponseToClickAfterBeingMovedBetweenFrames()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))

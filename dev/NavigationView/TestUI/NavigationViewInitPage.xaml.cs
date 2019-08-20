@@ -114,5 +114,10 @@ namespace MUXControlsTestApp
                 MyLocationResult.Text = "Frame2";
             }
         }
+
+        private void ChangePaneVisibleButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavView4.IsPaneVisible = !NavView4.IsPaneVisible;
+        }
     }
 }
