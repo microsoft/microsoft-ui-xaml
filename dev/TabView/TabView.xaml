@@ -10,6 +10,7 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Padding" Value="{ThemeResource TabViewHeaderPadding}" />
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Background" Value="{ThemeResource TabViewBackground}" />
 
         <Setter Property="Template">
             <Setter.Value>
@@ -21,7 +22,7 @@
                         </Grid.RowDefinitions>
 
                         <Grid x:Name="TabContainerGrid"
-                            Background="{ThemeResource TabViewBackground}"
+                            Background="{TemplateBinding Background}"
                             XYFocusKeyboardNavigation="Enabled">
 
                             <Grid.ColumnDefinitions>
@@ -34,40 +35,39 @@
                             <ContentPresenter
                                 Grid.Column="0"
                                 x:Name="LeftContentPresenter"
-                                Content="{TemplateBinding LeftCustomContent}"
-                                ContentTemplate="{TemplateBinding LeftCustomContentTemplate}"/>
+                                Content="{TemplateBinding TabStripHeader}"
+                                ContentTemplate="{TemplateBinding TabStripHeaderTemplate}"/>
 
                             <primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"
-                                CanReorderItems="{TemplateBinding CanDragDropTabs}"
-                                CanDragItems="{TemplateBinding CanDragDropTabs}"
-                                AllowDrop="{TemplateBinding CanDragDropTabs}"
-                                ItemsSource="{TemplateBinding ItemsSource}"
-                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+                                CanReorderItems="{TemplateBinding CanReorderTabs}"
+                                CanDragItems="{TemplateBinding CanDragTabs}"
+                                AllowDrop="{TemplateBinding AllowDropTabs}"
+                                ItemsSource="{TemplateBinding TabItemsSource}"
+                                ItemTemplate="{TemplateBinding TabItemTemplate}"
+                                ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}"/>
 
                             <Button
                                 Grid.Column="2"
                                 x:Name="AddButton"
                                 Content="&#xE710;"
-                                Command="{TemplateBinding AddButtonCommand}"
-                                CommandParameter="{TemplateBinding AddButtonCommandParameter}"
-                                Visibility="{Binding IsAddButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
+                                Command="{TemplateBinding AddTabButtonCommand}"
+                                CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
+                                Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}}"
                                 Style="{StaticResource TabViewButtonStyle}"/>
 
                             <ContentPresenter
                                 Grid.Column="3"
                                 x:Name="RightContentPresenter"
                                 HorizontalAlignment="Stretch"
-                                Content="{TemplateBinding RightCustomContent}"
-                                ContentTemplate="{TemplateBinding RightCustomContentTemplate}"/>
+                                Content="{TemplateBinding TabStripFooter}"
+                                ContentTemplate="{TemplateBinding TabStripFooterTemplate}"/>
 
                         </Grid>
 
                         <ContentPresenter x:Name="TabContentPresenter"
                             Grid.Row="1"
-                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
                     </Grid>

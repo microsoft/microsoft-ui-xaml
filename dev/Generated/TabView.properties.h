@@ -9,41 +9,23 @@ class TabViewProperties
 public:
     TabViewProperties();
 
-    void AddButtonCommand(winrt::ICommand const& value);
-    winrt::ICommand AddButtonCommand();
+    void AddTabButtonCommand(winrt::ICommand const& value);
+    winrt::ICommand AddTabButtonCommand();
 
-    void AddButtonCommandParameter(winrt::IInspectable const& value);
-    winrt::IInspectable AddButtonCommandParameter();
+    void AddTabButtonCommandParameter(winrt::IInspectable const& value);
+    winrt::IInspectable AddTabButtonCommandParameter();
 
-    void CanDragDropTabs(bool value);
-    bool CanDragDropTabs();
+    void AllowDropTabs(bool value);
+    bool AllowDropTabs();
 
-    void IsAddButtonVisible(bool value);
-    bool IsAddButtonVisible();
+    void CanDragTabs(bool value);
+    bool CanDragTabs();
 
-    void Items(winrt::IVector<winrt::IInspectable> const& value);
-    winrt::IVector<winrt::IInspectable> Items();
+    void CanReorderTabs(bool value);
+    bool CanReorderTabs();
 
-    void ItemsSource(winrt::IInspectable const& value);
-    winrt::IInspectable ItemsSource();
-
-    void ItemTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate ItemTemplate();
-
-    void ItemTemplateSelector(winrt::DataTemplateSelector const& value);
-    winrt::DataTemplateSelector ItemTemplateSelector();
-
-    void LeftCustomContent(winrt::IInspectable const& value);
-    winrt::IInspectable LeftCustomContent();
-
-    void LeftCustomContentTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate LeftCustomContentTemplate();
-
-    void RightCustomContent(winrt::IInspectable const& value);
-    winrt::IInspectable RightCustomContent();
-
-    void RightCustomContentTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate RightCustomContentTemplate();
+    void IsAddTabButtonVisible(bool value);
+    bool IsAddTabButtonVisible();
 
     void SelectedIndex(int value);
     int SelectedIndex();
@@ -51,64 +33,92 @@ public:
     void SelectedItem(winrt::IInspectable const& value);
     winrt::IInspectable SelectedItem();
 
+    void TabItems(winrt::IVector<winrt::IInspectable> const& value);
+    winrt::IVector<winrt::IInspectable> TabItems();
+
+    void TabItemsSource(winrt::IInspectable const& value);
+    winrt::IInspectable TabItemsSource();
+
+    void TabItemTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate TabItemTemplate();
+
+    void TabItemTemplateSelector(winrt::DataTemplateSelector const& value);
+    winrt::DataTemplateSelector TabItemTemplateSelector();
+
+    void TabStripFooter(winrt::IInspectable const& value);
+    winrt::IInspectable TabStripFooter();
+
+    void TabStripFooterTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate TabStripFooterTemplate();
+
+    void TabStripHeader(winrt::IInspectable const& value);
+    winrt::IInspectable TabStripHeader();
+
+    void TabStripHeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate TabStripHeaderTemplate();
+
     void TabWidthMode(winrt::TabViewWidthMode const& value);
     winrt::TabViewWidthMode TabWidthMode();
 
-    static winrt::DependencyProperty AddButtonCommandProperty() { return s_AddButtonCommandProperty; }
-    static winrt::DependencyProperty AddButtonCommandParameterProperty() { return s_AddButtonCommandParameterProperty; }
-    static winrt::DependencyProperty CanDragDropTabsProperty() { return s_CanDragDropTabsProperty; }
-    static winrt::DependencyProperty IsAddButtonVisibleProperty() { return s_IsAddButtonVisibleProperty; }
-    static winrt::DependencyProperty ItemsProperty() { return s_ItemsProperty; }
-    static winrt::DependencyProperty ItemsSourceProperty() { return s_ItemsSourceProperty; }
-    static winrt::DependencyProperty ItemTemplateProperty() { return s_ItemTemplateProperty; }
-    static winrt::DependencyProperty ItemTemplateSelectorProperty() { return s_ItemTemplateSelectorProperty; }
-    static winrt::DependencyProperty LeftCustomContentProperty() { return s_LeftCustomContentProperty; }
-    static winrt::DependencyProperty LeftCustomContentTemplateProperty() { return s_LeftCustomContentTemplateProperty; }
-    static winrt::DependencyProperty RightCustomContentProperty() { return s_RightCustomContentProperty; }
-    static winrt::DependencyProperty RightCustomContentTemplateProperty() { return s_RightCustomContentTemplateProperty; }
+    static winrt::DependencyProperty AddTabButtonCommandProperty() { return s_AddTabButtonCommandProperty; }
+    static winrt::DependencyProperty AddTabButtonCommandParameterProperty() { return s_AddTabButtonCommandParameterProperty; }
+    static winrt::DependencyProperty AllowDropTabsProperty() { return s_AllowDropTabsProperty; }
+    static winrt::DependencyProperty CanDragTabsProperty() { return s_CanDragTabsProperty; }
+    static winrt::DependencyProperty CanReorderTabsProperty() { return s_CanReorderTabsProperty; }
+    static winrt::DependencyProperty IsAddTabButtonVisibleProperty() { return s_IsAddTabButtonVisibleProperty; }
     static winrt::DependencyProperty SelectedIndexProperty() { return s_SelectedIndexProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
+    static winrt::DependencyProperty TabItemsProperty() { return s_TabItemsProperty; }
+    static winrt::DependencyProperty TabItemsSourceProperty() { return s_TabItemsSourceProperty; }
+    static winrt::DependencyProperty TabItemTemplateProperty() { return s_TabItemTemplateProperty; }
+    static winrt::DependencyProperty TabItemTemplateSelectorProperty() { return s_TabItemTemplateSelectorProperty; }
+    static winrt::DependencyProperty TabStripFooterProperty() { return s_TabStripFooterProperty; }
+    static winrt::DependencyProperty TabStripFooterTemplateProperty() { return s_TabStripFooterTemplateProperty; }
+    static winrt::DependencyProperty TabStripHeaderProperty() { return s_TabStripHeaderProperty; }
+    static winrt::DependencyProperty TabStripHeaderTemplateProperty() { return s_TabStripHeaderTemplateProperty; }
     static winrt::DependencyProperty TabWidthModeProperty() { return s_TabWidthModeProperty; }
 
-    static GlobalDependencyProperty s_AddButtonCommandProperty;
-    static GlobalDependencyProperty s_AddButtonCommandParameterProperty;
-    static GlobalDependencyProperty s_CanDragDropTabsProperty;
-    static GlobalDependencyProperty s_IsAddButtonVisibleProperty;
-    static GlobalDependencyProperty s_ItemsProperty;
-    static GlobalDependencyProperty s_ItemsSourceProperty;
-    static GlobalDependencyProperty s_ItemTemplateProperty;
-    static GlobalDependencyProperty s_ItemTemplateSelectorProperty;
-    static GlobalDependencyProperty s_LeftCustomContentProperty;
-    static GlobalDependencyProperty s_LeftCustomContentTemplateProperty;
-    static GlobalDependencyProperty s_RightCustomContentProperty;
-    static GlobalDependencyProperty s_RightCustomContentTemplateProperty;
+    static GlobalDependencyProperty s_AddTabButtonCommandProperty;
+    static GlobalDependencyProperty s_AddTabButtonCommandParameterProperty;
+    static GlobalDependencyProperty s_AllowDropTabsProperty;
+    static GlobalDependencyProperty s_CanDragTabsProperty;
+    static GlobalDependencyProperty s_CanReorderTabsProperty;
+    static GlobalDependencyProperty s_IsAddTabButtonVisibleProperty;
     static GlobalDependencyProperty s_SelectedIndexProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
+    static GlobalDependencyProperty s_TabItemsProperty;
+    static GlobalDependencyProperty s_TabItemsSourceProperty;
+    static GlobalDependencyProperty s_TabItemTemplateProperty;
+    static GlobalDependencyProperty s_TabItemTemplateSelectorProperty;
+    static GlobalDependencyProperty s_TabStripFooterProperty;
+    static GlobalDependencyProperty s_TabStripFooterTemplateProperty;
+    static GlobalDependencyProperty s_TabStripHeaderProperty;
+    static GlobalDependencyProperty s_TabStripHeaderTemplateProperty;
     static GlobalDependencyProperty s_TabWidthModeProperty;
 
-    winrt::event_token AddButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value);
-    void AddButtonClick(winrt::event_token const& token);
+    winrt::event_token AddTabButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value);
+    void AddTabButtonClick(winrt::event_token const& token);
     winrt::event_token SelectionChanged(winrt::SelectionChangedEventHandler const& value);
     void SelectionChanged(winrt::event_token const& token);
-    winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs> const& value);
-    void TabClosing(winrt::event_token const& token);
-    winrt::event_token TabDraggedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs> const& value);
-    void TabDraggedOutside(winrt::event_token const& token);
-    winrt::event_token TabStripDragItemsCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::DragItemsCompletedEventArgs> const& value);
-    void TabStripDragItemsCompleted(winrt::event_token const& token);
-    winrt::event_token TabStripDragItemsStarting(winrt::DragItemsStartingEventHandler const& value);
-    void TabStripDragItemsStarting(winrt::event_token const& token);
+    winrt::event_token TabCloseRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs> const& value);
+    void TabCloseRequested(winrt::event_token const& token);
+    winrt::event_token TabDragCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs> const& value);
+    void TabDragCompleted(winrt::event_token const& token);
+    winrt::event_token TabDragStarting(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs> const& value);
+    void TabDragStarting(winrt::event_token const& token);
+    winrt::event_token TabDroppedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs> const& value);
+    void TabDroppedOutside(winrt::event_token const& token);
     winrt::event_token TabStripDragOver(winrt::DragEventHandler const& value);
     void TabStripDragOver(winrt::event_token const& token);
     winrt::event_token TabStripDrop(winrt::DragEventHandler const& value);
     void TabStripDrop(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable>> m_addButtonClickEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable>> m_addTabButtonClickEventSource;
     event_source<winrt::SelectionChangedEventHandler> m_selectionChangedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs>> m_tabClosingEventSource;
-    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs>> m_tabDraggedOutsideEventSource;
-    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::DragItemsCompletedEventArgs>> m_tabStripDragItemsCompletedEventSource;
-    event_source<winrt::DragItemsStartingEventHandler> m_tabStripDragItemsStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs>> m_tabCloseRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs>> m_tabDragCompletedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs>> m_tabDragStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs>> m_tabDroppedOutsideEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDragOverEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDropEventSource;
 
