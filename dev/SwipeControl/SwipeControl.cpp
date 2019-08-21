@@ -687,7 +687,7 @@ void SwipeControl::AttachDismissingHandlers()
                     },
                     true /*handledEventsToo*/);
 
-                m_xamlRootKeyDownEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+                m_xamlRootKeyDownEventHandler = AddRoutedEventHandler<RoutedEventType::KeyDown>(
                     xamlRootContent,
                     [this](auto const&, auto const& args)
                     {
