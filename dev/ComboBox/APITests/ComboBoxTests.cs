@@ -6,6 +6,7 @@ using MUXControlsTestApp.Utilities;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using System.Linq;
+using MUXControlsTestApp;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -49,9 +50,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var background = TestUtilities.FindDescendents<Border>(comboBox).Where(e => e.Name == "Background").Single();
                 Verify.AreEqual(new CornerRadius(2, 2, 2, 2), background.CornerRadius);
 
+                var overlayCornerRadius = new CornerRadius(0, 0, 0, 0);
+                var radius = App.Current.Resources["OverlayCornerRadius"];
+                if (radius != null)
+                {
+                    overlayCornerRadius = (CornerRadius)radius;
+                }
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 var popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name=="PopupBorder").Single();
-                Verify.AreEqual(new CornerRadius(2, 2, 2, 2), popupBorder.CornerRadius);
+                Verify.AreEqual(overlayCornerRadius, popupBorder.CornerRadius);
             });
         }
 
@@ -78,9 +85,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var editableText = TestUtilities.FindDescendents<TextBox>(comboBox).Where(e => e.Name == "EditableText").Single();
                 Verify.AreEqual(new CornerRadius(2, 2, 0, 0), editableText.CornerRadius);
 
+                var overlayCornerRadius = new CornerRadius(0, 0, 0, 0);
+                var radius = App.Current.Resources["OverlayCornerRadius"];
+                if (radius != null)
+                {
+                    overlayCornerRadius = (CornerRadius)radius;
+                }
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 var popupBorder = TestUtilities.FindDescendents<Border>(popup).Where(e => e.Name == "PopupBorder").Single();
-                Verify.AreEqual(new CornerRadius(0, 0, 2, 2), popupBorder.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft), popupBorder.CornerRadius);
             });
         }
 
