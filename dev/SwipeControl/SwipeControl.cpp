@@ -679,7 +679,7 @@ void SwipeControl::AttachDismissingHandlers()
         {
             if (auto&& xamlRootContent = xamlRoot.Content())
             {
-                m_xamlRootPointerPressedEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+                m_xamlRootPointerPressedEventRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
                     xamlRootContent,
                     [this](auto const&, auto const& args)
                     {
@@ -687,7 +687,7 @@ void SwipeControl::AttachDismissingHandlers()
                     },
                     true /*handledEventsToo*/);
 
-                m_xamlRootKeyDownEventHandler = AddRoutedEventHandler<RoutedEventType::KeyDown>(
+                m_xamlRootKeyDownEventRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
                     xamlRootContent,
                     [this](auto const&, auto const& args)
                     {
@@ -726,8 +726,8 @@ void SwipeControl::DetachDismissingHandlers()
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    m_xamlRootPointerPressedEventHandler.revoke();
-    m_xamlRootKeyDownEventHandler.revoke();
+    m_xamlRootPointerPressedEventRevoker.revoke();
+    m_xamlRootKeyDownEventRevoker.revoke();
     m_xamlRootChangedRevoker.revoke();
 
     m_acceleratorKeyActivatedRevoker.revoke();
