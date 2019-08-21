@@ -177,8 +177,8 @@ private:
     tracker_ref<winrt::IInspectable> m_onPointerPressedEventHandler{ this };
 
     // Used on platforms where we have XamlRoot.
-    RoutedEventHandler_revoker m_onXamlRootPointerPressedEventHandler{};
-    RoutedEventHandler_revoker m_onXamlRootKeyDownEventHandler{};
+    RoutedEventHandler_revoker m_xamlRootPointerPressedEventHandler{};
+    RoutedEventHandler_revoker m_xamlRootKeyDownEventHandler{};
     winrt::IXamlRoot::Changed_revoker m_xamlRootChangedRevoker;
 
 

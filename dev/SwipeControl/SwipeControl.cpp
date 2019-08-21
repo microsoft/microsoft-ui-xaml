@@ -677,22 +677,24 @@ void SwipeControl::AttachDismissingHandlers()
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
         {
-            auto xamlRootContent = xamlRoot.Content();
-            m_onXamlRootPointerPressedEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
-                xamlRootContent,
-                [this](auto const&, auto const& args)
-                {
-                    DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
-                },
-                true /*handledEventsToo*/);
+            if (auto&& xamlRootContent = xamlRoot.Content())
+            {
+                m_xamlRootPointerPressedEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+                    xamlRootContent,
+                    [this](auto const&, auto const& args)
+                    {
+                        DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
+                    },
+                    true /*handledEventsToo*/);
 
-            m_onXamlRootKeyDownEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
-                xamlRootContent,
-                [this](auto const&, auto const& args)
-                {
-                    CloseIfNotRemainOpenExecuteItem();
-                },
-                true /*handledEventsToo*/);
+                m_xamlRootKeyDownEventHandler = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+                    xamlRootContent,
+                    [this](auto const&, auto const& args)
+                    {
+                        CloseIfNotRemainOpenExecuteItem();
+                    },
+                    true /*handledEventsToo*/);
+            }
 
             m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &SwipeControl::CurrentXamlRootChanged });
         }
@@ -724,8 +726,8 @@ void SwipeControl::DetachDismissingHandlers()
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    m_onXamlRootPointerPressedEventHandler.revoke();
-    m_onXamlRootKeyDownEventHandler.revoke();
+    m_xamlRootPointerPressedEventHandler.revoke();
+    m_xamlRootKeyDownEventHandler.revoke();
     m_xamlRootChangedRevoker.revoke();
 
     m_acceleratorKeyActivatedRevoker.revoke();
