@@ -12,7 +12,7 @@
     <StackPanel>
         <CheckBox Content="Two-state CheckBox"/>
         <CheckBox Content="Three-state CheckBox" IsThreeState="True"/>
-        <CheckBox Content="Disabled CheckBox Unchekced" IsEnabled="False"/>
+        <CheckBox Content="Disabled CheckBox Unchecked" IsEnabled="False"/>
         <CheckBox Content="Disabled CheckBox Indetermintate" IsThreeState="True" IsChecked="{x:Null}" IsEnabled="False"/>
         <CheckBox Content="Disabled CheckBox Checked" IsThreeState="True" IsChecked="True" IsEnabled="False"/>
     </StackPanel>
