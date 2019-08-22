@@ -268,8 +268,10 @@ void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChanged
 
 void TabView::OnItemsChanged(winrt::IInspectable const& item)
 {
-    if (auto args = item.as< winrt::IVectorChangedEventArgs>())
+    if (auto args = item.as<winrt::IVectorChangedEventArgs>())
     {
+        m_tabItemsChangedEventSource(*this, args);
+
         int numItems = static_cast<int>(TabItems().Size());
         if (args.CollectionChange() == winrt::CollectionChange::ItemRemoved && numItems > 0)
         {

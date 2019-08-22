@@ -298,7 +298,7 @@ namespace MUXControlsTestApp
 
         public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
         {
-            Tabs.Width = 700;
+            Tabs.Width = 690;
         }
 
         public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)

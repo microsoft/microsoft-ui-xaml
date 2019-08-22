@@ -108,6 +108,8 @@ public:
     void TabDragStarting(winrt::event_token const& token);
     winrt::event_token TabDroppedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs> const& value);
     void TabDroppedOutside(winrt::event_token const& token);
+    winrt::event_token TabItemsChanged(winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs> const& value);
+    void TabItemsChanged(winrt::event_token const& token);
     winrt::event_token TabStripDragOver(winrt::DragEventHandler const& value);
     void TabStripDragOver(winrt::event_token const& token);
     winrt::event_token TabStripDrop(winrt::DragEventHandler const& value);
@@ -119,6 +121,7 @@ public:
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs>> m_tabDragCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs>> m_tabDragStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs>> m_tabDroppedOutsideEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs>> m_tabItemsChangedEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDragOverEventSource;
     event_source<winrt::DragEventHandler> m_tabStripDropEventSource;
 
