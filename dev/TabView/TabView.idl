@@ -71,6 +71,8 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
     event Windows.Foundation.TypedEventHandler<TabView, Object> AddTabButtonClick;
 
+    event Windows.Foundation.TypedEventHandler<TabView, Windows.Foundation.Collections.IVectorChangedEventArgs> TabItemsChanged;
+
     // From ListView
     Object TabItemsSource;
     Windows.Foundation.Collections.IVector<Object> TabItems{ get; };
