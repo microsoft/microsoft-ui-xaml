@@ -238,7 +238,7 @@
                             Grid.Column="2"/>
 
                         <Grid x:Name="Border"
-                            Grid.ColumnSpan="2"
+                            Grid.ColumnSpan="3"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"/>
