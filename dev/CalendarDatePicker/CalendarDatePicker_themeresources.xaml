@@ -215,7 +215,8 @@
                                     DayOfWeekFormat="{TemplateBinding DayOfWeekFormat}"
                                     CalendarIdentifier="{TemplateBinding CalendarIdentifier}"
                                     IsOutOfScopeEnabled="{TemplateBinding IsOutOfScopeEnabled}"
-                                    IsGroupLabelVisible="{TemplateBinding IsGroupLabelVisible}" />
+                                    IsGroupLabelVisible="{TemplateBinding IsGroupLabelVisible}"
+                                    contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}" />
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>
 

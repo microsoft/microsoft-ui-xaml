@@ -33,6 +33,7 @@ TabViewProperties::TabViewProperties()
     , m_tabDragCompletedEventSource{static_cast<TabView*>(this)}
     , m_tabDragStartingEventSource{static_cast<TabView*>(this)}
     , m_tabDroppedOutsideEventSource{static_cast<TabView*>(this)}
+    , m_tabItemsChangedEventSource{static_cast<TabView*>(this)}
     , m_tabStripDragOverEventSource{static_cast<TabView*>(this)}
     , m_tabStripDropEventSource{static_cast<TabView*>(this)}
 {
@@ -503,6 +504,16 @@ winrt::event_token TabViewProperties::TabDroppedOutside(winrt::TypedEventHandler
 void TabViewProperties::TabDroppedOutside(winrt::event_token const& token)
 {
     m_tabDroppedOutsideEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabItemsChanged(winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs> const& value)
+{
+    return m_tabItemsChangedEventSource.add(value);
+}
+
+void TabViewProperties::TabItemsChanged(winrt::event_token const& token)
+{
+    m_tabItemsChangedEventSource.remove(token);
 }
 
 winrt::event_token TabViewProperties::TabStripDragOver(winrt::DragEventHandler const& value)

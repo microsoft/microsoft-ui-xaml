@@ -136,16 +136,16 @@
                         <ListBoxItem Content="Item 3"/>
                     </ListBox>
                 </Grid>
-                <Grid Grid.Row="5" Style="{StaticResource RightColumn}">
-                    <ListBox contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <ListBoxItem Content="Item 1"/>
-                        <ListBoxItem Content="Item 2"/>
-                        <ListBoxItem Content="Item 3"/>
-                    </ListBox>
+                <Grid Grid.Row="5" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center">N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="6" Text="ComboBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="6" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <ComboBox>
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
@@ -162,6 +162,10 @@
 
                 <TextBlock Grid.Row="7" Text="ComboBox (IsEditable)" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="7" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <ComboBox contract7Present:IsEditable="True">
                         <ComboBoxItem Content="Item 1"/>
                         <ComboBoxItem Content="Item 2"/>
@@ -178,6 +182,10 @@
 
                 <TextBlock Grid.Row="8" Text="AutoSuggestBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="8" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <AutoSuggestBox ItemsSource="{x:Bind AutoSuggestSource}"/>
                 </Grid>
                 <Grid Grid.Row="8" Style="{StaticResource RightColumn}">
@@ -186,6 +194,10 @@
 
                 <TextBlock Grid.Row="9" Text="DatePicker" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="9" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <DatePicker />
                 </Grid>
                 <Grid Grid.Row="9" Style="{StaticResource RightColumn}">
@@ -194,6 +206,10 @@
 
                 <TextBlock Grid.Row="10" Text="TimePicker" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="10" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <TimePicker/>
                 </Grid>
                 <Grid Grid.Row="10" Style="{StaticResource RightColumn}">
@@ -216,24 +232,16 @@
                         </CommandBar.Content>
                     </CommandBar>
                 </Grid>
-                <Grid Grid.Row="11" Style="{StaticResource RightColumn}">
-                    <CommandBar contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <AppBarButton Icon="AddFriend"/>
-                        <AppBarButton Icon="World" Label="World"/>
-                        <AppBarToggleButton Icon="Volume" Label="Volume"/>
-                        <CommandBar.SecondaryCommands>
-                            <AppBarButton Label="Like"/>
-                            <AppBarButton Label="Dislike"/>
-                            <AppBarToggleButton Label="Toggle"/>
-                        </CommandBar.SecondaryCommands>
-                        <CommandBar.Content>
-                            <TextBlock Text="Hello World" Margin="12"/>
-                        </CommandBar.Content>
-                    </CommandBar>
+                <Grid Grid.Row="11" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock>N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="12" Text="Flyout" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="12" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <Button Content="Click me">
                         <Button.Flyout>
                             <Flyout>
@@ -274,6 +282,10 @@
 
                 <TextBlock Grid.Row="13" Text="MenuFlyout" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="13" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <Button Content="Click me">
                         <Button.Flyout>
                             <MenuFlyout>
@@ -350,6 +362,10 @@
 
                 <TextBlock Grid.Row="14" Text="ContentDialog" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="14" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <Button Content="Click me" Click="ShowDialog_Click"/>
                 </Grid>
                 <Grid Grid.Row="14" Style="{StaticResource RightColumn}">
@@ -358,6 +374,10 @@
 
                 <TextBlock Grid.Row="15" Text="ToolTip" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="15" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <ToolTip>
                         <TextBlock Text="Hello world"/>
                     </ToolTip>
@@ -370,6 +390,10 @@
 
                 <TextBlock Grid.Row="17" Text="CalendarView" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="17" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <CalendarView/>
                 </Grid>
                 <Grid Grid.Row="17" Style="{StaticResource RightColumn}">
@@ -378,6 +402,10 @@
 
                 <TextBlock Grid.Row="18" Text="CalendarDatePicker" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="18" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <CalendarDatePicker/>
                 </Grid>
                 <Grid Grid.Row="18" Style="{StaticResource RightColumn}">
@@ -388,71 +416,75 @@
                 <Grid Grid.Row="20" Style="{StaticResource LeftColumn}">
                     <ToggleSwitch/>
                 </Grid>
-                <Grid Grid.Row="20" Style="{StaticResource RightColumn}">
-                    <ToggleSwitch contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                <Grid Grid.Row="20" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock>N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="21" Text="Slider" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="21" Style="{StaticResource LeftColumn}" MinWidth="200">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                    </Grid.Resources>
                     <Slider Orientation="Horizontal"/>
                 </Grid>
                 <Grid Grid.Row="21" Style="{StaticResource RightColumn}" MinWidth="200">
-                    <Grid.Resources>
-                        <!-- Rounding slider thumb until that becomes the default -->
-                        <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
-                    </Grid.Resources>
                     <Slider Orientation="Horizontal" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </Grid>
 
                 <TextBlock Grid.Row="22" Text="Slider" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="22" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                    </Grid.Resources>
                     <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside"/>
                 </Grid>
                 <Grid Grid.Row="22" Style="{StaticResource RightColumn}">
-                    <Grid.Resources>
-                        <!-- Rounding slider thumb until that becomes the default -->
-                        <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
-                    </Grid.Resources>
                     <Slider Orientation="Horizontal" TickFrequency="1" Width="200" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </Grid>
 
                 <TextBlock Grid.Row="23" Text="" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="23" Style="{StaticResource LeftColumn}" MinHeight="100">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                    </Grid.Resources>
                     <Slider Orientation="Vertical"/>
                 </Grid>
                 <Grid Grid.Row="23" Style="{StaticResource RightColumn}" MinHeight="100">
-                    <Grid.Resources>
-                        <!-- Rounding slider thumb until that becomes the default -->
-                        <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
-                    </Grid.Resources>
                     <Slider Orientation="Vertical" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </Grid>
 
                 <TextBlock Grid.Row="24" Text="" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="24" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                    </Grid.Resources>
                     <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside"/>
                 </Grid>
                 <Grid Grid.Row="24" Style="{StaticResource RightColumn}">
-                    <Grid.Resources>
-                        <!-- Rounding slider thumb until that becomes the default -->
-                        <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
-                    </Grid.Resources>
                     <Slider Orientation="Vertical" TickFrequency="1" Height="100" TickPlacement="Outside" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </Grid>
 
@@ -462,10 +494,8 @@
                         <AppBarButton Icon="World"/>
                     </AppBar>
                 </Grid>
-                <Grid Grid.Row="25" Style="{StaticResource RightColumn}">
-                    <AppBar contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}">
-                        <AppBarButton Icon="World"/>
-                    </AppBar>
+                <Grid Grid.Row="25" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock>N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="26" Text="MenuBar" Style="{StaticResource SideHeader}"/>
@@ -522,6 +552,10 @@
 
                 <TextBlock Grid.Row="31" Text="ProgressBar" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="31" Style="{StaticResource LeftColumn}" MinWidth="100">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <ProgressBar Minimum="0" Maximum="100" Value="50"/>
                 </Grid>
                 <Grid Grid.Row="31" Style="{StaticResource RightColumn}" MinWidth="100">
@@ -550,6 +584,10 @@
 
                 <TextBlock Grid.Row="34" Text="CheckBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="34" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <CheckBox Content="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="34" Style="{StaticResource RightColumn}">
@@ -558,6 +596,10 @@
 
                 <TextBlock Grid.Row="35" Text="Button" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="35" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <Button Content="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="35" Style="{StaticResource RightColumn}">
@@ -566,6 +608,10 @@
 
                 <TextBlock Grid.Row="36" Text="TextBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="36" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <TextBox Text="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="36" Style="{StaticResource RightColumn}">
@@ -574,6 +620,10 @@
 
                 <TextBlock Grid.Row="37" Text="PasswordBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="37" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <PasswordBox Password="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="37" Style="{StaticResource RightColumn}">
@@ -582,6 +632,10 @@
 
                 <TextBlock Grid.Row="38" Text="RichEditBox" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="38" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <RichEditBox/>
                 </Grid>
                 <Grid Grid.Row="38" Style="{StaticResource RightColumn}">
@@ -589,6 +643,10 @@
                 </Grid>
                 <TextBlock Grid.Row="39" Text="FlipView" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="39" Style="{StaticResource LeftColumn}" Width="200" Height="200">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <FlipView>
                         <Grid Background="Red"/>
                         <Grid Background="Green"/>
@@ -611,16 +669,16 @@
                         <RadioButton Content="Item 3"/>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Row="40" Style="{StaticResource RightColumn}">
-                    <StackPanel Orientation="Vertical">
-                        <RadioButton Content="Item 1" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                        <RadioButton Content="Item 2" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                        <RadioButton Content="Item 3" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
-                    </StackPanel>
+                <Grid Grid.Row="40" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock>N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="41" Text="ToggleButton" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="41" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <ToggleButton Content="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="41" Style="{StaticResource RightColumn}">
@@ -629,6 +687,10 @@
 
                 <TextBlock Grid.Row="42" Text="ToggleSplitButton" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="42" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <controls:ToggleSplitButton Content="Hello World">
                         <controls:ToggleSplitButton.Flyout>
                             <Flyout>
@@ -653,6 +715,10 @@
 
                 <TextBlock Grid.Row="43" Text="RepeatButton" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="43" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <RepeatButton Content="Hello World"/>
                 </Grid>
                 <Grid Grid.Row="43" Style="{StaticResource RightColumn}">
@@ -663,12 +729,16 @@
                 <Grid Grid.Row="44" Style="{StaticResource LeftColumn}">
                     <HyperlinkButton Content="Hello World"/>
                 </Grid>
-                <Grid Grid.Row="44" Style="{StaticResource RightColumn}">
-                    <HyperlinkButton Content="Hello World" contract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
+                <Grid Grid.Row="44" Style="{StaticResource RightColumn}" VerticalAlignment="Center">
+                    <TextBlock>N/A</TextBlock>
                 </Grid>
 
                 <TextBlock Grid.Row="45" Text="DropDownButton" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="45" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <controls:DropDownButton Content="Hello World">
                         <controls:DropDownButton.Flyout>
                             <Flyout>
@@ -692,6 +762,10 @@
                 </Grid>
                 <TextBlock Grid.Row="46" Text="SplitButton" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="46" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <controls:SplitButton Content="Hello World">
                         <controls:SplitButton.Flyout>
                             <Flyout>
@@ -715,6 +789,15 @@
                 </Grid>
                 <TextBlock Grid.Row="47" Text="ColorPicker" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="47" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                        <x:Double x:Key="SliderThumbCornerRadius">4</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbWidth">8</x:Double>
+                        <x:Double x:Key="SliderHorizontalThumbHeight">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbWidth">24</x:Double>
+                        <x:Double x:Key="SliderVerticalThumbHeight">8</x:Double>
+                    </Grid.Resources>
                     <controls:ColorPicker IsAlphaEnabled="True"/>
                 </Grid>
                 <Grid Grid.Row="47" Style="{StaticResource RightColumn}">
@@ -728,12 +811,6 @@
                         <contract7Present:Style TargetType="primitives:ColorPickerSlider">
                             <Setter Property="CornerRadius" Value="{Binding ControlCornerRadius, Mode=OneWay}"/>
                         </contract7Present:Style>
-                        <!-- Rounding slider thumb until that becomes the default -->
-                        <x:Double x:Key="SliderThumbCornerRadius">10</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
-                        <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
                     </Grid.Resources>
                     <controls:ColorPicker IsAlphaEnabled="True" muxContract7Present:CornerRadius="{x:Bind ControlCornerRadius, Mode=OneWay}"/>
                 </Grid>
@@ -777,6 +854,10 @@
 
                 <TextBlock Grid.Row="50" Text="TreeView" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="50" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <controls:TreeView SelectionMode="Multiple">
                         <controls:TreeView.RootNodes>
                             <controls:TreeViewNode Content="Item 1" IsExpanded="True">
@@ -814,11 +895,23 @@
                 </Grid>
                 <TextBlock Grid.Row="51" Text="MediaPlayerElement" Style="{StaticResource SideHeader}"/>
                 <Grid Grid.Row="51" Style="{StaticResource LeftColumn}">
+                    <Grid.Resources>
+                        <CornerRadius x:Key="ControlCornerRadius">0,0,0,0</CornerRadius>
+                        <CornerRadius x:Key="OverlayCornerRadius">0,0,0,0</CornerRadius>
+                    </Grid.Resources>
                     <MediaPlayerElement 
                         Width="200"
                         Height="100"
                         x:Name="mediaPlayer"
                         AreTransportControlsEnabled="True" />
+                </Grid>
+                
+                <Grid Grid.Row="51" Style="{StaticResource RightColumn}">
+                    <MediaPlayerElement 
+                        Width="200"
+                        Height="100"
+                        AreTransportControlsEnabled="True"
+                        contract7Present:CornerRadius="{x:Bind ControlCornerRadius}" />
                 </Grid>
             </Grid>
 
