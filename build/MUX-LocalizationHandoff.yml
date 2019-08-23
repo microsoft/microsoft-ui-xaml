@@ -2,7 +2,7 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
   pool:
-    name: Package ES Lab E
+    name: Package ES Standard Build
 
   steps:
   - task: PkgESSetupBuild@10
