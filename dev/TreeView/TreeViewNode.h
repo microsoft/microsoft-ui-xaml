@@ -66,6 +66,7 @@ private:
     winrt::ItemsSourceView m_itemsDataSource{ nullptr };
     void OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void SyncChildrenNodesWithItemsSource();
+    bool AreChildrenNodesEqualToItemsSource();
     void AddToChildrenNodes(int index, int count);
     void RemoveFromChildrenNodes(int index, int count);
     bool m_isContentMode{ false };
