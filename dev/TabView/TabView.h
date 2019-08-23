@@ -86,6 +86,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    winrt::Size MeasureOverride(winrt::Size const& availableSize); 
 
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -171,4 +172,6 @@ private:
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
 
     DispatcherHelper m_dispatcherHelper{ *this };
+
+    winrt::Size previousAvailableSize{};
 };
