@@ -2688,6 +2688,61 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1182
+        public void TreeViewWithMultiLevelChildrenExpandCollapseTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("AddSecondLevelOfNodes");
+                ClickButton("LabelItems");
+
+                var root1 = new TreeItem(FindElement.ByName("Root.1"));
+                root1.Expand();
+                Wait.ForIdle();
+
+                Log.Comment("Drag Root.1.2 into Root.1.1");
+                var root11 = new TreeItem(FindElement.ByName("Root.1.1"));
+                var root12 = new TreeItem(FindElement.ByName("Root.1.2"));
+                InputHelper.DragToTarget(root12, root11);
+
+                var root0 = new TreeItem(FindElement.ByName("Root.0"));
+                Log.Comment("Drag Root.1 into Root.0");
+                InputHelper.DragToTarget(root1, root0);
+
+                root0.Expand();
+                Wait.ForIdle();
+                root1.Expand();
+                Wait.ForIdle();
+                root11.Expand();
+                Wait.ForIdle();
+
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 | Root.2", ReadResult());
+
+                root0.Collapse();
+                Wait.ForIdle();
+                root0.Expand();
+                Wait.ForIdle();
+
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 | Root.2", ReadResult());
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
