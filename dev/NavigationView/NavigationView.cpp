@@ -824,7 +824,15 @@ bool NavigationView::ShouldShowCloseButton()
 {
     if (m_backButton && !ShouldPreserveNavigationViewRS3Behavior() && m_closeButton)
     {
-        if (PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::LeftMinimal || !IsPaneOpen())
+        if (!IsPaneOpen())
+        {
+            return false;
+        }
+
+        auto paneDisplayMode = PaneDisplayMode();
+
+        if (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::LeftMinimal &&
+            (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::Auto || DisplayMode() != winrt::NavigationViewDisplayMode::Minimal))
         {
             return false;
         }
