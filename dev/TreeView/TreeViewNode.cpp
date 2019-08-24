@@ -236,7 +236,7 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
         auto children = winrt::get_self<TreeViewNodeVector>(Children());
         children->Clear(false /* updateItemsSource */);
 
-        auto size = m_itemsDataSource.Count();
+        auto size = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
         for (auto i = 0; i < size; i++)
         {
             auto item = m_itemsDataSource.GetAt(i);
