@@ -250,7 +250,8 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
 
 bool TreeViewNode::AreChildrenNodesEqualToItemsSource()
 {
-    UINT32 childrenCount = Children() ? Children().Size() : 0;
+    auto children = Children();
+    UINT32 childrenCount = children ? children.Size() : 0;
     UINT32 itemsSourceCount = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
 
     if (childrenCount != itemsSourceCount)
@@ -259,14 +260,11 @@ bool TreeViewNode::AreChildrenNodesEqualToItemsSource()
     }
 
     // Compare the actual content in collections when counts are equal
-    if (itemsSourceCount > 0)
+    for (UINT32 i = 0; i < itemsSourceCount; i++)
     {
-        for (UINT32 i = 0; i < itemsSourceCount; i++)
+        if (children.GetAt(i).Content() != m_itemsDataSource.GetAt(i))
         {
-            if (Children().GetAt(i).Content() != m_itemsDataSource.GetAt(i))
-            {
-                return false;
-            }
+            return false;
         }
     }
 
