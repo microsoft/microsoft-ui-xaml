@@ -479,7 +479,7 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
 
 winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
 {
-    previousAvailableSize = availableSize;;
+    previousAvailableSize = availableSize;
     return __super::MeasureOverride(availableSize);
 }
 
