@@ -318,5 +318,10 @@ namespace MUXControlsTestApp
                 ScrollButtonsVisible.Text = "Unexpected";
             }
         }
+
+        private void TabViewSizingPageButtton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(TabViewSizingPage));
+        }
     }
 }
