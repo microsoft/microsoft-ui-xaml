@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -2643,6 +2643,30 @@
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal"/>
+
+                                                        <VisualState x:Name="PointerOver">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="RootGrid.(local:RevealBrush.State)" Value="PointerOver" />
+                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ButtonRevealBackgroundPointerOver}"/>
+                                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPointerOver}"/>
+                                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundPointerOver}"/>
+                                                            </VisualState.Setters>
+                                                            <Storyboard>
+                                                                <PointerUpThemeAnimation Storyboard.TargetName="RootGrid" />
+                                                            </Storyboard>
+                                                        </VisualState>
+
+                                                        <VisualState x:Name="Pressed">
+                                                            <VisualState.Setters>
+                                                                <Setter Target="RootGrid.(local:RevealBrush.State)" Value="Pressed" />
+                                                                <Setter Target="RootGrid.Background" Value="{ThemeResource ButtonRevealBackgroundPressed}"/>
+                                                                <Setter Target="ContentPresenter.BorderBrush" Value="{ThemeResource ButtonRevealBorderBrushPressed}"/>
+                                                                <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource SplitButtonForegroundPressed}"/>
+                                                            </VisualState.Setters>
+                                                            <Storyboard>
+                                                                <PointerDownThemeAnimation Storyboard.TargetName="RootGrid" />
+                                                            </Storyboard>
+                                                        </VisualState>
 
                                                         <VisualState x:Name="Disabled">
                                                             <VisualState.Setters>
