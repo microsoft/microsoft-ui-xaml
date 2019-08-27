@@ -17,11 +17,11 @@ parameters:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
       # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open%3bWindows.10.Amd64.Client19H1.Open'
+      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs4.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
