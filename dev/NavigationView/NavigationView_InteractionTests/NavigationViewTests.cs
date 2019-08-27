@@ -1947,6 +1947,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
+        public void VerifyNoCrashWhenSelectedItemIsInvalidItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
+            {
+              
+                Button setInvalidSelectedItemButton = new Button(FindElement.ById("SetInvalidSelectedItem"));
+                UIObject apps = FindElement.ById("AppsItem");
+
+                var invokeResult = new Edit(FindElement.ById("ItemInvokedResult"));
+                var selectResult = new Edit(FindElement.ById("SelectionChangedResult"));
+
+                // Select apps
+                using (var waiter = new ValueChangedEventWaiter(invokeResult))
+                {
+                    apps.Click();
+                    waiter.Wait();
+                }
+
+                Verify.AreEqual(selectResult.Value, "Apps");
+
+                setInvalidSelectedItemButton.Click();
+                Wait.ForIdle();
+               
+                Verify.AreEqual(selectResult.Value, "Null");
+            }
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void VerifyTopNavigationItemFocusVisualKindRevealTest()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Store Test" }))

@@ -1856,7 +1856,6 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
     if (auto topNavListView = m_topNavListView.get())
     {
-        MUX_ASSERT(prev && next);
         auto prevIndex = prev ? topNavListView.IndexFromContainer(prev) : s_itemNotFound;
         auto nextIndex = next ? topNavListView.IndexFromContainer(next) : s_itemNotFound;
         if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
