@@ -154,10 +154,9 @@ namespace MUXControlsTestApp
             }
             else
             {
-                if (e.SelectedItem != null)
+                if (e.SelectedItem is NavigationViewItem item)
                 {
-                    var content = ((e.SelectedItem) as NavigationViewItem).Content;
-                    SelectionChangedResult.Text = GetAndVerifyTheContainer(content, container);
+                    SelectionChangedResult.Text = GetAndVerifyTheContainer(item.Content, container);
                 }
                 else
                 {
@@ -278,6 +277,11 @@ namespace MUXControlsTestApp
         private void ChangeTopNavVisibility_Click(object sender, RoutedEventArgs e)
         {
             NavView.IsPaneVisible = !NavView.IsPaneVisible;
+        }
+
+        private void SetInvalidSelectedItem_Click(object sender, RoutedEventArgs e)
+        {
+            NavView.SelectedItem = new CheckBox();
         }
     }
 }
