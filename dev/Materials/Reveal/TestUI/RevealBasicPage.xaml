@@ -6,6 +6,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d">
 
     <local:TestPage.BottomAppBar>
@@ -88,12 +89,30 @@
                                 </MenuFlyout>
                             </Button.Flyout>
                         </Button>
-                    </StackPanel>
+
+                      </StackPanel>
 
                     <Button Content="Large Button" MinWidth="100" MinHeight="100" Style="{StaticResource ButtonRevealStyle}" Margin="5" />
                     <Button Content="Narrow" MaxWidth="50" MinHeight="100" Style="{StaticResource ButtonRevealStyle}" Margin="5" />
+
+                    <StackPanel>
+                        <controls:SplitButton Style="{StaticResource SplitButtonRevealStyle}" Margin="5" Content="Test SplitButton" >
+                            <controls:SplitButton.Flyout>
+                                <Flyout >
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                        <controls:DropDownButton Content="Test DropDownButton" Margin="5"  Style="{StaticResource DropDownButtonRevealStyle}">
+                            <controls:DropDownButton.Flyout>
+                                <Flyout Placement="Bottom" >
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:DropDownButton.Flyout>
+                        </controls:DropDownButton>
+                    </StackPanel>
                 </StackPanel>
-                
+
                 <TextBlock Text="Non-Revealy" Margin="24"/>
 
                 <StackPanel Orientation="Horizontal">
@@ -123,8 +142,24 @@
 
                     <Button Content="Large Button" MinWidth="100" MinHeight="100" Margin="5" />
                     <Button Content="Narrow" MaxWidth="50" MinHeight="100" Margin="5" />
-                </StackPanel>
 
+                    <StackPanel>
+                        <controls:SplitButton Content="Test SplitButton" Margin="5" >
+                            <controls:SplitButton.Flyout>
+                                <Flyout >
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:SplitButton.Flyout>
+                        </controls:SplitButton>
+                        <controls:DropDownButton Content="Test DropDownButton" Margin="5" >
+                            <controls:DropDownButton.Flyout>
+                                <Flyout Placement="Bottom" >
+                                    <TextBlock Text="Hello"/>
+                                </Flyout>
+                            </controls:DropDownButton.Flyout>
+                        </controls:DropDownButton>
+                    </StackPanel>
+                </StackPanel>
                 <Button x:Name="ChangeDefaultPosition" Content="Change CommandBarDefaultLabelPosition" Click="OnChangeDefaultPositionClick" />
             </StackPanel>
         </StackPanel>
