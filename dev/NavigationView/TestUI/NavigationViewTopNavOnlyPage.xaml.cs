@@ -154,10 +154,9 @@ namespace MUXControlsTestApp
             }
             else
             {
-                if (e.SelectedItem != null && (e.SelectedItem) as NavigationViewItem != null)
+                if (e.SelectedItem is NavigationViewItem item)
                 {
-                    var content = ((e.SelectedItem) as NavigationViewItem).Content;
-                    SelectionChangedResult.Text = GetAndVerifyTheContainer(content, container);
+                    SelectionChangedResult.Text = GetAndVerifyTheContainer(item.Content, container);
                 }
                 else
                 {
