@@ -80,14 +80,14 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.DataTemplate TabItemTemplate;
     Windows.UI.Xaml.Controls.DataTemplateSelector TabItemTemplateSelector{ get; set; };
 
-    [MUX_DEFAULT_VALUE("true")]
+    [MUX_DEFAULT_VALUE("false")]
     Boolean CanDragTabs{ get; set; };
     [MUX_DEFAULT_VALUE("true")]
     Boolean CanReorderTabs{ get; set; };
     [MUX_DEFAULT_VALUE("true")]
     Boolean AllowDropTabs{ get; set; };
 
-    [MUX_DEFAULT_VALUE("-1")]
+    [MUX_DEFAULT_VALUE("0")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SelectedIndex;
 
