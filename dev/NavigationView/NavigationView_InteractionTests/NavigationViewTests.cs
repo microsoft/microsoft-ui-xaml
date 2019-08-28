@@ -1967,7 +1967,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(selectResult.Value, "Apps");
 
-                setInvalidSelectedItemButton.Click();
+                setInvalidSelectedItemButton.Invoke();
                 Wait.ForIdle();
                
                 Verify.AreEqual(selectResult.Value, "Null");
