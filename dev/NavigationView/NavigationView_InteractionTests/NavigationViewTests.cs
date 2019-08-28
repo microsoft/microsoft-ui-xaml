@@ -1961,7 +1961,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Select apps
                 using (var waiter = new ValueChangedEventWaiter(invokeResult))
                 {
-                    apps.Click();
+                    apps.Invoke();
                     waiter.Wait();
                 }
 
