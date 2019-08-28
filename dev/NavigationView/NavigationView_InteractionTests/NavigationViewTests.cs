@@ -1953,7 +1953,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
               
                 Button setInvalidSelectedItemButton = new Button(FindElement.ById("SetInvalidSelectedItem"));
-                UIObject apps = FindElement.ById("AppsItem");
+                var apps = new Button(FindElement.ById("AppsItem"));
 
                 var invokeResult = new Edit(FindElement.ById("ItemInvokedResult"));
                 var selectResult = new Edit(FindElement.ById("SelectionChangedResult"));
