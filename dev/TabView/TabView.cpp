@@ -477,6 +477,12 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
     }
 }
 
+winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
+{
+    previousAvailableSize = availableSize;
+    return __super::MeasureOverride(availableSize);
+}
+
 void TabView::UpdateTabWidths()
 {
     double tabWidth = std::numeric_limits<double>::quiet_NaN();
@@ -505,7 +511,8 @@ void TabView::UpdateTabWidths()
 
         if (auto tabColumn = m_tabColumn.get())
         {
-            auto availableWidth = ActualWidth() - widthTaken;
+            // Note: can be infinite
+            auto availableWidth = previousAvailableSize.Width - widthTaken;
 
             if (TabWidthMode() == winrt::TabViewWidthMode::SizeToContent)
             {
