@@ -261,7 +261,7 @@
                             <Flyout>
                                 <Flyout.FlyoutPresenterStyle>
                                     <contract7Present:Style TargetType="FlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
+                                        <Setter Property="CornerRadius" Value="4"/>
                                     </contract7Present:Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <TextBlock Text="Hello World"/>
@@ -271,7 +271,7 @@
                             <Flyout>
                                 <Flyout.FlyoutPresenterStyle>
                                     <contract7Present:Style TargetType="FlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
+                                        <Setter Property="CornerRadius" Value="4"/>
                                     </contract7Present:Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <TextBlock Text="Hello World" MinHeight="300" MinWidth="300"/>
@@ -323,7 +323,7 @@
                             <MenuFlyout>
                                 <MenuFlyout.MenuFlyoutPresenterStyle>
                                     <contract7Present:Style TargetType="MenuFlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
+                                        <Setter Property="CornerRadius" Value="4"/>
                                     </contract7Present:Style>
                                 </MenuFlyout.MenuFlyoutPresenterStyle>
                                 <MenuFlyoutItem Text="Share" >
@@ -342,7 +342,7 @@
                             <MenuFlyout>
                                 <MenuFlyout.MenuFlyoutPresenterStyle>
                                     <contract7Present:Style TargetType="MenuFlyoutPresenter">
-                                        <Setter Property="CornerRadius" Value="{Binding OverlayCornerRadius, Mode=OneWay}"/>
+                                        <Setter Property="CornerRadius" Value="4"/>
                                     </contract7Present:Style>
                                 </MenuFlyout.MenuFlyoutPresenterStyle>
                                 <MenuFlyoutItem Text="Share" >
