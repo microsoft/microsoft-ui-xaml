@@ -3,7 +3,7 @@ Param(
     [Parameter(mandatory=$true)]
     [string]$newVersion,
 
-    [string]$currentPackageVersion = "2.1" + "190606001"
+    [string]$currentPackageVersion = "2.1." + "190606001"
 )
 
 $scriptDirectory = $script:MyInvocation.MyCommand.Path | Split-Path -Parent
@@ -24,7 +24,7 @@ Get-ChildItem $scriptDirectory -r -File |
 
 if ($numFilesReplaced -eq 0)
 {
-  Write-Host "##vso[task.logissue type=error]No files found with '$env:currentPackageVersion' in them, make sure to update *.yml files when retargeting ReleaseTest projects"
+  Write-Host "##vso[task.logissue type=error]No files found with '$currentPackageVersion' in them, make sure to update *.yml files when retargeting ReleaseTest projects"
   Exit 1
 }
 
