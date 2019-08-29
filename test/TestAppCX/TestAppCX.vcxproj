@@ -181,7 +181,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="MenuBarTestPage.xaml.h" >
+    <ClInclude Include="CornerRadiusTestPage.xaml.h">
+      <DependentUpon>CornerRadiusTestPage.xaml</DependentUpon>
+    </ClInclude>
+    <ClInclude Include="MenuBarTestPage.xaml.h">
       <DependentUpon>MenuBarTestPage.xaml</DependentUpon>
     </ClInclude>
     <ClInclude Include="pch.h" />
@@ -191,7 +194,7 @@
     <ClInclude Include="MainPage.xaml.h">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="LeakCycleTestCX.xaml.h" >
+    <ClInclude Include="LeakCycleTestCX.xaml.h">
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
@@ -199,13 +202,16 @@
     <ApplicationDefinition Include="App.xaml">
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="CornerRadiusTestPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="MainPage.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="LeakCycleTestCX.xaml" >
+    <Page Include="LeakCycleTestCX.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MenuBarTestPage.xaml" >
+    <Page Include="MenuBarTestPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -228,10 +234,13 @@
     <ClCompile Include="App.xaml.cpp">
       <DependentUpon>App.xaml</DependentUpon>
     </ClCompile>
+    <ClCompile Include="CornerRadiusTestPage.xaml.cpp">
+      <DependentUpon>CornerRadiusTestPage.xaml</DependentUpon>
+    </ClCompile>
     <ClCompile Include="MainPage.xaml.cpp">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="MenuBarTestPage.xaml.cpp" >
+    <ClCompile Include="MenuBarTestPage.xaml.cpp">
       <DependentUpon>MenuBarTestPage.xaml</DependentUpon>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -244,7 +253,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|arm64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="LeakCycleTestCX.xaml.cpp" >
+    <ClCompile Include="LeakCycleTestCX.xaml.cpp">
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>

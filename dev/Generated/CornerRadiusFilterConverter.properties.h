@@ -12,9 +12,14 @@ public:
     void Filter(winrt::CornerRadiusFilterKind const& value);
     winrt::CornerRadiusFilterKind Filter();
 
+    void ReturnAsDouble(bool value);
+    bool ReturnAsDouble();
+
     static winrt::DependencyProperty FilterProperty() { return s_FilterProperty; }
+    static winrt::DependencyProperty ReturnAsDoubleProperty() { return s_ReturnAsDoubleProperty; }
 
     static GlobalDependencyProperty s_FilterProperty;
+    static GlobalDependencyProperty s_ReturnAsDoubleProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
