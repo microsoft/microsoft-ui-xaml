@@ -26,7 +26,8 @@ jobs:
     name: 'RunTestsInHelix'
     dependsOn:
     - Build
-    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    #condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    condition: False
     testSuite: 'DevTestSuite'
     taefQuery: $(taefQuery)
     useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
@@ -67,6 +68,9 @@ jobs:
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
-    dependsOn: RunTestsInHelix
+    dependsOn:
+    - RunTestsInHelix
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 1
