@@ -35,6 +35,36 @@ jobs:
       config:
         isDummyMatrix: true
 
+# Create Nuget Package
+- template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
+  parameters:
+    jobName: CreateNugetPackage
+    dependsOn: Build
+
+# Build solution that depends on nuget package
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
+    dependsOn: CreateNugetPackage
+    condition: in(dependencies.CreateNugetPackage.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+   
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: CreateNugetPackage
+    condition: in(dependencies.CreateNugetPackage.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
     dependsOn: RunTestsInHelix

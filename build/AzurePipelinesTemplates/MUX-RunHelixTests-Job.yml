@@ -57,23 +57,24 @@ jobs:
       restoreDirectory: packages
 
   - task: DownloadBuildArtifacts@0 
+    #and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
     condition:
-      and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
+      succeeded()
     inputs: 
       artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
-  - task: DownloadBuildArtifacts@0 
-    condition:
-      and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
-    inputs: 
-      buildType: specific
-      buildVersionToDownload: specific
-      project: $(System.TeamProjectId)
-      pipeline: ${{ parameters.useBuildOutputFromPipeline }}
-      buildId: $(useBuildOutputFromBuildId)
-      artifactName: ${{ parameters.artifactName }} 
-      downloadPath: '$(artifactsDir)'
+  # - task: DownloadBuildArtifacts@0 
+  #   condition:
+  #     and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
+  #   inputs: 
+  #     buildType: specific
+  #     buildVersionToDownload: specific
+  #     project: $(System.TeamProjectId)
+  #     pipeline: ${{ parameters.useBuildOutputFromPipeline }}
+  #     buildId: $(useBuildOutputFromBuildId)
+  #     artifactName: ${{ parameters.artifactName }} 
+  #     downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
     displayName: 'PrepareHelixPayload.ps1'

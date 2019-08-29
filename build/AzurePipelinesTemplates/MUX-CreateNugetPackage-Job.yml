@@ -2,6 +2,7 @@ parameters:
 # Extract the build revision number from Build.BuildNumber. This is needed to pass to build-nupkg
   jobName: ''
   dependsOn: ''
+  condition: ''
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   nupkgdir: '$(build.artifactStagingDirectory)'
 # The "primary" build arch is the one that the nuspec gets its winmd, pri, and other neutral files from
@@ -14,6 +15,7 @@ jobs:
 - job: ${{ parameters.jobName }}
   dependsOn:
     - ${{ parameters.dependsOn }}
+  condition: ${{ parameters.condition }}
 
   # XES tasks need to be on PackageES machines.
   ${{if parameters.signConfig }}:
