@@ -640,7 +640,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Background="Transparent"
-                            Margin="0,2,2,2"
+                            Margin="0,1,1,1"
                             Visibility="Collapsed"
                             Width="30"
                             HorizontalAlignment="Right"
