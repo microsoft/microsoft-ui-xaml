@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -129,13 +129,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PersonPicture", "PersonPict
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PersonPicture", "dev\PersonPicture\PersonPicture.vcxitems", "{5FDF2501-AA3D-4082-AD45-D1F2A94C1213}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CppWinRT", "CppWinRT", "{D2CCA8FF-5640-4196-BAA2-F4E157D48EE5}"
-	ProjectSection(SolutionItems) = preProject
-		build\CppWinRT\CppWinRT_SDK.nuspec = build\CppWinRT\CppWinRT_SDK.nuspec
-		build\CppWinRT\CppWinRT_SDK.targets = build\CppWinRT\CppWinRT_SDK.targets
-		build\CppWinRT\MakeCppWinRTNuPkg.cmd = build\CppWinRT\MakeCppWinRTNuPkg.cmd
-	EndProjectSection
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RatingControl_InteractionTests", "dev\RatingControl\InteractionTests\RatingControl_InteractionTests.shproj", "{AFAAD014-132C-4D2A-A28E-4EF717D3E647}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ScrollViewer_InteractionTests", "dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.shproj", "{BFAAD015-232D-5D2B-B28F-5EF717D3E648}"
@@ -200,30 +193,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TreeView", "TreeView", "{0A
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TreeView", "dev\TreeView\TreeView.vcxitems", "{EEB38379-3A5C-439F-BB5E-535D75F2B6C1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MiniWindowsSDK", "MiniWindowsSDK", "{10F15015-8C42-4130-B9C0-B03C2434E73D}"
-	ProjectSection(SolutionItems) = preProject
-		build\MiniWindowsSDK\MakeMiniWindowsSDKNuPkg.cmd = build\MiniWindowsSDK\MakeMiniWindowsSDKNuPkg.cmd
-		build\MiniWindowsSDK\MiniWindowsSDK.nuspec = build\MiniWindowsSDK\MiniWindowsSDK.nuspec
-		build\MiniWindowsSDK\MiniWindowsSDK.targets = build\MiniWindowsSDK\MiniWindowsSDK.targets
-		build\MiniWindowsSDK\MiniWindowsSDK_Dummy.cs = build\MiniWindowsSDK\MiniWindowsSDK_Dummy.cs
-		build\MiniWindowsSDK\readme.md = build\MiniWindowsSDK\readme.md
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpkgDefs", "SpkgDefs", "{E4B1BF51-AF68-4B74-86CA-7A0289D25BAE}"
-	ProjectSection(SolutionItems) = preProject
-		build\SpkgDefs\MUXControls.CodeCoverageDependencies.Empty.pkg.xml = build\SpkgDefs\MUXControls.CodeCoverageDependencies.Empty.pkg.xml
-		build\SpkgDefs\MUXControls.CodeCoverageDependencies.pkg.xml = build\SpkgDefs\MUXControls.CodeCoverageDependencies.pkg.xml
-		build\SpkgDefs\MUXControls.OS.pkg.xml = build\SpkgDefs\MUXControls.OS.pkg.xml
-		build\SpkgDefs\MUXControls.OS.Test.pkg.xml = build\SpkgDefs\MUXControls.OS.Test.pkg.xml
-		build\SpkgDefs\MUXControls.Test.pkg.xml = build\SpkgDefs\MUXControls.Test.pkg.xml
-		build\SpkgDefs\MUXControls.TestDependencies.arm.pkg.xml = build\SpkgDefs\MUXControls.TestDependencies.arm.pkg.xml
-		build\SpkgDefs\MUXControls.TestDependencies.x64.pkg.xml = build\SpkgDefs\MUXControls.TestDependencies.x64.pkg.xml
-		build\SpkgDefs\MUXControls.TestDependencies.x86.pkg.xml = build\SpkgDefs\MUXControls.TestDependencies.x86.pkg.xml
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{5FC770CF-73C1-407A-A195-FDFCEDB2930B}"
 	ProjectSection(SolutionItems) = preProject
-		build\Localization\Localization.props = build\Localization\Localization.props
 		build\Localization\LocalizationAutomation.proj = build\Localization\LocalizationAutomation.proj
 		build\Localization\NuGet.Config = build\Localization\NuGet.Config
 		build\Localization\readme.md = build\Localization\readme.md
@@ -233,10 +204,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localizatio
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Settings", "Settings", "{9944D1EA-3D24-4ECC-A0C1-D678E51CF90A}"
 	ProjectSection(SolutionItems) = preProject
-		build\Localization\Settings\LatteAutomation.config = build\Localization\Settings\LatteAutomation.config
 		build\Localization\Settings\LocConfig.xml = build\Localization\Settings\LocConfig.xml
 		build\Localization\Settings\packages.config = build\Localization\Settings\packages.config
-		build\Localization\Settings\ReachProjectIds_master.xml = build\Localization\Settings\ReachProjectIds_master.xml
 	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TreeView_APITests", "dev\TreeView\APITests\TreeView_APITests.shproj", "{DE885C66-929C-464E-BAC4-3E076EC46483}"
@@ -355,44 +324,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsPorting", "WindowsPo
 	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IconSource_APITests", "dev\IconSource\APITests\IconSource_APITests.shproj", "{D73627E9-564C-4A72-A12D-F6C82F17AD0D}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TREXDefs", "TREXDefs", "{BB58F210-346C-4BB7-BC9C-8C2D591DF0B8}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Default", "Default", "{4342C9C2-1873-4C07-93CE-98014EFB2B23}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{44858663-F0DC-46E9-9147-6A01A9D15179}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefs\x86\ci_TrexConfig.xml = build\TRexDefs\x86\ci_TrexConfig.xml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amd64", "amd64", "{5C101822-1D25-4F18-8871-7BCFF2DE9737}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefs\amd64\ci_TrexConfig.xml = build\TRexDefs\amd64\ci_TrexConfig.xml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeCoverage", "CodeCoverage", "{D794E679-D409-4267-9EC8-212AC711723E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Onboarding", "Onboarding", "{D5FD7E52-07AF-43EE-8CC4-61D134E54D4E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{6C6B88B7-47AE-48C4-B2FC-9C92D5E7D2FF}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefsOnboarding\x86\ci_TrexConfigOnboarding.xml = build\TRexDefsOnboarding\x86\ci_TrexConfigOnboarding.xml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amd64", "amd64", "{1F8CCFCC-9458-44DF-8287-931A387F4AA7}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefsOnboarding\amd64\ci_TrexConfigOnboarding.xml = build\TRexDefsOnboarding\amd64\ci_TrexConfigOnboarding.xml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "x86", "x86", "{4D6F0E25-C956-4EA8-A836-66D41488262E}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefsCodeCoverage\x86\ci_TrexConfig.xml = build\TRexDefsCodeCoverage\x86\ci_TrexConfig.xml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "amd64", "amd64", "{6C462E2C-AF1E-4B1B-8A5F-77B79951253B}"
-	ProjectSection(SolutionItems) = preProject
-		build\TRexDefsCodeCoverage\amd64\ci_TrexConfig.xml = build\TRexDefsCodeCoverage\amd64\ci_TrexConfig.xml
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXControlsAdhocApp", "test\MUXControlsAdhocApp\MUXControlsAdhocApp.csproj", "{906E225A-E99D-466E-AA60-E23384910D99}"
 EndProject
@@ -1450,7 +1381,6 @@ Global
 		{447F5D0D-9189-4B8A-BCDC-0FE67646DE97} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
 		{813C1EA5-ADC1-4C14-B3DC-B873098D7AAA} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{5FDF2501-AA3D-4082-AD45-D1F2A94C1213} = {813C1EA5-ADC1-4C14-B3DC-B873098D7AAA}
-		{D2CCA8FF-5640-4196-BAA2-F4E157D48EE5} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
 		{AFAAD014-132C-4D2A-A28E-4EF717D3E647} = {3B0C114B-AC74-4BB1-975D-26FE5D505BD1}
 		{BFAAD015-232D-5D2B-B28F-5EF717D3E648} = {4B0C114C-BC75-5BB2-A75E-36FE5D505BD2}
 		{BFAAD014-132C-4D2A-A28E-4EF717D3E648} = {438CED23-DAB1-495E-9A72-0FF38E01EB80}
@@ -1483,8 +1413,6 @@ Global
 		{1522A856-17CE-4178-A6B3-0692F90D7C55} = {73E823BC-5485-4F26-9B09-8B83C133EE6B}
 		{0A38E3C5-3CFA-42EB-860C-395A861B6791} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{EEB38379-3A5C-439F-BB5E-535D75F2B6C1} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
-		{10F15015-8C42-4130-B9C0-B03C2434E73D} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
-		{E4B1BF51-AF68-4B74-86CA-7A0289D25BAE} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
 		{5FC770CF-73C1-407A-A195-FDFCEDB2930B} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
 		{9944D1EA-3D24-4ECC-A0C1-D678E51CF90A} = {5FC770CF-73C1-407A-A195-FDFCEDB2930B}
 		{DE885C66-929C-464E-BAC4-3E076EC46483} = {0A38E3C5-3CFA-42EB-860C-395A861B6791}
@@ -1528,16 +1456,6 @@ Global
 		{19FFFF77-4814-4AD6-ACD7-42C6A50AB0D8} = {E220EFAB-BA88-458D-A271-279B6630E864}
 		{EE9F64DF-7F2B-45F0-82AA-F0DFF577AB82} = {5EF3865D-EFAC-4676-B1E6-FB09DD7C67FD}
 		{D73627E9-564C-4A72-A12D-F6C82F17AD0D} = {E220EFAB-BA88-458D-A271-279B6630E864}
-		{BB58F210-346C-4BB7-BC9C-8C2D591DF0B8} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
-		{4342C9C2-1873-4C07-93CE-98014EFB2B23} = {BB58F210-346C-4BB7-BC9C-8C2D591DF0B8}
-		{44858663-F0DC-46E9-9147-6A01A9D15179} = {4342C9C2-1873-4C07-93CE-98014EFB2B23}
-		{5C101822-1D25-4F18-8871-7BCFF2DE9737} = {4342C9C2-1873-4C07-93CE-98014EFB2B23}
-		{D794E679-D409-4267-9EC8-212AC711723E} = {BB58F210-346C-4BB7-BC9C-8C2D591DF0B8}
-		{D5FD7E52-07AF-43EE-8CC4-61D134E54D4E} = {BB58F210-346C-4BB7-BC9C-8C2D591DF0B8}
-		{6C6B88B7-47AE-48C4-B2FC-9C92D5E7D2FF} = {D5FD7E52-07AF-43EE-8CC4-61D134E54D4E}
-		{1F8CCFCC-9458-44DF-8287-931A387F4AA7} = {D5FD7E52-07AF-43EE-8CC4-61D134E54D4E}
-		{4D6F0E25-C956-4EA8-A836-66D41488262E} = {D794E679-D409-4267-9EC8-212AC711723E}
-		{6C462E2C-AF1E-4B1B-8A5F-77B79951253B} = {D794E679-D409-4267-9EC8-212AC711723E}
 		{906E225A-E99D-466E-AA60-E23384910D99} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{8211954E-FE33-469C-87C7-9C863ACE1759} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{8D0E4610-B51D-45C1-8B82-240BD2F73A92} = {8211954E-FE33-469C-87C7-9C863ACE1759}
