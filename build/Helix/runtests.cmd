@@ -4,6 +4,14 @@ robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
+rem enable dump collection for our test apps:
+rem note, this script is run from a 32-bit cmd, but we need to set the native reg-key
+FOR %%A IN (MUXControlsTestApp.exe,IXMPTestApp.exe,NugetPackageTestApp.exe,NugetPackageTestAppCX.exe,te.exe,te.processhost.exe,AppThatUsesMUXIndirectly.exe) DO (
+  %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpFolder /t REG_EXPAND_SZ /d %HELIX_DUMP_FOLDER% /f
+  %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpType /t REG_DWORD /d 2 /f
+  %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpCount /t REG_DWORD /d 10 /f
+)
+
 :: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe
@@ -22,17 +30,10 @@ for %%B in (%testBinaryCandidates%) do (
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %*
 
 move te.wtl te_original.wtl
-%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_original.wtl -result_name te_original.wtl
 
-FOR %%I in (WexLogFileOutput\*.jpg) DO (
-    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
-)
-
-FOR %%I in (*.pgc) DO (
-    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI%%~xI 
-)
+copy /y te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%
 
 set FailedTestQuery=
 for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_original.wtl`) DO (
@@ -46,12 +47,9 @@ if "%FailedTestQuery%" == "" goto :SkipReruns
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
 
 move te.wtl te_rerun.wtl
-%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun.wtl -result_name te_rerun.wtl
 
-FOR %%I in (WexLogFileOutput\*.jpg) DO (
-    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%~nI_rerun%%~xI%HELIX_RESULTS_CONTAINER_RSAS%"
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun%%~xI
-)
+copy /y te_rerun.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
 
 rem If there are still failing tests remaining, we'll run them eight more times, so they'll have been run a total of ten times.
 rem If any tests fail all ten times, we can be pretty confident that these are actual test failures rather than unreliable tests.
@@ -67,21 +65,15 @@ if "%FailedTestQuery%" == "" goto :SkipReruns
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
 
 move te.wtl te_rerun_multiple.wtl
-%HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result te_rerun_multiple.wtl -result_name te_rerun_multiple.wtl
 
-FOR %%I in (WexLogFileOutput\*.jpg) DO (
-    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%~nI_rerun_multiple%%~xI%HELIX_RESULTS_CONTAINER_RSAS%"
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%~nI_rerun_multiple%%~xI
-)
+copy /y te_rerun_multiple.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
 
 :SkipReruns
 
 powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl %testnameprefix%
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl testResults.xml %testnameprefix%
 
-FOR %%I in (*_subresults.json) DO (
-    echo Uploading %%I to "%HELIX_RESULTS_CONTAINER_URI%/%%I%HELIX_RESULTS_CONTAINER_RSAS%"
-    %HELIX_PYTHONPATH% %HELIX_SCRIPT_ROOT%\upload_result.py -result %%I -result_name %%I
-)
+copy /y *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
 
 type testResults.xml
