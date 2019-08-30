@@ -61,6 +61,9 @@ TabView::TabView()
         ctrlShiftTabAccel.ScopeOwner(*this);
         KeyboardAccelerators().Append(ctrlShiftTabAccel);
     }
+
+    winrt::Button button;
+    button.Width(100);
 }
 
 void TabView::OnApplyTemplate()
