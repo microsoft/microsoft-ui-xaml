@@ -10,7 +10,7 @@
     <ParameterGroup>
       <StampFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
       <PackageReferences ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-      <RestoreNeeded ParameterType="bool" Output="true" />
+      <RestoreNeeded ParameterType="System.Boolean" Output="true" />
     </ParameterGroup>
 
     <Task>
