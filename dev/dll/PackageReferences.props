@@ -1,0 +1,12 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Tasks.Git" Version="1.0.0-beta2-18618-05" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BinSkim" Version="1.3.9" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Gsl" Version="0.1.2.1" />
+    <PackageReference Include="Microsoft.SourceLink.Common" Version="1.0.0-beta2-18618-05" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-18618-05" />
+    <PackageReference Include="Microsoft.Windows.CppWinRT" Version="2.0.190722.3" />
+    <PackageReference Include="MUXCustomBuildTasks" Version="1.0.47" />
+    <PackageReference Include="MUXPGODatabase" Version="0.0.2" />
+  </ItemGroup>
+</Project>

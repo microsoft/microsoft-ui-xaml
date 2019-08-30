@@ -100,13 +100,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
-    <None Include="packages.config" />
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="XamlMetadataProviderGenerated.tt" />
     <None Include="XamlMetadataProviderWindowsCodeGen.tt" />
     <None Include="CommonHelpers.tt" />
     <None Include="WinRtType.tt" />
     <None Include="CppWinRTFilterTypes.tt" />
+    <None Include="PackageReferences.props" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
