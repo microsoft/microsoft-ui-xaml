@@ -27,16 +27,6 @@ winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius con
         result.TopRight = 0;
         result.BottomRight = 0;
         break;
-    case winrt::CornerRadiusFilterKind::TopLeft:
-        result.TopRight = 0;
-        result.BottomLeft = 0;
-        result.BottomRight = 0;
-        break;
-    case winrt::CornerRadiusFilterKind::BottomRight:
-        result.TopLeft = 0;
-        result.TopRight = 0;
-        result.BottomLeft = 0;
-        break;
     }
 
     return result;
@@ -46,9 +36,9 @@ double CornerRadiusFilterConverter::GetDoubleValue(winrt::CornerRadius const& ra
 {
     switch (filterKind)
     {
-    case winrt::CornerRadiusFilterKind::TopLeft:
+    case winrt::CornerRadiusFilterKind::TopLeftValue:
         return radius.TopLeft;
-    case winrt::CornerRadiusFilterKind::BottomRight:
+    case winrt::CornerRadiusFilterKind::BottomRightValue:
         return radius.BottomRight;
     }
     return 0;
@@ -61,7 +51,14 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
     winrt::hstring const& language)
 {
     auto cornerRadius = unbox_value<winrt::CornerRadius>(value);
-    return ReturnAsDouble() ? box_value(GetDoubleValue(cornerRadius, Filter())) : box_value(Convert(cornerRadius, Filter()));
+    auto filterType = Filter();
+    if (filterType == winrt::CornerRadiusFilterKind::TopLeftValue ||
+        filterType == winrt::CornerRadiusFilterKind::BottomRightValue)
+    {
+        return box_value(GetDoubleValue(cornerRadius, Filter()));
+    }
+
+    return box_value(Convert(cornerRadius, Filter()));
 }
 
 winrt::IInspectable CornerRadiusFilterConverter::ConvertBack(

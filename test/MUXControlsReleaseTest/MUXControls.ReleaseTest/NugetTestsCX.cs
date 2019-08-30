@@ -59,5 +59,16 @@ namespace MUXControls.ReleaseTest
             var item3 = FindElement.ByName("Item3");
             Verify.IsNotNull(item3);
         }
+
+        [TestMethod]
+        public void CornerRadiusTest()
+        {
+            var button = new Button(FindElement.ByName("GetCheckBoxRectangleCornerRadiusValue"));
+            button.Click();
+            Wait.ForIdle();
+
+            var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
+            Verify.AreEqual("2,2", textBlock.DocumentText);
+        }
     }
 }

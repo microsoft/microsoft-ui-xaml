@@ -9,7 +9,6 @@
 CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
 
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_FilterProperty{ nullptr };
-GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_ReturnAsDoubleProperty{ nullptr };
 
 CornerRadiusFilterConverterProperties::CornerRadiusFilterConverterProperties()
 {
@@ -29,23 +28,11 @@ void CornerRadiusFilterConverterProperties::EnsureProperties()
                 ValueHelper<winrt::CornerRadiusFilterKind>::BoxValueIfNecessary(winrt::CornerRadiusFilterKind::None),
                 nullptr);
     }
-    if (!s_ReturnAsDoubleProperty)
-    {
-        s_ReturnAsDoubleProperty =
-            InitializeDependencyProperty(
-                L"ReturnAsDouble",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::CornerRadiusFilterConverter>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
-    }
 }
 
 void CornerRadiusFilterConverterProperties::ClearProperties()
 {
     s_FilterProperty = nullptr;
-    s_ReturnAsDoubleProperty = nullptr;
 }
 
 void CornerRadiusFilterConverterProperties::Filter(winrt::CornerRadiusFilterKind const& value)
@@ -56,14 +43,4 @@ void CornerRadiusFilterConverterProperties::Filter(winrt::CornerRadiusFilterKind
 winrt::CornerRadiusFilterKind CornerRadiusFilterConverterProperties::Filter()
 {
     return ValueHelper<winrt::CornerRadiusFilterKind>::CastOrUnbox(static_cast<CornerRadiusFilterConverter*>(this)->GetValue(s_FilterProperty));
-}
-
-void CornerRadiusFilterConverterProperties::ReturnAsDouble(bool value)
-{
-    static_cast<CornerRadiusFilterConverter*>(this)->SetValue(s_ReturnAsDoubleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool CornerRadiusFilterConverterProperties::ReturnAsDouble()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<CornerRadiusFilterConverter*>(this)->GetValue(s_ReturnAsDoubleProperty));
 }
