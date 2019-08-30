@@ -64,7 +64,7 @@ namespace MUXControls.ReleaseTest
         public void CornerRadiusTest()
         {
             var button = new Button(FindElement.ByName("GetCheckBoxRectangleCornerRadiusValue"));
-            button.Click();
+            button.Invoke();
             Wait.ForIdle();
 
             var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
