@@ -99,6 +99,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{CDC531B5-F8D8-4A8D-8653-0470B07B2404}"
 	ProjectSection(SolutionItems) = preProject
 		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		mux.controls.props = mux.controls.props
 		build\SignConfig.xml = build\SignConfig.xml
 		version.props = version.props
