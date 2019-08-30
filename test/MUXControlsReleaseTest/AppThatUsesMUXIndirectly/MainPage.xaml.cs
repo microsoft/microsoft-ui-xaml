@@ -13,17 +13,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace AppThatUsesMUXIndirectly
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
+        // This app does NOT directly consume MUX, but it references another library that does use MUX.
         public MainPage()
         {
+            
             this.InitializeComponent();
             var userControl = new LibraryThatUsesMUX.TestUserControl1();
             layoutRoot.Children.Add(userControl);

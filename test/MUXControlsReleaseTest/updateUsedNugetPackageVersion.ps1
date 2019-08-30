@@ -3,6 +3,7 @@ Param(
     [Parameter(mandatory=$true)]
     [string]$newVersion,
 
+    # this string literal is split in two to avoid this script finding it and overwriting itself.
     [string]$currentPackageVersion = "2.1." + "190606001"
 )
 
@@ -24,7 +25,6 @@ Get-ChildItem $scriptDirectory -r -File |
 
 if ($numFilesReplaced -eq 0)
 {
-  Write-Host "##vso[task.logissue type=error]No files found with '$currentPackageVersion' in them, make sure to update *.yml files when retargeting ReleaseTest projects"
+  Write-Error "No files found with '$currentPackageVersion' in them."
   Exit 1
 }
-
