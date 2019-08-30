@@ -79,7 +79,7 @@
                 <controls:TabView
                     x:Name="Tabs"
                     TabWidthMode="Equal"
-                    SelectedIndex="0"
+                    CanDragTabs="True"
                     SelectionChanged="TabViewSelectionChanged"
                     TabCloseRequested="TabViewTabCloseRequested"
                     TabDragStarting="OnTabDragStarting"
@@ -159,7 +159,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699">
+                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
                         <controls:TabView.TabItemTemplate>
                             <DataTemplate x:DataType="local:TabDataItem">
                                 <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">
@@ -179,7 +179,7 @@
 
                     <controls:TabView x:Name="SecondTabView"
                         Grid.Column="2"
-                        SelectedIndex="0"
+                        CanDragTabs="True"
                         IsAddTabButtonVisible="false"
                         TabDragStarting="OnTabDragStarting"
                         TabStripDragOver="OnTabStripDragOver"

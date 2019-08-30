@@ -205,7 +205,7 @@
     <Style x:Name="TabViewButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource TabViewItemHeaderBackground}"/>
         <Setter Property="Foreground" Value="{ThemeResource SystemControlBackgroundBaseMediumBrush}"/>
-        <Setter Property="CornerRadius" Value="{ThemeResource TabViewItemCornerRadius}"/>
+        <Setter Property="CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
         <Setter Property="VerticalAlignment" Value="Bottom"/>
@@ -304,7 +304,6 @@
                                 <VisualState x:Name="PointerOver">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPointerOver}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -312,7 +311,6 @@
                                 <VisualState x:Name="Pressed">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundPressed}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -320,7 +318,6 @@
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundSelected}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -328,7 +325,6 @@
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPointerOver}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -336,7 +332,6 @@
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="TabContainer.Background" Value="{ThemeResource TabViewItemHeaderBackgroundSelected}" />
-                                        <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TabViewItemHeaderForegroundPressed}" />
                                     </VisualState.Setters>
                                 </VisualState>
@@ -490,7 +485,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             Control.IsTemplateFocusTarget="True"
                             Padding="{ThemeResource TabViewItemHeaderPadding}"
-                            CornerRadius="{ThemeResource TabViewItemCornerRadius}"
+                            CornerRadius="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"
                             FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
 
                             <Grid.ColumnDefinitions>
@@ -506,7 +501,7 @@
                                 <ContentControl x:Name="IconControl"
                                     Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.IconElement}"
                                     IsTabStop="False"
-                                    Foreground="{TemplateBinding Foreground}" />
+                                    Foreground="{ThemeResource TabViewItemIconForeground}" />
                             </Viewbox>
 
                             <ContentPresenter x:Name="ContentPresenter"

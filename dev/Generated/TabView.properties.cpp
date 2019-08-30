@@ -83,7 +83,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(true),
+                ValueHelper<bool>::BoxValueIfNecessary(false),
                 nullptr);
     }
     if (!s_CanReorderTabsProperty)
@@ -116,7 +116,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<int>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<int>::BoxValueIfNecessary(-1),
+                ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnSelectedIndexPropertyChanged));
     }
     if (!s_SelectedItemProperty)

@@ -224,13 +224,14 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             TabItems(lvItems);
         }
 
-        if (ReadLocalValue(s_SelectedIndexProperty) != winrt::DependencyProperty::UnsetValue())
-        {
-            UpdateSelectedIndex();
-        }
         if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
         {
             UpdateSelectedItem();
+        }
+        else
+        {
+            // If SelectedItem wasn't set, default to selecting the first tab
+            UpdateSelectedIndex();
         }
 
         SelectedIndex(listView.SelectedIndex());
@@ -514,45 +515,49 @@ void TabView::UpdateTabWidths()
             // Note: can be infinite
             auto availableWidth = previousAvailableSize.Width - widthTaken;
 
-            if (TabWidthMode() == winrt::TabViewWidthMode::SizeToContent)
+            // Size can be 0 when window is first created; in that case, skip calculations; we'll get a new size soon
+            if (availableWidth > 0)
             {
-                tabColumn.MaxWidth(availableWidth);
-                tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
-                if (auto listview = m_listView.get())
+                if (TabWidthMode() == winrt::TabViewWidthMode::SizeToContent)
                 {
-                    listview.MaxWidth(availableWidth);
-                    winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
-                }
-            }
-            else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
-            {
-                // Tabs should all be the same size, proportional to the amount of space.
-                double minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));
-                double maxTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMaxWidthName, winrt::Application::Current().Resources(), box_value(c_tabMaximumWidth)));
-
-                // Calculate the proportional width of each tab given the width of the ScrollViewer.
-                auto padding = Padding();
-                double tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
-
-                tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
-
-                // Size tab column to needed size
-                tabColumn.MaxWidth(availableWidth);
-                auto requiredWidth = tabWidth * TabItems().Size();
-                if (requiredWidth >= availableWidth)
-                {
-                    tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
-                    if (auto listview = m_listView.get())
-                    {
-                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
-                    }
-                }
-                else
-                {
+                    tabColumn.MaxWidth(availableWidth);
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
                     if (auto listview = m_listView.get())
                     {
-                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                        listview.MaxWidth(availableWidth);
+                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
+                    }
+                }
+                else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
+                {
+                    // Tabs should all be the same size, proportional to the amount of space.
+                    double minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));
+                    double maxTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMaxWidthName, winrt::Application::Current().Resources(), box_value(c_tabMaximumWidth)));
+
+                    // Calculate the proportional width of each tab given the width of the ScrollViewer.
+                    auto padding = Padding();
+                    double tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+
+                    tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
+
+                    // Size tab column to needed size
+                    tabColumn.MaxWidth(availableWidth);
+                    auto requiredWidth = tabWidth * TabItems().Size();
+                    if (requiredWidth >= availableWidth)
+                    {
+                        tabColumn.Width(winrt::GridLengthHelper::FromPixels(availableWidth));
+                        if (auto listview = m_listView.get())
+                        {
+                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible);
+                        }
+                    }
+                    else
+                    {
+                        tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
+                        if (auto listview = m_listView.get())
+                        {
+                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                        }
                     }
                 }
             }
