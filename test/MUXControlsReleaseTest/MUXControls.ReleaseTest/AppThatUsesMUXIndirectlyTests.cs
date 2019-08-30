@@ -41,6 +41,7 @@ namespace MUXControls.ReleaseTest
         {
             var uiobj = FindElement.ByName("MuxColorPicker");
             Verify.IsNotNull(uiobj, "Expected to find ColorPicker");
+            Verify.IsTrue(false, "Intentionally failing tests");
         }
     }
 
