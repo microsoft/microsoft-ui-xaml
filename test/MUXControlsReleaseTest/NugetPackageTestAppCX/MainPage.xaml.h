@@ -16,8 +16,11 @@ namespace NugetPackageTestAppCX
         void CloseAppInvokerButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void PageLoaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void OnAddItemsButtonClick(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void GetCheckBoxRectangleCornerRadiusValue_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
         Platform::Collections::Vector<Platform::String^>^ mItems;
         void WaitForIdleInvokerButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+        void GetCheckBoxRectangleCornerRadius(DependencyObject^ obj);
     };
 }

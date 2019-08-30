@@ -45,11 +45,17 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock x:Name="TestTextBlock" AutomationProperties.Name="TestTextBlock" Text="Loaded"/>
-            <Button Grid.Row="1" Click="OnAddItemsButtonClick" Content="Add Items" AutomationProperties.Name="AddItemsButton"  />
-            <ScrollViewer Grid.Row="2">
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <CheckBox x:Name="TestCheckBox" AutomationProperties.Name="TestCheckBox" Content="CheckBox" />
+                <Button x:Name="GetCheckBoxRectangleCornerRadiusValue" Content="GetCheckBoxRectangleCornerRadiusValue" AutomationProperties.Name="GetCheckBoxRectangleCornerRadiusValue"  Click="GetCheckBoxRectangleCornerRadiusValue_Click"/>
+                <TextBlock x:Name="CheckBoxRectangleCornerRadiusValueTextBlock" AutomationProperties.Name="CheckBoxRectangleCornerRadiusValueTextBlock"></TextBlock>
+            </StackPanel>
+            <Button Grid.Row="2" Click="OnAddItemsButtonClick" Content="Add Items" AutomationProperties.Name="AddItemsButton"  />
+            <ScrollViewer Grid.Row="3">
                 <controls:ItemsRepeater x:Name="Repeater" />
             </ScrollViewer>
         </Grid>

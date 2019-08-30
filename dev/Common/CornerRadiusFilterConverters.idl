@@ -22,7 +22,9 @@ enum CornerRadiusFilterKind
     Top,
     Right,
     Bottom,
-    Left
+    Left,
+    TopLeftValue,
+    BottomRightValue
 };
 
 }

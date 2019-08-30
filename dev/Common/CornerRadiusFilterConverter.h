@@ -25,4 +25,7 @@ public:
         winrt::TypeName const& targetType,
         winrt::IInspectable const& parameter,
         winrt::hstring const& language);
+
+private:
+    double GetDoubleValue(winrt::CornerRadius const& radius, winrt::CornerRadiusFilterKind const& filterKind);
 };
