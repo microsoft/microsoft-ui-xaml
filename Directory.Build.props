@@ -25,4 +25,7 @@
     <GeneratedFilesDir>$(BaseIntermediateOutputPath)Generated Files\</GeneratedFilesDir>
     <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)\sdk\PackageReference\VCPackageReferenceSupport.props"
+          Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
 </Project>
