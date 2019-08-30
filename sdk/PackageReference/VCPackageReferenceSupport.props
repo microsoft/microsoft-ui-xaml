@@ -26,8 +26,7 @@
           {
               Log.LogMessage("Stamp file does not exist");
               RestoreNeeded = true;
-              Success = true;
-              return;
+              return true;
           }
           
           Dictionary<string, string> referenceEntries = new Dictionary<string, string>();
@@ -42,8 +41,7 @@
               if (parts.Length != 2)
               {
                   Log.LogError("Malformed stamp file: Should have exactly two pipe-separated fields");
-                  Success = false;
-                  return;
+                  return false;
               }
           
               stampEntries.Add(parts[0], parts[1]);
