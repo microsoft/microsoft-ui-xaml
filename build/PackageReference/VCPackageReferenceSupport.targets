@@ -9,8 +9,7 @@
       <Output TaskParameter="RestoreNeeded" PropertyName="_PackageRestoreNeeded" />
     </CheckPackageRestoreNeeded>
 
-    <CallTarget Targets="Restore" Condition="$(_PackageRestoreNeeded)" />
-    <Error Text="Package references restored, please restart build" Condition="$(_PackageRestoreNeeded)" />
+    <Error Text="Package reference restore required, please run Restore target" Condition="$(_PackageRestoreNeeded)" />
   </Target>
 
   <Target Name="_WritePackageRestoreStampFile" AfterTargets="Restore" Condition="'@(PackageReference)' != ''">
