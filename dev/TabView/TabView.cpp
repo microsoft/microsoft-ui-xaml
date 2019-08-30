@@ -62,7 +62,7 @@ TabView::TabView()
         KeyboardAccelerators().Append(ctrlShiftTabAccel);
     }
 
-    winrt::Button button;
+    winrt::Button button{ nullptr };
     button.Width(100);
 }
 
