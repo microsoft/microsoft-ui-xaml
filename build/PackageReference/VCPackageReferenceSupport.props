@@ -1,6 +1,8 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project>
   <PropertyGroup>
+    <!-- This property disables the code that adds .NET assemblies to the reference list. -->
+    <!-- This aspect of PackageReference support does not function correctly with C++ projects. -->
     <ResolveNuGetPackages>false</ResolveNuGetPackages>
     <ProjectPackageReferencesFile Condition="'$(ProjectPackageReferencesFile)' == ''">$(MSBuildProjectDirectory)\PackageReferences.props</ProjectPackageReferencesFile>
   </PropertyGroup>
