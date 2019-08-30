@@ -1,4 +1,4 @@
 <Project>
-  <Import Project="$(MSBuildThisFileDirectory)\sdk\PackageReference\VCPackageReferenceSupport.targets"
+  <Import Project="$(MSBuildThisFileDirectory)\build\PackageReference\VCPackageReferenceSupport.targets"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
 </Project>

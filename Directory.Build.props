@@ -26,6 +26,6 @@
     <GenerateProjectSpecificOutputFolder>True</GenerateProjectSpecificOutputFolder>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)\sdk\PackageReference\VCPackageReferenceSupport.props"
+  <Import Project="$(MSBuildThisFileDirectory)\build\PackageReference\VCPackageReferenceSupport.props"
           Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
 </Project>
