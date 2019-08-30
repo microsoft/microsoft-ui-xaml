@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.757
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29209.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dev", "dev", "{67599AD5-51EC-44CB-85CE-B60CD8CBA270}"
 EndProject
@@ -678,8 +678,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutoSuggestBox_InteractionT
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PackageReference", "PackageReference", "{D8F23205-AB3E-4006-9FEA-0C9684764F25}"
 	ProjectSection(SolutionItems) = preProject
-		sdk\PackageReference\VCPackageReferenceSupport.props = sdk\PackageReference\VCPackageReferenceSupport.props
-		sdk\PackageReference\VCPackageReferenceSupport.targets = sdk\PackageReference\VCPackageReferenceSupport.targets
+		build\PackageReference\VCPackageReferenceSupport.props = build\PackageReference\VCPackageReferenceSupport.props
+		build\PackageReference\VCPackageReferenceSupport.targets = build\PackageReference\VCPackageReferenceSupport.targets
 	EndProjectSection
 EndProject
 Global
