@@ -25,6 +25,7 @@ Write-Host "queryUri = $queryUri"
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
 [System.Collections.Generic.List[string]]$failingTests = @()
 [System.Collections.Generic.List[string]]$unreliableTests = @()
+[System.Collections.Generic.List[string]]$unexpectedResultTest = @()
 
 $timesSeenByRunName = @{}
 $totalTestsExecutedCount = 0
@@ -73,6 +74,14 @@ foreach ($testRun in ($testRuns.value | Sort-Object -Property "completedDate"))
                 $unreliableTests.Add($shortTestCaseTitle)
             }
         }
+        elseif ($testResult.outcome -ne "Passed")
+        {
+            # We should only see tests with result "Passed", "Failed" or "Warning"
+            if (-not $unexpectedResultTest.Contains($shortTestCaseTitle))
+            {
+                $unexpectedResultTest.Add($shortTestCaseTitle)
+            }
+        }
     }
 }
 
@@ -90,6 +99,15 @@ if ($failingTests.Count -gt 0)
     Write-Host @"
 ##vso[task.logissue type=error;]Failing tests:
 ##vso[task.logissue type=error;]$($failingTests -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
+
+"@
+}
+
+if ($unexpectedResultTest.Count -gt 0)
+{
+    Write-Host @"
+##vso[task.logissue type=error;]Tests with unexpected results:
+##vso[task.logissue type=error;]$($unexpectedResultTest -join "$([Environment]::NewLine)##vso[task.logissue type=error;]")
 
 "@
 }
