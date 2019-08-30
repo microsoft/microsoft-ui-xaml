@@ -16,15 +16,19 @@ runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Win
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[flags]
 enum CornerRadiusFilterKind
 {
-    None,
-    Top,
-    Right,
-    Bottom,
-    Left,
-    TopLeftValue,
-    BottomRightValue
+    None = 0x0000,
+    TopLeft = 0x0001,
+    TopRight = 0x0002,
+    BottomLeft = 0x0004,
+    BottomRight = 0x0008,
+    Top = TopLeft | TopRight,
+    Left = TopLeft | BottomLeft,
+    Bottom = BottomLeft | BottomRight,
+    Right = TopRight | BottomRight,
+    ValueOnly = 0x0010,
 };
 
 }

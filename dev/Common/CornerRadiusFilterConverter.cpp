@@ -5,28 +5,30 @@
 #include <common.h>
 #include "CornerRadiusFilterConverter.h"
 
+using FilterKind = winrt::CornerRadiusFilterKind;
+
 winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius const& radius, winrt::CornerRadiusFilterKind const& filterKind)
 {
-    winrt::CornerRadius result = radius;
+    winrt::CornerRadius result { 0,0,0,0 };
 
-    switch (filterKind)
+    if ((filterKind & FilterKind::TopLeft) == FilterKind::TopLeft)
     {
-    case winrt::CornerRadiusFilterKind::Top:
-        result.BottomLeft = 0;
-        result.BottomRight = 0;
-        break;
-    case winrt::CornerRadiusFilterKind::Right:
-        result.TopLeft = 0;
-        result.BottomLeft = 0;
-        break;
-    case winrt::CornerRadiusFilterKind::Bottom:
-        result.TopLeft = 0;
-        result.TopRight = 0;
-        break;
-    case winrt::CornerRadiusFilterKind::Left:
-        result.TopRight = 0;
-        result.BottomRight = 0;
-        break;
+        result.TopLeft = radius.TopLeft;
+    }
+
+    if ((filterKind & FilterKind::TopRight) == FilterKind::TopRight)
+    {
+        result.TopRight = radius.TopRight;
+    }
+
+    if ((filterKind & FilterKind::BottomLeft) == FilterKind::BottomLeft)
+    {
+        result.BottomLeft = radius.BottomLeft;
+    }
+
+    if ((filterKind & FilterKind::BottomRight) == FilterKind::BottomRight)
+    {
+        result.BottomRight = radius.BottomRight;
     }
 
     return result;
@@ -34,13 +36,26 @@ winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius con
 
 double CornerRadiusFilterConverter::GetDoubleValue(winrt::CornerRadius const& radius, winrt::CornerRadiusFilterKind const& filterKind)
 {
-    switch (filterKind)
+    if ((filterKind & FilterKind::TopLeft) == FilterKind::TopLeft)
     {
-    case winrt::CornerRadiusFilterKind::TopLeftValue:
         return radius.TopLeft;
-    case winrt::CornerRadiusFilterKind::BottomRightValue:
+    }
+
+    if ((filterKind & FilterKind::TopRight) == FilterKind::TopRight)
+    {
+        return radius.TopRight;
+    }
+
+    if ((filterKind & FilterKind::BottomLeft) == FilterKind::BottomLeft)
+    {
+        return radius.BottomLeft;
+    }
+
+    if ((filterKind & FilterKind::BottomRight) == FilterKind::BottomRight)
+    {
         return radius.BottomRight;
     }
+
     return 0;
 }
 
@@ -52,8 +67,7 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
 {
     auto cornerRadius = unbox_value<winrt::CornerRadius>(value);
     auto filterType = Filter();
-    if (filterType == winrt::CornerRadiusFilterKind::TopLeftValue ||
-        filterType == winrt::CornerRadiusFilterKind::BottomRightValue)
+    if ((filterType & FilterKind::ValueOnly) == FilterKind::ValueOnly)
     {
         return box_value(GetDoubleValue(cornerRadius, Filter()));
     }
