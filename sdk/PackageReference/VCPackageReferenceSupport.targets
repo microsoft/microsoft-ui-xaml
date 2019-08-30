@@ -1,0 +1,19 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <PropertyGroup>
+    <PackageRestoreStampFile>$(MSBuildProjectDirectory)\obj\$(MSBuildProjectName).VCPackageReferenceCache.txt</PackageRestoreStampFile>
+  </PropertyGroup>
+
+  <Target Name="_CheckPackageRestoreNeeded" BeforeTargets="_PrepareForBuild" Condition="'@(PackageReference)' != ''">
+    <CheckPackageRestoreNeeded StampFile="$(PackageRestoreStampFile)" PackageReferences="@(PackageReference)">
+      <Output TaskParameter="RestoreNeeded" PropertyName="_PackageRestoreNeeded" />
+    </CheckPackageRestoreNeeded>
+
+    <CallTarget Targets="Restore" Condition="$(_PackageRestoreNeeded)" />
+    <Error Text="Package references restored, please restart build" Condition="$(_PackageRestoreNeeded)" />
+  </Target>
+
+  <Target Name="_WritePackageRestoreStampFile" AfterTargets="Restore" Condition="'@(PackageReference)' != ''">
+    <WritePackageRestoreStampFile StampFile="$(PackageRestoreStampFile)" PackageReferences="@(PackageReference)" />
+  </Target>
+</Project>

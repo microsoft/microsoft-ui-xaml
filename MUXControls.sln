@@ -674,6 +674,12 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutoSuggestBox_APITests", "
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "AutoSuggestBox_InteractionTests", "dev\AutoSuggestBox\InteractionTests\AutoSuggestBox_InteractionTests.shproj", "{ED3E2182-D259-4DC0-B7BB-9B4219762F4C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PackageReference", "PackageReference", "{D8F23205-AB3E-4006-9FEA-0C9684764F25}"
+	ProjectSection(SolutionItems) = preProject
+		sdk\PackageReference\VCPackageReferenceSupport.props = sdk\PackageReference\VCPackageReferenceSupport.props
+		sdk\PackageReference\VCPackageReferenceSupport.targets = sdk\PackageReference\VCPackageReferenceSupport.targets
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -1673,6 +1679,7 @@ Global
 		{CA704A8C-2624-4630-89A0-D86CB1EE409A} = {4C9CEC92-77C8-4B7B-8595-6C736A660F93}
 		{84673739-208C-427E-A19E-E090EC3733CE} = {CFAFD6A7-FC7B-4C96-B292-A440C7C65D89}
 		{ED3E2182-D259-4DC0-B7BB-9B4219762F4C} = {CFAFD6A7-FC7B-4C96-B292-A440C7C65D89}
+		{D8F23205-AB3E-4006-9FEA-0C9684764F25} = {CDC531B5-F8D8-4A8D-8653-0470B07B2404}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}

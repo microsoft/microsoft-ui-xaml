@@ -1,0 +1,107 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Project>
+  <PropertyGroup>
+    <ProjectPackageReferencesFile Condition="'$(ProjectPackageReferencesFile)' == ''">$(MSBuildProjectDirectory)\PackageReferences.props</ProjectPackageReferencesFile>
+  </PropertyGroup>
+
+  <Import Project="$(ProjectPackageReferencesFile)" Condition="Exists('$(ProjectPackageReferencesFile)')" />
+
+  <UsingTask TaskName="CheckPackageRestoreNeeded" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <StampFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <PackageReferences ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <RestoreNeeded ParameterType="bool" Output="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          if (!File.Exists(StampFile.ItemSpec))
+          {
+              Log.LogMessage("Stamp file does not exist");
+              RestoreNeeded = true;
+              Success = true;
+              return;
+          }
+          
+          Dictionary<string, string> referenceEntries = new Dictionary<string, string>();
+          foreach (ITaskItem reference in PackageReferences) referenceEntries.Add(reference.ItemSpec, reference.GetMetadata("Version"));
+          
+          Dictionary<string, string> stampEntries = new Dictionary<string, string>();
+          foreach (string line in File.ReadAllLines(StampFile.ItemSpec))
+          {
+              if (line == "") continue;
+          
+              string[] parts = line.Split('|');
+              if (parts.Length != 2)
+              {
+                  Log.LogError("Malformed stamp file: Should have exactly two pipe-separated fields");
+                  Success = false;
+                  return;
+              }
+          
+              stampEntries.Add(parts[0], parts[1]);
+          }
+          
+          foreach (var pair in referenceEntries)
+          {
+              if (!stampEntries.ContainsKey(pair.Key))
+              {
+                  Log.LogMessage("Reference {0} not in stamp file", pair.Key);
+                  RestoreNeeded = true;
+              }
+          
+              if (stampEntries[pair.Key] != pair.Value)
+              {
+                  Log.LogMessage("Reference {0} has different version in project ({1}) than in stamp file ({2})", pair.Key, pair.Value, stampEntries[pair.Key]);
+                  RestoreNeeded = true;
+              }
+          }
+  
+          foreach (var pair in stampEntries)
+          {
+              if (!referenceEntries.ContainsKey(pair.Key))
+              {
+                  Log.LogMessage("Reference {0} in stamp file but was removed from project", pair.Key);
+                  RestoreNeeded = true;
+              }
+          }
+          
+          Success = true;
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <UsingTask TaskName="WritePackageRestoreStampFile" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <StampFile ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+      <PackageReferences ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+    </ParameterGroup>
+
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          Dictionary<string, string> referenceEntries = new Dictionary<string, string>();
+          foreach (ITaskItem reference in PackageReferences) referenceEntries.Add(reference.ItemSpec, reference.GetMetadata("Version"));
+
+          File.WriteAllLines(StampFile.ItemSpec, referenceEntries.Select(pair => $"{pair.Key}|{pair.Value}"));
+          Log.LogMessage("Saved PackageReferences in stamp file {0}", StampFile.ItemSpec);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>
