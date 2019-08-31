@@ -36,26 +36,20 @@ winrt::CornerRadius CornerRadiusFilterConverter::Convert(winrt::CornerRadius con
 
 double CornerRadiusFilterConverter::GetDoubleValue(winrt::CornerRadius const& radius, winrt::CornerRadiusFilterKind const& filterKind)
 {
-    if ((filterKind & FilterKind::TopLeft) == FilterKind::TopLeft)
+    switch (filterKind)
     {
+    case FilterKind::TopLeft:
         return radius.TopLeft;
-    }
 
-    if ((filterKind & FilterKind::TopRight) == FilterKind::TopRight)
-    {
+    case FilterKind::TopRight:
         return radius.TopRight;
-    }
 
-    if ((filterKind & FilterKind::BottomLeft) == FilterKind::BottomLeft)
-    {
+    case FilterKind::BottomLeft:
         return radius.BottomLeft;
-    }
 
-    if ((filterKind & FilterKind::BottomRight) == FilterKind::BottomRight)
-    {
+    case FilterKind::BottomRight:
         return radius.BottomRight;
     }
-
     return 0;
 }
 
