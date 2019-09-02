@@ -54,7 +54,7 @@ It will also have the latest lower-level composition and rendering innovations l
 
 3. **Easier "a la carte" desktop development**  
 WinUI 3 will let you more easily mix and match the right combination of:
-    * **Language**: .NET (C#, Visual Basic), standard C++
+    * **Language**: .NET (C#, F#, Visual Basic), standard C++
     * **App model**: UWP, Win32
     * **Packaging**: [MSIX](https://docs.microsoft.com/windows/msix/), AppX for the Microsoft Store, unpackaged  
     * **Interop**: use WinUI 3 to extend existing WPF, WinForms and MFC apps with modern Fluent UI
