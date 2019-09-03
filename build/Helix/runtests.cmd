@@ -25,9 +25,9 @@ te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /t
 
 move te.wtl te_original.wtl
 
-copy te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
-copy WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
-copy *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%
 
 set FailedTestQuery=
 for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_original.wtl`) DO (
@@ -42,8 +42,8 @@ te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /t
 
 move te.wtl te_rerun.wtl
 
-copy te_rerun.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
-copy WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y te_rerun.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
 
 rem If there are still failing tests remaining, we'll run them eight more times, so they'll have been run a total of ten times.
 rem If any tests fail all ten times, we can be pretty confident that these are actual test failures rather than unreliable tests.
@@ -60,14 +60,14 @@ te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /t
 
 move te.wtl te_rerun_multiple.wtl
 
-copy te_rerun_multiple.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
-copy WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y te_rerun_multiple.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
 
 :SkipReruns
 
 powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl %testnameprefix%
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl testResults.xml %testnameprefix%
 
-copy *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
+copy /y *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
 
 type testResults.xml
