@@ -8,13 +8,13 @@ The WinUI team has two major efforts underway in 2019:
 
 2. **WinUI 3.0**: a major update to the Windows 10 UI platform, ETA Q4 2019 (preview release)
 
-## WinUI 2 (Q3 2019)
+## WinUI 2 (Q4 2019)
 
-The next release of WinUI 2 will be **WinUI 2.2**.
+The next release of WinUI 2 will be **WinUI 2.3**.
 
-2.2 will be an incremental release that includes new WinUI features and fixes for UWP apps on Windows 10.
+2.3 will be an incremental release that includes new WinUI features and fixes for UWP apps on Windows 10.
 
-You can see a list of currently planned work in the [WinUI 2.2 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/6).
+You can see a list of currently planned work in the [WinUI 2.3 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/8).
 
 WinUI 2 will be superseded by WinUI 3 in early 2020. WinUI 3 will include all the controls and features in WinUI 2.
 
