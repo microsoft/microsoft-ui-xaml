@@ -6,6 +6,8 @@ reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t 
 reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpFolder /t REG_EXPAND_SZ /d c:\cores /f
 reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpType /t REG_DWORD /d 2 /f
 
+set
+
 :: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe
@@ -71,3 +73,5 @@ powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te
 copy /y *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
 
 type testResults.xml
+
+dir /b /s c:\cores
