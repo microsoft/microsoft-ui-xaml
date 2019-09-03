@@ -3,8 +3,8 @@ setlocal ENABLEDELAYEDEXPANSION
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
-reg add HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe /v DumpFolder /t REG_EXPAND_SZ /d c:\cores /f
-reg add HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe /v DumpType /t REG_DWORD /d 2 /f
+reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpFolder /t REG_EXPAND_SZ /d c:\cores /f
+reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpType /t REG_DWORD /d 2 /f
 
 :: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
 :: expected to show UI we don't want it running.
