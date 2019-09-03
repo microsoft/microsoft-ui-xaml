@@ -3,8 +3,11 @@ setlocal ENABLEDELAYEDEXPANSION
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
-reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpFolder /t REG_EXPAND_SZ /d c:\cores /f
+reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpFolder /t REG_EXPAND_SZ /d %HELIX_DUMP_FOLDER% /f
 reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpType /t REG_DWORD /d 2 /f
+reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\MUXControlsTestApp.exe" /v DumpCount /t REG_DWORD /d 10 /f
+
+reg export "HKLM\SOFTWARE\Microsoft\Windows\Windows Error Reporting" %HELIX_WORKITEM_UPLOAD_ROOT%\wer.reg /y
 
 set
 
@@ -73,5 +76,7 @@ powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te
 copy /y *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
 
 type testResults.xml
+
+powershell -ExecutionPolicy Bypass Get-Process
 
 dir /b /s c:\cores
