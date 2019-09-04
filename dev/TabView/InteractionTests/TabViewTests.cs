@@ -379,6 +379,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 VerifyElement.NotFound("FirstTab", FindBy.Name);
+
+                // Move focus to the second tab content
+                secondTabButton.SetFocus();
+                Wait.ForIdle();
             }
         }
 
