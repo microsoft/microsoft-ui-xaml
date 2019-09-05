@@ -414,8 +414,7 @@
                                     BorderThickness="{ThemeResource AutoSuggestListBorderThemeThickness}"
                                     BorderBrush="{ThemeResource AutoSuggestBoxSuggestionsListBorderBrush}"
                                     Background="{ThemeResource AutoSuggestBoxSuggestionsListBackground}"
-                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                                    contract7NotPresent:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                    CornerRadius="{ThemeResource OverlayCornerRadius}">
                                 <Border.RenderTransform>
                                     <contract7NotPresent:TranslateTransform x:Name="UpwardTransform" />
                                 </Border.RenderTransform>

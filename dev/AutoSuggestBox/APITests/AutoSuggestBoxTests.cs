@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using System.Linq;
 using System.Collections.Generic;
+using MUXControlsTestApp;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -64,9 +65,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var textBox = TestUtilities.FindDescendents<TextBox>(autoSuggestBox).Where(e => e.Name == "TextBox").Single();
                 Verify.AreEqual(new CornerRadius(2, 2, 0, 0), textBox.CornerRadius);
 
+                var overlayCornerRadius = new CornerRadius(0, 0, 0, 0);
+                var radius = App.Current.Resources["OverlayCornerRadius"];
+                if (radius != null)
+                {
+                    overlayCornerRadius = (CornerRadius)radius;
+                }
                 var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
                 var popupBorder = popup.Child as Border;
-                Verify.AreEqual(new CornerRadius(0, 0, 2, 2), popupBorder.CornerRadius);
+
+                Verify.AreEqual(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft), popupBorder.CornerRadius);
             });
         }
 

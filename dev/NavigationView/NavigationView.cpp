@@ -77,6 +77,8 @@ static constexpr float c_paneElevationTranslationZ = 32;
 // so 4 is selected for threshold.
 constexpr int s_measureOnInitStep2CountThreshold{ 4 };
 
+constexpr int s_itemNotFound{ -1 };
+
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
 NavigationView::~NavigationView()
@@ -378,6 +380,7 @@ void NavigationView::OnApplyTemplate()
     UpdateSingleSelectionFollowsFocusTemplateSetting();
     UpdateNavigationViewUseSystemVisual();
     PropagateNavigationViewAsParent();
+    UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
 }
@@ -823,7 +826,15 @@ bool NavigationView::ShouldShowCloseButton()
 {
     if (m_backButton && !ShouldPreserveNavigationViewRS3Behavior() && m_closeButton)
     {
-        if (PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::LeftMinimal || !IsPaneOpen())
+        if (!IsPaneOpen())
+        {
+            return false;
+        }
+
+        auto paneDisplayMode = PaneDisplayMode();
+
+        if (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::LeftMinimal &&
+            (paneDisplayMode != winrt::NavigationViewPaneDisplayMode::Auto || DisplayMode() != winrt::NavigationViewDisplayMode::Minimal))
         {
             return false;
         }
@@ -1845,10 +1856,9 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
     if (auto topNavListView = m_topNavListView.get())
     {
-        MUX_ASSERT(prev && next);
-        auto prevIndex = topNavListView.IndexFromContainer(prev);
-        auto nextIndex = topNavListView.IndexFromContainer(next);
-        if (prevIndex == -1 || nextIndex == -1)
+        auto prevIndex = prev ? topNavListView.IndexFromContainer(prev) : s_itemNotFound;
+        auto nextIndex = next ? topNavListView.IndexFromContainer(next) : s_itemNotFound;
+        if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
         {
             // One item is settings, so have problem to get the index
             recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
@@ -1918,7 +1928,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
         bool measureOverrideDidNothing = m_shouldInvalidateMeasureOnNextLayoutUpdate && !m_layoutUpdatedToken;
             
         if (measureOverrideDidNothing ||
-            (newItem && m_topDataProvider.IndexOf(newItem) != -1 && m_topDataProvider.IndexOf(newItem, PrimaryList) == -1)) // selection is in overflow
+            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
         }
@@ -2372,7 +2382,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 {
     // Calculate selected overflow item size.
     auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(item);
-    MUX_ASSERT(selectedOverflowItemIndex != -1);
+    MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
     auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
  
     bool needInvalidMeasure = !m_topDataProvider.IsValidWidthForItem(selectedOverflowItemIndex);
@@ -2385,12 +2395,12 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
         MUX_ASSERT(desiredWidth <= actualWidth);
 
         // Calculate selected item size
-        auto selectedItemIndex = -1;
+        auto selectedItemIndex = s_itemNotFound;
         auto selectedItemWidth = 0.f;
         if (auto selectedItem = SelectedItem())
         {
             selectedItemIndex = m_topDataProvider.IndexOf(selectedItem);
-            if (selectedItemIndex != -1)
+            if (selectedItemIndex != s_itemNotFound)
             {
                 selectedItemWidth = m_topDataProvider.GetWidthForItem(selectedItemIndex);
             }

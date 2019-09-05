@@ -231,13 +231,13 @@ void TreeViewNode::RemoveFromChildrenNodes(int index, int count)
 
 void TreeViewNode::SyncChildrenNodesWithItemsSource()
 {
-    auto children = winrt::get_self<TreeViewNodeVector>(Children());
-    children->Clear(false /* updateItemsSource */);
-
-    if (m_itemsDataSource)
+    if (!AreChildrenNodesEqualToItemsSource())
     {
-        int size = m_itemsDataSource.Count();
-        for (int i = 0; i < size; i++)
+        auto children = winrt::get_self<TreeViewNodeVector>(Children());
+        children->Clear(false /* updateItemsSource */);
+
+        auto size = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
+        for (auto i = 0; i < size; i++)
         {
             auto item = m_itemsDataSource.GetAt(i);
             auto node = winrt::make_self<TreeViewNode>();
@@ -246,6 +246,29 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             children->Append(*node, false /* updateItemsSource */);
         }
     }
+}
+
+bool TreeViewNode::AreChildrenNodesEqualToItemsSource()
+{
+    auto children = Children();
+    UINT32 childrenCount = children ? children.Size() : 0;
+    UINT32 itemsSourceCount = m_itemsDataSource ? m_itemsDataSource.Count() : 0;
+
+    if (childrenCount != itemsSourceCount)
+    {
+        return false;
+    }
+
+    // Compare the actual content in collections when counts are equal
+    for (UINT32 i = 0; i < itemsSourceCount; i++)
+    {
+        if (children.GetAt(i).Content() != m_itemsDataSource.GetAt(i))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 hstring TreeViewNode::GetContentAsString()

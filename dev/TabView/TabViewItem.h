@@ -6,6 +6,7 @@
 #include "pch.h"
 #include "common.h"
 
+#include "TabView.h"
 #include "TabViewItem.g.h"
 #include "TabViewItem.properties.h"
 #include "TabViewItemAutomationPeer.h"
@@ -25,7 +26,7 @@ public:
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-    void OnIsCloseablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -36,12 +37,14 @@ public:
     void OnPointerCanceled(winrt::PointerRoutedEventArgs const& args);
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
+    void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
+
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
 
     void UpdateCloseButton();
-    void TryClose();
+    void RequestClose();
     void OnIconSourceChanged();
 
     bool m_firstTimeSettingToolTip{ true };

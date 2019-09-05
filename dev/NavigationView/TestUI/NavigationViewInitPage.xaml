@@ -26,7 +26,7 @@
                     <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveButton_Click"/>
                     <Button x:Name="ChangeToIEnumerableButton" AutomationProperties.Name="ChangeToIEnumerableButton" Content="Make it IEnumerable" Click="ChangeToIEnumerableButton_Clicks"/>
                     <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
-                
+
                     <StackPanel>
                         <Button x:Name="SwitchFrame" AutomationProperties.Name="SwitchFrame" Content="SwitchFrame" Click="SwitchFrame_Click" />
                         <TextBlock x:Name="MyLocationResult" AutomationProperties.Name="MyLocationResult" Text="Unknown"/>
@@ -52,6 +52,13 @@
                     <controls:NavigationViewItem Content="Albums" IsSelected="True" />
                     <controls:NavigationViewItem Content="People" IsSelected="True" />
                 </controls:NavigationView.MenuItems>
+            </controls:NavigationView>
+            <controls:NavigationView x:Name="NavView4"
+                IsPaneVisible="False">
+                <controls:NavigationView.MenuItems>
+                    <controls:NavigationViewItem Content="123" AutomationProperties.Name="PaneIsVisibleItem"/>
+                </controls:NavigationView.MenuItems>
+                <Button Content="Change IsPaneVisible Flag" AutomationProperties.Name="ChangePaneVisible" Click="ChangePaneVisibleButton_Click" />
             </controls:NavigationView>
         </StackPanel>
     </Grid>

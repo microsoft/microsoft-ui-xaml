@@ -25,7 +25,8 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#66FFFFFF" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
-
+            <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
@@ -45,7 +46,8 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
-
+            <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FF000000" />
@@ -65,6 +67,8 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#26000000" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
+            <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

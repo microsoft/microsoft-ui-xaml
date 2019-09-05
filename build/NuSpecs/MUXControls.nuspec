@@ -30,6 +30,7 @@
 
     <!-- Common build logic -->
     <file target="build\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
+    <file target="buildTransitive\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
 
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>

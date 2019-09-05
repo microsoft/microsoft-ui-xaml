@@ -2,6 +2,8 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)">
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
@@ -69,6 +71,7 @@
                                 <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
                                 <Setter Property="FocusVisualMargin" Value="-7,0,-7,0" />
                                 <Setter Property="IsFocusEngagementEnabled" Value="True" />
+                                <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
                                 <Setter Property="Template">
                                     <Setter.Value>
                                         <ControlTemplate TargetType="Slider">
@@ -231,9 +234,25 @@
                                                             <RowDefinition Height="Auto" />
                                                             <RowDefinition Height="18" />
                                                         </Grid.RowDefinitions>
-                                                        <Rectangle x:Name="HorizontalTrackRect" Fill="{TemplateBinding Background}" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
+                                                        <Rectangle
+                                                            x:Name="HorizontalTrackRect"
+                                                            Fill="{TemplateBinding Background}"
+                                                            Height="{ThemeResource SliderTrackThemeHeight}"
+                                                            Grid.Row="1"
+                                                            Grid.ColumnSpan="3"
+                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                                         <ProgressBar x:Name="DownloadProgressIndicator" Style="{StaticResource MediaSliderProgressBarStyle}" Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
-                                                        <Rectangle x:Name="HorizontalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Row="1" />
+                                                        <Rectangle
+                                                            x:Name="HorizontalDecreaseRect"
+                                                            Fill="{TemplateBinding Foreground}"
+                                                            Grid.Row="1"
+                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                                         <TickBar x:Name="TopTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Height="{ThemeResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Bottom" Margin="0,0,0,4" Grid.ColumnSpan="3" />
                                                         <TickBar x:Name="HorizontalInlineTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderInlineTickBarFill}" Height="{ThemeResource SliderTrackThemeHeight}" Grid.Row="1" Grid.ColumnSpan="3" />
                                                         <TickBar x:Name="BottomTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Height="{ThemeResource SliderOutsideTickBarThemeHeight}" VerticalAlignment="Top" Margin="0,4,0,0" Grid.Row="2" Grid.ColumnSpan="3" />
@@ -264,8 +283,25 @@
                                                             <ColumnDefinition Width="Auto" />
                                                             <ColumnDefinition Width="18" />
                                                         </Grid.ColumnDefinitions>
-                                                        <Rectangle x:Name="VerticalTrackRect" Fill="{TemplateBinding Background}" Width="{ThemeResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
-                                                        <Rectangle x:Name="VerticalDecreaseRect" Fill="{TemplateBinding Foreground}" Grid.Column="1" Grid.Row="2" />
+                                                        <Rectangle
+                                                            x:Name="VerticalTrackRect"
+                                                            Fill="{TemplateBinding Background}"
+                                                            Width="{ThemeResource SliderTrackThemeHeight}"
+                                                            Grid.Column="1"
+                                                            Grid.RowSpan="3"
+                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
+                                                        <Rectangle
+                                                            x:Name="VerticalDecreaseRect"
+                                                            Fill="{TemplateBinding Foreground}"
+                                                            Grid.Column="1"
+                                                            Grid.Row="2"
+                                                            contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                                            contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                                                         <TickBar x:Name="LeftTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Width="{ThemeResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Right" Margin="0,0,4,0" Grid.RowSpan="3" />
                                                         <TickBar x:Name="VerticalInlineTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderInlineTickBarFill}" Width="{ThemeResource SliderTrackThemeHeight}" Grid.Column="1" Grid.RowSpan="3" />
                                                         <TickBar x:Name="RightTickBar" Visibility="Collapsed" Fill="{ThemeResource SliderTickBarFill}" Width="{ThemeResource SliderOutsideTickBarThemeHeight}" HorizontalAlignment="Left" Margin="4,0,0,0" Grid.Column="2" Grid.RowSpan="3" />

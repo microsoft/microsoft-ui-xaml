@@ -10,6 +10,7 @@
 #include "MainPage.xaml.h"
 #include "LeakCycleTestCX.xaml.h"
 #include "MenuBarTestPage.xaml.h"
+#include "CornerRadiusTestPage.xaml.h"
 
 using namespace TestAppCX;
 
@@ -41,4 +42,10 @@ void TestAppCX::MainPage::GoToMenuBarTestPage(Platform::Object^ sender, Windows:
 {
     auto app = dynamic_cast<App^>(Application::Current);
     app->RootFrame->Navigate(TypeName(MenuBarTestPage::typeid), nullptr);
+}
+
+void TestAppCX::MainPage::GoToCornerRadiusTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+    app->RootFrame->Navigate(TypeName(CornerRadiusTestPage::typeid), nullptr);
 }

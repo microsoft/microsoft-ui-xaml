@@ -697,6 +697,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void VerifyPaneVisibleOnInit()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
+            {
+                Log.Comment("Verify PaneIsVisibleItem is invisible");
+                VerifyElement.NotFound("PaneIsVisibleItem", FindBy.Name);
+
+                FindElement.ByName<Button>("ChangePaneVisible").Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Verify PaneIsVisibleItem is visible");
+                VerifyElement.Found("PaneIsVisibleItem", FindBy.Name);
+
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void VerifyNavigationViewItemResponseToClickAfterBeingMovedBetweenFrames()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
@@ -1926,6 +1944,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }                
             }
         }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void VerifyNoCrashWhenSelectedItemIsInvalidItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
+            {
+              
+                Button setInvalidSelectedItemButton = new Button(FindElement.ById("SetInvalidSelectedItem"));
+                var apps = new Button(FindElement.ById("AppsItem"));
+
+                var invokeResult = new Edit(FindElement.ById("ItemInvokedResult"));
+                var selectResult = new Edit(FindElement.ById("SelectionChangedResult"));
+
+                // Select apps
+                using (var waiter = new ValueChangedEventWaiter(invokeResult))
+                {
+                    apps.Invoke();
+                    waiter.Wait();
+                }
+
+                Verify.AreEqual(selectResult.Value, "Apps");
+
+                setInvalidSelectedItemButton.Invoke();
+                Wait.ForIdle();
+               
+                Verify.AreEqual(selectResult.Value, "Null");
+            }
+        }
+
 
         [TestMethod]
         [TestProperty("TestSuite", "B")]
@@ -3484,20 +3532,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        [TestProperty("Description", "Verifies the back button is visible when the pane is closed and the close button is visible when the pane is open, in LeftMinimal display mode")]
-        public void VerifyBackAndCloseButtonsVisibility()
+        [TestProperty("Description", "Verifies the back button is visible when the pane is closed and the close button is visible when the pane is open, in LeftMinimal pane display mode")]
+        public void VerifyBackAndCloseButtonsVisibilityInLeftMinimalPaneDisplayMode()
+        {
+            VerifyBackAndCloseButtonsVisibility(inLeftMinimalPanelDisplayMode: true);
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        [TestProperty("Description", "Verifies the close button is visible when the pane is open, in Auto pane display mode and Minimal display mode")]
+        public void VerifyBackAndCloseButtonsVisibilityInAutoPaneDisplayMode()
+        {
+            VerifyBackAndCloseButtonsVisibility(inLeftMinimalPanelDisplayMode: false);
+        }
+
+        private void VerifyBackAndCloseButtonsVisibility(bool inLeftMinimalPanelDisplayMode)
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
+                var displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
                 var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
                 var isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
-                Log.Comment("Set PaneDisplayMode to LeftMinimal");
-                panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
-                Wait.ForIdle();
+                Verify.AreEqual(expanded, displayModeTextBox.DocumentText, "Original DisplayMode expected to be Expanded");
 
-                Log.Comment("Verify Pane is closed automatically when PaneDisplayMode becomes LeftMinimal");
-                Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False when PaneDisplayMode becomes LeftMinimal");
+                if (inLeftMinimalPanelDisplayMode)
+                {
+                    Log.Comment("Set PaneDisplayMode to LeftMinimal");
+                    panelDisplayModeComboBox.SelectItemByName("LeftMinimal");
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify Pane is closed automatically when PaneDisplayMode becomes LeftMinimal");
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False when PaneDisplayMode becomes LeftMinimal");
+                }
+                else
+                {
+                    Log.Comment("Set PaneDisplayMode to Auto");
+                    panelDisplayModeComboBox.SelectItemByName("Auto");
+                    Wait.ForIdle();
+
+                    Log.Comment("Verify Pane remains open when PaneDisplayMode becomes Auto");
+                    Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to remain True when PaneDisplayMode becomes Auto");
+
+                    Log.Comment("Verify back button is visible when pane is open in Expanded DisplayMode");
+                    VerifyElement.Found("NavigationViewBackButton", FindBy.Id);
+
+                    Log.Comment("Verify close button is not visible when pane is open in Expanded DisplayMode");
+                    VerifyElement.NotFound("NavigationViewCloseButton", FindBy.Id);
+
+                    Log.Comment("Decrease the width of the control from Wide to Narrow and force pane closure");
+                    SetNavViewWidth(ControlWidth.Narrow);
+                    Wait.ForIdle();
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after decreasing width");
+                    Verify.AreEqual(minimal, displayModeTextBox.DocumentText);
+                }
 
                 Log.Comment("Verify toggle-pane button is visible when pane is closed");
                 VerifyElement.Found("TogglePaneButton", FindBy.Id);

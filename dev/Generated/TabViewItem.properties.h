@@ -18,8 +18,8 @@ public:
     void IconSource(winrt::IconSource const& value);
     winrt::IconSource IconSource();
 
-    void IsCloseable(bool value);
-    bool IsCloseable();
+    void IsClosable(bool value);
+    bool IsClosable();
 
     void TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value);
     winrt::TabViewItemTemplateSettings TabViewTemplateSettings();
@@ -27,19 +27,19 @@ public:
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
-    static winrt::DependencyProperty IsCloseableProperty() { return s_IsCloseableProperty; }
+    static winrt::DependencyProperty IsClosableProperty() { return s_IsClosableProperty; }
     static winrt::DependencyProperty TabViewTemplateSettingsProperty() { return s_TabViewTemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
-    static GlobalDependencyProperty s_IsCloseableProperty;
+    static GlobalDependencyProperty s_IsClosableProperty;
     static GlobalDependencyProperty s_TabViewTemplateSettingsProperty;
 
-    winrt::event_token TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value);
-    void TabClosing(winrt::event_token const& token);
+    winrt::event_token CloseRequested(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabCloseRequestedEventArgs> const& value);
+    void CloseRequested(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs>> m_tabClosingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabCloseRequestedEventArgs>> m_closeRequestedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
@@ -52,7 +52,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnIsCloseablePropertyChanged(
+    static void OnIsClosablePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

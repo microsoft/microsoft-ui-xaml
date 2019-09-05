@@ -8,29 +8,32 @@
 
 CppWinRTActivatableClassWithDPFactory(TabView)
 
-GlobalDependencyProperty TabViewProperties::s_AddButtonCommandProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_AddButtonCommandParameterProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_CanDragDropTabsProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_IsAddButtonVisibleProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_ItemsProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_ItemsSourceProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_ItemTemplateProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_ItemTemplateSelectorProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_LeftCustomContentProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_LeftCustomContentTemplateProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_RightCustomContentProperty{ nullptr };
-GlobalDependencyProperty TabViewProperties::s_RightCustomContentTemplateProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandParameterProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_AllowDropTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_CanDragTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_CanReorderTabsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_IsAddTabButtonVisibleProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedIndexProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_SelectedItemProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabItemsProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabItemsSourceProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabItemTemplateProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabItemTemplateSelectorProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabStripFooterProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabStripFooterTemplateProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabStripHeaderProperty{ nullptr };
+GlobalDependencyProperty TabViewProperties::s_TabStripHeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_TabWidthModeProperty{ nullptr };
 
 TabViewProperties::TabViewProperties()
-    : m_addButtonClickEventSource{static_cast<TabView*>(this)}
+    : m_addTabButtonClickEventSource{static_cast<TabView*>(this)}
     , m_selectionChangedEventSource{static_cast<TabView*>(this)}
-    , m_tabClosingEventSource{static_cast<TabView*>(this)}
-    , m_tabDraggedOutsideEventSource{static_cast<TabView*>(this)}
-    , m_tabStripDragItemsCompletedEventSource{static_cast<TabView*>(this)}
-    , m_tabStripDragItemsStartingEventSource{static_cast<TabView*>(this)}
+    , m_tabCloseRequestedEventSource{static_cast<TabView*>(this)}
+    , m_tabDragCompletedEventSource{static_cast<TabView*>(this)}
+    , m_tabDragStartingEventSource{static_cast<TabView*>(this)}
+    , m_tabDroppedOutsideEventSource{static_cast<TabView*>(this)}
+    , m_tabItemsChangedEventSource{static_cast<TabView*>(this)}
     , m_tabStripDragOverEventSource{static_cast<TabView*>(this)}
     , m_tabStripDropEventSource{static_cast<TabView*>(this)}
 {
@@ -39,136 +42,70 @@ TabViewProperties::TabViewProperties()
 
 void TabViewProperties::EnsureProperties()
 {
-    if (!s_AddButtonCommandProperty)
+    if (!s_AddTabButtonCommandProperty)
     {
-        s_AddButtonCommandProperty =
+        s_AddTabButtonCommandProperty =
             InitializeDependencyProperty(
-                L"AddButtonCommand",
+                L"AddTabButtonCommand",
                 winrt::name_of<winrt::ICommand>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_AddButtonCommandParameterProperty)
+    if (!s_AddTabButtonCommandParameterProperty)
     {
-        s_AddButtonCommandParameterProperty =
+        s_AddTabButtonCommandParameterProperty =
             InitializeDependencyProperty(
-                L"AddButtonCommandParameter",
+                L"AddTabButtonCommandParameter",
                 winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_CanDragDropTabsProperty)
+    if (!s_AllowDropTabsProperty)
     {
-        s_CanDragDropTabsProperty =
+        s_AllowDropTabsProperty =
             InitializeDependencyProperty(
-                L"CanDragDropTabs",
+                L"AllowDropTabs",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 nullptr);
     }
-    if (!s_IsAddButtonVisibleProperty)
+    if (!s_CanDragTabsProperty)
     {
-        s_IsAddButtonVisibleProperty =
+        s_CanDragTabsProperty =
             InitializeDependencyProperty(
-                L"IsAddButtonVisible",
+                L"CanDragTabs",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
+    if (!s_CanReorderTabsProperty)
+    {
+        s_CanReorderTabsProperty =
+            InitializeDependencyProperty(
+                L"CanReorderTabs",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 nullptr);
     }
-    if (!s_ItemsProperty)
+    if (!s_IsAddTabButtonVisibleProperty)
     {
-        s_ItemsProperty =
+        s_IsAddTabButtonVisibleProperty =
             InitializeDependencyProperty(
-                L"Items",
-                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                L"IsAddTabButtonVisible",
+                winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ItemsSourceProperty)
-    {
-        s_ItemsSourceProperty =
-            InitializeDependencyProperty(
-                L"ItemsSource",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ItemTemplateProperty)
-    {
-        s_ItemTemplateProperty =
-            InitializeDependencyProperty(
-                L"ItemTemplate",
-                winrt::name_of<winrt::DataTemplate>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_ItemTemplateSelectorProperty)
-    {
-        s_ItemTemplateSelectorProperty =
-            InitializeDependencyProperty(
-                L"ItemTemplateSelector",
-                winrt::name_of<winrt::DataTemplateSelector>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_LeftCustomContentProperty)
-    {
-        s_LeftCustomContentProperty =
-            InitializeDependencyProperty(
-                L"LeftCustomContent",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_LeftCustomContentTemplateProperty)
-    {
-        s_LeftCustomContentTemplateProperty =
-            InitializeDependencyProperty(
-                L"LeftCustomContentTemplate",
-                winrt::name_of<winrt::DataTemplate>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_RightCustomContentProperty)
-    {
-        s_RightCustomContentProperty =
-            InitializeDependencyProperty(
-                L"RightCustomContent",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_RightCustomContentTemplateProperty)
-    {
-        s_RightCustomContentTemplateProperty =
-            InitializeDependencyProperty(
-                L"RightCustomContentTemplate",
-                winrt::name_of<winrt::DataTemplate>(),
-                winrt::name_of<winrt::TabView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                ValueHelper<bool>::BoxValueIfNecessary(true),
                 nullptr);
     }
     if (!s_SelectedIndexProperty)
@@ -179,7 +116,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<int>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<int>::BoxValueIfNecessary(-1),
+                ValueHelper<int>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnSelectedIndexPropertyChanged));
     }
     if (!s_SelectedItemProperty)
@@ -193,6 +130,94 @@ void TabViewProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnSelectedItemPropertyChanged));
     }
+    if (!s_TabItemsProperty)
+    {
+        s_TabItemsProperty =
+            InitializeDependencyProperty(
+                L"TabItems",
+                winrt::name_of<winrt::IVector<winrt::IInspectable>>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabItemsSourceProperty)
+    {
+        s_TabItemsSourceProperty =
+            InitializeDependencyProperty(
+                L"TabItemsSource",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabItemTemplateProperty)
+    {
+        s_TabItemTemplateProperty =
+            InitializeDependencyProperty(
+                L"TabItemTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabItemTemplateSelectorProperty)
+    {
+        s_TabItemTemplateSelectorProperty =
+            InitializeDependencyProperty(
+                L"TabItemTemplateSelector",
+                winrt::name_of<winrt::DataTemplateSelector>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplateSelector>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabStripFooterProperty)
+    {
+        s_TabStripFooterProperty =
+            InitializeDependencyProperty(
+                L"TabStripFooter",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabStripFooterTemplateProperty)
+    {
+        s_TabStripFooterTemplateProperty =
+            InitializeDependencyProperty(
+                L"TabStripFooterTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabStripHeaderProperty)
+    {
+        s_TabStripHeaderProperty =
+            InitializeDependencyProperty(
+                L"TabStripHeader",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_TabStripHeaderTemplateProperty)
+    {
+        s_TabStripHeaderTemplateProperty =
+            InitializeDependencyProperty(
+                L"TabStripHeaderTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::TabView>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_TabWidthModeProperty)
     {
         s_TabWidthModeProperty =
@@ -201,27 +226,29 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewWidthMode>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(winrt::TabViewWidthMode::SizeToContent),
+                ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(winrt::TabViewWidthMode::Equal),
                 winrt::PropertyChangedCallback(&OnTabWidthModePropertyChanged));
     }
 }
 
 void TabViewProperties::ClearProperties()
 {
-    s_AddButtonCommandProperty = nullptr;
-    s_AddButtonCommandParameterProperty = nullptr;
-    s_CanDragDropTabsProperty = nullptr;
-    s_IsAddButtonVisibleProperty = nullptr;
-    s_ItemsProperty = nullptr;
-    s_ItemsSourceProperty = nullptr;
-    s_ItemTemplateProperty = nullptr;
-    s_ItemTemplateSelectorProperty = nullptr;
-    s_LeftCustomContentProperty = nullptr;
-    s_LeftCustomContentTemplateProperty = nullptr;
-    s_RightCustomContentProperty = nullptr;
-    s_RightCustomContentTemplateProperty = nullptr;
+    s_AddTabButtonCommandProperty = nullptr;
+    s_AddTabButtonCommandParameterProperty = nullptr;
+    s_AllowDropTabsProperty = nullptr;
+    s_CanDragTabsProperty = nullptr;
+    s_CanReorderTabsProperty = nullptr;
+    s_IsAddTabButtonVisibleProperty = nullptr;
     s_SelectedIndexProperty = nullptr;
     s_SelectedItemProperty = nullptr;
+    s_TabItemsProperty = nullptr;
+    s_TabItemsSourceProperty = nullptr;
+    s_TabItemTemplateProperty = nullptr;
+    s_TabItemTemplateSelectorProperty = nullptr;
+    s_TabStripFooterProperty = nullptr;
+    s_TabStripFooterTemplateProperty = nullptr;
+    s_TabStripHeaderProperty = nullptr;
+    s_TabStripHeaderTemplateProperty = nullptr;
     s_TabWidthModeProperty = nullptr;
 }
 
@@ -249,124 +276,64 @@ void TabViewProperties::OnTabWidthModePropertyChanged(
     winrt::get_self<TabView>(owner)->OnTabWidthModePropertyChanged(args);
 }
 
-void TabViewProperties::AddButtonCommand(winrt::ICommand const& value)
+void TabViewProperties::AddTabButtonCommand(winrt::ICommand const& value)
 {
-    static_cast<TabView*>(this)->SetValue(s_AddButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_AddTabButtonCommandProperty, ValueHelper<winrt::ICommand>::BoxValueIfNecessary(value));
 }
 
-winrt::ICommand TabViewProperties::AddButtonCommand()
+winrt::ICommand TabViewProperties::AddTabButtonCommand()
 {
-    return ValueHelper<winrt::ICommand>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddButtonCommandProperty));
+    return ValueHelper<winrt::ICommand>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddTabButtonCommandProperty));
 }
 
-void TabViewProperties::AddButtonCommandParameter(winrt::IInspectable const& value)
+void TabViewProperties::AddTabButtonCommandParameter(winrt::IInspectable const& value)
 {
-    static_cast<TabView*>(this)->SetValue(s_AddButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_AddTabButtonCommandParameterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-winrt::IInspectable TabViewProperties::AddButtonCommandParameter()
+winrt::IInspectable TabViewProperties::AddTabButtonCommandParameter()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddButtonCommandParameterProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AddTabButtonCommandParameterProperty));
 }
 
-void TabViewProperties::CanDragDropTabs(bool value)
+void TabViewProperties::AllowDropTabs(bool value)
 {
-    static_cast<TabView*>(this)->SetValue(s_CanDragDropTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_AllowDropTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool TabViewProperties::CanDragDropTabs()
+bool TabViewProperties::AllowDropTabs()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanDragDropTabsProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_AllowDropTabsProperty));
 }
 
-void TabViewProperties::IsAddButtonVisible(bool value)
+void TabViewProperties::CanDragTabs(bool value)
 {
-    static_cast<TabView*>(this)->SetValue(s_IsAddButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_CanDragTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool TabViewProperties::IsAddButtonVisible()
+bool TabViewProperties::CanDragTabs()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_IsAddButtonVisibleProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanDragTabsProperty));
 }
 
-void TabViewProperties::Items(winrt::IVector<winrt::IInspectable> const& value)
+void TabViewProperties::CanReorderTabs(bool value)
 {
-    static_cast<TabView*>(this)->SetValue(s_ItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_CanReorderTabsProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-winrt::IVector<winrt::IInspectable> TabViewProperties::Items()
+bool TabViewProperties::CanReorderTabs()
 {
-    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemsProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_CanReorderTabsProperty));
 }
 
-void TabViewProperties::ItemsSource(winrt::IInspectable const& value)
+void TabViewProperties::IsAddTabButtonVisible(bool value)
 {
-    static_cast<TabView*>(this)->SetValue(s_ItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<TabView*>(this)->SetValue(s_IsAddTabButtonVisibleProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-winrt::IInspectable TabViewProperties::ItemsSource()
+bool TabViewProperties::IsAddTabButtonVisible()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemsSourceProperty));
-}
-
-void TabViewProperties::ItemTemplate(winrt::DataTemplate const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
-}
-
-winrt::DataTemplate TabViewProperties::ItemTemplate()
-{
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemTemplateProperty));
-}
-
-void TabViewProperties::ItemTemplateSelector(winrt::DataTemplateSelector const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_ItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
-}
-
-winrt::DataTemplateSelector TabViewProperties::ItemTemplateSelector()
-{
-    return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_ItemTemplateSelectorProperty));
-}
-
-void TabViewProperties::LeftCustomContent(winrt::IInspectable const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_LeftCustomContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable TabViewProperties::LeftCustomContent()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_LeftCustomContentProperty));
-}
-
-void TabViewProperties::LeftCustomContentTemplate(winrt::DataTemplate const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_LeftCustomContentTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
-}
-
-winrt::DataTemplate TabViewProperties::LeftCustomContentTemplate()
-{
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_LeftCustomContentTemplateProperty));
-}
-
-void TabViewProperties::RightCustomContent(winrt::IInspectable const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_RightCustomContentProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable TabViewProperties::RightCustomContent()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_RightCustomContentProperty));
-}
-
-void TabViewProperties::RightCustomContentTemplate(winrt::DataTemplate const& value)
-{
-    static_cast<TabView*>(this)->SetValue(s_RightCustomContentTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
-}
-
-winrt::DataTemplate TabViewProperties::RightCustomContentTemplate()
-{
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_RightCustomContentTemplateProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_IsAddTabButtonVisibleProperty));
 }
 
 void TabViewProperties::SelectedIndex(int value)
@@ -389,6 +356,86 @@ winrt::IInspectable TabViewProperties::SelectedItem()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_SelectedItemProperty));
 }
 
+void TabViewProperties::TabItems(winrt::IVector<winrt::IInspectable> const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabItemsProperty, ValueHelper<winrt::IVector<winrt::IInspectable>>::BoxValueIfNecessary(value));
+}
+
+winrt::IVector<winrt::IInspectable> TabViewProperties::TabItems()
+{
+    return ValueHelper<winrt::IVector<winrt::IInspectable>>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabItemsProperty));
+}
+
+void TabViewProperties::TabItemsSource(winrt::IInspectable const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabItemsSourceProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TabViewProperties::TabItemsSource()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabItemsSourceProperty));
+}
+
+void TabViewProperties::TabItemTemplate(winrt::DataTemplate const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplate TabViewProperties::TabItemTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabItemTemplateProperty));
+}
+
+void TabViewProperties::TabItemTemplateSelector(winrt::DataTemplateSelector const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabItemTemplateSelectorProperty, ValueHelper<winrt::DataTemplateSelector>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplateSelector TabViewProperties::TabItemTemplateSelector()
+{
+    return ValueHelper<winrt::DataTemplateSelector>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabItemTemplateSelectorProperty));
+}
+
+void TabViewProperties::TabStripFooter(winrt::IInspectable const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabStripFooterProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TabViewProperties::TabStripFooter()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabStripFooterProperty));
+}
+
+void TabViewProperties::TabStripFooterTemplate(winrt::DataTemplate const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabStripFooterTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplate TabViewProperties::TabStripFooterTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabStripFooterTemplateProperty));
+}
+
+void TabViewProperties::TabStripHeader(winrt::IInspectable const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabStripHeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+}
+
+winrt::IInspectable TabViewProperties::TabStripHeader()
+{
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabStripHeaderProperty));
+}
+
+void TabViewProperties::TabStripHeaderTemplate(winrt::DataTemplate const& value)
+{
+    static_cast<TabView*>(this)->SetValue(s_TabStripHeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplate TabViewProperties::TabStripHeaderTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabStripHeaderTemplateProperty));
+}
+
 void TabViewProperties::TabWidthMode(winrt::TabViewWidthMode const& value)
 {
     static_cast<TabView*>(this)->SetValue(s_TabWidthModeProperty, ValueHelper<winrt::TabViewWidthMode>::BoxValueIfNecessary(value));
@@ -399,14 +446,14 @@ winrt::TabViewWidthMode TabViewProperties::TabWidthMode()
     return ValueHelper<winrt::TabViewWidthMode>::CastOrUnbox(static_cast<TabView*>(this)->GetValue(s_TabWidthModeProperty));
 }
 
-winrt::event_token TabViewProperties::AddButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value)
+winrt::event_token TabViewProperties::AddTabButtonClick(winrt::TypedEventHandler<winrt::TabView, winrt::IInspectable> const& value)
 {
-    return m_addButtonClickEventSource.add(value);
+    return m_addTabButtonClickEventSource.add(value);
 }
 
-void TabViewProperties::AddButtonClick(winrt::event_token const& token)
+void TabViewProperties::AddTabButtonClick(winrt::event_token const& token)
 {
-    m_addButtonClickEventSource.remove(token);
+    m_addTabButtonClickEventSource.remove(token);
 }
 
 winrt::event_token TabViewProperties::SelectionChanged(winrt::SelectionChangedEventHandler const& value)
@@ -419,44 +466,54 @@ void TabViewProperties::SelectionChanged(winrt::event_token const& token)
     m_selectionChangedEventSource.remove(token);
 }
 
-winrt::event_token TabViewProperties::TabClosing(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabClosingEventArgs> const& value)
+winrt::event_token TabViewProperties::TabCloseRequested(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabCloseRequestedEventArgs> const& value)
 {
-    return m_tabClosingEventSource.add(value);
+    return m_tabCloseRequestedEventSource.add(value);
 }
 
-void TabViewProperties::TabClosing(winrt::event_token const& token)
+void TabViewProperties::TabCloseRequested(winrt::event_token const& token)
 {
-    m_tabClosingEventSource.remove(token);
+    m_tabCloseRequestedEventSource.remove(token);
 }
 
-winrt::event_token TabViewProperties::TabDraggedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDraggedOutsideEventArgs> const& value)
+winrt::event_token TabViewProperties::TabDragCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragCompletedEventArgs> const& value)
 {
-    return m_tabDraggedOutsideEventSource.add(value);
+    return m_tabDragCompletedEventSource.add(value);
 }
 
-void TabViewProperties::TabDraggedOutside(winrt::event_token const& token)
+void TabViewProperties::TabDragCompleted(winrt::event_token const& token)
 {
-    m_tabDraggedOutsideEventSource.remove(token);
+    m_tabDragCompletedEventSource.remove(token);
 }
 
-winrt::event_token TabViewProperties::TabStripDragItemsCompleted(winrt::TypedEventHandler<winrt::TabView, winrt::DragItemsCompletedEventArgs> const& value)
+winrt::event_token TabViewProperties::TabDragStarting(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDragStartingEventArgs> const& value)
 {
-    return m_tabStripDragItemsCompletedEventSource.add(value);
+    return m_tabDragStartingEventSource.add(value);
 }
 
-void TabViewProperties::TabStripDragItemsCompleted(winrt::event_token const& token)
+void TabViewProperties::TabDragStarting(winrt::event_token const& token)
 {
-    m_tabStripDragItemsCompletedEventSource.remove(token);
+    m_tabDragStartingEventSource.remove(token);
 }
 
-winrt::event_token TabViewProperties::TabStripDragItemsStarting(winrt::DragItemsStartingEventHandler const& value)
+winrt::event_token TabViewProperties::TabDroppedOutside(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewTabDroppedOutsideEventArgs> const& value)
 {
-    return m_tabStripDragItemsStartingEventSource.add(value);
+    return m_tabDroppedOutsideEventSource.add(value);
 }
 
-void TabViewProperties::TabStripDragItemsStarting(winrt::event_token const& token)
+void TabViewProperties::TabDroppedOutside(winrt::event_token const& token)
 {
-    m_tabStripDragItemsStartingEventSource.remove(token);
+    m_tabDroppedOutsideEventSource.remove(token);
+}
+
+winrt::event_token TabViewProperties::TabItemsChanged(winrt::TypedEventHandler<winrt::TabView, winrt::IVectorChangedEventArgs> const& value)
+{
+    return m_tabItemsChangedEventSource.add(value);
+}
+
+void TabViewProperties::TabItemsChanged(winrt::event_token const& token)
+{
+    m_tabItemsChangedEventSource.remove(token);
 }
 
 winrt::event_token TabViewProperties::TabStripDragOver(winrt::DragEventHandler const& value)

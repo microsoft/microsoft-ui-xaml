@@ -11,11 +11,11 @@ CppWinRTActivatableClassWithDPFactory(TabViewItem)
 GlobalDependencyProperty TabViewItemProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_IconSourceProperty{ nullptr };
-GlobalDependencyProperty TabViewItemProperties::s_IsCloseableProperty{ nullptr };
+GlobalDependencyProperty TabViewItemProperties::s_IsClosableProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_TabViewTemplateSettingsProperty{ nullptr };
 
 TabViewItemProperties::TabViewItemProperties()
-    : m_tabClosingEventSource{static_cast<TabViewItem*>(this)}
+    : m_closeRequestedEventSource{static_cast<TabViewItem*>(this)}
 {
     EnsureProperties();
 }
@@ -55,16 +55,16 @@ void TabViewItemProperties::EnsureProperties()
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
     }
-    if (!s_IsCloseableProperty)
+    if (!s_IsClosableProperty)
     {
-        s_IsCloseableProperty =
+        s_IsClosableProperty =
             InitializeDependencyProperty(
-                L"IsCloseable",
+                L"IsClosable",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::TabViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(true),
-                winrt::PropertyChangedCallback(&OnIsCloseablePropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsClosablePropertyChanged));
     }
     if (!s_TabViewTemplateSettingsProperty)
     {
@@ -84,7 +84,7 @@ void TabViewItemProperties::ClearProperties()
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_IconSourceProperty = nullptr;
-    s_IsCloseableProperty = nullptr;
+    s_IsClosableProperty = nullptr;
     s_TabViewTemplateSettingsProperty = nullptr;
 }
 
@@ -104,12 +104,12 @@ void TabViewItemProperties::OnIconSourcePropertyChanged(
     winrt::get_self<TabViewItem>(owner)->OnIconSourcePropertyChanged(args);
 }
 
-void TabViewItemProperties::OnIsCloseablePropertyChanged(
+void TabViewItemProperties::OnIsClosablePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::TabViewItem>();
-    winrt::get_self<TabViewItem>(owner)->OnIsCloseablePropertyChanged(args);
+    winrt::get_self<TabViewItem>(owner)->OnIsClosablePropertyChanged(args);
 }
 
 void TabViewItemProperties::Header(winrt::IInspectable const& value)
@@ -142,14 +142,14 @@ winrt::IconSource TabViewItemProperties::IconSource()
     return ValueHelper<winrt::IconSource>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IconSourceProperty));
 }
 
-void TabViewItemProperties::IsCloseable(bool value)
+void TabViewItemProperties::IsClosable(bool value)
 {
-    static_cast<TabViewItem*>(this)->SetValue(s_IsCloseableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<TabViewItem*>(this)->SetValue(s_IsClosableProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool TabViewItemProperties::IsCloseable()
+bool TabViewItemProperties::IsClosable()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsCloseableProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsClosableProperty));
 }
 
 void TabViewItemProperties::TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value)
@@ -162,12 +162,12 @@ winrt::TabViewItemTemplateSettings TabViewItemProperties::TabViewTemplateSetting
     return ValueHelper<winrt::TabViewItemTemplateSettings>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_TabViewTemplateSettingsProperty));
 }
 
-winrt::event_token TabViewItemProperties::TabClosing(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabClosingEventArgs> const& value)
+winrt::event_token TabViewItemProperties::CloseRequested(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabCloseRequestedEventArgs> const& value)
 {
-    return m_tabClosingEventSource.add(value);
+    return m_closeRequestedEventSource.add(value);
 }
 
-void TabViewItemProperties::TabClosing(winrt::event_token const& token)
+void TabViewItemProperties::CloseRequested(winrt::event_token const& token)
 {
-    m_tabClosingEventSource.remove(token);
+    m_closeRequestedEventSource.remove(token);
 }
