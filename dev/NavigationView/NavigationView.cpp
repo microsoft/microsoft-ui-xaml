@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -584,7 +584,12 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     {
         MUX_FAIL_FAST();
     }
-
+    if (displayMode == winrt::NavigationViewDisplayMode::Minimal) {
+        IsPaneOpen(false);
+    }
+    if (displayMode == winrt::NavigationViewDisplayMode::Expanded) {
+        IsPaneOpen(true);
+    }
     auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
