@@ -81,8 +81,6 @@ constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
-bool isInitialLoading = false;
-
 NavigationView::~NavigationView()
 {
     // Used for correct displaying of initial display mode when DisplayMode is "Auto"
