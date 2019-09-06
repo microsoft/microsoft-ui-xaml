@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -383,6 +383,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
+                    if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
+                    {
+                        isPaneOpenCheckBox.Toggle();
+                        Wait.ForIdle();
+                    }
+
                     Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
                     Button navButton = new Button(FindElement.ById("TogglePaneButton"));
@@ -412,6 +418,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be False after increasing the width of the control from compact to expanded");
                     Verify.AreEqual(expanded, displayModeTextBox.DocumentText);
                 }
+            }
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void PaneClosedWhenAutoAndNarrow()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation Minimal Test" }))
+                {
+
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsAutoPaneOpenCheckBox"));
+                    Log.Comment("Checking that a NavigationView with displaymode set to 'Auto' and a narrow width does not display pane");
+                    Wait.ForIdle();
+                    Verify.IsTrue(isPaneOpenCheckBox.ToggleState == ToggleState.Off);
+                }
+
             }
         }
 
