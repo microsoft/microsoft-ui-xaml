@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -81,8 +81,12 @@ constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
+bool isInitialLoading = false;
+
 NavigationView::~NavigationView()
 {
+    // Used for correct displaying of initial display mode when DisplayMode is "Auto"
+    m_InitialNonForcedModeUpdate = false;
     UnhookEventsAndClearFields(true);
 }
 
@@ -584,12 +588,17 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     {
         MUX_FAIL_FAST();
     }
-    if (displayMode == winrt::NavigationViewDisplayMode::Minimal) {
-        IsPaneOpen(false);
+    if (!forceSetDisplayMode && m_InitialNonForcedModeUpdate) {
+        if (displayMode == winrt::NavigationViewDisplayMode::Minimal && PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Auto) {
+            ClosePane();
+        }
+        m_InitialNonForcedModeUpdate = false;
     }
-    if (displayMode == winrt::NavigationViewDisplayMode::Expanded) {
-        IsPaneOpen(true);
+
+    if (forceSetDisplayMode) {
+        m_InitialNonForcedModeUpdate = true;
     }
+
     auto previousMode = DisplayMode();
     SetDisplayMode(displayMode, forceSetDisplayMode);
 
