@@ -134,8 +134,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
 NavigationView::NavigationView()
 {
-    // Used for correct displaying of initial display mode when DisplayMode is "Auto"
-    m_InitialNonForcedModeUpdate = false;
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationView);
     SetValue(s_TemplateSettingsProperty, winrt::make<::NavigationViewTemplateSettings>());
     SetDefaultStyleKey(this);
@@ -591,10 +589,6 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
             ClosePane();
         }
         m_InitialNonForcedModeUpdate = false;
-    }
-
-    if (forceSetDisplayMode) {
-        m_InitialNonForcedModeUpdate = true;
     }
 
     auto previousMode = DisplayMode();

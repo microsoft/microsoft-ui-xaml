@@ -162,7 +162,7 @@ private:
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
     void UpdateSelectionForMenuItems();
-    bool m_InitialNonForcedModeUpdate;
+    bool m_InitialNonForcedModeUpdate{ true };
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
