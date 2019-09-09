@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -382,12 +382,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
-
-                    if (isPaneOpenCheckBox.ToggleState == ToggleState.Off)
-                    {
-                        isPaneOpenCheckBox.Toggle();
-                        Wait.ForIdle();
-                    }
 
                     Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
