@@ -83,8 +83,6 @@ static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numer
 
 NavigationView::~NavigationView()
 {
-    // Used for correct displaying of initial display mode when DisplayMode is "Auto"
-    m_InitialNonForcedModeUpdate = false;
     UnhookEventsAndClearFields(true);
 }
 
@@ -136,6 +134,8 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
 NavigationView::NavigationView()
 {
+    // Used for correct displaying of initial display mode when DisplayMode is "Auto"
+    m_InitialNonForcedModeUpdate = false;
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NavigationView);
     SetValue(s_TemplateSettingsProperty, winrt::make<::NavigationViewTemplateSettings>());
     SetDefaultStyleKey(this);
