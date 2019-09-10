@@ -5,7 +5,9 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:SwipeControl">
+    <Style TargetType="local:SwipeControl" BasedOn="{StaticResource DefaultSwipeControlStyle}" />
+
+    <Style x:Key="DefaultSwipeControlStyle" TargetType="local:SwipeControl">
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="MinHeight" Value="{ThemeResource ListViewItemMinHeight}"/>

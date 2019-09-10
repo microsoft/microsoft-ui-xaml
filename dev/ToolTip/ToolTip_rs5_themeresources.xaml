@@ -21,7 +21,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="ToolTip">
+    <Style TargetType="ToolTip" BasedOn="{StaticResource DefaultToolTipStyle}" />
+
+    <Style x:Key="DefaultToolTipStyle" TargetType="ToolTip">
         <Setter Property="Foreground" Value="{ThemeResource ToolTipForeground}" />
         <Setter Property="Background" Value="{ThemeResource ToolTipBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ToolTipBorderBrush}" />

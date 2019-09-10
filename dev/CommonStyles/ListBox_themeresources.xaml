@@ -62,7 +62,9 @@
 
     <Thickness x:Key="ListBoxItemPadding">12,9,12,12</Thickness>
 
-     <Style TargetType="ListBoxItem">
+    <Style TargetType="ListBoxItem" BasedOn="{StaticResource DefaultListBoxItemStyle}" />
+
+    <Style x:Key="DefaultListBoxItemStyle" TargetType="ListBoxItem">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="TabNavigation" Value="Local" />
         <Setter Property="Padding" Value="{StaticResource ListBoxItemPadding}" />
@@ -190,7 +192,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="ListBox">
+    <Style TargetType="ListBox" BasedOn="{StaticResource DefaultListBoxStyle}" />
+
+    <Style x:Key="DefaultListBoxStyle" TargetType="ListBox">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />
         <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlForegroundBaseHighBrush}" />

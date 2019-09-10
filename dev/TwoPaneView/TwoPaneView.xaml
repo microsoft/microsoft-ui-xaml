@@ -6,7 +6,9 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:TwoPaneView">
+    <Style TargetType="local:TwoPaneView" BasedOn="{StaticResource DefaultTwoPaneViewStyle}" />
+
+    <Style x:Key="DefaultTwoPaneViewStyle" TargetType="local:TwoPaneView">
         <Setter Property="HorizontalAlignment" Value="Stretch" />
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="MinWideModeWidth" Value="641"/>

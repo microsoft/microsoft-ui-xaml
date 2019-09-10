@@ -98,8 +98,10 @@
     <Thickness x:Key="AppBarButtonTextLabelMargin">2,0,2,8</Thickness>
     <Thickness x:Key="AppBarButtonTextLabelOnRightMargin">8,11,12,13</Thickness>
 
+    <Style TargetType="AppBarButton" BasedOn="{StaticResource DefaultAppBarButtonStyle}" />
+
     <!-- LabelOnRightStyle is retired since RS3, We still need it for RS2 or RS3 -->
-    <Style TargetType="AppBarButton">
+    <Style x:Key="DefaultAppBarButtonStyle" TargetType="AppBarButton">
         <Setter Property="Background" Value="{ThemeResource AppBarButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource AppBarButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource AppBarButtonBorderBrush}" />

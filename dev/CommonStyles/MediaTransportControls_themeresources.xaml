@@ -23,7 +23,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-        <Style TargetType="MediaTransportControls">
+    <Style TargetType="MediaTransportControls" BasedOn="{StaticResource DefaultMediaTransportControlsStyle}" />
+
+    <Style x:Key="DefaultMediaTransportControlsStyle" TargetType="MediaTransportControls">
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="FlowDirection" Value="LeftToRight" />

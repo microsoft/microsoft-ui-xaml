@@ -5,7 +5,8 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <ResourceDictionary x:Key="Default">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
         <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
         <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemControlPageBackgroundListLowBrush" />
         <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -28,7 +29,7 @@
         <SolidColorBrush x:Key="FlipViewButtonPressedBorderThemeBrush" Color="#BD292929" />
         <SolidColorBrush x:Key="FlipViewButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
     </ResourceDictionary>
-    <ResourceDictionary x:Key="HighContrast">
+        <ResourceDictionary x:Key="HighContrast">
         <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemControlPageBackgroundListLowBrush" />
         <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
         <StaticResource x:Key="FlipViewNextPreviousButtonBackgroundPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
@@ -51,7 +52,7 @@
         <SolidColorBrush x:Key="FlipViewButtonPressedBorderThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
         <SolidColorBrush x:Key="FlipViewButtonPressedForegroundThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
     </ResourceDictionary>
-    <ResourceDictionary x:Key="Light">
+        <ResourceDictionary x:Key="Light">
         <Thickness x:Key="FlipViewButtonBorderThemeThickness">0</Thickness>
         <StaticResource x:Key="FlipViewBackground" ResourceKey="SystemControlPageBackgroundListLowBrush" />
         <StaticResource x:Key="FlipViewNextPreviousButtonBackground" ResourceKey="SystemControlBackgroundBaseMediumLowBrush" />
@@ -74,8 +75,11 @@
         <SolidColorBrush x:Key="FlipViewButtonPressedBorderThemeBrush" Color="#BD292929" />
         <SolidColorBrush x:Key="FlipViewButtonPressedForegroundThemeBrush" Color="#FFFFFFFF" />
     </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="FlipView">
+    <Style TargetType="FlipView" BasedOn="{StaticResource DefaultFlipViewStyle}" />
+
+    <Style x:Key="DefaultFlipViewStyle" TargetType="FlipView">
         <Setter Property="Background" Value="{ThemeResource FlipViewBackground}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="TabNavigation" Value="Once" />

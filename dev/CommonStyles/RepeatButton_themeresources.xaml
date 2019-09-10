@@ -80,7 +80,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="RepeatButton">
+    <Style TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonStyle}" />
+
+    <Style x:Key="DefaultRepeatButtonStyle" TargetType="RepeatButton">
         <Setter Property="Background" Value="{ThemeResource RepeatButtonBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Foreground" Value="{ThemeResource RepeatButtonForeground}" />

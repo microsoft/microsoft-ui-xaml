@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-  <Style TargetType="local:RefreshContainer">
+  <Style TargetType="local:RefreshContainer" BasedOn="{StaticResource DefaultRefreshContainerStyle}" />
+
+  <Style x:Key="DefaultRefreshContainerStyle" TargetType="local:RefreshContainer">
     <Setter Property="Foreground" Value="{ThemeResource RefreshContainerForegroundBrush}"/>
     <Setter Property="Background" Value="{ThemeResource RefreshContainerBackgroundBrush}"/>
     <Setter Property="IsTabStop" Value="False" />
