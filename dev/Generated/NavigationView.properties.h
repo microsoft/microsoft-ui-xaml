@@ -226,6 +226,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnAllowMultipleExpandedItemGroupsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnAlwaysShowHeaderPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

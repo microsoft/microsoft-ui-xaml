@@ -45,7 +45,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnHasUnrealizedChildrenPropertyChanged));
     }
     if (!s_IconProperty)
     {
@@ -67,7 +67,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsChildSelectedPropertyChanged));
     }
     if (!s_IsExpandedProperty)
     {
@@ -78,7 +78,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIsExpandedPropertyChanged));
     }
     if (!s_MenuItemsProperty)
     {
@@ -100,7 +100,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnMenuItemsSourcePropertyChanged));
     }
     if (!s_SelectsOnInvokedProperty)
     {
@@ -128,12 +128,44 @@ void NavigationViewItemProperties::ClearProperties()
     NavigationViewItemBase::ClearProperties();
 }
 
+void NavigationViewItemProperties::OnHasUnrealizedChildrenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnHasUnrealizedChildrenPropertyChanged(args);
+}
+
 void NavigationViewItemProperties::OnIconPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NavigationViewItem>();
     winrt::get_self<NavigationViewItem>(owner)->OnIconPropertyChanged(args);
+}
+
+void NavigationViewItemProperties::OnIsChildSelectedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnIsChildSelectedPropertyChanged(args);
+}
+
+void NavigationViewItemProperties::OnIsExpandedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnIsExpandedPropertyChanged(args);
+}
+
+void NavigationViewItemProperties::OnMenuItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnMenuItemsSourcePropertyChanged(args);
 }
 
 void NavigationViewItemProperties::CompactPaneLength(double value)

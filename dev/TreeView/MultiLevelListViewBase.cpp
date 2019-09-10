@@ -34,8 +34,12 @@ winrt::TreeViewNode MultiLevelListViewBase::NodeAtFlatIndex(int index) const
 
 winrt::TreeViewNode MultiLevelListViewBase::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    int index = m_listView.get().IndexFromContainer(container);
-    return NodeAtFlatIndex(index);
+    int index = container ? m_listView.get().IndexFromContainer(container) : -1;
+    if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
+    {
+        return NodeAtFlatIndex(index);
+    }
+    return nullptr;
 }
 
 winrt::DependencyObject MultiLevelListViewBase::ContainerFromNode(winrt::TreeViewNode const& node)

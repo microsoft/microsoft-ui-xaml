@@ -71,7 +71,7 @@ void NavigationViewProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationView>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnAllowMultipleExpandedItemGroupsPropertyChanged));
     }
     if (!s_AlwaysShowHeaderProperty)
     {
@@ -498,6 +498,14 @@ void NavigationViewProperties::ClearProperties()
     s_SettingsItemProperty = nullptr;
     s_ShoulderNavigationEnabledProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
+}
+
+void NavigationViewProperties::OnAllowMultipleExpandedItemGroupsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationView>();
+    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
 }
 
 void NavigationViewProperties::OnAlwaysShowHeaderPropertyChanged(

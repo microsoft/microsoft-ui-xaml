@@ -165,45 +165,52 @@ void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyCh
     UpdateVisualStateNoTransition();
 }
 
-//void NavigationViewItem::OnPropertyChanged()
-//{
-//    auto property = args.Property();
-//
-//    if (auto node = TreeNode())
-//    {
-//        if (property == s_IsExpandedProperty)
-//        {
-//            UpdateIsExpanded(node);
-//            UpdateSelectionIndicatorVisiblity();
-//        }
-//        else if (property == s_MenuItemsSourceProperty)
-//        {
-//            winrt::IInspectable value = args.NewValue();
-//            // MenuItemsSource change happens during measuring.
-//            // Adding MenuItemsSource to node's children triggers another layout change, so it has to be done async.
-//            m_dispatcherHelper.RunAsync(
-//                [node, value]()
-//                {
-//                    winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
-//                });
-//        }
-//        else if (property == s_IsChildSelectedProperty)
-//        {
-//            // Update the corresponding node
-//            if (auto navViewList = GetNavigationViewList())
-//            {
-//                auto viewModel = winrt::get_self<NavigationViewList>(navViewList)->ListViewModel();
-//                TreeNodeSelectionState selectionState = IsChildSelected() ? TreeNodeSelectionState::PartialSelected : TreeNodeSelectionState::UnSelected;
-//                viewModel->UpdateSelection(node, selectionState);
-//            }
-//            UpdateSelectionIndicatorVisiblity();
-//        }
-//        else if (property == s_HasUnrealizedChildrenProperty)
-//        {
-//            node.HasUnrealizedChildren(HasUnrealizedChildren());
-//        }
-//    }
-//}
+void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto node = TreeNode())
+    {
+        UpdateIsExpanded(node);
+        UpdateSelectionIndicatorVisiblity();
+    }
+}
+
+void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto node = TreeNode())
+    {
+        winrt::IInspectable value = args.NewValue();
+        // MenuItemsSource change happens during measuring.
+        // Adding MenuItemsSource to node's children triggers another layout change, so it has to be done async.
+        m_dispatcherHelper.RunAsync(
+            [node, value]()
+            {
+                winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
+            });
+    }
+}
+
+void NavigationViewItem::OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto node = TreeNode())
+    {
+        // Update the corresponding node
+        if (auto navViewList = GetNavigationViewList())
+        {
+            auto viewModel = winrt::get_self<NavigationViewList>(navViewList)->ListViewModel();
+            TreeNodeSelectionState selectionState = IsChildSelected() ? TreeNodeSelectionState::PartialSelected : TreeNodeSelectionState::UnSelected;
+            viewModel->UpdateSelection(node, selectionState);
+        }
+        UpdateSelectionIndicatorVisiblity();
+    }
+}
+
+void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto node = TreeNode())
+    {
+        node.HasUnrealizedChildren(HasUnrealizedChildren());
+    }
+}
 
 winrt::TreeViewNode NavigationViewItem::TreeNode()
 {

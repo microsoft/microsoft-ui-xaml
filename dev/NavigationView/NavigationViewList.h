@@ -11,6 +11,8 @@ class NavigationViewList :
     public ReferenceTracker<NavigationViewList, winrt::implementation::NavigationViewListT>, public MultiLevelListViewBase
 {
 public:
+    NavigationViewList();
+
     // IItemsControlOverrides
     winrt::DependencyObject GetContainerForItemOverride();
     bool IsItemItsOwnContainerOverride(winrt::IInspectable const& item);

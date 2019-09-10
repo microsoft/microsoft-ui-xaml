@@ -58,7 +58,4 @@ public:
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
     int m_depth{ 0 };
-
-public:
-    NavigationViewItemBase();
 };

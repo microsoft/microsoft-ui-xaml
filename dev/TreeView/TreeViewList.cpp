@@ -627,16 +627,6 @@ winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& 
     return current;
 }
 
-winrt::TreeViewNode TreeViewList::NodeFromContainer(winrt::DependencyObject const& container)
-{
-    int index = container ? IndexFromContainer(container) : -1;
-    if (index >= 0 && index < static_cast<int32_t>(ListViewModel()->Size()))
-    {
-        return NodeAtFlatIndex(index);
-    }
-    return nullptr;
-}
-
 winrt::DependencyObject TreeViewList::ContainerFromNode(winrt::TreeViewNode const& node)
 {
     if (!node)

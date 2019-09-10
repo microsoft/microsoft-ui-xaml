@@ -523,7 +523,11 @@ void ViewModel::SetOwningList(winrt::ListView const& owningList)
 
 winrt::TreeViewList ViewModel::ListControl()
 {
-    return m_TreeViewList.get();
+    if (auto tvList = m_listView.get().try_as<winrt::TreeViewList>())
+    {
+        return tvList;
+    }
+    return nullptr;
 }
 
 bool ViewModel::IsInSingleSelectionMode()

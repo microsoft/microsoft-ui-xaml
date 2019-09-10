@@ -63,6 +63,7 @@ public:
     // Helper functions
     void PrepareView(winrt::TreeViewNode const& originNode);
     void SetOwningList(winrt::ListView const& owningList);
+    winrt::TreeViewList ListControl();
     bool IsInSingleSelectionMode();
     bool IsNodeSelected(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState NodeSelectionState(winrt::TreeViewNode const& targetNode);

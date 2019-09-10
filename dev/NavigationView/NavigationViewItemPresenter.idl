@@ -1,7 +1,7 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
 
-﻿[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
 {

@@ -28,6 +28,10 @@ public:
     void OnApplyTemplate() override;
 
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     winrt::UIElement GetSelectionIndicator();
     winrt::ToolTip GetToolTip();
