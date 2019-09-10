@@ -310,8 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: fix broken test
-        //[TestMethod]
+        [TestMethod]
         public void KeyboardTest()
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
@@ -380,6 +379,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 VerifyElement.NotFound("FirstTab", FindBy.Name);
+
+                // Move focus to the second tab content
+                secondTabButton.SetFocus();
+                Wait.ForIdle();
             }
         }
 

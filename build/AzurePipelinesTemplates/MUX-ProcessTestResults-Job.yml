@@ -3,6 +3,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
+  
 
 jobs:
 - job: ProcessTestResults
@@ -11,6 +12,8 @@ jobs:
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
+  variables:
+    crashDumpsListFilePath: $(Build.SourcesDirectory)\crashdumps.html
 
   steps:
   - task: powershell@2
@@ -32,3 +35,20 @@ jobs:
       targetType: filePath
       filePath: build\Helix\OutputTestResults.ps1
       arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+
+  - task: powershell@2
+    displayName: 'CreateListOfCrashDumpsFromTestPass.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\CreateListOfCrashDumpsFromTestPass.ps1
+      arguments: -OutputFilePath '$(crashDumpsListFilePath)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Crash Dump List'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(crashDumpsListFilePath)
+      artifactName: drop
