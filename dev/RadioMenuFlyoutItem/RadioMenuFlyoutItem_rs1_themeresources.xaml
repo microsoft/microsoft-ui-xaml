@@ -4,8 +4,10 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
+    <Style TargetType="local:RadioMenuFlyoutItem" BasedOn="{StaticResource DefaultRadioMenuFlyoutItemStyle}" />
+
     <!-- Same as default rs1 style for ToggleMenuFlyoutItem -->
-    <Style TargetType="local:RadioMenuFlyoutItem">
+    <Style x:Key="DefaultRadioMenuFlyoutItemStyle" TargetType="local:RadioMenuFlyoutItem">
         <Setter Property="Background" Value="{ThemeResource ToggleMenuFlyoutItemBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource ToggleMenuFlyoutItemForeground}" />
         <Setter Property="Padding" Value="{ThemeResource MenuFlyoutItemThemePadding}" />
