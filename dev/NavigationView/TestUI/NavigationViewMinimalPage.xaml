@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 <!-- This page contains a NavigationView control that is in LeftMinimal mode on initial load -->
-    <Grid>
+    <StackPanel>
         <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
                                     IsBackEnabled="True" Header="Minimal Test Page" PaneDisplayMode="LeftMinimal">
             <StackPanel>
@@ -18,5 +18,14 @@
                 <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
             </StackPanel>
         </muxcontrols:NavigationView>
-    </Grid>
+        <muxcontrols:NavigationView x:Name="NavViewAuto" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
+                                    IsBackEnabled="True" Header="Minimal Test Page" Width="250" Height="300" >
+            <StackPanel>
+            </StackPanel>
+        </muxcontrols:NavigationView>
+        <CheckBox
+            IsChecked="{Binding IsPaneOpen, ElementName=NavViewAuto, Mode=TwoWay}"
+            x:Name="IsAutoPaneOpenCheckBox"
+            AutomationProperties.Name="IsPaneOpenCheckBox" >Toggle auto pane open</CheckBox>
+    </StackPanel>
 </local:TestPage>
