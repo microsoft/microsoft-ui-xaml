@@ -11,23 +11,14 @@
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewList);
 
-TreeViewList::TreeViewList()
+TreeViewList::TreeViewList():
+    MultiLevelListViewBase(this, this->try_as<winrt::ListView>())
 {
     ListViewModel(winrt::make_self<ViewModel>());
 
     DragItemsStarting({ this, &TreeViewList::OnDragItemsStarting });
     DragItemsCompleted({ this, &TreeViewList::OnDragItemsCompleted });
     ContainerContentChanging({ this, &TreeViewList::OnContainerContentChanging });
-}
-
-com_ptr<ViewModel> TreeViewList::ListViewModel() const
-{
-    return m_viewModel.get();
-}
-
-void TreeViewList::ListViewModel(com_ptr<ViewModel> viewModel)
-{
-    m_viewModel.set(viewModel);
 }
 
 winrt::TreeViewNode TreeViewList::DraggedTreeViewNode()
@@ -623,11 +614,6 @@ unsigned int TreeViewList::IndexInParent(const winrt::TreeViewNode& node)
     unsigned int indexInParent;
     node.Parent().Children().IndexOf(node, indexInParent);
     return indexInParent;
-}
-
-winrt::TreeViewNode TreeViewList::NodeAtFlatIndex(int index) const
-{
-    return ListViewModel()->GetNodeAt(index);
 }
 
 winrt::TreeViewNode TreeViewList::GetRootOfSelection(const winrt::TreeViewNode& node) const

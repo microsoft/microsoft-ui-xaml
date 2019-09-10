@@ -8,6 +8,9 @@
 #include "VectorChangedEventArgs.h"
 #include "TreeViewList.h"
 #include <HashMap.h>
+#include "NavigationViewList.h"
+#include "NavigationViewItemBase.h"
+#include "NavigationViewItem.h"
 
 // Need to update node selection states on UI before vector changes.
 // Listen on vector change events don't solve the problem because the event already happened when the event handler gets called.
@@ -340,8 +343,29 @@ bool ViewModel::IndexOf(winrt::IInspectable const& value, uint32_t& index)
     else
     {
         auto inner = GetVectorInnerImpl();
-        return inner->IndexOf(value, index);
+        if (value.try_as<winrt::TreeViewNode>())
+        {
+            return inner->IndexOf(value, index);
+        }
+        // The vector 'inner' consists of TreeViewNodes. However, in some automation scenarios for earlier versions of windows,
+        // (e.g. ScrollItemPattern) this function is called with a container as the 'value' parameter.
+        else
+        {
+            if (m_listView)
+            {
+                if(auto depObj = value.try_as<winrt::DependencyObject>())
+                {
+                    auto lvIndex = static_cast<uint32_t>(m_listView.get().IndexFromContainer(depObj));
+                    if (lvIndex >= 0)
+                    {
+                        index = lvIndex;
+                        return true;
+                    }
+                }
+            }
+        }
     }
+    return false;
 }
 
 uint32_t ViewModel::GetMany(uint32_t const startIndex, winrt::array_view<winrt::IInspectable> values)
@@ -492,9 +516,9 @@ void ViewModel::PrepareView(const winrt::TreeViewNode& originNode)
     }
 }
 
-void ViewModel::SetOwningList(winrt::TreeViewList const& owningList)
+void ViewModel::SetOwningList(winrt::ListView const& owningList)
 {
-    m_TreeViewList = winrt::make_weak(owningList);
+    m_listView = winrt::make_weak(owningList);
 }
 
 winrt::TreeViewList ViewModel::ListControl()
@@ -504,7 +528,7 @@ winrt::TreeViewList ViewModel::ListControl()
 
 bool ViewModel::IsInSingleSelectionMode()
 {
-    return m_TreeViewList.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
+    return m_listView.get().SelectionMode() == winrt::ListViewSelectionMode::Single;
 }
 
 // Private helpers
@@ -752,6 +776,10 @@ void ViewModel::UpdateSelectionStateOfAncestors(winrt::TreeViewNode const& targe
     }
 }
 
+// Note: Now that Hierarchical Navigation View is also dependent on the ViewModel, any potential
+// change in the selection state behavior should be made with Navigation View in mind. More specifically,
+// Navigation View is dependent on the current 'PartialSelected' selection state change behavior in order to properly determine
+// which nodes are parents of a selected child.
 TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewNode const& node)
 {
     bool hasSelectedChildren{ false };
@@ -781,13 +809,29 @@ TreeNodeSelectionState ViewModel::SelectionStateBasedOnChildren(winrt::TreeViewN
 
 void ViewModel::NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState)
 {
-    if (m_TreeViewList)
+    if (m_listView)
     {
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
-        if (container)
+        if (auto tvList = m_listView.get().try_as<winrt::TreeViewList>())
         {
-            winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
-            winrt::get_self<TreeViewItem>(targetItem)->UpdateSelectionVisual(selectionState);
+            auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
+            if (container)
+            {
+                winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
+                winrt::get_self<TreeViewItem>(targetItem)->UpdateSelectionVisual(selectionState);
+            }
+        }
+        else if (auto nvList = m_listView.get().try_as<winrt::NavigationViewList>())
+        {
+            // For NavigationView, TreeNodeSelectionState is only used for determining the parents of a selected item
+            bool isChildSelected = selectionState == TreeNodeSelectionState::PartialSelected ? true : false;
+            auto container = winrt::get_self<NavigationViewList>(nvList)->ContainerFromItem(targetNode.Content());
+            if (container)
+            {
+                if (auto targetItem = container.try_as<winrt::NavigationViewItem>())
+                {
+                    winrt::get_self<NavigationViewItem>(targetItem)->IsChildSelected(isChildSelected);
+                }
+            }
         }
     }
 }
@@ -1052,14 +1096,17 @@ void ViewModel::TreeViewNodeIsExpandedPropertyChanged(winrt::TreeViewNode const&
 
 void ViewModel::TreeViewNodeHasChildrenPropertyChanged(winrt::TreeViewNode const& sender, winrt::IDependencyPropertyChangedEventArgs const& args)
 {
-    if (m_TreeViewList)
+    if (m_listView)
     {
         auto targetNode = sender.as<winrt::TreeViewNode>();
-        auto container = winrt::get_self<TreeViewList>(m_TreeViewList.get())->ContainerFromNode(targetNode);
-        if (container)
+        if (auto tvList = m_listView.get().try_as<winrt::TreeViewList>())
         {
-            winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
-            targetItem.GlyphOpacity(targetNode.HasChildren() ? 1.0 : 0.0);
+            auto container = winrt::get_self<TreeViewList>(tvList)->ContainerFromNode(targetNode);
+            if (container)
+            {
+                winrt::TreeViewItem targetItem = container.as<winrt::TreeViewItem>();
+                targetItem.GlyphOpacity(targetNode.HasChildren() ? 1.0 : 0.0);
+            }
         }
     }
 }

@@ -5,9 +5,12 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
+#include "NavigationViewItemBaseTemplateSettings.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.
@@ -49,6 +52,13 @@ public:
     winrt::SplitView GetSplitView();
     winrt::NavigationViewList GetNavigationViewList();
 
+    void SetDepth(int depth);
+    int GetDepth();
+
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
+    int m_depth{ 0 };
+
+public:
+    NavigationViewItemBase();
 };

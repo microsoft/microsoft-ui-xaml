@@ -244,6 +244,11 @@ void TreeViewNode::SyncChildrenNodesWithItemsSource()
             node->Content(item);
             node->IsContentMode(true);
             children->Append(*node, false /* updateItemsSource */);
+            // Required to create the whole tree when used in NavigationView Markup
+            if (auto nvi = item.try_as<winrt::NavigationViewItem>())
+            {
+                node->ItemsSource(nvi.MenuItems());
+            }
         }
     }
 }

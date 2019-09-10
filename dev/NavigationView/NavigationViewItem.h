@@ -9,6 +9,7 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItem.g.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
+#include "TreeViewNode.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
@@ -18,6 +19,10 @@ public:
     ForwardRefToBaseReferenceTracker(NavigationViewItemBase)
 
     NavigationViewItem();
+
+	// These functions are ambiguous with NavigationViewItemBase, disambiguate 
+	using NavigationViewItemProperties::EnsureProperties;
+	using NavigationViewItemProperties::ClearProperties;
 
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
@@ -45,6 +50,13 @@ public:
     
     bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
     void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
+
+    void UpdateItemDepth(int depth);
+
+    winrt::TreeViewNode TreeNode();
+
+    void ToggleIsExpanded();
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
@@ -85,4 +97,11 @@ private:
     bool m_appliedTemplate{ false };
     bool m_hasKeyboardFocus{ false };
     bool m_isContentChangeHandlingDelayedForTopNav{ false };
+
+    void UpdateIsExpanded(winrt::TreeViewNode node);
+    void UpdateSelectionIndicatorVisiblity();
+    void PropagateDepth();
+
+    void OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
+    bool HasChildren();
 };

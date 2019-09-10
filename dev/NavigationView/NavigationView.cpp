@@ -10,6 +10,8 @@
 #include "NavigationViewDisplayModeChangedEventArgs.h"
 #include "NavigationViewPaneClosingEventArgs.h"
 #include "NavigationViewBackRequestedEventArgs.h"
+#include "NavigationViewExpandingEventArgs.h"
+#include "NavigationViewCollapsedEventArgs.h"
 #include "ResourceAccessor.h"
 #include "CppWinRTHelpers.h"
 #include "NavigationViewItem.h"
@@ -154,6 +156,8 @@ NavigationView::NavigationView()
 
     Unloaded({ this, &NavigationView::OnUnloaded });
     Loaded({ this, &NavigationView::OnLoaded });
+
+    m_rootNode.set(winrt::make<TreeViewNode>());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -232,6 +236,15 @@ void NavigationView::OnApplyTemplate()
         {
             leftNavListView.SingleSelectionFollowsFocus(false);
         }
+
+        // Set up the ViewModel for the List
+        auto leftNavigationViewList = leftNavListView.try_as<NavigationViewList>();
+        leftNavigationViewList->ListViewModel(winrt::make_self<ViewModel>());
+        auto viewModel = leftNavigationViewList->ListViewModel();
+        viewModel->IsContentMode(true);
+        viewModel->PrepareView(m_rootNode.get());
+        viewModel->SetOwningList(leftNavListView);
+        leftNavigationViewList->ItemsSource(*viewModel.get());
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -503,6 +516,7 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     {
         // For some unknown reason, ListView may not always selected a item on the first time when we update the datasource.
         // If it's not selected, we re-selected it.
+        // This is also used when a previously selected MenuItem was hidden and is now being shown.
         auto selectedItem = SelectedItem();
         if (selectedItem)
         {
@@ -1326,6 +1340,20 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
     eventArgs->RecommendedNavigationTransitionInfo(CreateNavigationTransitionInfo(recommendedDirection));
     m_selectionChangedEventSource(*this, *eventArgs);
 }
+
+void NavigationView::ToggleIsExpandedFromItem(const winrt::IInspectable& item)
+{
+    auto container = NavigationViewItemOrSettingsContentFromData(item);
+    if (container)
+    {
+        ToggleIsExpandedFromContainer(container);
+    }
+}
+
+void NavigationView::ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container)
+{
+    winrt::get_self<NavigationViewItem>(container)->ToggleIsExpanded();
+}
  
 // SelectedItem change can be invoked by API or user's action like clicking. if it's not from API, m_shouldRaiseInvokeItemInSelectionChange would be true
 // If nextItem is selectionsuppressed, we should undo the selection. We didn't undo it OnSelectionChange because we want change by API has the same undo logic.
@@ -1346,10 +1374,15 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         if (isSelectionSuppressed)
         {
             UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
-
+            
             // Undo only happened when customer clicked a selectionsuppressed item. 
             // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
             RaiseItemInvoked(nextActualItem, isSettingsItem);
+
+            if (m_shouldRaiseInvokeItemInSelectionChange)
+            {
+                ToggleIsExpandedFromItem(nextActualItem);
+            }
         }
         else
         {
@@ -1405,9 +1438,56 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
                 RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
             }
 
+            UpdateIsChildSelected(prevItem, nextActualItem);
+
+            if (m_shouldRaiseInvokeItemInSelectionChange)
+            {
+                ToggleIsExpandedFromItem(nextActualItem);
+            }
+
             AnimateSelectionChanged(prevItem, nextActualItem);
 
             ClosePaneIfNeccessaryAfterItemIsClicked();
+        }
+    }
+}
+
+void NavigationView::UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
+{
+    // REMOVE CHECK ONCE TOP NAV FUNCTIONALITY IS IMPLEMENTED
+    if (IsTopNavigationView() || RootNodes().Size() == 0)
+    {
+        return;
+    }
+
+    auto lv = GetActiveListView();
+    if (lv)
+    {
+        auto lvImpl = winrt::get_self<NavigationViewList>(lv);
+        auto viewModel = lvImpl->ListViewModel();
+
+        if (viewModel && prevItem && !IsSettingsItem(prevItem))
+        {
+            auto prevItemNode = m_previouslySelectedNode.get();
+            if (prevItemNode && prevItemNode.Parent())
+            {
+                auto nodeParent = prevItemNode.Parent();
+                viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::UnSelected);
+                viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::UnSelected);
+                m_previouslySelectedNode = nullptr;
+            }
+        }
+
+        if (viewModel && nextItem && !IsSettingsItem(nextItem))
+        {
+            auto nextItemNode = lvImpl->NodeFromItem(nextItem);
+            if (nextItemNode && nextItemNode.Parent())
+            {
+                auto nodeParent = nextItemNode.Parent();
+                viewModel->UpdateSelection(nodeParent, TreeNodeSelectionState::PartialSelected);
+                viewModel->NotifyContainerOfSelectionChange(nodeParent, TreeNodeSelectionState::PartialSelected);
+                m_previouslySelectedNode = winrt::make_weak(nextItemNode);
+            }
         }
     }
 }
@@ -1416,9 +1496,17 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
 {
     auto clickedItem = args.ClickedItem();
 
-    auto itemContainer = GetContainerForClickedItem(clickedItem);
+    // 'GetContainerForClickedItem' was introduced to fix a bug for TopNav (see NavigationViewList.h, m_lastItemCalledInIsItemItsOwnContainerOverride).
+    // However, this workaround returns the wrong container when databinding is used. So in order to have functional behavior without removing the previous
+    // bug fix, first we try the standard approach of finding the container, and if that fails, we attempt the workaround.
+    auto itemContainer = NavigationViewItemBaseOrSettingsContentFromData(clickedItem);
+    if (!itemContainer)
+    {
+        itemContainer = GetContainerForClickedItem(clickedItem);
+    }
 
     auto selectedItem = SelectedItem();
+
     // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
     // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
     //
@@ -1428,9 +1516,23 @@ void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const wi
     if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
     {
         RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
-
+        ToggleIsExpandedFromItem(itemContainer);
         ClosePaneIfNeccessaryAfterItemIsClicked();
     }
+}
+
+void NavigationView::RaiseIsExpanding(winrt::NavigationViewItemBase const& item)
+{
+    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    eventArgs->ExpandingItemContainer(item);
+    m_expandingEventSource(*this, *eventArgs);
+}
+
+void NavigationView::RaiseCollapsed(winrt::NavigationViewItemBase const& item)
+{
+    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    eventArgs->CollapsedItemContainer(item);
+    m_collapsedEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
@@ -1895,7 +1997,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::
         container = listView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
     }
 
-    MUX_ASSERT(container && container.Content() == itemData);
+    MUX_ASSERT(container);
     return container;
 }
 
@@ -2042,6 +2144,7 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
     // 3, select from listviewitem to null from API.
     if (prevItem && prevItem != nextItem)
     {
+        // TODO: Add Check for where above selection case 2 & 3 start from listviewitem that is hidden
         if (IsSettingsItem(prevItem) || (nextItem && IsSettingsItem(nextItem)) || !nextItem)
         {
             ChangeSelectStatusForItem(prevItem, false /*selected*/);
@@ -2060,6 +2163,13 @@ void NavigationView::UndoSelectionAndRevertSelectionTo(winrt::IInspectable const
         }
         else
         {
+            // In the case of hierarchical nav view, there is a possibility that the previously selected item
+            // is hidden (hence not in the listview). This 'if' clause guarantees that the items that needs to be unselected
+            // gets unselected.
+            if (nextItem)
+            {
+                ChangeSelectStatusForItem(nextItem, false /*selected*/);
+            }
             ChangeSelectStatusForItem(prevSelectedItem, true /*selected*/);
             AnimateSelectionChangedToItem(prevSelectedItem);
             selectedItem = prevSelectedItem;
@@ -3262,7 +3372,11 @@ void NavigationView::UpdatePaneTitleMargins()
 
 void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
 {
-    UpdateListViewItemsSource(m_leftNavListView.get(), items);
+    // unbinding Data from ListView
+    UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
+    UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+
+    SyncRootNodesWithItemsSource(items);
 }
 
 void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
@@ -3301,7 +3415,6 @@ void NavigationView::UpdateListViewItemSource()
     if (!dataSource)
     {
         dataSource = MenuItems();
-        UpdateSelectionForMenuItems();
     }
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
@@ -3323,36 +3436,16 @@ void NavigationView::UpdateListViewItemSource()
     }
 }
 
-void NavigationView::UpdateSelectionForMenuItems()
+winrt::IVector<winrt::TreeViewNode> NavigationView::RootNodes()
 {
-    // Allow customer to set selection by NavigationViewItem.IsSelected.
-    // If there are more than two items are set IsSelected=true, the first one is actually selected.
-    // If SelectedItem is set, IsSelected is ignored.
-    //         <NavigationView.MenuItems>
-    //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
-    //         </NavigationView.MenuItems>
-    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
-    {
-        if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
-        {
-            for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
-            {
-                if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
-                {
-                    if (item.IsSelected())
-                    {
-                        auto scopeGuard = gsl::finally([this]()
-                            {
-                                m_shouldIgnoreNextSelectionChange = false;
-                            });
-                        m_shouldIgnoreNextSelectionChange = true;
-                        SelectedItem(item);
-                        break;
-                    }
-                }
-            }
-        }
-    }
+    return m_rootNode.get().Children();
+}
+
+void NavigationView::SyncRootNodesWithItemsSource(winrt::IInspectable const& items)
+{
+    // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+    winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(items);
 }
 
 void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 
@@ -3611,3 +3704,35 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
+
+
+void NavigationView::Expand(winrt::NavigationViewItem const& value)
+{
+    if (!value.IsExpanded())
+    {
+        ToggleIsExpandedFromContainer(value);
+    }
+}
+
+void NavigationView::Collapse(winrt::NavigationViewItem const& value)
+{
+    if (value.IsExpanded())
+    {
+        ToggleIsExpandedFromContainer(value);
+    }
+}
+
+//TODO: Update to work with Overflow Popup
+winrt::NavigationViewList NavigationView::GetActiveListView()
+{
+    auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
+    if (lv)
+    {
+        if (auto navListView = lv.try_as<winrt::NavigationViewList>())
+        {
+            return navListView;
+        }
+    }
+    return nullptr;
+}
+

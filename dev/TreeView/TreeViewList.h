@@ -3,11 +3,11 @@
 
 #pragma once
 #include "ViewModel.h"
-
 #include "TreeViewList.g.h"
+#include "MultiLevelListViewBase.h"
 
 class TreeViewList :
-    public ReferenceTracker<TreeViewList, winrt::implementation::TreeViewListT>
+    public ReferenceTracker<TreeViewList, winrt::implementation::TreeViewListT>, public MultiLevelListViewBase
 {
 public:
     TreeViewList();
@@ -44,7 +44,6 @@ public:
     int FlatIndex(const winrt::TreeViewNode& node) const;
     bool IsFlatIndexValid(int index) const;
     unsigned int RemoveNodeFromParent(const winrt::TreeViewNode& node);
-    winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
     winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
     winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
@@ -59,7 +58,6 @@ private:
     hstring GetAutomationName(int index);
     hstring BuildEffectString(hstring priorString, hstring afterString, hstring dragString, hstring dragOverString);
     unsigned int IndexInParent(const winrt::TreeViewNode& node);
-    winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode GetRootOfSelection(const winrt::TreeViewNode& node) const;
     void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode);
 
@@ -68,7 +66,6 @@ private:
     int m_emptySlotIndex{ 0 };
     bool m_itemsSourceAttached{ false };
     bool m_isMultiselectEnabled{ false };
-    tracker_com_ref<ViewModel> m_viewModel{ this };
     tracker_ref<winrt::TreeViewNode> m_draggedTreeViewNode{ this };
 };
 

@@ -62,8 +62,7 @@ public:
 
     // Helper functions
     void PrepareView(winrt::TreeViewNode const& originNode);
-    void SetOwningList(winrt::TreeViewList const& owningList);
-    winrt::TreeViewList ListControl();
+    void SetOwningList(winrt::ListView const& owningList);
     bool IsInSingleSelectionMode();
     bool IsNodeSelected(winrt::TreeViewNode const& targetNode);
     TreeNodeSelectionState NodeSelectionState(winrt::TreeViewNode const& targetNode);
@@ -82,7 +81,7 @@ private:
     std::vector<winrt::event_token> m_selectedNodeChildrenChangedEventTokenVector;
     std::vector<winrt::event_token> m_IsExpandedChangedEventTokenVector;
     winrt::event_token m_rootNodeChildrenChangedEventToken;
-    winrt::weak_ref<winrt::TreeViewList> m_TreeViewList{ nullptr };
+    winrt::weak_ref<winrt::ListView> m_listView{ nullptr };
     tracker_ref<winrt::TreeViewNode> m_originNode{ this };
     bool m_isContentMode{ false };
     tracker_ref<winrt::IVector<winrt::IInspectable>> m_selectedItems{ this };

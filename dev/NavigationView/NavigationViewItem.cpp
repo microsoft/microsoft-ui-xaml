@@ -8,7 +8,7 @@
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
-
+#include "NavigationViewList.h"
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 
@@ -25,6 +25,9 @@ void NavigationViewItem::OnNavigationViewListPositionChanged()
 NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
+
+    auto items = winrt::make<Vector<winrt::IInspectable>>();
+    SetValue(s_MenuItemsProperty, items);
 }
 
 void NavigationViewItem::OnApplyTemplate()
@@ -39,6 +42,8 @@ void NavigationViewItem::OnApplyTemplate()
     winrt::IControlProtected controlProtected = *this;
     m_helper.Init(controlProtected);
     m_navigationViewItemPresenter.set(GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected));
+
+    PropagateDepth();
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
 
@@ -55,11 +60,19 @@ void NavigationViewItem::OnApplyTemplate()
         UpdateIsClosedCompact();
     }
 
+    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationViewItem::OnIsSelectedChanged });
+
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
+}
+
+void NavigationViewItem::UpdateItemDepth(int depth)
+{
+        SetDepth(depth);
+        winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(depth);
 }
 
 winrt::UIElement NavigationViewItem::GetSelectionIndicator()
@@ -150,6 +163,55 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
 void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateNoTransition();
+}
+
+//void NavigationViewItem::OnPropertyChanged()
+//{
+//    auto property = args.Property();
+//
+//    if (auto node = TreeNode())
+//    {
+//        if (property == s_IsExpandedProperty)
+//        {
+//            UpdateIsExpanded(node);
+//            UpdateSelectionIndicatorVisiblity();
+//        }
+//        else if (property == s_MenuItemsSourceProperty)
+//        {
+//            winrt::IInspectable value = args.NewValue();
+//            // MenuItemsSource change happens during measuring.
+//            // Adding MenuItemsSource to node's children triggers another layout change, so it has to be done async.
+//            m_dispatcherHelper.RunAsync(
+//                [node, value]()
+//                {
+//                    winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
+//                });
+//        }
+//        else if (property == s_IsChildSelectedProperty)
+//        {
+//            // Update the corresponding node
+//            if (auto navViewList = GetNavigationViewList())
+//            {
+//                auto viewModel = winrt::get_self<NavigationViewList>(navViewList)->ListViewModel();
+//                TreeNodeSelectionState selectionState = IsChildSelected() ? TreeNodeSelectionState::PartialSelected : TreeNodeSelectionState::UnSelected;
+//                viewModel->UpdateSelection(node, selectionState);
+//            }
+//            UpdateSelectionIndicatorVisiblity();
+//        }
+//        else if (property == s_HasUnrealizedChildrenProperty)
+//        {
+//            node.HasUnrealizedChildren(HasUnrealizedChildren());
+//        }
+//    }
+//}
+
+winrt::TreeViewNode NavigationViewItem::TreeNode()
+{
+    if (auto navViewList = GetNavigationViewList())
+    {
+        return  winrt::get_self<NavigationViewList>(navViewList)->NodeFromContainer(*this);
+    }
+    return nullptr;
 }
 
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
@@ -258,6 +320,8 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     // visual state for focus state. top navigation use it to provide different visual for selected and selected+focused
     UpdateVisualStateForKeyboardFocusedState();
+
+    PropagateDepth();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
@@ -351,4 +415,68 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
         m_hasKeyboardFocus = false;
         UpdateVisualStateNoTransition();
     }
+}
+
+void NavigationViewItem::UpdateIsExpanded(winrt::TreeViewNode node)
+{
+    if (node.IsExpanded() != IsExpanded())
+    {
+        node.IsExpanded(IsExpanded());
+    }
+}
+
+void NavigationViewItem::UpdateSelectionIndicatorVisiblity()
+{
+    auto selectionIndicator = GetSelectionIndicator();
+    if (selectionIndicator)
+    {
+        if ((IsChildSelected() && !IsExpanded()) || IsSelected())
+        {
+            selectionIndicator.Opacity(1);
+        }
+        else
+        {
+            selectionIndicator.Opacity(0);
+        }
+    }
+}
+
+void NavigationViewItem::PropagateDepth()
+{
+    if (m_navigationViewItemPresenter.get())
+    {
+        winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->SetDepth(GetDepth());
+    }
+}
+
+void NavigationViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+{
+    UpdateSelectionIndicatorVisiblity();
+}
+
+void NavigationViewItem::ToggleIsExpanded()
+{
+    if (HasChildren())
+    {
+        auto nv = winrt::get_self<NavigationView>(GetNavigationView());
+        auto isItemBeingExpanded = !IsExpanded();
+        if (isItemBeingExpanded)
+        {
+            nv->RaiseIsExpanding(*this);
+        }
+
+        IsExpanded(isItemBeingExpanded);
+
+        if (!isItemBeingExpanded)
+        {
+            nv->RaiseCollapsed(*this);
+        }
+    }
+}
+
+bool NavigationViewItem::HasChildren()
+{
+    return (MenuItems().Size() > 0 ||
+            MenuItemsSource() ||
+            HasUnrealizedChildren());
 }

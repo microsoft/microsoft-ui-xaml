@@ -113,5 +113,4 @@
             <StaticResource x:Key="TopNavigationViewItemBackgroundSelected" ResourceKey="SystemControlHighlightListLowRevealBackgroundBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
 </ResourceDictionary>

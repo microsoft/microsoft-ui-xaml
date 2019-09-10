@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -566,55 +566,50 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
-                        <Grid 
-                            Margin="4,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
-
-                            <Rectangle
-                                x:Name="SelectionIndicator"
-                                Width="2"
-                                Height="24"
-                                Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"
-                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
-                        </Grid>
-
                         <Border
                             x:Name="RevealBorder"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" />
 
-                        <Grid HorizontalAlignment="Left" 
-                            x:Name="ContentGrid"
-                            MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                        <Grid Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Indentation}">
+                            <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
+                            <Grid
+                                Margin="4,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
 
-                            <Viewbox x:Name="IconBox"
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                                <ContentPresenter 
-                                    x:Name="Icon" 
-                                    Content="{TemplateBinding Icon}" />
-                            </Viewbox>
+                                <Rectangle
+                                    x:Name="SelectionIndicator"
+                                    Width="2"
+                                    Height="24"
+                                    Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
+                                    Opacity="0.0"/>
+                            </Grid>
 
-                            <ContentPresenter x:Name="ContentPresenter"
-                                Grid.Column="1"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                Margin="{TemplateBinding Padding}"
-                                AutomationProperties.AccessibilityView="Raw"/>
+                            <Grid Height="40" HorizontalAlignment="Left" x:Name="ContentGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="IconColumn" Width="48" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Viewbox x:Name="IconBox"                                
+                                    Margin="{ThemeResource NavigationViewItemIconBoxMargin}">
+                                    <ContentPresenter 
+                                        x:Name="Icon" 
+                                        Content="{TemplateBinding Icon}" />
+                                </Viewbox>
+
+                                <ContentPresenter x:Name="ContentPresenter"
+                                    Grid.Column="1"
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                    Margin="{TemplateBinding Padding}"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -669,58 +664,56 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
-                        <Grid
-                            Margin="4,0,0,0"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center">
-
-                            <Rectangle
-                                x:Name="SelectionIndicator"
-                                Width="2"
-                                Height="24"
-                                Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
-                                Opacity="0.0"
-                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
-                        </Grid>
                         <Border		
                             x:Name="RevealBorder"		
                             BorderBrush="{TemplateBinding BorderBrush}"		
                             BorderThickness="{TemplateBinding BorderThickness}" />
-                        <Grid 
-                            x:Name="ContentGrid"
-                            MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
-                            HorizontalAlignment="Left">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                        <Grid Margin="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.Indentation}">
+                            <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
+                            <Grid
+                                Margin="4,0,0,0"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
 
-                            <Viewbox 
-                                x:Name="IconBox"                                
-                                Height="16"
-                                Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
+                                <Rectangle
+                                    x:Name="SelectionIndicator"
+                                    Width="2"
+                                    Height="24"
+                                    Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
+                                    Opacity="0.0"/>
+                            </Grid>
+
+                            <Grid 
+                                x:Name="ContentGrid"
+                                Height="40" 
+                                HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="IconColumn" Width="48" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Viewbox 
+                                    x:Name="IconBox"                                
+                                    Margin="{ThemeResource NavigationViewItemIconBoxMargin}">
+                                    <ContentPresenter 
+                                        x:Name="Icon" 
+                                        Foreground="{TemplateBinding Foreground}"
+                                        Content="{TemplateBinding Icon}" />
+                                </Viewbox>
+
                                 <ContentPresenter 
-                                    x:Name="Icon" 
+                                    x:Name="ContentPresenter"
+                                    Grid.Column="1"
                                     Foreground="{TemplateBinding Foreground}"
-                                    Content="{TemplateBinding Icon}" />
-                            </Viewbox>
-
-                            <ContentPresenter 
-                                x:Name="ContentPresenter"
-                                Grid.Column="1"
-                                Foreground="{TemplateBinding Foreground}"
-                                ContentTransitions="{TemplateBinding ContentTransitions}"
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                Margin="{TemplateBinding Padding}"
-                                AutomationProperties.AccessibilityView="Raw"/>
+                                    ContentTransitions="{TemplateBinding ContentTransitions}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Content="{TemplateBinding Content}"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                                    Margin="{TemplateBinding Padding}"
+                                    AutomationProperties.AccessibilityView="Raw"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
