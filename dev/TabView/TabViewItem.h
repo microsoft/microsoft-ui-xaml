@@ -54,6 +54,10 @@ public:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
+
+    winrt::ThemeShadow m_shadow;
 };

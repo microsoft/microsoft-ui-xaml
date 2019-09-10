@@ -17,6 +17,9 @@ TabViewItem::TabViewItem()
 
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
+    //RegisterPropertyChanged(*this, winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
+
     Loaded({ this, &TabViewItem::OnLoaded });
 }
 
@@ -34,6 +37,37 @@ void TabViewItem::OnApplyTemplate()
     }());
 
     OnIconSourceChanged();
+
+    // ### temporary
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+        {
+            if (auto internalTabView = winrt::get_self<TabView>(tabView))
+            {
+                m_shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+
+                auto currentTranslation = Translation();
+                auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, 8 }; //### magic
+                Translation(translation);
+            }
+        }
+    }
+}
+
+void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        if (IsSelected())
+        {
+            Shadow(m_shadow);
+        }
+        else
+        {
+            Shadow(nullptr);
+        }
+    }
 }
 
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()

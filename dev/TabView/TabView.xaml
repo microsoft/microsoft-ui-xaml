@@ -41,6 +41,9 @@
                                 Content="{TemplateBinding TabStripHeader}"
                                 ContentTemplate="{TemplateBinding TabStripHeaderTemplate}"/>
 
+                            <Grid x:Name="ShadowReceiver"
+                                Grid.Column="1"/>
+
                             <primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"

@@ -109,6 +109,8 @@ public:
 
     void RequestCloseTab(winrt::TabViewItem const& item);
 
+    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
+
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -154,6 +156,8 @@ private:
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
+
+    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
