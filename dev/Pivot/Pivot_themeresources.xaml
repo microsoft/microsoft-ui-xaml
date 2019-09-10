@@ -496,7 +496,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="PivotHeaderItem" BasedOn="{StaticResource DefaultPivotHeaderItem}" />
+    <Style TargetType="PivotHeaderItem" BasedOn="{StaticResource DefaultPivotHeaderItemStyle}" />
 
     <Style x:Key="DefaultPivotHeaderItem" TargetType="PivotHeaderItem">
         <Setter Property="FontSize" Value="{ThemeResource PivotHeaderItemFontSize}" />
