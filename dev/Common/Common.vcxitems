@@ -18,12 +18,15 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LifetimeHandler.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\CornerRadiusFilterConverter.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ThicknessFilterConverter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ThicknessFilterConverter.properties.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AutoHandle.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorConversion.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)LifetimeHandler.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ThicknessFilterConverter.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Common_themeresources.xaml">
@@ -33,6 +36,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ThicknessFilterConverter.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)CornerRadiusFilterConverters.idl" />
   </ItemGroup>
 </Project>
