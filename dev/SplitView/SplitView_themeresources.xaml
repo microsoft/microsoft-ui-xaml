@@ -36,7 +36,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="SplitView">
+    <Style TargetType="SplitView" BasedOn="{StaticResource DefaultSplitViewStyle}" />
+
+    <Style x:Key="DefaultSplitViewStyle" TargetType="SplitView">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="OpenPaneLength" Value="{ThemeResource SplitViewOpenPaneThemeLength}" />

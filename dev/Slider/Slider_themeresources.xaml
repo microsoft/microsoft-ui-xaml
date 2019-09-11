@@ -172,8 +172,10 @@
     <x:Double x:Key="SliderHorizontalThumbHeight">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbWidth">20</x:Double>
     <x:Double x:Key="SliderVerticalThumbHeight">20</x:Double>
+
+    <Style TargetType="Slider" BasedOn="{StaticResource DefaultSliderStyle}" />
     
-    <Style TargetType="Slider">
+    <Style x:Key="DefaultSliderStyle" TargetType="Slider">
         <Setter Property="Background" Value="{ThemeResource SliderTrackFill}" />
         <Setter Property="BorderThickness" Value="{ThemeResource SliderBorderThemeThickness}" />
         <Setter Property="Foreground" Value="{ThemeResource SliderTrackValueFill}" />

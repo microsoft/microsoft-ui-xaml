@@ -88,7 +88,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="ContentDialog">
+    <Style TargetType="ContentDialog" BasedOn="{StaticResource DefaultContentDialogStyle}" />
+
+    <Style x:Key="DefaultContentDialogStyle" TargetType="ContentDialog">
         <Setter Property="Foreground" Value="{ThemeResource ContentDialogForeground}" />
         <Setter Property="Background" Value="{ThemeResource ContentDialogBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ContentDialogBorderBrush}" />

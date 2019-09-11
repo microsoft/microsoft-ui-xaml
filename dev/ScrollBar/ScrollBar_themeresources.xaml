@@ -198,7 +198,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="ScrollBar">
+    <Style TargetType="ScrollBar" BasedOn="{StaticResource DefaultScrollBarStyle}" />
+
+    <Style x:Key="DefaultScrollBarStyle" TargetType="ScrollBar">
         <Setter Property="MinWidth" Value="{ThemeResource ScrollBarSize}" />
         <Setter Property="MinHeight" Value="{ThemeResource ScrollBarSize}" />
         <Setter Property="Background" Value="{ThemeResource ScrollBarBackground}" />

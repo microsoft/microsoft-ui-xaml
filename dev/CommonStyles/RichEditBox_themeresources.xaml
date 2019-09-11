@@ -7,7 +7,9 @@
 
     <Thickness x:Key="RichEditBoxTopHeaderMargin">0,0,0,4</Thickness>
 
-    <Style TargetType="RichEditBox">
+    <Style TargetType="RichEditBox" BasedOn="{StaticResource DefaultRichEditBoxStyle}" />
+
+    <Style x:Key="DefaultRichEditBoxStyle" TargetType="RichEditBox">
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
         <contract7Present:Setter Property="ContentLinkForegroundColor" Value="{ThemeResource ContentLinkForegroundColor}" />
