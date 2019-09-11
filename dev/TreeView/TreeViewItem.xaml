@@ -125,7 +125,7 @@
                                             Width="32"
                                             MinWidth="32"
                                             Margin="12,0,0,0"
-                                            VerticalAlignment="Stretch"
+                                            VerticalAlignment="Center"
                                             Visibility="Collapsed"
                                             IsTabStop="False"
                                             AutomationProperties.AccessibilityView="Raw" />
