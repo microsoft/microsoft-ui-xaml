@@ -120,7 +120,9 @@
 
     <Thickness x:Key="ButtonPadding">8,5,8,6</Thickness>
 
-    <Style TargetType="Button">
+    <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}" />
+
+    <Style x:Key="DefaultButtonStyle" TargetType="Button">
         <Setter Property="Background" Value="{ThemeResource ButtonBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Foreground" Value="{ThemeResource ButtonForeground}" />

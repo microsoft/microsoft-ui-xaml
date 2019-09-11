@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style TargetType="local:PersonPicture">
+    <Style TargetType="local:PersonPicture" BasedOn="{StaticResource DefaultPersonPictureStyle}" />
+
+    <Style x:Key="DefaultPersonPictureStyle" TargetType="local:PersonPicture">
         <Setter Property="Foreground" Value="{ThemeResource PersonPictureForegroundThemeBrush}" />
         <Setter Property="Width" Value="100" />
         <Setter Property="Height" Value="100" />

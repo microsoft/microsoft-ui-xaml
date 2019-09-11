@@ -129,7 +129,9 @@
     <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
     <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
 
-    <Style TargetType="DatePicker">
+    <Style TargetType="DatePicker" BasedOn="{StaticResource DefaultDatePickerStyle}" />
+
+    <Style x:Key="DefaultDatePickerStyle" TargetType="DatePicker">
         <Setter Property="Orientation" Value="Horizontal" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -350,7 +352,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="DatePickerFlyoutPresenter">
+    <Style TargetType="DatePickerFlyoutPresenter" BasedOn="{StaticResource DefaultDatePickerFlyoutPresenterStyle}" />
+
+    <Style x:Key="DefaultDatePickerFlyoutPresenterStyle" TargetType="DatePickerFlyoutPresenter">
         <Setter Property="Width" Value="296" />
         <Setter Property="MinWidth" Value="296" />
         <Setter Property="MaxHeight" Value="398" />

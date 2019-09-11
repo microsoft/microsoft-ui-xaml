@@ -74,7 +74,9 @@
 
     <Thickness x:Key="TextBoxTopHeaderMargin">0,0,0,4</Thickness>
 
-    <Style TargetType="TextBox">
+    <Style TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}" />
+
+    <Style x:Key="DefaultTextBoxStyle" TargetType="TextBox">
         <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
         <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
