@@ -10,7 +10,7 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 We use GitHub issues to track bugs and features.
 
-For reporting security issues please see the [Security Policy](Security.md).
+For reporting security issues please see the [Security Policy](docs/SECURITY.md).
 
 For all other bugs and general issues please [file a new issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/new/choose) using the Bug Report template.
 
