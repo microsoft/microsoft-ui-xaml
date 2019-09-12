@@ -13,13 +13,10 @@
 
 namespace features
 {
-#ifdef MUX_PRERELEASE
-    // In prerelease, the feature is disabled by default (giving it the [experimental] tag)
+    // The "experimental" feature is disabled by default.
+    // * In prerelease,  mdmerge transforms it into the [experimental] tag
+    // * In release, mdmerge strips out the disabledbydefault features.
     feature_name Feature_Experimental = { DisabledByDefault, FALSE };
-#else
-    // In release, the experimental feature is disabled, removing it from the final WinMD
-    feature_name Feature_Experimental = { AlwaysDisabled, FALSE };
-#endif
 }
 
 namespace Microsoft.UI.Xaml.CustomAttributes

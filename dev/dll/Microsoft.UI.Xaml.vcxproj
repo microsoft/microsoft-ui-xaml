@@ -614,7 +614,11 @@
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
       <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" -i "$(CppWinRTUnmergedDir)" -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" -i "$(CppWinRTUnmergedDir)" -partial -n:3 -createPublicMetadata</_MdMergeParameters>
+      <!-- In prerelease, turn experimental features into [experimental] -->
+      <_MdMergeParameters Condition="$(MUXFinalRelease) == 'false'">$(_MdMergeParameters) -transformExperimental:transform</_MdMergeParameters>
+      <!-- In release, strip out experimental features -->
+      <_MdMergeParameters Condition="$(MUXFinalRelease) != 'false'">$(_MdMergeParameters) -transformExperimental:remove</_MdMergeParameters>
     </PropertyGroup>
     <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
