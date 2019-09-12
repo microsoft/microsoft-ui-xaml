@@ -131,7 +131,7 @@
       <Version>6.2.8</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.UI.Xaml">
-      <Version>2.2.190830001</Version>
+      <Version>2.1.190606001</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
@@ -152,3 +152,5 @@
   </Target>
   -->
 </Project>
+
+
