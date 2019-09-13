@@ -590,7 +590,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}" />
 
                         <Grid
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            HorizontalAlignment="Stretch"
                             x:Name="ContentGrid"
                             MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                             <Grid.ColumnDefinitions>
