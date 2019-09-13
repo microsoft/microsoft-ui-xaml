@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "pch.h"
 #include "common.h"
@@ -293,4 +293,6 @@ private:
 
     //Ideally this would be computed from layout but it is difficult to do.
     static constexpr float s_tailOcclusionAmount = 2;
+    void ClosePopupOnUnloadEvent(IInspectable const&, winrt::RoutedEventArgs e);
+
 };
