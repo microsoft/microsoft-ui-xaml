@@ -63,6 +63,7 @@ winrt::Size StackLayout::MeasureOverride(
         false, /* isWrapping*/
         0 /* minItemSpacing */,
         m_itemSpacing,
+        MAXUINT /* maxItemsPerLine */,
         GetScrollOrientation(),
         LayoutId());
     return { desiredSize.Width, desiredSize.Height };
@@ -325,7 +326,7 @@ double StackLayout::GetAverageElementSize(
     const winrt::com_ptr<StackLayoutState>& stackLayoutState)
 {
     double averageElementSize = 0;
-    
+
     if (context.ItemCount() > 0)
     {
         if (stackLayoutState->TotalElementsMeasured() == 0)
