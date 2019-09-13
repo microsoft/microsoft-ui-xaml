@@ -36,6 +36,11 @@
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
     <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
     <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that 
+         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
+         Use -ignore_velocity to have the feature attributes be ignored by the tool.
+         -->
+    <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
