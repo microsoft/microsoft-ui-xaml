@@ -44,6 +44,9 @@ namespace MUXControls.ReleaseTest
                 var textBlock = new TextBlock(FindElement.ByName("TestTextBlock"));
                 Verify.IsNotNull(textBlock);
                 Verify.AreEqual(textBlock.DocumentText, "Loaded");
+
+                var button = new Button(FindElement.ById("RequestRefresh"));
+                button.Invoke();
             }
         }
 

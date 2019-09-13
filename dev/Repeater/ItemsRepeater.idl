@@ -126,13 +126,13 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
     Layout Layout { get; set; };
-    
+
     [WUXC_VERSION_PREVIEW]
     {
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         ElementAnimator Animator{ get; set; };
     }
-    
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("2.0")]
     Double HorizontalCacheLength { get; set; };
@@ -396,6 +396,8 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
     [MUX_DEFAULT_VALUE("winrt::UniformGridLayoutItemsStretch::None")]
     UniformGridLayoutItemsStretch ItemsStretch{ get; set; };
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 MaximumRowsOrColumns{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinItemWidthProperty { get; };
@@ -404,6 +406,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsJustificationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsStretchProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaximumRowsOrColumnsProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]

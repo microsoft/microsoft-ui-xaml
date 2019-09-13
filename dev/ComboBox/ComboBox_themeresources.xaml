@@ -361,7 +361,9 @@
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
     <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
 
-    <Style TargetType="ComboBox">
+    <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}"/>
+
+    <Style x:Key="DefaultComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Padding" Value="{ThemeResource ComboBoxPadding}" />
         <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />

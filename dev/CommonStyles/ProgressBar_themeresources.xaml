@@ -34,7 +34,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="ProgressBar">
+    <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />
+    
+    <Style x:Key="DefaultProgressBarStyle" TargetType="ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
         <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />

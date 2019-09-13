@@ -369,7 +369,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="AutoSuggestBox">
+    <Style TargetType="AutoSuggestBox" BasedOn="{StaticResource DefaultAutoSuggestBoxStyle}" />
+
+    <Style x:Key="DefaultAutoSuggestBoxStyle" TargetType="AutoSuggestBox">
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TextBoxStyle" Value="{StaticResource AutoSuggestBoxTextBoxStyle}" />

@@ -4,7 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
-    <Style TargetType="local:MenuBar">
+    <Style TargetType="local:MenuBar" BasedOn="{StaticResource DefaultMenuBarStyle}" />
+
+    <Style x:Key="DefaultMenuBarStyle" TargetType="local:MenuBar">
         <Setter Property="Background" Value="{ThemeResource MenuBarBackground}"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="Height" Value="{StaticResource MenuBarHeight}"/>

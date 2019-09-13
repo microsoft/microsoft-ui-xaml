@@ -194,7 +194,9 @@
     
     <x:Double x:Key="ToggleSwitchThemeMinWidth">154</x:Double>
 
-    <Style TargetType="ToggleSwitch">
+    <Style TargetType="ToggleSwitch" BasedOn="{StaticResource DefaultToggleSwitchStyle}" />
+
+    <Style x:Key="DefaultToggleSwitchStyle" TargetType="ToggleSwitch">
         <Setter Property="Foreground" Value="{ThemeResource ToggleSwitchContentForeground}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />

@@ -6,7 +6,9 @@
     xmlns:localPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:ScrollViewer">
+    <Style TargetType="local:ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}" />
+
+    <Style x:Key="DefaultScrollViewerStyle" TargetType="local:ScrollViewer">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>

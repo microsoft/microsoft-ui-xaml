@@ -262,6 +262,7 @@
                                     <!-- Top nav list -->
                                     <local:NavigationViewList
                                         AutomationProperties.LandmarkType="Navigation"
+                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                         x:Name="TopNavMenuItemsHost"
                                         Grid.Column="3"
                                         SelectionMode="Single"
@@ -439,6 +440,7 @@
                                         <!-- Left nav list -->
                                         <local:NavigationViewList
                                             x:Name="MenuItemsHost"
+                                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                             Grid.Row="6"
                                             Margin="0,0,0,20"
                                             SelectionMode="Single"

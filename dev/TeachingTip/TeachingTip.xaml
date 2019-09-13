@@ -11,7 +11,9 @@
     <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
     <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
 
-    <Style TargetType="local:TeachingTip">
+    <Style TargetType="local:TeachingTip" BasedOn="{StaticResource DefaultTeachingTipStyle}" />
+
+    <Style x:Key="DefaultTeachingTipStyle" TargetType="local:TeachingTip">
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource TeachingTipForegroundBrush}"/>
         <Setter Property="BorderBrush" Value="{ThemeResource TeachingTipBorderBrush}"/>

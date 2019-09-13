@@ -12,8 +12,11 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <controls:RefreshContainer>
-            <TextBlock x:Name="TestTextBlock" AutomationProperties.Name="TestTextBlock" Text="Loaded"/>
-        </controls:RefreshContainer>
+        <StackPanel Orientation="Vertical">
+            <Button Content="Call RequestRefresh" AutomationProperties.AutomationId="RequestRefresh" Click="RequestRefresh_Clicked"/>
+            <controls:RefreshContainer x:Name="refreshContainer">
+                <TextBlock x:Name="TestTextBlock" AutomationProperties.Name="TestTextBlock" Text="Loaded"/>
+            </controls:RefreshContainer>
+        </StackPanel>
     </Grid>
 </utils:TestPage>

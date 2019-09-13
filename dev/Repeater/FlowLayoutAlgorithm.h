@@ -39,6 +39,7 @@ public:
         bool isWrapping,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const ScrollOrientation& orientation,
         const wstring_view& layoutId);
     winrt::Size Arrange(
@@ -68,7 +69,7 @@ private:
         Backward
     };
 
-    // Methods  
+    // Methods
 #pragma region Measure related private methods
     int GetAnchorIndex(
         const winrt::Size& availableSize,
@@ -81,6 +82,7 @@ private:
         const winrt::Size& availableSize,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const wstring_view& layoutId);
     void MakeAnchor(
         const winrt::VirtualizingLayoutContext& context,
@@ -133,6 +135,6 @@ private:
     // we do not want to align the line. We could potentially switch the
     // meaning of line alignment in this case, but I'll hold off on that
     // feature until someone asks for it - This is not a common scenario
-    // anyway. 
+    // anyway.
     bool m_scrollOrientationSameAsFlow{ false };
 };
