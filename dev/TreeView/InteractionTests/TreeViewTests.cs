@@ -114,10 +114,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseTest_NodeMode()
         {
            ExpandCollapseTest();
@@ -404,19 +403,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
-        //[TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyDownLeftToRightTest_NodeMode()
         {
             TreeViewKeyDownLeftToRightTest();
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyDownLeftToRightTest_ContentMode()
         {
             TreeViewKeyDownLeftToRightTest(isContentMode: true);
@@ -500,17 +497,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //Multiple unreliable TreeView tests #131
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_NodeMode()
         {
             TreeViewKeyDownRightToLeftTest();
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
         {
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
@@ -753,17 +748,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropOnNode_NodeMode()
         {
             TreeViewDragAndDropOnNode();
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropOnNode_ContentMode()
         {
             TreeViewDragAndDropOnNode(isContentMode:true);
@@ -1685,9 +1678,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // Multiple unreliable TreeView tests #131
-        //[TestMethod]
-        //[TestProperty("TestSuite", "B")]
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_NodeMode()
         {
             TreeViewMultiSelectGamepadTest();
