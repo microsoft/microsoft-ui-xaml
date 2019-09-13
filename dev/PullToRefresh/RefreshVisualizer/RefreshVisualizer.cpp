@@ -298,7 +298,13 @@ void RefreshVisualizer::UpdateContent()
             contentVisual.Opacity(1.0f);
             if (m_root)
             {
-                float translationRatio = (1.0f - (float)(m_refreshInfoProvider.get().ExecutionRatio())) * PARALLAX_POSITION_RATIO;
+                float translationRatio = [this]() {
+                    if (auto&& refreshInfoProvider = m_refreshInfoProvider.get())
+                    {
+                        return (1.0f - (float)(refreshInfoProvider.ExecutionRatio())) * PARALLAX_POSITION_RATIO;
+                    }
+                    return 0.0f;
+                }();
                 translationRatio = IsPullDirectionFar() ? -1.0f * translationRatio : translationRatio;
                 //On RS2 and above we achieve the parallax animation using the Translation property, so we set the appropriate field here.
                 if (SharedHelpers::IsRS2OrHigher())
