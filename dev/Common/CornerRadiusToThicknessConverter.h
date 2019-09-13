@@ -2,17 +2,17 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
-#include "ThicknessFilterConverter.g.h"
-#include "ThicknessFilterConverter.properties.h"
+#include "CornerRadiusToThicknessConverter.g.h"
+#include "CornerRadiusToThicknessConverter.properties.h"
 
-class ThicknessFilterConverter :
-    public winrt::implementation::ThicknessFilterConverterT<ThicknessFilterConverter>,
-    public ThicknessFilterConverterProperties
+class CornerRadiusToThicknessConverter :
+    public winrt::implementation::CornerRadiusToThicknessConverterT<CornerRadiusToThicknessConverter>,
+    public CornerRadiusToThicknessConverterProperties
 {
 public:
     winrt::Thickness Convert(
         winrt::CornerRadius const& radius,
-        winrt::ThicknessFilterConverterKind const& filterKind);
+        winrt::CornerRadiusToThicknessConverterKind const& filterKind);
 
     winrt::IInspectable Convert(
         winrt::IInspectable const& value,

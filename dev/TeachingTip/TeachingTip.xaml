@@ -6,10 +6,10 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
-    <primitives:ThicknessFilterConverter x:Key="TopThicknessFilterConverter" Filter="Top"/>
-    <primitives:ThicknessFilterConverter x:Key="BottomThicknessFilterConverter" Filter="Bottom"/>
-    <primitives:ThicknessFilterConverter x:Key="LeftThicknessFilterConverter" Filter="Left"/>
-    <primitives:ThicknessFilterConverter x:Key="RightThicknessFilterConverter" Filter="Right"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="TopThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromTop"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="BottomThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromBottom"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
 
     <Style TargetType="local:TeachingTip">
         <Setter Property="Background" Value="{ThemeResource TeachingTipBackgroundBrush}"/>

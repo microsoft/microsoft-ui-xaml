@@ -3,33 +3,33 @@
 
 #include <pch.h>
 #include <common.h>
-#include "ThicknessFilterConverter.h"
+#include "CornerRadiusToThicknessConverter.h"
 
-winrt::Thickness ThicknessFilterConverter::Convert(winrt::CornerRadius const& radius, winrt::ThicknessFilterConverterKind const& filterKind)
+winrt::Thickness CornerRadiusToThicknessConverter::Convert(winrt::CornerRadius const& radius, winrt::CornerRadiusToThicknessConverterKind const& filterKind)
 {
     auto result = winrt::Thickness{};
 
     switch (filterKind)
     {
-    case winrt::ThicknessFilterConverterKind::Top:
+    case winrt::CornerRadiusToThicknessConverterKind::FilterLeftAndRightFromTop:
         result.Left = radius.TopLeft;
         result.Right = radius.TopRight;
         result.Top = 0;
         result.Bottom = 0;
         break;
-    case winrt::ThicknessFilterConverterKind::Bottom:
+    case winrt::CornerRadiusToThicknessConverterKind::FilterLeftAndRightFromBottom:
         result.Left = radius.BottomLeft;
         result.Right = radius.BottomRight;
         result.Top = 0;
         result.Bottom = 0;
         break;
-    case winrt::ThicknessFilterConverterKind::Left:
+    case winrt::CornerRadiusToThicknessConverterKind::FilterTopAndBottomFromLeft:
         result.Left = 0;
         result.Right = 0;
         result.Top = radius.TopLeft;
         result.Bottom = radius.BottomLeft;
         break;
-    case winrt::ThicknessFilterConverterKind::Right:
+    case winrt::CornerRadiusToThicknessConverterKind::FilterTopAndBottomFromRight:
         result.Left = 0;
         result.Right = 0;
         result.Top = radius.TopRight;
@@ -40,7 +40,7 @@ winrt::Thickness ThicknessFilterConverter::Convert(winrt::CornerRadius const& ra
     return result;
 }
 
-winrt::IInspectable ThicknessFilterConverter::Convert(
+winrt::IInspectable CornerRadiusToThicknessConverter::Convert(
     winrt::IInspectable const& value,
     winrt::TypeName const& targetType,
     winrt::IInspectable const& parameter,
@@ -48,10 +48,10 @@ winrt::IInspectable ThicknessFilterConverter::Convert(
 {
     auto radius = unbox_value<winrt::CornerRadius>(value);
 
-    return box_value(Convert(radius, Filter()));
+    return box_value(Convert(radius, ConversionKind()));
 }
 
-winrt::IInspectable ThicknessFilterConverter::ConvertBack(
+winrt::IInspectable CornerRadiusToThicknessConverter::ConvertBack(
     winrt::IInspectable const& value,
     winrt::TypeName const& targetType,
     winrt::IInspectable const& parameter,
