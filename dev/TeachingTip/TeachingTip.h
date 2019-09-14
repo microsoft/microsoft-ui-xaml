@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "pch.h"
 #include "common.h"
@@ -125,6 +125,7 @@ private:
     void OnTargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
+    void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
 
     void CreateExpandAnimation();
     void CreateContractAnimation();
@@ -293,6 +294,4 @@ private:
 
     //Ideally this would be computed from layout but it is difficult to do.
     static constexpr float s_tailOcclusionAmount = 2;
-    void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
-
 };
