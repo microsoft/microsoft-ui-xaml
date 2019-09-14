@@ -1,4 +1,4 @@
-﻿<local:TestPage
+<local:TestPage
     x:Class="MUXControlsTestApp.TeachingTipPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -14,11 +14,12 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Grid Grid.Column="0" Margin="5" MinWidth="500">
             <ScrollViewer x:Name="ContentScrollViewer">
-                <StackPanel>
+                <StackPanel x:Name="ContentStackPanel">
                     <Grid Background="Green" Width="100" Height="1000"/>
                     <muxc:TeachingTip x:Name="TeachingTipInVisualTree" 
                                           AutomationProperties.Name="TeachingTipInVisualTree"
@@ -37,7 +38,7 @@
                         </muxc:TeachingTip.HeroContent>
                         <muxc:TeachingTip.Content>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
+                                <TextBlock VerticalAlignment="Center"  x:Name="TeachingTipContentTextBlock" Unloaded="RemoveTeachingTipTextBlockContent_Unloaded">Cancel closes:</TextBlock>
                                 <CheckBox x:Name="CancelClosesCheckBoxInVisualTree" IsChecked="False" VerticalAlignment="Center"/>
                             </StackPanel>
                         </muxc:TeachingTip.Content>
@@ -60,7 +61,7 @@
                                     <Grid MinHeight="200" MinWidth="200" Background="red"/>
                                 </muxc:TeachingTip.HeroContent>
                                 <muxc:TeachingTip.Content>
-                                    <StackPanel Orientation="Horizontal">
+                                    <StackPanel Orientation="Horizontal"   >
                                         <TextBlock VerticalAlignment="Center">Cancel closes:</TextBlock>
                                         <CheckBox x:Name="CancelClosesCheckBoxInResources" IsChecked="False" VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -373,6 +374,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -537,6 +539,8 @@
 
                         <TextBlock Grid.Row="47" Foreground="Red" Text="Is Page RTL" VerticalAlignment="Center"/>
                         <CheckBox Grid.Row="47" Grid.Column="1" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
+                        <Button Grid.Row="48" Grid.Column="1" x:Name="RemoveTeachingTipButton" Click="RemoveTeachingTipButton_Click">Remove tooltip from page</Button>
+                        <CheckBox  Grid.Row="49" Grid.Column="1" x:Name="VisualTreeTeachingTipContentTextBlockUnloaded">Visual tree teachingtip unloaded</CheckBox>
                     </Grid>
                 </ScrollViewer>
 

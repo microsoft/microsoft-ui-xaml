@@ -1,4 +1,4 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -113,6 +113,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     ClearTeachingTipDebugMessages();
                 }
+            }
+        }
+        [TestMethod]
+        public void TeachingTipRemovalClosesPopup()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                ScrollTargetIntoView();
+                OpenTeachingTip();
+
+                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
+
+                // Finding the button to remove the teaching tip
+                Button removeButton = elements.GetRemoveTeachingTipButton();
+
+                // Removing teaching tip
+                
+                removeButton.InvokeAndWait();
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.On);
+                Verify.IsTrue(elements.GetIsOpenCheckBox().ToggleState == ToggleState.Off);
             }
         }
 
