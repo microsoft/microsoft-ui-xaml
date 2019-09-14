@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -15,7 +15,7 @@ TeachingTip::TeachingTip()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
-    Unloaded({ this, &TeachingTip::RemovePopupOnUnloadEvent });
+    Unloaded({ this, &TeachingTip::ClosePopupOnUnloadEvent });
     m_automationNameChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
     m_automationIdChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
@@ -26,7 +26,7 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
     return winrt::make<TeachingTipAutomationPeer>(*this);
 }
 
-void TeachingTip::RemovePopupOnUnloadEvent(winrt::IInspectable const& /* sender */, winrt::RoutedEventArgs const& /* e */)
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& /* sender */, winrt::RoutedEventArgs const& /* e */)
 {
     ClosePopup();
 }
