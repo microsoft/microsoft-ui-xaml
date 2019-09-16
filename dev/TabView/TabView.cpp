@@ -241,7 +241,7 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         m_scrollViewer.set(scrollViewer);
         if (scrollViewer)
         {
-            if (scrollViewer.IsLoaded())
+            if (SharedHelpers::IsIsLoadedAvailable() && scrollViewer.IsLoaded())
             {
                 // This scenario occurs reliably for Terminal in XAML islands
                 OnScrollViewerLoaded(nullptr, nullptr);
