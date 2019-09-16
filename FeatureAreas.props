@@ -3,11 +3,11 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
-    <FeatureMaterialsEnabled>partial</FeatureMaterialsEnabled>
-    <FeatureLightsEnabled>partial</FeatureLightsEnabled>
-    <FeatureEffectsEnabled>partial</FeatureEffectsEnabled>
-    <FeatureResourceHelperEnabled>partial</FeatureResourceHelperEnabled>
-    <FeatureCollectionsEnabled>partial</FeatureCollectionsEnabled>
+    <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
+    <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
+    <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
+    <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
+    <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
@@ -17,9 +17,9 @@
     <FeatureComboBoxEnabled>false</FeatureComboBoxEnabled>
     <FeatureCommandBarFlyoutEnabled>false</FeatureCommandBarFlyoutEnabled>
     <FeatureDatePickerEnabled>false</FeatureDatePickerEnabled>
-    <FeatureDropDownButtonEnabled>partial</FeatureDropDownButtonEnabled>
+    <FeatureDropDownButtonEnabled>productOnly</FeatureDropDownButtonEnabled>
     <FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
-    <FeatureIconSourceEnabled>partial</FeatureIconSourceEnabled>
+    <FeatureIconSourceEnabled>productOnly</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
     <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
@@ -37,14 +37,14 @@
     <FeatureScrollerEnabled>false</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
-    <FeatureSplitButtonEnabled>partial</FeatureSplitButtonEnabled>
+    <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
     <FeatureTeachingTipEnabled>false</FeatureTeachingTipEnabled>
     <FeatureTimePickerEnabled>false</FeatureTimePickerEnabled>
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
-    <FeatureCommonStylesEnabled>partial</FeatureCommonStylesEnabled>
+    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
     <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>

@@ -237,14 +237,20 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
-        m_scrollViewer.set([this, listView]() {
-            auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
-            if (scrollViewer)
+        auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
+        m_scrollViewer.set(scrollViewer);
+        if (scrollViewer)
+        {
+            if (scrollViewer.IsLoaded())
+            {
+                // This scenario occurs reliably for Terminal in XAML islands
+                OnScrollViewerLoaded(nullptr, nullptr);
+            }
+            else
             {
                 m_scrollViewerLoadedRevoker = scrollViewer.Loaded(winrt::auto_revoke, { this, &TabView::OnScrollViewerLoaded });
             }
-            return scrollViewer;
-        }());
+        }
     }
 }
 
