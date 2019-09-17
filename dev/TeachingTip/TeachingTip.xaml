@@ -110,11 +110,15 @@
                                 <VisualState x:Name="HeroContentTop">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="0"/>
+                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
+                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="HeroContentBottom">
                                     <VisualState.Setters>
                                         <Setter Target="HeroContentBorder.(Grid.Row)" Value="2"/>
+                                        <contract7Present:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"/>
+                                        <contract7NotPresent:Setter Target="HeroContentBorder.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -539,7 +543,10 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
-                                    <Border x:Name="HeroContentBorder" Grid.Row="0" Child="{TemplateBinding HeroContent}" Background="{TemplateBinding Background}"/>
+                                    <Border x:Name="HeroContentBorder"
+                                            Grid.Row="0"
+                                            Child="{TemplateBinding HeroContent}"
+                                            Background="{TemplateBinding Background}"/>
                                     <Grid x:Name="NonHeroContentRootGrid" Grid.Row="1">
                                         <ScrollViewer Foreground="{TemplateBinding Foreground}">
                                             <StackPanel Margin="{StaticResource TeachingTipContentMargin}">
