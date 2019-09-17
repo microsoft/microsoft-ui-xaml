@@ -739,15 +739,15 @@ namespace MUXControlsTestApp
         {
             if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentLeft)
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Left;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentCenter)
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Center;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Center;
             }
             else
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Right;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Right;
             }
             OnGetTargetBoundsButtonClicked(null, null);
         }

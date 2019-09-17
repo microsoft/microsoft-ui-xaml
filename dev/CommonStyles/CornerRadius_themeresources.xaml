@@ -24,5 +24,11 @@
     <primitives:CornerRadiusFilterConverter x:Key="LeftCornerRadiusFilterConverter" Filter="Left"/>
     <primitives:CornerRadiusFilterConverter x:Key="TopLeftCornerRadiusDoubleValueConverter" Filter="TopLeftValue"/>
     <primitives:CornerRadiusFilterConverter x:Key="BottomRightCornerRadiusDoubleValueConverter" Filter="BottomRightValue"/>
-    
+
+
+    <primitives:CornerRadiusToThicknessConverter x:Key="TopThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromTop"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="BottomThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromBottom"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
+    <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
+
 </ResourceDictionary>
