@@ -347,8 +347,7 @@
                                         HorizontalContentAlignment="Stretch"
                                         Grid.Column="7" />
                                     <Grid
-                                        Grid.Column="8"
-                                        >
+                                        Grid.Column="8" >
                                         <local:NavigationViewItem
                                             x:Name="SettingsTopNavPaneItem"
                                             Style="{ThemeResource MUX_NavigationViewSettingsItemStyleWhenOnTopPane}"
