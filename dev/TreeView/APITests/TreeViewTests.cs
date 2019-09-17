@@ -364,6 +364,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
+        public void ValidateTreeViewItemSourceChangeUpdatesChevronOpacity()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                TreeViewItem tvi = new TreeViewItem();
+                var emptyCollection = new ObservableCollection<int>();
+                tvi.ItemsSource = emptyCollection;
+                Verify.AreEqual(tvi.GlyphOpacity, 0.0);
+                var collection = new ObservableCollection<int>();
+                collection.Add(5);
+                tvi.ItemsSource = collection;
+                Verify.AreEqual(tvi.GlyphOpacity, 1.0);
+            });
+        }
+
+        [TestMethod]
         public void TreeViewItemContainerStyleTest()
         {
             RunOnUIThread.Execute(() =>
