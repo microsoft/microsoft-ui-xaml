@@ -55,6 +55,8 @@ public:
 
     static bool IsThemeShadowAvailable();
 
+    static bool IsIsLoadedAvailable();
+
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2
     static bool IsAPIContractV8Available(); // 19H1
