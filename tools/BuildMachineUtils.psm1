@@ -8,8 +8,8 @@
         $installLocation = Get-Package Microsoft.IdentityModel.Clients.ActiveDirectory -MaximumVersion $adalVersion -MinimumVersion $adalVersion -ErrorAction Ignore
         if (!$installLocation)
         {
-            Install-package Microsoft.IdentityModel.Clients.ActiveDirectory -Source https://nuget.org/api/v2/ -ProviderName nuget -MaximumVersion $adalMaxVersion -Scope CurrentUser
-            $installLocation = Get-Package Microsoft.IdentityModel.Clients.ActiveDirectory -MaximumVersion $adalMaxVersion
+            Install-package Microsoft.IdentityModel.Clients.ActiveDirectory -Source https://nuget.org/api/v2/ -ProviderName nuget -MaximumVersion $adalVersion -Scope CurrentUser
+            $installLocation = Get-Package Microsoft.IdentityModel.Clients.ActiveDirectory -MaximumVersion $adalVersion
         }
 
         $adalPath = Split-Path $installLocation.Source
