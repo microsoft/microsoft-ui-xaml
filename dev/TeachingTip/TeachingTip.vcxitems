@@ -28,7 +28,6 @@
       <IsPublic>false</IsPublic>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TeachingTip_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>

@@ -6,11 +6,6 @@
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
 
-    <primitives:CornerRadiusToThicknessConverter x:Key="TopThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromTop"/>
-    <primitives:CornerRadiusToThicknessConverter x:Key="BottomThicknessFilterConverter" ConversionKind="FilterLeftAndRightFromBottom"/>
-    <primitives:CornerRadiusToThicknessConverter x:Key="LeftThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromLeft"/>
-    <primitives:CornerRadiusToThicknessConverter x:Key="RightThicknessFilterConverter" ConversionKind="FilterTopAndBottomFromRight"/>
-
     <Style TargetType="local:TeachingTip" BasedOn="{StaticResource DefaultTeachingTipStyle}" />
 
     <Style x:Key="DefaultTeachingTipStyle" TargetType="local:TeachingTip">
