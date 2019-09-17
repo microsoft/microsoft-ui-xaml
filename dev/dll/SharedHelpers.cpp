@@ -198,6 +198,14 @@ bool SharedHelpers::IsThemeShadowAvailable()
     return s_isThemeShadowAvailable;
 }
 
+bool SharedHelpers::IsIsLoadedAvailable()
+{
+    static bool s_isAvailable =
+        IsRS5OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
+    return s_isAvailable;
+}
+
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
 {
     static bool isAPIContractVxAvailableInitialized = false;
