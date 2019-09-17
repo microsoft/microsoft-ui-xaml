@@ -336,8 +336,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
+        [TestMethod]
         public void VerifyThatProgrammaticallyRemovingEngagementResetsValue()
         {
             using (var setup = new TestSetupHelper("RatingControl Tests"))  // This literally clicks the button corresponding to the test page.
