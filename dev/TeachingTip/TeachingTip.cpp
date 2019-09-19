@@ -26,7 +26,7 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
     return winrt::make<TeachingTipAutomationPeer>(*this);
 }
 
-void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& /* sender */, winrt::RoutedEventArgs const& /* e */)
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& , winrt::RoutedEventArgs const&)
 {
     IsOpen(false);
     ClosePopup();

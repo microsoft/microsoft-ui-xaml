@@ -362,8 +362,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             return GetElement(ref effectiveRemoveTeachingTipButton, "RemoveTeachingTipButton");
         }
-
         private Button effectiveRemoveTeachingTipButton;
+
         public TextBlock GetTeachingTipContent()
         {
             return GetElement(ref effectiveTeachingTipContent, "TeachingTipContentTextBlock");
