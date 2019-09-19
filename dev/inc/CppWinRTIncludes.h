@@ -319,6 +319,7 @@ namespace winrt
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
     using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
+    using ProgressBarTemplateSettings = winrt::Windows::UI::Xaml::Controls::Primitives::ProgressBarTemplateSettings;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
     using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;

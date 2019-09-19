@@ -8,7 +8,10 @@
 
 CppWinRTActivatableClassWithDPFactory(ProgressBar)
 
-GlobalDependencyProperty ProgressBarProperties::s_PlaceholderProperty{ nullptr };
+GlobalDependencyProperty ProgressBarProperties::s_IsIndeterminateProperty{ nullptr };
+GlobalDependencyProperty ProgressBarProperties::s_ShowErrorProperty{ nullptr };
+GlobalDependencyProperty ProgressBarProperties::s_ShowPausedProperty{ nullptr };
+GlobalDependencyProperty ProgressBarProperties::s_TemplateSettingsProperty{ nullptr };
 
 ProgressBarProperties::ProgressBarProperties()
 {
@@ -17,25 +20,61 @@ ProgressBarProperties::ProgressBarProperties()
 
 void ProgressBarProperties::EnsureProperties()
 {
-    if (!s_PlaceholderProperty)
+    if (!s_IsIndeterminateProperty)
     {
-        s_PlaceholderProperty =
+        s_IsIndeterminateProperty =
             InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
+                L"IsIndeterminate",
+                winrt::name_of<bool>(),
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderPropertyChanged));
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnIsIndeterminatePropertyChanged));
+    }
+    if (!s_ShowErrorProperty)
+    {
+        s_ShowErrorProperty =
+            InitializeDependencyProperty(
+                L"ShowError",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::ProgressBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnShowErrorPropertyChanged));
+    }
+    if (!s_ShowPausedProperty)
+    {
+        s_ShowPausedProperty =
+            InitializeDependencyProperty(
+                L"ShowPaused",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::ProgressBar>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnShowPausedPropertyChanged));
+    }
+    if (!s_TemplateSettingsProperty)
+    {
+        s_TemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"TemplateSettings",
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                winrt::name_of<winrt::ProgressBar>(),
+                false /* isAttached */,
+                ValueHelper<winrt::ProgressBarTemplateSettings>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
     }
 }
 
 void ProgressBarProperties::ClearProperties()
 {
-    s_PlaceholderProperty = nullptr;
+    s_IsIndeterminateProperty = nullptr;
+    s_ShowErrorProperty = nullptr;
+    s_ShowPausedProperty = nullptr;
+    s_TemplateSettingsProperty = nullptr;
 }
 
-void ProgressBarProperties::OnPlaceholderPropertyChanged(
+void ProgressBarProperties::OnIsIndeterminatePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -43,12 +82,66 @@ void ProgressBarProperties::OnPlaceholderPropertyChanged(
     winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
 }
 
-void ProgressBarProperties::Placeholder(winrt::IInspectable const& value)
+void ProgressBarProperties::OnShowErrorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    static_cast<ProgressBar*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    auto owner = sender.as<winrt::ProgressBar>();
+    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
 }
 
-winrt::IInspectable ProgressBarProperties::Placeholder()
+void ProgressBarProperties::OnShowPausedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_PlaceholderProperty));
+    auto owner = sender.as<winrt::ProgressBar>();
+    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
+}
+
+void ProgressBarProperties::OnTemplateSettingsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressBar>();
+    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
+}
+
+void ProgressBarProperties::IsIndeterminate(bool value)
+{
+    static_cast<ProgressBar*>(this)->SetValue(s_IsIndeterminateProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool ProgressBarProperties::IsIndeterminate()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_IsIndeterminateProperty));
+}
+
+void ProgressBarProperties::ShowError(bool value)
+{
+    static_cast<ProgressBar*>(this)->SetValue(s_ShowErrorProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool ProgressBarProperties::ShowError()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_ShowErrorProperty));
+}
+
+void ProgressBarProperties::ShowPaused(bool value)
+{
+    static_cast<ProgressBar*>(this)->SetValue(s_ShowPausedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool ProgressBarProperties::ShowPaused()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_ShowPausedProperty));
+}
+
+void ProgressBarProperties::TemplateSettings(winrt::ProgressBarTemplateSettings const& value)
+{
+    static_cast<ProgressBar*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressBarTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::ProgressBarTemplateSettings ProgressBarProperties::TemplateSettings()
+{
+    return ValueHelper<winrt::ProgressBarTemplateSettings>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_TemplateSettingsProperty));
 }

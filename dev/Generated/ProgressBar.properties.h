@@ -9,17 +9,44 @@ class ProgressBarProperties
 public:
     ProgressBarProperties();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
+    void IsIndeterminate(bool value);
+    bool IsIndeterminate();
 
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
+    void ShowError(bool value);
+    bool ShowError();
 
-    static GlobalDependencyProperty s_PlaceholderProperty;
+    void ShowPaused(bool value);
+    bool ShowPaused();
+
+    void TemplateSettings(winrt::ProgressBarTemplateSettings const& value);
+    winrt::ProgressBarTemplateSettings TemplateSettings();
+
+    static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
+    static winrt::DependencyProperty ShowErrorProperty() { return s_ShowErrorProperty; }
+    static winrt::DependencyProperty ShowPausedProperty() { return s_ShowPausedProperty; }
+    static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
+
+    static GlobalDependencyProperty s_IsIndeterminateProperty;
+    static GlobalDependencyProperty s_ShowErrorProperty;
+    static GlobalDependencyProperty s_ShowPausedProperty;
+    static GlobalDependencyProperty s_TemplateSettingsProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPlaceholderPropertyChanged(
+    static void OnIsIndeterminatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnShowErrorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnShowPausedPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnTemplateSettingsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };
