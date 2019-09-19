@@ -2,8 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
-
-  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared"  />
+  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="..\..\dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
   <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="..\..\dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
@@ -22,7 +21,7 @@
   <Import Project="..\..\dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="..\..\dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true'" />
   <Import Project="..\..\dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
-  <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />  
+  <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
   <Import Project="..\..\dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="..\..\dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
   <Import Project="..\..\dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
@@ -34,4 +33,5 @@
   <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\TabView\InteractionTests\TabView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\InteractionTests\ProgressBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
 </Project>
