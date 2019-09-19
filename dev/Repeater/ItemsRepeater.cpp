@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -117,6 +117,18 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         auto virtualContext = winrt::get_self<VirtualizingLayoutContext>(layoutContext);
         virtualContext->Indent(Indent());
 #endif
+
+        // Checking if we have an data template
+        if (m_dataTemplateReference) {
+            // Checking if it has no content
+            if (!m_dataTemplateReference.LoadContent().as<winrt::FrameworkElement>()) {
+                // Has no content, so we will draw nothing and request zero space
+                extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
+                m_viewportManager->SetLayoutExtent(extent);
+                m_lastAvailableSize = availableSize;
+                return desiredSize;
+            }
+        }
 
         desiredSize = layout.Measure(layoutContext, availableSize);
         extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
@@ -598,6 +610,7 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+            m_dataTemplateReference = dataTemplate;
         }
         else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
         {
