@@ -26,7 +26,7 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBarWinUI_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>
