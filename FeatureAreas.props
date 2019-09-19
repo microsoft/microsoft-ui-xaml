@@ -48,6 +48,11 @@
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
+    <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
+    <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
@@ -96,6 +101,11 @@
     <FeatureToolTipEnabled>true</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
+    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
+    <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
