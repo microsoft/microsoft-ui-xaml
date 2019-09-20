@@ -117,9 +117,9 @@
                 Visibility=Collapsed
                 RenderSize=0,0
               [Windows.UI.Xaml.Controls.Button]
-                  Padding=8,4,8,5
+                  Padding=8,5,8,6
                   Foreground=#FF000000
-                  BorderThickness=2,2,2,2
+                  BorderThickness=1,1,1,1
                   BorderBrush=#00FFFFFF
                   Background=#33000000
                   CornerRadius=0,0,0,0
@@ -132,9 +132,9 @@
                   Visibility=Visible
                   RenderSize=0,0
               [Windows.UI.Xaml.Controls.Button]
-                  Padding=8,4,8,5
+                  Padding=8,5,8,6
                   Foreground=#FF000000
-                  BorderThickness=2,2,2,2
+                  BorderThickness=1,1,1,1
                   BorderBrush=#00FFFFFF
                   Background=#33000000
                   CornerRadius=0,0,0,0
@@ -147,9 +147,9 @@
                   Visibility=Visible
                   RenderSize=0,0
               [Windows.UI.Xaml.Controls.Button]
-                  Padding=8,4,8,5
+                  Padding=8,5,8,6
                   Foreground=#FF000000
-                  BorderThickness=2,2,2,2
+                  BorderThickness=1,1,1,1
                   BorderBrush=#00FFFFFF
                   Background=#33000000
                   CornerRadius=0,0,0,0

@@ -19,7 +19,7 @@
       BorderThickness=0,0,0,0
       BorderBrush=#00FFFFFF
       Background=#00FFFFFF
-      CornerRadius=0,0,0,0
+      CornerRadius=2,2,2,2
       MinWidth=120
       MinHeight=32
       Margin=0,0,0,0
@@ -31,7 +31,7 @@
       RenderSize=120,32
     [Windows.UI.Xaml.Controls.Grid]
         Padding=0,0,0,0
-        CornerRadius=0,0,0,0
+        CornerRadius=2,2,2,2
         BorderThickness=0,0,0,0
         BorderBrush=#00FFFFFF
         Background=#00FFFFFF
@@ -101,7 +101,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=20,20
+                RenderSize=20,16
       [Windows.UI.Xaml.Controls.ContentPresenter]
           Foreground=#FF000000
           Padding=0,0,0,0
