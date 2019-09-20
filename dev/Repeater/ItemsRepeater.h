@@ -178,6 +178,6 @@ private:
 
     // Bug where DataTemplate with no content causes a crash.
     // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
-    // Solution: Have flag that is only true when DataTemplate is existend and empty!
+    // Solution: Have flag that is only true when DataTemplate exists but it is empty.
     bool m_isItemTemplateEmpty{ false };
 };
