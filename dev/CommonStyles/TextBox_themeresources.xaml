@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
   xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
   xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
@@ -99,8 +99,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Grid>
-
+                    <Grid >
                         <Grid.Resources>
                             <Style x:Name="DeleteButtonStyle" TargetType="Button">
                                 <Setter Property="Template">
@@ -261,6 +260,7 @@
 
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="1" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
@@ -286,7 +286,7 @@
                         <Border x:Name="BorderElement"
                             Grid.Row="1"
                             Grid.Column="0"
-                            Grid.RowSpan="1"
+                            Grid.RowSpan="2"
                             Grid.ColumnSpan="2"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
@@ -296,11 +296,9 @@
                             Control.IsTemplateFocusTarget="True"
                             MinWidth="{TemplateBinding MinWidth}"
                             MinHeight="{TemplateBinding MinHeight}" />
-                        <Border Padding="0,1,0,0"
-                            Grid.Row="1"
-                            Grid.Column="0">
                             <ScrollViewer x:Name="ContentElement"
-
+                            Grid.Row="2"
+                            Grid.Column="0"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
                             VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
@@ -313,10 +311,9 @@
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
-                        </Border>
 
                         <TextBlock x:Name="PlaceholderTextContentPresenter"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
          		            contract5NotPresent:Foreground="{ThemeResource TextControlPlaceholderForeground}"
@@ -328,7 +325,7 @@
                             TextWrapping="{TemplateBinding TextWrapping}"
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Grid.Column="1"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
@@ -341,16 +338,14 @@
                             MinWidth="34"
                             VerticalAlignment="Stretch" />
                         <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
                             Content="{TemplateBinding Description}"
                             Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
                             AutomationProperties.AccessibilityView="Raw"
                             x:Load="False"/>
-
                     </Grid>
-
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
