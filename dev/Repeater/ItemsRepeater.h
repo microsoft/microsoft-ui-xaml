@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -178,6 +178,6 @@ private:
 
     // Bug where DataTemplate with no content causes a crash.
     // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
-    // Solution: Have reference to DataTemplate and check if content is not null
-    winrt::DataTemplate m_dataTemplateReference{ nullptr };
+    // Solution: Have flag that is only true when DataTemplate is existend and empty!
+    bool m_isItemTemplateEmpty{ false };
 };
