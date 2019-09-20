@@ -13,7 +13,7 @@ jobs:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
-    crashDumpsListFilePath: $(Build.SourcesDirectory)\crashdumps.html
+    helixOutputFilePath: $(Build.SourcesDirectory)\HelixTestFailureDumps.html
 
   steps:
   - task: powershell@2
@@ -37,18 +37,18 @@ jobs:
       arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
 
   - task: powershell@2
-    displayName: 'CreateListOfCrashDumpsFromTestPass.ps1'
+    displayName: 'CreateHelixTestFailureDumps.ps1'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\CreateListOfCrashDumpsFromTestPass.ps1
-      arguments: -OutputFilePath '$(crashDumpsListFilePath)'
+      filePath: build\Helix\CreateHelixTestFailureDumps.ps1
+      arguments: -OutputFilePath '$(helixOutputFilePath)'
 
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Crash Dump List'
+    displayName: 'Publish Helix Output File List'
     condition: succeededOrFailed()
     inputs:
-      PathtoPublish: $(crashDumpsListFilePath)
+      PathtoPublish: $(helixOutputFilePath)
       artifactName: drop

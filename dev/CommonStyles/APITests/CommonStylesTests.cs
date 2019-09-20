@@ -18,6 +18,7 @@ using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 using Windows.UI.Xaml.Markup;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -117,10 +118,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
                 "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
 
+            bool failed = false;
+
             foreach (var control in controlsToVerify)
             {
-                Log.Comment($"Verify visual tree for {control}");
-                VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+                try
+                {
+                    Log.Comment($"Verify visual tree for {control}");
+                    VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+                }
+                catch (Exception e)
+                {
+                    failed = true;
+                    Log.Error(e.Message);
+                }
+            }
+
+            if(failed)
+            {
+                Verify.Fail("One or more visual tree verification failed, see details above");
             }
         }
 
