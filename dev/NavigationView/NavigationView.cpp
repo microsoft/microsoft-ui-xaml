@@ -1600,7 +1600,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     switch (key)
     {
     case winrt::VirtualKey::GamepadView:
-        if (!IsPaneOpen())
+        if (!IsPaneOpen() && !IsTopNavigationView())
         {
             OpenPane();
             handled = true;
