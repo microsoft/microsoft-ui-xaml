@@ -285,7 +285,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ColorPicker colorPicker = null;
             RunOnUIThread.Execute(() =>
             {
-                colorPicker = new ColorPicker { IsAlphaEnabled = true };
+                colorPicker = new ColorPicker { IsAlphaEnabled = true, Width=300, Height=600 };
             });
             TestUtilities.SetAsVisualTreeRoot(colorPicker);
 

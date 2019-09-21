@@ -5,15 +5,17 @@
     BorderBrush=[NULL]
     Background=[NULL]
     CornerRadius=2,2,2,2
+    Width=300
     MinWidth=312
     MaxWidth=392
     Margin=0,0,0,0
+    Height=600
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
     FocusVisualPrimaryBrush=#FF000000
     Visibility=Visible
-    RenderSize=392,567
+    RenderSize=312,600
   [Windows.UI.Xaml.Controls.Grid]
       Padding=0,0,0,0
       CornerRadius=0,0,0,0
@@ -26,7 +28,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#FF000000
       Visibility=Visible
-      RenderSize=392,567
+      RenderSize=312,600
     [Windows.UI.Xaml.Controls.StackPanel]
         Padding=0,0,0,0
         CornerRadius=0,0,0,0
@@ -39,7 +41,7 @@
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
-        RenderSize=392,678
+        RenderSize=312,600
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
@@ -53,7 +55,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=392,336
+          RenderSize=312,256
         [Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum]
             Padding=0,0,0,0
             Foreground=#FF000000
@@ -67,13 +69,13 @@
             MaxWidth=336
             MaxHeight=336
             Margin=0,0,0,0
-            Height=336
+            Height=256
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=336,336
+            RenderSize=256,256
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -87,53 +89,53 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=336,336
+              RenderSize=256,256
             [Windows.UI.Xaml.Controls.Grid]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
-                Width=336
+                Width=256
                 Name=SizingGrid
                 Margin=0,0,0,0
-                Height=336
+                Height=256
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=336,336
+                RenderSize=256,256
               [Windows.UI.Xaml.Shapes.Rectangle]
                   StrokeThickness=1
-                  Width=336
+                  Width=256
                   Name=SpectrumRectangle
                   Margin=0,0,0,0
-                  Height=336
+                  Height=256
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=336,336
+                  RenderSize=256,256
               [Windows.UI.Xaml.Shapes.Rectangle]
                   StrokeThickness=1
-                  Width=336
+                  Width=256
                   Name=SpectrumOverlayRectangle
                   Margin=0,0,0,0
-                  Height=336
+                  Height=256
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=336,336
+                  RenderSize=256,256
               [Windows.UI.Xaml.Shapes.Ellipse]
                   StrokeThickness=1
-                  Width=336
+                  Width=256
                   Name=SpectrumEllipse
                   Margin=0,0,-1,-1
-                  Height=336
+                  Height=256
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -142,10 +144,10 @@
                   RenderSize=0,0
               [Windows.UI.Xaml.Shapes.Ellipse]
                   StrokeThickness=1
-                  Width=336
+                  Width=256
                   Name=SpectrumOverlayEllipse
                   Margin=0,0,-1,-1
-                  Height=336
+                  Height=256
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
@@ -154,16 +156,16 @@
                   RenderSize=0,0
               [Windows.UI.Xaml.Controls.Canvas]
                   Background=#00FFFFFF
-                  Width=336
+                  Width=256
                   Name=InputTarget
                   Margin=0,0,0,0
-                  Height=336
+                  Height=256
                   FocusVisualSecondaryThickness=1,1,1,1
                   FocusVisualSecondaryBrush=#99FFFFFF
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=336,336
+                  RenderSize=256,256
                 [Windows.UI.Xaml.Controls.Grid]
                     Padding=0,0,0,0
                     CornerRadius=0,0,0,0
@@ -209,7 +211,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=336,336
+                  RenderSize=256,256
               [Windows.UI.Xaml.Shapes.Ellipse]
                   StrokeThickness=2
                   Name=EllipseBorder
@@ -234,7 +236,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=44,336
+            RenderSize=44,256
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
               Margin=0,0,0,0
@@ -243,7 +245,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=44,336
+              RenderSize=44,256
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
               Name=ColorPreviewRectangle
@@ -253,7 +255,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=44,336
+              RenderSize=44,256
           [Windows.UI.Xaml.Shapes.Rectangle]
               StrokeThickness=1
               Name=PreviousColorRectangle
@@ -273,7 +275,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=44,336
+              RenderSize=44,256
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
           CornerRadius=0,0,0,0
@@ -287,7 +289,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=392,49
+          RenderSize=312,49
         [Windows.UI.Xaml.Shapes.Rectangle]
             StrokeThickness=1
             Margin=0,0,0,0
@@ -297,7 +299,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,11
+            RenderSize=312,11
         [Microsoft.UI.Xaml.Controls.Primitives.ColorPickerSlider]
             Padding=0,0,0,0
             Foreground=#FF0078D7
@@ -312,7 +314,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,49
+            RenderSize=312,49
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -325,7 +327,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=392,44
+              RenderSize=312,44
             [Windows.UI.Xaml.Controls.Grid]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
@@ -339,7 +341,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=392,44
+                RenderSize=312,44
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -354,7 +356,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=392,44
+                  RenderSize=312,44
                 [Windows.UI.Xaml.Shapes.Rectangle]
                     StrokeThickness=1
                     Name=HorizontalTrackRect
@@ -365,10 +367,10 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=392,2
+                    RenderSize=312,2
                 [Windows.UI.Xaml.Shapes.Rectangle]
                     StrokeThickness=1
-                    Width=372
+                    Width=292
                     Name=HorizontalDecreaseRect
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -376,7 +378,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=372,2
+                    RenderSize=292,2
                 [Windows.UI.Xaml.Controls.Primitives.Thumb]
                     Padding=0,0,0,0
                     Foreground=#FF0078D7
@@ -420,7 +422,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=392,49
+          RenderSize=312,49
         [Windows.UI.Xaml.Shapes.Rectangle]
             StrokeThickness=1
             Margin=0,0,0,0
@@ -430,7 +432,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,11
+            RenderSize=312,11
         [Windows.UI.Xaml.Shapes.Rectangle]
             StrokeThickness=1
             Name=AlphaSliderBackgroundRectangle
@@ -441,7 +443,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,11
+            RenderSize=312,11
         [Microsoft.UI.Xaml.Controls.Primitives.ColorPickerSlider]
             Padding=0,0,0,0
             Foreground=#FF0078D7
@@ -456,7 +458,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,49
+            RenderSize=312,49
           [Windows.UI.Xaml.Controls.Grid]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -469,7 +471,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=392,44
+              RenderSize=312,44
             [Windows.UI.Xaml.Controls.Grid]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
@@ -483,7 +485,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=392,44
+                RenderSize=312,44
               [Windows.UI.Xaml.Controls.Grid]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -498,7 +500,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=392,44
+                  RenderSize=312,44
                 [Windows.UI.Xaml.Shapes.Rectangle]
                     StrokeThickness=1
                     Name=HorizontalTrackRect
@@ -509,10 +511,10 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=392,2
+                    RenderSize=312,2
                 [Windows.UI.Xaml.Shapes.Rectangle]
                     StrokeThickness=1
-                    Width=372
+                    Width=292
                     Name=HorizontalDecreaseRect
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
@@ -520,7 +522,7 @@
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
-                    RenderSize=372,2
+                    RenderSize=292,2
                 [Windows.UI.Xaml.Controls.Primitives.Thumb]
                     Padding=0,0,0,0
                     Foreground=#FF0078D7
@@ -581,7 +583,7 @@
           FocusVisualPrimaryThickness=2,2,2,2
           FocusVisualPrimaryBrush=#FF000000
           Visibility=Visible
-          RenderSize=392,220
+          RenderSize=312,220
         [Windows.UI.Xaml.Controls.ComboBox]
             Padding=12,5,0,7
             Foreground=#FF000000
@@ -766,7 +768,7 @@
             FocusVisualPrimaryThickness=2,2,2,2
             FocusVisualPrimaryBrush=#FF000000
             Visibility=Visible
-            RenderSize=392,176
+            RenderSize=312,176
           [Windows.UI.Xaml.Controls.StackPanel]
               Padding=0,0,0,0
               CornerRadius=0,0,0,0
@@ -780,7 +782,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=392,132
+              RenderSize=312,132
             [Windows.UI.Xaml.Controls.StackPanel]
                 Padding=0,0,0,0
                 CornerRadius=0,0,0,0
@@ -794,7 +796,7 @@
                 FocusVisualPrimaryThickness=2,2,2,2
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
-                RenderSize=392,132
+                RenderSize=312,132
               [Windows.UI.Xaml.Controls.StackPanel]
                   Padding=0,0,0,0
                   CornerRadius=0,0,0,0
@@ -807,7 +809,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=392,32
+                  RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
                     Padding=10,5,6,6
                     Foreground=#FF000000
@@ -1046,7 +1048,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=392,32
+                  RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
                     Padding=10,5,6,6
                     Foreground=#FF000000
@@ -1285,7 +1287,7 @@
                   FocusVisualPrimaryThickness=2,2,2,2
                   FocusVisualPrimaryBrush=#FF000000
                   Visibility=Visible
-                  RenderSize=392,32
+                  RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
                     Padding=10,5,6,6
                     Foreground=#FF000000
@@ -1665,7 +1667,7 @@
               FocusVisualPrimaryThickness=2,2,2,2
               FocusVisualPrimaryBrush=#FF000000
               Visibility=Visible
-              RenderSize=392,32
+              RenderSize=312,32
             [Windows.UI.Xaml.Controls.TextBox]
                 Padding=10,5,6,6
                 Foreground=#FF000000
