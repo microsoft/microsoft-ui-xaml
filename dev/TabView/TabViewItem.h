@@ -50,10 +50,21 @@ public:
     bool m_firstTimeSettingToolTip{ true };
 
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
+    winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
+    winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
+    void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
+    void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
+    void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);
+
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
+    bool m_isDragging = false;
+
+    void UpdateShadow();
+    winrt::ThemeShadow m_shadow;
 };

@@ -77,6 +77,8 @@ void TabView::OnApplyTemplate()
 
     m_tabContainerGrid.set(GetTemplateChildT<winrt::Grid>(L"TabContainerGrid", controlProtected));
 
+    m_shadowReceiver.set(GetTemplateChildT<winrt::Grid>(L"ShadowReceiver", controlProtected));
+
     m_listView.set([this, controlProtected]() {
         auto listView = GetTemplateChildT<winrt::ListView>(L"TabListView", controlProtected);
         if (listView)
@@ -117,6 +119,23 @@ void TabView::OnApplyTemplate()
         }
         return addButton;
     }());
+
+    if (SharedHelpers::IsThemeShadowAvailable())
+    {
+        if (auto shadowCaster = GetTemplateChildT<winrt::Grid>(L"ShadowCaster", controlProtected))
+        {
+            winrt::ThemeShadow shadow;
+            shadow.Receivers().Append(GetShadowReceiver());
+
+            double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewShadowDepthName, winrt::Application::Current().Resources(), box_value(c_tabShadowDepth)));
+
+            auto currentTranslation = shadowCaster.Translation();
+            auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+            shadowCaster.Translation(translation);
+
+            shadowCaster.Shadow(shadow);
+        }
+    }
 }
 
 void TabView::OnListViewGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
