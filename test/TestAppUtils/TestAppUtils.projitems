@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -17,10 +17,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestDeclaration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestFrame.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestPage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ToggleThemeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeDumper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)Themes\Generic.xaml"  Condition="'$(MSBuildProjectName)' != 'MUXControlsTestAppWPF'">
+    <Page Include="$(MSBuildThisFileDirectory)Themes\Generic.xaml" Condition="'$(MSBuildProjectName)' != 'MUXControlsTestAppWPF'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

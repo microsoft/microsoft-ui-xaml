@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControls.TestAppUtils;
@@ -24,6 +24,7 @@ namespace MUXControlsTestApp
         private Button _backButton = null;
         private Button _goBackInvokerButton = null;
         private Button _goFullScreenInvokerButton = null;
+        private Button _toggleThemeButton = null;
         private Button _closeAppInvokerButton = null;
         private Button _waitForIdleInvokerButton = null;
         private CheckBox _idleStateEnteredCheckBox = null;
@@ -92,6 +93,9 @@ namespace MUXControlsTestApp
             // just by being named "BackButton"
             _backButton = (Button)GetTemplateChild("BackButton");
 
+            _toggleThemeButton = (Button)GetTemplateChild("ToggleThemeButton");
+            _toggleThemeButton.Click += ToggleThemeButton_Click;
+
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
 
@@ -122,6 +126,12 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+        }
+
+        private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
+        {
+            ToggleThemeHelper.ToggleTheme();
+            _rootGrid.RequestedTheme = ToggleThemeHelper.CurrentTheme;
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)

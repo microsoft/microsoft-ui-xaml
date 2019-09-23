@@ -54,6 +54,8 @@ namespace MUXControlsTestApp
 
             // OneCore has no splash screen, so we'll ignore the splash-screen requirement there.
             _isSplashScreenDismissed = PlatformConfiguration.IsDevice(DeviceType.OneCore);
+            ToggleThemeHelper.SetThemeFromAppTheme(Application.Current.RequestedTheme);
+
         }
 
         public Frame RootFrame
