@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -21,5 +21,16 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    // Internal
+    void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+private:
+    void OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+    void OnLayoutRootLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
+
+    void OnRangeBaseValueChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
+    winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
+
+    tracker_ref<winrt::Grid> m_layoutRoot{ this };
 };

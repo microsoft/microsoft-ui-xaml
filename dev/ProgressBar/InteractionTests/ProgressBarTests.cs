@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -45,7 +45,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void BasicTest()
         {
-            Log.Comment("ProgressBar Basic Test");
+            using (var setup = new TestSetupHelper("ProgressBar Tests"))
+            {
+                Log.Comment("ProgressBar Basic Test");
+
+                // NOTE: Interaction tests can only access what accessibility tools see. In this case, we can find the button because we
+                // set AutomationProperties.Name on the button in ProgressBarPage.xaml
+                Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
+                changeValueButton.InvokeAndWait();
+
+                // TODO: verify something
+            }
         }
     }
 }
