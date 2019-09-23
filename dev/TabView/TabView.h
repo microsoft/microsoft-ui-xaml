@@ -14,7 +14,7 @@
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
 
-static constexpr double c_tabShadowDepth = 32.0;
+static constexpr double c_tabShadowDepth = 16.0;
 static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
 
 class TabViewTabCloseRequestedEventArgs :

@@ -33,7 +33,7 @@ void TabViewItem::OnApplyTemplate()
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;
-        }());
+    }());
 
     OnIconSourceChanged();
 
