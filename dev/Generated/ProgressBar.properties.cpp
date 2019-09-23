@@ -40,7 +40,7 @@ void ProgressBarProperties::EnsureProperties()
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnShowErrorPropertyChanged));
+                nullptr);
     }
     if (!s_ShowPausedProperty)
     {
@@ -51,7 +51,7 @@ void ProgressBarProperties::EnsureProperties()
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnShowPausedPropertyChanged));
+                nullptr);
     }
     if (!s_TemplateSettingsProperty)
     {
@@ -62,7 +62,7 @@ void ProgressBarProperties::EnsureProperties()
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ProgressBarTemplateSettings>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnTemplateSettingsPropertyChanged));
+                nullptr);
     }
 }
 
@@ -79,31 +79,7 @@ void ProgressBarProperties::OnIsIndeterminatePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::ProgressBar>();
-    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
-}
-
-void ProgressBarProperties::OnShowErrorPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::ProgressBar>();
-    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
-}
-
-void ProgressBarProperties::OnShowPausedPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::ProgressBar>();
-    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
-}
-
-void ProgressBarProperties::OnTemplateSettingsPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::ProgressBar>();
-    winrt::get_self<ProgressBar>(owner)->OnPropertyChanged(args);
+    winrt::get_self<ProgressBar>(owner)->OnIsIndeterminatePropertyChanged(args);
 }
 
 void ProgressBarProperties::IsIndeterminate(bool value)

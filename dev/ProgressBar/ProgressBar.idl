@@ -3,13 +3,13 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBase
 {
     ProgressBar();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsIndeterminate{ get; set; };
+
     Boolean ShowError{ get; set; };
     Boolean ShowPaused{ get; set; };
 
