@@ -43,13 +43,17 @@ void TabViewItem::OnApplyTemplate()
         {
             if (auto internalTabView = winrt::get_self<TabView>(tabView))
             {
-                m_shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                winrt::ThemeShadow shadow;
+                shadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                m_shadow = shadow;
 
                 double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewShadowDepthName, winrt::Application::Current().Resources(), box_value(c_tabShadowDepth)));
 
                 auto currentTranslation = Translation();
                 auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
                 Translation(translation);
+
+                UpdateShadow();
             }
         }
 
@@ -69,7 +73,7 @@ void TabViewItem::UpdateShadow()
     {
         if (IsSelected() && !m_isDragging)
         {
-            Shadow(m_shadow);
+            Shadow(m_shadow.as<winrt::ThemeShadow>());
         }
         else
         {

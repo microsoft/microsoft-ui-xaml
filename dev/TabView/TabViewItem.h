@@ -66,5 +66,5 @@ public:
     bool m_isDragging = false;
 
     void UpdateShadow();
-    winrt::ThemeShadow m_shadow;
+    winrt::IInspectable m_shadow{ nullptr };
 };
