@@ -285,7 +285,7 @@ hstring TreeViewNode::GetContentAsString()
             return result.ToString();
         }
 
-        return unbox_value<winrt::hstring>(content);
+        return winrt::unbox_value_or<hstring>(content, Type().Name);
     }
 
     return Type().Name;
