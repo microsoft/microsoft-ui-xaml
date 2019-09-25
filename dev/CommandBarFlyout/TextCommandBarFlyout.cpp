@@ -530,7 +530,6 @@ TextControlButtons TextCommandBarFlyout::GetPasswordBoxButtonsToAdd(winrt::Passw
         buttonsToAdd |= TextControlButtons::SelectAll;
     }
 
-
     return buttonsToAdd;
 }
 
@@ -545,31 +544,43 @@ void TextCommandBarFlyout::ExecuteCutCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
+    try
     {
-        if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+        if (auto textBoxTarget = target.try_as<winrt::TextBox>())
         {
-            textBox8.CutSelectionToClipboard();
+            if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+            {
+                textBox8.CutSelectionToClipboard();
+            }
+            else
+            {
+                winrt::DataPackage cutPackage;
+
+                cutPackage.RequestedOperation(winrt::DataPackageOperation::Move);
+                cutPackage.SetText(textBoxTarget.SelectedText());
+
+                winrt::Clipboard::SetContent(cutPackage);
+
+                textBoxTarget.SelectedText(L"");
+            }
         }
-        else
+        else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
         {
-            winrt::DataPackage cutPackage;
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            cutPackage.RequestedOperation(winrt::DataPackageOperation::Move);
-            cutPackage.SetText(textBoxTarget.SelectedText());
-
-            winrt::Clipboard::SetContent(cutPackage);
-
-            textBoxTarget.SelectedText(L"");
+            if (selection)
+            {
+                selection.Cut();
+            }
         }
     }
-    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
+    catch (winrt::hresult_error e)
     {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
-
-        if (selection)
+        // If we got a clipboard error, we don't want to crash as a result of that - that can happen (e.g.)
+        // if the app isn't the foreground window when we try to execute a clipboard operation.
+        if (e.code().value < CLIPBRD_E_FIRST || e.code().value > CLIPBRD_E_LAST)
         {
-            selection.Cut();
+            throw;
         }
     }
 
@@ -582,8 +593,11 @@ void TextCommandBarFlyout::ExecuteCutCommand()
 void TextCommandBarFlyout::ExecuteCopyCommand()
 {
     auto target = Target();
-    auto executeRichTextBlockCopyCommand =
-        [this](winrt::RichTextBlock const& richTextBlockTarget)
+
+    try
+    {
+        auto executeRichTextBlockCopyCommand =
+            [this](winrt::RichTextBlock const& richTextBlockTarget)
         {
             if (auto richTextBlock6 = richTextBlockTarget.try_as<winrt::IRichTextBlock6>())
             {
@@ -600,56 +614,66 @@ void TextCommandBarFlyout::ExecuteCopyCommand()
             }
         };
 
-    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
-    {
-        if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+        if (auto textBoxTarget = target.try_as<winrt::TextBox>())
         {
-            textBox8.CopySelectionToClipboard();
+            if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+            {
+                textBox8.CopySelectionToClipboard();
+            }
+            else
+            {
+                winrt::DataPackage copyPackage;
+
+                copyPackage.RequestedOperation(winrt::DataPackageOperation::Copy);
+                copyPackage.SetText(textBoxTarget.SelectedText());
+
+                winrt::Clipboard::SetContent(copyPackage);
+            }
         }
-        else
+        else if (auto textBlockTarget = target.try_as<winrt::TextBlock>())
         {
-            winrt::DataPackage copyPackage;
+            if (auto textBlock7 = textBlockTarget.try_as<winrt::ITextBlock7>())
+            {
+                textBlock7.CopySelectionToClipboard();
+            }
+            else
+            {
+                winrt::DataPackage copyPackage;
 
-            copyPackage.RequestedOperation(winrt::DataPackageOperation::Copy);
-            copyPackage.SetText(textBoxTarget.SelectedText());
+                copyPackage.RequestedOperation(winrt::DataPackageOperation::Copy);
+                copyPackage.SetText(textBlockTarget.SelectedText());
 
-            winrt::Clipboard::SetContent(copyPackage);
+                winrt::Clipboard::SetContent(copyPackage);
+            }
+        }
+        else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
+        {
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
+
+            if (selection)
+            {
+                selection.Copy();
+            }
+        }
+        else if (auto richTextBlockTarget = target.try_as<winrt::RichTextBlock>())
+        {
+            executeRichTextBlockCopyCommand(richTextBlockTarget);
+        }
+        else if (auto richTextBlockOverflowTarget = target.try_as<winrt::RichTextBlockOverflow>())
+        {
+            if (auto richTextBoxSource = richTextBlockOverflowTarget.ContentSource())
+            {
+                executeRichTextBlockCopyCommand(richTextBoxSource);
+            }
         }
     }
-    else if (auto textBlockTarget = target.try_as<winrt::TextBlock>())
+    catch (winrt::hresult_error e)
     {
-        if (auto textBlock7 = textBlockTarget.try_as<winrt::ITextBlock7>())
+        // If we got a clipboard error, we don't want to crash as a result of that - that can happen (e.g.)
+        // if the app isn't the foreground window when we try to execute a clipboard operation.
+        if (e.code().value < CLIPBRD_E_FIRST || e.code().value > CLIPBRD_E_LAST)
         {
-            textBlock7.CopySelectionToClipboard();
-        }
-        else
-        {
-            winrt::DataPackage copyPackage;
-
-            copyPackage.RequestedOperation(winrt::DataPackageOperation::Copy);
-            copyPackage.SetText(textBlockTarget.SelectedText());
-
-            winrt::Clipboard::SetContent(copyPackage);
-        }
-    }
-    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
-    {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
-
-        if (selection)
-        {
-            selection.Copy();
-        }
-    }
-    else if (auto richTextBlockTarget = target.try_as<winrt::RichTextBlock>())
-    {
-        executeRichTextBlockCopyCommand(richTextBlockTarget);
-    }
-    else if (auto richTextBlockOverflowTarget = target.try_as<winrt::RichTextBlockOverflow>())
-    {
-        if (auto richTextBoxSource = richTextBlockOverflowTarget.ContentSource())
-        {
-            executeRichTextBlockCopyCommand(richTextBoxSource);
+            throw;
         }
     }
 
@@ -663,50 +687,62 @@ void TextCommandBarFlyout::ExecutePasteCommand()
 {
     auto target = Target();
 
-    if (auto textBoxTarget = target.try_as<winrt::TextBox>())
+    try
     {
-        if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+        if (auto textBoxTarget = target.try_as<winrt::TextBox>())
         {
-            textBox8.PasteFromClipboard();
+            if (auto textBox8 = textBoxTarget.try_as<winrt::ITextBox8>())
+            {
+                textBox8.PasteFromClipboard();
+            }
+            else
+            {
+                auto strongThis = get_strong();
+
+                winrt::Clipboard::GetContent().GetTextAsync().Completed(
+                    winrt::AsyncOperationCompletedHandler<winrt::hstring>([strongThis, textBoxTarget](winrt::IAsyncOperation<winrt::hstring> asyncOperation, winrt::AsyncStatus asyncStatus)
+                        {
+                            if (asyncStatus != winrt::AsyncStatus::Completed)
+                            {
+                                return;
+                            }
+
+                            auto textToPaste = asyncOperation.GetResults();
+
+                            strongThis->m_dispatcherHelper.RunAsync(
+                                [strongThis, textBoxTarget, textToPaste]()
+                                {
+                                    textBoxTarget.SelectedText(textToPaste);
+                                    textBoxTarget.SelectionStart(textBoxTarget.SelectionStart() + textToPaste.size());
+                                    textBoxTarget.SelectionLength(0);
+
+                                    strongThis->UpdateButtons();
+                                });
+                        }));
+            }
         }
-        else
+        else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
         {
-            auto strongThis = get_strong();
+            auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
 
-            winrt::Clipboard::GetContent().GetTextAsync().Completed(
-                winrt::AsyncOperationCompletedHandler<winrt::hstring>([strongThis, textBoxTarget](winrt::IAsyncOperation<winrt::hstring> asyncOperation, winrt::AsyncStatus asyncStatus)
-                {
-                    if (asyncStatus != winrt::AsyncStatus::Completed)
-                    {
-                        return;
-                    }
-
-                    auto textToPaste = asyncOperation.GetResults();
-
-                    strongThis->m_dispatcherHelper.RunAsync(
-                        [strongThis, textBoxTarget, textToPaste]()
-                    {
-                        textBoxTarget.SelectedText(textToPaste);
-                        textBoxTarget.SelectionStart(textBoxTarget.SelectionStart() + textToPaste.size());
-                        textBoxTarget.SelectionLength(0);
-
-                        strongThis->UpdateButtons();
-                    });
-                }));
+            if (selection)
+            {
+                selection.Paste(0);
+            }
+        }
+        else if (auto passwordBoxTarget = target.try_as<winrt::PasswordBox>())
+        {
+            passwordBoxTarget.PasteFromClipboard();
         }
     }
-    else if (auto richEditBoxTarget = target.try_as<winrt::RichEditBox>())
+    catch (winrt::hresult_error e)
     {
-        auto selection{ SharedHelpers::GetRichTextSelection(richEditBoxTarget) };
-
-        if (selection)
+        // If we got a clipboard error, we don't want to crash as a result of that - that can happen (e.g.)
+        // if the app isn't the foreground window when we try to execute a clipboard operation.
+        if (e.code().value < CLIPBRD_E_FIRST || e.code().value > CLIPBRD_E_LAST)
         {
-            selection.Paste(0);
+            throw;
         }
-    }
-    else if (auto passwordBoxTarget = target.try_as<winrt::PasswordBox>())
-    {
-        passwordBoxTarget.PasteFromClipboard();
     }
 
     if (IsButtonInPrimaryCommands(TextControlButtons::Paste))
