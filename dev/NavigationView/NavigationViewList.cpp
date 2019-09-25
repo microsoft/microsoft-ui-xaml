@@ -59,7 +59,7 @@ void NavigationViewList::ClearContainerForItemOverride(winrt::DependencyObject c
 
 void NavigationViewList::PrepareContainerForItemOverride(winrt::DependencyObject const& element, winrt::IInspectable const& item)
 {
-    auto nvNode = winrt::get_self<TreeViewNode>(NodeFromContainer(element));
+    auto nvNode = ListViewModel() ? winrt::get_self<TreeViewNode>(NodeFromContainer(element)) : NULL;
     if (auto itemContainer = element.try_as<winrt::NavigationViewItemBase>())
     {
         winrt::get_self<NavigationViewItemBase>(itemContainer)->Position(m_navigationViewListPosition);

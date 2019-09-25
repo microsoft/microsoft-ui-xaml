@@ -153,11 +153,15 @@ NavigationView::NavigationView()
                 target->OnTopNavDataSourceChanged(args);
             }
         });
+    m_topDataProvider.SetNavigationViewParent(*this);
 
     Unloaded({ this, &NavigationView::OnUnloaded });
     Loaded({ this, &NavigationView::OnLoaded });
 
     m_rootNode.set(winrt::make<TreeViewNode>());
+    m_topRootNode.set(winrt::make<TreeViewNode>());
+    m_overflowRootNode.set(winrt::make<TreeViewNode>());
+    m_emptyRootNode.set(winrt::make<TreeViewNode>());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -237,12 +241,11 @@ void NavigationView::OnApplyTemplate()
             leftNavListView.SingleSelectionFollowsFocus(false);
         }
 
-        // Set up the ViewModel for the List
+        // Set up the ViewModel for the Left Navigation List View
         auto leftNavigationViewList = leftNavListView.try_as<NavigationViewList>();
         leftNavigationViewList->ListViewModel(winrt::make_self<ViewModel>());
         auto viewModel = leftNavigationViewList->ListViewModel();
         viewModel->IsContentMode(true);
-        viewModel->PrepareView(m_rootNode.get());
         viewModel->SetOwningList(leftNavListView);
         leftNavigationViewList->ItemsSource(*viewModel.get());
     }
@@ -258,6 +261,14 @@ void NavigationView::OnApplyTemplate()
         m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
         SetNavigationViewListPosition(topNavListView, NavigationViewListPosition::TopPrimary);
+
+        // Set up the ViewModel for the Top Navigation ListView
+        auto topNavigationViewList = topNavListView.try_as<NavigationViewList>();
+        topNavigationViewList->ListViewModel(winrt::make_self<ViewModel>());
+        auto viewModel = topNavigationViewList->ListViewModel();
+        viewModel->IsContentMode(true);
+        viewModel->SetOwningList(topNavListView);
+        topNavigationViewList->ItemsSource(*viewModel.get());
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -267,6 +278,14 @@ void NavigationView::OnApplyTemplate()
         m_topNavListOverflowViewSelectionChangedRevoker = topNavListOverflowView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemSelectionChanged });
 
         SetNavigationViewListPosition(topNavListOverflowView, NavigationViewListPosition::TopOverflow);
+
+        // Set up the ViewModel for the Overflow ListView
+        auto topOverflowNavigationViewList = topNavListOverflowView.try_as<NavigationViewList>();
+        topOverflowNavigationViewList->ListViewModel(winrt::make_self<ViewModel>());
+        auto viewModel = topOverflowNavigationViewList->ListViewModel();
+        viewModel->IsContentMode(true);
+        viewModel->SetOwningList(topNavListOverflowView);
+        topOverflowNavigationViewList->ItemsSource(*viewModel.get());
     }
 
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
@@ -3370,22 +3389,40 @@ void NavigationView::UpdatePaneTitleMargins()
     }
 }
 
-void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
+void NavigationView::UnsetLeftNavigationView()
 {
-    // unbinding Data from ListView
-    UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-    UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+    auto leftNavigationViewList = m_leftNavListView.get().try_as<NavigationViewList>();
+    auto viewModel = leftNavigationViewList->ListViewModel();
+    viewModel->PrepareView(m_emptyRootNode.get());
+}
 
-    SyncRootNodesWithItemsSource(items);
+void NavigationView::UnsetTopNavigationView()
+{
+    auto topNavigationViewList = m_topNavListView.get().try_as<NavigationViewList>();
+    auto topViewModel = topNavigationViewList->ListViewModel();
+    topViewModel->PrepareView(m_emptyRootNode.get());
+
+    auto topNavigationOverflowViewList = m_topNavListOverflowView.get().try_as<NavigationViewList>();
+    auto topOverflowViewModel = topNavigationOverflowViewList->ListViewModel();
+    topOverflowViewModel->PrepareView(m_emptyRootNode.get());
+}
+
+void NavigationView::UpdateLeftNavListViewItemSource()
+{
+    // Set root node for the ViewModel
+    auto leftNavigationViewList = m_leftNavListView.get().try_as<NavigationViewList>();
+    auto viewModel = leftNavigationViewList->ListViewModel();
+    viewModel->PrepareView(m_rootNode.get());
 }
 
 void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
 {
     if (m_topDataProvider.ShouldChangeDataSource(items))
     {
+        // TODO: CAN DELETE?!? Seems like duplicate logic
         // unbinding Data from ListView
-        UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-        UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+        //UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
+        //UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
 
         // Change data source and setup vectors
         m_topDataProvider.SetDataSource(items);
@@ -3393,13 +3430,29 @@ void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& i
         // rebinding
         if (items)
         {
-            UpdateListViewItemsSource(m_topNavListView.get(), m_topDataProvider.GetPrimaryItems());
-            UpdateListViewItemsSource(m_topNavListOverflowView.get(), m_topDataProvider.GetOverflowItems());
+            auto topNavigationViewList = m_topNavListView.get().try_as<NavigationViewList>();
+            auto topViewModel = topNavigationViewList->ListViewModel();
+            topViewModel->PrepareView(m_topRootNode.get());
+
+            // Add all created nodes to the primary list
+            auto nodes = m_rootNode.get().Children();
+            for (auto node : nodes)
+            {
+                topViewModel->Append(node);
+            }
+
+            auto topNavigationOverflowViewList = m_topNavListOverflowView.get().try_as<NavigationViewList>();
+            auto topOverflowViewModel = topNavigationOverflowViewList->ListViewModel();
+            topOverflowViewModel->PrepareView(m_overflowRootNode.get());
+
+            // Add nodes to their respective viewmodel
+
         }
         else
         {
-            UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-            UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
+            // TODO: CAN DELETE?!? Seems like duplicate logic
+            //UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
+            //UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
         }
     }
 }
@@ -3417,17 +3470,16 @@ void NavigationView::UpdateListViewItemSource()
         dataSource = MenuItems();
     }
 
-    // Always unset the data source first from old ListView, then set data source for new ListView.
-    if (IsTopNavigationView())
-    {
-        UpdateLeftNavListViewItemSource(nullptr);
-        UpdateTopNavListViewItemSource(dataSource);
-    }
-    else
-    {
-        UpdateTopNavListViewItemSource(nullptr);
-        UpdateLeftNavListViewItemSource(dataSource);
-    }
+    // Unset the data from old ListViews
+    IsTopNavigationView() ? UnsetLeftNavigationView() : UnsetTopNavigationView();
+
+    // TODO: Verify that old tree is getting destroyed when itemsource gets updated!!!!!!
+    // Create the data tree from the dataSource
+    auto rootNode = m_rootNode.get();
+    SyncRootNodeWithItemsSource(rootNode, dataSource);
+
+    // Set data source for new ListView.
+    IsTopNavigationView() ? UpdateTopNavListViewItemSource(dataSource) : UpdateLeftNavListViewItemSource();
  
     if (IsTopNavigationView())
     {
@@ -3441,11 +3493,12 @@ winrt::IVector<winrt::TreeViewNode> NavigationView::RootNodes()
     return m_rootNode.get().Children();
 }
 
-void NavigationView::SyncRootNodesWithItemsSource(winrt::IInspectable const& items)
+
+void NavigationView::SyncRootNodeWithItemsSource(winrt::TreeViewNode& rootNode, winrt::IInspectable const& items)
 {
     // All TreeViewNode should be set to 'IsContentMode = true' as we dont want to pass node objects to the list view
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(items);
+    winrt::get_self<TreeViewNode>(rootNode)->IsContentMode(true);
+    winrt::get_self<TreeViewNode>(rootNode)->ItemsSource(items);
 }
 
 void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 

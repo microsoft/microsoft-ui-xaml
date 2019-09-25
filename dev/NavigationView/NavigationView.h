@@ -77,6 +77,8 @@ public:
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
     winrt::ListView LeftNavListView() { return m_leftNavListView.get(); };
+    winrt::ListView TopNavListView() { return m_topNavListView.get(); };
+    winrt::ListView TopNavListOverflowView() { return m_topNavListOverflowView.get(); };
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);
@@ -166,8 +168,10 @@ private:
     void UpdatePaneToggleSize();
     void UpdateBackAndCloseButtonsVisibility();
     void UpdatePaneTitleMargins();
-    void UpdateLeftNavListViewItemSource(const winrt::IInspectable& items);
+    void UpdateLeftNavListViewItemSource();
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
+    void UnsetLeftNavigationView();
+    void UnsetTopNavigationView();
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
     void UpdateSelectionForMenuItems();
@@ -280,7 +284,7 @@ private:
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
-    void SyncRootNodesWithItemsSource(winrt::IInspectable const& items);
+    void SyncRootNodeWithItemsSource(winrt::TreeViewNode& rootNode, winrt::IInspectable const& items);
     void ToggleIsExpandedFromItem(const winrt::IInspectable& item);
     void ToggleIsExpandedFromContainer(winrt::NavigationViewItem const& container);
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
@@ -369,7 +373,13 @@ private:
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
+    // Root nodes for the ViewModels that represent the different ListViews in Hierarchical Navigation
     tracker_ref<winrt::TreeViewNode> m_rootNode{ this };
+    tracker_ref<winrt::TreeViewNode> m_topRootNode{ this };
+    tracker_ref<winrt::TreeViewNode> m_overflowRootNode{ this };
+    // Used for clearing view models
+    tracker_ref<winrt::TreeViewNode> m_emptyRootNode{ this };
+
     weak_ref<winrt::TreeViewNode> m_previouslySelectedNode{ nullptr };
 
     bool m_appliedTemplate{ false };

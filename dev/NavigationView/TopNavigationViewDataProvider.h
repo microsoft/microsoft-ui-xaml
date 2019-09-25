@@ -65,6 +65,8 @@ public:
 
     // If value is not in the raw data set or can't be move to primarylist, then return false
     bool IsItemSelectableInPrimaryList(const winrt::IInspectable& value);
+
+    void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 protected:
     void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
 
@@ -74,6 +76,7 @@ private:
     void ChangeDataSource(winrt::ItemsSourceView dataSource);
     bool IsContainerNavigationViewItem(int index);
     bool IsContainerNavigationViewHeader(int index);
+    void MoveNodeToList(int index, NavigationViewSplitVectorID vectorID, int newIndex);
 
     tracker_ref<winrt::ItemsSourceView> m_dataSource;
     // If the raw datasource is the same, we don't need to create new winrt::ItemsSourceView object.
@@ -82,5 +85,7 @@ private:
     winrt::event_token m_dataSourceChanged{};
     std::function<void(const winrt::NotifyCollectionChangedEventArgs& args)> m_dataChangeCallback;
     float m_overflowButtonCachedWidth{};
+
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 };
 

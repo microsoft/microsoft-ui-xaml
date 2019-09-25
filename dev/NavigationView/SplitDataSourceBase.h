@@ -194,9 +194,11 @@ public:
         }
     }
 
-    void MoveItemToVector(int index, typename SplitVectorID newVectorID)
+    int MoveItemToVector(int index, typename SplitVectorID newVectorID)
     {
         MUX_ASSERT(index >= 0 && index < RawDataSize());
+
+        int pos = -1;
 
         if (m_flags[index] != newVectorID)
         {
@@ -212,12 +214,13 @@ public:
             // insert item to vector which matches with the newVectorID
             if (auto &toVector = m_splitVectors[newVectorID])
             {
-                int pos = GetPreferIndex(index, newVectorID);
+                pos = GetPreferIndex(index, newVectorID);
 
                 auto value = GetAt(index);
                 toVector->InsertAt(pos, index, value);
             }
         }
+        return pos;
     }
 
 protected:
@@ -307,6 +310,11 @@ protected:
         OnClear();
     }
 
+    int GetPreferIndex(int index, SplitVectorID vectorID)
+    {
+        return RangeCount(0, index, vectorID);
+    }
+
 private:
     void OnRemoveAt(int index)
     {
@@ -352,11 +360,6 @@ private:
 
         m_flags.insert(m_flags.begin() + index, vectorID);
         m_attachedData.insert(m_attachedData.begin() + index, defaultAttachedData);
-    }
-
-    int GetPreferIndex(int index, SplitVectorID vectorID)
-    {
-        return RangeCount(0, index, vectorID);
     }
 
     int RangeCount(int start, int end, SplitVectorID vectorID)

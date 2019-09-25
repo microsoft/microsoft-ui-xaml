@@ -8,6 +8,8 @@
 #include "TopNavigationViewDataProvider.h"
 #include "InspectingDataSource.h"
 #include "NavigationViewItem.h"
+#include "NavigationViewList.h"
+#include "NavigationView.h"
 
 TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandleManager* m_owner)
     :SplitDataSourceT()
@@ -145,8 +147,60 @@ void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const& inde
 {
     for (auto &index : indexes)
     {
-        MoveItemToVector(index, vectorID);
-    };
+        int newIndex = MoveItemToVector(index, vectorID);
+        MoveNodeToList(index, vectorID, newIndex);
+    }
+}
+
+void TopNavigationViewDataProvider::MoveNodeToList(int index, NavigationViewSplitVectorID vectorID, int newIndex)
+{
+    // Get Item
+    auto item = GetAt(index);
+
+    // Get List Views
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+
+    auto topNavList = (nv->TopNavListView()).as<winrt::NavigationViewList>();
+    auto topNavListImpl = winrt::get_self<NavigationViewList>(topNavList);
+
+    auto topNavOverflowList = (nv->TopNavListOverflowView()).as<winrt::NavigationViewList>();
+    auto topNavOverflowListImpl = winrt::get_self<NavigationViewList>(topNavOverflowList);
+
+    // Get ViewModels
+    auto vmTopNav = topNavListImpl->ListViewModel();
+    auto vmTopNavOverflow = topNavOverflowListImpl->ListViewModel();
+
+    if (vectorID == NavigationViewSplitVectorID::OverflowList)
+    {
+        // Get Node
+        auto node = topNavListImpl->NodeFromItem(item);
+
+        // Update ViewModel List
+        uint32_t index;
+        if (vmTopNav->IndexOf(node, index))
+        {
+            vmTopNav->RemoveAt(index);
+        }
+        vmTopNavOverflow->InsertAt(newIndex, node);
+    }
+    else if (vectorID == NavigationViewSplitVectorID::PrimaryList)
+    {
+        // Get Node
+        auto node = topNavOverflowListImpl->NodeFromItem(item);
+
+        // Update ViewModel List
+        uint32_t index;
+        if (vmTopNavOverflow->IndexOf(node, index))
+        {
+            vmTopNavOverflow->RemoveAt(index);
+        }
+        vmTopNav->InsertAt(newIndex, node);
+    }
+}
+
+void TopNavigationViewDataProvider::SetNavigationViewParent(winrt::NavigationView const& navigationView)
+{
+    m_navigationView = winrt::make_weak(navigationView);
 }
 
 int TopNavigationViewDataProvider::GetPrimaryListSize()
