@@ -319,6 +319,7 @@
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
+                            FontSize="{TemplateBinding FontSize}"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
@@ -329,6 +330,7 @@
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
                             Grid.ColumnSpan="3"
+                            FontSize="{TemplateBinding FontSize}"
                             Content="{TemplateBinding PlaceholderText}"
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
@@ -405,6 +407,7 @@
                             Header="{TemplateBinding Header}"
                             Width="{TemplateBinding Width}"
                             contract7Present:Description="{TemplateBinding Description}"
+                            FontSize="{TemplateBinding FontSize}"
                             ScrollViewer.BringIntoViewOnFocusChange="False"
                             Canvas.ZIndex="0"
                             Margin="0"
@@ -426,6 +429,7 @@
                                     x:Name="SuggestionsList"
                                     DisplayMemberPath="{TemplateBinding DisplayMemberPath}"
                                     IsItemClickEnabled="True"
+                                    FontSize="{TemplateBinding FontSize}"
                                     ItemTemplate="{TemplateBinding ItemTemplate}"
                                     ItemTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                     ItemContainerStyle="{TemplateBinding ItemContainerStyle}"
