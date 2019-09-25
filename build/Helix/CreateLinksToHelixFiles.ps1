@@ -3,7 +3,7 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutputFilePath = "dumplinks.html"
+    [string]$OutputFilePath = "LinksToHelixTestFiles.html"
 )
 
 function Generate-File-Links
@@ -11,6 +11,7 @@ function Generate-File-Links
     Param ([Array[]]$files,[string]$headerName)
     if($files.Count -gt 0)
     {
+        Out-File -FilePath $outputFilePath -Append -InputObject "<div class=$headerName>"
         Out-File -FilePath $outputFilePath -Append -InputObject "<h4>$headerName</h4>"
         Out-File -FilePath $outputFilePath -Append -InputObject "<ul>"
         foreach($file in $files)
@@ -18,6 +19,7 @@ function Generate-File-Links
             Out-File -FilePath $outputFilePath -Append -InputObject "<li><a href=$($file.Link)>$($file.Name)</a></li>"
         }
         Out-File -FilePath $outputFilePath -Append -InputObject "</ul>"
+        Out-File -FilePath $outputFilePath -Append -InputObject "</div>"
     }
 }
 
@@ -70,8 +72,10 @@ foreach ($testRun in $testRuns.value)
                 }
                 Out-File -FilePath $outputFilePath -Append -InputObject "<h3>$helixWorkItemName</h3>"
                 Generate-File-Links $screenShots "Screenshots"
-                Generate-File-Links $dumps "Crash Dumps"
-                Generate-File-Links $visualTreeMasters "Visual Tree Masters"
+                Generate-File-Links $dumps "CrashDumps"
+                Generate-File-Links $visualTreeMasters "VisualTreeMasters"
+                $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeMasters -NotContains $_) }
+                Generate-File-Links $misc "Misc"
             }
         }        
     }

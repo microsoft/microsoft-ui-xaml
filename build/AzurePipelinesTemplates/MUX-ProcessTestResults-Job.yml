@@ -13,7 +13,7 @@ jobs:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
-    helixOutputFilePath: $(Build.SourcesDirectory)\HelixTestFailureDumps.html
+    helixOutputFilePath: $(Build.SourcesDirectory)\LinksToHelixTestFiles.html
 
   steps:
   - task: powershell@2
@@ -37,13 +37,13 @@ jobs:
       arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
 
   - task: powershell@2
-    displayName: 'CreateHelixTestFailureDumps.ps1'
+    displayName: 'CreateLinksToHelixFiles.ps1'
     condition: succeededOrFailed()
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       targetType: filePath
-      filePath: build\Helix\CreateHelixTestFailureDumps.ps1
+      filePath: build\Helix\CreateLinksToHelixFiles.ps1
       arguments: -OutputFilePath '$(helixOutputFilePath)'
 
   - task: PublishBuildArtifacts@1
