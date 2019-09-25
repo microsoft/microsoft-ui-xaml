@@ -112,7 +112,6 @@
                                                     VerticalAlignment="Center"
                                                     HorizontalAlignment="Center"
                                                     FontStyle="Normal"
-                                                    FontSize="{ThemeResource AutoSuggestBoxIconFontSize}"
                                                     Text="&#xE10A;"
                                                     FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                                     AutomationProperties.AccessibilityView="Raw" />
@@ -319,7 +318,6 @@
                             IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
-                            FontSize="{TemplateBinding FontSize}"
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
@@ -330,7 +328,6 @@
                             Padding="{TemplateBinding Padding}"
                             IsTabStop="False"
                             Grid.ColumnSpan="3"
-                            FontSize="{TemplateBinding FontSize}"
                             Content="{TemplateBinding PlaceholderText}"
                             IsHitTestVisible="False" />
                         <Button x:Name="DeleteButton"
@@ -408,6 +405,9 @@
                             Width="{TemplateBinding Width}"
                             contract7Present:Description="{TemplateBinding Description}"
                             FontSize="{TemplateBinding FontSize}"
+                            FontFamily="{TemplateBinding FontFamily}"
+                            FontWeight="{TemplateBinding FontWeight}"
+                            FontStretch="{TemplateBinding FontStretch}"
                             ScrollViewer.BringIntoViewOnFocusChange="False"
                             Canvas.ZIndex="0"
                             Margin="0"
