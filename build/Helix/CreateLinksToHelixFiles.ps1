@@ -8,11 +8,11 @@ Param(
 
 function Generate-File-Links
 {
-    Param ([Array[]]$files,[string]$headerName)
+    Param ([Array[]]$files,[string]$sectionName)
     if($files.Count -gt 0)
     {
-        Out-File -FilePath $outputFilePath -Append -InputObject "<div class=$headerName>"
-        Out-File -FilePath $outputFilePath -Append -InputObject "<h4>$headerName</h4>"
+        Out-File -FilePath $outputFilePath -Append -InputObject "<div class=$sectionName>"
+        Out-File -FilePath $outputFilePath -Append -InputObject "<h4>$sectionName</h4>"
         Out-File -FilePath $outputFilePath -Append -InputObject "<ul>"
         foreach($file in $files)
         {
