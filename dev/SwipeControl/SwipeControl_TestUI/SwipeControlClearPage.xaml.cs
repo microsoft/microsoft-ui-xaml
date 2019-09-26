@@ -13,11 +13,7 @@ namespace MUXControlsTestApp
         public SwipeControlClearPage()
         {
             this.InitializeComponent();
-        }
-
-        public void SwipeItemInvoked(Microsoft.UI.Xaml.Controls.SwipeItem sender, Microsoft.UI.Xaml.Controls.SwipeItemInvokedEventArgs args)
-        {
-
+            SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
         }
 
         public void AddSwipeItemsButton_Click(object sender, RoutedEventArgs e)
@@ -32,11 +28,14 @@ namespace MUXControlsTestApp
             //"The parameter is incorrect. This SwipeControl is horizontal and can not have vertical items."
             //DefaultSwipeItemsVertical.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
             //DefaultSwipeItemsVertical.Add(DefaultSwipeItemVertical);
+
+            SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
         }
         public void ClearSwipeItemsButton_Click(object sender, RoutedEventArgs e)
         {
             DefaultSwipeItemsHorizontal.Clear();
             DefaultSwipeItemsVertical.Clear();
+            SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
         }
 
     }

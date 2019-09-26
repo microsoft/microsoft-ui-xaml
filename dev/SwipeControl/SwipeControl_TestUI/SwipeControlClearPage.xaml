@@ -14,9 +14,9 @@
     <Grid>
         <Grid.Resources>
             <muxc:SwipeItems x:Name="DefaultSwipeItemsHorizontal" ></muxc:SwipeItems>
-            <muxc:SwipeItem x:Name="DefaultSwipeItemHorizontal" Invoked="SwipeItemInvoked" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
+            <muxc:SwipeItem x:Name="DefaultSwipeItemHorizontal" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
             <muxc:SwipeItems x:Name="DefaultSwipeItemsVertical"></muxc:SwipeItems>
-            <muxc:SwipeItem x:Name="DefaultSwipeItemVertical" Invoked="SwipeItemInvoked" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
+            <muxc:SwipeItem x:Name="DefaultSwipeItemVertical" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
         </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -55,8 +55,9 @@
         </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="1">
-            <Button Click="AddSwipeItemsButton_Click">Add SwipeItems</Button>
-            <Button Click="ClearSwipeItemsButton_Click">Clear SwipeItems</Button>
+            <Button Click="AddSwipeItemsButton_Click" x:Name="AddItemsButton" AutomationProperties.Name="AddItemsButton">Add SwipeItems</Button>
+            <Button Click="ClearSwipeItemsButton_Click" x:Name="ClearItemsButton" AutomationProperties.Name="ClearItemsButton">Clear SwipeItems</Button>
+            <TextBlock x:Name="SwipeItemsChildSum" AutomationProperties.Name="SwipeItemsChildSum" ></TextBlock>
         </StackPanel>
         
     </Grid>
