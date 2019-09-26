@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControls.TestAppUtils;
@@ -16,6 +16,8 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
+        public static ElementTheme CurrentTheme { get;  set; } = ElementTheme.Default;
+
         private static string _error = string.Empty;
         private static string _log = string.Empty;
 
@@ -42,6 +44,19 @@ namespace MUXControlsTestApp
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
             Application.Current.UnhandledException += OnUnhandledException;
+
+            if(CurrentTheme == ElementTheme.Default)
+            {
+                if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
+                {
+                    CurrentTheme = ElementTheme.Dark;
+                }
+                else
+                {
+                    CurrentTheme = ElementTheme.Light;
+                }
+            }
+
         }
 
         public void ChangeBarVisibility(Visibility visibility)
@@ -130,8 +145,15 @@ namespace MUXControlsTestApp
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
         {
-            ToggleThemeHelper.ToggleTheme();
-            _rootGrid.RequestedTheme = ToggleThemeHelper.CurrentTheme;
+            if(CurrentTheme == ElementTheme.Light)
+            {
+                CurrentTheme = ElementTheme.Dark;
+            }
+            else
+            {
+                CurrentTheme = ElementTheme.Light;
+            }
+            _rootGrid.RequestedTheme = CurrentTheme;
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)
