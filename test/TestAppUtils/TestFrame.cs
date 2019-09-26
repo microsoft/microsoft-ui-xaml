@@ -16,7 +16,7 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
-        public static ElementTheme CurrentTheme { get;  set; } = ElementTheme.Default;
+        private static ElementTheme CurrentTheme { get;  set; } = ElementTheme.Default;
 
         private static string _error = string.Empty;
         private static string _log = string.Empty;
