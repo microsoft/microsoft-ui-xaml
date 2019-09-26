@@ -69,4 +69,6 @@
     <x:Double x:Key="TabViewItemScrollButtonHeight">29</x:Double>
     <Thickness x:Key="TabViewItemScrollButtonPadding">6,4,10,5</Thickness>
 
+    <x:Double x:Key="TabViewShadowDepth">16</x:Double>
+
 </ResourceDictionary>
