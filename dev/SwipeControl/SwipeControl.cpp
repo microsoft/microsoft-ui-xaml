@@ -1440,7 +1440,10 @@ void SwipeControl::OnLeftItemsChanged(const winrt::IObservableVector<winrt::Swip
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasLeftContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasLeftContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Left)
     {
@@ -1453,7 +1456,11 @@ void SwipeControl::OnRightItemsChanged(const winrt::IObservableVector<winrt::Swi
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, sender.Size() > 0);
+
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Right)
     {
@@ -1466,7 +1473,10 @@ void SwipeControl::OnTopItemsChanged(const winrt::IObservableVector<winrt::Swipe
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Top)
     {
@@ -1479,7 +1489,10 @@ void SwipeControl::OnBottomItemsChanged(const winrt::IObservableVector<winrt::Sw
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Bottom)
     {
