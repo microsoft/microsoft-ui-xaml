@@ -12,7 +12,16 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
-            <controls:ProgressBar x:Name="TestProgressBar" AutomationProperties.Name="TestProgressBar" Value="0.5" />
+            <controls:ProgressBar
+                x:Name="TestProgressBar"
+                AutomationProperties.Name="TestProgressBar"
+                Value="0.5"
+                Maximum="10"
+                Width="300"
+                HorizontalAlignment="Left"
+                IsIndeterminate="True"
+                ShowPaused="False"
+                ShowError="False"/>
             <Button x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Change Value" Click="Button_Click"/>
         </StackPanel>
     </Grid>
