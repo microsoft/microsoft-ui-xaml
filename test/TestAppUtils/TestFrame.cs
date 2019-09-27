@@ -145,7 +145,7 @@ namespace MUXControlsTestApp
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
         {
-            if(CurrentTheme == ElementTheme.Light)
+            if (CurrentTheme == ElementTheme.Light)
             {
                 CurrentTheme = ElementTheme.Dark;
             }
