@@ -24,5 +24,6 @@
         </controls:TreeView>
 
         <Button Content="ReplaceAll" Click="ReplaceAll_Click" />
+        <Button Content="Clear" Click="Clear_Click" />
     </StackPanel>
 </Page>

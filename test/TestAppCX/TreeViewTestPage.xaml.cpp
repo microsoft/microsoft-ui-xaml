@@ -31,6 +31,13 @@ void TestAppCX::TreeViewTestPage::ReplaceAll_Click(Platform::Object^ sender, Win
 {
     auto newItems = ref new Platform::Array<TreeViewData^>(2);
     newItems[0] = ref new TreeViewData("444");
+    newItems[0]->Children->Append(ref new TreeViewData("123"));
     newItems[1] = ref new TreeViewData("555");
     Items->ReplaceAll(newItems);
+}
+
+
+void TestAppCX::TreeViewTestPage::Clear_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    Items->Clear();
 }
