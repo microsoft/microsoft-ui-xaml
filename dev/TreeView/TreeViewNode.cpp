@@ -194,15 +194,7 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
 
     case winrt::NotifyCollectionChangedAction::Reset:
     {
-        int count = m_itemsDataSource.Count();
-        int childrenCount = Children().Size();
-
-        if (count > 0) {
-            // Reset was raised as part of massive collection changes!
-            // Add all items to the children
-            AddToChildrenNodes(0, count);
-        }
-        RemoveFromChildrenNodes(count, childrenCount);
+        SyncChildrenNodesWithItemsSource();
         break;
     }
 
