@@ -52,6 +52,7 @@ void ProgressBar::OnRangeBaseValueChanged(const winrt::DependencyObject& sender,
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
 
     // TODO: things
+
 }
 
 void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -61,3 +62,7 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
     // TODO: things
 }
 
+void ProgressBar::SetProgressBarIndicatorWidth()
+{
+
+}

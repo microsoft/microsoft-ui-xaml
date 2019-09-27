@@ -22,9 +22,13 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
+        private static int _clicks = 0;
+
         public void Button_Click(object sender, RoutedEventArgs e)
         {
-            TestProgressBar.Value = 0.75;
+            _clicks += 1;
+            TestProgressBar.Value = _clicks;
+            if (_clicks >= TestProgressBar.Maximum) _clicks = 0;
         }
     }
 }

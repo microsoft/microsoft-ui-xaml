@@ -5,12 +5,81 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls">
 
     <Style TargetType="local:ProgressBar">
+        <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="BorderThickness" Value="{ThemeResource ProgressBarBorderThemeThickness}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlHighlightTransparentBrush}" />
+        <Setter Property="Maximum" Value="100" />
+        <Setter Property="MinHeight" Value="{ThemeResource ProgressBarThemeMinHeight}" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressBar">
-                    
+
                     <Grid x:Name="LayoutRoot">
-                        <TextBlock Text="I am a ProgressBar"/>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Paused" To="Indeterminate">
+                                        <Storyboard>
+                                            <DoubleAnimation
+                                                Storyboard.TargetName="ProgressBarIndicator"
+                                                Storyboard.TargetProperty="Opacity"
+                                                To="1"
+                                                Duration="0:0:0.25" />
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+                                
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Determinate" />
+                                <VisualState x:Name="Indeterminate">
+                                    <Storyboard RepeatBehavior="Forever">
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="IndeterminateRoot"
+                                            Duration="0:0:3.917"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransofm).(TranslateTransform.X)"
+                                            From="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}"
+                                            To="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition}" />
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" Storyboard.TargetName="ProgressBarIndicator">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationWellPosition}" KeySpline="0.4,0,0.6,1" />
+                                            <EasingDoubleKeyFrame KeyTime="0:0:2" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationWellPosition}" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:3" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationEndPosition}" KeySpline="0.4,0,0.6,1" />
+                                        </DoubleAnimationUsingKeyFrames>
+
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Paused">
+                                    <Storyboard>
+                                        <ObjectAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ProgressBarIndicator"
+                                            Storyboard.TargetProperty="Fill" >
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource SystemControlForegroundAccentBrush}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ProgressBarIndicator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="{ThemeResource ProgressBarIndicatorPauseOpacity}"
+                                            Duration="0:0:0.25" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <Border x:Name="DeterminateRoot"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderBrush}"
+                            CornerRadius="{TemplateBinding CornerRadius}" >
+
+                            <Rectangle x:Name="ProgressBarIndicator"
+                                Margin="{TemplateBinding Padding}"
+                                Fill="{TemplateBinding Foreground}"         
+                                HorizontalAlignment="Left" />
+                        </Border>
                     </Grid>
                     
                 </ControlTemplate>
