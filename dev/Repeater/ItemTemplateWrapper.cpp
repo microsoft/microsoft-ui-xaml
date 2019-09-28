@@ -55,6 +55,11 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
         // no element was found in recycle pool, create a new element
         element = selectedTemplate.LoadContent().as<winrt::FrameworkElement>();
 
+        // Template returned null, so insert empty element to render nothing
+        if (!element) {
+            element = winrt::XamlReader::Load(L"<Rectangle xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Height='0' Width='0' />").as<winrt::Rectangle>();
+        }
+
         // Associate template with element
         element.SetValue(RecyclePool::GetOriginTemplateProperty(), selectedTemplate);
     }
