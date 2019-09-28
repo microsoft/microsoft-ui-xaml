@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -142,32 +142,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.SetValue(ItemsRepeater.ItemsSourceProperty, dataSource);
                 Verify.AreSame(dataSource, repeater.GetValue(ItemsRepeater.ItemsSourceProperty) as ItemsSourceView);
                 Verify.AreSame(dataSource, repeater.ItemsSourceView);
-            });
-        }
-
-        [TestMethod]
-        public void ValidateNoSizeWhenEmptyDataTemplate()
-        {
-
-            ItemsRepeater repeater = null;
-            RunOnUIThread.Execute(() =>
-            {
-                var elementFactory = new RecyclingElementFactory();
-                elementFactory.RecyclePool = new RecyclePool();
-                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
-                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
-
-                repeater = new ItemsRepeater() {
-                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
-                    ItemTemplate = elementFactory,
-                    // Default is StackLayout, so do not have to explicitly set.
-                    // Layout = new StackLayout(),
-                };
-                repeater.UpdateLayout();
-
-                // Asserting render size is zero
-                Verify.IsLessThan(repeater.RenderSize.Width , 0.0001);
-                Verify.IsLessThan(repeater.RenderSize.Height , 0.0001);
             });
         }
 

@@ -372,6 +372,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateNoSizeWhenEmptyDataTemplate()
+        {
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var elementFactory = new RecyclingElementFactory();
+                elementFactory.RecyclePool = new RecyclePool();
+                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = elementFactory,
+                    // Default is StackLayout, so do not have to explicitly set.
+                    // Layout = new StackLayout(),
+                };
+                repeater.UpdateLayout();
+
+                // Asserting render size is zero
+                Verify.IsLessThan(repeater.RenderSize.Width, 0.0001);
+                Verify.IsLessThan(repeater.RenderSize.Height, 0.0001);
+            });
+        }
+
+        [TestMethod]
         public void ValidateReyclingElementFactoryWithNoTemplate()
         {
             RunOnUIThread.Execute(() =>
