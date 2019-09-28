@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -393,6 +393,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Asserting render size is zero
                 Verify.IsLessThan(repeater.RenderSize.Width, 0.0001);
                 Verify.IsLessThan(repeater.RenderSize.Height, 0.0001);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateCorrectSizeWhenEmptyDataTemplateInSelector()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplateOdd = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' />
+                        </DataTemplate>");
+                var dataTemplateEven = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+                var selector = new MySelector() {
+                    TemplateOdd = dataTemplateOdd,
+                    TemplateEven = dataTemplateEven
+                };
+
+                Content = CreateAndInitializeRepeater
+                (
+                   itemsSource: Enumerable.Range(0, numItems),
+                   elementFactory: selector,
+                   layout: new StackLayout(),
+                   repeater: ref repeater
+                );
+
+                Content.UpdateLayout();
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (FrameworkElement)repeater.TryGetElement(i);
+                    if (i % 2 == 0)
+                    {
+                        Verify.AreEqual(element.Height, 0);
+                    }
+                    else
+                    {
+                        Verify.AreEqual(element.Height, 30);
+                    }
+                }
+
+                repeater.ItemsSource = null;
+                Content.UpdateLayout();
             });
         }
 
