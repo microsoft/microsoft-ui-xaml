@@ -402,8 +402,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 var dataTemplateOdd = (DataTemplate)XamlReader.Load(
-                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                            <TextBlock Text='{Binding}' Height='30' />
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' Width='50' />
                         </DataTemplate>");
                 var dataTemplateEven = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
@@ -414,13 +414,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     TemplateEven = dataTemplateEven
                 };
 
-                Content = CreateAndInitializeRepeater
-                (
-                   itemsSource: Enumerable.Range(0, numItems),
-                   elementFactory: selector,
-                   layout: new StackLayout(),
-                   repeater: ref repeater
-                );
+                repeater = new ItemsRepeater() {
+                    ItemTemplate = selector,
+                    Layout = new StackLayout(),
+                    ItemsSource = Enumerable.Range(0, numItems)
+                };
+
+                repeater.VerticalAlignment = VerticalAlignment.Top;
+                repeater.HorizontalAlignment = HorizontalAlignment.Left;
+                Content = repeater;
 
                 Content.UpdateLayout();
                 Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
@@ -436,6 +438,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.AreEqual(element.Height, 30);
                     }
                 }
+
+                Verify.AreEqual(5 * 30, repeater.ActualHeight);
+
+                // ItemsRepeater stretches page, so actual width is width of page and not 50
+                //Verify.AreEqual(50, repeater.ActualWidth);
+
 
                 repeater.ItemsSource = null;
                 Content.UpdateLayout();
