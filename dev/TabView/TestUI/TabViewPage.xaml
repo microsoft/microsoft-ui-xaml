@@ -30,6 +30,8 @@
                 <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
                 <Button x:Name="SetTabViewWidth" AutomationProperties.Name="SetTabViewWidth" Content="Set Width" Margin="0,0,0,8" Click="SetTabViewWidth_Click" />
 
+                <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock Text="Scroll buttons visible: " />
                     <TextBlock x:Name="ScrollButtonsVisible" AutomationProperties.Name="ScrollButtonsVisible" Text="False" />
@@ -108,8 +110,8 @@
                             </controls:TabViewItem.IconSource>
 
                             <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
-                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                                <Button x:Name="TabViewSizingPageButtton" AutomationProperties.Name="TabViewSizingPageButtton" Margin="8" FontSize="20" Click="TabViewSizingPageButtton_Click" >TabView Sizing Page</Button>
+                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
+                                <Button x:Name="TabViewSizingPageButtton" AutomationProperties.Name="TabViewSizingPageButtton" Margin="8" Click="TabViewSizingPageButtton_Click" >TabView Sizing Page</Button>
                             </StackPanel>
                         </controls:TabViewItem>
 

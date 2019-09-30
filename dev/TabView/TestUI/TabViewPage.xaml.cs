@@ -323,5 +323,11 @@ namespace MUXControlsTestApp
         {
             this.Frame.Navigate(typeof(TabViewSizingPage));
         }
+
+        private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
+        {
+            FirstTab.Header = "s";
+            LongHeaderTab.Header = "long long long long long long long long";
+        }
     }
 }
