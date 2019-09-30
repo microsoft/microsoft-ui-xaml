@@ -57,7 +57,10 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
 
         // Template returned null, so insert empty element to render nothing
         if (!element) {
-            element = winrt::XamlReader::Load(L"<Rectangle xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Height='0' Width='0' />").as<winrt::Rectangle>();
+            winrt::Rectangle rectangle = winrt::Rectangle();
+            rectangle.Width(0);
+            rectangle.Height(0);
+            element = rectangle;
         }
 
         // Associate template with element
