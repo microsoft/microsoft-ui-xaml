@@ -16,8 +16,6 @@ namespace MUXControlsTestApp
 {
     public sealed class TestFrame : Frame
     {
-        private static ElementTheme CurrentTheme { get;  set; } = ElementTheme.Default;
-
         private static string _error = string.Empty;
         private static string _log = string.Empty;
 
@@ -44,19 +42,6 @@ namespace MUXControlsTestApp
             _mainPageType = mainPageType;
             this.DefaultStyleKey = typeof(TestFrame);
             Application.Current.UnhandledException += OnUnhandledException;
-
-            if(CurrentTheme == ElementTheme.Default)
-            {
-                if (Application.Current.RequestedTheme == ApplicationTheme.Dark)
-                {
-                    CurrentTheme = ElementTheme.Dark;
-                }
-                else
-                {
-                    CurrentTheme = ElementTheme.Light;
-                }
-            }
-
         }
 
         public void ChangeBarVisibility(Visibility visibility)
@@ -145,15 +130,13 @@ namespace MUXControlsTestApp
 
         private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
         {
-            if (CurrentTheme == ElementTheme.Light)
+            if(_rootGrid.RequestedTheme == ElementTheme.Default)
             {
-                CurrentTheme = ElementTheme.Dark;
+                // Convert theme from default to either dark or light based on application requestedtheme
+                _rootGrid.RequestedTheme = (Application.Current.RequestedTheme == ApplicationTheme.Light) ? ElementTheme.Light : ElementTheme.Dark;
             }
-            else
-            {
-                CurrentTheme = ElementTheme.Light;
-            }
-            _rootGrid.RequestedTheme = CurrentTheme;
+            // Invert theme
+            _rootGrid.RequestedTheme = (_rootGrid.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)
