@@ -15,14 +15,18 @@
             <controls:ProgressBar
                 x:Name="TestProgressBar"
                 AutomationProperties.Name="TestProgressBar"
-                Maximum="10"
-                Width="300"
+                Maximum ="{Binding ElementName=MaximumInput, Path=Text, FallbackValue=100, Mode=OneWay}"
+                Minimum="{Binding ElementName=MinimumInput, Path=Text, FallbackValue=0, Mode=Oneway}"
+                Width="100"
                 HorizontalAlignment="Left"
                 IsIndeterminate="True"
                 ShowPaused="False"
                 ShowError="False"/>
+            
+            <TextBox x:Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" />
+            <TextBox x:Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" />
             <TextBlock Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
-            <Button x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Change Value" Click="Button_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="Button_Click" />
         </StackPanel>
     </Grid>
 </local:TestPage>
