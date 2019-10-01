@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using Windows.UI.Xaml;
 
 namespace MUXControlsTestApp
@@ -24,10 +25,8 @@ namespace MUXControlsTestApp
             DefaultSwipeItemsHorizontal.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
             DefaultSwipeItemsHorizontal.Add(DefaultSwipeItemHorizontal);
 
-            // Throws exception:
-            //"The parameter is incorrect. This SwipeControl is horizontal and can not have vertical items."
-            //DefaultSwipeItemsVertical.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
-            //DefaultSwipeItemsVertical.Add(DefaultSwipeItemVertical);
+            DefaultSwipeItemsVertical.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
+            DefaultSwipeItemsVertical.Add(DefaultSwipeItemVertical);
 
             SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
         }

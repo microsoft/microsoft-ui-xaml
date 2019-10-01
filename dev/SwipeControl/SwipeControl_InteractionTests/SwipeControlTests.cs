@@ -178,7 +178,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Find FindItemsSum textblock");
                 TextBlock sumOfSwipeItemsCount = new TextBlock(FindElement.ByName("SwipeItemsChildSum"));
                 Verify.IsNotNull(sumOfSwipeItemsCount);
-                Verify.AreEqual("0", sumOfSwipeItemsCount.GetText());
+                Verify.AreEqual("2", sumOfSwipeItemsCount.GetText());
 
                 Log.Comment("Find clear SwipeItems button");
                 Button clearItemsButton = new Button(FindElement.ByName("ClearItemsButton"));
@@ -193,7 +193,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(addItemsButton);
                 addItemsButton.Invoke();
                 Wait.ForIdle();
-                Verify.AreEqual("1", sumOfSwipeItemsCount.GetText());
+                Verify.AreEqual("2", sumOfSwipeItemsCount.GetText());
 
                 Log.Comment("clearing items again");
                 clearItemsButton.Invoke();

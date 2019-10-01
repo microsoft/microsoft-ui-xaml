@@ -13,9 +13,13 @@
 
     <Grid>
         <Grid.Resources>
-            <muxc:SwipeItems x:Name="DefaultSwipeItemsHorizontal" ></muxc:SwipeItems>
+            <muxc:SwipeItems x:Name="DefaultSwipeItemsHorizontal" >
+                <muxc:SwipeItem Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
+            </muxc:SwipeItems>
             <muxc:SwipeItem x:Name="DefaultSwipeItemHorizontal" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
-            <muxc:SwipeItems x:Name="DefaultSwipeItemsVertical"></muxc:SwipeItems>
+            <muxc:SwipeItems x:Name="DefaultSwipeItemsVertical">
+                <muxc:SwipeItem Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
+            </muxc:SwipeItems>
             <muxc:SwipeItem x:Name="DefaultSwipeItemVertical" Background="Orange" BehaviorOnInvoked="RemainOpen"></muxc:SwipeItem>
         </Grid.Resources>
         <Grid.RowDefinitions>
@@ -47,10 +51,10 @@
                 <Grid Background="Green" Width="100" />
             </muxc:SwipeControl>
             <muxc:SwipeControl Grid.Row="2" Grid.Column="0" RightItems="{StaticResource DefaultSwipeItemsHorizontal}">
-                <Grid Background="Yellow" Height="100" />
+                <Grid Background="Blue" Height="100" />
             </muxc:SwipeControl>
             <muxc:SwipeControl Grid.Row="2" Grid.Column="2" BottomItems="{StaticResource DefaultSwipeItemsVertical}">
-                <Grid Background="Blue" Width="100" />
+                <Grid Background="Yellow" Width="100" />
             </muxc:SwipeControl>
         </Grid>
 
