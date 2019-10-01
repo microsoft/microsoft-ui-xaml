@@ -28,7 +28,10 @@ namespace MUXControlsTestApp
         {
             _clicks += 1;
             TestProgressBar.Value = _clicks;
-            if (_clicks >= TestProgressBar.Maximum) _clicks = 0;
+
+            double minimum = TestProgressBar.Minimum;
+
+            if (_clicks >= TestProgressBar.Maximum) _clicks = (int)(minimum + 0.5);
         }
     }
 }
