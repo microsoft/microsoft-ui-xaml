@@ -197,6 +197,9 @@
     <ClInclude Include="LeakCycleTestCX.xaml.h">
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="TreeViewTestPage.xaml.h">
+      <DependentUpon>TreeViewTestPage.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -212,6 +215,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="MenuBarTestPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TreeViewTestPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
@@ -255,6 +261,9 @@
     </ClCompile>
     <ClCompile Include="LeakCycleTestCX.xaml.cpp">
       <DependentUpon>LeakCycleTestCX.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="TreeViewTestPage.xaml.cpp">
+      <DependentUpon>TreeViewTestPage.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

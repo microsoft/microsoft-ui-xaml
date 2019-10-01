@@ -1,7 +1,7 @@
 @echo OFF
 setlocal
 
-set VisualStudioVersion=15.0
+if "%VisualStudioVersion%" == "" set VisualStudioVersion=15.0
 
 if defined NUGETEXETOOLPATH goto :AzurePipelines
 

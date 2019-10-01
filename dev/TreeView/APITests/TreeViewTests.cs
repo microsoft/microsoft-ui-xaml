@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -163,6 +163,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Put things back
                 MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
+        [TestMethod]
+        public void TreeViewItemSourceResetRecreateItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+
+                ExtendedObservableCollection<TreeViewItemSource> items
+                    = new ExtendedObservableCollection<TreeViewItemSource>();
+                TreeViewItemSource item1 = new TreeViewItemSource() { Content = "item1" };
+                TreeViewItemSource item2 = new TreeViewItemSource() { Content = "item2" };
+                TreeViewItemSource item3 = new TreeViewItemSource() { Content = "item3" };
+                items.Add(item1);
+                items.Add(item2);
+                items.Add(item3);
+
+                var treeView = new TreeView();
+                treeView.ItemsSource = items;
+
+                Verify.AreEqual(treeView.RootNodes.Count, 3);
+                Verify.AreEqual(treeView.RootNodes[0].Content as TreeViewItemSource, items[0]);
+
+                List<TreeViewItemSource> newItems = new List<TreeViewItemSource>();
+                TreeViewItemSource item4 = new TreeViewItemSource() { Content = "item4" };
+                TreeViewItemSource item5 = new TreeViewItemSource() { Content = "item5" };
+
+                newItems.Add(item4);
+                newItems.Add(item5);
+
+                items.ReplaceAll(newItems);
+
+                Verify.AreEqual(treeView.RootNodes.Count, 2);
+                Verify.AreEqual(treeView.RootNodes[0].Content as TreeViewItemSource, items[0]);
+
+
             });
         }
 
@@ -360,6 +397,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     var treeViewItem = listControl.ContainerFromItem(node) as TreeViewItem;
                     Verify.AreEqual(treeViewItem.ContentTemplate, dataTemplate);
                 };
+            });
+        }
+
+        [TestMethod]
+        public void ValidateTreeViewItemSourceChangeUpdatesChevronOpacity()
+        {
+            var collection = new ObservableCollection<int>();
+            collection.Add(5);
+            TreeViewItem tvi = null;
+            TreeView treeView = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                treeView = new TreeView();
+                treeView.ItemsSource = collection;
+                MUXControlsTestApp.App.TestContentRoot = treeView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                tvi = (TreeViewItem)treeView.ContainerFromItem(5);
+                Verify.AreEqual(tvi.GlyphOpacity, 0.0);
+                tvi.ItemsSource = collection;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Verify.AreEqual(tvi.GlyphOpacity, 1.0);
+                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
