@@ -296,6 +296,7 @@ namespace MUXControlsTestApp
         {
             if (args.SelectedItem != null)
             {
+                SelectionChangedItemWasNull.Text = "False";
                 var itemdata = args.SelectedItem as NavigationViewItem;
                 if (itemdata != null)
                 {
@@ -308,6 +309,10 @@ namespace MUXControlsTestApp
                         NavView.Header = "Settings as header";
                     }
                 }
+            }
+            else
+            {
+                SelectionChangedItemWasNull.Text = "True";
             }
         }
 

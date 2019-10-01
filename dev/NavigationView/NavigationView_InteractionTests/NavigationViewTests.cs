@@ -2925,6 +2925,38 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        public void DisplayModeChangeSelectionEventTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                {
+                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                    {
+                        Log.Warning("Test is disabled on RS2 and earlier because SplitView lacks the requisite events.");
+                        return;
+                    }
+
+                    ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                    selectedItem.SelectItemByName("Settings");
+
+                    ComboBox displayMode = new ComboBox(FindElement.ById("PaneDisplayModeCombobox"));
+                    displayMode.SelectItemByName("Top");
+                    Wait.ForIdle();
+
+                    TextBlock selectedItemWasNull = new TextBlock(FindElement.ById("SelectionChangedItemWasNull"));
+                    Verify.AreEqual("False", selectedItemWasNull.GetText());
+
+                    displayMode.SelectItemByName("Left");
+                    Wait.ForIdle();
+                    Verify.AreEqual("False", selectedItemWasNull.GetText());
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void PaneOpenCloseEventsTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
