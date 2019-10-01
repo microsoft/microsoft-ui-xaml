@@ -398,7 +398,7 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         if (shouldSelectSetting)
         { 
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
+            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
         }
 
         m_settingsItemTappedRevoker.revoke();
