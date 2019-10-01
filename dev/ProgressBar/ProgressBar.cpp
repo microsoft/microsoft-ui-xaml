@@ -35,6 +35,12 @@ void ProgressBar::OnApplyTemplate()
         // (I can think of no reason you would want to handle grid loading, this is just an example of how it works.)
         m_layoutRootLoadedRevoker = layoutRoot.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
     }
+
+    m_progressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(L"ProgressBarIndicator", controlProtected));
+    if (auto progressBarIndicator = m_progressBarIndicator.get())
+    {
+        m_progressBarIndicatorRevoker = progressBarIndicator.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
+    }
 }
 
 void ProgressBar::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -64,5 +70,8 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 
 void ProgressBar::SetProgressBarIndicatorWidth()
 {
-
+    if (auto progressBar = m_progressBarIndicator.get())
+    {
+        progressBar.Width(100);
+    }
 }
