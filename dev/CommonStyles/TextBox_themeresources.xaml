@@ -99,8 +99,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
-                    <Grid>
-
+                    <Grid >
                         <Grid.Resources>
                             <Style x:Name="DeleteButtonStyle" TargetType="Button">
                                 <Setter Property="Template">
@@ -296,7 +295,7 @@
                             Control.IsTemplateFocusTarget="True"
                             MinWidth="{TemplateBinding MinWidth}"
                             MinHeight="{TemplateBinding MinHeight}" />
-                        <ScrollViewer x:Name="ContentElement"
+                            <ScrollViewer x:Name="ContentElement"
                             Grid.Row="1"
                             Grid.Column="0"
                             HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
@@ -311,6 +310,7 @@
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
+
                         <TextBlock x:Name="PlaceholderTextContentPresenter"
                             Grid.Row="1"
                             Grid.Column="0"
@@ -344,9 +344,7 @@
                             Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
                             AutomationProperties.AccessibilityView="Raw"
                             x:Load="False"/>
-
                     </Grid>
-
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
