@@ -3,28 +3,31 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutputFilePath = "LinksToHelixTestFiles.html"
+    [string]$OutPutFolder = "HelixOutput"
 )
+
+$helixLinkFile = "$OutPutFolder\LinksToHelixTestFiles.html"
+$visualTreeMasterFolder = "$OutPutFolder\VisualTreeMasters"
 
 function Generate-File-Links
 {
     Param ([Array[]]$files,[string]$sectionName)
     if($files.Count -gt 0)
     {
-        Out-File -FilePath $outputFilePath -Append -InputObject "<div class=$sectionName>"
-        Out-File -FilePath $outputFilePath -Append -InputObject "<h4>$sectionName</h4>"
-        Out-File -FilePath $outputFilePath -Append -InputObject "<ul>"
+        Out-File -FilePath $helixLinkFile -Append -InputObject "<div class=$sectionName>"
+        Out-File -FilePath $helixLinkFile -Append -InputObject "<h4>$sectionName</h4>"
+        Out-File -FilePath $helixLinkFile -Append -InputObject "<ul>"
         foreach($file in $files)
         {
-            Out-File -FilePath $outputFilePath -Append -InputObject "<li><a href=$($file.Link)>$($file.Name)</a></li>"
+            Out-File -FilePath $helixLinkFile -Append -InputObject "<li><a href=$($file.Link)>$($file.Name)</a></li>"
         }
-        Out-File -FilePath $outputFilePath -Append -InputObject "</ul>"
-        Out-File -FilePath $outputFilePath -Append -InputObject "</div>"
+        Out-File -FilePath $helixLinkFile -Append -InputObject "</ul>"
+        Out-File -FilePath $helixLinkFile -Append -InputObject "</div>"
     }
 }
 
-#Write empty string to create the file
-Out-File -FilePath $outputFilePath -Append -InputObject ""
+#Create output directory and file
+New-Item $helixLinkFile -Force
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
@@ -37,7 +40,7 @@ $queryUri = GetQueryTestRunsUri -CollectionUri $CollectionUri -TeamProject $Team
 Write-Host "queryUri = $queryUri"
 
 $testRuns = Invoke-RestMethod -Uri $queryUri -Method Get -Headers $azureDevOpsRestApiHeaders
-
+$webClient = New-Object System.Net.WebClient
 [System.Collections.Generic.List[string]]$workItems = @()
 
 foreach ($testRun in $testRuns.value)
@@ -67,16 +70,62 @@ foreach ($testRun in $testRuns.value)
             {
                 if(-Not $isTestRunNameShown)
                 {
-                    Out-File -FilePath $outputFilePath -Append -InputObject "<h2>$($testRun.name)</h2>"
+                    Out-File -FilePath $helixLinkFile -Append -InputObject "<h2>$($testRun.name)</h2>"
                     $isTestRunNameShown = $true
                 }
-                Out-File -FilePath $outputFilePath -Append -InputObject "<h3>$helixWorkItemName</h3>"
+                Out-File -FilePath $helixLinkFile -Append -InputObject "<h3>$helixWorkItemName</h3>"
                 Generate-File-Links $screenShots "Screenshots"
                 Generate-File-Links $dumps "CrashDumps"
                 Generate-File-Links $visualTreeMasters "VisualTreeMasters"
                 $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeMasters -NotContains $_) }
                 Generate-File-Links $misc "Misc"
+
+                if( -Not (Test-Path $visualTreeMasterFolder) )
+                {
+                    New-Item $visualTreeMasterFolder -ItemType Directory
+                }
+                foreach($masterFile in $visualTreeMasters)
+                {
+                    $destination = "$visualTreeMasterFolder\$($masterFile.Name)"
+                    Write-Host "Copying $($masterFile.Name) to $destination"
+                    $webClient.DownloadFile($masterFile.Link, $destination)
+                }
             }
         }        
     }
+}
+
+Write-Host "Merge duplicated master files..."
+$masterFiles = Get-ChildItem $visualTreeMasterFolder
+$prefixList = @()
+foreach($file in $masterFiles)
+{
+    $prefix = $file.BaseName.Split('-')[0]
+    if($prefixList -NotContains $prefix)
+    {
+        $prefixList += $prefix
+    }
+}
+
+foreach($prefix in $prefixList)
+{
+    $filesToDelete = @()
+    $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith($prefix) } | Sort-Object -Property Name -Descending
+    for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
+    {
+        $v1 = Get-Content $versionedMasters[$i].FullName
+        $v2 = Get-Content $versionedMasters[$i+1].FullName
+        $diff = Compare-Object $v1 $v2
+        if($diff.Length -eq 0)
+        {
+            $filesToDelete += $versionedMasters[$i]
+        }
+    }
+    $filesToDelete | ForEach-Object {
+        Write-Host "Deleting $($_.Name)"
+        Remove-Item $_.FullName
+    }
+
+    Write-Host "Renaming $($versionedMasters[-1].Name) to $prefix.xml"
+    Move-Item $versionedMasters[-1].FullName "$visualTreeMasterFolder\$prefix.xml" -Force
 }
