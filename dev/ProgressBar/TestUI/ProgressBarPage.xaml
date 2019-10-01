@@ -15,13 +15,13 @@
             <controls:ProgressBar
                 x:Name="TestProgressBar"
                 AutomationProperties.Name="TestProgressBar"
-                Value="0.5"
                 Maximum="10"
                 Width="300"
                 HorizontalAlignment="Left"
                 IsIndeterminate="True"
                 ShowPaused="False"
                 ShowError="False"/>
+            <TextBlock Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
             <Button x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Change Value" Click="Button_Click"/>
         </StackPanel>
     </Grid>

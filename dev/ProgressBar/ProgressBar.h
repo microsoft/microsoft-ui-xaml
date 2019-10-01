@@ -33,6 +33,9 @@ private:
     void OnRangeBaseValueChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
+    winrt::Rectangle::Loaded_revoker m_progressBarIndicatorRevoker{};
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
+
 };
