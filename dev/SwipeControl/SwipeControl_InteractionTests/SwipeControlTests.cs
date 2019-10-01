@@ -193,7 +193,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNotNull(addItemsButton);
                 addItemsButton.Invoke();
                 Wait.ForIdle();
-                Verify.AreEqual("2", sumOfSwipeItemsCount.GetText());
+                // Only adds horizontal items, see test app for explanation
+                Verify.AreEqual("1", sumOfSwipeItemsCount.GetText());
 
                 Log.Comment("clearing items again");
                 clearItemsButton.Invoke();

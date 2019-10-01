@@ -11,10 +11,17 @@ namespace MUXControlsTestApp
     /// </summary>
     public sealed partial class SwipeControlClearPage : TestPage
     {
+        private string[] items = new string[] { "some text" };
+
         public SwipeControlClearPage()
         {
             this.InitializeComponent();
             SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
+
+            leftSwipe.ItemsSource = items;
+            topSwipe.ItemsSource = items;
+            rightSwipe.ItemsSource = items;
+            bottomSwipe.ItemsSource = items;
         }
 
         public void AddSwipeItemsButton_Click(object sender, RoutedEventArgs e)
@@ -25,8 +32,10 @@ namespace MUXControlsTestApp
             DefaultSwipeItemsHorizontal.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
             DefaultSwipeItemsHorizontal.Add(DefaultSwipeItemHorizontal);
 
-            DefaultSwipeItemsVertical.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
-            DefaultSwipeItemsVertical.Add(DefaultSwipeItemVertical);
+            // Using swipecontrol inside datatemplate prevents us from setting that:
+            // Swipecontrol is in horizontal mode, can not add vertical swipe items...
+            //DefaultSwipeItemsVertical.Mode = Microsoft.UI.Xaml.Controls.SwipeMode.Reveal;
+            //DefaultSwipeItemsVertical.Add(DefaultSwipeItemVertical);
 
             SwipeItemsChildSum.Text = (DefaultSwipeItemsHorizontal.Count + DefaultSwipeItemsVertical.Count).ToString();
         }

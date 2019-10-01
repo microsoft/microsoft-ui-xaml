@@ -33,29 +33,55 @@
 
         <Grid Grid.Row="0" Grid.Column="0" Margin="20">
             <Grid.RowDefinitions>
-                <RowDefinition Height="100px"></RowDefinition>
-                <RowDefinition Height="10px"></RowDefinition>
-                <RowDefinition Height="100px"></RowDefinition>
+                <RowDefinition Height="100"></RowDefinition>
+                <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="100"></RowDefinition>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="100px"></ColumnDefinition>
-                <ColumnDefinition Width="10px"></ColumnDefinition>
-                <ColumnDefinition Width="100px"></ColumnDefinition>
+                <ColumnDefinition Width="120"></ColumnDefinition>
+                <ColumnDefinition Width="0"></ColumnDefinition>
+                <ColumnDefinition Width="120"></ColumnDefinition>
             </Grid.ColumnDefinitions>
+            <ListView  Grid.Row="0" Grid.Column="0" x:Name="leftSwipe">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <muxc:SwipeControl LeftItems="{StaticResource DefaultSwipeItemsHorizontal}">
+                            <Grid Background="Red" Width="100" Height="100" />
+                        </muxc:SwipeControl>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <ListView Grid.Row="0" Grid.Column="2" x:Name="topSwipe">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <muxc:SwipeControl TopItems="{StaticResource DefaultSwipeItemsVertical}">
+                            <Grid Background="Green" Width="100" Height="100" />
+                        </muxc:SwipeControl>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <ListView Grid.Row="2" Grid.Column="0" x:Name="rightSwipe">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <muxc:SwipeControl RightItems="{StaticResource DefaultSwipeItemsHorizontal}">
+                            <Grid Background="Blue" Width="100" Height="100" />
+                        </muxc:SwipeControl>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <ListView Grid.Row="2" Grid.Column="2" x:Name="bottomSwipe">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <muxc:SwipeControl BottomItems="{StaticResource DefaultSwipeItemsVertical}">
+                            <Grid Background="Yellow" Width="100" Height="100"/>
+                        </muxc:SwipeControl>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-            <muxc:SwipeControl  Grid.Row="0" Grid.Column="0" LeftItems="{StaticResource DefaultSwipeItemsHorizontal}">
-                <Grid Background="Red" Height="100" />
-            </muxc:SwipeControl>
-            <muxc:SwipeControl Grid.Row="0" Grid.Column="2" TopItems="{StaticResource DefaultSwipeItemsVertical}">
-                <Grid Background="Green" Width="100" />
-            </muxc:SwipeControl>
-            <muxc:SwipeControl Grid.Row="2" Grid.Column="0" RightItems="{StaticResource DefaultSwipeItemsHorizontal}">
-                <Grid Background="Blue" Height="100" />
-            </muxc:SwipeControl>
-            <muxc:SwipeControl Grid.Row="2" Grid.Column="2" BottomItems="{StaticResource DefaultSwipeItemsVertical}">
-                <Grid Background="Yellow" Width="100" />
-            </muxc:SwipeControl>
+
+
         </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="1">
