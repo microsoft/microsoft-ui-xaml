@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -368,6 +368,85 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.AreEqual(40, ((TextBlock)element).Height);
                     }
                 }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateNoSizeWhenEmptyDataTemplate()
+        {
+            ItemsRepeater repeater = null;
+            RunOnUIThread.Execute(() =>
+            {
+                var elementFactory = new RecyclingElementFactory();
+                elementFactory.RecyclePool = new RecyclePool();
+                elementFactory.Templates["Item"] = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = Enumerable.Range(0, 10).Select(i => string.Format("Item #{0}", i)),
+                    ItemTemplate = elementFactory,
+                    // Default is StackLayout, so do not have to explicitly set.
+                    // Layout = new StackLayout(),
+                };
+                repeater.UpdateLayout();
+
+                // Asserting render size is zero
+                Verify.IsLessThan(repeater.RenderSize.Width, 0.0001);
+                Verify.IsLessThan(repeater.RenderSize.Height, 0.0001);
+            });
+        }
+
+        [TestMethod]
+        public void ValidateCorrectSizeWhenEmptyDataTemplateInSelector()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var dataTemplateOdd = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                            <TextBlock Text='{Binding}' Height='30' Width='50' />
+                        </DataTemplate>");
+                var dataTemplateEven = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />");
+                ItemsRepeater repeater = null;
+                const int numItems = 10;
+                var selector = new MySelector() {
+                    TemplateOdd = dataTemplateOdd,
+                    TemplateEven = dataTemplateEven
+                };
+
+                repeater = new ItemsRepeater() {
+                    ItemTemplate = selector,
+                    Layout = new StackLayout(),
+                    ItemsSource = Enumerable.Range(0, numItems)
+                };
+
+                repeater.VerticalAlignment = VerticalAlignment.Top;
+                repeater.HorizontalAlignment = HorizontalAlignment.Left;
+                Content = repeater;
+
+                Content.UpdateLayout();
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (FrameworkElement)repeater.TryGetElement(i);
+                    if (i % 2 == 0)
+                    {
+                        Verify.AreEqual(element.Height, 0);
+                    }
+                    else
+                    {
+                        Verify.AreEqual(element.Height, 30);
+                    }
+                }
+
+                Verify.AreEqual(5 * 30, repeater.ActualHeight);
+
+                // ItemsRepeater stretches page, so actual width is width of page and not 50
+                //Verify.AreEqual(50, repeater.ActualWidth);
+
+
+                repeater.ItemsSource = null;
+                Content.UpdateLayout();
             });
         }
 
