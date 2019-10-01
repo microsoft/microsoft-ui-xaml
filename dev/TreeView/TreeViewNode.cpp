@@ -194,10 +194,7 @@ void TreeViewNode::OnItemsSourceChanged(const winrt::IInspectable& sender, const
 
     case winrt::NotifyCollectionChangedAction::Reset:
     {
-        if (Children().Size() > 0)
-        {
-            Children().Clear();
-        }
+        SyncChildrenNodesWithItemsSource();
         break;
     }
 
