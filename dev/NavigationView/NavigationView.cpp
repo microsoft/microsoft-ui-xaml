@@ -397,7 +397,8 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
 
         if (shouldSelectSetting)
-        { 
+        {
+            m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
         }
 
@@ -1981,10 +1982,7 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
 
         m_indexOfLastSelectedItemInTopNav = m_topDataProvider.IndexOf(item); // for the next time we animate
     }
-    // Only select item when it is NOT null
-    if (item) {
-        SelectedItem(item);
-    }
+    SelectedItem(item);
     if (!isChangingSelection)
     {
         m_shouldRaiseInvokeItemInSelectionChange = false;
