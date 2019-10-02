@@ -811,7 +811,7 @@
                   Visibility=Visible
                   RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -858,7 +858,7 @@
                         Visibility=Visible
                         RenderSize=120,32
                     [Windows.UI.Xaml.Controls.ScrollViewer]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
@@ -907,7 +907,7 @@
                               BorderBrush=[NULL]
                               Background=[NULL]
                               Name=ScrollContentPresenter
-                              Margin=10,5,6,6
+                              Margin=10,6,6,5
                               FocusVisualSecondaryThickness=1,1,1,1
                               FocusVisualSecondaryBrush=#99FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
@@ -984,7 +984,7 @@
                               Visibility=Collapsed
                               RenderSize=0,0
                     [Windows.UI.Xaml.Controls.TextBlock]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#99000000
                         Name=PlaceholderTextContentPresenter
                         Margin=1,1,1,1
@@ -1050,7 +1050,7 @@
                   Visibility=Visible
                   RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -1097,7 +1097,7 @@
                         Visibility=Visible
                         RenderSize=120,32
                     [Windows.UI.Xaml.Controls.ScrollViewer]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
@@ -1146,7 +1146,7 @@
                               BorderBrush=[NULL]
                               Background=[NULL]
                               Name=ScrollContentPresenter
-                              Margin=10,5,6,6
+                              Margin=10,6,6,5
                               FocusVisualSecondaryThickness=1,1,1,1
                               FocusVisualSecondaryBrush=#99FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
@@ -1223,7 +1223,7 @@
                               Visibility=Collapsed
                               RenderSize=0,0
                     [Windows.UI.Xaml.Controls.TextBlock]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#99000000
                         Name=PlaceholderTextContentPresenter
                         Margin=1,1,1,1
@@ -1289,7 +1289,7 @@
                   Visibility=Visible
                   RenderSize=312,32
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -1336,7 +1336,7 @@
                         Visibility=Visible
                         RenderSize=120,32
                     [Windows.UI.Xaml.Controls.ScrollViewer]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
                         BorderBrush=#00FFFFFF
@@ -1385,7 +1385,7 @@
                               BorderBrush=[NULL]
                               Background=[NULL]
                               Name=ScrollContentPresenter
-                              Margin=10,5,6,6
+                              Margin=10,6,6,5
                               FocusVisualSecondaryThickness=1,1,1,1
                               FocusVisualSecondaryBrush=#99FFFFFF
                               FocusVisualPrimaryThickness=2,2,2,2
@@ -1462,7 +1462,7 @@
                               Visibility=Collapsed
                               RenderSize=0,0
                     [Windows.UI.Xaml.Controls.TextBlock]
-                        Padding=10,5,6,6
+                        Padding=10,6,6,5
                         Foreground=#99000000
                         Name=PlaceholderTextContentPresenter
                         Margin=1,1,1,1
@@ -1542,7 +1542,7 @@
                   Visibility=Visible
                   RenderSize=0,0
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -1584,7 +1584,7 @@
                   Visibility=Visible
                   RenderSize=0,0
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -1626,7 +1626,7 @@
                   Visibility=Visible
                   RenderSize=0,0
                 [Windows.UI.Xaml.Controls.TextBox]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=1,1,1,1
                     BorderBrush=#99000000
@@ -1669,7 +1669,7 @@
               Visibility=Visible
               RenderSize=312,32
             [Windows.UI.Xaml.Controls.TextBox]
-                Padding=10,5,6,6
+                Padding=10,6,6,5
                 Foreground=#FF000000
                 BorderThickness=1,1,1,1
                 BorderBrush=#99000000
@@ -1716,7 +1716,7 @@
                     Visibility=Visible
                     RenderSize=120,32
                 [Windows.UI.Xaml.Controls.ScrollViewer]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=0,0,0,0
                     BorderBrush=#00FFFFFF
@@ -1765,7 +1765,7 @@
                           BorderBrush=[NULL]
                           Background=[NULL]
                           Name=ScrollContentPresenter
-                          Margin=10,5,6,6
+                          Margin=10,6,6,5
                           FocusVisualSecondaryThickness=1,1,1,1
                           FocusVisualSecondaryBrush=#99FFFFFF
                           FocusVisualPrimaryThickness=2,2,2,2
@@ -1842,7 +1842,7 @@
                           Visibility=Collapsed
                           RenderSize=0,0
                 [Windows.UI.Xaml.Controls.TextBlock]
-                    Padding=10,5,6,6
+                    Padding=10,6,6,5
                     Foreground=#99000000
                     Name=PlaceholderTextContentPresenter
                     Margin=1,1,1,1
@@ -1895,7 +1895,7 @@
                 Visibility=Visible
                 RenderSize=48,19
         [Windows.UI.Xaml.Controls.TextBox]
-            Padding=10,5,6,6
+            Padding=10,6,6,5
             Foreground=#FF000000
             BorderThickness=1,1,1,1
             BorderBrush=#99000000
@@ -1942,7 +1942,7 @@
                 Visibility=Visible
                 RenderSize=132,32
             [Windows.UI.Xaml.Controls.ScrollViewer]
-                Padding=10,5,6,6
+                Padding=10,6,6,5
                 Foreground=#FF000000
                 BorderThickness=0,0,0,0
                 BorderBrush=#00FFFFFF
@@ -1991,7 +1991,7 @@
                       BorderBrush=[NULL]
                       Background=[NULL]
                       Name=ScrollContentPresenter
-                      Margin=10,5,6,6
+                      Margin=10,6,6,5
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
                       FocusVisualPrimaryThickness=2,2,2,2
@@ -2068,7 +2068,7 @@
                       Visibility=Collapsed
                       RenderSize=0,0
             [Windows.UI.Xaml.Controls.TextBlock]
-                Padding=10,5,6,6
+                Padding=10,6,6,5
                 Foreground=#99000000
                 Name=PlaceholderTextContentPresenter
                 Margin=1,1,1,1
