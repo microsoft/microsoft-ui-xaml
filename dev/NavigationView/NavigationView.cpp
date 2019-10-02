@@ -3617,13 +3617,13 @@ void NavigationView::UpdatePaneShadow()
 
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
 
         // Ensuring shadow is aligned to the left
         shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
 
         // Ensure shadow is as wide as the pane when it is open
-        shadowReceiver.Width(OpenPaneLength() + c_paneElevationTranslationZ);
+        shadowReceiver.Width(OpenPaneLength());
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
