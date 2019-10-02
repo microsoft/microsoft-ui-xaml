@@ -1,0 +1,123 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.NavigationViewTitleBarIntegrationPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <muxcontrols:NavigationView x:Name="NavView" AutomationProperties.Name="NavView" AutomationProperties.AutomationId="NavView"
+                PaneTitle="NavView Test"
+                DisplayModeChanged="NavView_DisplayModeChanged"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                CompactModeThresholdWidth="480"
+                Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+                PaneDisplayMode="Top"
+                AccessKey="H">
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
+                <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
+                <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
+                <muxcontrols:NavigationViewItem x:Name="CollapsedItem1" Content="CollapsedItem 1" Visibility="Collapsed"/>
+                <muxcontrols:NavigationViewItem x:Name="CollapsedItem2" Content="CollapsedItem 2" Visibility="Collapsed"/>
+                <muxcontrols:NavigationViewItemSeparator />
+                <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />
+                <muxcontrols:NavigationViewItem x:Name="MusicItem" Content="Music" Icon="Audio"/>
+                <muxcontrols:NavigationViewItem x:Name="MoviesItem" Content="Movies" Icon="Video"/>
+                <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem2" Content="Header Text 2" />
+                <muxcontrols:NavigationViewItem x:Name="TVItem" Content="TV" Icon="Slideshow"/>
+                <muxcontrols:NavigationViewItem x:Name="CollapsedItem3" Content="CollapsedItem 3" Visibility="Collapsed"/>
+                <muxcontrols:NavigationViewItem x:Name="VolumeItem" AutomationProperties.Name="Volume" Icon="Volume">
+                    <muxcontrols:NavigationViewItem.Content>
+                        <TextBlock Text="Volume"/>
+                    </muxcontrols:NavigationViewItem.Content>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem x:Name="IntegerItem" AutomationProperties.Name="Integer" Icon="Accept"/>
+            </muxcontrols:NavigationView.MenuItems>
+
+            <ScrollViewer Margin="8,0,0,0">
+                <StackPanel>
+                    <TextBlock x:Name="tblDisplayMode" 
+                                AutomationProperties.Name="tblDisplayMode"
+                                Style="{StaticResource BodyTextBlockStyle}"
+                                Margin="12,0,0,0" 
+                                VerticalAlignment="Center"/>
+                    <CheckBox
+                        x:Name="chkIsPaneOpen"
+                        AutomationProperties.Name="chkIsPaneOpen"
+                        Content="IsPaneOpen?"
+                        IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
+                        Margin="2"/>
+
+                    <CheckBox x:Name="chkIsBackButtonVisible" AutomationProperties.Name="chkIsBackButtonVisible" Content="IsBackButtonVisible?" Checked="ChkIsBackButtonVisible_Checked" Unchecked="ChkIsBackButtonVisible_Unchecked" IsChecked="True" Margin="2"/>
+                    <CheckBox x:Name="chkIsBackEnabled" AutomationProperties.Name="chkIsBackEnabled" Content="IsBackEnabled?" Checked="ChkIsBackEnabled_Checked" Unchecked="ChkIsBackEnabled_Unchecked" Margin="2"/>
+                    <CheckBox x:Name="chkIsSettingsVisible" AutomationProperties.Name="chkIsSettingsVisible" Content="IsSettingsVisible?" Checked="ChkIsSettingsVisible_Checked" Unchecked="ChkIsSettingsVisible_Unchecked" Margin="2"/>
+                    <CheckBox x:Name="chkIsPaneToggleButtonVisible" AutomationProperties.Name="chkIsPaneToggleButtonVisible" Content="IsPaneToggleButtonVisible?" Checked="ChkIsPaneToggleButtonVisible_Checked" Unchecked="ChkIsPaneToggleButtonVisible_Unchecked" Margin="2"/>
+                    <CheckBox x:Name="chkAlwaysShowHeader" AutomationProperties.Name="chkAlwaysShowHeader" Content="AlwaysShowHeader?" Checked="ChkAlwaysShowHeader_Checked" Unchecked="ChkAlwaysShowHeader_Unchecked" Margin="2"/>
+                    <CheckBox x:Name="chkIsTitleBarAutoPaddingEnabled" AutomationProperties.Name="chkIsTitleBarAutoPaddingEnabled" Content="IsTitleBarAutoPaddingEnabled?" Checked="ChkIsTitleBarAutoPaddingEnabled_Checked" Unchecked="ChkIsTitleBarAutoPaddingEnabled_Unchecked" Margin="2"/>
+                    <CheckBox x:Name="chkExtendViewIntoTitleBar" AutomationProperties.Name="chkExtendViewIntoTitleBar" Content="ExtendViewIntoTitleBar?" Checked="ChkExtendViewIntoTitleBar_Checked" Unchecked="ChkExtendViewIntoTitleBar_Unchecked" Margin="2"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetCoreApplicationViewTitleBarIsVisible" Content="Get" Margin="2" Click="BtnGetCoreApplicationViewTitleBarIsVisible_Click"/>
+                        <TextBlock Text="CoreApplicationViewTitleBar.IsVisible:" Margin="2"/>
+                        <TextBlock x:Name="tblCoreApplicationViewTitleBarIsVisible" Margin="2"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetCoreApplicationViewTitleBarSystemOverlayLeftInset" Content="Get" Margin="2" Click="BtnGetCoreApplicationViewTitleBarSystemOverlayLeftInset_Click"/>
+                        <TextBlock Text="CoreApplicationViewTitleBar.SystemOverlayLeftInset:" Margin="2"/>
+                        <TextBlock x:Name="tblCoreApplicationViewTitleBarSystemOverlayLeftInset" Margin="2"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetCoreApplicationViewTitleBarSystemOverlayRightInset" Content="Get" Margin="2" Click="BtnGetCoreApplicationViewTitleBarSystemOverlayRightInset_Click"/>
+                        <TextBlock Text="CoreApplicationViewTitleBar.SystemOverlayRightInset:" Margin="2"/>
+                        <TextBlock x:Name="tblCoreApplicationViewTitleBarSystemOverlayRightInset" Margin="2"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetCoreApplicationViewTitleBarHeight" Content="Get" Margin="2" Click="BtnGetCoreApplicationViewTitleBarHeight_Click"/>
+                        <TextBlock Text="CoreApplicationViewTitleBar.Height:" Margin="2"/>
+                        <TextBlock x:Name="tblCoreApplicationViewTitleBarHeight" Margin="2"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetAplicationViewIsFullScreenMode" Content="Get" Margin="2" Click="BtnGetAplicationViewIsFullScreenMode_Click"/>
+                        <TextBlock Text="AplicationView.IsFullScreenMode:" Margin="2"/>
+                        <TextBlock x:Name="tblAplicationViewIsFullScreenMode" Margin="2"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="btnGetUIViewSettingsUserInteractionMode" Content="Get" Margin="2" Click="BtnGetUIViewSettingsUserInteractionMode_Click"/>
+                        <TextBlock Text="UIViewSettings.UserInteractionMode:" Margin="2"/>
+                        <TextBlock x:Name="tblUIViewSettingsUserInteractionMode" Margin="2"/>
+                    </StackPanel>
+
+                    <Button x:Name="BtnChangeHeader" AutomationProperties.Name="btnChangeHeader" Content="Change Header" Click="BtnChangeHeader_Click" Margin="2"/>
+                    <Button x:Name="btnChangePaneTitle" AutomationProperties.Name="btnChangePaneTitleButton" Content="Change PaneTitle" Click="BtnChangePaneTitle_Click" Margin="2"/>
+                    <Button x:Name="btnChangePaneDisplayMode" AutomationProperties.Name="btnChangePaneDisplayMode" Content="Change PaneDisplayMode" Click="BtnChangePaneDisplayMode_Click" Margin="2"/>
+
+                    <TextBlock TextWrapping="Wrap" Margin="2">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris faucibus quam id sem porta posuere. Interdum et malesuada fames ac ante ipsum primis in faucibus. Morbi sodales suscipit justo quis consequat. Vestibulum lectus magna, mattis id eleifend sed, congue eget lectus. Nam et sem pellentesque, dignissim erat eu, tincidunt lacus. Ut porttitor tincidunt ullamcorper. Vestibulum sodales neque purus, vitae eleifend metus convallis in. Etiam non metus nec ligula pharetra molestie. Donec dignissim dapibus blandit. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
+                        
+Cras laoreet feugiat nisi, quis consectetur mi mattis et. Integer luctus, nunc ac lobortis volutpat, ligula magna commodo diam, sit amet scelerisque diam mauris nec urna. Sed consectetur, libero at efficitur tincidunt, sem nunc pharetra felis, vitae accumsan lorem ligula at ligula. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam finibus odio ut augue tempor, a egestas leo ornare. Sed varius magna sed tellus tempus viverra. Suspendisse potenti. Pellentesque eget nibh quis quam pellentesque molestie et sit amet arcu. Donec eget sollicitudin metus. Fusce sit amet semper quam. Curabitur quis suscipit lorem. Donec dictum, ipsum eu congue consequat, enim nulla lacinia lorem, nec molestie arcu lacus quis velit. 
+
+Aenean nisl est, sollicitudin eu libero in, aliquam accumsan sapien. Nunc fermentum rutrum augue nec tincidunt. Pellentesque maximus iaculis purus auctor ullamcorper. Proin nec libero id erat tincidunt venenatis sit amet at risus. Nunc sagittis facilisis est ut venenatis. Etiam eget elit hendrerit, dictum libero vel, cursus risus. Nunc nec elit lacus. Nam a libero eros. Nullam nec semper orci. Vivamus sed aliquet eros, et elementum metus. Nullam et suscipit nunc. Curabitur congue urna ut consequat vestibulum. Pellentesque accumsan molestie pellentesque. Duis eget ipsum ac diam bibendum eleifend vitae quis diam. Suspendisse condimentum, turpis eu vehicula dignissim, sem dui euismod neque, eu condimentum arcu ante at mi. Fusce justo neque, congue vel libero ac, consectetur lobortis purus. 
+
+Nullam egestas, orci sed molestie aliquet, diam ex euismod risus, ac dapibus quam magna sit amet odio. Mauris commodo felis lorem, ut faucibus lorem tristique vitae. Maecenas id orci porta, varius velit a, fringilla sem. Maecenas vulputate eu odio a dictum. Pellentesque vitae interdum mauris. Donec et imperdiet est. Suspendisse eget velit in enim varius suscipit. Integer pellentesque egestas magna, sed hendrerit leo dignissim ut. Vestibulum eget placerat libero. Integer accumsan eros leo, vitae auctor purus aliquam vel. Cras rutrum pulvinar velit et commodo. Fusce porta blandit nunc et euismod. Vestibulum sit amet molestie nisl. Fusce odio quam, maximus eu consectetur nec, bibendum a leo. Ut arcu quam, interdum in lectus ut, aliquet semper neque.
+                    </TextBlock>
+                </StackPanel>
+            </ScrollViewer>
+
+            <muxcontrols:NavigationView.AutoSuggestBox>
+                <AutoSuggestBox QueryIcon="Find" AutomationProperties.Name="PaneAutoSuggestBox"/>
+            </muxcontrols:NavigationView.AutoSuggestBox>
+
+            <muxcontrols:NavigationView.PaneFooter>
+                <Grid Background="Plum">
+                    <Button x:Name="btnFooter" AutomationProperties.Name="btnFooter" Content="Footer Button" Margin="2"/>
+                </Grid>
+            </muxcontrols:NavigationView.PaneFooter>
+        </muxcontrols:NavigationView>
+    </Grid>
+</local:TestPage>

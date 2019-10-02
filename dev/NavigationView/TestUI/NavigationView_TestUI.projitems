@@ -58,6 +58,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationViewTitleBarIntegrationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -117,6 +121,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewRS4Page.xaml.cs">
       <DependentUpon>NavigationViewRS4Page.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTitleBarIntegrationPage.xaml.cs">
+      <DependentUpon>NavigationViewTitleBarIntegrationPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavPage.xaml</DependentUpon>
