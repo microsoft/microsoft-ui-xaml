@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.NavigationViewPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -177,8 +177,9 @@
                             <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                             <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                         </ComboBox>
-                        <TextBlock VerticalAlignment="Center">SelectedItem in SelectionChanged event was null: </TextBlock>
-                        <TextBlock VerticalAlignment="Center" x:Name="SelectionChangedItemWasNull" AutomationProperties.Name="SelectionChangedItemWasNull"/>
+                        <Button x:Name="ClearSelectionChangeIndicatorButton" AutomationProperties.Name="ClearSelectionChangeIndicatorButton"  Click="ClearSelectionChangeBlock">Clear selection changed indicator</Button>
+                        <TextBlock VerticalAlignment="Center">Selection was raised:  </TextBlock>
+                        <TextBlock VerticalAlignment="Center" x:Name="SelectionChangedRaised" AutomationProperties.Name="SelectionChangedRaised"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">

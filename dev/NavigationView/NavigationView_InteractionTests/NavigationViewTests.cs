@@ -2937,20 +2937,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Log.Warning("Test is disabled on RS2 and earlier because SplitView lacks the requisite events.");
                         return;
                     }
+                    Button clearSelectedItem = new Button(FindElement.ById("ClearSelectionChangeIndicatorButton"));
+                    TextBlock selectionRaisedIndicator = new TextBlock(FindElement.ById("SelectionChangedRaised"));
 
                     ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
                     selectedItem.SelectItemByName("Settings");
+                    Verify.AreEqual("True", selectionRaisedIndicator.GetText());
 
                     ComboBox displayMode = new ComboBox(FindElement.ById("PaneDisplayModeCombobox"));
+                    clearSelectedItem.InvokeAndWait();
                     displayMode.SelectItemByName("Top");
+                    Verify.AreEqual("False", selectionRaisedIndicator.GetText());
                     Wait.ForIdle();
 
-                    TextBlock selectedItemWasNull = new TextBlock(FindElement.ById("SelectionChangedItemWasNull"));
-                    Verify.AreEqual("False", selectedItemWasNull.GetText());
 
                     displayMode.SelectItemByName("Left");
                     Wait.ForIdle();
-                    Verify.AreEqual("False", selectedItemWasNull.GetText());
+                    Verify.AreEqual("False", selectionRaisedIndicator.GetText());
                 }
             }
         }

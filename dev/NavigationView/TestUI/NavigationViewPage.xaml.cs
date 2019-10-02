@@ -294,9 +294,9 @@ namespace MUXControlsTestApp
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            SelectionChangedRaised.Text = "True";
             if (args.SelectedItem != null)
             {
-                SelectionChangedItemWasNull.Text = "False";
                 var itemdata = args.SelectedItem as NavigationViewItem;
                 if (itemdata != null)
                 {
@@ -310,10 +310,11 @@ namespace MUXControlsTestApp
                     }
                 }
             }
-            else
-            {
-                SelectionChangedItemWasNull.Text = "True";
-            }
+        }
+
+        private void ClearSelectionChangeBlock(object sender,RoutedEventArgs e)
+        {
+            SelectionChangedRaised.Text = "False";
         }
 
         private void MoviesEnabledCheckbox_Checked(object sender, RoutedEventArgs e)

@@ -398,7 +398,7 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         if (shouldSelectSetting)
         { 
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
         }
 
         m_settingsItemTappedRevoker.revoke();
@@ -425,7 +425,8 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         SetValue(s_SettingsItemProperty, settingsItem);
 
         if (shouldSelectSetting)
-        { 
+        {
+            m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(m_settingsItem.get());
         }
     }
@@ -1980,8 +1981,10 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
 
         m_indexOfLastSelectedItemInTopNav = m_topDataProvider.IndexOf(item); // for the next time we animate
     }
-
-    SelectedItem(item);
+    // Only select item when it is NOT null
+    if (item) {
+        SelectedItem(item);
+    }
     if (!isChangingSelection)
     {
         m_shouldRaiseInvokeItemInSelectionChange = false;
