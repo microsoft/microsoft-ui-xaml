@@ -30,6 +30,7 @@ namespace MUXControlsTestApp
 
             navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlPage), 0); };
             navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlPage2), 0); };
+            navigateToClear.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlClearPage), 0); };
         }
 
         private void CmbSwipeControlOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
