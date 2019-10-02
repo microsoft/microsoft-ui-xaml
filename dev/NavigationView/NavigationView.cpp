@@ -398,6 +398,10 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         if (shouldSelectSetting)
         {
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
             m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
         }
@@ -427,6 +431,10 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 
         if (shouldSelectSetting)
         {
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
             m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(m_settingsItem.get());
         }
