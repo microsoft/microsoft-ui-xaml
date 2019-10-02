@@ -319,7 +319,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TabViewSizingPageButtton_Click(object sender, RoutedEventArgs e)
+        private void TabViewSizingPageButton_Click(object sender, RoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(TabViewSizingPage));
         }

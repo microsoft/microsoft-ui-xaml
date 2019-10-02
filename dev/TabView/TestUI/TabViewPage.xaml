@@ -110,8 +110,8 @@
                             </controls:TabViewItem.IconSource>
 
                             <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
-                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8">Home Button</Button>
-                                <Button x:Name="TabViewSizingPageButtton" AutomationProperties.Name="TabViewSizingPageButtton" Margin="8" Click="TabViewSizingPageButtton_Click" >TabView Sizing Page</Button>
+                                <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
+                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton" Margin="8" Click="TabViewSizingPageButton_Click" FontSize="20">TabView Sizing Page</Button>
                             </StackPanel>
                         </controls:TabViewItem>
 

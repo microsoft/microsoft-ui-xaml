@@ -176,7 +176,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
-    if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+    if (IsSelected() && args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
         auto pointerPoint = args.GetCurrentPoint(*this);
         if (pointerPoint.Properties().IsLeftButtonPressed())
