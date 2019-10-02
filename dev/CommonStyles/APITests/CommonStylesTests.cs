@@ -18,6 +18,7 @@ using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
 using Windows.UI.Xaml.Markup;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -33,6 +34,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesApiTests
     {
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestUtilities.ClearVisualTreeRoot();
+        }
+
         [TestMethod]
         public void VerifyUseCompactResourcesAPI()
         {
@@ -95,19 +102,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var bottomRadiusGrid = (Grid)root.FindName("BottomRadiusGrid");
                 var leftRadiusGrid = (Grid)root.FindName("LeftRadiusGrid");
 
-                VerifyCornerRadius(topRadiusGrid.CornerRadius, new[] { 6, 6, 0, 0 });
-                VerifyCornerRadius(rightRadiusGrid.CornerRadius, new[] { 0, 6, 6, 0 });
-                VerifyCornerRadius(bottomRadiusGrid.CornerRadius, new[] { 0, 0, 6, 6 });
-                VerifyCornerRadius(leftRadiusGrid.CornerRadius, new[] { 6, 0, 0, 6 });
+                Verify.AreEqual(new CornerRadius(6, 6, 0, 0), topRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 6, 6, 0), rightRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 0, 6, 6), bottomRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);
             });
         }
 
-        private void VerifyCornerRadius(CornerRadius radius, int[] expectedValue)
+        [TestMethod]
+        public void VerifyVisualTreeForControlsInCommonStyles()
         {
-            Verify.AreEqual(expectedValue[0], radius.TopLeft, "Verify CornerRadius.TopLeft");
-            Verify.AreEqual(expectedValue[1], radius.TopRight, "Verify CornerRadius.TopRight");
-            Verify.AreEqual(expectedValue[2], radius.BottomRight, "Verify CornerRadius.BottomRight");
-            Verify.AreEqual(expectedValue[3], radius.BottomLeft, "Verify CornerRadius.BottomLeft");
+            var controlsToVerify = new List<string> {
+                "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
+                "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
+                "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
+                "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
+
+            bool failed = false;
+
+            foreach (var control in controlsToVerify)
+            {
+                try
+                {
+                    Log.Comment($"Verify visual tree for {control}");
+                    VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+                }
+                catch (Exception e)
+                {
+                    failed = true;
+                    Log.Error(e.Message);
+                }
+            }
+
+            if(failed)
+            {
+                Verify.Fail("One or more visual tree verification failed, see details above");
+            }
+        }
+
+        private string XamlStringForControl(string controlName)
+        {
+            return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                          <{controlName} />
+                   </Grid>";
+        }
+    }
+
+    class ControlVisualTreeTestFilter : VisualTreeDumper.DefaultFilter
+    {
+        public override bool ShouldVisitProperty(string propertyName)
+        {
+            return base.ShouldVisitProperty(propertyName) && !propertyName.Contains("RenderSize");
         }
     }
 

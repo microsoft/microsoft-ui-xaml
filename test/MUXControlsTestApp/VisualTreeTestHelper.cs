@@ -58,7 +58,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         // Log MasterFile to MusicLibrary or LocalFolder. By default(AlwaysLogMasterFile=false), It logs the master files to  LocalFolder. 
         // You can change the setting by set AlwaysLogMasterFile = true. After you run the tests and test case fails, the master files are put into MusicLibrary.
         // Finally you can copy master files to master/ directory and check in with code. 
-        public static bool AlwaysLogMasterFile = false;
+        public static bool AlwaysLogMasterFile = true;
         
         public static void ChangeRequestedTheme(UIElement root, ElementTheme theme)
         {
@@ -223,10 +223,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         public MasterFileStorage(bool useLocalStorage, string masterFileNamePrefix)
         {
-            _storage = useLocalStorage ? ApplicationData.Current.LocalFolder : KnownFolders.MusicLibrary;
+            _storage = useLocalStorage ? ApplicationData.Current.LocalFolder : KnownFolders.PicturesLibrary;
             ExpectedMasterFileName = GetExpectedMasterFileName(masterFileNamePrefix);
             BestMatchedMasterFileName = SearchBestMatchedMasterFileName(masterFileNamePrefix);
-            StorageLocation = useLocalStorage ? ApplicationData.Current.LocalFolder.Path : "MusicLibrary";
+            StorageLocation = useLocalStorage ? ApplicationData.Current.LocalFolder.Path : "PictureLibrary";
         }
 
         public void LogMasterFile(string fileName, string content)
