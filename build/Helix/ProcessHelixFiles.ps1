@@ -26,8 +26,8 @@ function Generate-File-Links
     }
 }
 
-#Create output directory and file
-New-Item $helixLinkFile -Force
+#Create output directory
+New-Item $OutPutFolder -ItemType Directory
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
@@ -95,37 +95,40 @@ foreach ($testRun in $testRuns.value)
     }
 }
 
-Write-Host "Merge duplicated master files..."
-$masterFiles = Get-ChildItem $visualTreeMasterFolder
-$prefixList = @()
-foreach($file in $masterFiles)
+if(Test-Path $visualTreeMasterFolder)
 {
-    $prefix = $file.BaseName.Split('-')[0]
-    if($prefixList -NotContains $prefix)
+    Write-Host "Merge duplicated master files..."
+    $masterFiles = Get-ChildItem $visualTreeMasterFolder
+    $prefixList = @()
+    foreach($file in $masterFiles)
     {
-        $prefixList += $prefix
-    }
-}
-
-foreach($prefix in $prefixList)
-{
-    $filesToDelete = @()
-    $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith($prefix) } | Sort-Object -Property Name -Descending
-    for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
-    {
-        $v1 = Get-Content $versionedMasters[$i].FullName
-        $v2 = Get-Content $versionedMasters[$i+1].FullName
-        $diff = Compare-Object $v1 $v2
-        if($diff.Length -eq 0)
+        $prefix = $file.BaseName.Split('-')[0]
+        if($prefixList -NotContains $prefix)
         {
-            $filesToDelete += $versionedMasters[$i]
+            $prefixList += $prefix
         }
     }
-    $filesToDelete | ForEach-Object {
-        Write-Host "Deleting $($_.Name)"
-        Remove-Item $_.FullName
-    }
 
-    Write-Host "Renaming $($versionedMasters[-1].Name) to $prefix.xml"
-    Move-Item $versionedMasters[-1].FullName "$visualTreeMasterFolder\$prefix.xml" -Force
+    foreach($prefix in $prefixList)
+    {
+        $filesToDelete = @()
+        $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith($prefix) } | Sort-Object -Property Name -Descending
+        for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
+        {
+            $v1 = Get-Content $versionedMasters[$i].FullName
+            $v2 = Get-Content $versionedMasters[$i+1].FullName
+            $diff = Compare-Object $v1 $v2
+            if($diff.Length -eq 0)
+            {
+                $filesToDelete += $versionedMasters[$i]
+            }
+        }
+        $filesToDelete | ForEach-Object {
+            Write-Host "Deleting $($_.Name)"
+            Remove-Item $_.FullName
+        }
+
+        Write-Host "Renaming $($versionedMasters[-1].Name) to $prefix.xml"
+        Move-Item $versionedMasters[-1].FullName "$visualTreeMasterFolder\$prefix.xml" -Force
+    }
 }
