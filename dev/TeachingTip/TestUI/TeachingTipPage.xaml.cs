@@ -85,6 +85,14 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
+            if (testWindowBounds != null && testWindowBounds.IsOpen)	
+            {	
+                testWindowBounds.IsOpen = false;	
+            }	
+            if(testScreenBounds != null && testScreenBounds.IsOpen)	
+            {	
+                testScreenBounds.IsOpen = false;	
+            }
             base.OnNavigatedFrom(e);
         }
 
