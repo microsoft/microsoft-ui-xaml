@@ -3594,6 +3594,9 @@ void NavigationView::UpdatePaneShadow()
             if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
             {
                 contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                contentGrid.SetRow(shadowReceiver, 0);
+                contentGrid.SetColumn(shadowReceiver, 0);
+                contentGrid.SetColumnSpan(shadowReceiver, 2);
                 contentGrid.Children().Append(shadowReceiver);
 
                 winrt::ThemeShadow shadow;
@@ -3611,9 +3614,16 @@ void NavigationView::UpdatePaneShadow()
             }
         }
 
+
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
         winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+
+        // Ensuring shadow is aligned to the left
+        shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
+
+        // Ensure shadow is as wide as the pane when it is open
+        shadowReceiver.Width(OpenPaneLength() + c_paneElevationTranslationZ);
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }
