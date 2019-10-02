@@ -3596,7 +3596,7 @@ void NavigationView::UpdatePaneShadow()
                 contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
                 contentGrid.SetRow(shadowReceiver, 0);
                 contentGrid.SetColumn(shadowReceiver, 0);
-                contentGrid.SetColumnSpan(shadowReceiver, 2);
+                contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
                 contentGrid.Children().Append(shadowReceiver);
 
                 winrt::ThemeShadow shadow;
