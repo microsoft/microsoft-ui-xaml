@@ -41,6 +41,11 @@ void ProgressBar::OnApplyTemplate()
     {
         m_progressBarIndicatorRevoker = progressBarIndicator.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
     }
+
+    if (IsIndeterminate())
+    {
+        UpdateStates();
+    }
 }
 
 void ProgressBar::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -66,6 +71,19 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
     // NOTE: This hits when IsIndeterminate changes because we set MUX_PROPERTY_CHANGED_CALLBACK to true in the idl.
 
     // TODO: things
+    UpdateStates();
+}
+
+void ProgressBar::UpdateStates()
+{
+    if (ShowPaused())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Paused", true);
+    }
+    else if (!ShowPaused())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Determinate", true);
+    }
 }
 
 void ProgressBar::SetProgressBarIndicatorWidth()
