@@ -90,6 +90,11 @@ public:
     void RaiseIsExpanding(winrt::NavigationViewItemBase const& item);
     void RaiseCollapsed(winrt::NavigationViewItemBase const& item);
 
+    winrt::IVector<winrt::TreeViewNode> RootNodes();
+    winrt::TreeViewNode GetTopRootNode() { return m_topRootNode.get(); };
+    winrt::TreeViewNode GetTopOverflowRootNode() { return m_overflowRootNode.get(); };
+    winrt::TreeViewNode GetEmptyRootNode() { return m_emptyRootNode.get(); };
+
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool ShouldIgnoreMeasureOverride();
@@ -290,7 +295,6 @@ private:
     void UpdateIsChildSelected(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
 
     winrt::NavigationViewList GetActiveListView();
-    winrt::IVector<winrt::TreeViewNode> RootNodes();
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

@@ -154,6 +154,8 @@ void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const& inde
 
 void TopNavigationViewDataProvider::MoveNodeToList(int index, NavigationViewSplitVectorID vectorID, int newIndex)
 {
+    // TODO: ENSURE THAT ALL EXPANDED NODES ARE CLOSED AND HANDLE CASE WHEN SUB-ITEM INDEX IS SELECTED (aka map selected item to its top level anscestor)
+
     // Get Item
     auto item = GetAt(index);
 
@@ -179,7 +181,8 @@ void TopNavigationViewDataProvider::MoveNodeToList(int index, NavigationViewSpli
         uint32_t index;
         if (vmTopNav->IndexOf(node, index))
         {
-            vmTopNav->RemoveAt(index);
+            //vmTopNav->RemoveAt(index);
+            vmTopNav->RemoveNodeAndDescendantsFromView(node);
         }
         vmTopNavOverflow->InsertAt(newIndex, node);
     }
@@ -192,10 +195,65 @@ void TopNavigationViewDataProvider::MoveNodeToList(int index, NavigationViewSpli
         uint32_t index;
         if (vmTopNavOverflow->IndexOf(node, index))
         {
-            vmTopNavOverflow->RemoveAt(index);
+            //vmTopNavOverflow->RemoveAt(index);
+            vmTopNavOverflow->RemoveNodeAndDescendantsFromView(node);
         }
         vmTopNav->InsertAt(newIndex, node);
     }
+}
+
+void TopNavigationViewDataProvider::MoveAllNodesToPrimaryList()
+{
+    // Add all created nodes to the primary list
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+
+    auto topNavList = (nv->TopNavListView()).as<winrt::NavigationViewList>();
+    auto topNavListImpl = winrt::get_self<NavigationViewList>(topNavList);
+
+    auto vmTopNav = topNavListImpl->ListViewModel();
+
+    auto nodes = nv->RootNodes();
+    for (auto node : nodes)
+    {
+        vmTopNav->Append(node);
+    }
+}
+
+void TopNavigationViewDataProvider::ClearNodeLists()
+{
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+
+    auto topNavList = (nv->TopNavListView()).as<winrt::NavigationViewList>();
+    auto topNavListImpl = winrt::get_self<NavigationViewList>(topNavList);
+
+    auto topNavOverflowList = (nv->TopNavListOverflowView()).as<winrt::NavigationViewList>();
+    auto topNavOverflowListImpl = winrt::get_self<NavigationViewList>(topNavOverflowList);
+
+    auto vmTopNav = topNavListImpl->ListViewModel();
+    auto vmTopNavOverflow = topNavOverflowListImpl->ListViewModel();
+
+
+
+}
+
+void TopNavigationViewDataProvider::ResyncNodeLists()
+{
+
+    // Get List Views
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+
+    auto topNavList = (nv->TopNavListView()).as<winrt::NavigationViewList>();
+    auto topNavListImpl = winrt::get_self<NavigationViewList>(topNavList);
+
+    auto topNavOverflowList = (nv->TopNavListOverflowView()).as<winrt::NavigationViewList>();
+    auto topNavOverflowListImpl = winrt::get_self<NavigationViewList>(topNavOverflowList);
+
+    // Get ViewModels
+    auto vmTopNav = topNavListImpl->ListViewModel();
+    auto vmTopNavOverflow = topNavOverflowListImpl->ListViewModel();
+
+
+
 }
 
 void TopNavigationViewDataProvider::SetNavigationViewParent(winrt::NavigationView const& navigationView)

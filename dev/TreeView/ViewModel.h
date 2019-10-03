@@ -71,8 +71,8 @@ public:
     winrt::IVector<winrt::TreeViewNode> GetSelectedNodes();
     winrt::IVector<winrt::IInspectable> GetSelectedItems();
     void NotifyContainerOfSelectionChange(winrt::TreeViewNode const& targetNode, TreeNodeSelectionState const& selectionState);
-
     winrt::TreeViewNode GetAssociatedNode(winrt::IInspectable item);
+    void RemoveNodeAndDescendantsFromView(const winrt::TreeViewNode& value);
 
 private:
     tracker_ref<winrt::IVector<winrt::TreeViewNode>> m_selectedNodes{ this };
@@ -93,7 +93,6 @@ private:
     int CountDescendants(const winrt::TreeViewNode& value);
     void AddNodeToView(const winrt::TreeViewNode& value, unsigned int index);
     int AddNodeDescendantsToView(const winrt::TreeViewNode& value, unsigned int index, int offset);
-    void RemoveNodeAndDescendantsFromView(const winrt::TreeViewNode& value);
     void RemoveNodesAndDescendentsWithFlatIndexRange(unsigned int startIndex, unsigned int stopIndex);
     int GetNextIndexInFlatTree(const winrt::TreeViewNode& indexNode);
     unsigned int IndexOfNextSibling(winrt::TreeViewNode& childNode);

@@ -67,6 +67,10 @@ public:
     bool IsItemSelectableInPrimaryList(const winrt::IInspectable& value);
 
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+    void MoveAllNodesToPrimaryList();
+    void ResyncNodeLists();
+    void ClearNodeLists();
+
 protected:
     void OnDataSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
 
