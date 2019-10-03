@@ -176,6 +176,20 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
+    if (IsSelected() && args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+    {
+        auto pointerPoint = args.GetCurrentPoint(*this);
+        if (pointerPoint.Properties().IsLeftButtonPressed())
+        {
+            auto isCtrlDown = (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) == winrt::CoreVirtualKeyStates::Down;
+            if (isCtrlDown)
+            {
+                // Return here so the base class will not pick it up, but let it remain unhandled so someone else could handle it.
+                return;
+            }
+        }
+    }
+
     __super::OnPointerPressed(args);
 
     if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonPressed)

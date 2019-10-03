@@ -22,6 +22,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Windows.UI.Xaml.Media;
+using Windows.Devices.Input;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -71,6 +72,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button selectIndexButton = FindElement.ByName<Button>("SelectIndexButton");
                 selectIndexButton.InvokeAndWait();
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+
+                Log.Comment("Verify that ctrl-click on tab selects it.");
+                UIObject firstTab = FindElement.ByName("FirstTab");
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                firstTab.Click();
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                Wait.ForIdle();
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+
+                Log.Comment("Verify that ctrl-click on tab does not deselect.");
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                firstTab.Click();
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                Wait.ForIdle();
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
             }
         }
 
@@ -120,6 +136,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Tab with larger content should be wider.");
                 Verify.IsGreaterThan(largerTab.BoundingRectangle.Width, smallerTab.BoundingRectangle.Width);
+
+                Log.Comment("Changing tab header to short/long.");
+                Button shortLongButton = FindElement.ByName<Button>("ShortLongTextButton");
+                shortLongButton.InvokeAndWait();
+                ElementCache.Refresh();
+
+                diff = Math.Abs(smallerTab.BoundingRectangle.Width - 100);
+                Verify.IsLessThanOrEqual(diff, 1, "Smaller text should have min width of 100");
+
+                diff = Math.Abs(largerTab.BoundingRectangle.Width - 240);
+                Verify.IsLessThanOrEqual(diff, 1, "Smaller text should have max width of 240");
 
                 // With largerTab now rendering wider, the scroll buttons should appear:
                 Verify.IsTrue(AreScrollButtonsVisible(), "Scroll buttons should appear");
