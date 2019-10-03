@@ -22,6 +22,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Windows.UI.Xaml.Media;
+using Windows.Devices.Input;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -72,12 +73,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 selectIndexButton.InvokeAndWait();
                 Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
 
-                Log.Comment("Verify that ctrl-click on tab does not deselect.");
-                UIObject selectedTab = FindElement.ByName("LongHeaderTab");
+                Log.Comment("Verify that ctrl-click on tab selects it.");
+                UIObject firstTab = FindElement.ByName("FirstTab");
                 KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
-                selectedTab.Click();
+                firstTab.Click();
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
-                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "2");
+                Wait.ForIdle();
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
+
+                Log.Comment("Verify that ctrl-click on tab does not deselect.");
+                KeyboardHelper.PressDownModifierKey(ModifierKey.Control);
+                firstTab.Click();
+                KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
+                Wait.ForIdle();
+                Verify.AreEqual(selectedIndexTextBlock.DocumentText, "0");
             }
         }
 
