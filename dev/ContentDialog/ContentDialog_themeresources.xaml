@@ -95,6 +95,9 @@
         <Setter Property="Background" Value="{ThemeResource ContentDialogBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource ContentDialogBorderBrush}" />
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="PrimaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
+        <Setter Property="SecondaryButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
+        <Setter Property="CloseButtonStyle" Value="{ThemeResource DefaultButtonStyle}" />
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
