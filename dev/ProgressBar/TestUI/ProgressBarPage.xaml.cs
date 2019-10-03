@@ -11,6 +11,8 @@ using Windows.UI;
 using System.Windows.Input;
 
 using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
+using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
+using Windows.UI.Xaml.Data;
 
 namespace MUXControlsTestApp
 {
@@ -32,6 +34,25 @@ namespace MUXControlsTestApp
             double minimum = TestProgressBar.Minimum;
 
             if (_clicks >= TestProgressBar.Maximum) _clicks = (int)(minimum + 0.5);
+        }
+    }
+
+    public class NullableBooleanToBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool?)
+            {
+                return (bool)value;
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            if (value is bool)
+                return (bool)value;
+            return false;
         }
     }
 }

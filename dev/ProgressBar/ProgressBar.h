@@ -25,6 +25,7 @@ public:
     void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void SetProgressBarIndicatorWidth();
+    void UpdateStates();
 
 private:
     void OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
