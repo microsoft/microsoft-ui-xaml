@@ -17,8 +17,8 @@
       Padding=0,0,0,0
       Foreground=#FF000000
       BorderThickness=0,0,0,0
-      BorderBrush=#FF0078D7
-      Background=#FFFFFFFF
+      BorderBrush=#33000000
+      Background=#FFF2F2F2
       MaxWidth=548
       MaxHeight=756
       Margin=0,0,0,0
