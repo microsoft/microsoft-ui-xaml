@@ -134,6 +134,23 @@ Windows, not just the most recent version. Your tests may need version or
 [IsApiPresent](https://docs.microsoft.com/en-us/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
 checks in order to pass on all versions.
 
+#### Updating visual tree masters
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and we use them as the baseline (master) for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with masters. The master files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing masters with the new ones.
+
+1. Find your test build.
+
+    ![test fail page1](images/test_fail_page1.png)
+    ![test fail page2](images/test_fail_page2.png)
+
+2. Download new masters.
+
+    ![drop folder](images/test_pipeline_drop.png)
+    ![VisualTreeMasters folder](images/masters_folder.png)
+
+3. Diff & replace
+
+    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and new masters, make sure the changes are intended, replace the files and commit your changes.
+
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
