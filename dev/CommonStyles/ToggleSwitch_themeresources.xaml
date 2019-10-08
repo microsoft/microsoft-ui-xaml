@@ -249,9 +249,6 @@
                                 <VisualState x:Name="Pressed">
 
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterBorder" Storyboard.TargetProperty="StrokeThickness">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
-                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="OuterBorder" Storyboard.TargetProperty="Stroke">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ToggleSwitchStrokeOffPressed}" />
                                         </ObjectAnimationUsingKeyFrames>
