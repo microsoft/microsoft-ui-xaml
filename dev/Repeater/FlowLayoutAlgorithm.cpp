@@ -82,11 +82,12 @@ winrt::Size FlowLayoutAlgorithm::Measure(
 winrt::Size FlowLayoutAlgorithm::Arrange(
     const winrt::Size& finalSize,
     const winrt::VirtualizingLayoutContext& context,
+    bool isWrapping,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
     const wstring_view& layoutId)
 {
     REPEATER_TRACE_INFO(L"%*s: \tArrangeLayout \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
-    ArrangeVirtualizingLayout(finalSize, lineAlignment, layoutId);
+    ArrangeVirtualizingLayout(finalSize, lineAlignment, isWrapping, layoutId);
 
     return winrt::Size
     {
@@ -174,7 +175,7 @@ int FlowLayoutAlgorithm::GetAnchorIndex(
 
         if (isAnchorSuggestionValid)
         {
-            REPEATER_TRACE_INFO(L"%*s: \tUsing suggested anchor %d\n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),layoutId.data(), suggestedAnchorIndex);
+            REPEATER_TRACE_INFO(L"%*s: \tUsing suggested anchor %d\n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data(), suggestedAnchorIndex);
             anchorIndex = m_algorithmCallbacks->Algorithm_GetAnchorForTargetElement(
                 suggestedAnchorIndex,
                 availableSize,
@@ -471,7 +472,7 @@ bool FlowLayoutAlgorithm::ShouldContinueFillingUpSpace(
         // is the same as the flow direction we still stop at the end of the viewport rectangle.
         shouldContinue =
             (direction == GenerateDirection::Forward && elementMajorStart < rectMajorEnd && elementMinorStart < rectMinorEnd) ||
-            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart && elementMinorEnd > rectMinorStart);
+            (direction == GenerateDirection::Backward && elementMajorEnd > rectMajorStart&& elementMinorEnd > rectMinorStart);
     }
 
     return shouldContinue;
@@ -555,6 +556,7 @@ void FlowLayoutAlgorithm::RaiseLineArranged()
 void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
     const winrt::Size& finalSize,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
+    bool isWrapping,
     const wstring_view& layoutId)
 {
     // Walk through the realized elements one line at a time and
@@ -574,7 +576,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
             if (currentBounds.*MajorStart() != currentLineOffset)
             {
                 spaceAtLineEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, layoutId);
+                PerformLineAlignment(i - countInLine, countInLine, spaceAtLineStart, spaceAtLineEnd, currentLineSize, lineAlignment, isWrapping, finalSize, layoutId);
                 spaceAtLineStart = currentBounds.*MinorStart();
                 countInLine = 0;
                 currentLineOffset = currentBounds.*MajorStart();
@@ -591,7 +593,7 @@ void FlowLayoutAlgorithm::ArrangeVirtualizingLayout(
         if (countInLine > 0)
         {
             float spaceAtEnd = finalSize.*Minor() - previousElementBounds.*MinorStart() - previousElementBounds.*MinorSize();
-            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, layoutId);
+            PerformLineAlignment(realizedElementCount - countInLine, countInLine, spaceAtLineStart, spaceAtEnd, currentLineSize, lineAlignment, isWrapping, finalSize, layoutId);
         }
     }
 }
@@ -605,6 +607,8 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
     float spaceAtLineEnd,
     float lineSize,
     FlowLayoutAlgorithm::LineAlignment lineAlignment,
+    bool isWrapping,
+    const winrt::Size& finalSize,
     const wstring_view& layoutId)
 {
     for (int rangeIndex = lineStartIndex; rangeIndex < lineStartIndex + countInLine; ++rangeIndex)
@@ -668,6 +672,12 @@ void FlowLayoutAlgorithm::PerformLineAlignment(
 
         bounds.X -= m_lastExtent.X;
         bounds.Y -= m_lastExtent.Y;
+
+        if (!isWrapping)
+        {
+            bounds.*MinorSize() = std::max(bounds.*MinorSize(), finalSize.*Minor());
+        }
+
         auto element = m_elementManager.GetAt(rangeIndex);
 
         REPEATER_TRACE_INFO(L"%*s: \tArranging element %d at (%.0f,%.0f,%.0f,%.0f). \n",

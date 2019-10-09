@@ -76,6 +76,7 @@ winrt::Size StackLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
+        false, /* isWraping */
         FlowLayoutAlgorithm::LineAlignment::Start,
         LayoutId());
 

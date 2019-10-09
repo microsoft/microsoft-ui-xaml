@@ -1335,6 +1335,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateStackLayoutArrangeWithStretch()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var svWidth = 1000.0;
+                ScrollViewer sv = new ScrollViewer() {
+                    Width = svWidth,
+                    HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                };
+
+                var repeater = new ItemsRepeater();
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = GetDataTemplate(@"<TextBlock HorizontalAlignment='Stretch' Text='{Binding}' />");
+
+                sv.Content = repeater;
+
+                Content = sv;
+                Content.UpdateLayout();
+
+                var firstItem = (FrameworkElement)repeater.TryGetElement(0);
+                var bounds = LayoutInformation.GetLayoutSlot(firstItem);
+                Verify.AreEqual(svWidth, bounds.Width);
+
+            });
+        }
+
         #region Private Helpers
 
         private enum LayoutChoice
