@@ -163,7 +163,8 @@
                                             FontSize="{TemplateBinding GlyphSize}" Text="{TemplateBinding CollapsedGlyph}"
                                             FontFamily="{StaticResource SymbolThemeFontFamily}"
                                             VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"/>
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            IsTextScaleFactorEnabled="False" />
                                 <TextBlock Foreground="{TemplateBinding GlyphBrush}"
                                             Width="12" Height="12"
                                             Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TreeViewItemTemplateSettings.ExpandedGlyphVisibility}" 
@@ -171,7 +172,8 @@
                                             Text="{TemplateBinding ExpandedGlyph}"
                                             FontFamily="{StaticResource SymbolThemeFontFamily}"
                                             VerticalAlignment="Center"
-                                            AutomationProperties.AccessibilityView="Raw"/>
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            IsTextScaleFactorEnabled="False"/>
                             </Grid>
 
                             <ContentPresenter x:Name="ContentPresenter"
