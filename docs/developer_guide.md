@@ -140,11 +140,13 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 1. Find your test build.
 
     ![test fail page1](images/test_fail_page1.png)
+
     ![test fail page2](images/test_fail_page2.png)
 
 2. Download new masters.
 
     ![drop folder](images/test_pipeline_drop.png)
+    
     ![VisualTreeMasters folder](images/masters_folder.png)
 
 3. Diff & replace
