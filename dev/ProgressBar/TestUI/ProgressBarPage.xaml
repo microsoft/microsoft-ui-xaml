@@ -23,9 +23,9 @@
                 Minimum="{Binding ElementName=MinimumInput, Path=Text, FallbackValue=0, Mode=Oneway}"
                 Width="100"
                 HorizontalAlignment="Left"
-                IsIndeterminate="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
+                IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
-                ShowError="False"/>
+                ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
             
             <TextBox x:Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" />
             <TextBox x:Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" />
@@ -34,6 +34,12 @@
 
             <TextBlock Text="{x:Bind ShowPausedCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowPausedCheckBox" Content="Show Paused"/>
+
+            <TextBlock Text="{x:Bind ShowErrorCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ShowErrorCheckBox" Content="Show Error"/>
+
+            <TextBlock Text="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Mode=OneWay}"/>
+            <CheckBox x:Name="ShowIsDeterminateCheckBox" Content="Show IsDeterminate"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

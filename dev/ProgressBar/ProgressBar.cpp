@@ -70,13 +70,23 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 {
     // NOTE: This hits when IsIndeterminate changes because we set MUX_PROPERTY_CHANGED_CALLBACK to true in the idl.
 
-    // TODO: things
+    UpdateStates();
+}
+
+void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+
     UpdateStates();
 }
 
 void ProgressBar::UpdateStates()
 {
-    if (ShowPaused())
+    if (IsIndeterminate())
+    {
+        SetProgressBarIndicatorWidth();
+        winrt::VisualStateManager::GoToState(*this, L"Indeterminate", true);
+    }
+    else if (ShowPaused())
     {
         winrt::VisualStateManager::GoToState(*this, L"Paused", true);
     }
@@ -90,13 +100,19 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 {
     if (auto progressBarIndicator = m_progressBarIndicator.get())
     {
+        double progressBarWidth = m_layoutRoot.get().ActualWidth();
+
+        if (IsIndeterminate())
+        {
+            progressBarIndicator.Width(progressBarWidth / 3);
+            return;
+        }
+
         double maximum = Maximum();
         double minimum = Minimum();
         double increment = 0;
-        double progressBarWidth = m_layoutRoot.get().ActualWidth();
-
+        
         increment = progressBarWidth / (maximum - minimum);
-
         progressBarIndicator.Width(increment * (Value() - minimum));
     }
 }

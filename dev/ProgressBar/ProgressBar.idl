@@ -11,6 +11,8 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
     Boolean IsIndeterminate{ get; set; };
 
     Boolean ShowError{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowPaused{ get; set; };
 
     Windows.UI.Xaml.Controls.Primitives.ProgressBarTemplateSettings TemplateSettings{ get; };

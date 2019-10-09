@@ -38,21 +38,24 @@
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Indeterminate">
                                     <Storyboard RepeatBehavior="Forever">
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateRoot"
-                                            Duration="0:0:3.917"
-                                            Storyboard.TargetProperty="(UIElement.RenderTransofm).(TranslateTransform.X)"
-                                            From="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}"
-                                            To="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition}" />
-                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" Storyboard.TargetName="ProgressBarIndicator">
-                                            <EasingDoubleKeyFrame KeyTime="0" Value="0" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationWellPosition}" KeySpline="0.4,0,0.6,1" />
-                                            <EasingDoubleKeyFrame KeyTime="0:0:2" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationWellPosition}" />
-                                            <SplineDoubleKeyFrame KeyTime="0:0:3" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.EllipseAnimationEndPosition}" KeySpline="0.4,0,0.6,1" />
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ProgressBarIndicator"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                            Duration="0:0:1">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase/>
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="100">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase/>
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
                                         </DoubleAnimationUsingKeyFrames>
-
                                     </Storyboard>
                                 </VisualState>
+
                                 <VisualState x:Name="Paused">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames
@@ -70,16 +73,25 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <Border x:Name="DeterminateRoot"
+                        <Border x:Name="ProgressBarRoot"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderBrush}"
-                            CornerRadius="{TemplateBinding CornerRadius}" >
+                            CornerRadius="{TemplateBinding CornerRadius}">
 
+                            <Border.Clip>
+                                <RectangleGeometry Rect="0 0 100 100"></RectangleGeometry>
+                            </Border.Clip>
+    
                             <Rectangle x:Name="ProgressBarIndicator"
                                 Margin="{TemplateBinding Padding}"
                                 Fill="{TemplateBinding Foreground}"         
-                                HorizontalAlignment="Left" />
+                                HorizontalAlignment="Left"
+>
+                                <Rectangle.RenderTransform>
+                                    <CompositeTransform/>
+                                </Rectangle.RenderTransform>
+                            </Rectangle>
                         </Border>
                     </Grid>
                     

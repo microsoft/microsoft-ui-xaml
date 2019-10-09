@@ -51,7 +51,7 @@ void ProgressBarProperties::EnsureProperties()
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnShowPausedPropertyChanged));
     }
     if (!s_TemplateSettingsProperty)
     {
@@ -80,6 +80,14 @@ void ProgressBarProperties::OnIsIndeterminatePropertyChanged(
 {
     auto owner = sender.as<winrt::ProgressBar>();
     winrt::get_self<ProgressBar>(owner)->OnIsIndeterminatePropertyChanged(args);
+}
+
+void ProgressBarProperties::OnShowPausedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressBar>();
+    winrt::get_self<ProgressBar>(owner)->OnShowPausedPropertyChanged(args);
 }
 
 void ProgressBarProperties::IsIndeterminate(bool value)
