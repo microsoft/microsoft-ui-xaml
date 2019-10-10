@@ -48,6 +48,7 @@
     <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
     <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
   </PropertyGroup>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
@@ -94,6 +95,7 @@
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
     <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
     <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
     <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
   </PropertyGroup>

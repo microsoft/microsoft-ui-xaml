@@ -1,0 +1,161 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.NumberBoxPage"
+    x:Name="NumberBoxTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:NullableBooleanToBooleanConverter x:Key="BooleanConverter" />
+        <local:DoubleToIntConverter x:Key="intconverter" />
+        <local:StringToRoundingAlgConverter x:Key="RoundingConverter" />
+        <local:DoubleToUIntConverter x:Key="UintConverter" />
+        <local:StringToRounderConverter x:Key="RounderConverter"/>
+        <local:StringToValidationModeConverter x:Key="ValidationConverter" />
+    </Page.Resources>
+
+
+        <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+
+            <RelativePanel x:Name="ParentPanel">
+
+            <ComboBox x:Name="validationmode" Header="Validation Mode (WIP)"  SelectedValue="TextBlockMessage">
+                <x:String>TextBlockMessage</x:String>
+                <x:String>IconMessage</x:String>
+                <x:String>InvalidInputOverwritten</x:String>
+                <x:String>Disabled</x:String>
+            </ComboBox>
+
+            <CheckBox x:Name="calculations"
+                IsChecked="False"
+                Content="AcceptsCalculations"
+                RelativePanel.Below="validationmode"
+                />
+
+            <ComboBox x:Name="Spinmode"
+                SelectedValue="Hidden"
+                      SelectionChanged="SpinMode_Changed"
+                Header="SpinButtonMode"
+                RelativePanel.Below="calculations">
+                    <x:String>Hidden</x:String>
+                    <x:String>Inline</x:String>
+                </ComboBox>
+
+                <CheckBox x:Name="hyperscroll"
+                IsChecked="False"
+                Content="HyperScroll Enabled"
+                RelativePanel.Below="Spinmode"
+                Checked="Hyperscroll_Checked"
+                Unchecked="Hyperscroll_Checked"/>
+
+                <ComboBox x:Name="boundbox"
+                RelativePanel.Below="hyperscroll"
+                Header="MinMaxMode"
+                      SelectedValue="None"
+                      SelectionChanged="Bounds_Changed">
+                    <x:String>None</x:String>
+                    <x:String>MinEnabled</x:String>
+                    <x:String>MaxEnabled</x:String>
+                    <x:String>MinAndMaxEnabled</x:String>
+                    <x:String>WrapEnabled</x:String>
+                </ComboBox>
+
+
+            <controls:NumberBox x:Name="step"
+                RelativePanel.Below="boundbox" Value="1"/>
+            <TextBlock Text="StepFrequency" RelativePanel.RightOf="step" RelativePanel.Below="boundbox"/>
+
+
+            <TextBlock Text="Min" RelativePanel.RightOf="min" RelativePanel.Below="step" />
+                <controls:NumberBox x:Name="min"
+                RelativePanel.Below="step"/>
+                <TextBlock Text="Max" RelativePanel.RightOf="max" RelativePanel.Below="min" />
+
+                <controls:NumberBox x:Name="max"
+                RelativePanel.Below="min"/>
+
+                <TextBlock Text="Fraction Digits" RelativePanel.RightOf="frac" RelativePanel.Below="max" />
+                <controls:NumberBox x:Name="frac" RelativePanel.Below="max" Value="0"/>
+
+                <TextBlock Text="Integer Digits" RelativePanel.RightOf="intdig" RelativePanel.Below="frac" />
+                <controls:NumberBox x:Name="intdig" RelativePanel.Below="frac" Value="1" />
+
+                <TextBlock Text="Significant Digits" RelativePanel.RightOf="sigdig" RelativePanel.Below="intdig" />
+                <controls:NumberBox x:Name="sigdig" RelativePanel.Below="intdig" />
+
+                <CheckBox x:Name="dec" RelativePanel.Below="sigdig" Content="IsDecimalPointAlwaysDisplayed" />
+                <CheckBox x:Name="zerosign" RelativePanel.Below="dec" Content="IsZeroSigned" />
+
+                <ComboBox Header="Number Rounder Type (Increment/SigFig)" x:Name="rounder" PlaceholderText="NumberRounder" RelativePanel.Below="zerosign"  SelectedValue="None" >
+                    <x:String>IncrementNumberRounder</x:String>
+                    <x:String>SignificantDigitsNumberRounder</x:String>
+                    <x:String>None</x:String>
+
+                </ComboBox>
+
+
+                <ComboBox x:Name="algo" Header="Rounding Algorithm" RelativePanel.Below="rounder" SelectedValue="RoundAwayFromZero" >
+                    <x:String>None</x:String>
+                    <x:String>RoundAwayFromZero</x:String>
+                    <x:String>RoundDown</x:String>
+                    <x:String>RoundHalfAwayFromZero</x:String>
+                    <x:String>RoundHalfDown</x:String>
+                    <x:String>RoundHalfToEven</x:String>
+                    <x:String>RoundHalfToOdd</x:String>
+                    <x:String>RoundHalfTowardsZero</x:String>
+                    <x:String>RoundHalfUp</x:String>
+                    <x:String>RoundTowardsZero</x:String>
+                    <x:String>RoundUp</x:String>
+                </ComboBox>
+
+                <TextBlock Text="IncrementPrecision (For inc rounder)" RelativePanel.RightOf="increment" RelativePanel.Below="algo" />
+                <controls:NumberBox x:Name="increment" RelativePanel.Below="algo" Value="1" />
+
+                <TextBlock Text="SignificantDigitPrecision (For sig rounder)" RelativePanel.RightOf="sigprec" RelativePanel.Below="increment" />
+                <controls:NumberBox x:Name="sigprec" RelativePanel.Below="increment" Value="1"/>
+
+                <controls:NumberBox
+                AutomationProperties.Name="NumBox"
+                x:Name="numBox"
+                Margin="0,100,0,0"
+                Header="NumberBox"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                MinValue="{x:Bind min.Value, Mode=OneWay}"
+                MaxValue="{x:Bind max.Value, Mode=OneWay}"
+                BasicValidationMode="{x:Bind validationmode.SelectedValue, Converter={StaticResource ValidationConverter}, Mode=OneWay}"
+                FractionDigits="{x:Bind frac.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                IntegerDigits="{x:Bind intdig.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                SignificantDigits="{x:Bind sigdig.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                IsDecimalPointAlwaysDisplayed="{x:Bind dec.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                IsZeroSigned="{x:Bind zerosign.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                NumberRounder="{x:Bind rounder.SelectedValue, Converter={StaticResource RounderConverter}, Mode=OneWay}"
+                RoundingAlgorithm="{x:Bind algo.SelectedValue, Converter={StaticResource RoundingConverter}, Mode=OneWay}"
+                IncrementPrecision="{x:Bind increment.Value, Mode=OneWay}"
+                SignificantDigitPrecision="{x:Bind sigprec.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
+                AcceptsCalculation="{x:Bind calculations.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"
+                StepFrequency="{x:Bind step.Value, Mode=OneWay}"
+
+                />
+
+            <TextBlock x:Name="valtext" RelativePanel.RightOf="numBox" Margin="10,50,0,0" Text="Value: " />
+            <TextBlock RelativePanel.RightOf="valtext" Margin="5,50,0,0" Text="{x:Bind numBox.Value, Mode=OneWay}" />
+
+        </RelativePanel>
+
+
+
+
+
+
+
+
+
+
+
+        </Grid>
+</local:TestPage>
