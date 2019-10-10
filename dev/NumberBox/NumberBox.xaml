@@ -2,84 +2,124 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Microsoft.UI.Xaml.Controls">
+    xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:NumberBox">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
+
+                    <!-- ### why -->
                     <RelativePanel>
+
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="ValidationStates" >
+                            <VisualStateGroup x:Name="ValidationStates">
+                                <VisualState x:Name="Valid" />
+
                                 <VisualState x:Name="Invalid">
                                     <VisualState.Setters>
-                                        <!-- TODO: Export Color to ThemeResource -->
-                                        <Setter Target="InputBox.BorderBrush" Value="#C50500" />
+                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
                                     </VisualState.Setters>
                                 </VisualState>
-                                <VisualState x:Name="Valid" />
 
                                 <VisualState x:Name="InvalidIcon">
                                     <VisualState.Setters>
-                                        <!-- TODO: Export Color to ThemeResource -->
-                                        <Setter Target="InputBox.BorderBrush" Value="#C50500"/>
+                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
                                         <Setter Target="ValidationIcon.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
+
                                 <VisualState x:Name="InvalidText">
                                     <VisualState.Setters>
-                                        <!-- TODO: Export Color to ThemeResource -->
-                                        <Setter Target="InputBox.BorderBrush" Value="#C50500" />
+                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
                                         <Setter Target="ErrorTextMessage.Visibility" Value="Visible" />
                                     </VisualState.Setters>
                                 </VisualState>
-
                             </VisualStateGroup>
+
                             <VisualStateGroup x:Name="SpinButtonStates">
+                                <VisualState x:Name="SpinButtonsCollapsed" />
+
                                 <VisualState x:Name="SpinButtonsVisible">
                                     <VisualState.Setters>
                                         <Setter Target="DownSpinButton.Visibility" Value="Visible" />
                                         <Setter Target="UpSpinButton.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="SpinButtonsCollapsed" >
-                                    <VisualState.Setters>
-                                        <Setter Target="DownSpinButton.Visibility" Value="Collapsed" />
-                                        <Setter Target="UpSpinButton.Visibility" Value="Collapsed" />
+                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
+
                         <StackPanel Orientation="Horizontal" Name="panel">
-                            <TextBox x:Name="InputBox" Header=""/>
-                            <!-- TODO: Export Border Thickness to ThemeResource -->
-                            <RepeatButton x:Name="DownSpinButton"
-                                Visibility="Collapsed"
-                                AutomationProperties.AccessibilityView="Raw"
-                                BorderThickness="0 2 2 2"  FontSize="{TemplateBinding FontSize}"
-                                IsTabStop="False" MinWidth="34" Margin="{ThemeResource HelperButtonThemePadding}"
-                                VerticalAlignment="Stretch" Background="{ThemeResource TextControlBackground}"
-                                BorderBrush="{ThemeResource TextControlBorderBrush}" FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Content="&#xE70D;" />
+                            <StackPanel.Resources>
+                                <ResourceDictionary>
+                                    <ResourceDictionary.ThemeDictionaries>
+                                        <ResourceDictionary x:Key="Light">
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                        </ResourceDictionary>
+
+                                        <ResourceDictionary x:Key="Dark">
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                        </ResourceDictionary>
+
+                                        <ResourceDictionary x:Key="HighContrast">
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+                                        </ResourceDictionary>
+                                    </ResourceDictionary.ThemeDictionaries>
+                                </ResourceDictionary>
+                            </StackPanel.Resources>
+
+                            <TextBox x:Name="InputBox" Header=""/> <!-- ### why no header here? -->
+
                             <RepeatButton x:Name="UpSpinButton"
                                 Visibility="Collapsed"
-                                BorderThickness="0 2 2 2"
                                 FontSize="{TemplateBinding FontSize}"
-                                IsTabStop="False"
-                                MinWidth="34"
-                                Margin="{ThemeResource HelperButtonThemePadding}"
-                                VerticalAlignment="Stretch"
-                                Background="{ThemeResource TextControlBackground}"
-                                BorderBrush="{ThemeResource TextControlBorderBrush}"
+                                Content="&#xE70E;"
+                                Style="{StaticResource NumberBoxSpinButtonStyle}" />
+
+                            <RepeatButton x:Name="DownSpinButton"
+                                Visibility="Collapsed"
+                                FontSize="{TemplateBinding FontSize}"
+                                Content="&#xE70D;"
+                                Style="{StaticResource NumberBoxSpinButtonStyle}"
+                                contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+
+                            <FontIcon x:Name="ValidationIcon"
+                                Visibility="Collapsed"
+                                Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Content="&#xE70E;" />
-                            <!-- TODO: Export Color to ThemeResource -->
-                            <FontIcon x:Name="ValidationIcon" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE7BA;" Foreground="#C50500" Margin="10,0,0,0" Visibility="Collapsed" ToolTipService.ToolTip="Invalid Input" />
+                                Margin="{ThemeResource NumberBoxIconMargin}"
+                                Glyph="&#xE7BA;"
+                                ToolTipService.ToolTip="Invalid Input" /> <!-- ### need to globalize -->
                         </StackPanel>
-                        <TextBlock Visibility="Collapsed" x:Name="ErrorTextMessage" Foreground="#C50500" IsColorFontEnabled="True" Text="Invalid Value" RelativePanel.Below="panel" />
+
+                        <TextBlock x:Name="ErrorTextMessage"
+                            Visibility="Collapsed"
+                            Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
+                            IsColorFontEnabled="True"
+                            Text="Invalid Value"
+                            RelativePanel.Below="panel" /> <!-- ### need to globalize -->
                     </RelativePanel>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Name="NumberBoxSpinButtonStyle" TargetType="RepeatButton">
+        <Style.Setters>
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="MinWidth" Value="34"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
+            <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>
+            <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
+        </Style.Setters>
     </Style>
 </ResourceDictionary>

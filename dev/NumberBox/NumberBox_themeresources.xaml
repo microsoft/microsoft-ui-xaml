@@ -6,14 +6,17 @@
 
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBrush" Color="#C50500" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
-            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBrush" Color="#C50500" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
-            <SolidColorBrush x:Key="NumberBoxInvalidStateBorderBrush=" Color="#C50500" />
+            <SolidColorBrush x:Key="NumberBoxInvalidStateBrush" Color="#C50500" />
         </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries> 
+    </ResourceDictionary.ThemeDictionaries>
+
+    <Thickness x:Key="NumberBoxSpinButtonBorderThickness">0,1,1,1</Thickness>
+    <Thickness x:Key="NumberBoxIconMargin">10,0,0,0</Thickness>
 
 </ResourceDictionary>
