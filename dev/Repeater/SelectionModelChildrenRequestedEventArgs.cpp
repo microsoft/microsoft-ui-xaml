@@ -4,11 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemsRepeater.common.h"
+#include "SelectionNode.h"
 #include "SelectionModelChildrenRequestedEventArgs.h"
 
-SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source)
+SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source, SelectionNode* sourceNode)
 {
-    Initialize(source);
+    Initialize(source, sourceNode);
 }
 
 #pragma region ISelectionModelChildrenRequestedEventArgs
@@ -16,6 +17,11 @@ SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventAr
 winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Source()
 {
     return m_source.get();
+}
+
+winrt::IndexPath SelectionModelChildrenRequestedEventArgs::SourceIndex()
+{
+    return m_sourceNode->IndexPath();
 }
 
 winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Children()
@@ -30,8 +36,9 @@ void SelectionModelChildrenRequestedEventArgs::Children(winrt::IInspectable cons
 
 #pragma endregion
 
-void SelectionModelChildrenRequestedEventArgs::Initialize(const winrt::IInspectable& source)
+void SelectionModelChildrenRequestedEventArgs::Initialize(const winrt::IInspectable& source, SelectionNode* sourceNode)
 {
     m_source.set(source);
+    m_sourceNode = sourceNode;
     m_children.set(nullptr);
 }

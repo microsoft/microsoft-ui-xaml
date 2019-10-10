@@ -48,6 +48,7 @@ public:
     bool SelectRange(const IndexRange& range, bool select);
     SelectionState EvaluateIsSelectedBasedOnChildrenNodes();
     static winrt::IReference<bool> ConvertToNullableBool(SelectionState isSelected);
+    winrt::IndexPath IndexPath();
 
 private:
     void HookupCollectionChangedHandler();
