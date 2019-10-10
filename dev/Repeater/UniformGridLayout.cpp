@@ -85,7 +85,8 @@ winrt::Size UniformGridLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
-        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_itemsJustification),
+        true /* isWrapping */,
+        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_itemsJustification),        
         LayoutId());
     return { value.Width, value.Height };
 }

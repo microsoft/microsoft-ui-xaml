@@ -45,6 +45,7 @@ public:
     winrt::Size Arrange(
         const winrt::Size& finalSize,
         const winrt::VirtualizingLayoutContext& context,
+        bool isWrapping,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
     void OnItemsSourceChanged(
@@ -100,6 +101,7 @@ private:
     void ArrangeVirtualizingLayout(
         const winrt::Size& finalSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
         const wstring_view& layoutId);
     void PerformLineAlignment(
         int lineStartIndex,
@@ -108,6 +110,8 @@ private:
         float spaceAtLineEnd,
         float lineSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
+        const winrt::Size& finalSize,
         const wstring_view& layoutId);
 #pragma endregion
 
