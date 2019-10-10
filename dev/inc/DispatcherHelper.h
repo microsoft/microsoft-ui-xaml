@@ -5,7 +5,7 @@
 #include "SharedHelpers.h"
 
 // To avoid having to call a potentially throwing cppwinrt api, we call directly through the abi.
-// We don't want to include the entirety of the abi headers, so we just reproduce the single interfact
+// We don't want to include the entirety of the abi headers, so we just reproduce the single interface
 // that we need.
 namespace ABI::Windows::ApplicationModel::Core
 {
