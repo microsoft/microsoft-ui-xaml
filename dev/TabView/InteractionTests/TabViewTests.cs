@@ -393,7 +393,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
                 Button tabContent = FindElement.ByName<Button>("FirstTabButton");
-                Button backButton = FindElement.ById<Button>("__BackButton");
+                Button toggleThemeButton = FindElement.ById<Button>("__ToggleThemeButton");
                 TabItem firstTab = FindElement.ByName<TabItem>("FirstTab");
                 TabItem secondTab = FindElement.ByName<TabItem>("SecondTab");
                 TabItem lastTab = FindElement.ByName<TabItem>("LastTab");
@@ -419,7 +419,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 GamepadHelper.PressButton(null, GamepadButton.LeftThumbstickUp);
                 Wait.ForIdle();
-                Verify.IsTrue(backButton.HasKeyboardFocus, "GamePad Up should move to back button");
+                Verify.IsTrue(toggleThemeButton.HasKeyboardFocus, "GamePad Up should move to toggle theme button");
             }
         }
 
