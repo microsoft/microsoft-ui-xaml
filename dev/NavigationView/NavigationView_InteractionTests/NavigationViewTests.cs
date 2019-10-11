@@ -445,7 +445,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void PaneClosedWhenAutoAndNarrow()
+        public void PaneClosedUponLaunch()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
@@ -455,6 +455,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsAutoPaneOpenCheckBox"));
                     Log.Comment("Checking that a NavigationView with displaymode set to 'Auto' and a narrow width does not display pane");
+                    Wait.ForIdle();
+                    Verify.IsTrue(isPaneOpenCheckBox.ToggleState == ToggleState.Off);
+
+                    isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftMinimalPaneOpenCheckBox"));
+                    Wait.ForIdle();
+                    Verify.IsTrue(isPaneOpenCheckBox.ToggleState == ToggleState.Off);
+
+                    isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftCompactPaneOpenCheckBox"));
                     Wait.ForIdle();
                     Verify.IsTrue(isPaneOpenCheckBox.ToggleState == ToggleState.Off);
                 }
