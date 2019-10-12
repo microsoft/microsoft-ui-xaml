@@ -73,7 +73,9 @@
 
     <Thickness x:Key="CommandBarOverflowPresenterMargin">0,4,0,4</Thickness>
 
-    <Style TargetType="CommandBar">
+    <Style TargetType="CommandBar" BasedOn="{StaticResource DefaultCommandBarStyle}" />
+
+    <Style x:Key="DefaultCommandBarStyle" TargetType="CommandBar">
         <Setter Property="Background" Value="{ThemeResource CommandBarBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource CommandBarForeground}" />
         <Setter Property="IsTabStop" Value="False" />
