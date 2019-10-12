@@ -140,6 +140,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
+        [TestMethod]
+        public void VerifyVisualTreeForCommandBar()
+        {
+            var commandBarXaml = @"
+                        <StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                                xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
+                                <Grid Width='400' Height='400'>
+                                    <CommandBar>
+                                        <AppBarButton Icon='Save' Label='Normal button'></AppBarButton>
+                                        <AppBarToggleButton Icon = 'Like' Label = 'Toggle button'> Toggle button </AppBarToggleButton>
+                                    </CommandBar>
+                                </Grid>
+                                <Grid Width = '400' Height = '400'>
+                                    <CommandBar DefaultLabelPosition = 'Right'>
+                                        <AppBarButton Icon = 'Save' Label = 'Normal button'></AppBarButton>
+                                        <AppBarToggleButton Icon = 'Like' Label = 'Toggle button'> Toggle button </AppBarToggleButton>
+                                    </CommandBar>
+                                </Grid>
+                                <Grid Width = '400' Height = '400'>
+                                    <CommandBar DefaultLabelPosition = 'Collapsed'>
+                                        <AppBarButton Icon = 'Save' Label = 'Normal button'></AppBarButton>
+                                        <AppBarToggleButton Icon = 'Like' Label = 'Toggle button'> Toggle button </AppBarToggleButton>
+                                    </CommandBar>
+                                </Grid>
+                            </StackPanel> ";
+            Log.Comment("Verify visual tree for Commandbar with buttons");
+            VisualTreeTestHelper.VerifyVisualTree(xaml: commandBarXaml, masterFilePrefix: "CommandBar_With_Button");
+        }
+
         private string XamlStringForControl(string controlName)
         {
             return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
