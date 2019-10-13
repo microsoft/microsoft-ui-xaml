@@ -1,4 +1,4 @@
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -115,6 +115,51 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+
+        [TestMethod]
+        public void TargetUnloadingClosesTeachingTip()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                elements.GetSetTargetButton().InvokeAndWait();
+                OpenTeachingTip();
+
+                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
+
+                // Removing target button from visual tree
+                Button remove = elements.GetRemoveOpenButtonFromVisualTreeButton();
+                remove.InvokeAndWait();
+
+                // Target unloaded, TeachingTip must do the same
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.On);
+            }
+        }
+
+        [TestMethod]
+        public void PreviousTargetUnloadingLeavesTeachingTipOpen()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                elements.GetSetTargetButton().InvokeAndWait();
+                elements.GetRemoveTargetButton().InvokeAndWait();
+                OpenTeachingTip();
+
+                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
+
+
+                // Removing target button from visual tree
+                Button remove = elements.GetRemoveOpenButtonFromVisualTreeButton();
+                remove.InvokeAndWait();
+
+                // We expect the teaching tip to still be upon since it has no target
+                Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
+            }
+        }
+
         [TestMethod]
         public void TeachingTipRemovalClosesPopup()
         {

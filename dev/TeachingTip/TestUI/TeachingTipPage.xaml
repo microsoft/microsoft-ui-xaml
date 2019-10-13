@@ -375,6 +375,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -541,6 +542,7 @@
                         <CheckBox Grid.Row="47" Grid.Column="1" IsChecked="{x:Bind IsPageRTL, Mode=TwoWay}"/>
                         <Button Grid.Row="48" Grid.Column="0" x:Name="RemoveTeachingTipButton" Click="RemoveTeachingTipButton_Click">Remove tooltip from page</Button>
                         <CheckBox  Grid.Row="48" Grid.Column="1" x:Name="VisualTreeTeachingTipContentTextBlockUnloaded">Visual tree teachingtip unloaded</CheckBox>
+                        <Button Grid.Row="49" x:Name="RemoveButtonFromVisualTreeButton" Click="RemoveOpenButton_Click">Remove button from visual tree</Button>
                     </Grid>
                 </ScrollViewer>
 

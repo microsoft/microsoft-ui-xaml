@@ -938,9 +938,16 @@ namespace MUXControlsTestApp
             ContentStackPanel.Children.Remove(TeachingTipInVisualTree);
             ContentStackPanel.Children.Remove(TeachingTipInResources);
         }
+        
         private void RemoveTeachingTipTextBlockContent_Unloaded(object sender, RoutedEventArgs e)
         {
             VisualTreeTeachingTipContentTextBlockUnloaded.IsChecked = true;
         }
+    
+        private void RemoveOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentStackPanel.Children.Remove(targetButton);
+        }
+        
     }
 }
