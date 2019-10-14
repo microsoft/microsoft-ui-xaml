@@ -534,6 +534,9 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
 
         m_getChildrenEventSource(*this, m_childrenRequestedEventArgs.get());
         resolved = m_childrenRequestedEventArgs.get().Children();
+
+        // Clear out the values in the args so that it cannot be used after the event handler call.
+        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, nullptr);
     }
     else
     {

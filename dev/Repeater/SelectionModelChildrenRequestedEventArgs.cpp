@@ -16,11 +16,21 @@ SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventAr
 
 winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Source()
 {
+    if (!m_sourceNode) // Note that we are checking m_sourceNode since source being nullptr is possibly valid.
+    {
+        throw winrt::hresult_error(E_FAIL, L"Source can only be accesed in the ChildrenRequested event handler.");
+    }
+
     return m_source.get();
 }
 
 winrt::IndexPath SelectionModelChildrenRequestedEventArgs::SourceIndex()
 {
+    if (!m_sourceNode)
+    {
+        throw winrt::hresult_error(E_FAIL, L"SourceIndex can only be accesed in the ChildrenRequested event handler.");
+    }
+
     return m_sourceNode->IndexPath();
 }
 

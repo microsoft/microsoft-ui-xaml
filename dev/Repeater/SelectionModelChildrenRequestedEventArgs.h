@@ -22,6 +22,9 @@ public:
 
 private:
     tracker_ref<winrt::IInspectable> m_source{ this };
-    SelectionNode* m_sourceNode{ nullptr };
     tracker_ref<winrt::IInspectable> m_children{ this };
+
+    // Lifetime of sourceNode is owned by the caller and is guaranteed to be alive
+    // during the event handler call.
+    SelectionNode* m_sourceNode{ nullptr };
 };
