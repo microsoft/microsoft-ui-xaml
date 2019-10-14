@@ -87,7 +87,7 @@ winrt::IndexPath SelectionNode::IndexPath()
     {
         auto childNodes = parent->m_childrenNodes;
         auto it = std::find_if(childNodes.cbegin(), childNodes.cend(), [&child](const auto& item) {return item.get() == child;});
-        int index = distance(childNodes.cbegin(), it);
+        const auto index = static_cast<int>(distance(childNodes.cbegin(), it));
         assert(index >= 0);
         // we are walking up to the parent, so the path will be backwards
         path.insert(path.begin(), index);
