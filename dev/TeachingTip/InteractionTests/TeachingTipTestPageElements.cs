@@ -1,4 +1,4 @@
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System;
 using System.Numerics;
@@ -370,11 +370,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock effectiveTeachingTipContent;
 
-        public CheckBox GetToolTipContentUnloadedCheckbox()
+        public CheckBox GetTeachingTipContentUnloadedCheck()
         {
-            return GetElement(ref effectiveToolTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
+            return GetElement(ref effectiveTeachingTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
         }
-        private CheckBox effectiveToolTipContentUnloadedCheckbox;
+        private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
 
         public Button GetRemoveOpenButtonFromVisualTreeButton()
         {

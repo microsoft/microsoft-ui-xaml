@@ -125,7 +125,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements.GetSetTargetButton().InvokeAndWait();
                 OpenTeachingTip();
 
-                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                CheckBox unloadedCheckbox = elements.GetTeachingTipContentUnloadedCheck();
                 Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
 
                 // Removing target button from visual tree
@@ -147,7 +147,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 elements.GetRemoveTargetButton().InvokeAndWait();
                 OpenTeachingTip();
 
-                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                CheckBox unloadedCheckbox = elements.GetTeachingTipContentUnloadedCheck();
                 Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
 
 
@@ -169,7 +169,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ScrollTargetIntoView();
                 OpenTeachingTip();
 
-                CheckBox unloadedCheckbox = elements.GetToolTipContentUnloadedCheckbox();
+                CheckBox unloadedCheckbox = elements.GetTeachingTipContentUnloadedCheck();
                 Verify.IsTrue(unloadedCheckbox.ToggleState == ToggleState.Off);
 
                 // Finding the button to remove the teaching tip
