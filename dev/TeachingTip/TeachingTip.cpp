@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "common.h"
 #include "TeachingTip.h"
 #include "RuntimeProfiler.h"
@@ -128,14 +128,14 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         // Unregister from old target if it exists
         if (args.OldValue()) {
-            winrt::FrameworkElement  oldTarget = unbox_value<winrt::FrameworkElement >(args.OldValue());
-            oldTarget.Unloaded(m_TargetUnloadToken);
+            winrt::FrameworkElement oldTarget = unbox_value<winrt::FrameworkElement >(args.OldValue());
+            m_TargetUnloadedRevoker.revoke();
         }
 
         // Register to new target if it exists
         if (args.NewValue()) {
-            winrt::FrameworkElement  newTarget = unbox_value<winrt::FrameworkElement >(args.NewValue());
-            m_TargetUnloadToken = newTarget.Unloaded({ this,&TeachingTip::ClosePopupOnUnloadEvent });
+            winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(args.NewValue());
+            m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke,{ this,&TeachingTip::ClosePopupOnUnloadEvent });
         }
         OnTargetChanged();
     }
