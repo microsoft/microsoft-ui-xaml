@@ -18,8 +18,8 @@ public:
     void ShowPaused(bool value);
     bool ShowPaused();
 
-    void TemplateSettings(winrt::ProgressBarTemplateSettings const& value);
-    winrt::ProgressBarTemplateSettings TemplateSettings();
+    void TemplateSettings(winrt::ProgressBar2TemplateSettings const& value);
+    winrt::ProgressBar2TemplateSettings TemplateSettings();
 
     static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
     static winrt::DependencyProperty ShowErrorProperty() { return s_ShowErrorProperty; }

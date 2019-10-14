@@ -15,11 +15,16 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar2TemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar2TemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar2TemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar2TemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ProgressBar.xaml">

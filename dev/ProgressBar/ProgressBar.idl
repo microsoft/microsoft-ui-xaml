@@ -1,6 +1,37 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass ProgressBar2TemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    ProgressBar2TemplateSettings();
+
+    Double ContainerAnimationStartPosition;
+    static Windows.UI.Xaml.DependencyProperty ContainerAnimationStartPositionProperty{ get; };
+
+    Double ContainerAnimationEndPosition;
+    static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPositionProperty{ get; };
+
+    Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
+    static Windows.UI.Xaml.DependencyProperty ClipRectProperty{ get; };
+
+    Double EllipseAnimationEndPosition;
+    static Windows.UI.Xaml.DependencyProperty EllipseAnimationEndPositionProperty{ get; };
+
+    Double EllipseAnimationWellPosition;
+    static Windows.UI.Xaml.DependencyProperty EllipseAnimationWellPositionProperty{ get; };
+
+    Double EllipseDiameter;
+    static Windows.UI.Xaml.DependencyProperty EllipseDiameterProperty{ get; };
+
+    Double EllipseOffset;
+    static Windows.UI.Xaml.DependencyProperty EllipseOffsetProperty{ get; };
+
+    Double IndicatorLengthDelta;
+    static Windows.UI.Xaml.DependencyProperty IndicatorLengthDeltaProperty{ get; };
+}
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBase
@@ -15,7 +46,7 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowPaused{ get; set; };
 
-    Windows.UI.Xaml.Controls.Primitives.ProgressBarTemplateSettings TemplateSettings{ get; };
+    ProgressBar2TemplateSettings TemplateSettings{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ShowErrorProperty{ get; };

@@ -6,6 +6,8 @@
 #include "pch.h"
 #include "common.h"
 
+#include "ProgressBar2TemplateSettings.h"
+
 #include "ProgressBar.g.h"
 #include "ProgressBar.properties.h"
 
@@ -27,6 +29,7 @@ public:
 
     void SetProgressBarIndicatorWidth();
     void UpdateStates();
+    void UpdateWidthBasedTemplateSettings();
 
 private:
     void OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -39,5 +42,4 @@ private:
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
-
 };

@@ -58,10 +58,10 @@ void ProgressBarProperties::EnsureProperties()
         s_TemplateSettingsProperty =
             InitializeDependencyProperty(
                 L"TemplateSettings",
-                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                winrt::name_of<winrt::ProgressBar2TemplateSettings>(),
                 winrt::name_of<winrt::ProgressBar>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ProgressBarTemplateSettings>::BoxedDefaultValue(),
+                ValueHelper<winrt::ProgressBar2TemplateSettings>::BoxedDefaultValue(),
                 nullptr);
     }
 }
@@ -120,12 +120,12 @@ bool ProgressBarProperties::ShowPaused()
     return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_ShowPausedProperty));
 }
 
-void ProgressBarProperties::TemplateSettings(winrt::ProgressBarTemplateSettings const& value)
+void ProgressBarProperties::TemplateSettings(winrt::ProgressBar2TemplateSettings const& value)
 {
-    static_cast<ProgressBar*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressBarTemplateSettings>::BoxValueIfNecessary(value));
+    static_cast<ProgressBar*>(this)->SetValue(s_TemplateSettingsProperty, ValueHelper<winrt::ProgressBar2TemplateSettings>::BoxValueIfNecessary(value));
 }
 
-winrt::ProgressBarTemplateSettings ProgressBarProperties::TemplateSettings()
+winrt::ProgressBar2TemplateSettings ProgressBarProperties::TemplateSettings()
 {
-    return ValueHelper<winrt::ProgressBarTemplateSettings>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_TemplateSettingsProperty));
+    return ValueHelper<winrt::ProgressBar2TemplateSettings>::CastOrUnbox(static_cast<ProgressBar*>(this)->GetValue(s_TemplateSettingsProperty));
 }

@@ -19,6 +19,9 @@ ProgressBar::ProgressBar()
 
     // NOTE: You can also hook up to events on your control from here.
     Loaded({ this, &ProgressBar::OnLoaded });
+
+    SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBar2TemplateSettings>());
+
 }
 
 void ProgressBar::OnApplyTemplate()
@@ -84,6 +87,7 @@ void ProgressBar::UpdateStates()
     if (IsIndeterminate())
     {
         SetProgressBarIndicatorWidth();
+        UpdateWidthBasedTemplateSettings();
         winrt::VisualStateManager::GoToState(*this, L"Indeterminate", true);
     }
     else if (ShowPaused())
@@ -114,5 +118,36 @@ void ProgressBar::SetProgressBarIndicatorWidth()
         
         increment = progressBarWidth / (maximum - minimum);
         progressBarIndicator.Width(increment * (Value() - minimum));
+
     }
+}
+
+void ProgressBar::UpdateWidthBasedTemplateSettings()
+{
+    auto const templateSettings = winrt::get_self<::ProgressBar2TemplateSettings>(TemplateSettings());
+    auto progressBar = m_layoutRoot.get();
+
+    auto const [width, height] = [progressBar]()
+    {
+        if (progressBar)
+        {
+            float const width = static_cast<float>(progressBar.ActualWidth());
+            float const height = static_cast<float>(progressBar.ActualHeight());
+            return std::make_tuple(width, height);
+        }
+        return std::make_tuple(0.0f, 0.0f);
+    }();
+
+    templateSettings->ContainerAnimationEndPosition(width);
+    templateSettings->ContainerAnimationStartPosition(0);
+
+    winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangle = [width, height]()
+    {
+        auto const returnValue = winrt::RectangleGeometry();
+        winrt::Rect rect{ 0, 0, width, height };
+        returnValue.Rect(rect);
+        return returnValue;
+    }();
+
+    templateSettings->ClipRect(rectangle);
 }

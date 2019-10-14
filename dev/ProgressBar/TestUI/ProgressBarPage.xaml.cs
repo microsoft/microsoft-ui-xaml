@@ -11,7 +11,7 @@ using Windows.UI;
 using System.Windows.Input;
 
 using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
-using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
+//using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Data;
 
 namespace MUXControlsTestApp

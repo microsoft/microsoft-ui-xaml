@@ -47,7 +47,7 @@
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>
                                             </EasingDoubleKeyFrame>
-                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="100">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition}">
                                                 <EasingDoubleKeyFrame.EasingFunction>
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>
@@ -77,12 +77,9 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderBrush}"
-                            CornerRadius="{TemplateBinding CornerRadius}">
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
 
-                            <Border.Clip>
-                                <RectangleGeometry Rect="0 0 100 100"></RectangleGeometry>
-                            </Border.Clip>
-    
                             <Rectangle x:Name="ProgressBarIndicator"
                                 Margin="{TemplateBinding Padding}"
                                 Fill="{TemplateBinding Foreground}"         
