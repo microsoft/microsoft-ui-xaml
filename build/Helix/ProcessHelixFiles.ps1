@@ -112,7 +112,7 @@ if(Test-Path $visualTreeMasterFolder)
     foreach($prefix in $prefixList)
     {
         $filesToDelete = @()
-        $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith($prefix) } | Sort-Object -Property Name -Descending
+        $versionedMasters = $masterFiles | Where { $_.BaseName.StartsWith("$prefix-") } | Sort-Object -Property Name -Descending
         for ($i=0; $i -lt $versionedMasters.Length-1; $i++)
         {
             $v1 = Get-Content $versionedMasters[$i].FullName
