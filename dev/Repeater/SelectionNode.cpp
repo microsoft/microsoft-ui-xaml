@@ -126,7 +126,7 @@ std::shared_ptr<SelectionNode> SelectionNode::GetAt(int index, bool realizeChild
             auto childData = m_dataSource.get().GetAt(index);
             if (childData != nullptr)
             {
-                auto resolvedChild = m_manager->ResolvePath(childData, this);
+                auto resolvedChild = m_manager->ResolvePath(childData, weak_from_this());
                 if (resolvedChild != nullptr)
                 {
                     child = std::make_shared<SelectionNode>(m_manager, this /* parent */);

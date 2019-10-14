@@ -17,7 +17,7 @@ enum SelectionState
 // a nested scenario. This would map to one ItemsSourceView/Collection. This node reacts
 // to collection changes and keeps the selected indices up to date.
 // This can either be a leaf node or a non leaf node.
-class SelectionNode final
+class SelectionNode final: public std::enable_shared_from_this<SelectionNode>
 {
 public:
     SelectionNode(SelectionModel* manager, SelectionNode* parent);

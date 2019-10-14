@@ -517,7 +517,7 @@ void SelectionModel::OnSelectionInvalidatedDueToCollectionChange()
     OnSelectionChanged();
 }
 
-winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data, SelectionNode* sourceNode)
+winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode)
 {
     winrt::IInspectable resolved = nullptr;
     // Raise ChildrenRequested event if there is a handler
@@ -536,7 +536,7 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
         resolved = m_childrenRequestedEventArgs.get().Children();
 
         // Clear out the values in the args so that it cannot be used after the event handler call.
-        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, nullptr);
+        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, std::weak_ptr<SelectionNode>() /* empty weakptr */);
     }
     else
     {
