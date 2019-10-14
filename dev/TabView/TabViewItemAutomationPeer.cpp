@@ -24,3 +24,25 @@ winrt::AutomationControlType TabViewItemAutomationPeer::GetAutomationControlType
     return winrt::AutomationControlType::TabItem;
 }
 
+
+winrt::hstring TabViewItemAutomationPeer::GetNameCore()
+{
+    winrt::hstring returnHString = __super::GetNameCore();
+
+    // If a name hasn't been provided by AutomationProperties.Name in markup:
+    if (returnHString.empty())
+    {
+        if (auto tvi = Owner().try_as<winrt::TabViewItem>())
+        {
+            if (auto content = tvi.Header())
+            {
+                if (auto stringableName = content.try_as<winrt::IStringable>())
+                {
+                    returnHString = stringableName.ToString();
+                }
+            }
+        }
+    }
+
+    return returnHString;
+}
