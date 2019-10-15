@@ -33,11 +33,8 @@ void NumberBox::OnApplyTemplate()
 {
     // Initializations - Visual Components
     winrt::IControlProtected controlProtected = *this;
-    m_TextBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
-    m_SpinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected);
-    m_SpinUp = GetTemplateChildT<winrt::RepeatButton>(L"UpSpinButton", controlProtected);
-    m_WarningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected);
-    m_ErrorTextMessage = GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected);
+
+    m_errorTextBlock.set(GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected));
 
     // Initializations - Visual States
     SetSpinButtonVisualState();
@@ -45,18 +42,31 @@ void NumberBox::OnApplyTemplate()
     SetPlaceHolderText();
     
     // Initializations - Interactions
-    m_ErrorToolTip.Content(m_ErrorToolTipTextBlock);
-    winrt::ToolTipService::SetToolTip(m_WarningIcon, m_ErrorToolTip);
+    if (auto warningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected))
+    {
+        winrt::ToolTipService::SetToolTip(warningIcon, m_errorToolTip);
+    }
 
-    if (m_SpinDown)
+    if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected))
     {
-        m_SpinDown.Click({ this, &NumberBox::OnSpinDownClick });
+        spinDown.Click({ this, &NumberBox::OnSpinDownClick });
     }
-    if (m_SpinUp)
+
+    if (auto spinUp = GetTemplateChildT<winrt::RepeatButton>(L"UpSpinButton", controlProtected))
     {
-        m_SpinUp.Click({ this, &NumberBox::OnSpinUpClick });
+        spinUp.Click({ this, &NumberBox::OnSpinUpClick });
     }
-    m_TextBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
+
+    m_textBox.set([this, controlProtected]() {
+        auto textBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
+        if (textBox)
+        {
+            textBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
+            textBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
+        }
+        return textBox;
+    }());
+
     PointerWheelChanged({ this, &NumberBox::OnScroll });
 
     // Initializations - Tools, etc.
@@ -70,16 +80,7 @@ void NumberBox::OnApplyTemplate()
     m_stepPrecisionRounder.RoundingAlgorithm(winrt::RoundingAlgorithm::RoundHalfAwayFromZero);
 
     // Set Text to reflect preset Value
-    if (/* ### ??? s_ValueProperty != 0.0 &&*/ m_TextBox)
-    {
-        UpdateTextToValue();
-    }
-
-    // Register LostFocus Event
-    if (m_TextBox)
-    {
-        m_TextBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
-    }
+    UpdateTextToValue();
 }
 
 
@@ -146,16 +147,16 @@ void NumberBox::OnSignificantDigitPrecisionPropertyChanged(const winrt::Dependen
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    m_TextBox.Text(Text());
+    if (auto textBox = m_textBox.get())
+    {
+        textBox.Text(Text());
+    }
 }
 
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (m_TextBox)
-    {
-        UpdateTextToValue(); 
-    }
+    UpdateTextToValue();
 }
 
 void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -180,81 +181,90 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 // Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
 void NumberBox::ValidateInput()
 {
-    // ### well, 0 might not be in bounds, we'd be better defaulting to min probably?
-    // Handles Empty TextBox Case, current behavior is to set Value to default (0)
-    if (m_TextBox.Text() == L"")
+    if (auto textBox = m_textBox.get())
     {
-        Value(0);
-        m_hasError = false;
-        return;
-    }
-
-    if (AcceptsCalculation() && IsFormulaic(m_TextBox.Text()))
-    {
-        NormalizeShorthandOperations();
-        EvaluateInput();
-
-        // Divide by 0 error state
-        if (fpclassify(Value()) == FP_NAN)
+        auto text = textBox.Text();
+        
+        // ### well, 0 might not be in bounds, we'd be better defaulting to min probably?
+        // Handles Empty TextBox Case, current behavior is to set Value to default (0)
+        if (text == L"")
         {
-            SetErrorState(ValidationState::InvalidDivide);
-            return;
-        }
-    }
-
-    auto parsedNum = m_formatter.ParseDouble(m_TextBox.Text());
-
-    // Rounding separately because rounding affects Value property while formatting does not
-    if (parsedNum && NumberRounder() != winrt::NumberBoxNumberRounder::None)
-    {
-        if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder)
-            parsedNum = m_iRounder.RoundDouble(parsedNum.Value());
-        else
-            parsedNum = m_sRounder.RoundDouble(parsedNum.Value());
-    }
-
-    // Valid, in bounds value
-    if (parsedNum && GetBoundState(parsedNum.Value()) == BoundState::InBounds )
-    {
-        SetErrorState(ValidationState::Valid);
-        Value(parsedNum.Value());
-        UpdateTextToValue();
-    }
-    else
-    {
-        // No parsable value
-        if (!parsedNum && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-        {
-            SetErrorState(ValidationState::InvalidInput);
+            Value(0);
+            m_hasError = false;
             return;
         }
 
-        // Value needs to be overwritten
-        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+        if (AcceptsCalculation() && IsFormulaic(text))
         {
-            // Revert to previous value
+            NormalizeShorthandOperations();
+            EvaluateInput();
+
+            // Divide by 0 error state
+            if (fpclassify(Value()) == FP_NAN)
+            {
+                SetErrorState(ValidationState::InvalidDivide);
+                return;
+            }
+        }
+
+        auto parsedNum = m_formatter.ParseDouble(text);
+
+        // Rounding separately because rounding affects Value property while formatting does not
+        if (parsedNum && NumberRounder() != winrt::NumberBoxNumberRounder::None)
+        {
+            if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder)
+            {
+                parsedNum = m_iRounder.RoundDouble(parsedNum.Value());
+            }
+            else
+            {
+                parsedNum = m_sRounder.RoundDouble(parsedNum.Value());
+            }
+        }
+
+        // Valid, in bounds value
+        if (parsedNum && GetBoundState(parsedNum.Value()) == BoundState::InBounds )
+        {
             SetErrorState(ValidationState::Valid);
+            Value(parsedNum.Value());
             UpdateTextToValue();
-            return;
         }
-
-        // Parsable value that is not in bounds
-        BoundState invalidState = GetBoundState(parsedNum.Value());
-
-        switch (invalidState)
+        else
         {
-            case BoundState::OverMax:
-                SetErrorState(ValidationState::InvalidMax);
-                break;
-            case BoundState::UnderMin:
-                SetErrorState(ValidationState::InvalidMin);
-                break;
-            default:
-                SetErrorState(ValidationState::Invalid);
-        }
+            // No parsable value
+            if (!parsedNum && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+            {
+                SetErrorState(ValidationState::InvalidInput);
+                return;
+            }
 
-        Value(parsedNum.Value());
-        UpdateTextToValue();
+            // Value needs to be overwritten
+            if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+            {
+                // Revert to previous value
+                SetErrorState(ValidationState::Valid);
+                UpdateTextToValue();
+                return;
+            }
+
+            // Parsable value that is not in bounds
+            BoundState invalidState = GetBoundState(parsedNum.Value());
+
+            switch (invalidState)
+            {
+                case BoundState::OverMax:
+                    SetErrorState(ValidationState::InvalidMax);
+                    break;
+                case BoundState::UnderMin:
+                    SetErrorState(ValidationState::InvalidMin);
+                    break;
+                default:
+                    SetErrorState(ValidationState::Invalid);
+            }
+
+            Value(parsedNum.Value());
+            UpdateTextToValue();
+        }
     }
 }
 
@@ -271,21 +281,35 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
 
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    //Gamepad Interactions still untested
-    switch (args.OriginalKey()) {
-    case winrt::VirtualKey::Up:
-    case winrt::VirtualKey::GamepadDPadUp:
-        StepValue(true);
-        break;
-    case winrt::VirtualKey::Down:
-    case winrt::VirtualKey::GamepadDPadDown:
-        StepValue(false);
-        break;
+    // ### Gamepad Interactions still untested
+    switch (args.OriginalKey())
+    {
+        case winrt::VirtualKey::Enter:
+        case winrt::VirtualKey::GamepadA:
+            ValidateInput();
+            break;
+
+        case winrt::VirtualKey::Escape:
+        case winrt::VirtualKey::GamepadB:
+            UpdateTextToValue();
+            break;
+
+        case winrt::VirtualKey::Up:
+        case winrt::VirtualKey::GamepadDPadUp:
+            StepValue(true);
+            break;
+
+        case winrt::VirtualKey::Down:
+        case winrt::VirtualKey::GamepadDPadDown:
+            StepValue(false);
+            break;
     }
 }
 
-void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args) {
-    if (HyperScrollEnabled()) {
+void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+{
+    if (HyperScrollEnabled())
+    {
         int delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
         if (delta > 0)
         {
@@ -393,6 +417,7 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 
     // Pick bigger of two decimal sigDigits
     int result = std::max(oldValSig, StepSig);
+
     // append # of integer digits from new value
     result += (int) formattedNew.substr(0, formattedNew.find_first_of('.')).size();
     return result;
@@ -401,37 +426,48 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 // Appends current value to start of special shorthand functions in form "(Operation Operand)*"
 void NumberBox::NormalizeShorthandOperations()
 {
-    std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");
-    if (std::regex_match(m_TextBox.Text().data(), r))
+    if (auto textBox = m_textBox.get())
     {
-        std::wstringstream ss;
-        ss << Value() << m_TextBox.Text().data();
-        m_TextBox.Text(ss.str());
+        std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");
+        if (std::regex_match(textBox.Text().data(), r))
+        {
+            std::wstringstream ss;
+            ss << Value() << textBox.Text().data();
+            textBox.Text(ss.str());
+        }
     }
 }
 
 // Run value entered through NumberParser
 void NumberBox::EvaluateInput()
 {
-    auto val = NumberBoxParser::Compute(m_TextBox.Text());
-    // No calculation could be done
-    if (val == std::nullopt)
+    if (auto textBox = m_textBox.get())
     {
-        return;
-    }
-    if (std::isnan(val.value()))
-    {
+        auto val = NumberBoxParser::Compute(textBox.Text());
+
+        // No calculation could be done
+        if (val == std::nullopt)
+        {
+            return;
+        }
+        if (std::isnan(val.value()))
+        {
+            Value(val.value());
+        }
+
         Value(val.value());
-    }
-   Value(val.value());
-   UpdateTextToValue(); 
+        UpdateTextToValue();
+   }
 }
 
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
+    if (auto textBox = m_textBox.get())
+    {
         auto formattedValue = m_formatter.Format(Value());
-        m_TextBox.Text(formattedValue);
+        textBox.Text(formattedValue);
+    }
 }
 
 // Handler for swapping visual states of textbox
@@ -459,29 +495,38 @@ void NumberBox::SetErrorState(ValidationState state)
                 msg << "Only use numbers.";
             }
             break;
+
         case ValidationState::InvalidMin:
             msg << "Min is " << Minimum() << ".";
             break;
+
         case ValidationState::InvalidMax:
             msg << "Max is " << Maximum() << ".";
             break;
+
         case ValidationState::InvalidDivide:
             msg << "Division by 0 unsupported.";
             break;
+
         case ValidationState::Invalid:
             msg << "Invalid Input.";
-        }
+            break;
+    }
     m_ValidationMessage = msg.str();
 
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
-        m_ErrorToolTipTextBlock.Text(msg.str());
+        m_errorToolTip.Content(msg.str);
+        //tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonTooltip)));
     }
     else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidText", false);
-        m_ErrorTextMessage.Text(msg.str());
+        if (auto errorTextBlock = m_errorTextBlock.get())
+        {
+            errorTextBlock.Text(msg.str());
+        }
     }
     m_hasError = true;
 }
@@ -581,9 +626,13 @@ void NumberBox::SetHeader()
 }
 
 // Sets TextBox placeholder text
+// ### why
 void NumberBox::SetPlaceHolderText()
 {
-    m_TextBox.PlaceholderText(PlaceholderText());
+    if (auto textBox = m_textBox.get())
+    {
+        textBox.PlaceholderText(PlaceholderText());
+    }
 }
 
 

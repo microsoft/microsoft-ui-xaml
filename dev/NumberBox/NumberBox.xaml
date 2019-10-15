@@ -93,6 +93,7 @@
                                 Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Margin="{ThemeResource NumberBoxIconMargin}"
+                                VerticalAlignment="Bottom"
                                 Glyph="&#xE7BA;"
                                 ToolTipService.ToolTip="Invalid Input" /> <!-- ### need to globalize -->
                         </StackPanel>

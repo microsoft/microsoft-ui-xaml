@@ -88,18 +88,18 @@ private:
     bool IsFormulaic(const winrt::hstring& in);
     void NormalizeShorthandOperations();
     BoundState GetBoundState(double val);
+
     winrt::DecimalFormatter m_formatter{};
     winrt::IncrementNumberRounder m_iRounder{};
     winrt::SignificantDigitsNumberRounder m_sRounder{};
     winrt::DecimalFormatter m_stepPrecisionFormatter{};
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
-    winrt::TextBox m_TextBox{};
-    winrt::RepeatButton m_SpinDown{};
-    winrt::RepeatButton m_SpinUp{};
-    winrt::FontIcon m_WarningIcon{};
-    winrt::ToolTip m_ErrorToolTip{};
-    winrt::TextBlock m_ErrorToolTipTextBlock{};
-    winrt::TextBlock m_ErrorTextMessage{};
+
+    tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::TextBlock> m_errorTextBlock{ this };
+
+    winrt::ToolTip m_errorToolTip{};
+
     winrt::hstring m_ValidationMessage{};
 
 };
