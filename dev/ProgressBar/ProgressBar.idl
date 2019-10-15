@@ -29,6 +29,7 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsIndeterminate{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowError{ get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

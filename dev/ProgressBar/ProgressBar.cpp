@@ -21,7 +21,6 @@ ProgressBar::ProgressBar()
     Loaded({ this, &ProgressBar::OnLoaded });
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
-
 }
 
 void ProgressBar::OnApplyTemplate()
@@ -45,10 +44,7 @@ void ProgressBar::OnApplyTemplate()
         m_progressBarIndicatorRevoker = progressBarIndicator.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
     }
 
-    if (IsIndeterminate())
-    {
-        UpdateStates();
-    }
+    UpdateStates();
 }
 
 void ProgressBar::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
@@ -66,7 +62,6 @@ void ProgressBar::OnRangeBaseValueChanged(const winrt::DependencyObject& sender,
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
 
     SetProgressBarIndicatorWidth();
-
 }
 
 void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -78,23 +73,34 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 
 void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    UpdateStates();
+}
 
+void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
     UpdateStates();
 }
 
 void ProgressBar::UpdateStates()
 {
-    if (IsIndeterminate())
+    if (ShowError())
     {
-        SetProgressBarIndicatorWidth();
-        UpdateWidthBasedTemplateSettings();
-        winrt::VisualStateManager::GoToState(*this, L"Indeterminate", true);
+        winrt::VisualStateManager::GoToState(*this, L"Error", true);
+    }
+    else if (ShowPaused() && IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Error", true); // Paused-Indeterminate state same visual treatment as Error state
     }
     else if (ShowPaused())
     {
         winrt::VisualStateManager::GoToState(*this, L"Paused", true);
     }
-    else if (!ShowPaused())
+    else if (IsIndeterminate())
+    {
+        UpdateWidthBasedTemplateSettings();
+        winrt::VisualStateManager::GoToState(*this, L"Indeterminate", true);
+    }
+    else if (!IsIndeterminate())
     {
         winrt::VisualStateManager::GoToState(*this, L"Determinate", true);
     }
@@ -105,20 +111,12 @@ void ProgressBar::SetProgressBarIndicatorWidth()
     if (auto progressBarIndicator = m_progressBarIndicator.get())
     {
         double progressBarWidth = m_layoutRoot.get().ActualWidth();
-
-        if (IsIndeterminate())
-        {
-            progressBarIndicator.Width(progressBarWidth / 3);
-            return;
-        }
-
         double maximum = Maximum();
         double minimum = Minimum();
         double increment = 0;
         
         increment = progressBarWidth / (maximum - minimum);
         progressBarIndicator.Width(increment * (Value() - minimum));
-
     }
 }
 
@@ -126,6 +124,7 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 {
     auto const templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
     auto progressBar = m_layoutRoot.get();
+    auto progressBarIndicator = m_progressBarIndicator.get();
 
     auto const [width, height] = [progressBar]()
     {
@@ -137,6 +136,8 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
         }
         return std::make_tuple(0.0f, 0.0f);
     }();
+
+    progressBarIndicator.Width(width / 3);
 
     templateSettings->ContainerAnimationEndPosition(width);
     templateSettings->ContainerAnimationStartPosition(0);
