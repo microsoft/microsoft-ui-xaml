@@ -128,14 +128,13 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     {
         // Unregister from old target if it exists
         if (args.OldValue()) {
-            winrt::FrameworkElement oldTarget = unbox_value<winrt::FrameworkElement >(args.OldValue());
             m_TargetUnloadedRevoker.revoke();
         }
 
         // Register to new target if it exists
-        if (args.NewValue()) {
-            winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(args.NewValue());
-            m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke,{ this,&TeachingTip::ClosePopupOnUnloadEvent });
+        if (const auto& value = args.NewValue()) {
+            winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(value);
+            m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke, { this,&TeachingTip::ClosePopupOnUnloadEvent });
         }
         OnTargetChanged();
     }
