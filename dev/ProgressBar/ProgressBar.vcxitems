@@ -16,15 +16,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar2TemplateSettings.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar2TemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar2TemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar2TemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ProgressBar.xaml">

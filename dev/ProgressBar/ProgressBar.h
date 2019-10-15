@@ -6,7 +6,7 @@
 #include "pch.h"
 #include "common.h"
 
-#include "ProgressBar2TemplateSettings.h"
+#include "ProgressBarTemplateSettings.h"
 
 #include "ProgressBar.g.h"
 #include "ProgressBar.properties.h"

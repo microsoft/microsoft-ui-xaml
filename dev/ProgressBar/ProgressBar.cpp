@@ -20,7 +20,7 @@ ProgressBar::ProgressBar()
     // NOTE: You can also hook up to events on your control from here.
     Loaded({ this, &ProgressBar::OnLoaded });
 
-    SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBar2TemplateSettings>());
+    SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 
 }
 
@@ -124,7 +124,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
 void ProgressBar::UpdateWidthBasedTemplateSettings()
 {
-    auto const templateSettings = winrt::get_self<::ProgressBar2TemplateSettings>(TemplateSettings());
+    auto const templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
     auto progressBar = m_layoutRoot.get();
 
     auto const [width, height] = [progressBar]()

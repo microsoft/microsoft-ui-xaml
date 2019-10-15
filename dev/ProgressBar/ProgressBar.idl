@@ -3,9 +3,9 @@
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass ProgressBar2TemplateSettings : Windows.UI.Xaml.DependencyObject
+unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
 {
-    ProgressBar2TemplateSettings();
+    ProgressBarTemplateSettings();
 
     Double ContainerAnimationStartPosition;
     static Windows.UI.Xaml.DependencyProperty ContainerAnimationStartPositionProperty{ get; };
@@ -34,7 +34,7 @@ unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBas
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean ShowPaused{ get; set; };
 
-    ProgressBar2TemplateSettings TemplateSettings{ get; set; };
+    ProgressBarTemplateSettings TemplateSettings{ get; };
 
     static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ShowErrorProperty{ get; };

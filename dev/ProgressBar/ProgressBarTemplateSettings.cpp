@@ -3,9 +3,9 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ProgressBar2TemplateSettings.h"
+#include "ProgressBarTemplateSettings.h"
 
-ProgressBar2TemplateSettings::ProgressBar2TemplateSettings()
+ProgressBarTemplateSettings::ProgressBarTemplateSettings()
 {
     EnsureProperties();
 }
