@@ -459,12 +459,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Log.Comment("Verify that NavigationView with DisplayMode set to 'LeftMinimal' does not display pane on load.");
                     CheckBox isLeftMinimalPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftMinimalPaneOpenCheckBox"));
-                    Wait.ForIdle();
                     Verify.IsTrue(isLeftMinimalPaneOpenCheckBox.ToggleState == ToggleState.Off);
 
                     Log.Comment("Verify that NavigationView with DisplayMode set to 'LeftCompact' does not display pane on load.");
                     CheckBox isLeftCompactPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftCompactPaneOpenCheckBox"));
-                    Wait.ForIdle();
                     Verify.IsTrue(isLeftCompactPaneOpenCheckBox.ToggleState == ToggleState.Off);
                 }
 
