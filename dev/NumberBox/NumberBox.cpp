@@ -517,8 +517,8 @@ void NumberBox::SetErrorState(ValidationState state)
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
-        m_errorToolTip.Content(msg.str);
-        //tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonTooltip)));
+        m_errorToolTip.Content(box_value(msg.str()));
+        // ### tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonTooltip)));
     }
     else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
     {
