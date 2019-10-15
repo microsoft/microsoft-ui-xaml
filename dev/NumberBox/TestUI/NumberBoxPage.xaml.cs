@@ -17,44 +17,39 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
-        private void Hyperscroll_Checked(object sender, RoutedEventArgs e)
+        private void HyperScroll_Checked(object sender, RoutedEventArgs e)
         {
             CheckBox check = (CheckBox) sender;
             if ( (bool) check.IsChecked)
             {
-                numBox.HyperScrollEnabled = true;
+                TestNumberBox.HyperScrollEnabled = true;
             }
             else
             {
-                numBox.HyperScrollEnabled = false;
+                TestNumberBox.HyperScrollEnabled = false;
             }
         }
 
         private void SpinMode_Changed(object sender, RoutedEventArgs e)
         {
             ComboBox spinmode = (ComboBox)sender;
-            if (numBox == null)
+            if (TestNumberBox == null)
             {
                 return;
             }
             if ((string) spinmode.SelectedValue == "Inline")
             {
-                numBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
+                TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
             }
             else if ((string) spinmode.SelectedValue == "Hidden")
             {
-                numBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
+                TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
             }
         }
 
-        private void Bounds_Changed(object sender, RoutedEventArgs e)
+        private void Wrap_CheckChanged(object sender, RoutedEventArgs e)
         {
-            if (numBox == null)
-            {
-                return;
-            }
-            ComboBox boundmode = (ComboBox)sender;
-            numBox.MinMaxMode = (NumberBoxMinMaxMode) Enum.Parse(typeof(NumberBoxMinMaxMode), boundmode.SelectedValue as string);
+            TestNumberBox.WrapEnabled = WrapCheckBox.IsEnabled;
         }
     }
 }

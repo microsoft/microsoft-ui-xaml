@@ -43,8 +43,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         public string GetTextBoxString()
         {
-            UIObject Numbox = FindElement.ByName("NumBox");
-            foreach (UIObject elem in Numbox.Children)
+            UIObject numberBox = FindElement.ByName("TestNumberBox");
+            foreach (UIObject elem in numberBox.Children)
             {
                 if (elem.ClassName.Equals("TextBox"))
                 {
@@ -60,7 +60,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 Log.Comment("Verify NumberBox exists");
-                UIObject Numbox = FindElement.ByName("NumBox");
+                UIObject Numbox = FindElement.ByName("TestNumberBox");
                 Verify.IsNotNull(Numbox);
                 Log.Comment("NumberBox Exists");
 

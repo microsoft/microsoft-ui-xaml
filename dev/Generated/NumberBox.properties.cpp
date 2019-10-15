@@ -17,21 +17,16 @@ GlobalDependencyProperty NumberBoxProperties::s_IncrementPrecisionProperty{ null
 GlobalDependencyProperty NumberBoxProperties::s_IntegerDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsDecimalPointAlwaysDisplayedProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsZeroSignedProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_MaxValueProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_MinMaxModeProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_MinValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_NumberRounderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_PlaceholderTextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_RoundingAlgorithmProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitPrecisionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SignificantDigitsProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_WrapEnabledProperty{ nullptr };
 
 NumberBoxProperties::NumberBoxProperties()
-    : m_valueChangedEventSource{static_cast<NumberBox*>(this)}
 {
     EnsureProperties();
 }
@@ -137,39 +132,6 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsZeroSignedPropertyChanged));
     }
-    if (!s_MaxValueProperty)
-    {
-        s_MaxValueProperty =
-            InitializeDependencyProperty(
-                L"MaxValue",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(0),
-                nullptr);
-    }
-    if (!s_MinMaxModeProperty)
-    {
-        s_MinMaxModeProperty =
-            InitializeDependencyProperty(
-                L"MinMaxMode",
-                winrt::name_of<winrt::NumberBoxMinMaxMode>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(winrt::NumberBoxMinMaxMode::None),
-                nullptr);
-    }
-    if (!s_MinValueProperty)
-    {
-        s_MinValueProperty =
-            InitializeDependencyProperty(
-                L"MinValue",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(0),
-                nullptr);
-    }
     if (!s_NumberRounderProperty)
     {
         s_NumberRounderProperty =
@@ -236,17 +198,6 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(winrt::NumberBoxSpinButtonPlacementMode::Hidden),
                 winrt::PropertyChangedCallback(&OnSpinButtonPlacementModePropertyChanged));
     }
-    if (!s_StepFrequencyProperty)
-    {
-        s_StepFrequencyProperty =
-            InitializeDependencyProperty(
-                L"StepFrequency",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(1),
-                nullptr);
-    }
     if (!s_TextProperty)
     {
         s_TextProperty =
@@ -258,16 +209,16 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnTextPropertyChanged));
     }
-    if (!s_ValueProperty)
+    if (!s_WrapEnabledProperty)
     {
-        s_ValueProperty =
+        s_WrapEnabledProperty =
             InitializeDependencyProperty(
-                L"Value",
-                winrt::name_of<double>(),
+                L"WrapEnabled",
+                winrt::name_of<bool>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(0),
-                winrt::PropertyChangedCallback(&OnValuePropertyChanged));
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
     }
 }
 
@@ -282,18 +233,14 @@ void NumberBoxProperties::ClearProperties()
     s_IntegerDigitsProperty = nullptr;
     s_IsDecimalPointAlwaysDisplayedProperty = nullptr;
     s_IsZeroSignedProperty = nullptr;
-    s_MaxValueProperty = nullptr;
-    s_MinMaxModeProperty = nullptr;
-    s_MinValueProperty = nullptr;
     s_NumberRounderProperty = nullptr;
     s_PlaceholderTextProperty = nullptr;
     s_RoundingAlgorithmProperty = nullptr;
     s_SignificantDigitPrecisionProperty = nullptr;
     s_SignificantDigitsProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
-    s_StepFrequencyProperty = nullptr;
     s_TextProperty = nullptr;
-    s_ValueProperty = nullptr;
+    s_WrapEnabledProperty = nullptr;
 }
 
 void NumberBoxProperties::OnBasicValidationModePropertyChanged(
@@ -408,14 +355,6 @@ void NumberBoxProperties::OnTextPropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnTextPropertyChanged(args);
 }
 
-void NumberBoxProperties::OnValuePropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnValuePropertyChanged(args);
-}
-
 void NumberBoxProperties::AcceptsCalculation(bool value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_AcceptsCalculationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
@@ -506,36 +445,6 @@ bool NumberBoxProperties::IsZeroSigned()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsZeroSignedProperty));
 }
 
-void NumberBoxProperties::MaxValue(double value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_MaxValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double NumberBoxProperties::MaxValue()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MaxValueProperty));
-}
-
-void NumberBoxProperties::MinMaxMode(winrt::NumberBoxMinMaxMode const& value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_MinMaxModeProperty, ValueHelper<winrt::NumberBoxMinMaxMode>::BoxValueIfNecessary(value));
-}
-
-winrt::NumberBoxMinMaxMode NumberBoxProperties::MinMaxMode()
-{
-    return ValueHelper<winrt::NumberBoxMinMaxMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinMaxModeProperty));
-}
-
-void NumberBoxProperties::MinValue(double value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_MinValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double NumberBoxProperties::MinValue()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_MinValueProperty));
-}
-
 void NumberBoxProperties::NumberRounder(winrt::NumberBoxNumberRounder const& value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_NumberRounderProperty, ValueHelper<winrt::NumberBoxNumberRounder>::BoxValueIfNecessary(value));
@@ -596,16 +505,6 @@ winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacement
     return ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SpinButtonPlacementModeProperty));
 }
 
-void NumberBoxProperties::StepFrequency(double value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_StepFrequencyProperty, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double NumberBoxProperties::StepFrequency()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepFrequencyProperty));
-}
-
 void NumberBoxProperties::Text(winrt::hstring const& value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_TextProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
@@ -616,22 +515,12 @@ winrt::hstring NumberBoxProperties::Text()
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextProperty));
 }
 
-void NumberBoxProperties::Value(double value)
+void NumberBoxProperties::WrapEnabled(bool value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_WrapEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-double NumberBoxProperties::Value()
+bool NumberBoxProperties::WrapEnabled()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValueProperty));
-}
-
-winrt::event_token NumberBoxProperties::ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value)
-{
-    return m_valueChangedEventSource.add(value);
-}
-
-void NumberBoxProperties::ValueChanged(winrt::event_token const& token)
-{
-    m_valueChangedEventSource.remove(token);
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_WrapEnabledProperty));
 }

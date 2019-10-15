@@ -73,7 +73,7 @@
                                 </ResourceDictionary>
                             </StackPanel.Resources>
 
-                            <TextBox x:Name="InputBox" Header=""/> <!-- ### why no header here? -->
+                            <TextBox x:Name="InputBox" Header="{TemplateBinding Header}"/> <!-- ### why no header here? -->
 
                             <RepeatButton x:Name="UpSpinButton"
                                 Visibility="Collapsed"
@@ -114,8 +114,8 @@
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="MinWidth" Value="34"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="{ThemeResource TextControlThemeMinHeight}"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>

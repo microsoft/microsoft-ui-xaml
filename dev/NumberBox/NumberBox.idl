@@ -51,52 +51,53 @@ runtimeclass NumberBoxValueChangingEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
+unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Primitives.RangeBase
 {
     NumberBox();
-    
-    
-    [MUX_DEFAULT_VALUE("0")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Double Value{ get; set; };
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Header;
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String PlaceholderText;
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxBasicValidationMode BasicValidationMode;
+
     [MUX_DEFAULT_VALUE("false")]
     Boolean AcceptsCalculation;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode{ get; set; };
+
     [MUX_DEFAULT_VALUE("false")]
     Boolean HyperScrollEnabled;
-    [MUX_DEFAULT_VALUE("1")]
-    Double StepFrequency;
 
-    [MUX_DEFAULT_VALUE("winrt::NumberBoxMinMaxMode::None")]
-    NumberBoxMinMaxMode MinMaxMode{ get; set; };
-    [MUX_DEFAULT_VALUE("0")]
-    Double MinValue;
-    [MUX_DEFAULT_VALUE("0")]
-    Double MaxValue;
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean WrapEnabled;
+
+    // ### remove all this and just make the formatter a property
 
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 IntegerDigits;
+
     [MUX_DEFAULT_VALUE("0")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 FractionDigits;
+
     [MUX_DEFAULT_VALUE("0")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SignificantDigits;
+
     [MUX_DEFAULT_VALUE("false")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsDecimalPointAlwaysDisplayed;
+
     [MUX_DEFAULT_VALUE("false")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsZeroSigned;
@@ -104,32 +105,27 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::RoundingAlgorithm::RoundAwayFromZero")]
     Windows.Globalization.NumberFormatting.RoundingAlgorithm RoundingAlgorithm{ get; set; };
+
     [MUX_DEFAULT_VALUE("winrt::NumberBoxNumberRounder::None")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxNumberRounder NumberRounder{ get; set; };
+
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double IncrementPrecision;
+
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SignificantDigitPrecision;
-
-
-
-    event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty AcceptsCalculationProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty MinMaxModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty MinValueProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty MaxValueProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty WrapEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IntegerDigitsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty FractionDigitsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SignificantDigitsProperty{ get; };
