@@ -319,6 +319,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 navView.IsSettingsVisible = true;
                 navView.IsPaneOpen = true;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
                 MUXControlsTestApp.App.TestContentRoot = navView;
             });
 

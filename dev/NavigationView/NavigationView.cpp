@@ -584,8 +584,10 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     {
         MUX_FAIL_FAST();
     }
+
     if (!forceSetDisplayMode && m_InitialNonForcedModeUpdate) {
-        if (displayMode == winrt::NavigationViewDisplayMode::Minimal && PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Auto) {
+        if (displayMode == winrt::NavigationViewDisplayMode::Minimal ||
+            displayMode == winrt::NavigationViewDisplayMode::Compact) {
             ClosePane();
         }
         m_InitialNonForcedModeUpdate = false;
