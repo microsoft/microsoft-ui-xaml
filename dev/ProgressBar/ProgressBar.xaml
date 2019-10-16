@@ -42,7 +42,7 @@
                                             Storyboard.TargetName="ProgressBarIndicator"
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                             Duration="0:0:1">
-                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}">
                                                 <EasingDoubleKeyFrame.EasingFunction>
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>
@@ -57,9 +57,21 @@
                                 </VisualState>
                                 <VisualState x:Name="Error">
                                     <Storyboard>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="ProgressBarIndicator">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="0" />
-                                        </ObjectAnimationUsingKeyFrames>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ProgressBarIndicator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.25" />
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ProgressBarIndicator"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
+                                            Duration="0:0:0.75">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}">
+                                                <EasingDoubleKeyFrame.EasingFunction>
+                                                    <CubicEase/>
+                                                </EasingDoubleKeyFrame.EasingFunction>
+                                            </EasingDoubleKeyFrame>
+                                        </DoubleAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Paused">

@@ -21,7 +21,7 @@
                 AutomationProperties.Name="TestProgressBar"
                 Maximum ="{Binding ElementName=MaximumInput, Path=Text, FallbackValue=100, Mode=OneWay}"
                 Minimum="{Binding ElementName=MinimumInput, Path=Text, FallbackValue=0, Mode=Oneway}"
-                Width="400"
+                Width="100"
                 HorizontalAlignment="Left"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
