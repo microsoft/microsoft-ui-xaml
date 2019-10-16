@@ -114,15 +114,17 @@ int32_t TreeViewItemAutomationPeer::GetPositionInSetCore()
 {
     winrt::ListView ancestorListView = GetParentListView();
     auto targetNode = GetTreeViewNode();
-    int positionInSet = -1;
+    int positionInSet = 0;
 
     if (ancestorListView && targetNode)
     {
-        auto targetParentNode = targetNode.Parent();
-        UINT32 position = 0;
-        if (targetParentNode.Children().IndexOf(targetNode, position))
+        if (auto targetParentNode = targetNode.Parent())
         {
-            positionInSet = static_cast<int>(position) + 1;
+            UINT32 position = 0;
+            if (targetParentNode.Children().IndexOf(targetNode, position))
+            {
+                positionInSet = static_cast<int>(position) + 1;
+            }
         }
     }
 
@@ -133,13 +135,15 @@ int32_t TreeViewItemAutomationPeer::GetSizeOfSetCore()
 {
     winrt::ListView ancestorListView = GetParentListView();
     auto targetNode = GetTreeViewNode();
-    int setSize = -1;
+    int setSize = 0;
 
     if (ancestorListView && targetNode)
     {
-        auto targetParentNode = targetNode.Parent();
-        UINT32 size = targetParentNode.Children().Size();
-        setSize = static_cast<int>(size);
+        if (auto targetParentNode = targetNode.Parent())
+        {
+            UINT32 size = targetParentNode.Children().Size();
+            setSize = static_cast<int>(size);
+        }
     }
 
     return setSize;
