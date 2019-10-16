@@ -30,6 +30,8 @@
                 <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
                 <Button x:Name="SetTabViewWidth" AutomationProperties.Name="SetTabViewWidth" Content="Set Width" Margin="0,0,0,8" Click="SetTabViewWidth_Click" />
 
+                <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
+
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock Text="Scroll buttons visible: " />
                     <TextBlock x:Name="ScrollButtonsVisible" AutomationProperties.Name="ScrollButtonsVisible" Text="False" />
@@ -79,7 +81,7 @@
                 <controls:TabView
                     x:Name="Tabs"
                     TabWidthMode="Equal"
-                    SelectedIndex="0"
+                    CanDragTabs="True"
                     SelectionChanged="TabViewSelectionChanged"
                     TabCloseRequested="TabViewTabCloseRequested"
                     TabDragStarting="OnTabDragStarting"
@@ -109,7 +111,7 @@
 
                             <StackPanel x:Name="FirstTabContent" AutomationProperties.Name="FirstTabContent">
                                 <Button x:Name="FirstTabButton" AutomationProperties.Name="FirstTabButton" Margin="8" FontSize="20">Home Button</Button>
-                                <Button x:Name="FirstTabButton2" AutomationProperties.Name="FirstTabButton2" Margin="8" FontSize="20">Another Button</Button>
+                                <Button x:Name="TabViewSizingPageButton" AutomationProperties.Name="TabViewSizingPageButton" Margin="8" Click="TabViewSizingPageButton_Click" FontSize="20">TabView Sizing Page</Button>
                             </StackPanel>
                         </controls:TabViewItem>
 
@@ -159,7 +161,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699">
+                    <controls:TabView x:Name="DataBindingTabView" IsAddTabButtonVisible="false" Background="#66336699" SelectedIndex="2">
                         <controls:TabView.TabItemTemplate>
                             <DataTemplate x:DataType="local:TabDataItem">
                                 <controls:TabViewItem Header="{x:Bind Header}" IconSource="{x:Bind IconSource}" Content="{x:Bind Content}">
@@ -179,7 +181,7 @@
 
                     <controls:TabView x:Name="SecondTabView"
                         Grid.Column="2"
-                        SelectedIndex="0"
+                        CanDragTabs="True"
                         IsAddTabButtonVisible="false"
                         TabDragStarting="OnTabDragStarting"
                         TabStripDragOver="OnTabStripDragOver"

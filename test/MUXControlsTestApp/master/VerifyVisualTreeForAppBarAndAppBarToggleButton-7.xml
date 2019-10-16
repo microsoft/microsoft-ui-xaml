@@ -1,10 +1,12 @@
 [Windows.UI.Xaml.Controls.Grid]
     Padding=0,0,0,0
+    CornerRadius=0,0,0,0
     BorderThickness=0,0,0,0
     BorderBrush=[NULL]
     Background=[NULL]
-    Name=
+    Width=400
     Margin=0,0,0,0
+    Height=400
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
@@ -13,10 +15,10 @@
     RenderSize=400,400
   [Windows.UI.Xaml.Controls.StackPanel]
       Padding=0,0,0,0
+      CornerRadius=0,0,0,0
       BorderThickness=0,0,0,0
       BorderBrush=[NULL]
       Background=[NULL]
-      Name=
       Margin=0,0,0,0
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
@@ -30,7 +32,8 @@
         BorderThickness=0,0,0,0
         BorderBrush=#00FFFFFF
         Background=#00FFFFFF
-        Name=
+        CornerRadius=0,0,0,0
+        Width=68
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
@@ -40,6 +43,7 @@
         RenderSize=68,56
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
+          CornerRadius=0,0,0,0
           BorderThickness=0,0,0,0
           BorderBrush=#00FFFFFF
           Background=#00FFFFFF
@@ -63,10 +67,12 @@
             RenderSize=68,56
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
+            CornerRadius=0,0,0,0
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
             Name=ContentRoot
+            MinHeight=56
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
@@ -77,6 +83,7 @@
           [Windows.UI.Xaml.Controls.Viewbox]
               Name=ContentViewbox
               Margin=0,12,0,4
+              Height=16
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -85,10 +92,10 @@
               RenderSize=16,16
             [Windows.UI.Xaml.Controls.Border]
                 Padding=0,0,0,0
+                CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
-                Name=
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
@@ -99,6 +106,7 @@
               [Windows.UI.Xaml.Controls.ContentPresenter]
                   Foreground=#FF000000
                   Padding=0,0,0,0
+                  CornerRadius=0,0,0,0
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
                   Background=[NULL]
@@ -112,7 +120,6 @@
                   RenderSize=20,20
                 [Windows.UI.Xaml.Controls.SymbolIcon]
                     Foreground=#FF000000
-                    Name=
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
@@ -122,10 +129,10 @@
                     RenderSize=20,20
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=0,0,0,0
+                      CornerRadius=0,0,0,0
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=#00000000
-                      Name=
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -136,7 +143,6 @@
                     [Windows.UI.Xaml.Controls.TextBlock]
                         Padding=0,0,0,0
                         Foreground=#FF000000
-                        Name=
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#99FFFFFF
@@ -193,7 +199,8 @@
         BorderThickness=0,0,0,0
         BorderBrush=#00FFFFFF
         Background=#00FFFFFF
-        Name=
+        CornerRadius=0,0,0,0
+        Width=68
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
@@ -203,6 +210,7 @@
         RenderSize=68,56
       [Windows.UI.Xaml.Controls.Grid]
           Padding=0,0,0,0
+          CornerRadius=0,0,0,0
           BorderThickness=0,0,0,0
           BorderBrush=#00FFFFFF
           Background=#00FFFFFF
@@ -246,10 +254,12 @@
             RenderSize=68,56
         [Windows.UI.Xaml.Controls.Grid]
             Padding=0,0,0,0
+            CornerRadius=0,0,0,0
             BorderThickness=0,0,0,0
             BorderBrush=[NULL]
             Background=[NULL]
             Name=ContentRoot
+            MinHeight=56
             Margin=0,0,0,0
             FocusVisualSecondaryThickness=1,1,1,1
             FocusVisualSecondaryBrush=#99FFFFFF
@@ -260,8 +270,10 @@
           [Windows.UI.Xaml.Controls.TextBlock]
               Padding=0,0,0,0
               Foreground=#FF000000
+              Width=14
               Name=OverflowCheckGlyph
               Margin=12,4,12,4
+              Height=14
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -271,6 +283,7 @@
           [Windows.UI.Xaml.Controls.Viewbox]
               Name=ContentViewbox
               Margin=0,12,0,4
+              Height=16
               FocusVisualSecondaryThickness=1,1,1,1
               FocusVisualSecondaryBrush=#99FFFFFF
               FocusVisualPrimaryThickness=2,2,2,2
@@ -279,10 +292,10 @@
               RenderSize=16,16
             [Windows.UI.Xaml.Controls.Border]
                 Padding=0,0,0,0
+                CornerRadius=0,0,0,0
                 BorderThickness=0,0,0,0
                 BorderBrush=[NULL]
                 Background=[NULL]
-                Name=
                 Margin=0,0,0,0
                 FocusVisualSecondaryThickness=1,1,1,1
                 FocusVisualSecondaryBrush=#99FFFFFF
@@ -293,6 +306,7 @@
               [Windows.UI.Xaml.Controls.ContentPresenter]
                   Foreground=#FF000000
                   Padding=0,0,0,0
+                  CornerRadius=0,0,0,0
                   BorderThickness=0,0,0,0
                   BorderBrush=[NULL]
                   Background=[NULL]
@@ -306,7 +320,6 @@
                   RenderSize=20,20
                 [Windows.UI.Xaml.Controls.SymbolIcon]
                     Foreground=#FF000000
-                    Name=
                     Margin=0,0,0,0
                     FocusVisualSecondaryThickness=1,1,1,1
                     FocusVisualSecondaryBrush=#99FFFFFF
@@ -316,10 +329,10 @@
                     RenderSize=20,20
                   [Windows.UI.Xaml.Controls.Grid]
                       Padding=0,0,0,0
+                      CornerRadius=0,0,0,0
                       BorderThickness=0,0,0,0
                       BorderBrush=[NULL]
                       Background=#00000000
-                      Name=
                       Margin=0,0,0,0
                       FocusVisualSecondaryThickness=1,1,1,1
                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -330,7 +343,6 @@
                     [Windows.UI.Xaml.Controls.TextBlock]
                         Padding=0,0,0,0
                         Foreground=#FF000000
-                        Name=
                         Margin=0,0,0,0
                         FocusVisualSecondaryThickness=1,1,1,1
                         FocusVisualSecondaryBrush=#99FFFFFF

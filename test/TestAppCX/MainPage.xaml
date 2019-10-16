@@ -13,6 +13,8 @@
         <StackPanel x:Name="panel" HorizontalAlignment="Center">
             <Button Content="Leak Test Page" Click="GoToLeakTestControlPage"/>
             <Button Content="MenuBar test page" Click="GoToMenuBarTestPage"/>
+            <Button Content="CornerRadius test page" Click="GoToCornerRadiusTestPage"/>
+            <Button Content="TreeView test page" Click="GoToTreeViewTestPage"/>
         </StackPanel>
     </Grid>
 </Page>

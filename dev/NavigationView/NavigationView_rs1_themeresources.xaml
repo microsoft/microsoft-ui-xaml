@@ -578,19 +578,19 @@
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
                                 Opacity="0.0"
-                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
-                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                         </Grid>
 
                         <Border
                             x:Name="RevealBorder"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            contract4NotPresent:Visibility="Collapsed" />
+                            BorderThickness="{TemplateBinding BorderThickness}" />
 
-                        <Grid HorizontalAlignment="Left" 
+                        <Grid
+                            HorizontalAlignment="Stretch"
                             x:Name="ContentGrid"
                             MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
                             <Grid.ColumnDefinitions>
@@ -682,12 +682,15 @@
                                 Height="24"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
                                 Opacity="0.0"
-                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
-                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                         </Grid>
-
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                         <Grid 
                             x:Name="ContentGrid"
                             MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
@@ -751,6 +754,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -758,6 +762,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
@@ -772,6 +777,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PressedSelected">
@@ -779,6 +785,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="{ThemeResource TopNavigationViewItemBackgroundPressed}" />
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -787,6 +794,7 @@
                                 <VisualState x:Name="Disabled">
                                     <VisualState.Setters>
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
+                                        <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushCheckedDisabled}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -794,6 +802,11 @@
                         <Rectangle 
                             x:Name="PointerRectangle" 
                             Fill="Transparent" />
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" >
+                        </Border>
                         <Grid x:Name="ContentGrid">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -841,6 +854,7 @@
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Pressed">
@@ -849,6 +863,7 @@
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="Selected">
@@ -865,6 +880,7 @@
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPointerOver}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPointerOver}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="PointerOver" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="PressedSelected">
@@ -873,6 +889,7 @@
                                         <Setter Target="PointerRectangle.Fill" Value="{ThemeResource NavigationViewItemBackgroundSelectedPressed}" />
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundPressed}" />
+                                        <contract4Present:Setter Target="LayoutRoot.(media:RevealBrush.State)" Value="Pressed" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -882,6 +899,7 @@
                                     <VisualState.Setters>
                                         <Setter Target="Icon.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TopNavigationViewItemForegroundDisabled}" />
+                                        <Setter Target="RevealBorder.BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrushCheckedDisabled}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -908,6 +926,10 @@
                             x:Name="PointerRectangle" 
                             Fill="Transparent"
                             Visibility="Collapsed" />
+                        <Border		
+                            x:Name="RevealBorder"		
+                            BorderBrush="{TemplateBinding BorderBrush}"		
+                            BorderThickness="{TemplateBinding BorderThickness}" />
                         <Grid x:Name="ContentGrid">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -948,10 +970,10 @@
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
                                 Opacity="0"
-                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
-                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
+                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
                         </Grid>
                     </Grid>
                 </ControlTemplate>
@@ -1049,10 +1071,10 @@
                                 Height="2"
                                 Fill="{ThemeResource NavigationViewSelectionIndicatorForeground}"
                                 Opacity="0"
-                                contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
-                                contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
-                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}"/>
+                                contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

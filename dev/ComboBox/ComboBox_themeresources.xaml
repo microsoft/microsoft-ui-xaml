@@ -64,9 +64,9 @@
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -165,9 +165,9 @@
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -292,9 +292,9 @@
             <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForeground" ResourceKey="SystemControlPageTextBaseHighBrush" />
             <StaticResource x:Key="ComboBoxPlaceHolderForegroundFocusedPressed" ResourceKey="SystemControlHighlightAltBaseHighBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="SystemControlForegroundBaseMediumHighBrush" />
             <StaticResource x:Key="ComboBoxDropDownGlyphForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
@@ -361,7 +361,9 @@
     <Thickness x:Key="ComboBoxEditableTextPadding">11,5,32,6</Thickness>
     <Thickness x:Key="ComboBoxMinHeight">32</Thickness>
 
-    <Style TargetType="ComboBox">
+    <Style TargetType="ComboBox" BasedOn="{StaticResource DefaultComboBoxStyle}"/>
+
+    <Style x:Key="DefaultComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Padding" Value="{ThemeResource ComboBoxPadding}" />
         <Setter Property="MaxDropDownHeight" Value="504" />
         <Setter Property="Foreground" Value="{ThemeResource ComboBoxForeground}" />
@@ -640,7 +642,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Background="Transparent"
-                            Margin="0,2,2,2"
+                            Margin="0,1,1,1"
                             Visibility="Collapsed"
                             Width="30"
                             HorizontalAlignment="Right"

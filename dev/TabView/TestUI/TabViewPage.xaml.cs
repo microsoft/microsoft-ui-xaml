@@ -318,5 +318,16 @@ namespace MUXControlsTestApp
                 ScrollButtonsVisible.Text = "Unexpected";
             }
         }
+
+        private void TabViewSizingPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(TabViewSizingPage));
+        }
+
+        private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
+        {
+            FirstTab.Header = "s";
+            LongHeaderTab.Header = "long long long long long long long long";
+        }
     }
 }

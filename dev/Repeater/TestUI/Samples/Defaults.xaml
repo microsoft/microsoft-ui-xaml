@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Page
     x:Class="MUXControlsTestApp.Samples.Defaults"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -7,6 +7,7 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -20,5 +21,10 @@
                 <controls:ItemsRepeater ItemsSource="{x:Bind Data}" />
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
+        <controls:ItemsRepeater x:Name="emptyDataTemplateRepeater" ItemsSource="{x:Bind Data}">
+            <controls:ItemsRepeater.ItemTemplate>
+                <DataTemplate />
+            </controls:ItemsRepeater.ItemTemplate>
+        </controls:ItemsRepeater>
     </Grid>
 </Page>

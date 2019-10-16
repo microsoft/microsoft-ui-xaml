@@ -18,6 +18,7 @@
         <StackPanel Margin="2">
             <Button x:Name="navigateToSimpleContents" AutomationProperties.Name="navigateToSimpleContents" Margin="2" HorizontalAlignment="Stretch">List Items with simple swipe items.</Button>
             <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise Swipe API</Button>
+            <Button x:Name="navigateToClear" AutomationProperties.Name="navigateToClear" Margin="2" HorizontalAlignment="Stretch">Clear items page</Button>
         </StackPanel>
 
         <StackPanel Grid.Column="1" Margin="2">

@@ -14,6 +14,9 @@
 #include "TabViewTabDragCompletedEventArgs.g.h"
 #include "DispatcherHelper.h"
 
+static constexpr double c_tabShadowDepth = 16.0;
+static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
+
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
 {
@@ -86,6 +89,7 @@ public:
 
     // IFrameworkElement
     void OnApplyTemplate();
+    winrt::Size MeasureOverride(winrt::Size const& availableSize); 
 
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
@@ -107,6 +111,8 @@ public:
     void UpdateTabContent();
 
     void RequestCloseTab(winrt::TabViewItem const& item);
+
+    winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -154,6 +160,8 @@ private:
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
 
+    tracker_ref<winrt::Grid> m_shadowReceiver{ this };
+
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
@@ -171,4 +179,6 @@ private:
     winrt::RepeatButton::Click_revoker m_scrollIncreaseClickRevoker{};
 
     DispatcherHelper m_dispatcherHelper{ *this };
+
+    winrt::Size previousAvailableSize{};
 };

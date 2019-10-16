@@ -30,7 +30,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland };
+    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland, AppThatUsesMuxIndirectly };
 
     // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
     // fixtures get executed.  It won't actually host any tests.
@@ -44,20 +44,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #else
         private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
 #endif
-
-        private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
-        private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
+        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
 
         public const string _nugetTestAppPackageName = "NugetPackageTestApp";
         private const string _nugetTestAppName = "NugetPackageTestApp_8wekyb3d8bbwe!App";
+        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
+
+        public const string _appThatUsesMUXIndirectlyPackageName = "AppThatUsesMUXIndirectly";
+        private const string _appThatUsesMUXIndirectlyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App";
+        private const string _appThatUsesMUXIndirectlyPackageFamilyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe";
 
         public const string _nugetTestAppCXPackageName = "NugetPackageTestAppCX";
         private const string _nugetTestAppCXName = "NugetPackageTestAppCX_8wekyb3d8bbwe!App";
-
-        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
         private const string _nugetTestAppCXPackageFamilyName = "NugetPackageTestAppCX_8wekyb3d8bbwe";
+
+        private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
+        private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
         private const string _wpfXamlIslandPackageFamilyName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe";
+
+        
+
 
         public static TestContext TestContext { get; private set; }
 
@@ -155,6 +161,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (type == TestType.Nuget) return new Application(_nugetTestAppPackageName, _nugetTestAppPackageFamilyName, _nugetTestAppName);
             if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFamilyName, _nugetTestAppCXName);
             if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFamilyName, _wfpXamlIslandAppName, false /* isUWPApp */);
+            if (type == TestType.AppThatUsesMuxIndirectly) return new Application(_appThatUsesMUXIndirectlyPackageName, _appThatUsesMUXIndirectlyPackageFamilyName, _appThatUsesMUXIndirectlyName);
             return new Application(_testAppPackageName, _testAppPackageFamilyName, _testAppName);
         }
 

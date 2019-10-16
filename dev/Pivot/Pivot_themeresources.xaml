@@ -209,7 +209,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="Pivot">
+    <Style TargetType="Pivot" BasedOn="{StaticResource DefaultPivotStyle}" />
+
+    <Style x:Key="DefaultPivotStyle" TargetType="Pivot">
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Background" Value="{ThemeResource PivotBackground}" />
@@ -467,7 +469,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="PivotItem">
+    <Style TargetType="PivotItem" BasedOn="{StaticResource DefaultPivotItemStyle}" />
+
+    <Style x:Key="DefaultPivotItemStyle" TargetType="PivotItem">
         <Setter Property="Background" Value="{ThemeResource PivotItemBackground}" />
         <Setter Property="Margin" Value="{ThemeResource PivotItemMargin}" />
         <Setter Property="Padding" Value="0" />
@@ -492,7 +496,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="PivotHeaderItem">
+    <Style TargetType="PivotHeaderItem" BasedOn="{StaticResource DefaultPivotHeaderItemStyle}" />
+
+    <Style x:Key="DefaultPivotHeaderItemStyle" TargetType="PivotHeaderItem">
         <Setter Property="FontSize" Value="{ThemeResource PivotHeaderItemFontSize}" />
         <Setter Property="FontFamily" Value="{ThemeResource PivotHeaderItemFontFamily}" />
         <Setter Property="FontWeight" Value="{ThemeResource PivotHeaderItemThemeFontWeight}" />
@@ -619,10 +625,10 @@
 
                         <ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" FontSize="{TemplateBinding FontSize}" FontFamily="{TemplateBinding FontFamily}" FontWeight="{TemplateBinding FontWeight}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" OpticalMarginAlignment="TrimSideBearings" />
                         <Rectangle x:Name="SelectedPipe" Fill="{ThemeResource PivotHeaderItemSelectedPipeFill}" Height="2" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Margin="0,0,0,2"
-                                   contract7Present:RadiusX="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.TopLeft}"
-                                   contract7Present:RadiusY="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius.BottomRight}"
-                                   contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Path=TopLeft}"
-                                   contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Path=BottomRight}" />
+                                   contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                   contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                   contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                   contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}" />
 
                     </Grid>
                 </ControlTemplate>

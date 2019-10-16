@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -118,8 +118,15 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         virtualContext->Indent(Indent());
 #endif
 
-        desiredSize = layout.Measure(layoutContext, availableSize);
-        extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        // Checking if we have an data template and it is empty
+        if (m_isItemTemplateEmpty) {
+            // Has no content, so we will draw nothing and request zero space
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
+        }
+        else {
+            desiredSize = layout.Measure(layoutContext, availableSize);
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        }
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
         // call GetElementAt(index).
@@ -589,7 +596,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
         m_itemTemplate = newValue;
     }
-
+    // Clear flag for bug #776
+    m_isItemTemplateEmpty = false;
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
@@ -598,6 +606,10 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+            if (!dataTemplate.LoadContent().as<winrt::FrameworkElement>()) {
+                // We have a DataTemplate which is empty, so we need to set it to true
+                m_isItemTemplateEmpty = true;
+            }
         }
         else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
         {

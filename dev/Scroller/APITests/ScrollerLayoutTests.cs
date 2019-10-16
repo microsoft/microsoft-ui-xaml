@@ -366,7 +366,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                double expectedViewportHeight = 
+                double expectedViewportHeight =
                     rectangle.Height + stackPanel.BorderThickness.Top + stackPanel.BorderThickness.Bottom +
                     stackPanel.Margin.Top + stackPanel.Margin.Bottom;
 
@@ -543,7 +543,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller = new Scroller();
                 scroller.Content = imageScrollerContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);

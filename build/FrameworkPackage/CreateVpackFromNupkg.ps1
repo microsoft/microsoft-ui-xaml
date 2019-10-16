@@ -93,6 +93,9 @@ if($LASTEXITCODE)
     exit
 }
 
+$infoTextFilePath = Join-Path $outputPath "info.txt"
+Out-File -FilePath $infoTextFilePath -InputObject "Vpack created from nuget package: $nupkgFileNameWithoutExtension"
+
 if($isPrerelease)
 {
     $flavors = @("x86", "x64", "arm", "arm64")

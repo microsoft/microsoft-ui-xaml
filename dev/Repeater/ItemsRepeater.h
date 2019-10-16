@@ -175,4 +175,9 @@ private:
     winrt::IElementFactory m_itemTemplate{ nullptr };
     winrt::Layout m_layout{ nullptr };
     winrt::ElementAnimator m_animator{ nullptr };
+
+    // Bug where DataTemplate with no content causes a crash.
+    // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
+    // Solution: Have flag that is only true when DataTemplate exists but it is empty.
+    bool m_isItemTemplateEmpty{ false };
 };

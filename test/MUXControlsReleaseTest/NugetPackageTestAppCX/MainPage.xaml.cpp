@@ -18,6 +18,7 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
+using namespace Windows::UI::Xaml::Shapes;
 
 MainPage::MainPage() :
     mItems(ref new Vector<String^>())
@@ -63,4 +64,29 @@ void NugetPackageTestAppCX::MainPage::WaitForIdleInvokerButton_Click(Platform::O
         }));
     });
     auto asyncAction = Windows::System::Threading::ThreadPool::RunAsync(workItem);
+}
+
+void NugetPackageTestAppCX::MainPage::GetCheckBoxRectangleCornerRadiusValue_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    GetCheckBoxRectangleCornerRadius(TestCheckBox);
+}
+
+void NugetPackageTestAppCX::MainPage::GetCheckBoxRectangleCornerRadius(DependencyObject^ obj)
+{
+    if (obj == nullptr) return;
+
+    auto count = VisualTreeHelper::GetChildrenCount(obj);
+    for (int i = 0; i < count; i++)
+    {
+        auto child = VisualTreeHelper::GetChild(obj, i);
+        if (auto rec = dynamic_cast<Rectangle^>(child))
+        {
+            CheckBoxRectangleCornerRadiusValueTextBlock->Text = rec->RadiusX + "," + rec->RadiusY;
+        }
+        else
+        {
+            GetCheckBoxRectangleCornerRadius(child);
+        }
+
+    }
 }

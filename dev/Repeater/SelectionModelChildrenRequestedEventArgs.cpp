@@ -4,18 +4,36 @@
 #include "pch.h"
 #include "common.h"
 #include "ItemsRepeater.common.h"
+#include "SelectionNode.h"
 #include "SelectionModelChildrenRequestedEventArgs.h"
 
-SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source)
+SelectionModelChildrenRequestedEventArgs::SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& source, const std::weak_ptr<SelectionNode>& sourceNode)
 {
-    Initialize(source);
+    Initialize(source, sourceNode);
 }
 
 #pragma region ISelectionModelChildrenRequestedEventArgs
 
 winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Source()
 {
+    auto node = m_sourceNode.lock();
+    if (!node)
+    {
+        throw winrt::hresult_error(E_FAIL, L"Source can only be accesed in the ChildrenRequested event handler.");
+    }
+
     return m_source.get();
+}
+
+winrt::IndexPath SelectionModelChildrenRequestedEventArgs::SourceIndex()
+{
+    auto node = m_sourceNode.lock();
+    if (!node)
+    {
+        throw winrt::hresult_error(E_FAIL, L"SourceIndex can only be accesed in the ChildrenRequested event handler.");
+    }
+
+    return node->IndexPath();
 }
 
 winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Children()
@@ -30,8 +48,9 @@ void SelectionModelChildrenRequestedEventArgs::Children(winrt::IInspectable cons
 
 #pragma endregion
 
-void SelectionModelChildrenRequestedEventArgs::Initialize(const winrt::IInspectable& source)
+void SelectionModelChildrenRequestedEventArgs::Initialize(const winrt::IInspectable& source, const std::weak_ptr<SelectionNode>& sourceNode)
 {
     m_source.set(source);
+    m_sourceNode = sourceNode;
     m_children.set(nullptr);
 }

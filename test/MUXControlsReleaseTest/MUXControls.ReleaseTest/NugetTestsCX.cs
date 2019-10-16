@@ -59,5 +59,23 @@ namespace MUXControls.ReleaseTest
             var item3 = FindElement.ByName("Item3");
             Verify.IsNotNull(item3);
         }
+
+        [TestMethod]
+        public void CornerRadiusTest()
+        {
+            var button = new Button(FindElement.ByName("GetCheckBoxRectangleCornerRadiusValue"));
+            button.Invoke();
+            Wait.ForIdle();
+
+            var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
+            Verify.AreEqual("2,2", textBlock.DocumentText);
+        }
+
+        [TestMethod]
+        public void TreeViewNodeContentTest()
+        {
+            var node = FindElement.ByName("TreeViewNode1");
+            Verify.IsNotNull(node, "Verify TreeViewNode conteins right content");
+        }
     }
 }

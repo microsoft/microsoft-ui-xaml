@@ -178,7 +178,9 @@
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
-    <Style TargetType="ToggleButton">
+    <Style TargetType="ToggleButton" BasedOn="{StaticResource DefaultToggleButtonStyle}" />
+
+    <Style x:Key="DefaultToggleButtonStyle" TargetType="ToggleButton">
         <Setter Property="Background" Value="{ThemeResource ToggleButtonBackground}" />
         <contract7Present:Setter Property="BackgroundSizing" Value="OuterBorderEdge" />
         <Setter Property="Foreground" Value="{ThemeResource ToggleButtonForeground}" />

@@ -279,6 +279,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            ColorPicker colorPicker = null;
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsAlphaEnabled = true, Width=300, Height=600 };
+            });
+            TestUtilities.SetAsVisualTreeRoot(colorPicker);
+
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+        }
+
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
         private void SetAsRootAndWaitForColorSpectrumFill(FrameworkElement element)
         {

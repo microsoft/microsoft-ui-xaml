@@ -17,9 +17,9 @@
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
@@ -47,9 +47,9 @@
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
@@ -89,9 +89,9 @@
             <StaticResource x:Key="DatePickerSpacerFillDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerHeaderForeground" ResourceKey="SystemControlForegroundBaseHighBrush" />
             <StaticResource x:Key="DatePickerHeaderForegroundDisabled" ResourceKey="SystemControlDisabledBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumLowBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumBrush" />
-            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="DatePickerButtonBorderBrushPressed" ResourceKey="SystemControlHighlightBaseMediumBrush" />
             <StaticResource x:Key="DatePickerButtonBorderBrushDisabled" ResourceKey="SystemControlDisabledBaseLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackground" ResourceKey="SystemControlBackgroundAltMediumLowBrush" />
             <StaticResource x:Key="DatePickerButtonBackgroundPointerOver" ResourceKey="SystemControlPageBackgroundAltMediumBrush" />
@@ -129,7 +129,9 @@
     <Thickness x:Key="DatePickerHostPadding">0,3,0,6</Thickness>
     <Thickness x:Key="DatePickerHostMonthPadding">9,3,0,6</Thickness>
 
-    <Style TargetType="DatePicker">
+    <Style TargetType="DatePicker" BasedOn="{StaticResource DefaultDatePickerStyle}" />
+
+    <Style x:Key="DefaultDatePickerStyle" TargetType="DatePicker">
         <Setter Property="Orientation" Value="Horizontal" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
@@ -350,7 +352,9 @@
         </Setter>
     </Style>
 
-    <Style TargetType="DatePickerFlyoutPresenter">
+    <Style TargetType="DatePickerFlyoutPresenter" BasedOn="{StaticResource DefaultDatePickerFlyoutPresenterStyle}" />
+
+    <Style x:Key="DefaultDatePickerFlyoutPresenterStyle" TargetType="DatePickerFlyoutPresenter">
         <Setter Property="Width" Value="296" />
         <Setter Property="MinWidth" Value="296" />
         <Setter Property="MaxHeight" Value="398" />

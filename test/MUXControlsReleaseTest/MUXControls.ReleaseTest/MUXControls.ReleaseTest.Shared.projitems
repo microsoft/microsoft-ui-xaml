@@ -116,6 +116,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AppThatUsesMUXIndirectlyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTestsCX.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTests.cs" />

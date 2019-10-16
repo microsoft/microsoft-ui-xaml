@@ -77,6 +77,8 @@ static constexpr float c_paneElevationTranslationZ = 32;
 // so 4 is selected for threshold.
 constexpr int s_measureOnInitStep2CountThreshold{ 4 };
 
+constexpr int s_itemNotFound{ -1 };
+
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
 
 NavigationView::~NavigationView()
@@ -581,6 +583,14 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     else
     {
         MUX_FAIL_FAST();
+    }
+
+    if (!forceSetDisplayMode && m_InitialNonForcedModeUpdate) {
+        if (displayMode == winrt::NavigationViewDisplayMode::Minimal ||
+            displayMode == winrt::NavigationViewDisplayMode::Compact) {
+            ClosePane();
+        }
+        m_InitialNonForcedModeUpdate = false;
     }
 
     auto previousMode = DisplayMode();
@@ -1592,7 +1602,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     switch (key)
     {
     case winrt::VirtualKey::GamepadView:
-        if (!IsPaneOpen())
+        if (!IsPaneOpen() && !IsTopNavigationView())
         {
             OpenPane();
             handled = true;
@@ -1854,10 +1864,9 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
     if (auto topNavListView = m_topNavListView.get())
     {
-        MUX_ASSERT(prev && next);
-        auto prevIndex = topNavListView.IndexFromContainer(prev);
-        auto nextIndex = topNavListView.IndexFromContainer(next);
-        if (prevIndex == -1 || nextIndex == -1)
+        auto prevIndex = prev ? topNavListView.IndexFromContainer(prev) : s_itemNotFound;
+        auto nextIndex = next ? topNavListView.IndexFromContainer(next) : s_itemNotFound;
+        if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
         {
             // One item is settings, so have problem to get the index
             recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
@@ -1927,7 +1936,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
         bool measureOverrideDidNothing = m_shouldInvalidateMeasureOnNextLayoutUpdate && !m_layoutUpdatedToken;
             
         if (measureOverrideDidNothing ||
-            (newItem && m_topDataProvider.IndexOf(newItem) != -1 && m_topDataProvider.IndexOf(newItem, PrimaryList) == -1)) // selection is in overflow
+            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
         }
@@ -2381,7 +2390,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 {
     // Calculate selected overflow item size.
     auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(item);
-    MUX_ASSERT(selectedOverflowItemIndex != -1);
+    MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
     auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
  
     bool needInvalidMeasure = !m_topDataProvider.IsValidWidthForItem(selectedOverflowItemIndex);
@@ -2394,12 +2403,12 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
         MUX_ASSERT(desiredWidth <= actualWidth);
 
         // Calculate selected item size
-        auto selectedItemIndex = -1;
+        auto selectedItemIndex = s_itemNotFound;
         auto selectedItemWidth = 0.f;
         if (auto selectedItem = SelectedItem())
         {
             selectedItemIndex = m_topDataProvider.IndexOf(selectedItem);
-            if (selectedItemIndex != -1)
+            if (selectedItemIndex != s_itemNotFound)
             {
                 selectedItemWidth = m_topDataProvider.GetWidthForItem(selectedItemIndex);
             }
@@ -3587,6 +3596,12 @@ void NavigationView::UpdatePaneShadow()
             if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
             {
                 contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                contentGrid.SetRow(shadowReceiver, 0);
+                // Only register to columns if those are actually defined
+                if (contentGrid.ColumnDefinitions().Size() > 0) {
+                    contentGrid.SetColumn(shadowReceiver, 0);
+                    contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
+                }
                 contentGrid.Children().Append(shadowReceiver);
 
                 winrt::ThemeShadow shadow;
@@ -3604,9 +3619,16 @@ void NavigationView::UpdatePaneShadow()
             }
         }
 
+
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+
+        // Ensuring shadow is aligned to the left
+        shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
+
+        // Ensure shadow is as wide as the pane when it is open
+        shadowReceiver.Width(OpenPaneLength());
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }

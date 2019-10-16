@@ -3,7 +3,9 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Style TargetType="RadioButton">
+    <Style TargetType="RadioButton" BasedOn="{StaticResource DefaultRadioButtonStyle}" />
+
+    <Style x:Key="DefaultRadioButtonStyle" TargetType="RadioButton">
         <Setter Property="Background" Value="{ThemeResource RadioButtonBackground}" />
         <Setter Property="Foreground" Value="{ThemeResource RadioButtonForeground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource RadioButtonBorderBrush}" />
@@ -140,7 +142,7 @@
                         <Grid VerticalAlignment="Top" Height="32">
                             <Ellipse x:Name="OuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseStroke}" Fill="{StaticResource RadioButtonOuterEllipseFill}" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
                             <Ellipse x:Name="CheckOuterEllipse" Width="20" Height="20" UseLayoutRounding="False" Stroke="{ThemeResource RadioButtonOuterEllipseCheckedStroke}" Fill="{ThemeResource RadioButtonOuterEllipseCheckedFill}" Opacity="0" StrokeThickness="{ThemeResource RadioButtonBorderThemeThickness}" />
-                            <Ellipse x:Name="CheckGlyph" Width="10" Height="10" UseLayoutRounding="False" Opacity="0" Fill="{ThemeResource RadioButtonCheckGlyphFill}" Stroke="{ThemeResource RadioButtonCheckGlyphStroke}" />
+                            <Ellipse x:Name="CheckGlyph" Width="8" Height="8" UseLayoutRounding="False" Opacity="0" Fill="{ThemeResource RadioButtonCheckGlyphFill}" Stroke="{ThemeResource RadioButtonCheckGlyphStroke}" />
                         </Grid>
                         <ContentPresenter x:Name="ContentPresenter" Content="{TemplateBinding Content}" ContentTransitions="{TemplateBinding ContentTransitions}" ContentTemplate="{TemplateBinding ContentTemplate}" Foreground="{TemplateBinding Foreground}" Margin="{TemplateBinding Padding}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Grid.Column="1" AutomationProperties.AccessibilityView="Raw" TextWrapping="Wrap" />
                     </Grid>
