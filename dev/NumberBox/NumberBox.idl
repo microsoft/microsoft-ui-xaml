@@ -55,13 +55,11 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Primitives.RangeBase
 {
     NumberBox();
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Header;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
 
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String PlaceholderText;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

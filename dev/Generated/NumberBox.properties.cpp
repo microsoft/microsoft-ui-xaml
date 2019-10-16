@@ -75,7 +75,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
+                nullptr);
     }
     if (!s_HyperScrollEnabledProperty)
     {
@@ -152,7 +152,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderTextPropertyChanged));
+                nullptr);
     }
     if (!s_RoundingAlgorithmProperty)
     {
@@ -259,14 +259,6 @@ void NumberBoxProperties::OnFractionDigitsPropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnFractionDigitsPropertyChanged(args);
 }
 
-void NumberBoxProperties::OnHeaderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnHeaderPropertyChanged(args);
-}
-
 void NumberBoxProperties::OnIncrementPrecisionPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -305,14 +297,6 @@ void NumberBoxProperties::OnNumberRounderPropertyChanged(
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnNumberRounderPropertyChanged(args);
-}
-
-void NumberBoxProperties::OnPlaceholderTextPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnPlaceholderTextPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnRoundingAlgorithmPropertyChanged(

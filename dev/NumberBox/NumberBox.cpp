@@ -6,7 +6,7 @@
 #include "NumberBox.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
-
+#include "Utils.h"
 
 NumberBox::NumberBox()
 {
@@ -38,8 +38,6 @@ void NumberBox::OnApplyTemplate()
 
     // Initializations - Visual States
     SetSpinButtonVisualState();
-    SetHeader();
-    SetPlaceHolderText();
     
     // Initializations - Interactions
     if (auto warningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected))
@@ -83,20 +81,9 @@ void NumberBox::OnApplyTemplate()
     UpdateTextToValue();
 }
 
-
-void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    SetHeader();
-}
-
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetSpinButtonVisualState();
-}
-
-void NumberBox::OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    SetPlaceHolderText();
 }
 
 void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -186,6 +173,7 @@ void NumberBox::ValidateInput()
         auto text = textBox.Text();
         
         // ### well, 0 might not be in bounds, we'd be better defaulting to min probably?
+        // ### prefer some IsEmpty method
         // Handles Empty TextBox Case, current behavior is to set Value to default (0)
         if (text == L"")
         {
@@ -482,52 +470,51 @@ void NumberBox::SetErrorState(ValidationState state)
     }
 
     // Build Validation message based on error that user made
-    std::wstringstream msg;
+    winrt::hstring errorMessage;
     switch (state)
     {
         case ValidationState::InvalidInput:
             if (AcceptsCalculation())
             {
-                msg << "Only use numbers and ()+-*/^.";
+                errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersAndSymbols);
             }
             else
             {
-                msg << "Only use numbers.";
+                errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersOnly);
             }
             break;
 
         case ValidationState::InvalidMin:
-            msg << "Min is " << Minimum() << ".";
-            break;
-
         case ValidationState::InvalidMax:
-            msg << "Max is " << Maximum() << ".";
+            errorMessage = StringUtil::FormatString(
+                ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorRange),
+                Minimum(),
+                Maximum());
             break;
 
         case ValidationState::InvalidDivide:
-            msg << "Division by 0 unsupported.";
+            errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorDivByZero);
             break;
 
         case ValidationState::Invalid:
-            msg << "Invalid Input.";
+            errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorInvalidInput);
             break;
     }
-    m_ValidationMessage = msg.str();
 
     if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
-        m_errorToolTip.Content(box_value(msg.str()));
-        // ### tooltip.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_TabViewAddButtonTooltip)));
+        m_errorToolTip.Content(box_value(errorMessage));
     }
     else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
     {
         winrt::VisualStateManager::GoToState(*this, L"InvalidText", false);
         if (auto errorTextBlock = m_errorTextBlock.get())
         {
-            errorTextBlock.Text(msg.str());
+            errorTextBlock.Text(errorMessage);
         }
     }
+
     m_hasError = true;
 }
 
@@ -610,28 +597,6 @@ void NumberBox::UpdateRounder()
         m_sRounder.SignificantDigits(static_cast<int>(abs(SignificantDigitPrecision())));
         m_sRounder.RoundingAlgorithm(RoundingAlgorithm());
         m_formatter.NumberRounder(m_sRounder); 
-    }
-}
-
-void NumberBox::SetHeader()
-{
-    /*
-    winrt::hstring a = Header();
-    if (Header() != L"" )
-    {
-        winrt::TextBlock headerbox;
-        headerbox.Text(Header());
-        m_TextBox.Header(headerbox); 
-    } */
-}
-
-// Sets TextBox placeholder text
-// ### why
-void NumberBox::SetPlaceHolderText()
-{
-    if (auto textBox = m_textBox.get())
-    {
-        textBox.PlaceholderText(PlaceholderText());
     }
 }
 

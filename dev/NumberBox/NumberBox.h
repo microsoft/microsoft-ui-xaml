@@ -100,6 +100,4 @@ private:
 
     winrt::ToolTip m_errorToolTip{};
 
-    winrt::hstring m_ValidationMessage{};
-
 };

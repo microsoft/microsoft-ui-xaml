@@ -10,8 +10,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
 
-                    <!-- ### why -->
-                    <RelativePanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ValidationStates">
@@ -51,7 +54,7 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <StackPanel Orientation="Horizontal" Name="panel">
+                        <StackPanel Orientation="Horizontal">
                             <StackPanel.Resources>
                                 <ResourceDictionary>
                                     <ResourceDictionary.ThemeDictionaries>
@@ -73,7 +76,9 @@
                                 </ResourceDictionary>
                             </StackPanel.Resources>
 
-                            <TextBox x:Name="InputBox" Header="{TemplateBinding Header}"/> <!-- ### why no header here? -->
+                            <TextBox x:Name="InputBox"
+                                Header="{TemplateBinding Header}"
+                                PlaceholderText="{TemplateBinding PlaceholderText}"/>
 
                             <RepeatButton x:Name="UpSpinButton"
                                 Visibility="Collapsed"
@@ -94,17 +99,15 @@
                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                 Margin="{ThemeResource NumberBoxIconMargin}"
                                 VerticalAlignment="Bottom"
-                                Glyph="&#xE7BA;"
-                                ToolTipService.ToolTip="Invalid Input" /> <!-- ### need to globalize -->
+                                Glyph="&#xE7BA;"/>
                         </StackPanel>
 
                         <TextBlock x:Name="ErrorTextMessage"
+                            Grid.Row="1"
                             Visibility="Collapsed"
                             Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
-                            IsColorFontEnabled="True"
-                            Text="Invalid Value"
-                            RelativePanel.Below="panel" /> <!-- ### need to globalize -->
-                    </RelativePanel>
+                            IsColorFontEnabled="True" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
