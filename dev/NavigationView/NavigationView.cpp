@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -1933,7 +1933,17 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newItem = args.NewValue();
-    ChangeSelection(args.OldValue(), newItem);
+    auto oldItem = args.OldValue();
+    ChangeSelection(oldItem, newItem);
+
+    // Animate to be sure the selected item is visually higlighted!
+    // See #1395 for additional context
+    if (oldItem != newItem)
+    {
+        ChangeSelectStatusForItem(oldItem, false /*selected*/);
+        ChangeSelectStatusForItem(newItem, true /*selected*/);
+        AnimateSelectionChanged(oldItem, newItem);
+    }
 
     if (m_appliedTemplate && IsTopNavigationView())
     {
