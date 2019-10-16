@@ -118,7 +118,7 @@ int32_t TreeViewItemAutomationPeer::GetPositionInSetCore()
 
     if (ancestorListView && targetNode)
     {
-        if (auto targetParentNode = targetNode.Parent())
+        if (const auto targetParentNode = targetNode.Parent())
         {
             UINT32 position = 0;
             if (targetParentNode.Children().IndexOf(targetNode, position))
@@ -139,7 +139,7 @@ int32_t TreeViewItemAutomationPeer::GetSizeOfSetCore()
 
     if (ancestorListView && targetNode)
     {
-        if (auto targetParentNode = targetNode.Parent())
+        if (const auto targetParentNode = targetNode.Parent())
         {
             UINT32 size = targetParentNode.Children().Size();
             setSize = static_cast<int>(size);
