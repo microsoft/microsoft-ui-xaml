@@ -369,8 +369,7 @@ private:
         const winrt::ZoomMode& zoomMode);
 #endif
     void SetupVisualInteractionSourceRedirectionMode(
-        const winrt::VisualInteractionSource& visualInteractionSource,
-        const winrt::InputKind& ignoredinputKind);
+        const winrt::VisualInteractionSource& visualInteractionSource);
     void SetupVisualInteractionSourceCenterPointModifier(
         const winrt::VisualInteractionSource& visualInteractionSource,
         ScrollerDimension dimension);
@@ -641,16 +640,6 @@ private:
     void OnPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-
-    // Used on platforms where we have XamlRoot.
-    void OnXamlRootKeyDownOrUp(
-        const winrt::IInspectable& sender,
-        const winrt::KeyRoutedEventArgs& args);
-
-    // Used on platforms where we don't have XamlRoot.
-    void OnCoreWindowKeyDownOrUp(
-        const winrt::CoreWindow& sender,
-        const winrt::KeyEventArgs& args);
 
     void OnScrollControllerInteractionRequested(
         const winrt::IScrollController& sender,
