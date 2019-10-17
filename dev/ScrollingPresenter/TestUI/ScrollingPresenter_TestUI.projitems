@@ -7,130 +7,130 @@
     <SharedGUID>0EC52FD5-42FE-3EB4-84E0-79EC9B5A014E</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Scroller_Test</Import_RootNamespace>
+    <Import_RootNamespace>ScrollingPresenter_Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerAccessibilityPage.xaml.cs">
-      <DependentUpon>ScrollerAccessibilityPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAccessibilityPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterAccessibilityPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml.cs">
-      <DependentUpon>ScrollerBringIntoViewPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterBringIntoViewPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterBringIntoViewPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml.cs">
-      <DependentUpon>ScrollerSnapPointsPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPointsPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterSnapPointsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerStackPanelAnchoringPage.xaml.cs">
-      <DependentUpon>ScrollerStackPanelAnchoringPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterStackPanelAnchoringPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterStackPanelAnchoringPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerRepeaterAnchoringPage.xaml.cs">
-      <DependentUpon>ScrollerRepeaterAnchoringPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterRepeaterAnchoringPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterRepeaterAnchoringPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerChainingAndRailingPage.xaml.cs">
-      <DependentUpon>ScrollerChainingAndRailingPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterChainingAndRailingPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterChainingAndRailingPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerExpressionAnimationSourcesPage.xaml.cs">
-      <DependentUpon>ScrollerExpressionAnimationSourcesPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterExpressionAnimationSourcesPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterExpressionAnimationSourcesPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerDynamicPage.xaml.cs">
-      <DependentUpon>ScrollerDynamicPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterDynamicPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterDynamicPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerLeakDetectionPage.xaml.cs">
-      <DependentUpon>ScrollerLeakDetectionPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterLeakDetectionPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterLeakDetectionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerManipulationModePage.xaml.cs">
-      <DependentUpon>ScrollerManipulationModePage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterManipulationModePage.xaml.cs">
+      <DependentUpon>ScrollingPresenterManipulationModePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerPage.xaml.cs">
-      <DependentUpon>ScrollerPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollersWithSimpleContentsPage.xaml.cs">
-      <DependentUpon>ScrollersWithSimpleContentsPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresentersWithSimpleContentsPage.xaml.cs">
+      <DependentUpon>ScrollingPresentersWithSimpleContentsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerWithBiDirectionalScrollControllerPage.xaml.cs">
-      <DependentUpon>ScrollerWithBiDirectionalScrollControllerPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithBiDirectionalScrollControllerPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterWithBiDirectionalScrollControllerPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerWithCompositionScrollControllersPage.xaml.cs">
-      <DependentUpon>ScrollerWithCompositionScrollControllersPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithCompositionScrollControllersPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterWithCompositionScrollControllersPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerWithSimpleScrollControllersPage.xaml.cs">
-      <DependentUpon>ScrollerWithSimpleScrollControllersPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithSimpleScrollControllersPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterWithSimpleScrollControllersPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)BiDirectionalScrollController.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CompositionScrollController.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerAccessibilityPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterAccessibilityPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterBringIntoViewPage.xaml">
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPointsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerStackPanelAnchoringPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterStackPanelAnchoringPage.xaml">
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerRepeaterAnchoringPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterRepeaterAnchoringPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerChainingAndRailingPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterChainingAndRailingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerExpressionAnimationSourcesPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterExpressionAnimationSourcesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerDynamicPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterDynamicPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerLeakDetectionPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterLeakDetectionPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerManipulationModePage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterManipulationModePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerWithBiDirectionalScrollControllerPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithBiDirectionalScrollControllerPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerWithCompositionScrollControllersPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithCompositionScrollControllersPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerWithSimpleScrollControllersPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterWithSimpleScrollControllersPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\ScrollerPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)\ScrollingPresenterPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollersWithSimpleContentsPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresentersWithSimpleContentsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>

@@ -16,7 +16,7 @@ using Windows.UI.Xaml.Hosting;
 
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
@@ -28,7 +28,7 @@ namespace MUXControlsTestApp
 {
     public sealed partial class DynamicPage : TestPage
     {
-        Scroller scroller = null;
+        ScrollingPresenter scrollingPresenter = null;
         Rectangle rectSC = null;
 
         public DynamicPage()
@@ -37,8 +37,8 @@ namespace MUXControlsTestApp
 
             this.ParallaxView = this.parallaxView;
             this.ScrollViewer = null;
-            this.Scroller = null;
-            SetupScroller();
+            this.ScrollingPresenter = null;
+            SetupScrollingPresenter();
             this.TargetElement = null;
             this.DynamicParallaxView = null;
             this.AnimatedValuesSpy = null;
@@ -84,7 +84,7 @@ namespace MUXControlsTestApp
             set;
         }
 
-        private Scroller Scroller
+        private ScrollingPresenter ScrollingPresenter
         {
             get;
             set;
@@ -258,7 +258,7 @@ namespace MUXControlsTestApp
         private void RefreshSourceContent()
         {
             if (
-                (this.Scroller != null && this.Scroller.Content != null) ||
+                (this.ScrollingPresenter != null && this.ScrollingPresenter.Content != null) ||
                 (this.ScrollViewer != null && this.ScrollViewer.Content != null))
             {
                 this.cmbSourceContent.SelectedIndex = 1;
@@ -285,16 +285,16 @@ namespace MUXControlsTestApp
                 }
             }
 
-            if (this.Scroller != null)
+            if (this.ScrollingPresenter != null)
             {
                 switch (this.cmbSourceContent.SelectedIndex)
                 {
                     case 0:
-                        this.Scroller.Content = null;
+                        this.ScrollingPresenter.Content = null;
                         break;
                     case 1:
-                        if (this.Scroller == this.scroller)
-                            this.Scroller.Content = this.rectSC;
+                        if (this.ScrollingPresenter == this.scrollingPresenter)
+                            this.ScrollingPresenter.Content = this.rectSC;
                         break;
                 }
             }
@@ -308,9 +308,9 @@ namespace MUXControlsTestApp
             {
                 feSourceContent = this.ScrollViewer.Content as FrameworkElement;
             }
-            else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+            else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
             {
-                feSourceContent = this.Scroller.Content as FrameworkElement;
+                feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
             }
 
             if (feSourceContent != null)
@@ -328,9 +328,9 @@ namespace MUXControlsTestApp
             {
                 feSourceContent = this.ScrollViewer.Content as FrameworkElement;
             }
-            else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+            else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
             {
-                feSourceContent = this.Scroller.Content as FrameworkElement;
+                feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
             }
 
             if (feSourceContent != null)
@@ -347,9 +347,9 @@ namespace MUXControlsTestApp
             {
                 feSourceContent = this.ScrollViewer.Content as FrameworkElement;
             }
-            else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+            else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
             {
-                feSourceContent = this.Scroller.Content as FrameworkElement;
+                feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
             }
 
             if (feSourceContent != null)
@@ -372,9 +372,9 @@ namespace MUXControlsTestApp
             {
                 feSourceContent = this.ScrollViewer.Content as FrameworkElement;
             }
-            else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+            else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
             {
-                feSourceContent = this.Scroller.Content as FrameworkElement;
+                feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
             }
 
             if (feSourceContent != null)
@@ -393,9 +393,9 @@ namespace MUXControlsTestApp
                 {
                     feSourceContent = this.ScrollViewer.Content as FrameworkElement;
                 }
-                else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+                else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
                 {
-                    feSourceContent = this.Scroller.Content as FrameworkElement;
+                    feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
                 }
 
                 if (feSourceContent != null)
@@ -416,9 +416,9 @@ namespace MUXControlsTestApp
             {
                 feSourceContent = this.ScrollViewer.Content as FrameworkElement;
             }
-            else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+            else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
             {
-                feSourceContent = this.Scroller.Content as FrameworkElement;
+                feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
             }
 
             if (feSourceContent != null)
@@ -437,9 +437,9 @@ namespace MUXControlsTestApp
                 {
                     feSourceContent = this.ScrollViewer.Content as FrameworkElement;
                 }
-                else if (this.Scroller != null && this.Scroller.Content is FrameworkElement)
+                else if (this.ScrollingPresenter != null && this.ScrollingPresenter.Content is FrameworkElement)
                 {
-                    feSourceContent = this.Scroller.Content as FrameworkElement;
+                    feSourceContent = this.ScrollingPresenter.Content as FrameworkElement;
                 }
 
                 if (feSourceContent != null)
@@ -636,9 +636,9 @@ namespace MUXControlsTestApp
             {
                 this.cmbHorizontalScrollMode.SelectedIndex = (int)this.ScrollViewer.HorizontalScrollMode;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                switch (this.Scroller.HorizontalScrollMode)
+                switch (this.ScrollingPresenter.HorizontalScrollMode)
                 {
                     case ScrollMode.Disabled:
                         this.cmbHorizontalScrollMode.SelectedIndex = 0;
@@ -665,21 +665,21 @@ namespace MUXControlsTestApp
             {
                 this.ScrollViewer.HorizontalScrollMode = (Windows.UI.Xaml.Controls.ScrollMode)this.cmbHorizontalScrollMode.SelectedIndex;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
                 switch (this.cmbHorizontalScrollMode.SelectedIndex)
                 {
                     case 0:
-                        this.Scroller.HorizontalScrollMode = ScrollMode.Disabled;
+                        this.ScrollingPresenter.HorizontalScrollMode = ScrollMode.Disabled;
                         break;
                     case 1:
-                        this.Scroller.HorizontalScrollMode = ScrollMode.Enabled;
+                        this.ScrollingPresenter.HorizontalScrollMode = ScrollMode.Enabled;
                         break;
                     case 2:
 #if USE_SCROLLMODE_AUTO
-                        this.Scroller.HorizontalScrollMode = ScrollMode.Auto;
+                        this.ScrollingPresenter.HorizontalScrollMode = ScrollMode.Auto;
 #else
-                        this.cmbHorizontalScrollMode.SelectedIndex = this.Scroller.HorizontalScrollMode == ScrollMode.Disabled ? 0 : 1;
+                        this.cmbHorizontalScrollMode.SelectedIndex = this.ScrollingPresenter.HorizontalScrollMode == ScrollMode.Disabled ? 0 : 1;
 #endif
                         break;
                 }
@@ -692,9 +692,9 @@ namespace MUXControlsTestApp
             {
                 this.cmbVerticalScrollMode.SelectedIndex = (int)this.ScrollViewer.VerticalScrollMode;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                switch (this.Scroller.VerticalScrollMode)
+                switch (this.ScrollingPresenter.VerticalScrollMode)
                 {
                     case ScrollMode.Disabled:
                         this.cmbVerticalScrollMode.SelectedIndex = 0;
@@ -721,21 +721,21 @@ namespace MUXControlsTestApp
             {
                 this.ScrollViewer.VerticalScrollMode = (Windows.UI.Xaml.Controls.ScrollMode)this.cmbVerticalScrollMode.SelectedIndex;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
                 switch (this.cmbVerticalScrollMode.SelectedIndex)
                 {
                     case 0:
-                        this.Scroller.VerticalScrollMode = ScrollMode.Disabled;
+                        this.ScrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
                         break;
                     case 1:
-                        this.Scroller.VerticalScrollMode = ScrollMode.Enabled;
+                        this.ScrollingPresenter.VerticalScrollMode = ScrollMode.Enabled;
                         break;
                     case 2:
 #if USE_SCROLLMODE_AUTO
-                        this.Scroller.VerticalScrollMode = ScrollMode.Auto;
+                        this.ScrollingPresenter.VerticalScrollMode = ScrollMode.Auto;
 #else
-                        this.cmbVerticalScrollMode.SelectedIndex = this.Scroller.VerticalScrollMode == ScrollMode.Disabled ? 0 : 1;
+                        this.cmbVerticalScrollMode.SelectedIndex = this.ScrollingPresenter.VerticalScrollMode == ScrollMode.Disabled ? 0 : 1;
 #endif
                         break;
                 }
@@ -748,9 +748,9 @@ namespace MUXControlsTestApp
             {
                 this.cmbZoomMode.SelectedIndex = (int)this.ScrollViewer.ZoomMode;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                switch (this.Scroller.ZoomMode)
+                switch (this.ScrollingPresenter.ZoomMode)
                 {
                     case ZoomMode.Disabled:
                         this.cmbZoomMode.SelectedIndex = 0;
@@ -772,15 +772,15 @@ namespace MUXControlsTestApp
             {
                 this.ScrollViewer.ZoomMode = (Windows.UI.Xaml.Controls.ZoomMode)this.cmbZoomMode.SelectedIndex;
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
                 switch (this.cmbZoomMode.SelectedIndex)
                 {
                     case 0:
-                        this.Scroller.ZoomMode = ZoomMode.Disabled;
+                        this.ScrollingPresenter.ZoomMode = ZoomMode.Disabled;
                         break;
                     case 1:
-                        this.Scroller.ZoomMode = ZoomMode.Enabled;
+                        this.ScrollingPresenter.ZoomMode = ZoomMode.Enabled;
                         break;
                 }
             }
@@ -796,21 +796,21 @@ namespace MUXControlsTestApp
                     this.ScrollViewer.DirectManipulationStarted -= ScrollViewer_DirectManipulationStarted;
                     this.ScrollViewer.DirectManipulationCompleted -= ScrollViewer_DirectManipulationCompleted;
                 }
-                else if (this.Scroller != null)
+                else if (this.ScrollingPresenter != null)
                 {
-                    this.Scroller.ViewChanged -= Scroller_ViewChanged;
+                    this.ScrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
                 }
                 switch (this.cmbSource.SelectedIndex)
                 {
                     case 0:
                         this.ParallaxView.Source = null;
                         this.ScrollViewer = null;
-                        this.Scroller = null;
+                        this.ScrollingPresenter = null;
                         break;
                     case 1:
                         this.ParallaxView.Source = this.scrollViewer;
                         this.ScrollViewer = this.scrollViewer;
-                        this.Scroller = null;
+                        this.ScrollingPresenter = null;
                         if (this.cmbSourceContent.Items.Count > 1)
                             this.cmbSourceContent.Items.RemoveAt(1);
                         this.cmbSourceContent.Items.Add("stackPanel");
@@ -826,8 +826,8 @@ namespace MUXControlsTestApp
                         btnGetZoomFactor_Click(null, null);
                         break;
                     case 2:
-                        this.ParallaxView.Source = this.scroller;
-                        this.Scroller = this.scroller;
+                        this.ParallaxView.Source = this.scrollingPresenter;
+                        this.ScrollingPresenter = this.scrollingPresenter;
                         this.ScrollViewer = null;
                         if (this.cmbSourceContent.Items.Count > 1)
                             this.cmbSourceContent.Items.RemoveAt(1);
@@ -853,9 +853,9 @@ namespace MUXControlsTestApp
                     this.ScrollViewer.DirectManipulationStarted += ScrollViewer_DirectManipulationStarted;
                     this.ScrollViewer.DirectManipulationCompleted += ScrollViewer_DirectManipulationCompleted;
                 }
-                else if (this.Scroller != null)
+                else if (this.ScrollingPresenter != null)
                 {
-                    this.Scroller.ViewChanged += Scroller_ViewChanged;
+                    this.ScrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
                 }
             }
         }
@@ -878,7 +878,7 @@ namespace MUXControlsTestApp
             SpyAnimatedValues();
         }
 
-        private void Scroller_ViewChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
         {
             SpyAnimatedValues();
         }
@@ -1213,9 +1213,9 @@ namespace MUXControlsTestApp
             {
                 this.txtHorizontalOffset.Text = this.ScrollViewer.HorizontalOffset.ToString();
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                this.txtHorizontalOffset.Text = this.Scroller.HorizontalOffset.ToString();
+                this.txtHorizontalOffset.Text = this.ScrollingPresenter.HorizontalOffset.ToString();
             }
         }
 
@@ -1227,11 +1227,11 @@ namespace MUXControlsTestApp
                 {
                     this.ScrollViewer.ChangeView(Convert.ToSingle(this.txtHorizontalOffset.Text), null, null, true);
                 }
-                else if (this.Scroller != null)
+                else if (this.ScrollingPresenter != null)
                 {
-                    this.Scroller.ScrollTo(
+                    this.ScrollingPresenter.ScrollTo(
                         Convert.ToSingle(this.txtHorizontalOffset.Text),
-                        this.Scroller.VerticalOffset,
+                        this.ScrollingPresenter.VerticalOffset,
                         new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
@@ -1246,9 +1246,9 @@ namespace MUXControlsTestApp
             {
                 this.txtVerticalOffset.Text = this.ScrollViewer.VerticalOffset.ToString();
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                this.txtVerticalOffset.Text = this.Scroller.VerticalOffset.ToString();
+                this.txtVerticalOffset.Text = this.ScrollingPresenter.VerticalOffset.ToString();
             }
         }
 
@@ -1260,10 +1260,10 @@ namespace MUXControlsTestApp
                 {
                     this.ScrollViewer.ChangeView(null, Convert.ToSingle(this.txtVerticalOffset.Text), null, true);
                 }
-                else if (this.Scroller != null)
+                else if (this.ScrollingPresenter != null)
                 {
-                    this.Scroller.ScrollTo(
-                        this.Scroller.HorizontalOffset,
+                    this.ScrollingPresenter.ScrollTo(
+                        this.ScrollingPresenter.HorizontalOffset,
                         Convert.ToSingle(this.txtVerticalOffset.Text),
                         new ScrollOptions(
                             AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1280,9 +1280,9 @@ namespace MUXControlsTestApp
             {
                 this.txtZoomFactor.Text = this.ScrollViewer.ZoomFactor.ToString();
             }
-            else if (this.Scroller != null)
+            else if (this.ScrollingPresenter != null)
             {
-                this.txtZoomFactor.Text = this.Scroller.ZoomFactor.ToString();
+                this.txtZoomFactor.Text = this.ScrollingPresenter.ZoomFactor.ToString();
             }
         }
 
@@ -1294,9 +1294,9 @@ namespace MUXControlsTestApp
                 {
                     this.ScrollViewer.ChangeView(null, null, Convert.ToSingle(this.txtZoomFactor.Text), true);
                 }
-                else if (this.Scroller != null)
+                else if (this.ScrollingPresenter != null)
                 {
-                    this.Scroller.ZoomTo(
+                    this.ScrollingPresenter.ZoomTo(
                         Convert.ToSingle(this.txtZoomFactor.Text),
                         System.Numerics.Vector2.Zero,
                         new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1312,7 +1312,7 @@ namespace MUXControlsTestApp
             try
             {
                 FrameworkElement source = this.ScrollViewer == null ?
-                    this.Scroller as FrameworkElement : 
+                    this.ScrollingPresenter as FrameworkElement : 
                     this.ScrollViewer as FrameworkElement;
 
                 if (source != null && source.Parent != null)
@@ -1330,7 +1330,7 @@ namespace MUXControlsTestApp
             try
             {
                 FrameworkElement source = this.ScrollViewer == null ?
-                    this.Scroller as FrameworkElement : 
+                    this.ScrollingPresenter as FrameworkElement : 
                     this.ScrollViewer as FrameworkElement;
 
                 if (source != null && source.Parent == null)
@@ -1410,7 +1410,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void SetupScroller()
+        private void SetupScrollingPresenter()
         {
             LinearGradientBrush threeColorsLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -1428,24 +1428,24 @@ namespace MUXControlsTestApp
             this.rectSC.Height = 900;
             this.rectSC.Fill = threeColorsLGB;
 
-            this.scroller = new Scroller();
-            this.scroller.Name = "scroller";
-            this.scroller.Width = 400;
-            this.scroller.Height = 300;
-            this.scroller.Background = new SolidColorBrush(Windows.UI.Colors.Magenta);
-            this.scroller.Margin = new Thickness(6);
-            this.scroller.HorizontalScrollMode = ScrollMode.Disabled;
-            this.scroller.VerticalScrollMode = ScrollMode.Enabled;
-            this.scroller.ZoomMode = ZoomMode.Enabled;
-            this.scroller.Content = this.rectSC;
-            this.scroller.ViewChanged += Scroller_ViewChanged;
-            this.scroller.SetValue(AutomationProperties.NameProperty, "scroller");
+            this.scrollingPresenter = new ScrollingPresenter();
+            this.scrollingPresenter.Name = "scrollingPresenter";
+            this.scrollingPresenter.Width = 400;
+            this.scrollingPresenter.Height = 300;
+            this.scrollingPresenter.Background = new SolidColorBrush(Windows.UI.Colors.Magenta);
+            this.scrollingPresenter.Margin = new Thickness(6);
+            this.scrollingPresenter.HorizontalScrollMode = ScrollMode.Disabled;
+            this.scrollingPresenter.VerticalScrollMode = ScrollMode.Enabled;
+            this.scrollingPresenter.ZoomMode = ZoomMode.Enabled;
+            this.scrollingPresenter.Content = this.rectSC;
+            this.scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
+            this.scrollingPresenter.SetValue(AutomationProperties.NameProperty, "scrollingPresenter");
 
-            this.spInner.Children.Add(this.scroller);
+            this.spInner.Children.Add(this.scrollingPresenter);
 
             ComboBoxItem cmbItem = new ComboBoxItem();
-            cmbItem.Content = "scroller";
-            cmbItem.SetValue(AutomationProperties.NameProperty, "scroller");
+            cmbItem.Content = "scrollingPresenter";
+            cmbItem.SetValue(AutomationProperties.NameProperty, "scrollingPresenter");
             cmbSource.Items.Add(cmbItem);
         }
     }

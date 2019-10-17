@@ -132,12 +132,12 @@ unsealed runtimeclass ScrollViewer : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollCompletedEventArgs> ScrollCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollViewer, ZoomCompletedEventArgs> ZoomCompleted;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerBringingIntoViewEventArgs> BringingIntoView;
-    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollerAnchorRequestedEventArgs> AnchorRequested;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollingPresenterBringingIntoViewEventArgs> BringingIntoView;
+    event Windows.Foundation.TypedEventHandler<ScrollViewer, ScrollingPresenterAnchorRequestedEventArgs> AnchorRequested;
 
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
-    [MUX_PROPERTY_TYPE("winrt::Scroller")]
-    static Windows.UI.Xaml.DependencyProperty ScrollerProperty { get; };
+    [MUX_PROPERTY_TYPE("winrt::ScrollingPresenter")]
+    static Windows.UI.Xaml.DependencyProperty ScrollingPresenterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollControllerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollControllerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };

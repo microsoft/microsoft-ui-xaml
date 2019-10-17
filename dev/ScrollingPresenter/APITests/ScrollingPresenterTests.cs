@@ -36,14 +36,14 @@ using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class ScrollerTests
+    public partial class ScrollingPresenterTests
     {
         private const InteractionState c_defaultState = InteractionState.Idle;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
@@ -68,10 +68,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultVerticalOffset = 0.0;
         private const double c_defaultAnchorRatio = 0.0;
 
-        private const double c_defaultUIScrollerContentWidth = 1200.0;
-        private const double c_defaultUIScrollerContentHeight = 600.0;
-        private const double c_defaultUIScrollerWidth = 300.0;
-        private const double c_defaultUIScrollerHeight = 200.0;
+        private const double c_defaultUIScrollingPresenterContentWidth = 1200.0;
+        private const double c_defaultUIScrollingPresenterContentHeight = 600.0;
+        private const double c_defaultUIScrollingPresenterWidth = 300.0;
+        private const double c_defaultUIScrollingPresenterHeight = 200.0;
         private const double c_defaultUIScrollControllerThickness = 44.0;
 
         private const float c_defaultOffsetResultTolerance = 0.0001f;
@@ -89,246 +89,246 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const string c_expressionAnimationSourcesZoomFactorPropertyName = "ZoomFactor";
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroller default properties.")]
+        [TestProperty("Description", "Verifies the ScrollingPresenter default properties.")]
         public void VerifyDefaultPropertyValues()
         {
             RunOnUIThread.Execute(() =>
             {
-                Scroller scroller = new Scroller();
-                Verify.IsNotNull(scroller);
+                ScrollingPresenter scrollingPresenter = new ScrollingPresenter();
+                Verify.IsNotNull(scrollingPresenter);
 
-                Log.Comment("Verifying Scroller default property values");
-                Verify.IsNull(scroller.HorizontalScrollController);
-                Verify.IsNull(scroller.VerticalScrollController);
-                Verify.IsNull(scroller.Content);
-                Verify.IsNotNull(scroller.ExpressionAnimationSources);
-                Verify.AreEqual(c_defaultState, scroller.State);
-                Verify.AreEqual(c_defaultHorizontalScrollChainingMode, scroller.HorizontalScrollChainingMode);
-                Verify.AreEqual(c_defaultVerticalScrollChainingMode, scroller.VerticalScrollChainingMode);
-                Verify.AreEqual(c_defaultHorizontalScrollRailingMode, scroller.HorizontalScrollRailingMode);
-                Verify.AreEqual(c_defaultVerticalScrollRailingMode, scroller.VerticalScrollRailingMode);
-                Verify.AreEqual(c_defaultHorizontalScrollMode, scroller.HorizontalScrollMode);
-                Verify.AreEqual(c_defaultVerticalScrollMode, scroller.VerticalScrollMode);
-                Verify.AreEqual(c_defaultZoomChainingMode, scroller.ZoomChainingMode);
-                Verify.AreEqual(c_defaultContentOrientation, scroller.ContentOrientation);
-                Verify.AreEqual(c_defaultZoomMode, scroller.ZoomMode);
-                Verify.AreEqual(c_defaultIgnoredInputKind, scroller.IgnoredInputKind);
-                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
-                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
-                Verify.AreEqual(c_defaultZoomFactor, scroller.ZoomFactor);
-                Verify.AreEqual(c_defaultHorizontalOffset, scroller.HorizontalOffset);
-                Verify.AreEqual(c_defaultVerticalOffset, scroller.VerticalOffset);
-                Verify.AreEqual(c_defaultAnchorRatio, scroller.HorizontalAnchorRatio);
-                Verify.AreEqual(c_defaultAnchorRatio, scroller.VerticalAnchorRatio);
-                Verify.AreEqual(0.0, scroller.ExtentWidth);
-                Verify.AreEqual(0.0, scroller.ExtentHeight);
-                Verify.AreEqual(0.0, scroller.ViewportWidth);
-                Verify.AreEqual(0.0, scroller.ViewportHeight);
-                Verify.AreEqual(0.0, scroller.ScrollableWidth);
-                Verify.AreEqual(0.0, scroller.ScrollableHeight);
+                Log.Comment("Verifying ScrollingPresenter default property values");
+                Verify.IsNull(scrollingPresenter.HorizontalScrollController);
+                Verify.IsNull(scrollingPresenter.VerticalScrollController);
+                Verify.IsNull(scrollingPresenter.Content);
+                Verify.IsNotNull(scrollingPresenter.ExpressionAnimationSources);
+                Verify.AreEqual(c_defaultState, scrollingPresenter.State);
+                Verify.AreEqual(c_defaultHorizontalScrollChainingMode, scrollingPresenter.HorizontalScrollChainingMode);
+                Verify.AreEqual(c_defaultVerticalScrollChainingMode, scrollingPresenter.VerticalScrollChainingMode);
+                Verify.AreEqual(c_defaultHorizontalScrollRailingMode, scrollingPresenter.HorizontalScrollRailingMode);
+                Verify.AreEqual(c_defaultVerticalScrollRailingMode, scrollingPresenter.VerticalScrollRailingMode);
+                Verify.AreEqual(c_defaultHorizontalScrollMode, scrollingPresenter.HorizontalScrollMode);
+                Verify.AreEqual(c_defaultVerticalScrollMode, scrollingPresenter.VerticalScrollMode);
+                Verify.AreEqual(c_defaultZoomChainingMode, scrollingPresenter.ZoomChainingMode);
+                Verify.AreEqual(c_defaultContentOrientation, scrollingPresenter.ContentOrientation);
+                Verify.AreEqual(c_defaultZoomMode, scrollingPresenter.ZoomMode);
+                Verify.AreEqual(c_defaultIgnoredInputKind, scrollingPresenter.IgnoredInputKind);
+                Verify.AreEqual(c_defaultMinZoomFactor, scrollingPresenter.MinZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
+                Verify.AreEqual(c_defaultZoomFactor, scrollingPresenter.ZoomFactor);
+                Verify.AreEqual(c_defaultHorizontalOffset, scrollingPresenter.HorizontalOffset);
+                Verify.AreEqual(c_defaultVerticalOffset, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual(c_defaultAnchorRatio, scrollingPresenter.HorizontalAnchorRatio);
+                Verify.AreEqual(c_defaultAnchorRatio, scrollingPresenter.VerticalAnchorRatio);
+                Verify.AreEqual(0.0, scrollingPresenter.ExtentWidth);
+                Verify.AreEqual(0.0, scrollingPresenter.ExtentHeight);
+                Verify.AreEqual(0.0, scrollingPresenter.ViewportWidth);
+                Verify.AreEqual(0.0, scrollingPresenter.ViewportHeight);
+                Verify.AreEqual(0.0, scrollingPresenter.ScrollableWidth);
+                Verify.AreEqual(0.0, scrollingPresenter.ScrollableHeight);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Exercises the Scroller property setters and getters for non-default values.")]
+        [TestProperty("Description", "Exercises the ScrollingPresenter property setters and getters for non-default values.")]
         public void VerifyPropertyGettersAndSetters()
         {
-            Scroller scroller = null;
+            ScrollingPresenter scrollingPresenter = null;
             Rectangle rectangle = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scroller = new Scroller();
-                Verify.IsNotNull(scroller);
+                scrollingPresenter = new ScrollingPresenter();
+                Verify.IsNotNull(scrollingPresenter);
 
                 rectangle = new Rectangle();
                 Verify.IsNotNull(rectangle);
 
-                Log.Comment("Setting Scroller properties to non-default values");
-                scroller.Content = rectangle;
-                scroller.HorizontalScrollChainingMode = ChainingMode.Always;
-                scroller.VerticalScrollChainingMode = ChainingMode.Never;
-                scroller.HorizontalScrollRailingMode = RailingMode.Disabled;
-                scroller.VerticalScrollRailingMode = RailingMode.Disabled;
-                scroller.HorizontalScrollMode = ScrollMode.Disabled;
-                scroller.VerticalScrollMode = ScrollMode.Disabled;
-                scroller.ZoomChainingMode = ChainingMode.Never;
-                scroller.ZoomMode = ZoomMode.Enabled;
-                scroller.IgnoredInputKind = InputKind.MouseWheel;
-                scroller.ContentOrientation = ContentOrientation.Horizontal;
-                scroller.MinZoomFactor = 0.5f;
-                scroller.MaxZoomFactor = 2.0f;
-                scroller.HorizontalAnchorRatio = 0.25f;
-                scroller.VerticalAnchorRatio = 0.75f;
+                Log.Comment("Setting ScrollingPresenter properties to non-default values");
+                scrollingPresenter.Content = rectangle;
+                scrollingPresenter.HorizontalScrollChainingMode = ChainingMode.Always;
+                scrollingPresenter.VerticalScrollChainingMode = ChainingMode.Never;
+                scrollingPresenter.HorizontalScrollRailingMode = RailingMode.Disabled;
+                scrollingPresenter.VerticalScrollRailingMode = RailingMode.Disabled;
+                scrollingPresenter.HorizontalScrollMode = ScrollMode.Disabled;
+                scrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
+                scrollingPresenter.ZoomChainingMode = ChainingMode.Never;
+                scrollingPresenter.ZoomMode = ZoomMode.Enabled;
+                scrollingPresenter.IgnoredInputKind = InputKind.MouseWheel;
+                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.MinZoomFactor = 0.5f;
+                scrollingPresenter.MaxZoomFactor = 2.0f;
+                scrollingPresenter.HorizontalAnchorRatio = 0.25f;
+                scrollingPresenter.VerticalAnchorRatio = 0.75f;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Verifying Scroller non-default property values");
-                Verify.AreEqual(rectangle, scroller.Content);
-                Verify.AreEqual(c_defaultState, scroller.State);
-                Verify.AreEqual(ChainingMode.Always, scroller.HorizontalScrollChainingMode);
-                Verify.AreEqual(ChainingMode.Never, scroller.VerticalScrollChainingMode);
-                Verify.AreEqual(RailingMode.Disabled, scroller.HorizontalScrollRailingMode);
-                Verify.AreEqual(RailingMode.Disabled, scroller.VerticalScrollRailingMode);
-                Verify.AreEqual(ScrollMode.Disabled, scroller.HorizontalScrollMode);
-                Verify.AreEqual(ScrollMode.Disabled, scroller.VerticalScrollMode);
-                Verify.AreEqual(ChainingMode.Never, scroller.ZoomChainingMode);
-                Verify.AreEqual(ZoomMode.Enabled, scroller.ZoomMode);
-                Verify.AreEqual(InputKind.MouseWheel, scroller.IgnoredInputKind);
-                Verify.AreEqual(ContentOrientation.Horizontal, scroller.ContentOrientation);
-                Verify.AreEqual(0.5f, scroller.MinZoomFactor);
-                Verify.AreEqual(2.0f, scroller.MaxZoomFactor);
-                Verify.AreEqual(0.25f, scroller.HorizontalAnchorRatio);
-                Verify.AreEqual(0.75f, scroller.VerticalAnchorRatio);
+                Log.Comment("Verifying ScrollingPresenter non-default property values");
+                Verify.AreEqual(rectangle, scrollingPresenter.Content);
+                Verify.AreEqual(c_defaultState, scrollingPresenter.State);
+                Verify.AreEqual(ChainingMode.Always, scrollingPresenter.HorizontalScrollChainingMode);
+                Verify.AreEqual(ChainingMode.Never, scrollingPresenter.VerticalScrollChainingMode);
+                Verify.AreEqual(RailingMode.Disabled, scrollingPresenter.HorizontalScrollRailingMode);
+                Verify.AreEqual(RailingMode.Disabled, scrollingPresenter.VerticalScrollRailingMode);
+                Verify.AreEqual(ScrollMode.Disabled, scrollingPresenter.HorizontalScrollMode);
+                Verify.AreEqual(ScrollMode.Disabled, scrollingPresenter.VerticalScrollMode);
+                Verify.AreEqual(ChainingMode.Never, scrollingPresenter.ZoomChainingMode);
+                Verify.AreEqual(ZoomMode.Enabled, scrollingPresenter.ZoomMode);
+                Verify.AreEqual(InputKind.MouseWheel, scrollingPresenter.IgnoredInputKind);
+                Verify.AreEqual(ContentOrientation.Horizontal, scrollingPresenter.ContentOrientation);
+                Verify.AreEqual(0.5f, scrollingPresenter.MinZoomFactor);
+                Verify.AreEqual(2.0f, scrollingPresenter.MaxZoomFactor);
+                Verify.AreEqual(0.25f, scrollingPresenter.HorizontalAnchorRatio);
+                Verify.AreEqual(0.75f, scrollingPresenter.VerticalAnchorRatio);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroller ExtentWidth/Height, ViewportWidth/Height and ScrollableWidth/Height properties.")]
+        [TestProperty("Description", "Verifies the ScrollingPresenter ExtentWidth/Height, ViewportWidth/Height and ScrollableWidth/Height properties.")]
         public void VerifyExtentAndViewportProperties()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent, setAsContentRoot: true);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent, setAsContentRoot: true);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(c_defaultUIScrollerContentWidth, scroller.ExtentWidth);
-                Verify.AreEqual(c_defaultUIScrollerContentHeight, scroller.ExtentHeight);
-                Verify.AreEqual(c_defaultUIScrollerWidth, scroller.ViewportWidth);
-                Verify.AreEqual(c_defaultUIScrollerHeight, scroller.ViewportHeight);
-                Verify.AreEqual(c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth, scroller.ScrollableWidth);
-                Verify.AreEqual(c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight, scroller.ScrollableHeight);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentWidth, scrollingPresenter.ExtentWidth);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentHeight, scrollingPresenter.ExtentHeight);
+                Verify.AreEqual(c_defaultUIScrollingPresenterWidth, scrollingPresenter.ViewportWidth);
+                Verify.AreEqual(c_defaultUIScrollingPresenterHeight, scrollingPresenter.ViewportHeight);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth, scrollingPresenter.ScrollableWidth);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight, scrollingPresenter.ScrollableHeight);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Attempts to set invalid Scroller.MinZoomFactor values.")]
+        [TestProperty("Description", "Attempts to set invalid ScrollingPresenter.MinZoomFactor values.")]
         public void SetInvalidMinZoomFactorValues()
         {
             RunOnUIThread.Execute(() =>
             {
-                Scroller scroller = new Scroller();
+                ScrollingPresenter scrollingPresenter = new ScrollingPresenter();
 
-                Log.Comment("Attempting to set Scroller.MinZoomFactor to double.NaN");
+                Log.Comment("Attempting to set ScrollingPresenter.MinZoomFactor to double.NaN");
                 try
                 {
-                    scroller.MinZoomFactor = double.NaN;
+                    scrollingPresenter.MinZoomFactor = double.NaN;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scrollingPresenter.MinZoomFactor);
 
-                Log.Comment("Attempting to set Scroller.MinZoomFactor to double.NegativeInfinity");
+                Log.Comment("Attempting to set ScrollingPresenter.MinZoomFactor to double.NegativeInfinity");
                 try
                 {
-                    scroller.MinZoomFactor = double.NegativeInfinity;
+                    scrollingPresenter.MinZoomFactor = double.NegativeInfinity;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scrollingPresenter.MinZoomFactor);
 
-                Log.Comment("Attempting to set Scroller.MinZoomFactor to double.PositiveInfinity");
+                Log.Comment("Attempting to set ScrollingPresenter.MinZoomFactor to double.PositiveInfinity");
                 try
                 {
-                    scroller.MinZoomFactor = double.PositiveInfinity;
+                    scrollingPresenter.MinZoomFactor = double.PositiveInfinity;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scrollingPresenter.MinZoomFactor);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Attempts to set invalid Scroller.MaxZoomFactor values.")]
+        [TestProperty("Description", "Attempts to set invalid ScrollingPresenter.MaxZoomFactor values.")]
         public void SetInvalidMaxZoomFactorValues()
         {
             RunOnUIThread.Execute(() =>
             {
-                Scroller scroller = new Scroller();
+                ScrollingPresenter scrollingPresenter = new ScrollingPresenter();
 
-                Log.Comment("Attempting to set Scroller.MaxZoomFactor to double.NaN");
+                Log.Comment("Attempting to set ScrollingPresenter.MaxZoomFactor to double.NaN");
                 try
                 {
-                    scroller.MaxZoomFactor = double.NaN;
+                    scrollingPresenter.MaxZoomFactor = double.NaN;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
 
-                Log.Comment("Attempting to set Scroller.MaxZoomFactor to double.NegativeInfinity");
+                Log.Comment("Attempting to set ScrollingPresenter.MaxZoomFactor to double.NegativeInfinity");
                 try
                 {
-                    scroller.MaxZoomFactor = double.NegativeInfinity;
+                    scrollingPresenter.MaxZoomFactor = double.NegativeInfinity;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
 
-                Log.Comment("Attempting to set Scroller.MaxZoomFactor to double.PositiveInfinity");
+                Log.Comment("Attempting to set ScrollingPresenter.MaxZoomFactor to double.PositiveInfinity");
                 try
                 {
-                    scroller.MaxZoomFactor = double.PositiveInfinity;
+                    scrollingPresenter.MaxZoomFactor = double.PositiveInfinity;
                 }
                 catch (Exception e)
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the InteractionTracker's VisualInteractionSource properties get set according to Scroller properties.")]
+        [TestProperty("Description", "Verifies the InteractionTracker's VisualInteractionSource properties get set according to ScrollingPresenter properties.")]
         public void VerifyInteractionSourceSettings()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications : false))
             {
-                Scroller scroller = null;
-                Rectangle rectangleScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                Rectangle rectangleScrollingPresenterContent = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    rectangleScrollerContent = new Rectangle();
-                    scroller = new Scroller();
+                    rectangleScrollingPresenterContent = new Rectangle();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionInteractionSourceCollection interactionSources = scrollerTestHooksHelper.GetInteractionSources(scroller);
+                    CompositionInteractionSourceCollection interactionSources = scrollingPresenterTestHooksHelper.GetInteractionSources(scrollingPresenter);
                     Verify.IsNotNull(interactionSources);
-                    ScrollerTestHooksHelper.LogInteractionSources(interactionSources);
+                    ScrollingPresenterTestHooksHelper.LogInteractionSources(interactionSources);
                     Verify.AreEqual(1, interactionSources.Count);
                     IEnumerator<ICompositionInteractionSource> sourcesEnumerator = (interactionSources as IEnumerable<ICompositionInteractionSource>).GetEnumerator();
                     sourcesEnumerator.MoveNext();
@@ -352,25 +352,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.ScaleSourceMode);
                     }
 
-                    Log.Comment("Changing Scroller properties that affect the primary VisualInteractionSource");
-                    scroller.HorizontalScrollChainingMode = ChainingMode.Always;
-                    scroller.VerticalScrollChainingMode = ChainingMode.Never;
-                    scroller.HorizontalScrollRailingMode = RailingMode.Disabled;
-                    scroller.VerticalScrollRailingMode = RailingMode.Disabled;
-                    scroller.HorizontalScrollMode = ScrollMode.Enabled;
-                    scroller.VerticalScrollMode = ScrollMode.Disabled;
-                    scroller.ZoomChainingMode = ChainingMode.Never;
-                    scroller.ZoomMode = ZoomMode.Enabled;
-                    scroller.IgnoredInputKind = InputKind.All & ~InputKind.Touch;
+                    Log.Comment("Changing ScrollingPresenter properties that affect the primary VisualInteractionSource");
+                    scrollingPresenter.HorizontalScrollChainingMode = ChainingMode.Always;
+                    scrollingPresenter.VerticalScrollChainingMode = ChainingMode.Never;
+                    scrollingPresenter.HorizontalScrollRailingMode = RailingMode.Disabled;
+                    scrollingPresenter.VerticalScrollRailingMode = RailingMode.Disabled;
+                    scrollingPresenter.HorizontalScrollMode = ScrollMode.Enabled;
+                    scrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
+                    scrollingPresenter.ZoomChainingMode = ChainingMode.Never;
+                    scrollingPresenter.ZoomMode = ZoomMode.Enabled;
+                    scrollingPresenter.IgnoredInputKind = InputKind.All & ~InputKind.Touch;
                 });
 
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionInteractionSourceCollection interactionSources = scrollerTestHooksHelper.GetInteractionSources(scroller);
+                    CompositionInteractionSourceCollection interactionSources = scrollingPresenterTestHooksHelper.GetInteractionSources(scrollingPresenter);
                     Verify.IsNotNull(interactionSources);
-                    ScrollerTestHooksHelper.LogInteractionSources(interactionSources);
+                    ScrollingPresenterTestHooksHelper.LogInteractionSources(interactionSources);
                     Verify.AreEqual(1, interactionSources.Count);
                     IEnumerator<ICompositionInteractionSource> sourcesEnumerator = (interactionSources as IEnumerable<ICompositionInteractionSource>).GetEnumerator();
                     sourcesEnumerator.MoveNext();
@@ -397,12 +397,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Decreases the Scroller.MaxZoomFactor property and verifies the Scroller.ZoomFactor value decreases accordingly. Verifies the impact on the Scroller.Content Visual.")]
+        [TestProperty("Description", "Decreases the ScrollingPresenter.MaxZoomFactor property and verifies the ScrollingPresenter.ZoomFactor value decreases accordingly. Verifies the impact on the ScrollingPresenter.Content Visual.")]
         public void PinchContentThroughMaxZoomFactor()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
+                //BUGBUG Bug 19277312: MUX ScrollingPresenter tests fail on RS5_Release
                 return;
             }
 
@@ -413,30 +413,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             const double newMaxZoomFactor = 0.5;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            Visual visualScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            Visual visualScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(newMaxZoomFactor < c_defaultZoomFactor);
                 Verify.IsTrue(newMaxZoomFactor < c_defaultMaxZoomFactor);
                 Verify.IsTrue(newMaxZoomFactor > c_defaultMinZoomFactor);
-                scroller.MaxZoomFactor = newMaxZoomFactor;
+                scrollingPresenter.MaxZoomFactor = newMaxZoomFactor;
             });
 
             IdleSynchronizer.Wait();
@@ -447,8 +447,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Setting up spy on translation and scale facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerContent, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerContent, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollingPresenterContent, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollingPresenterContent, compositor, Vector3.One);
                 });
             }
             else
@@ -456,11 +456,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting up spy property set");
-                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(rectangleScrollerContent);
+                    visualScrollingPresenterContent = ElementCompositionPreview.GetElementVisual(rectangleScrollingPresenterContent);
 
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -472,8 +472,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerContent);
-                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerContent);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollingPresenterContent);
+                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollingPresenterContent);
                 });
             }
             else
@@ -481,9 +481,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Cancelling spying");
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -492,12 +492,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
-                Verify.AreEqual(newMaxZoomFactor, scroller.ZoomFactor);
-                Verify.AreEqual(newMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scrollingPresenter.MinZoomFactor);
+                Verify.AreEqual(newMaxZoomFactor, scrollingPresenter.ZoomFactor);
+                Verify.AreEqual(newMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
             });
 
-            Log.Comment("Validating final transform of Scroller.Content's Visual after MaxZoomFactor change");
+            Log.Comment("Validating final transform of ScrollingPresenter.Content's Visual after MaxZoomFactor change");
             CompositionGetValueStatus status;
             float offset;
             float zoomFactor;
@@ -507,14 +507,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollingPresenterContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     Verify.AreEqual(c_defaultHorizontalOffset, translation.X);
                     Verify.AreEqual(c_defaultVerticalOffset, translation.Y);
 
                     Vector3 scale;
-                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollingPresenterContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
                     Verify.AreEqual(newMaxZoomFactor, scale.X);
                 });
@@ -523,15 +523,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
                     Verify.AreEqual(c_defaultHorizontalOffset, offset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
                     Verify.AreEqual(c_defaultVerticalOffset, offset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
                     Verify.AreEqual(newMaxZoomFactor, zoomFactor);
                 });
@@ -539,12 +539,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Increases the Scroller.MinZoomFactor property and verifies the Scroller.ZoomFactor value increases accordingly. Verifies the impact on the Scroller.Content Visual.")]
+        [TestProperty("Description", "Increases the ScrollingPresenter.MinZoomFactor property and verifies the ScrollingPresenter.ZoomFactor value increases accordingly. Verifies the impact on the ScrollingPresenter.Content Visual.")]
         public void StretchContentThroughMinZoomFactor()
         {
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
-                //BUGBUG Bug 19277312: MUX Scroller tests fail on RS5_Release
+                //BUGBUG Bug 19277312: MUX ScrollingPresenter tests fail on RS5_Release
                 return;
             }
 
@@ -555,30 +555,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             const double newMinZoomFactor = 2.0;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            Visual visualScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            Visual visualScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Verify.IsTrue(newMinZoomFactor > c_defaultZoomFactor);
                 Verify.IsTrue(newMinZoomFactor > c_defaultMinZoomFactor);
                 Verify.IsTrue(newMinZoomFactor < c_defaultMaxZoomFactor);
-                scroller.MinZoomFactor = newMinZoomFactor;
+                scrollingPresenter.MinZoomFactor = newMinZoomFactor;
             });
 
             IdleSynchronizer.Wait();
@@ -589,8 +589,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Setting up spy on translation and scale facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollerContent, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollerContent, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(rectangleScrollingPresenterContent, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(rectangleScrollingPresenterContent, compositor, Vector3.One);
                 });
             }
             else
@@ -598,11 +598,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting up spy property set");
-                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(rectangleScrollerContent);
+                    visualScrollingPresenterContent = ElementCompositionPreview.GetElementVisual(rectangleScrollingPresenterContent);
 
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -614,17 +614,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollerContent);
-                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollerContent);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(rectangleScrollingPresenterContent);
+                    CompositionPropertySpy.StopSpyingScaleFacade(rectangleScrollingPresenterContent);
                 });
             }
             else
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -633,12 +633,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(newMinZoomFactor, scroller.MinZoomFactor);
-                Verify.AreEqual(newMinZoomFactor, scroller.ZoomFactor);
-                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(newMinZoomFactor, scrollingPresenter.MinZoomFactor);
+                Verify.AreEqual(newMinZoomFactor, scrollingPresenter.ZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scrollingPresenter.MaxZoomFactor);
             });
             
-            Log.Comment("Validating final transform of Scroller.Content's Visual after MinZoomFactor change");
+            Log.Comment("Validating final transform of ScrollingPresenter.Content's Visual after MinZoomFactor change");
             CompositionGetValueStatus status;
             float offset;
             float zoomFactor;
@@ -648,14 +648,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollingPresenterContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     Verify.AreEqual(c_defaultHorizontalOffset, translation.X);
                     Verify.AreEqual(c_defaultVerticalOffset, translation.Y);
 
                     Vector3 scale;
-                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollingPresenterContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
                     Verify.AreEqual(newMinZoomFactor, scale.X);
                 });
@@ -664,15 +664,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
                     Verify.AreEqual(c_defaultHorizontalOffset, offset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
                     Verify.AreEqual(c_defaultVerticalOffset, offset);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
                     Verify.AreEqual(newMinZoomFactor, zoomFactor);
                 });
@@ -680,36 +680,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Reads the properties exposed by the Scroller.ExpressionAnimationSources CompositionPropertySet.")]
+        [TestProperty("Description", "Reads the properties exposed by the ScrollingPresenter.ExpressionAnimationSources CompositionPropertySet.")]
         public void ReadExpressionAnimationSources()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
                 SetupDefaultUI(
-                    scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                    scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Setting up spy property set");
-                CompositionPropertySpy.StartSpyingVector2Property(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName, Vector2.Zero);
-                CompositionPropertySpy.StartSpyingVector2Property(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName, Vector2.Zero);
-                CompositionPropertySpy.StartSpyingVector2Property(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName, Vector2.Zero);
-                CompositionPropertySpy.StartSpyingVector2Property(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName, Vector2.Zero);
-                CompositionPropertySpy.StartSpyingScalarProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName, 1.0f);
+                CompositionPropertySpy.StartSpyingVector2Property(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName, Vector2.Zero);
+                CompositionPropertySpy.StartSpyingVector2Property(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName, Vector2.Zero);
+                CompositionPropertySpy.StartSpyingVector2Property(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName, Vector2.Zero);
+                CompositionPropertySpy.StartSpyingVector2Property(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName, Vector2.Zero);
+                CompositionPropertySpy.StartSpyingScalarProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName, 1.0f);
             });
 
             Log.Comment("Jumping to absolute zoomFactor");
-            ZoomTo(scroller, 2.0f, 100.0f, 200.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);            
+            ZoomTo(scrollingPresenter, 2.0f, 100.0f, 200.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);            
 
             Log.Comment("Waiting for spied properties to be captured");
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
@@ -717,11 +717,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Cancelling spying");
-                CompositionPropertySpy.StopSpyingProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName);
-                CompositionPropertySpy.StopSpyingProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName);
-                CompositionPropertySpy.StopSpyingProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName);
-                CompositionPropertySpy.StopSpyingProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName);
-                CompositionPropertySpy.StopSpyingProperty(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName);
+                CompositionPropertySpy.StopSpyingProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName);
+                CompositionPropertySpy.StopSpyingProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName);
+                CompositionPropertySpy.StopSpyingProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName);
+                CompositionPropertySpy.StopSpyingProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName);
+                CompositionPropertySpy.StopSpyingProperty(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName);
             });
 
             Log.Comment("Waiting for captured properties to be updated");
@@ -729,7 +729,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Validating final property values of Scroller.ExpressionAnimationSources");
+                Log.Comment("Validating final property values of ScrollingPresenter.ExpressionAnimationSources");
                 CompositionGetValueStatus status;
                 float zoomFactor;
                 Vector2 offset;
@@ -740,45 +740,45 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Vector2 viewport;
 
                 Log.Comment("Validating final zoomFactor");
-                status = CompositionPropertySpy.TryGetScalar(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName, out zoomFactor);
+                status = CompositionPropertySpy.TryGetScalar(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName, out zoomFactor);
                 Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
                 Verify.AreEqual(2.0f, zoomFactor);
 
                 Log.Comment("Validating final offset");
-                status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName, out offset);
+                status = CompositionPropertySpy.TryGetVector2(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName, out offset);
                 Log.Comment("status={0}, offset={1}", status, offset);
                 Verify.AreEqual(0.0f, offset.X);
                 Verify.AreEqual(0.0f, offset.Y);
 
                 Log.Comment("Validating final position");
-                status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName, out position);
+                status = CompositionPropertySpy.TryGetVector2(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName, out position);
                 Log.Comment("status={0}, position={1}", status, position);
                 Verify.AreEqual(100.0f, position.X);
                 Verify.AreEqual(200.0f, position.Y);
 
                 Log.Comment("Validating final minPosition");
-                status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName, out minPosition);
+                status = CompositionPropertySpy.TryGetVector2(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName, out minPosition);
                 Log.Comment("status={0}, minPosition={1}", status, minPosition);
                 Verify.AreEqual(0.0f, minPosition.X);
                 Verify.AreEqual(0.0f, minPosition.Y);
 
                 Log.Comment("Validating final maxPosition");
-                status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName, out maxPosition);
+                status = CompositionPropertySpy.TryGetVector2(scrollingPresenter.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName, out maxPosition);
                 Log.Comment("status={0}, maxPosition={1}", status, maxPosition);
                 Verify.AreEqual(2100.0f, maxPosition.X);
                 Verify.AreEqual(1000.0f, maxPosition.Y);
 
                 Log.Comment("Validating final extent");
-                status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesExtentPropertyName, out extent);
+                status = scrollingPresenter.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesExtentPropertyName, out extent);
                 Log.Comment("status={0}, extent={1}", status, extent);
-                Verify.AreEqual(c_defaultUIScrollerContentWidth, extent.X);
-                Verify.AreEqual(c_defaultUIScrollerContentHeight, extent.Y);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentWidth, extent.X);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentHeight, extent.Y);
 
                 Log.Comment("Validating final viewport");
-                status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesViewportPropertyName, out viewport);
+                status = scrollingPresenter.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesViewportPropertyName, out viewport);
                 Log.Comment("status={0}, viewport={1}", status, viewport);
-                Verify.AreEqual(c_defaultUIScrollerWidth, viewport.X);
-                Verify.AreEqual(c_defaultUIScrollerHeight, viewport.Y);
+                Verify.AreEqual(c_defaultUIScrollingPresenterWidth, viewport.X);
+                Verify.AreEqual(c_defaultUIScrollingPresenterHeight, viewport.Y);
             });
         }
 
@@ -787,7 +787,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
-                Log.Warning("Skipped ValidateXYFocusNavigation because XYFocus support for third party scrollers is only available in RS4+.");
+                Log.Warning("Skipped ValidateXYFocusNavigation because XYFocus support for third party scrollingPresenters is only available in RS4+.");
                 return;
             }
 
@@ -805,7 +805,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         <Button Content='Outer Right Button' HorizontalAlignment='Right' VerticalAlignment='Center' />
                         <Button Content='Outer Bottom Button' HorizontalAlignment='Center' VerticalAlignment='Bottom' />
 
-                        <controlsPrimitives:Scroller x:Name='scroller' Width='200' Height='200' HorizontalAlignment='Center' VerticalAlignment='Center'>
+                        <controlsPrimitives:ScrollingPresenter x:Name='scrollingPresenter' Width='200' Height='200' HorizontalAlignment='Center' VerticalAlignment='Center'>
                             <Grid Width='600' Height='600' Background='Gray'>
                                 
                                 <!-- Inner buttons are larger than the outer so that they get ranked better by the XY focus algorithm. -->
@@ -816,7 +816,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                                 <Button x:Name='innerCenterButton' Content='Inner Center Button' HorizontalAlignment='Center' VerticalAlignment='Center' />
                             </Grid>
-                        </controlsPrimitives:Scroller>
+                        </controlsPrimitives:ScrollingPresenter>
                     </Grid>"));
 
                 innerCenterButton = (Button)rootPanel.FindName("innerCenterButton");
@@ -838,7 +838,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Listens to the Scroller.Content.EffectiveViewportChanged event and expects it to be raised while changing offsets.")]
+        [TestProperty("Description", "Listens to the ScrollingPresenter.Content.EffectiveViewportChanged event and expects it to be raised while changing offsets.")]
         public void ListenToContentEffectiveViewportChanged()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
@@ -847,31 +847,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             int effectiveViewportChangedCount = 0;
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
 
-                rectangleScrollerContent.EffectiveViewportChanged += (FrameworkElement sender, EffectiveViewportChangedEventArgs args) =>
+                rectangleScrollingPresenterContent.EffectiveViewportChanged += (FrameworkElement sender, EffectiveViewportChangedEventArgs args) =>
                 {
-                    Log.Comment("Scroller.Content.EffectiveViewportChanged: BringIntoViewDistance=" +
+                    Log.Comment("ScrollingPresenter.Content.EffectiveViewportChanged: BringIntoViewDistance=" +
                         args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                         args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
                     effectiveViewportChangedCount++;
                 };
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             ScrollTo(
-                scroller,
+                scrollingPresenter,
                 horizontalOffset: 250,
                 verticalOffset: 150,
                 animationMode: AnimationMode.Enabled,
@@ -886,14 +886,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         private void SetupDefaultUI(
-            Scroller scroller,
-            Rectangle rectangleScrollerContent,
-            AutoResetEvent scrollerLoadedEvent,
+            ScrollingPresenter scrollingPresenter,
+            Rectangle rectangleScrollingPresenterContent,
+            AutoResetEvent scrollingPresenterLoadedEvent,
             bool setAsContentRoot = true)
         {
-            Log.Comment("Setting up default UI with Scroller" + (rectangleScrollerContent == null ? "" : " and Rectangle"));
+            Log.Comment("Setting up default UI with ScrollingPresenter" + (rectangleScrollingPresenterContent == null ? "" : " and Rectangle"));
 
-            if (rectangleScrollerContent != null)
+            if (rectangleScrollingPresenterContent != null)
             {
                 LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -903,36 +903,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
                 twoColorLGB.GradientStops.Add(orangeGS);
 
-                rectangleScrollerContent.Width = c_defaultUIScrollerContentWidth;
-                rectangleScrollerContent.Height = c_defaultUIScrollerContentHeight;
-                rectangleScrollerContent.Fill = twoColorLGB;
+                rectangleScrollingPresenterContent.Width = c_defaultUIScrollingPresenterContentWidth;
+                rectangleScrollingPresenterContent.Height = c_defaultUIScrollingPresenterContentHeight;
+                rectangleScrollingPresenterContent.Fill = twoColorLGB;
             }
 
-            Verify.IsNotNull(scroller);
-            scroller.Width = c_defaultUIScrollerWidth;
-            scroller.Height = c_defaultUIScrollerHeight;
-            if (rectangleScrollerContent != null)
+            Verify.IsNotNull(scrollingPresenter);
+            scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
+            scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
+            if (rectangleScrollingPresenterContent != null)
             {
-                scroller.Content = rectangleScrollerContent;
+                scrollingPresenter.Content = rectangleScrollingPresenterContent;
             }
 
-            if (scrollerLoadedEvent != null)
+            if (scrollingPresenterLoadedEvent != null)
             {
-                scroller.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
-                    scrollerLoadedEvent.Set();
+                    Log.Comment("ScrollingPresenter.Loaded event handler");
+                    scrollingPresenterLoadedEvent.Set();
                 };
             }
 
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scroller;
+                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
             }
         }
 
-        private void SpyTranslationAndScale(Scroller scroller, Compositor compositor, out float horizontalOffset, out float verticalOffset, out float zoomFactor)
+        private void SpyTranslationAndScale(ScrollingPresenter scrollingPresenter, Compositor compositor, out float horizontalOffset, out float verticalOffset, out float zoomFactor)
         {
             Verify.IsTrue(PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2));
 
@@ -943,33 +943,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             horizontalOffset = verticalOffset = 0.0f;
             zoomFactor = 0.0f;
             
-            Visual visualScrollerContent = null;
+            Visual visualScrollingPresenterContent = null;
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.IsNotNull(scroller);
-                    Verify.IsNotNull(scroller.Content);
+                    Verify.IsNotNull(scrollingPresenter);
+                    Verify.IsNotNull(scrollingPresenter.Content);
 
                     Log.Comment("Setting up spying on facades");
 
-                    CompositionPropertySpy.StartSpyingTranslationFacade(scroller.Content, compositor, Vector3.Zero);
-                    CompositionPropertySpy.StartSpyingScaleFacade(scroller.Content, compositor, Vector3.One);
+                    CompositionPropertySpy.StartSpyingTranslationFacade(scrollingPresenter.Content, compositor, Vector3.Zero);
+                    CompositionPropertySpy.StartSpyingScaleFacade(scrollingPresenter.Content, compositor, Vector3.One);
                 });
             }
             else
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.IsNotNull(scroller);
-                    Verify.IsNotNull(scroller.Content);
+                    Verify.IsNotNull(scrollingPresenter);
+                    Verify.IsNotNull(scrollingPresenter.Content);
 
                     Log.Comment("Setting up spy property set");
-                    visualScrollerContent = ElementCompositionPreview.GetElementVisual(scroller.Content);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    visualScrollingPresenterContent = ElementCompositionPreview.GetElementVisual(scrollingPresenter.Content);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StartSpyingScalarProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
@@ -981,24 +981,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingTranslationFacade(scroller.Content);
-                    CompositionPropertySpy.StopSpyingScaleFacade(scroller.Content);
+                    CompositionPropertySpy.StopSpyingTranslationFacade(scrollingPresenter.Content);
+                    CompositionPropertySpy.StopSpyingScaleFacade(scrollingPresenter.Content);
                 });
             }
             else
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName);
-                    CompositionPropertySpy.StopSpyingProperty(visualScrollerContent, c_visualScaleTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName);
+                    CompositionPropertySpy.StopSpyingProperty(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName);
                 });
             }
 
             Log.Comment("Waiting for captured properties to be updated");
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
 
-            Log.Comment("Reading Scroller.Content's Visual Transform");
+            Log.Comment("Reading ScrollingPresenter.Content's Visual Transform");
             CompositionGetValueStatus status;
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
@@ -1006,14 +1006,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Vector3 translation = Vector3.Zero;
-                    status = CompositionPropertySpy.TryGetTranslationFacade(scroller.Content, out translation);
+                    status = CompositionPropertySpy.TryGetTranslationFacade(scrollingPresenter.Content, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
                     horizontalOffsetTmp = translation.X;
                     verticalOffsetTmp = translation.Y;
 
                     Vector3 scale = Vector3.One;
-                    status = CompositionPropertySpy.TryGetScaleFacade(scroller.Content, out scale);
+                    status = CompositionPropertySpy.TryGetScaleFacade(scrollingPresenter.Content, out scale);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactorTmp);
                     zoomFactorTmp = scale.X;
                 });
@@ -1022,13 +1022,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 RunOnUIThread.Execute(() =>
                 {
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out horizontalOffsetTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualHorizontalOffsetTargetedPropertyName, out horizontalOffsetTmp);
                     Log.Comment("status={0}, horizontal offset={1}", status, horizontalOffsetTmp);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out verticalOffsetTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualVerticalOffsetTargetedPropertyName, out verticalOffsetTmp);
                     Log.Comment("status={0}, vertical offset={1}", status, verticalOffsetTmp);
 
-                    status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactorTmp);
+                    status = CompositionPropertySpy.TryGetScalar(visualScrollingPresenterContent, c_visualScaleTargetedPropertyName, out zoomFactorTmp);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactorTmp);
                 });
             }

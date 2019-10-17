@@ -20,9 +20,9 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
-    public class Scroller : UIObject, IScroll
+    public class ScrollingPresenter : UIObject, IScroll
     {
-        public Scroller(UIObject uiObject)
+        public ScrollingPresenter(UIObject uiObject)
             : base(uiObject)
         {
             this.Initialize();
@@ -35,27 +35,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 
         public ScrollChangedEventWaiter GetScrollChangedWaiter(ScrollProperty scrollProperty, bool? expectedValue)
         {
-            Log.Comment("Scroller.GetScrollChangedWaiter call for scrollProperty={0} and expectedValue={1}.",
+            Log.Comment("ScrollingPresenter.GetScrollChangedWaiter call for scrollProperty={0} and expectedValue={1}.",
                 scrollProperty.ToString(), expectedValue == null ? "null" : expectedValue.ToString());
             return new ScrollChangedEventWaiter(this, scrollProperty, expectedValue);
         }
 
         public ScrollChangedEventWaiter GetScrollChangedWaiter(ScrollProperty scrollProperty, double expectedValue)
         {
-            Log.Comment("Scroller.GetScrollChangedWaiter call for scrollProperty={0} and expectedValue={1}.", 
+            Log.Comment("ScrollingPresenter.GetScrollChangedWaiter call for scrollProperty={0} and expectedValue={1}.", 
                 scrollProperty.ToString(), expectedValue.ToString());
             return new ScrollChangedEventWaiter(this, scrollProperty, expectedValue);
         }
 
-        new public static IFactory<Scroller> Factory
+        new public static IFactory<ScrollingPresenter> Factory
         {
             get
             {
-                if (null == Scroller._factory)
+                if (null == ScrollingPresenter._factory)
                 {
-                    Scroller._factory = new ScrollerFactory();
+                    ScrollingPresenter._factory = new ScrollingPresenterFactory();
                 }
-                return Scroller._factory;
+                return ScrollingPresenter._factory;
             }
         }
 
@@ -132,13 +132,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         #endregion
 
         private IScroll _scrollPattern;        
-        private static IFactory<Scroller> _factory = null;
+        private static IFactory<ScrollingPresenter> _factory = null;
 
-        private class ScrollerFactory : IFactory<Scroller>
+        private class ScrollingPresenterFactory : IFactory<ScrollingPresenter>
         {
-            public Scroller Create(UIObject element)
+            public ScrollingPresenter Create(UIObject element)
             {
-                return new Scroller(element);
+                return new ScrollingPresenter(element);
             }
         }
     }

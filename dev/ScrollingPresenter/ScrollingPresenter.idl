@@ -165,7 +165,7 @@ runtimeclass ZoomCompletedEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerBringingIntoViewEventArgs
+runtimeclass ScrollingPresenterBringingIntoViewEventArgs
 {
     SnapPointsMode SnapPointsMode { get; set; };
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
@@ -177,7 +177,7 @@ runtimeclass ScrollerBringingIntoViewEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass ScrollerAnchorRequestedEventArgs
+runtimeclass ScrollingPresenterAnchorRequestedEventArgs
 {
     Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
     Windows.UI.Xaml.UIElement AnchorElement { get; set; };

@@ -22,13 +22,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollingPresenterTests
     {
         private enum BiDirectionalAlignment
         {
@@ -39,7 +39,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content.Margin and verifies InteractionTracker.MaxPosition.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content.Margin and verifies InteractionTracker.MaxPosition.")]
         public void BasicMargin()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -49,61 +49,61 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             const double c_Margin = 50.0;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Adding positive Margin to Scroller.Content");
-                rectangleScrollerContent.Margin = new Thickness(c_Margin);
+                Log.Comment("Adding positive Margin to ScrollingPresenter.Content");
+                rectangleScrollingPresenterContent.Margin = new Thickness(c_Margin);
             });
 
             // Try to jump beyond maximum offsets
             ScrollTo(
-                scroller,
-                c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
-                c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
+                scrollingPresenter,
+                c_defaultUIScrollingPresenterContentWidth + 2 * c_Margin - c_defaultUIScrollingPresenterWidth + 10.0,
+                c_defaultUIScrollingPresenterContentHeight + 2 * c_Margin - c_defaultUIScrollingPresenterHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth + 2 * c_Margin - c_defaultUIScrollerWidth,
-                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight + 2 * c_Margin - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth + 2 * c_Margin - c_defaultUIScrollingPresenterWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollingPresenterContentHeight + 2 * c_Margin - c_defaultUIScrollingPresenterHeight);
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Adding negative Margin to Scroller.Content");
-                rectangleScrollerContent.Margin = new Thickness(-c_Margin);
+                Log.Comment("Adding negative Margin to ScrollingPresenter.Content");
+                rectangleScrollingPresenterContent.Margin = new Thickness(-c_Margin);
             });
 
             // Try to jump beyond maximum offsets
             ScrollTo(
-                scroller,
-                c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth + 10.0,
-                c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight + 10.0,
+                scrollingPresenter,
+                c_defaultUIScrollingPresenterContentWidth - 2 * c_Margin - c_defaultUIScrollingPresenterWidth + 10.0,
+                c_defaultUIScrollingPresenterContentHeight - 2 * c_Margin - c_defaultUIScrollingPresenterHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth - 2 * c_Margin - c_defaultUIScrollerWidth,
-                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight - 2 * c_Margin - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth - 2 * c_Margin - c_defaultUIScrollingPresenterWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollingPresenterContentHeight - 2 * c_Margin - c_defaultUIScrollingPresenterHeight);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content.Padding and verifies InteractionTracker.MaxPosition.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content.Padding and verifies InteractionTracker.MaxPosition.")]
         public void BasicPadding()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -113,48 +113,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             const double c_Padding = 50.0;
-            Scroller scroller = null;
-            Border borderScrollerContent = null;
+            ScrollingPresenter scrollingPresenter = null;
+            Border borderScrollingPresenterContent = null;
             Rectangle rectangle = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                borderScrollerContent = new Border();
+                borderScrollingPresenterContent = new Border();
                 rectangle = new Rectangle();
-                scroller = new Scroller();
+                scrollingPresenter = new ScrollingPresenter();
 
-                borderScrollerContent.Width = c_defaultUIScrollerContentWidth;
-                borderScrollerContent.Height = c_defaultUIScrollerContentHeight;
-                borderScrollerContent.Child = rectangle;
-                scroller.Content = borderScrollerContent;
+                borderScrollingPresenterContent.Width = c_defaultUIScrollingPresenterContentWidth;
+                borderScrollingPresenterContent.Height = c_defaultUIScrollingPresenterContentHeight;
+                borderScrollingPresenterContent.Child = rectangle;
+                scrollingPresenter.Content = borderScrollingPresenterContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Adding Padding to Scroller.Content");
-                borderScrollerContent.Padding = new Thickness(c_Padding);
+                Log.Comment("Adding Padding to ScrollingPresenter.Content");
+                borderScrollingPresenterContent.Padding = new Thickness(c_Padding);
             });
 
             // Try to jump beyond maximum offsets
             ScrollTo(
-                scroller,
-                c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth + 10.0,
-                c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight + 10.0,
+                scrollingPresenter,
+                c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth + 10.0,
+                c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth,
-                expectedFinalVerticalOffset: c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth,
+                expectedFinalVerticalOffset: c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and verifies content positioning.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content.HorizontalAlignment/VerticalAlignment and verifies content positioning.")]
         public void BasicAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -164,9 +164,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             const float c_smallZoomFactor = 0.15f;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             float horizontalOffset = 0.0f;
             float verticalOffset = 0.0f;
             float zoomFactor = 1.0f;
@@ -174,40 +174,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
             IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Stretch/Strech alignments");
-                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollerContent.HorizontalAlignment);
-                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollerContent.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollingPresenterContent.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollingPresenterContent.VerticalAlignment);
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
-            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
-            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollingPresenterWidth - c_defaultUIScrollingPresenterContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollingPresenterHeight - c_defaultUIScrollingPresenterContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Left/Top alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Left;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Top;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Left;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Top;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.AreEqual(0.0f, horizontalOffset);
             Verify.AreEqual(0.0f, verticalOffset);
@@ -216,96 +216,96 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Right/Bottom alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Right;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Bottom;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Right;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Bottom;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
-            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
-            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollingPresenterWidth - c_defaultUIScrollingPresenterContentWidth * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollingPresenterHeight - c_defaultUIScrollingPresenterContentHeight * c_smallZoomFactor)) < c_defaultOffsetResultTolerance);
             Verify.AreEqual(c_smallZoomFactor, zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Center/Center alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Center;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Center;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Center;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Center;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
-            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollerWidth - c_defaultUIScrollerContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
-            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollerHeight - c_defaultUIScrollerContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(horizontalOffset - (float)(c_defaultUIScrollingPresenterWidth - c_defaultUIScrollingPresenterContentWidth * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
+            Verify.IsTrue(Math.Abs(verticalOffset - (float)(c_defaultUIScrollingPresenterHeight - c_defaultUIScrollingPresenterContentHeight * c_smallZoomFactor) / 2.0f) < c_defaultOffsetResultTolerance);
             Verify.AreEqual(c_smallZoomFactor, zoomFactor);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Validates Scroller.ViewportHeight for various layouts.")]
+        [TestProperty("Description", "Validates ScrollingPresenter.ViewportHeight for various layouts.")]
         public void ViewportHeight()
         {
-            for (double scrollerContentHeight = 50.0; scrollerContentHeight <= 350.0; scrollerContentHeight += 300.0)
+            for (double scrollingPresenterContentHeight = 50.0; scrollingPresenterContentHeight <= 350.0; scrollingPresenterContentHeight += 300.0)
             {
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Top,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: true,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: true,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Top,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: true,
-                    scrollerVerticalAlignment: VerticalAlignment.Top,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: true,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Top,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
 
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Center,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: true,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: true,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Center,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: true,
-                    scrollerVerticalAlignment: VerticalAlignment.Center,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: true,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Center,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
 
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: true,
-                    isScrollerParentMaxSizeSet: false,
-                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: true,
+                    isScrollingPresenterParentMaxSizeSet: false,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
                 ViewportHeight(
-                    isScrollerParentSizeSet: false,
-                    isScrollerParentMaxSizeSet: true,
-                    scrollerVerticalAlignment: VerticalAlignment.Stretch,
-                    scrollerContentHeight: scrollerContentHeight);
+                    isScrollingPresenterParentSizeSet: false,
+                    isScrollingPresenterParentMaxSizeSet: true,
+                    scrollingPresenterVerticalAlignment: VerticalAlignment.Stretch,
+                    scrollingPresenterContentHeight: scrollingPresenterContentHeight);
             }
         }
 
         private void ViewportHeight(
-            bool isScrollerParentSizeSet,
-            bool isScrollerParentMaxSizeSet,
-            VerticalAlignment scrollerVerticalAlignment,
-            double scrollerContentHeight)
+            bool isScrollingPresenterParentSizeSet,
+            bool isScrollingPresenterParentMaxSizeSet,
+            VerticalAlignment scrollingPresenterVerticalAlignment,
+            double scrollingPresenterContentHeight)
         {
-            Log.Comment($"ViewportHeight test case - isScrollerParentSizeSet: {isScrollerParentSizeSet}, isScrollerParentMaxSizeSet: {isScrollerParentMaxSizeSet}, scrollerVerticalAlignment: {scrollerVerticalAlignment}, scrollerContentHeight: {scrollerContentHeight}");
+            Log.Comment($"ViewportHeight test case - isScrollingPresenterParentSizeSet: {isScrollingPresenterParentSizeSet}, isScrollingPresenterParentMaxSizeSet: {isScrollingPresenterParentMaxSizeSet}, scrollingPresenterVerticalAlignment: {scrollingPresenterVerticalAlignment}, scrollingPresenterContentHeight: {scrollingPresenterContentHeight}");
 
             Border border = null;
-            Scroller scroller = null;
+            ScrollingPresenter scrollingPresenter = null;
             StackPanel stackPanel = null;
             Rectangle rectangle = null;
             AutoResetEvent borderLoadedEvent = new AutoResetEvent(false);
@@ -315,7 +315,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 rectangle = new Rectangle()
                 {
                     Width = 30,
-                    Height = scrollerContentHeight
+                    Height = scrollingPresenterContentHeight
                 };
 
                 stackPanel = new StackPanel()
@@ -326,11 +326,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
                 stackPanel.Children.Add(rectangle);
 
-                scroller = new Scroller()
+                scrollingPresenter = new ScrollingPresenter()
                 {
                     Content = stackPanel,
                     ContentOrientation = ContentOrientation.Vertical,
-                    VerticalAlignment = scrollerVerticalAlignment
+                    VerticalAlignment = scrollingPresenterVerticalAlignment
                 };
 
                 border = new Border()
@@ -338,14 +338,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     BorderThickness = new Thickness(2),
                     Margin = new Thickness(3),
                     VerticalAlignment = VerticalAlignment.Center,
-                    Child = scroller
+                    Child = scrollingPresenter
                 };
-                if (isScrollerParentSizeSet)
+                if (isScrollingPresenterParentSizeSet)
                 {
                     border.Width = 300.0;
                     border.Height = 200.0;
                 }
-                if (isScrollerParentMaxSizeSet)
+                if (isScrollingPresenterParentMaxSizeSet)
                 {
                     border.MaxWidth = 300.0;
                     border.MaxHeight = 200.0;
@@ -372,52 +372,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 double borderChildAvailableHeight = border.ActualHeight - border.BorderThickness.Top - border.BorderThickness.Bottom;
 
-                if (expectedViewportHeight > borderChildAvailableHeight || scrollerVerticalAlignment == VerticalAlignment.Stretch)
+                if (expectedViewportHeight > borderChildAvailableHeight || scrollingPresenterVerticalAlignment == VerticalAlignment.Stretch)
                 {
                     expectedViewportHeight = borderChildAvailableHeight;
                 }
 
                 Log.Comment($"border.ActualWidth: {border.ActualWidth}, border.ActualHeight: {border.ActualHeight}");
-                Log.Comment($"Checking ViewportWidth - scroller.ViewportWidth: {scroller.ViewportWidth}, scroller.ActualWidth: {scroller.ActualWidth}");
-                Verify.AreEqual(scroller.ViewportWidth, scroller.ActualWidth);
+                Log.Comment($"Checking ViewportWidth - scrollingPresenter.ViewportWidth: {scrollingPresenter.ViewportWidth}, scrollingPresenter.ActualWidth: {scrollingPresenter.ActualWidth}");
+                Verify.AreEqual(scrollingPresenter.ViewportWidth, scrollingPresenter.ActualWidth);
 
-                Log.Comment($"Checking ViewportHeight - expectedViewportHeight: {expectedViewportHeight}, scroller.ViewportHeight: {scroller.ViewportHeight}, scroller.ActualHeight: {scroller.ActualHeight}");
-                Verify.AreEqual(expectedViewportHeight, scroller.ViewportHeight);
-                Verify.AreEqual(scroller.ViewportHeight, scroller.ActualHeight);
+                Log.Comment($"Checking ViewportHeight - expectedViewportHeight: {expectedViewportHeight}, scrollingPresenter.ViewportHeight: {scrollingPresenter.ViewportHeight}, scrollingPresenter.ActualHeight: {scrollingPresenter.ActualHeight}");
+                Verify.AreEqual(expectedViewportHeight, scrollingPresenter.ViewportHeight);
+                Verify.AreEqual(scrollingPresenter.ViewportHeight, scrollingPresenter.ActualHeight);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Uses a StackPanel with Stretch alignment as Scroller.Content to verify it stretched to the size of the Scroller.")]
+        [TestProperty("Description", "Uses a StackPanel with Stretch alignment as ScrollingPresenter.Content to verify it stretched to the size of the ScrollingPresenter.")]
         public void StretchAlignment()
         {
-            Scroller scroller = null;
+            ScrollingPresenter scrollingPresenter = null;
             StackPanel stackPanel = null;
             Rectangle rectangle = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
                 rectangle = new Rectangle();
-                rectangle.Height = c_defaultUIScrollerContentHeight;
+                rectangle.Height = c_defaultUIScrollingPresenterContentHeight;
                 stackPanel = new StackPanel();
                 stackPanel.Children.Add(rectangle);
-                scroller = new Scroller();
-                scroller.Width = c_defaultUIScrollerWidth;
-                scroller.Height = c_defaultUIScrollerHeight;
-                scroller.Content = stackPanel;
+                scrollingPresenter = new ScrollingPresenter();
+                scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
+                scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
+                scrollingPresenter.Content = stackPanel;
 
-                scroller.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
-                    scrollerLoadedEvent.Set();
+                    Log.Comment("ScrollingPresenter.Loaded event handler");
+                    scrollingPresenterLoadedEvent.Set();
                 };
 
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scroller;
+                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             RunOnUIThread.Execute(() =>
             {
@@ -426,13 +426,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(VerticalAlignment.Stretch, stackPanel.VerticalAlignment);
 
                 Log.Comment("Checking StackPanel size");
-                Verify.AreEqual(c_defaultUIScrollerWidth, stackPanel.ActualWidth);
-                Verify.AreEqual(c_defaultUIScrollerContentHeight, stackPanel.ActualHeight);
+                Verify.AreEqual(c_defaultUIScrollingPresenterWidth, stackPanel.ActualWidth);
+                Verify.AreEqual(c_defaultUIScrollingPresenterContentHeight, stackPanel.ActualHeight);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content.HorizontalAlignment/VerticalAlignment and Scroller.Content.Margin and verifies content positioning.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content.HorizontalAlignment/VerticalAlignment and ScrollingPresenter.Content.Margin and verifies content positioning.")]
         public void BasicMarginAndAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -443,9 +443,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             const float c_smallZoomFactor = 0.15f;
             const double c_Margin = 40.0;
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             float horizontalOffset = 0.0f;
             float verticalOffset = 0.0f;
             float zoomFactor = 1.0f;
@@ -453,31 +453,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
 
-                Log.Comment("Adding positive Margin to Scroller.Content");
-                rectangleScrollerContent.Margin = new Thickness(c_Margin);
+                Log.Comment("Adding positive Margin to ScrollingPresenter.Content");
+                rectangleScrollingPresenterContent.Margin = new Thickness(c_Margin);
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
             IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Stretch/Strech alignments");
-                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollerContent.HorizontalAlignment);
-                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollerContent.VerticalAlignment);
+                Verify.AreEqual(HorizontalAlignment.Stretch, rectangleScrollingPresenterContent.HorizontalAlignment);
+                Verify.AreEqual(VerticalAlignment.Stretch, rectangleScrollingPresenterContent.VerticalAlignment);
 
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 20.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 15.0f) < c_defaultOffsetResultTolerance);
@@ -486,11 +486,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Left/Top alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Left;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Top;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Left;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Top;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.IsTrue(Math.Abs(horizontalOffset + 34.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset + 34.0f) < c_defaultOffsetResultTolerance);
@@ -499,11 +499,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Right/Bottom alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Right;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Bottom;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Right;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Bottom;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 74.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 64.0f) < c_defaultOffsetResultTolerance);
@@ -512,11 +512,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Covering Center/Center alignments");
-                rectangleScrollerContent.HorizontalAlignment = HorizontalAlignment.Center;
-                rectangleScrollerContent.VerticalAlignment = VerticalAlignment.Center;
+                rectangleScrollingPresenterContent.HorizontalAlignment = HorizontalAlignment.Center;
+                rectangleScrollingPresenterContent.VerticalAlignment = VerticalAlignment.Center;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             Verify.IsTrue(Math.Abs(horizontalOffset - 20.0f) < c_defaultOffsetResultTolerance);
             Verify.IsTrue(Math.Abs(verticalOffset - 15.0f) < c_defaultOffsetResultTolerance);
@@ -524,104 +524,104 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content to an unsized and stretched Image, verifies resulting Scroller extents.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content to an unsized and stretched Image, verifies resulting ScrollingPresenter extents.")]
         public void StretchedImage()
         {
-            Scroller scroller = null;
-            Image imageScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Image imageScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             const double margin = 10.0;
 
             RunOnUIThread.Execute(() =>
             {
                 Uri uri = new Uri("ms-appx:/Assets/ingredient8.png");
                 Verify.IsNotNull(uri);
-                imageScrollerContent = new Image();
-                imageScrollerContent.Source = new BitmapImage(uri);
-                imageScrollerContent.Margin = new Thickness(margin);
+                imageScrollingPresenterContent = new Image();
+                imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                imageScrollingPresenterContent.Margin = new Thickness(margin);
 
-                scroller = new Scroller();
-                scroller.Content = imageScrollerContent;
+                scrollingPresenter = new ScrollingPresenter();
+                scrollingPresenter.Content = imageScrollingPresenterContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.None);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.None);
                 // Image is unconstrained and stretches to largest square contained in the 300 x 200 viewport: 200 x 200.
                 ValidateStretchedImageSize(
-                    scroller,
-                    imageScrollerContent,
+                    scrollingPresenter,
+                    imageScrollingPresenterContent,
                     desiredSize: 80.0 + 2.0 * margin /*natural size + margins*/,
-                    actualSize: c_defaultUIScrollerHeight - 2.0 * margin,
-                    extentSize: c_defaultUIScrollerHeight);
+                    actualSize: c_defaultUIScrollingPresenterHeight - 2.0 * margin,
+                    extentSize: c_defaultUIScrollingPresenterHeight);
 
-                Log.Comment("Changing Scroller.ContentOrientation to Vertical.");
-                scroller.ContentOrientation = ContentOrientation.Vertical;
+                Log.Comment("Changing ScrollingPresenter.ContentOrientation to Vertical.");
+                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Vertical);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.Vertical);
                 // Image is constrained horizontally to 300 and stretches to the 300 x 300 square.
                 ValidateStretchedImageSize(
-                    scroller,
-                    imageScrollerContent,
-                    desiredSize: c_defaultUIScrollerWidth,
-                    actualSize: c_defaultUIScrollerWidth - 2.0 * margin,
-                    extentSize: c_defaultUIScrollerWidth);
+                    scrollingPresenter,
+                    imageScrollingPresenterContent,
+                    desiredSize: c_defaultUIScrollingPresenterWidth,
+                    actualSize: c_defaultUIScrollingPresenterWidth - 2.0 * margin,
+                    extentSize: c_defaultUIScrollingPresenterWidth);
 
-                Log.Comment("Changing Scroller.ContentOrientation to Horizontal.");
-                scroller.ContentOrientation = ContentOrientation.Horizontal;
+                Log.Comment("Changing ScrollingPresenter.ContentOrientation to Horizontal.");
+                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Horizontal);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.Horizontal);
                 // Image is constrained vertically to 200 and stretches to the 200 x 200 square.
                 ValidateStretchedImageSize(
-                    scroller,
-                    imageScrollerContent,
-                    desiredSize: c_defaultUIScrollerHeight,
-                    actualSize: c_defaultUIScrollerHeight - 2.0 * margin,
-                    extentSize: c_defaultUIScrollerHeight);
+                    scrollingPresenter,
+                    imageScrollingPresenterContent,
+                    desiredSize: c_defaultUIScrollingPresenterHeight,
+                    actualSize: c_defaultUIScrollingPresenterHeight - 2.0 * margin,
+                    extentSize: c_defaultUIScrollingPresenterHeight);
             });
         }
 
         private void ValidateStretchedImageSize(
-            Scroller scroller,
-            Image imageScrollerContent,
+            ScrollingPresenter scrollingPresenter,
+            Image imageScrollingPresenterContent,
             double desiredSize,
             double actualSize,
             double extentSize)
         {
-            Log.Comment($"Sizes with Scroller.ContentOrientation={scroller.ContentOrientation}");
-            Log.Comment($"Image DesiredSize=({imageScrollerContent.DesiredSize.Width} x {imageScrollerContent.DesiredSize.Height})");
-            Log.Comment($"Image RenderSize=({imageScrollerContent.RenderSize.Width} x {imageScrollerContent.RenderSize.Height})");
-            Log.Comment($"Image ActualSize=({imageScrollerContent.ActualWidth} x {imageScrollerContent.ActualHeight})");
-            Log.Comment($"Scroller ExtentSize=({scroller.ExtentWidth} x {scroller.ExtentHeight})");
+            Log.Comment($"Sizes with ScrollingPresenter.ContentOrientation={scrollingPresenter.ContentOrientation}");
+            Log.Comment($"Image DesiredSize=({imageScrollingPresenterContent.DesiredSize.Width} x {imageScrollingPresenterContent.DesiredSize.Height})");
+            Log.Comment($"Image RenderSize=({imageScrollingPresenterContent.RenderSize.Width} x {imageScrollingPresenterContent.RenderSize.Height})");
+            Log.Comment($"Image ActualSize=({imageScrollingPresenterContent.ActualWidth} x {imageScrollingPresenterContent.ActualHeight})");
+            Log.Comment($"ScrollingPresenter ExtentSize=({scrollingPresenter.ExtentWidth} x {scrollingPresenter.ExtentHeight})");
 
-            Verify.AreEqual(imageScrollerContent.DesiredSize.Width, desiredSize);
-            Verify.AreEqual(imageScrollerContent.DesiredSize.Height, desiredSize);
-            Verify.AreEqual(imageScrollerContent.RenderSize.Width, actualSize);
-            Verify.AreEqual(imageScrollerContent.RenderSize.Height, actualSize);
-            Verify.AreEqual(imageScrollerContent.ActualWidth, actualSize);
-            Verify.AreEqual(imageScrollerContent.ActualHeight, actualSize);
-            Verify.AreEqual(scroller.ExtentWidth, extentSize);
-            Verify.AreEqual(scroller.ExtentHeight, extentSize);
+            Verify.AreEqual(imageScrollingPresenterContent.DesiredSize.Width, desiredSize);
+            Verify.AreEqual(imageScrollingPresenterContent.DesiredSize.Height, desiredSize);
+            Verify.AreEqual(imageScrollingPresenterContent.RenderSize.Width, actualSize);
+            Verify.AreEqual(imageScrollingPresenterContent.RenderSize.Height, actualSize);
+            Verify.AreEqual(imageScrollingPresenterContent.ActualWidth, actualSize);
+            Verify.AreEqual(imageScrollingPresenterContent.ActualHeight, actualSize);
+            Verify.AreEqual(scrollingPresenter.ExtentWidth, extentSize);
+            Verify.AreEqual(scrollingPresenter.ExtentHeight, extentSize);
         }
 
         [TestMethod]
-        [TestProperty("Description", "Sets Scroller.Content to Image with unnatural size and verifies InteractionTracker.MaxPosition.")]
+        [TestProperty("Description", "Sets ScrollingPresenter.Content to Image with unnatural size and verifies InteractionTracker.MaxPosition.")]
         public void ImageWithUnnaturalSize()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -632,43 +632,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             const double c_UnnaturalImageWidth = 1200.0;
             const double c_UnnaturalImageHeight = 1000.0;
-            Scroller scroller = null;
-            Image imageScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Image imageScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                imageScrollerContent = new Image();
-                scroller = new Scroller();
+                imageScrollingPresenterContent = new Image();
+                scrollingPresenter = new ScrollingPresenter();
 
                 Uri uri = new Uri("ms-appx:/Assets/ingredient3.png");
                 Verify.IsNotNull(uri);
-                imageScrollerContent.Source = new BitmapImage(uri);
-                imageScrollerContent.Width = c_UnnaturalImageWidth;
-                imageScrollerContent.Height = c_UnnaturalImageHeight;
-                scroller.Content = imageScrollerContent;
+                imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                imageScrollingPresenterContent.Width = c_UnnaturalImageWidth;
+                imageScrollingPresenterContent.Height = c_UnnaturalImageHeight;
+                scrollingPresenter.Content = imageScrollingPresenterContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Try to jump beyond maximum offsets
             ScrollTo(
-                scroller,
-                c_UnnaturalImageWidth - c_defaultUIScrollerWidth + 10.0,
-                c_UnnaturalImageHeight - c_defaultUIScrollerHeight + 10.0,
+                scrollingPresenter,
+                c_UnnaturalImageWidth - c_defaultUIScrollingPresenterWidth + 10.0,
+                c_UnnaturalImageHeight - c_defaultUIScrollingPresenterHeight + 10.0,
                 AnimationMode.Disabled,
                 SnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: c_UnnaturalImageWidth - c_defaultUIScrollerWidth,
-                expectedFinalVerticalOffset: c_UnnaturalImageHeight - c_defaultUIScrollerHeight);
+                expectedFinalHorizontalOffset: c_UnnaturalImageWidth - c_defaultUIScrollingPresenterWidth,
+                expectedFinalVerticalOffset: c_UnnaturalImageHeight - c_defaultUIScrollingPresenterHeight);
         }
 
         [TestMethod]
         [TestProperty("Description",
-            "Sets Scroller.ContentOrientation to Vertical and verifies Image positioning for Stretch alignment.")]
+            "Sets ScrollingPresenter.ContentOrientation to Vertical and verifies Image positioning for Stretch alignment.")]
         public void BasicImageWithConstrainedWidth()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -677,41 +677,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
             {
                 const double c_imageHeight = 300.0;
-                const double c_scrollerWidth = 200.0;
-                Scroller scroller = null;
-                Image imageScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                const double c_scrollingPresenterWidth = 200.0;
+                ScrollingPresenter scrollingPresenter = null;
+                Image imageScrollingPresenterContent = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
                 Compositor compositor = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    imageScrollerContent = new Image();
-                    scroller = new Scroller();
+                    imageScrollingPresenterContent = new Image();
+                    scrollingPresenter = new ScrollingPresenter();
 
                     Uri uri = new Uri("ms-appx:/Assets/ingredient3.png");
                     Verify.IsNotNull(uri);
-                    imageScrollerContent.Source = new BitmapImage(uri);
-                    scroller.Content = imageScrollerContent;
-                    scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
+                    imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                    scrollingPresenter.Content = imageScrollingPresenterContent;
+                    scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
-                // Constraining the Image width and making the Scroller smaller than the Image
-                imageScrollerContent.Height = c_imageHeight;
-                    scroller.ContentOrientation = ContentOrientation.Vertical;
-                    scroller.Width = c_scrollerWidth;
+                // Constraining the Image width and making the ScrollingPresenter smaller than the Image
+                imageScrollingPresenterContent.Height = c_imageHeight;
+                    scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                    scrollingPresenter.Width = c_scrollingPresenterWidth;
                     compositor = Window.Current.Compositor;
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 ValidateContentWithConstrainedWidth(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     horizontalAlignment: HorizontalAlignment.Stretch,
                     leftMargin: 0.0,
                     rightMargin: 0.0,
@@ -722,7 +722,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description",
-            "Sets Scroller.ContentOrientation to Vertical and verifies Image positioning for various alignments and zoom factors.")]
+            "Sets ScrollingPresenter.ContentOrientation to Vertical and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedWidth()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -734,41 +734,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             const float c_smallZoomFactor = 0.5f;
             const float c_largeZoomFactor = 2.0f;
             const double c_imageHeight = 300.0;
-            const double c_scrollerWidth = 200.0;
+            const double c_scrollingPresenterWidth = 200.0;
             const double c_leftMargin = 20.0;
             const double c_rightMargin = 30.0;
-            Scroller scroller = null;
-            Image imageScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Image imageScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                imageScrollerContent = new Image();
-                scroller = new Scroller();
+                imageScrollingPresenterContent = new Image();
+                scrollingPresenter = new ScrollingPresenter();
 
                 Uri uri = new Uri("ms-appx:/Assets/ingredient3.png");
                 Verify.IsNotNull(uri);
-                imageScrollerContent.Source = new BitmapImage(uri);
-                imageScrollerContent.Margin = new Thickness(c_leftMargin, 0, c_rightMargin, 0);
-                scroller.Content = imageScrollerContent;
-                scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
+                imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                imageScrollingPresenterContent.Margin = new Thickness(c_leftMargin, 0, c_rightMargin, 0);
+                scrollingPresenter.Content = imageScrollingPresenterContent;
+                scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
-                // Constraining the Image width and making the Scroller smaller than the Image
-                imageScrollerContent.Height = c_imageHeight;
-                scroller.ContentOrientation = ContentOrientation.Vertical;
-                scroller.Width = c_scrollerWidth;
+                // Constraining the Image width and making the ScrollingPresenter smaller than the Image
+                imageScrollingPresenterContent.Height = c_imageHeight;
+                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollingPresenter.Width = c_scrollingPresenterWidth;
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Stretch,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -776,22 +776,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: 1.0f);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Stretch,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
-                expectedMinPosition: (float)(-c_scrollerWidth * c_smallZoomFactor / 2.0), // -50
+                expectedMinPosition: (float)(-c_scrollingPresenterWidth * c_smallZoomFactor / 2.0), // -50
                 expectedZoomFactor: c_smallZoomFactor);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Left,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -800,31 +800,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Right,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
-                expectedMinPosition: (float)(-c_scrollerWidth * c_smallZoomFactor), // -100
+                expectedMinPosition: (float)(-c_scrollingPresenterWidth * c_smallZoomFactor), // -100
                 expectedZoomFactor: c_smallZoomFactor);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Center,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
-                expectedMinPosition: (float)(-c_scrollerWidth * c_smallZoomFactor / 2.0), // -50
+                expectedMinPosition: (float)(-c_scrollingPresenterWidth * c_smallZoomFactor / 2.0), // -50
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Stretch,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -833,8 +833,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Left,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -843,8 +843,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Right,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -853,8 +853,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedWidth(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 horizontalAlignment: HorizontalAlignment.Center,
                 leftMargin: c_leftMargin,
                 rightMargin: c_rightMargin,
@@ -864,7 +864,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description",
-            "Sets Scroller.ContentOrientation to Horizontal and verifies Image positioning for Stretch alignment.")]
+            "Sets ScrollingPresenter.ContentOrientation to Horizontal and verifies Image positioning for Stretch alignment.")]
         public void BasicImageWithConstrainedHeight()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -873,40 +873,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
             {
                 const float c_smallZoomFactor = 0.5f;
                 const double c_imageWidth = 250.0;
-                Scroller scroller = null;
-                Image imageScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                Image imageScrollingPresenterContent = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
                 Compositor compositor = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    imageScrollerContent = new Image();
-                    scroller = new Scroller();
+                    imageScrollingPresenterContent = new Image();
+                    scrollingPresenter = new ScrollingPresenter();
 
                     Uri uri = new Uri("ms-appx:/Assets/ingredient3.png");
                     Verify.IsNotNull(uri);
-                    imageScrollerContent.Source = new BitmapImage(uri);
-                    scroller.Content = imageScrollerContent;
-                    scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
+                    imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                    scrollingPresenter.Content = imageScrollingPresenterContent;
+                    scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
 
-                // Constraining the Image height and making the Scroller smaller than the Image
-                imageScrollerContent.Width = c_imageWidth;
-                    scroller.ContentOrientation = ContentOrientation.Horizontal;
+                // Constraining the Image height and making the ScrollingPresenter smaller than the Image
+                imageScrollingPresenterContent.Width = c_imageWidth;
+                    scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
                     compositor = Window.Current.Compositor;
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 ValidateContentWithConstrainedHeight(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     verticalAlignment: VerticalAlignment.Stretch,
                     topMargin: 0.0,
                     bottomMargin: 0.0,
@@ -914,23 +914,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedZoomFactor: 1.0f);
 
                 // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-                ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 ValidateContentWithConstrainedHeight(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     verticalAlignment: VerticalAlignment.Stretch,
                     topMargin: 0.0,
                     bottomMargin: 0.0,
-                    expectedMinPosition: (float)(-c_defaultUIScrollerHeight * c_smallZoomFactor / 2.0), // -50
+                    expectedMinPosition: (float)(-c_defaultUIScrollingPresenterHeight * c_smallZoomFactor / 2.0), // -50
                     expectedZoomFactor: c_smallZoomFactor);
             }
         }
 
         [TestMethod]
         [TestProperty("Description",
-            "Sets Scroller.ContentOrientation to Horizontal and verifies Image positioning for various alignments and zoom factors.")]
+            "Sets ScrollingPresenter.ContentOrientation to Horizontal and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedHeight()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -944,37 +944,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             const double c_imageWidth = 250.0;
             const double c_topMargin = 40.0;
             const double c_bottomMargin = 10.0;
-            Scroller scroller = null;
-            Image imageScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Image imageScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
             Compositor compositor = null;
 
             RunOnUIThread.Execute(() =>
             {
-                imageScrollerContent = new Image();
-                scroller = new Scroller();
+                imageScrollingPresenterContent = new Image();
+                scrollingPresenter = new ScrollingPresenter();
 
                 Uri uri = new Uri("ms-appx:/Assets/ingredient3.png");
                 Verify.IsNotNull(uri);
-                imageScrollerContent.Source = new BitmapImage(uri);
-                imageScrollerContent.Margin = new Thickness(0, c_topMargin, 0, c_bottomMargin);
-                scroller.Content = imageScrollerContent;
-                scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
+                imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                imageScrollingPresenterContent.Margin = new Thickness(0, c_topMargin, 0, c_bottomMargin);
+                scrollingPresenter.Content = imageScrollingPresenterContent;
+                scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
 
-                // Constraining the Image height and making the Scroller smaller than the Image
-                imageScrollerContent.Width = c_imageWidth;
-                scroller.ContentOrientation = ContentOrientation.Horizontal;
+                // Constraining the Image height and making the ScrollingPresenter smaller than the Image
+                imageScrollingPresenterContent.Width = c_imageWidth;
+                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
                 compositor = Window.Current.Compositor;
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Stretch,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -982,22 +982,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: 1.0f);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Stretch,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
-                expectedMinPosition: (float)(-c_defaultUIScrollerHeight * c_smallZoomFactor / 2.0), // -50
+                expectedMinPosition: (float)(-c_defaultUIScrollingPresenterHeight * c_smallZoomFactor / 2.0), // -50
                 expectedZoomFactor: c_smallZoomFactor);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Top,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -1006,31 +1006,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Bottom,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
-                expectedMinPosition: (float)(-c_defaultUIScrollerHeight * c_smallZoomFactor), // -100
+                expectedMinPosition: (float)(-c_defaultUIScrollingPresenterHeight * c_smallZoomFactor), // -100
                 expectedZoomFactor: c_smallZoomFactor);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Center,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
-                expectedMinPosition: (float)(-c_defaultUIScrollerHeight * c_smallZoomFactor / 2.0), // -50
+                expectedMinPosition: (float)(-c_defaultUIScrollingPresenterHeight * c_smallZoomFactor / 2.0), // -50
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Stretch,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -1039,8 +1039,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Top,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -1049,8 +1049,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Bottom,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -1059,8 +1059,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             ValidateContentWithConstrainedHeight(
                 compositor,
-                scroller,
-                content: imageScrollerContent,
+                scrollingPresenter,
+                content: imageScrollingPresenterContent,
                 verticalAlignment: VerticalAlignment.Center,
                 topMargin: c_topMargin,
                 bottomMargin: c_bottomMargin,
@@ -1070,7 +1070,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description",
-            "Sets Scroller.ContentOrientation to Both and verifies Image positioning for various alignments and zoom factors.")]
+            "Sets ScrollingPresenter.ContentOrientation to Both and verifies Image positioning for various alignments and zoom factors.")]
         public void ImageWithConstrainedSize()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -1079,76 +1079,76 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
             {
                 const float c_smallZoomFactor = 0.5f;
                 const float c_largeZoomFactor = 2.0f;
                 const double c_imageWidth = 2400;
                 const double c_imageHeight = 1400.0;
-                const double c_scrollerWidth = 314.0;
-                const double c_scrollerHeight = 210.0;
+                const double c_scrollingPresenterWidth = 314.0;
+                const double c_scrollingPresenterHeight = 210.0;
                 const double c_leftMargin = 20.0;
                 const double c_rightMargin = 30.0;
                 const double c_topMargin = 40.0;
                 const double c_bottomMargin = 10.0;
-                Scroller scroller = null;
-                Image imageScrollerContent = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                Image imageScrollingPresenterContent = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
                 Compositor compositor = null;
 
                 RunOnUIThread.Execute(() =>
                 {
-                    imageScrollerContent = new Image();
-                    scroller = new Scroller();
+                    imageScrollingPresenterContent = new Image();
+                    scrollingPresenter = new ScrollingPresenter();
 
                     Uri uri = new Uri("ms-appx:/Assets/LargeWisteria.jpg");
                     Verify.IsNotNull(uri);
-                    imageScrollerContent.Source = new BitmapImage(uri);
-                    imageScrollerContent.Margin = new Thickness(c_leftMargin, c_topMargin, c_rightMargin, c_bottomMargin);
-                    scroller.Content = imageScrollerContent;
-                    scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
+                    imageScrollingPresenterContent.Source = new BitmapImage(uri);
+                    imageScrollingPresenterContent.Margin = new Thickness(c_leftMargin, c_topMargin, c_rightMargin, c_bottomMargin);
+                    scrollingPresenter.Content = imageScrollingPresenterContent;
+                    scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
+                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
-                // Constraining the Image width and height, and making the Scroller smaller than the Image
-                scroller.ContentOrientation = ContentOrientation.Both;
-                    scroller.Width = c_scrollerWidth;
-                    scroller.Height = c_scrollerHeight;
+                // Constraining the Image width and height, and making the ScrollingPresenter smaller than the Image
+                scrollingPresenter.ContentOrientation = ContentOrientation.Both;
+                    scrollingPresenter.Width = c_scrollingPresenterWidth;
+                    scrollingPresenter.Height = c_scrollingPresenterHeight;
                     compositor = Window.Current.Compositor;
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 ValidateContentWithConstrainedSize(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     horizontalAlignment: HorizontalAlignment.Stretch,
                     verticalAlignment: VerticalAlignment.Stretch,
                     expectedMinPositionX: 0.0f,
-                    expectedMinPositionY: (float)-(c_scrollerHeight - (c_scrollerWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth - c_topMargin - c_bottomMargin) / 2.0f, //-3
+                    expectedMinPositionY: (float)-(c_scrollingPresenterHeight - (c_scrollingPresenterWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth - c_topMargin - c_bottomMargin) / 2.0f, //-3
                     expectedZoomFactor: 1.0f);
 
                 // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-                ZoomTo(scroller, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 ValidateContentWithConstrainedSize(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     horizontalAlignment: HorizontalAlignment.Stretch,
                     verticalAlignment: VerticalAlignment.Stretch,
-                    expectedMinPositionX: (float)-c_scrollerWidth / 4.0f, // -78.5
-                    expectedMinPositionY: (float)-(c_scrollerHeight - ((c_scrollerWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth + c_topMargin + c_bottomMargin) * c_smallZoomFactor) / 2.0f, //-54
+                    expectedMinPositionX: (float)-c_scrollingPresenterWidth / 4.0f, // -78.5
+                    expectedMinPositionY: (float)-(c_scrollingPresenterHeight - ((c_scrollingPresenterWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth + c_topMargin + c_bottomMargin) * c_smallZoomFactor) / 2.0f, //-54
                     expectedZoomFactor: c_smallZoomFactor);
 
                 // Jump to absolute large zoomFactor to make the content larger than the viewport.
-                ZoomTo(scroller, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+                ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
 
                 ValidateContentWithConstrainedSize(
                     compositor,
-                    scroller,
-                    content: imageScrollerContent,
+                    scrollingPresenter,
+                    content: imageScrollingPresenterContent,
                     horizontalAlignment: HorizontalAlignment.Stretch,
                     verticalAlignment: VerticalAlignment.Stretch,
                     expectedMinPositionX: 0.0f,
@@ -1159,7 +1159,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ValidateContentWithConstrainedWidth(
             Compositor compositor,
-            Scroller scroller,
+            ScrollingPresenter scrollingPresenter,
             FrameworkElement content,
             HorizontalAlignment horizontalAlignment,
             double leftMargin,
@@ -1167,7 +1167,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float expectedMinPosition,
             float expectedZoomFactor)
         {
-            const double c_scrollerWidth = 200.0;
+            const double c_scrollingPresenterWidth = 200.0;
             float horizontalOffset = 0.0f;
             float verticalOffset = 0.0f;
             float zoomFactor = 1.0f;
@@ -1184,8 +1184,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Vector2 minPosition = ScrollerTestHooks.GetMinPosition(scroller);
-                Vector2 arrangeRenderSizesDelta = ScrollerTestHooks.GetArrangeRenderSizesDelta(scroller);
+                Vector2 minPosition = ScrollingPresenterTestHooks.GetMinPosition(scrollingPresenter);
+                Vector2 arrangeRenderSizesDelta = ScrollingPresenterTestHooks.GetArrangeRenderSizesDelta(scrollingPresenter);
                 Log.Comment($"MinPosition {minPosition.ToString()}");
                 Log.Comment($"ArrangeRenderSizesDelta {arrangeRenderSizesDelta.ToString()}");
                 Log.Comment($"Content.DesiredSize {content.DesiredSize.ToString()}");
@@ -1193,12 +1193,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(expectedMinPosition, minPosition.X);
                 Verify.AreEqual(horizontalAlignment, content.HorizontalAlignment);
-                Verify.AreEqual(c_scrollerWidth, content.DesiredSize.Width); // 200
-                Verify.AreEqual(c_scrollerWidth - leftMargin - rightMargin, content.RenderSize.Width);
+                Verify.AreEqual(c_scrollingPresenterWidth, content.DesiredSize.Width); // 200
+                Verify.AreEqual(c_scrollingPresenterWidth - leftMargin - rightMargin, content.RenderSize.Width);
                 double arrangeRenderSizesDeltaX = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromHorizontalAlignment(horizontalAlignment),
-                    extentSize: c_scrollerWidth,
-                    renderSize: c_scrollerWidth - leftMargin - rightMargin,
+                    extentSize: c_scrollingPresenterWidth,
+                    renderSize: c_scrollingPresenterWidth - leftMargin - rightMargin,
                     nearMargin: leftMargin,
                     farMargin: rightMargin);
                 Verify.AreEqual(leftMargin, arrangeRenderSizesDeltaX);
@@ -1207,7 +1207,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedVerticalOffset = -minPosition.Y + (expectedZoomFactor - 1.0f) * arrangeRenderSizesDelta.Y;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1221,7 +1221,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ValidateContentWithConstrainedHeight(
             Compositor compositor,
-            Scroller scroller,
+            ScrollingPresenter scrollingPresenter,
             FrameworkElement content,
             VerticalAlignment verticalAlignment,
             double topMargin,
@@ -1245,8 +1245,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Vector2 minPosition = ScrollerTestHooks.GetMinPosition(scroller);
-                Vector2 arrangeRenderSizesDelta = ScrollerTestHooks.GetArrangeRenderSizesDelta(scroller);
+                Vector2 minPosition = ScrollingPresenterTestHooks.GetMinPosition(scrollingPresenter);
+                Vector2 arrangeRenderSizesDelta = ScrollingPresenterTestHooks.GetArrangeRenderSizesDelta(scrollingPresenter);
                 Log.Comment($"MinPosition {minPosition.ToString()}");
                 Log.Comment($"ArrangeRenderSizesDelta {arrangeRenderSizesDelta.ToString()}");
                 Log.Comment($"Content.DesiredSize {content.DesiredSize.ToString()}");
@@ -1254,12 +1254,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(expectedMinPosition, minPosition.Y);
                 Verify.AreEqual(verticalAlignment, content.VerticalAlignment);
-                Verify.AreEqual(c_defaultUIScrollerHeight, content.DesiredSize.Height);
-                Verify.AreEqual(c_defaultUIScrollerHeight - topMargin - bottomMargin, content.RenderSize.Height);
+                Verify.AreEqual(c_defaultUIScrollingPresenterHeight, content.DesiredSize.Height);
+                Verify.AreEqual(c_defaultUIScrollingPresenterHeight - topMargin - bottomMargin, content.RenderSize.Height);
                 double arrangeRenderSizesDeltaY = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromVerticalAlignment(verticalAlignment),
-                    extentSize: c_defaultUIScrollerHeight,
-                    renderSize: c_defaultUIScrollerHeight - topMargin - bottomMargin,
+                    extentSize: c_defaultUIScrollingPresenterHeight,
+                    renderSize: c_defaultUIScrollingPresenterHeight - topMargin - bottomMargin,
                     nearMargin: topMargin,
                     farMargin: bottomMargin);
                 Verify.AreEqual(topMargin, arrangeRenderSizesDeltaY);
@@ -1268,7 +1268,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedHorizontalOffset = -minPosition.X + (expectedZoomFactor - 1.0f) * arrangeRenderSizesDelta.X;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1282,7 +1282,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void ValidateContentWithConstrainedSize(
             Compositor compositor,
-            Scroller scroller,
+            ScrollingPresenter scrollingPresenter,
             FrameworkElement content,
             HorizontalAlignment horizontalAlignment,
             VerticalAlignment verticalAlignment,
@@ -1294,8 +1294,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             const double c_rightMargin = 30.0;
             const double c_topMargin = 40.0;
             const double c_bottomMargin = 10.0;
-            const double c_scrollerWidth = 314.0;
-            const double c_scrollerHeight = 210.0;
+            const double c_scrollingPresenterWidth = 314.0;
+            const double c_scrollingPresenterHeight = 210.0;
             const double c_imageWidth = 2400;
             const double c_imageHeight = 1400.0;
 
@@ -1321,8 +1321,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(horizontalAlignment, content.HorizontalAlignment);
                 Verify.AreEqual(verticalAlignment, content.VerticalAlignment);
 
-                Vector2 minPosition = ScrollerTestHooks.GetMinPosition(scroller);
-                Vector2 arrangeRenderSizesDelta = ScrollerTestHooks.GetArrangeRenderSizesDelta(scroller);
+                Vector2 minPosition = ScrollingPresenterTestHooks.GetMinPosition(scrollingPresenter);
+                Vector2 arrangeRenderSizesDelta = ScrollingPresenterTestHooks.GetArrangeRenderSizesDelta(scrollingPresenter);
                 Log.Comment($"MinPosition {minPosition.ToString()}");
                 Log.Comment($"ArrangeRenderSizesDelta {arrangeRenderSizesDelta.ToString()}");
                 Log.Comment($"Content.DesiredSize {content.DesiredSize.ToString()}");
@@ -1330,15 +1330,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(expectedMinPositionX, minPosition.X);
                 Verify.AreEqual(expectedMinPositionY, minPosition.Y);
-                Verify.AreEqual(c_scrollerWidth, content.DesiredSize.Width); // 314
-                Verify.AreEqual((c_scrollerWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth + c_topMargin + c_bottomMargin, content.DesiredSize.Height); // 204
-                Verify.AreEqual(c_scrollerWidth - c_leftMargin - c_rightMargin, content.RenderSize.Width); // 264
-                Verify.AreEqual((c_scrollerWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth, content.RenderSize.Height); // 154
+                Verify.AreEqual(c_scrollingPresenterWidth, content.DesiredSize.Width); // 314
+                Verify.AreEqual((c_scrollingPresenterWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth + c_topMargin + c_bottomMargin, content.DesiredSize.Height); // 204
+                Verify.AreEqual(c_scrollingPresenterWidth - c_leftMargin - c_rightMargin, content.RenderSize.Width); // 264
+                Verify.AreEqual((c_scrollingPresenterWidth - c_leftMargin - c_rightMargin) * c_imageHeight / c_imageWidth, content.RenderSize.Height); // 154
 
                 horizontalArrangeRenderSizesDelta = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromHorizontalAlignment(horizontalAlignment),
-                    extentSize: c_scrollerWidth,
-                    renderSize: c_scrollerWidth - c_leftMargin - c_rightMargin,
+                    extentSize: c_scrollingPresenterWidth,
+                    renderSize: c_scrollingPresenterWidth - c_leftMargin - c_rightMargin,
                     nearMargin: c_leftMargin,
                     farMargin: c_rightMargin);
                 Log.Comment($"horizontalArrangeRenderSizesDelta {horizontalArrangeRenderSizesDelta}");
@@ -1348,8 +1348,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 verticalArrangeRenderSizesDelta = GetArrangeRenderSizesDelta(
                     BiDirectionalAlignmentFromVerticalAlignment(verticalAlignment),
-                    extentSize: c_scrollerHeight,
-                    renderSize: c_scrollerHeight - c_topMargin - c_bottomMargin,
+                    extentSize: c_scrollingPresenterHeight,
+                    renderSize: c_scrollingPresenterHeight - c_topMargin - c_bottomMargin,
                     nearMargin: c_topMargin,
                     farMargin: c_bottomMargin);
                 Log.Comment($"verticalArrangeRenderSizesDelta {verticalArrangeRenderSizesDelta}");
@@ -1358,7 +1358,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedVerticalOffset = -minPosition.Y + (expectedZoomFactor - 1.0f) * verticalArrangeRenderSizesDelta;
             });
 
-            SpyTranslationAndScale(scroller, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
+            SpyTranslationAndScale(scrollingPresenter, compositor, out horizontalOffset, out verticalOffset, out zoomFactor);
 
             RunOnUIThread.Execute(() =>
             {

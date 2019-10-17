@@ -10,7 +10,7 @@ winrt::ZoomInfo ZoomCompletedEventArgs::ZoomInfo()
     return winrt::ZoomInfo{ m_zoomFactorChangeId };
 }
 
-ScrollerViewChangeResult ZoomCompletedEventArgs::Result()
+ScrollingPresenterViewChangeResult ZoomCompletedEventArgs::Result()
 {
     return m_result;
 }
@@ -20,7 +20,7 @@ void ZoomCompletedEventArgs::ZoomFactorChangeId(int32_t zoomFactorChangeId)
     m_zoomFactorChangeId = zoomFactorChangeId;
 }
 
-void ZoomCompletedEventArgs::Result(ScrollerViewChangeResult result)
+void ZoomCompletedEventArgs::Result(ScrollingPresenterViewChangeResult result)
 {
     m_result = result;
 }

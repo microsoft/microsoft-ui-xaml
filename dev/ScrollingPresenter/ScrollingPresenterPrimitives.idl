@@ -216,9 +216,9 @@ interface IScrollController
 [contentproperty("Content")]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 [MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
-unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
+unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
 {
-    Scroller();
+    ScrollingPresenter();
 
     Windows.UI.Xaml.Media.Brush Background { get; set; };
     Windows.UI.Xaml.UIElement Content { get; set; };
@@ -232,45 +232,45 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
     Double ViewportHeight { get; };
     Double ScrollableWidth { get; };
     Double ScrollableHeight { get; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultContentOrientation")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultContentOrientation")]
     MU_XC_NAMESPACE.ContentOrientation ContentOrientation { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollChainingMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultHorizontalScrollChainingMode")]
     MU_XC_NAMESPACE.ChainingMode HorizontalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollChainingMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultVerticalScrollChainingMode")]
     MU_XC_NAMESPACE.ChainingMode VerticalScrollChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollRailingMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultHorizontalScrollRailingMode")]
     MU_XC_NAMESPACE.RailingMode HorizontalScrollRailingMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollRailingMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultVerticalScrollRailingMode")]
     MU_XC_NAMESPACE.RailingMode VerticalScrollRailingMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultHorizontalScrollMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultHorizontalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode HorizontalScrollMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultVerticalScrollMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultVerticalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode VerticalScrollMode { get; set; };
 #ifdef USE_SCROLLMODE_AUTO
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedHorizontalScrollMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultComputedHorizontalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode ComputedHorizontalScrollMode { get; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultComputedVerticalScrollMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultComputedVerticalScrollMode")]
     MU_XC_NAMESPACE.ScrollMode ComputedVerticalScrollMode { get; };
 #endif
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomChainingMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultZoomChainingMode")]
     MU_XC_NAMESPACE.ChainingMode ZoomChainingMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultZoomMode")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultZoomMode")]
     MU_XC_NAMESPACE.ZoomMode ZoomMode { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultIgnoredInputKind")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultIgnoredInputKind")]
     MU_XC_NAMESPACE.InputKind IgnoredInputKind { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultMinZoomFactor")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultMinZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MinZoomFactor { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultMaxZoomFactor")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultMaxZoomFactor")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateZoomFactoryBoundary")]
     Double MaxZoomFactor { get; set; };
     MU_XC_NAMESPACE.InteractionState State { get; };
     IScrollController HorizontalScrollController { get; set; };
     IScrollController VerticalScrollController { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double HorizontalAnchorRatio { get; set; };
-    [MUX_DEFAULT_VALUE("Scroller::s_defaultAnchorRatio")]
+    [MUX_DEFAULT_VALUE("ScrollingPresenter::s_defaultAnchorRatio")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateAnchorRatio")]
     Double VerticalAnchorRatio { get; set; };
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> HorizontalSnapPoints { get; };
@@ -320,15 +320,15 @@ unsealed runtimeclass Scroller : Windows.UI.Xaml.FrameworkElement
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
 
-    event Windows.Foundation.TypedEventHandler<Scroller, Object> ExtentChanged;
-    event Windows.Foundation.TypedEventHandler<Scroller, Object> StateChanged;
-    event Windows.Foundation.TypedEventHandler<Scroller, Object> ViewChanged;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollCompletedEventArgs> ScrollCompleted;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ZoomCompletedEventArgs> ZoomCompleted;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerBringingIntoViewEventArgs> BringingIntoView;
-    event Windows.Foundation.TypedEventHandler<Scroller, MU_XC_NAMESPACE.ScrollerAnchorRequestedEventArgs> AnchorRequested;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> ExtentChanged;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> StateChanged;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> ViewChanged;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollCompletedEventArgs> ScrollCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ZoomCompletedEventArgs> ZoomCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingPresenterBringingIntoViewEventArgs> BringingIntoView;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingPresenterAnchorRequestedEventArgs> AnchorRequested;
 
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };

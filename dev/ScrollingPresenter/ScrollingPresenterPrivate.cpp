@@ -4,54 +4,54 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "Scroller.h"
+#include "ScrollingPresenter.h"
 #include "DoubleUtil.h"
 
-bool Scroller::IsHorizontallyScrollable()
+bool ScrollingPresenter::IsHorizontallyScrollable()
 {
     return m_contentOrientation != winrt::ContentOrientation::Vertical;
 }
 
-bool Scroller::IsVerticallyScrollable()
+bool ScrollingPresenter::IsVerticallyScrollable()
 {
     return m_contentOrientation != winrt::ContentOrientation::Horizontal;
 }
 
-winrt::event_token Scroller::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
+winrt::event_token ScrollingPresenter::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
 {
     return m_viewportChanged.add(value);
 }
 
-void Scroller::ViewportChanged(winrt::event_token const& token)
+void ScrollingPresenter::ViewportChanged(winrt::event_token const& token)
 {
     m_viewportChanged.remove(token);
 }
 
-winrt::event_token Scroller::PostArrange(winrt::PostArrangeEventHandler const& value)
+winrt::event_token ScrollingPresenter::PostArrange(winrt::PostArrangeEventHandler const& value)
 {
     return m_postArrange.add(value);
 }
 
-void Scroller::PostArrange(winrt::event_token const& token)
+void ScrollingPresenter::PostArrange(winrt::event_token const& token)
 {
     m_postArrange.remove(token);
 }
 
-winrt::event_token Scroller::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
+winrt::event_token ScrollingPresenter::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
 {
     return m_configurationChanged.add(value);
 }
 
-void Scroller::ConfigurationChanged(winrt::event_token const& token)
+void ScrollingPresenter::ConfigurationChanged(winrt::event_token const& token)
 {
     m_configurationChanged.remove(token);
 }
 
-winrt::Rect Scroller::GetRelativeViewport(
+winrt::Rect ScrollingPresenter::GetRelativeViewport(
     winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
-    // transform returns unexpected values shortly after a Scroller.Content layout offset change.
+    // transform returns unexpected values shortly after a ScrollingPresenter.Content layout offset change.
     // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
@@ -78,12 +78,12 @@ winrt::Rect Scroller::GetRelativeViewport(
     return result;
 }
 
-winrt::UIElement Scroller::CurrentAnchor()
+winrt::UIElement ScrollingPresenter::CurrentAnchor()
 {
     return AnchorElement();
 }
 
-winrt::UIElement Scroller::AnchorElement()
+winrt::UIElement ScrollingPresenter::AnchorElement()
 {
     bool isAnchoringElementHorizontally = false;
     bool isAnchoringElementVertically = false;
@@ -101,7 +101,7 @@ winrt::UIElement Scroller::AnchorElement()
     return value;
 }
 
-void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollingPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
@@ -130,7 +130,7 @@ void Scroller::RegisterAnchorCandidate(winrt::UIElement const& element)
     }
 }
 
-void Scroller::UnregisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollingPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
     SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 

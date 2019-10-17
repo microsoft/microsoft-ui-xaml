@@ -34,7 +34,7 @@
     <FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
     <FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
-    <FeatureScrollerEnabled>false</FeatureScrollerEnabled>
+    <FeatureScrollingPresenterEnabled>false</FeatureScrollingPresenterEnabled>
     <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
@@ -81,7 +81,7 @@
     <FeatureRatingControlEnabled>true</FeatureRatingControlEnabled>
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
-    <FeatureScrollerEnabled>true</FeatureScrollerEnabled>
+    <FeatureScrollingPresenterEnabled>true</FeatureScrollingPresenterEnabled>
     <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>true</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
@@ -98,7 +98,7 @@
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
+    <DefineConstants Condition="$(FeatureScrollingPresenterEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
     <DefineConstants Condition="$(FeatureNavigationViewEnabled) =='true'">$(DefineConstants);FEATURE_NAVIGATIONVIEW_ENABLED</DefineConstants>
     <DefineConstants Condition="$(SolutionName) == 'MUXControlsInnerLoop'">$(DefineConstants);INNERLOOP_BUILD</DefineConstants>
   </PropertyGroup>

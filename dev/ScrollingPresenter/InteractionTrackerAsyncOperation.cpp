@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollingPresenterTypeLogging.h"
 #include "InteractionTrackerAsyncOperation.h"
 
 InteractionTrackerAsyncOperation::InteractionTrackerAsyncOperation(

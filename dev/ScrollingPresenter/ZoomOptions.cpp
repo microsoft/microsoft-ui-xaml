@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollingPresenterTypeLogging.h"
 #include "ZoomOptions.h"
 
 CppWinRTActivatableClassWithBasicFactory(ZoomOptions);

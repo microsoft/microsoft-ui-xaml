@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Scroller.h"
+#include "ScrollingPresenter.h"
 #include "ZoomCompletedEventArgs.g.h"
 
 class ZoomCompletedEventArgs :
@@ -22,12 +22,12 @@ public:
 
     // IZoomCompletedEventArgs overrides
     winrt::ZoomInfo ZoomInfo();
-    ScrollerViewChangeResult Result();
+    ScrollingPresenterViewChangeResult Result();
 
     void ZoomFactorChangeId(int32_t zoomFactorChangeId);
-    void Result(ScrollerViewChangeResult result);
+    void Result(ScrollingPresenterViewChangeResult result);
 
 private:
     int32_t m_zoomFactorChangeId{ -1 };
-    ScrollerViewChangeResult m_result{ ScrollerViewChangeResult::Completed };
+    ScrollingPresenterViewChangeResult m_result{ ScrollingPresenterViewChangeResult::Completed };
 };

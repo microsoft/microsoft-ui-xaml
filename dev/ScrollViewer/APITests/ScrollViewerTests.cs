@@ -23,14 +23,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
+using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
 
@@ -93,7 +93,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment("Verifying ScrollViewer default property values");
                 Verify.IsNull(scrollViewer.Content);
-                Verify.IsNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
+                Verify.IsNull(ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer));
                 Verify.IsNull(scrollViewer.HorizontalScrollController);
                 Verify.IsNull(scrollViewer.VerticalScrollController);
 #if USE_SCROLLMODE_AUTO
@@ -127,7 +127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Verifies the ScrollViewer properties after template application.")]
-        public void VerifyScrollerAttachedProperties()
+        public void VerifyScrollingPresenterAttachedProperties()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
@@ -135,7 +135,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "ScrollingPresenter"))
             {
                 ScrollViewer scrollViewer = null;
                 Rectangle rectangleScrollViewerContent = null;
@@ -154,7 +154,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Setting Scroller-cloned properties to non-default values");
+                    Log.Comment("Setting ScrollingPresenter-cloned properties to non-default values");
                     scrollViewer.IgnoredInputKind = InputKind.MouseWheel | InputKind.Pen;
                     scrollViewer.ContentOrientation = ContentOrientation.Horizontal;
                     scrollViewer.HorizontalScrollChainingMode = ChainingMode.Always;
@@ -168,7 +168,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollViewer.MinZoomFactor = 2.0;
                     scrollViewer.MaxZoomFactor = 8.0;
 
-                    Log.Comment("Verifying Scroller-cloned non-default properties");
+                    Log.Comment("Verifying ScrollingPresenter-cloned non-default properties");
                     Verify.AreEqual(scrollViewer.IgnoredInputKind, InputKind.MouseWheel | InputKind.Pen);
                     Verify.AreEqual(scrollViewer.ContentOrientation, ContentOrientation.Horizontal);
                     Verify.AreEqual(scrollViewer.HorizontalScrollChainingMode, ChainingMode.Always);
@@ -205,7 +205,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Verifies the Scroller attached properties.")]
+        [TestProperty("Description", "Verifies the ScrollingPresenter attached properties.")]
         public void VerifyPropertyValuesAfterTemplateApplication()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
@@ -214,7 +214,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "ScrollingPresenter"))
             {
                 ScrollViewer scrollViewer = null;
                 Rectangle rectangleScrollViewerContent = null;
@@ -235,8 +235,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Verifying ScrollViewer property values after Loaded event");
                     Verify.AreEqual(scrollViewer.Content, rectangleScrollViewerContent);
-                    Verify.IsNotNull(ScrollViewerTestHooks.GetScrollerPart(scrollViewer));
-                    Verify.AreEqual(ScrollViewerTestHooks.GetScrollerPart(scrollViewer).Content, rectangleScrollViewerContent);
+                    Verify.IsNotNull(ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer));
+                    Verify.AreEqual(ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer).Content, rectangleScrollViewerContent);
                     Verify.IsNotNull(scrollViewer.HorizontalScrollController);
                     Verify.IsNotNull(scrollViewer.VerticalScrollController);
                     Verify.AreEqual(scrollViewer.ExtentWidth, c_defaultUIScrollViewerContentWidth);
@@ -480,10 +480,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "Scroller"))
+            using (PrivateLoggingHelper privateSVLoggingHelper = new PrivateLoggingHelper("ScrollViewer", "ScrollingPresenter"))
             {
                 int expectedAnchorCandidatesCount = 0;
-                Scroller scroller = null;
+                ScrollingPresenter scrollingPresenter = null;
                 ScrollViewer scrollViewer = null;
                 Rectangle rectangleScrollViewerContent = null;
                 AutoResetEvent scrollViewerLoadedEvent = new AutoResetEvent(false);
@@ -497,7 +497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     SetupDefaultUI(scrollViewer, rectangleScrollViewerContent, scrollViewerLoadedEvent);
 
-                    scrollViewer.AnchorRequested += (ScrollViewer sender, ScrollerAnchorRequestedEventArgs args) =>
+                    scrollViewer.AnchorRequested += (ScrollViewer sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
                     {
                         Log.Comment("ScrollViewer.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
                         Verify.IsNull(args.AnchorElement);
@@ -510,15 +510,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Accessing inner Scroller control");
-                    scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                    Log.Comment("Accessing inner ScrollingPresenter control");
+                    scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
 
                     Log.Comment("Registering Rectangle as anchor candidate");
                     scrollViewer.RegisterAnchorCandidate(rectangleScrollViewerContent);
                     expectedAnchorCandidatesCount = 1;
 
-                    Log.Comment("Forcing Scroller layout");
-                    scroller.InvalidateArrange();
+                    Log.Comment("Forcing ScrollingPresenter layout");
+                    scrollingPresenter.InvalidateArrange();
                 });
 
                 WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);
@@ -529,8 +529,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollViewer.UnregisterAnchorCandidate(rectangleScrollViewerContent);
                     expectedAnchorCandidatesCount = 0;
 
-                    Log.Comment("Forcing Scroller layout");
-                    scroller.InvalidateArrange();
+                    Log.Comment("Forcing ScrollingPresenter layout");
+                    scrollingPresenter.InvalidateArrange();
                 });
 
                 WaitForEvent("Waiting for AnchorRequested event", scrollViewerAnchorRequestedEvent);

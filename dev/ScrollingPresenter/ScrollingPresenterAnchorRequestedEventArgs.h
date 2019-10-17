@@ -3,20 +3,20 @@
 
 #pragma once
 
-#include "ScrollerAnchorRequestedEventArgs.g.h"
+#include "ScrollingPresenterAnchorRequestedEventArgs.g.h"
 
-class ScrollerAnchorRequestedEventArgs :
-    public ReferenceTracker<ScrollerAnchorRequestedEventArgs, winrt::implementation::ScrollerAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
+class ScrollingPresenterAnchorRequestedEventArgs :
+    public ReferenceTracker<ScrollingPresenterAnchorRequestedEventArgs, winrt::implementation::ScrollingPresenterAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ~ScrollerAnchorRequestedEventArgs()
+    ~ScrollingPresenterAnchorRequestedEventArgs()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollerAnchorRequestedEventArgs(const winrt::Scroller& scroller);
+    ScrollingPresenterAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter);
 
-#pragma region IScrollerAnchorRequestedEventArgs
+#pragma region IScrollingPresenterAnchorRequestedEventArgs
     winrt::IVector<winrt::UIElement> AnchorCandidates();
     winrt::UIElement AnchorElement();
     void AnchorElement(winrt::UIElement const& value);
@@ -31,5 +31,5 @@ public:
 private:
     tracker_ref<winrt::IVector<winrt::UIElement>> m_anchorCandidates{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
-    tracker_ref<winrt::Scroller> m_scroller{ this };
+    tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
 };

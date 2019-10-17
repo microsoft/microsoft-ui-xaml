@@ -17,16 +17,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollingPresenterTests
     {
         [TestMethod]
         [TestProperty("Description", "Create a bunch of snap points with invalid arguments.")]
@@ -55,93 +55,93 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             RunOnUIThread.Execute(() =>
             {
-                Scroller scroller = new Scroller();
+                ScrollingPresenter scrollingPresenter = new ScrollingPresenter();
                 RepeatedScrollSnapPoint snapPoint1 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: ScrollSnapPointsAlignment.Near);
                 RepeatedScrollSnapPoint snapPoint2 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: ScrollSnapPointsAlignment.Near);
                 RepeatedScrollSnapPoint snapPoint3 = new RepeatedScrollSnapPoint(offset:   0, interval:  2, start:   0, end:  12, alignment: ScrollSnapPointsAlignment.Near);
                 RepeatedScrollSnapPoint snapPoint4 = new RepeatedScrollSnapPoint(offset:   0, interval:  2, start:   0, end:  10, alignment: ScrollSnapPointsAlignment.Near);
                 RepeatedScrollSnapPoint snapPoint5 = new RepeatedScrollSnapPoint(offset: 100, interval:  2, start: 100, end: 200, alignment: ScrollSnapPointsAlignment.Near);
 
-                scroller.VerticalSnapPoints.Add(snapPoint1);
-                Verify.Throws<ArgumentException>(() => { scroller.VerticalSnapPoints.Add(snapPoint2); });
-                Verify.Throws<ArgumentException>(() => { scroller.VerticalSnapPoints.Add(snapPoint3); });
-                scroller.HorizontalSnapPoints.Add(snapPoint4);
-                scroller.HorizontalSnapPoints.Add(snapPoint5);
+                scrollingPresenter.VerticalSnapPoints.Add(snapPoint1);
+                Verify.Throws<ArgumentException>(() => { scrollingPresenter.VerticalSnapPoints.Add(snapPoint2); });
+                Verify.Throws<ArgumentException>(() => { scrollingPresenter.VerticalSnapPoints.Add(snapPoint3); });
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint4);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint5);
             });
         }
 
         [TestMethod]
         [TestProperty("Description", "Add and remove snap points and make sure the corresponding collections look correct.")]
-        public void CanAddAndRemoveSnapPointsFromAScroller()
+        public void CanAddAndRemoveSnapPointsFromAScrollingPresenter()
         {
-            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Near);
-            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Center);
-            CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment.Far);
+            CanAddAndRemoveSnapPointsFromAScrollingPresenter(ScrollSnapPointsAlignment.Near);
+            CanAddAndRemoveSnapPointsFromAScrollingPresenter(ScrollSnapPointsAlignment.Center);
+            CanAddAndRemoveSnapPointsFromAScrollingPresenter(ScrollSnapPointsAlignment.Far);
         }
 
-        private void CanAddAndRemoveSnapPointsFromAScroller(ScrollSnapPointsAlignment alignment)
+        private void CanAddAndRemoveSnapPointsFromAScrollingPresenter(ScrollSnapPointsAlignment alignment)
         { 
-            Scroller scroller = null;
+            ScrollingPresenter scrollingPresenter = null;
             ScrollSnapPoint snapPoint2 = null;
             RepeatedScrollSnapPoint snapPoint3 = null;
             RepeatedScrollSnapPoint snapPoint4 = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scroller = new Scroller();
+                scrollingPresenter = new ScrollingPresenter();
                 ScrollSnapPoint snapPoint1 = new ScrollSnapPoint(snapPointValue: 10, alignment: alignment);
                 snapPoint2 = new ScrollSnapPoint(snapPointValue: 10, alignment: alignment);
                 snapPoint3 = new RepeatedScrollSnapPoint(offset:  10, interval: 10, start:  10, end: 100, alignment: alignment);
                 snapPoint4 = new RepeatedScrollSnapPoint(offset: 100, interval: 10, start: 100, end: 200, alignment: alignment);
                 ZoomSnapPoint snapPoint5 = new ZoomSnapPoint(snapPointValue: 10);
-                scroller.HorizontalSnapPoints.Add(snapPoint1);
-                scroller.VerticalSnapPoints.Add(snapPoint1);
-                scroller.ZoomSnapPoints.Add(snapPoint5);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint1);
+                scrollingPresenter.VerticalSnapPoints.Add(snapPoint1);
+                scrollingPresenter.ZoomSnapPoints.Add(snapPoint5);
             });
             
             IdleSynchronizer.Wait();
             
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(1, scroller.HorizontalSnapPoints.Count);
-                Verify.AreEqual<int>(1, scroller.VerticalSnapPoints.Count);
-                Verify.AreEqual<int>(1, scroller.ZoomSnapPoints.Count);
-                scroller.HorizontalSnapPoints.Add(snapPoint2);
-                scroller.HorizontalSnapPoints.Add(snapPoint3);
-                scroller.HorizontalSnapPoints.Add(snapPoint4);
+                Verify.AreEqual<int>(1, scrollingPresenter.HorizontalSnapPoints.Count);
+                Verify.AreEqual<int>(1, scrollingPresenter.VerticalSnapPoints.Count);
+                Verify.AreEqual<int>(1, scrollingPresenter.ZoomSnapPoints.Count);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint2);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint3);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint4);
             });
             
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(4, scroller.HorizontalSnapPoints.Count);
-                scroller.HorizontalSnapPoints.Remove(snapPoint2);
+                Verify.AreEqual<int>(4, scrollingPresenter.HorizontalSnapPoints.Count);
+                scrollingPresenter.HorizontalSnapPoints.Remove(snapPoint2);
             });           
 
             IdleSynchronizer.Wait(); 
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(3, scroller.HorizontalSnapPoints.Count);
-                scroller.HorizontalSnapPoints.Remove(snapPoint2);
+                Verify.AreEqual<int>(3, scrollingPresenter.HorizontalSnapPoints.Count);
+                scrollingPresenter.HorizontalSnapPoints.Remove(snapPoint2);
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(3, scroller.HorizontalSnapPoints.Count);
-                scroller.HorizontalSnapPoints.Clear();
+                Verify.AreEqual<int>(3, scrollingPresenter.HorizontalSnapPoints.Count);
+                scrollingPresenter.HorizontalSnapPoints.Clear();
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(0, scroller.HorizontalSnapPoints.Count);
-                Verify.AreEqual<int>(1, scroller.VerticalSnapPoints.Count);
-                Verify.AreEqual<int>(1, scroller.ZoomSnapPoints.Count);
+                Verify.AreEqual<int>(0, scrollingPresenter.HorizontalSnapPoints.Count);
+                Verify.AreEqual<int>(1, scrollingPresenter.VerticalSnapPoints.Count);
+                Verify.AreEqual<int>(1, scrollingPresenter.ZoomSnapPoints.Count);
             });
         }
 
@@ -149,37 +149,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Add scroll snap points with various alignments.")]
         public void CanAddScrollSnapPointsWithMixedAlignments()
         {
-            Scroller scroller = null;
+            ScrollingPresenter scrollingPresenter = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scroller = new Scroller();
+                scrollingPresenter = new ScrollingPresenter();
                 ScrollSnapPoint nearSnapPoint = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
                 ScrollSnapPoint centerSnapPoint = new ScrollSnapPoint(snapPointValue: 20, alignment: ScrollSnapPointsAlignment.Center);
                 ScrollSnapPoint farSnapPoint = new ScrollSnapPoint(snapPointValue: 30, alignment: ScrollSnapPointsAlignment.Far);
                 RepeatedScrollSnapPoint nearRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 50, interval: 10, start: 50, end: 100, alignment: ScrollSnapPointsAlignment.Near);
                 RepeatedScrollSnapPoint centerRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 180, interval: 10, start: 175, end: 225, alignment: ScrollSnapPointsAlignment.Center);
                 RepeatedScrollSnapPoint farRepeatedScrollSnapPoint = new RepeatedScrollSnapPoint(offset: 280, interval: 5, start: 280, end: 300, alignment: ScrollSnapPointsAlignment.Far);
-                scroller.HorizontalSnapPoints.Add(nearSnapPoint);
-                scroller.HorizontalSnapPoints.Add(centerSnapPoint);
-                scroller.HorizontalSnapPoints.Add(farSnapPoint);
-                scroller.VerticalSnapPoints.Add(nearSnapPoint);
-                scroller.VerticalSnapPoints.Add(centerSnapPoint);
-                scroller.VerticalSnapPoints.Add(farSnapPoint);
-                scroller.HorizontalSnapPoints.Add(nearRepeatedScrollSnapPoint);
-                scroller.HorizontalSnapPoints.Add(centerRepeatedScrollSnapPoint);
-                scroller.HorizontalSnapPoints.Add(farRepeatedScrollSnapPoint);
-                scroller.VerticalSnapPoints.Add(nearRepeatedScrollSnapPoint);
-                scroller.VerticalSnapPoints.Add(centerRepeatedScrollSnapPoint);
-                scroller.VerticalSnapPoints.Add(farRepeatedScrollSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(nearSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(centerSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(farSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(nearSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(centerSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(farSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(nearRepeatedScrollSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(centerRepeatedScrollSnapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(farRepeatedScrollSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(nearRepeatedScrollSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(centerRepeatedScrollSnapPoint);
+                scrollingPresenter.VerticalSnapPoints.Add(farRepeatedScrollSnapPoint);
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual<int>(6, scroller.HorizontalSnapPoints.Count);
-                Verify.AreEqual<int>(6, scroller.VerticalSnapPoints.Count);
+                Verify.AreEqual<int>(6, scrollingPresenter.HorizontalSnapPoints.Count);
+                Verify.AreEqual<int>(6, scrollingPresenter.VerticalSnapPoints.Count);
             });
         }
 
@@ -187,9 +187,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Add the same snap points to multiple collections and ensure they use collection-specific data.")]
         public void CanShareSnapPointsInMultipleCollections()
         {
-            Scroller scroller1 = null;
-            Scroller scroller2 = null;
-            Scroller scroller3 = null;
+            ScrollingPresenter scrollingPresenter1 = null;
+            ScrollingPresenter scrollingPresenter2 = null;
+            ScrollingPresenter scrollingPresenter3 = null;
 
             ScrollSnapPoint scrollSnapPoint1 = null;
             ScrollSnapPoint scrollSnapPoint2 = null;
@@ -205,9 +205,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                scroller1 = new Scroller();
-                scroller2 = new Scroller();
-                scroller3 = new Scroller();
+                scrollingPresenter1 = new ScrollingPresenter();
+                scrollingPresenter2 = new ScrollingPresenter();
+                scrollingPresenter3 = new ScrollingPresenter();
 
                 scrollSnapPoint1 = new ScrollSnapPoint(snapPointValue: 10, alignment: ScrollSnapPointsAlignment.Near);
                 scrollSnapPoint2 = new ScrollSnapPoint(snapPointValue: 20, alignment: ScrollSnapPointsAlignment.Near);
@@ -221,46 +221,46 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 zoomSnapPoint2 = new ZoomSnapPoint(snapPointValue: 2);
                 zoomSnapPoint3 = new ZoomSnapPoint(snapPointValue: 3);
 
-                scroller1.HorizontalSnapPoints.Add(scrollSnapPoint1);
-                scroller1.HorizontalSnapPoints.Add(scrollSnapPoint2);
-                scroller1.VerticalSnapPoints.Add(scrollSnapPoint1);
-                scroller1.VerticalSnapPoints.Add(scrollSnapPoint3);
+                scrollingPresenter1.HorizontalSnapPoints.Add(scrollSnapPoint1);
+                scrollingPresenter1.HorizontalSnapPoints.Add(scrollSnapPoint2);
+                scrollingPresenter1.VerticalSnapPoints.Add(scrollSnapPoint1);
+                scrollingPresenter1.VerticalSnapPoints.Add(scrollSnapPoint3);
 
-                scroller2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint1);
-                scroller2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint2);
-                scroller2.VerticalSnapPoints.Add(repeatedScrollSnapPoint1);
-                scroller2.VerticalSnapPoints.Add(repeatedScrollSnapPoint3);
+                scrollingPresenter2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint1);
+                scrollingPresenter2.HorizontalSnapPoints.Add(repeatedScrollSnapPoint2);
+                scrollingPresenter2.VerticalSnapPoints.Add(repeatedScrollSnapPoint1);
+                scrollingPresenter2.VerticalSnapPoints.Add(repeatedScrollSnapPoint3);
 
-                scroller1.ZoomSnapPoints.Add(zoomSnapPoint1);
-                scroller1.ZoomSnapPoints.Add(zoomSnapPoint2);
-                scroller2.ZoomSnapPoints.Add(zoomSnapPoint1);
-                scroller2.ZoomSnapPoints.Add(zoomSnapPoint3);
+                scrollingPresenter1.ZoomSnapPoints.Add(zoomSnapPoint1);
+                scrollingPresenter1.ZoomSnapPoints.Add(zoomSnapPoint2);
+                scrollingPresenter2.ZoomSnapPoints.Add(zoomSnapPoint1);
+                scrollingPresenter2.ZoomSnapPoints.Add(zoomSnapPoint3);
 
-                scroller3.HorizontalSnapPoints.Add(scrollSnapPoint1);
-                scroller3.HorizontalSnapPoints.Add(scrollSnapPoint1);
+                scrollingPresenter3.HorizontalSnapPoints.Add(scrollSnapPoint1);
+                scrollingPresenter3.HorizontalSnapPoints.Add(scrollSnapPoint1);
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Vector2 horizontalScrollSnapPoint11ApplicableZone = ScrollerTestHooks.GetHorizontalSnapPointActualApplicableZone(scroller1, scrollSnapPoint1);
-                Vector2 verticalScrollSnapPoint11ApplicableZone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(scroller1, scrollSnapPoint1);
+                Vector2 horizontalScrollSnapPoint11ApplicableZone = ScrollingPresenterTestHooks.GetHorizontalSnapPointActualApplicableZone(scrollingPresenter1, scrollSnapPoint1);
+                Vector2 verticalScrollSnapPoint11ApplicableZone = ScrollingPresenterTestHooks.GetVerticalSnapPointActualApplicableZone(scrollingPresenter1, scrollSnapPoint1);
                 Log.Comment("horizontalScrollSnapPoint11ApplicableZone=" + horizontalScrollSnapPoint11ApplicableZone.ToString());
                 Log.Comment("verticalScrollSnapPoint11ApplicableZone=" + verticalScrollSnapPoint11ApplicableZone.ToString());
 
-                Vector2 horizontalScrollSnapPoint21ApplicableZone = ScrollerTestHooks.GetHorizontalSnapPointActualApplicableZone(scroller2, repeatedScrollSnapPoint1);
-                Vector2 verticalScrollSnapPoint21ApplicableZone = ScrollerTestHooks.GetVerticalSnapPointActualApplicableZone(scroller2, repeatedScrollSnapPoint1);
+                Vector2 horizontalScrollSnapPoint21ApplicableZone = ScrollingPresenterTestHooks.GetHorizontalSnapPointActualApplicableZone(scrollingPresenter2, repeatedScrollSnapPoint1);
+                Vector2 verticalScrollSnapPoint21ApplicableZone = ScrollingPresenterTestHooks.GetVerticalSnapPointActualApplicableZone(scrollingPresenter2, repeatedScrollSnapPoint1);
                 Log.Comment("horizontalScrollSnapPoint21ApplicableZone=" + horizontalScrollSnapPoint21ApplicableZone.ToString());
                 Log.Comment("verticalScrollSnapPoint21ApplicableZone=" + verticalScrollSnapPoint21ApplicableZone.ToString());
 
-                Vector2 zoomSnapPoint11ApplicableZone = ScrollerTestHooks.GetZoomSnapPointActualApplicableZone(scroller1, zoomSnapPoint1);
-                Vector2 zoomSnapPoint21ApplicableZone = ScrollerTestHooks.GetZoomSnapPointActualApplicableZone(scroller2, zoomSnapPoint1);
+                Vector2 zoomSnapPoint11ApplicableZone = ScrollingPresenterTestHooks.GetZoomSnapPointActualApplicableZone(scrollingPresenter1, zoomSnapPoint1);
+                Vector2 zoomSnapPoint21ApplicableZone = ScrollingPresenterTestHooks.GetZoomSnapPointActualApplicableZone(scrollingPresenter2, zoomSnapPoint1);
                 Log.Comment("zoomSnapPoint11ApplicableZone=" + zoomSnapPoint11ApplicableZone.ToString());
                 Log.Comment("zoomSnapPoint21ApplicableZone=" + zoomSnapPoint21ApplicableZone.ToString());
 
-                int combinationCount11 = ScrollerTestHooks.GetHorizontalSnapPointCombinationCount(scroller1, scrollSnapPoint1);
-                int combinationCount31 = ScrollerTestHooks.GetHorizontalSnapPointCombinationCount(scroller3, scrollSnapPoint1);
+                int combinationCount11 = ScrollingPresenterTestHooks.GetHorizontalSnapPointCombinationCount(scrollingPresenter1, scrollSnapPoint1);
+                int combinationCount31 = ScrollingPresenterTestHooks.GetHorizontalSnapPointCombinationCount(scrollingPresenter3, scrollSnapPoint1);
                 Log.Comment("combinationCount11=" + combinationCount11);
                 Log.Comment("combinationCount31=" + combinationCount31);
 

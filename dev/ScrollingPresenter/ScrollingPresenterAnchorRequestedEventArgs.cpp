@@ -4,37 +4,37 @@
 #include "pch.h"
 #include "common.h"
 #include "Vector.h"
-#include "Scroller.h"
-#include "ScrollerTrace.h"
-#include "ScrollerAnchorRequestedEventArgs.h"
+#include "ScrollingPresenter.h"
+#include "ScrollingPresenterTrace.h"
+#include "ScrollingPresenterAnchorRequestedEventArgs.h"
 
-ScrollerAnchorRequestedEventArgs::ScrollerAnchorRequestedEventArgs(const winrt::Scroller& scroller)
+ScrollingPresenterAnchorRequestedEventArgs::ScrollingPresenterAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scroller);
+    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
 
-    m_scroller.set(scroller);
+    m_scrollingPresenter.set(scrollingPresenter);
 }
 
-#pragma region IScrollerAnchorRequestedEventArgs
+#pragma region IScrollingPresenterAnchorRequestedEventArgs
 
-winrt::IVector<winrt::UIElement> ScrollerAnchorRequestedEventArgs::AnchorCandidates()
+winrt::IVector<winrt::UIElement> ScrollingPresenterAnchorRequestedEventArgs::AnchorCandidates()
 {
     return m_anchorCandidates.get();
 }
 
-winrt::UIElement ScrollerAnchorRequestedEventArgs::AnchorElement()
+winrt::UIElement ScrollingPresenterAnchorRequestedEventArgs::AnchorElement()
 {
     return m_anchorElement.get();
 }
 
-void ScrollerAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& value)
+void ScrollingPresenterAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& value)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     const winrt::UIElement& anchorElement{ value };
-    com_ptr<Scroller> scroller = winrt::get_self<Scroller>(m_scroller.get())->get_strong();
+    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(m_scrollingPresenter.get())->get_strong();
 
-    if (!anchorElement || scroller->IsElementValidAnchor(anchorElement))
+    if (!anchorElement || scrollingPresenter->IsElementValidAnchor(anchorElement))
     {
         m_anchorElement.set(anchorElement);
     }
@@ -46,12 +46,12 @@ void ScrollerAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& val
 
 #pragma endregion
 
-winrt::IVector<winrt::UIElement> ScrollerAnchorRequestedEventArgs::GetAnchorCandidates()
+winrt::IVector<winrt::UIElement> ScrollingPresenterAnchorRequestedEventArgs::GetAnchorCandidates()
 {
     return m_anchorCandidates.get();
 }
 
-void ScrollerAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates)
+void ScrollingPresenterAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tracker_ref<winrt::UIElement>>& anchorCandidates)
 {
     winrt::IVector<winrt::UIElement> anchorCandidatesTmp = winrt::make<Vector<winrt::UIElement, MakeVectorParam<VectorFlag::DependencyObjectBase>()>>();
         
@@ -62,12 +62,12 @@ void ScrollerAnchorRequestedEventArgs::SetAnchorCandidates(const std::vector<tra
     m_anchorCandidates.set(anchorCandidatesTmp);
 }
 
-winrt::UIElement ScrollerAnchorRequestedEventArgs::GetAnchorElement() const
+winrt::UIElement ScrollingPresenterAnchorRequestedEventArgs::GetAnchorElement() const
 {
     return m_anchorElement.get();
 }
 
-void ScrollerAnchorRequestedEventArgs::SetAnchorElement(const winrt::UIElement& anchorElement)
+void ScrollingPresenterAnchorRequestedEventArgs::SetAnchorElement(const winrt::UIElement& anchorElement)
 {
     m_anchorElement.set(anchorElement);
 }

@@ -198,7 +198,7 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <localPrimitives:Scroller x:Name="PART_Scroller"
+                        <localPrimitives:ScrollingPresenter x:Name="PART_ScrollingPresenter"
                             Grid.ColumnSpan="2" Grid.RowSpan="2"
                             Background="{TemplateBinding Background}"
                             Content="{TemplateBinding Content}"

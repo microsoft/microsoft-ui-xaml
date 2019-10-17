@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ScrollInputHelper.h"
-#include "Scroller.h"
+#include "ScrollingPresenter.h"
 
 PCWSTR ScrollInputHelper::s_horizontalOffsetPropertyName = L"TranslationX";
 PCWSTR ScrollInputHelper::s_verticalOffsetPropertyName = L"TranslationY";
@@ -20,8 +20,8 @@ ScrollInputHelper::ScrollInputHelper(
 
 ScrollInputHelper::~ScrollInputHelper()
 {
-    UnhookScrollerPropertyChanged();
-    UnhookScrollerContentPropertyChanged();
+    UnhookScrollingPresenterPropertyChanged();
+    UnhookScrollingPresenterContentPropertyChanged();
     UnhookScrollViewerPropertyChanged();
     UnhookScrollViewerContentPropertyChanged();
     UnhookScrollViewerDirectManipulationStarted();
@@ -151,23 +151,23 @@ void ScrollInputHelper::SetScrollViewer(const winrt::FxScrollViewer& scrollViewe
     }
 }
 
-void ScrollInputHelper::SetScroller(const winrt::Scroller& scroller)
+void ScrollInputHelper::SetScrollingPresenter(const winrt::ScrollingPresenter& scrollingPresenter)
 {
-    if (scroller != m_scroller.get())
+    if (scrollingPresenter != m_scrollingPresenter.get())
     {
-        if (m_scroller)
+        if (m_scrollingPresenter)
         {
-            UnhookScrollerPropertyChanged();
+            UnhookScrollingPresenterPropertyChanged();
         }
 
-        m_scroller.set(scroller);
+        m_scrollingPresenter.set(scrollingPresenter);
 
-        if (scroller)
+        if (scrollingPresenter)
         {
-            HookScrollerPropertyChanged();
+            HookScrollingPresenterPropertyChanged();
         }
 
-        ProcessScrollerContentChange();
+        ProcessScrollingPresenterContentChange();
     }
 }
 
@@ -191,13 +191,13 @@ winrt::RichEditBox ScrollInputHelper::GetRichEditBoxParent(const winrt::Dependen
     return nullptr;
 }
 
-// Returns the inner ScrollViewer or Scroller if any.
-void ScrollInputHelper::GetChildScrollerOrScrollViewer(
+// Returns the inner ScrollViewer or ScrollingPresenter if any.
+void ScrollInputHelper::GetChildScrollingPresenterOrScrollViewer(
     const winrt::DependencyObject& rootElement,
-    _Out_ winrt::Scroller* scroller,
+    _Out_ winrt::ScrollingPresenter* scrollingPresenter,
     _Out_ winrt::FxScrollViewer* scrollViewer)
 {
-    *scroller = nullptr;
+    *scrollingPresenter = nullptr;
     *scrollViewer = nullptr;
 
     if (rootElement)
@@ -211,8 +211,8 @@ void ScrollInputHelper::GetChildScrollerOrScrollViewer(
             {
                 return;
             }
-            *scroller = current.try_as<winrt::Scroller>();
-            if (*scroller)
+            *scrollingPresenter = current.try_as<winrt::ScrollingPresenter>();
+            if (*scrollingPresenter)
             {
                 return;
             }
@@ -221,11 +221,11 @@ void ScrollInputHelper::GetChildScrollerOrScrollViewer(
         for (int i = 0; i < childCount; i++)
         {
             winrt::DependencyObject current = winrt::VisualTreeHelper::GetChild(rootElement, i);
-            ScrollInputHelper::GetChildScrollerOrScrollViewer(
+            ScrollInputHelper::GetChildScrollingPresenterOrScrollViewer(
                 current,
-                scroller,
+                scrollingPresenter,
                 scrollViewer);
-            if (*scroller)
+            if (*scrollingPresenter)
             {
                 return;
             }
@@ -237,7 +237,7 @@ void ScrollInputHelper::GetChildScrollerOrScrollViewer(
     }
 }
 
-// Returns the ScrollViewer content as a UIElement, if any. Or Scroller.Content, if any.
+// Returns the ScrollViewer content as a UIElement, if any. Or ScrollingPresenter.Content, if any.
 winrt::UIElement ScrollInputHelper::GetScrollContentElement() const
 {
     if (m_scrollViewer)
@@ -250,9 +250,9 @@ winrt::UIElement ScrollInputHelper::GetScrollContentElement() const
             return content.try_as<winrt::UIElement>();
         }
     }
-    else if (auto scroller = m_scroller.get())
+    else if (auto scrollingPresenter = m_scrollingPresenter.get())
     {
-        return scroller.Content();
+        return scrollingPresenter.Content();
     }
     return nullptr;
 }
@@ -299,7 +299,7 @@ winrt::FxZoomMode ScrollInputHelper::GetEffectiveZoomMode() const
 // Updates the m_outOfBoundsPanSize field based on the viewport size and zoom mode.
 void ScrollInputHelper::UpdateOutOfBoundsPanSize()
 {
-    if (m_scroller || m_scrollViewer)
+    if (m_scrollingPresenter || m_scrollViewer)
     {
         double viewportWith = GetViewportSize(winrt::Orientation::Horizontal);
         double viewportHeight = GetViewportSize(winrt::Orientation::Vertical);
@@ -312,10 +312,10 @@ void ScrollInputHelper::UpdateOutOfBoundsPanSize()
         }
         else
         {
-            // When zooming is allowed for a ScrollViewer, or in general for the Scroller,
+            // When zooming is allowed for a ScrollViewer, or in general for the ScrollingPresenter,
             // the content can be pushed all the way to the edge of the screen with two fingers,
             // but we limit the offset to one viewport size.
-            // Note that if in the future, the Scroller's underpan & overpan limits become customizable,
+            // Note that if in the future, the ScrollingPresenter's underpan & overpan limits become customizable,
             // its ExpressionAnimationSources property set will have to expose those custom limits.
             // The values would then be consumed here for a more accurate ParallaxView behavior.
             m_outOfBoundsPanSize.Width = static_cast<float>(viewportWith);
@@ -332,19 +332,19 @@ void ScrollInputHelper::UpdateOutOfBoundsPanSize()
 void ScrollInputHelper::UpdateContentSize()
 {
     m_contentSize.Width = m_contentSize.Height = 0.0f;
-    auto scroller = m_scroller.get();
+    auto scrollingPresenter = m_scrollingPresenter.get();
 
-    if (!scroller && !m_scrollViewer)
+    if (!scrollingPresenter && !m_scrollViewer)
     {
         return;
     }
 
-    if (scroller)
+    if (scrollingPresenter)
     {
-        winrt::CompositionPropertySet scrollerPropertySet = scroller.ExpressionAnimationSources();
+        winrt::CompositionPropertySet scrollingPresenterPropertySet = scrollingPresenter.ExpressionAnimationSources();
         winrt::float2 extent{};
 
-        winrt::CompositionGetValueStatus status = scrollerPropertySet.TryGetVector2(Scroller::s_extentSourcePropertyName, extent);
+        winrt::CompositionGetValueStatus status = scrollingPresenterPropertySet.TryGetVector2(ScrollingPresenter::s_extentSourcePropertyName, extent);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_contentSize.Width = extent.x;
@@ -448,13 +448,13 @@ void ScrollInputHelper::UpdateContentSize()
 // Updates the m_viewportSize field.
 void ScrollInputHelper::UpdateViewportSize()
 {
-    auto scroller = m_scroller.get();
-    if (scroller)
+    auto scrollingPresenter = m_scrollingPresenter.get();
+    if (scrollingPresenter)
     {
-        winrt::CompositionPropertySet scrollerPropertySet = scroller.ExpressionAnimationSources();
+        winrt::CompositionPropertySet scrollingPresenterPropertySet = scrollingPresenter.ExpressionAnimationSources();
         winrt::float2 viewport{};
 
-        winrt::CompositionGetValueStatus status = scrollerPropertySet.TryGetVector2(Scroller::s_viewportSourcePropertyName, viewport);
+        winrt::CompositionGetValueStatus status = scrollingPresenterPropertySet.TryGetVector2(ScrollingPresenter::s_viewportSourcePropertyName, viewport);
         if (status == winrt::CompositionGetValueStatus::Succeeded)
         {
             m_viewportSize.Width = viewport.x;
@@ -519,43 +519,43 @@ void ScrollInputHelper::UpdateViewportSize()
 // the internal composition animations.
 void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
 {
-    winrt::Scroller scroller = nullptr;
+    winrt::ScrollingPresenter scrollingPresenter = nullptr;
     winrt::FxScrollViewer scrollViewer = nullptr;
     auto sourceElement = m_sourceElement.get();
     if (sourceElement)
     {
-        scroller = sourceElement.try_as<winrt::Scroller>();
+        scrollingPresenter = sourceElement.try_as<winrt::ScrollingPresenter>();
         scrollViewer = sourceElement.try_as<winrt::FxScrollViewer>();
     }
 
-    if (scroller || scrollViewer)
+    if (scrollingPresenter || scrollViewer)
     {
-        SetScroller(scroller);
+        SetScrollingPresenter(scrollingPresenter);
         SetScrollViewer(scrollViewer);
     }
     else if (sourceElement)
     {
-        ScrollInputHelper::GetChildScrollerOrScrollViewer(
+        ScrollInputHelper::GetChildScrollingPresenterOrScrollViewer(
             sourceElement,
-            &scroller,
+            &scrollingPresenter,
             &scrollViewer);
-        SetScroller(scroller);
+        SetScrollingPresenter(scrollingPresenter);
         SetScrollViewer(scrollViewer);
     }
     else
     {
-        SetScroller(nullptr);
+        SetScrollingPresenter(nullptr);
         SetScrollViewer(nullptr);
     }
 
     if (allowSourceElementLoadedHookup &&
-        !scroller &&
+        !scrollingPresenter &&
         !m_scrollViewer)
     {
         HookSourceElementLoaded();
     }
 
-    if (!scroller && !m_scrollViewer)
+    if (!scrollingPresenter && !m_scrollViewer)
     {
         StopInternalExpressionAnimations();
         m_sourcePropertySet = nullptr;
@@ -564,7 +564,7 @@ void ScrollInputHelper::UpdateSource(bool allowSourceElementLoadedHookup)
     {
         EnsureInternalSourcePropertySetAndExpressionAnimations();
         m_sourcePropertySet = m_internalSourcePropertySet;
-        StartInternalExpressionAnimations(m_scrollViewer ? m_scrollViewerPropertySet : scroller.ExpressionAnimationSources());
+        StartInternalExpressionAnimations(m_scrollViewer ? m_scrollViewerPropertySet : scrollingPresenter.ExpressionAnimationSources());
     }
 
     UpdateIsTargetElementInSource();
@@ -581,9 +581,9 @@ void ScrollInputHelper::UpdateIsTargetElementInSource()
     if (targetElement)
     {
         bool sourceIsScrollViewer = m_scrollViewer != nullptr;
-        bool sourceIsScroller = m_scroller != nullptr;
+        bool sourceIsScrollingPresenter = m_scrollingPresenter != nullptr;
 
-        if (sourceIsScrollViewer || sourceIsScroller)
+        if (sourceIsScrollViewer || sourceIsScrollingPresenter)
         {
             winrt::DependencyObject parent = targetElement;
             do
@@ -603,9 +603,9 @@ void ScrollInputHelper::UpdateIsTargetElementInSource()
                     }
                     else
                     {
-                        winrt::Scroller parentAsScroller = parent.try_as<winrt::Scroller>();
+                        winrt::ScrollingPresenter parentAsScrollingPresenter = parent.try_as<winrt::ScrollingPresenter>();
 
-                        if (parentAsScroller == m_scroller.get())
+                        if (parentAsScrollingPresenter == m_scrollingPresenter.get())
                         {
                             m_isTargetElementInSource = true;
                             return;
@@ -708,7 +708,7 @@ void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoCh
             StartInternalExpressionAnimations(m_scrollViewerPropertySet);
         }
     }
-    else if (auto scroller = m_scroller.get())
+    else if (auto scrollingPresenter = m_scrollingPresenter.get())
     {
         if (horizontalInfoChanged && m_internalTranslationXExpressionAnimation)
         {
@@ -729,7 +729,7 @@ void ScrollInputHelper::UpdateInternalExpressionAnimations(bool horizontalInfoCh
 
         if (restartAnimations && m_targetElement)
         {
-            StartInternalExpressionAnimations(scroller.ExpressionAnimationSources());
+            StartInternalExpressionAnimations(scrollingPresenter.ExpressionAnimationSources());
         }
     }
 }
@@ -958,7 +958,7 @@ void ScrollInputHelper::ProcessTargetElementChange()
     }
 }
 
-// Invoked when the ScrollViewer.Content or Scroller.Content size changed.
+// Invoked when the ScrollViewer.Content or ScrollingPresenter.Content size changed.
 void ScrollInputHelper::ProcessContentSizeChange()
 {
     double oldContentWidth = GetContentSize(winrt::Orientation::Horizontal);
@@ -1003,7 +1003,7 @@ void ScrollInputHelper::OnTargetElementChanged()
 {
     auto scrollViewer = m_scrollViewer.get();
     auto targetElement = m_targetElement.get();
-    auto scroller = m_scroller.get();
+    auto scrollingPresenter = m_scrollingPresenter.get();
     if (targetElement)
     {
         winrt::DependencyObject parent = winrt::VisualTreeHelper::GetParent(targetElement);
@@ -1013,13 +1013,13 @@ void ScrollInputHelper::OnTargetElementChanged()
         }
     }
 
-    if (scroller || scrollViewer)
+    if (scrollingPresenter || scrollViewer)
     {
         EnsureInternalSourcePropertySetAndExpressionAnimations();
         m_sourcePropertySet = m_internalSourcePropertySet;
         if (targetElement)
         {
-            StartInternalExpressionAnimations(scrollViewer ? m_scrollViewerPropertySet : scroller.ExpressionAnimationSources());
+            StartInternalExpressionAnimations(scrollViewer ? m_scrollViewerPropertySet : scrollingPresenter.ExpressionAnimationSources());
             if (m_isScrollViewerInDirectManipulation)
             {
                 UpdateManipulationAlignments();
@@ -1043,7 +1043,7 @@ void ScrollInputHelper::OnSourceInfoChanged(bool horizontalInfoChanged, bool ver
 {
     MUX_ASSERT(horizontalInfoChanged || verticalInfoChanged);
 
-    if ((m_scroller || m_scrollViewer) && m_targetElement)
+    if ((m_scrollingPresenter || m_scrollViewer) && m_targetElement)
     {
         UpdateInternalExpressionAnimations(horizontalInfoChanged, verticalInfoChanged, zoomInfoChanged);
     }
@@ -1097,22 +1097,22 @@ void ScrollInputHelper::ProcessScrollViewerContentChange()
     OnSourceInfoChanged(true /*horizontalInfoChanged*/, true /*verticalInfoChanged*/, true /*zoomInfoChanged*/);
 }
 
-void ScrollInputHelper::ProcessScrollerContentChange()
+void ScrollInputHelper::ProcessScrollingPresenterContentChange()
 {
-    auto scroller = m_scroller.get();
-    UnhookScrollerContentPropertyChanged();
+    auto scrollingPresenter = m_scrollingPresenter.get();
+    UnhookScrollingPresenterContentPropertyChanged();
 
     m_sourceContent.set(nullptr);
 
-    if (scroller)
+    if (scrollingPresenter)
     {
-        winrt::UIElement newContent = scroller.Content();
+        winrt::UIElement newContent = scrollingPresenter.Content();
 
         if (newContent)
         {
             m_sourceContent.set(newContent.try_as<winrt::FrameworkElement>());
 
-            HookScrollerContentPropertyChanged();
+            HookScrollingPresenterContentPropertyChanged();
         }
     }
 
@@ -1249,12 +1249,12 @@ void ScrollInputHelper::OnScrollViewerPropertyChanged(const winrt::DependencyObj
     }
 }
 
-// Invoked when a tracked dependency property changes for the Scroller dependency object.
-void ScrollInputHelper::OnScrollerPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+// Invoked when a tracked dependency property changes for the ScrollingPresenter dependency object.
+void ScrollInputHelper::OnScrollingPresenterPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
 {
-    if (args == winrt::Scroller::ContentProperty())
+    if (args == winrt::ScrollingPresenter::ContentProperty())
     {
-        ProcessScrollerContentChange();
+        ProcessScrollingPresenterContentChange();
     }
 }
 
@@ -1379,18 +1379,18 @@ void ScrollInputHelper::HookScrollViewerPropertyChanged()
     }
 }
 
-void ScrollInputHelper::HookScrollerPropertyChanged()
+void ScrollInputHelper::HookScrollingPresenterPropertyChanged()
 {
-    auto scroller = m_scroller.get();
+    auto scrollingPresenter = m_scrollingPresenter.get();
 
-    if (scroller)
+    if (scrollingPresenter)
     {
-        MUX_ASSERT(m_scrollerContentChangedToken.value == 0);
+        MUX_ASSERT(m_scrollingPresenterContentChangedToken.value == 0);
         MUX_ASSERT(m_sourceSizeChangedToken.value == 0);
 
-        m_scrollerContentChangedToken.value = scroller.RegisterPropertyChangedCallback(
-            winrt::Scroller::ContentProperty(), { this, &ScrollInputHelper::OnScrollerPropertyChanged });
-        m_sourceSizeChangedToken = scroller.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
+        m_scrollingPresenterContentChangedToken.value = scrollingPresenter.RegisterPropertyChangedCallback(
+            winrt::ScrollingPresenter::ContentProperty(), { this, &ScrollInputHelper::OnScrollingPresenterPropertyChanged });
+        m_sourceSizeChangedToken = scrollingPresenter.SizeChanged({ this, &ScrollInputHelper::OnSourceSizeChanged });
     }
 }
 
@@ -1427,20 +1427,20 @@ void ScrollInputHelper::UnhookScrollViewerPropertyChanged()
     }
 }
 
-void ScrollInputHelper::UnhookScrollerPropertyChanged()
+void ScrollInputHelper::UnhookScrollingPresenterPropertyChanged()
 {
-    auto scroller = m_scroller.safe_get();
+    auto scrollingPresenter = m_scrollingPresenter.safe_get();
 
-    if (scroller)
+    if (scrollingPresenter)
     {
-        if (m_scrollerContentChangedToken.value != 0)
+        if (m_scrollingPresenterContentChangedToken.value != 0)
         {
-            scroller.UnregisterPropertyChangedCallback(winrt::Scroller::ContentProperty(), m_scrollerContentChangedToken.value);
-            m_scrollerContentChangedToken.value = 0;
+            scrollingPresenter.UnregisterPropertyChangedCallback(winrt::ScrollingPresenter::ContentProperty(), m_scrollingPresenterContentChangedToken.value);
+            m_scrollingPresenterContentChangedToken.value = 0;
         }
         if (m_sourceSizeChangedToken.value != 0)
         {
-            scroller.SizeChanged(m_sourceSizeChangedToken);
+            scrollingPresenter.SizeChanged(m_sourceSizeChangedToken);
             m_sourceSizeChangedToken.value = 0;
         }
     }
@@ -1468,7 +1468,7 @@ void ScrollInputHelper::HookScrollViewerContentPropertyChanged()
     }
 }
 
-void ScrollInputHelper::HookScrollerContentPropertyChanged()
+void ScrollInputHelper::HookScrollingPresenterContentPropertyChanged()
 {
     auto sourceContent = m_sourceContent.get();
 
@@ -1505,11 +1505,11 @@ void ScrollInputHelper::UnhookScrollViewerContentPropertyChanged()
     }
 }
 
-// Note that if in the future the Scroller supports a virtual mode where the extent does not
-// correspond to its Content size, the Scroller will need to raise an event when its virtual extent
-// changes so that the Scroller.ExpressionAnimationSources's Extent composition property can
-// be read. This should replace hooking up the SizeChanged event on the Scroller.Content altogether.
-void ScrollInputHelper::UnhookScrollerContentPropertyChanged()
+// Note that if in the future the ScrollingPresenter supports a virtual mode where the extent does not
+// correspond to its Content size, the ScrollingPresenter will need to raise an event when its virtual extent
+// changes so that the ScrollingPresenter.ExpressionAnimationSources's Extent composition property can
+// be read. This should replace hooking up the SizeChanged event on the ScrollingPresenter.Content altogether.
+void ScrollInputHelper::UnhookScrollingPresenterContentPropertyChanged()
 {
     auto sourceContent = m_sourceContent.safe_get();
 

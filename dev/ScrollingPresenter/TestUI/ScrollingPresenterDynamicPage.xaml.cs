@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
@@ -38,14 +38,14 @@ using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationS
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
 
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
+using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
+using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerDynamicPage : TestPage
+    public sealed partial class ScrollingPresenterDynamicPage : TestPage
     {
         private enum QueuedOperationType
         {
@@ -97,50 +97,50 @@ namespace MUXControlsTestApp
         private Border border;
         private Border populatedBorder;
         private StackPanel verticalStackPanel;
-        private Scroller dynamicScroller = null;
-        private Scroller scroller = null;
+        private ScrollingPresenter dynamicScrollingPresenter = null;
+        private ScrollingPresenter scrollingPresenter = null;
 
-        public ScrollerDynamicPage()
+        public ScrollingPresenterDynamicPage()
         {
             this.InitializeComponent();
 
-            UseScroller(markupScroller);
+            UseScrollingPresenter(markupScrollingPresenter);
 
             CreateChildren();
         }
 
-        private void Scroller_ExtentChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ExtentChanged(ScrollingPresenter sender, object args)
         {
             AppendAsyncEventMessage("ExtentChanged ExtentWidth=" + sender.ExtentWidth + ", ExtentHeight=" + sender.ExtentHeight);
         }
 
-        private void Scroller_StateChanged(Scroller sender, object args)
+        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
         {
             AppendAsyncEventMessage("StateChanged " + sender.State.ToString());
         }
 
-        private void Scroller_ViewChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
         {
             AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void Scroller_ScrollCompleted(Scroller sender, ScrollCompletedEventArgs args)
+        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollCompletedEventArgs args)
         {
-            ScrollerViewChangeResult result = ScrollerTestHooks.GetScrollCompletedResult(args);
+            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
 
             AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
         }
 
-        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
         {
-            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
 
             AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
         }
 
-        private void ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
+        private void ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
         {
-            ScrollerViewChangeResult result = ScrollerTestHooks.GetZoomCompletedResult(args);
+            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
 
             AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
         }
@@ -214,54 +214,54 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //To turn on info and verbose logging for a particular Scroller instance:
-            //MUXControlsTestHooks.SetLoggingLevelForInstance(scroller, isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //To turn on info and verbose logging for a particular ScrollingPresenter instance:
+            //MUXControlsTestHooks.SetLoggingLevelForInstance(scrollingPresenter, isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             //To turn on info and verbose logging without any filter:
             //MUXControlsTestHooks.SetLoggingLevelForInstance(null, isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
-            //To turn on info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //To turn on info and verbose logging for the ScrollingPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //To turn off info and verbose logging for a particular Scroller instance:
-            //MUXControlsTestHooks.SetLoggingLevelForInstance(scroller, isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //To turn off info and verbose logging for a particular ScrollingPresenter instance:
+            //MUXControlsTestHooks.SetLoggingLevelForInstance(scrollingPresenter, isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             //To turn off info and verbose logging without any filter:
             //MUXControlsTestHooks.SetLoggingLevelForInstance(null, isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
-            //To turn off info and verbose logging for the Scroller type:
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //To turn off info and verbose logging for the ScrollingPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
-            scroller.ExtentChanged += Scroller_ExtentChanged;
-            scroller.StateChanged += Scroller_StateChanged;
-            scroller.ViewChanged += Scroller_ViewChanged;
-            scroller.ScrollCompleted += Scroller_ScrollCompleted;
-            scroller.ZoomCompleted += Scroller_ZoomCompleted;
-            scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
-            scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
+            scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
+            scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+            scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
+            scrollingPresenter.ScrollCompleted += ScrollingPresenter_ScrollCompleted;
+            scrollingPresenter.ZoomCompleted += ScrollingPresenter_ZoomCompleted;
+            scrollingPresenter.ScrollAnimationStarting += ScrollingPresenter_ScrollAnimationStarting;
+            scrollingPresenter.ZoomAnimationStarting += ScrollingPresenter_ZoomAnimationStarting;
         }
 
-        private void ChkLogScrollerEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            scroller.ExtentChanged -= Scroller_ExtentChanged;
-            scroller.StateChanged -= Scroller_StateChanged;
-            scroller.ViewChanged -= Scroller_ViewChanged;
-            scroller.ScrollCompleted -= Scroller_ScrollCompleted;
-            scroller.ZoomCompleted -= Scroller_ZoomCompleted;
-            scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
-            scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
+            scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
+            scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
+            scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
+            scrollingPresenter.ScrollCompleted -= ScrollingPresenter_ScrollCompleted;
+            scrollingPresenter.ZoomCompleted -= ScrollingPresenter_ZoomCompleted;
+            scrollingPresenter.ScrollAnimationStarting -= ScrollingPresenter_ScrollAnimationStarting;
+            scrollingPresenter.ZoomAnimationStarting -= ScrollingPresenter_ZoomAnimationStarting;
         }
 
         private void ChkLogContentEffectiveViewportChangedEvent_Checked(object sender, RoutedEventArgs e)
@@ -276,9 +276,9 @@ namespace MUXControlsTestApp
 
         private void HookContentEffectiveViewportChanged()
         {
-            if (scroller != null)
+            if (scrollingPresenter != null)
             {
-                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollingPresenter.Content as FrameworkElement;
                 if (contentAsFE != null)
                 {
                     contentAsFE.EffectiveViewportChanged += Content_EffectiveViewportChanged;
@@ -288,9 +288,9 @@ namespace MUXControlsTestApp
 
         private void UnhookContentEffectiveViewportChanged()
         {
-            if (scroller != null)
+            if (scrollingPresenter != null)
             {
-                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollingPresenter.Content as FrameworkElement;
                 if (contentAsFE != null)
                 {
                     contentAsFE.EffectiveViewportChanged -= Content_EffectiveViewportChanged;
@@ -335,16 +335,16 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkScrollerProperties_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterProperties_Checked(object sender, RoutedEventArgs e)
         {
-            if (svScrollerProperties != null)
-                svScrollerProperties.Visibility = Visibility.Visible;
+            if (svScrollingPresenterProperties != null)
+                svScrollingPresenterProperties.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerProperties_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterProperties_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (svScrollerProperties != null)
-                svScrollerProperties.Visibility = Visibility.Collapsed;
+            if (svScrollingPresenterProperties != null)
+                svScrollingPresenterProperties.Visibility = Visibility.Collapsed;
         }
 
         private void ChkContentProperties_Checked(object sender, RoutedEventArgs e)
@@ -359,28 +359,28 @@ namespace MUXControlsTestApp
                 grdContentProperties.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkScrollerMethods_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterMethods_Checked(object sender, RoutedEventArgs e)
         {
-            if (svScrollerMethods != null)
-                svScrollerMethods.Visibility = Visibility.Visible;
+            if (svScrollingPresenterMethods != null)
+                svScrollingPresenterMethods.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerMethods_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterMethods_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (svScrollerMethods != null)
-                svScrollerMethods.Visibility = Visibility.Collapsed;
+            if (svScrollingPresenterMethods != null)
+                svScrollingPresenterMethods.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkScrollerEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerEvents != null)
-                grdScrollerEvents.Visibility = Visibility.Visible;
+            if (grdScrollingPresenterEvents != null)
+                grdScrollingPresenterEvents.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerEvents != null)
-                grdScrollerEvents.Visibility = Visibility.Collapsed;
+            if (grdScrollingPresenterEvents != null)
+                grdScrollingPresenterEvents.Visibility = Visibility.Collapsed;
         }
 
         private void ChkPageMethods_Checked(object sender, RoutedEventArgs e)
@@ -395,151 +395,151 @@ namespace MUXControlsTestApp
                 grdPageMethods.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkScrollerTestHooks_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterTestHooks_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerTestHooks != null)
-                grdScrollerTestHooks.Visibility = Visibility.Visible;
+            if (grdScrollingPresenterTestHooks != null)
+                grdScrollingPresenterTestHooks.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerTestHooks_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterTestHooks_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerTestHooks != null)
-                grdScrollerTestHooks.Visibility = Visibility.Collapsed;
+            if (grdScrollingPresenterTestHooks != null)
+                grdScrollingPresenterTestHooks.Visibility = Visibility.Collapsed;
         }
 
         private void CmbContentOrientation_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.ContentOrientation = (ContentOrientation)cmbContentOrientation.SelectedIndex;
         }
 
         private void CmbHorizontalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.HorizontalScrollMode = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.HorizontalScrollMode = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
         }
 
         private void UpdateCmbContentOrientation()
         {
             try
             {
-                cmbContentOrientation.SelectedIndex = (int)scroller.ContentOrientation;
+                cmbContentOrientation.SelectedIndex = (int)scrollingPresenter.ContentOrientation;
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void UpdateCmbHorizontalScrollMode()
         {
-            cmbHorizontalScrollMode.SelectedIndex = (int)scroller.HorizontalScrollMode;
+            cmbHorizontalScrollMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollMode;
         }
 
         private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.HorizontalScrollChainingMode = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.HorizontalScrollChainingMode = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbHorizontalScrollChainingMode()
         {
-            cmbHorizontalScrollChainingMode.SelectedIndex = (int)scroller.HorizontalScrollChainingMode;
+            cmbHorizontalScrollChainingMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollChainingMode;
         }
 
         private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.HorizontalScrollRailingMode = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.HorizontalScrollRailingMode = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
         }
 
         private void UpdateCmbHorizontalScrollRailingMode()
         {
-            cmbHorizontalScrollRailingMode.SelectedIndex = (int)scroller.HorizontalScrollRailingMode;
+            cmbHorizontalScrollRailingMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollRailingMode;
         }
 
         private void CmbVerticalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.VerticalScrollMode = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.VerticalScrollMode = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollMode()
         {
-            cmbVerticalScrollMode.SelectedIndex = (int)scroller.VerticalScrollMode;
+            cmbVerticalScrollMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollMode;
         }
 
         private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.VerticalScrollChainingMode = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.VerticalScrollChainingMode = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollChainingMode()
         {
-            cmbVerticalScrollChainingMode.SelectedIndex = (int)scroller.VerticalScrollChainingMode;
+            cmbVerticalScrollChainingMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollChainingMode;
         }
 
         private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.VerticalScrollRailingMode = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.VerticalScrollRailingMode = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
         }
 
         private void UpdateCmbVerticalScrollRailingMode()
         {
-            cmbVerticalScrollRailingMode.SelectedIndex = (int)scroller.VerticalScrollRailingMode;
+            cmbVerticalScrollRailingMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollRailingMode;
         }
 
         private void CmbZoomMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.ZoomMode = (ZoomMode)cmbZoomMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.ZoomMode = (ZoomMode)cmbZoomMode.SelectedIndex;
         }
 
         private void UpdateCmbZoomMode()
         {
-            cmbZoomMode.SelectedIndex = (int)scroller.ZoomMode;
+            cmbZoomMode.SelectedIndex = (int)scrollingPresenter.ZoomMode;
         }
 
         private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
-                scroller.ZoomChainingMode = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
+            if (scrollingPresenter != null)
+                scrollingPresenter.ZoomChainingMode = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
         }
 
         private void UpdateCmbZoomChainingMode()
         {
-            cmbZoomChainingMode.SelectedIndex = (int)scroller.ZoomChainingMode;
+            cmbZoomChainingMode.SelectedIndex = (int)scrollingPresenter.ZoomChainingMode;
         }
 
         private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller != null)
+            if (scrollingPresenter != null)
             {
                 switch (cmbIgnoredInputKind.SelectedIndex)
                 {
                     case 0:
-                        scroller.IgnoredInputKind = InputKind.None;
+                        scrollingPresenter.IgnoredInputKind = InputKind.None;
                         break;
                     case 1:
-                        scroller.IgnoredInputKind = InputKind.Touch;
+                        scrollingPresenter.IgnoredInputKind = InputKind.Touch;
                         break;
                     case 2:
-                        scroller.IgnoredInputKind = InputKind.Pen;
+                        scrollingPresenter.IgnoredInputKind = InputKind.Pen;
                         break;
                     case 3:
-                        scroller.IgnoredInputKind = InputKind.MouseWheel;
+                        scrollingPresenter.IgnoredInputKind = InputKind.MouseWheel;
                         break;
                     case 4:
-                        scroller.IgnoredInputKind = InputKind.Keyboard;
+                        scrollingPresenter.IgnoredInputKind = InputKind.Keyboard;
                         break;
                     case 5:
-                        scroller.IgnoredInputKind = InputKind.Gamepad;
+                        scrollingPresenter.IgnoredInputKind = InputKind.Gamepad;
                         break;
                     case 6:
-                        scroller.IgnoredInputKind = InputKind.All;
+                        scrollingPresenter.IgnoredInputKind = InputKind.All;
                         break;
                 }
             }
@@ -547,7 +547,7 @@ namespace MUXControlsTestApp
 
         private void UpdateCmbIgnoredInputKind()
         {
-            switch (scroller.IgnoredInputKind)
+            switch (scrollingPresenter.IgnoredInputKind)
             {
                 case InputKind.None:
                     cmbIgnoredInputKind.SelectedIndex = 0;
@@ -575,73 +575,73 @@ namespace MUXControlsTestApp
 
         private void CmbContentHorizontalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Content is FrameworkElement)
+            if (scrollingPresenter.Content is FrameworkElement)
             {
-                ((FrameworkElement)scroller.Content).HorizontalAlignment = (HorizontalAlignment)cmbContentHorizontalAlignment.SelectedIndex;
+                ((FrameworkElement)scrollingPresenter.Content).HorizontalAlignment = (HorizontalAlignment)cmbContentHorizontalAlignment.SelectedIndex;
             }
         }
 
         private void UpdateCmbContentHorizontalAlignment()
         {
-            if (scroller.Content is FrameworkElement)
+            if (scrollingPresenter.Content is FrameworkElement)
             {
-                cmbContentHorizontalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Content).HorizontalAlignment;
+                cmbContentHorizontalAlignment.SelectedIndex = (int)((FrameworkElement)scrollingPresenter.Content).HorizontalAlignment;
             }
         }
 
         private void CmbContentVerticalAlignment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Content is FrameworkElement)
+            if (scrollingPresenter.Content is FrameworkElement)
             {
-                ((FrameworkElement)scroller.Content).VerticalAlignment = (VerticalAlignment)cmbContentVerticalAlignment.SelectedIndex;
+                ((FrameworkElement)scrollingPresenter.Content).VerticalAlignment = (VerticalAlignment)cmbContentVerticalAlignment.SelectedIndex;
             }
         }
 
         private void UpdateCmbContentVerticalAlignment()
         {
-            if (scroller.Content is FrameworkElement)
+            if (scrollingPresenter.Content is FrameworkElement)
             {
-                cmbContentVerticalAlignment.SelectedIndex = (int)((FrameworkElement)scroller.Content).VerticalAlignment;
+                cmbContentVerticalAlignment.SelectedIndex = (int)((FrameworkElement)scrollingPresenter.Content).VerticalAlignment;
             }
         }
 
-        private void CmbScrollerManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbScrollingPresenterManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch (cmbScrollerManipulationMode.SelectedIndex)
+            switch (cmbScrollingPresenterManipulationMode.SelectedIndex)
             {
                 case 0:
-                    scroller.ManipulationMode = ManipulationModes.System;
+                    scrollingPresenter.ManipulationMode = ManipulationModes.System;
                     break;
                 case 1:
-                    scroller.ManipulationMode = ManipulationModes.None;
+                    scrollingPresenter.ManipulationMode = ManipulationModes.None;
                     break;
             }
         }
 
-        private void UpdateCmbScrollerManipulationMode()
+        private void UpdateCmbScrollingPresenterManipulationMode()
         {
-            switch (scroller.ManipulationMode)
+            switch (scrollingPresenter.ManipulationMode)
             {
                 case ManipulationModes.System:
-                    cmbScrollerManipulationMode.SelectedIndex = 0;
+                    cmbScrollingPresenterManipulationMode.SelectedIndex = 0;
                     break;
                 case ManipulationModes.None:
-                    cmbScrollerManipulationMode.SelectedIndex = 1;
+                    cmbScrollingPresenterManipulationMode.SelectedIndex = 1;
                     break;
             }
         }
 
         private void CmbContentManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (scroller.Content is FrameworkElement)
+            if (scrollingPresenter.Content is FrameworkElement)
             {
                 switch (cmbContentManipulationMode.SelectedIndex)
                 {
                     case 0:
-                        scroller.Content.ManipulationMode = ManipulationModes.System;
+                        scrollingPresenter.Content.ManipulationMode = ManipulationModes.System;
                         break;
                     case 1:
-                        scroller.Content.ManipulationMode = ManipulationModes.None;
+                        scrollingPresenter.Content.ManipulationMode = ManipulationModes.None;
                         break;
                 }
             }
@@ -649,9 +649,9 @@ namespace MUXControlsTestApp
 
         private void UpdateCmbContentManipulationMode()
         {
-            if (scroller.Content != null)
+            if (scrollingPresenter.Content != null)
             {
-                switch (scroller.Content.ManipulationMode)
+                switch (scrollingPresenter.Content.ManipulationMode)
                 {
                     case ManipulationModes.System:
                         cmbContentManipulationMode.SelectedIndex = 0;
@@ -668,23 +668,23 @@ namespace MUXControlsTestApp
             switch (cmbBackground.SelectedIndex)
             {
                 case 0:
-                    scroller.Background = null;
+                    scrollingPresenter.Background = null;
                     break;
                 case 1:
-                    scroller.Background = new SolidColorBrush(Colors.Transparent);
+                    scrollingPresenter.Background = new SolidColorBrush(Colors.Transparent);
                     break;
                 case 2:
-                    scroller.Background = new SolidColorBrush(Colors.AliceBlue);
+                    scrollingPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
                     break;
                 case 3:
-                    scroller.Background = new SolidColorBrush(Colors.Aqua);
+                    scrollingPresenter.Background = new SolidColorBrush(Colors.Aqua);
                     break;
             }
         }
 
         private void UpdateCmbBackground()
         {
-            SolidColorBrush bg = scroller.Background as SolidColorBrush;
+            SolidColorBrush bg = scrollingPresenter.Background as SolidColorBrush;
 
             if (bg == null)
             {
@@ -708,7 +708,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                FrameworkElement currentContent = scroller.Content as FrameworkElement;
+                FrameworkElement currentContent = scrollingPresenter.Content as FrameworkElement;
                 FrameworkElement newContent = null;
 
                 switch (cmbContent.SelectedIndex)
@@ -759,14 +759,14 @@ namespace MUXControlsTestApp
                     }
                 }
 
-                if (chkLogScrollerEvents.IsChecked == true)
+                if (chkLogScrollingPresenterEvents.IsChecked == true)
                 {
                     UnhookContentEffectiveViewportChanged();
                 }
 
-                scroller.Content = newContent;
+                scrollingPresenter.Content = newContent;
 
-                if (chkLogScrollerEvents.IsChecked == true)
+                if (chkLogScrollingPresenterEvents.IsChecked == true)
                 {
                     HookContentEffectiveViewportChanged();
                 }
@@ -774,7 +774,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
 
                 UpdateCmbContent();
             }
@@ -782,13 +782,13 @@ namespace MUXControlsTestApp
 
         private void UpdateCmbContent()
         {
-            if (scroller.Content == null)
+            if (scrollingPresenter.Content == null)
             {
                 cmbContent.SelectedIndex = 0;
             }
-            else if (scroller.Content is Image)
+            else if (scrollingPresenter.Content is Image)
             {
-                if (((scroller.Content as Image).Source as BitmapImage).UriSource.AbsolutePath.ToLower().Contains("large"))
+                if (((scrollingPresenter.Content as Image).Source as BitmapImage).UriSource.AbsolutePath.ToLower().Contains("large"))
                 {
                     cmbContent.SelectedIndex = 2;
                 }
@@ -797,17 +797,17 @@ namespace MUXControlsTestApp
                     cmbContent.SelectedIndex = 1;
                 }
             }
-            else if (scroller.Content is Rectangle)
+            else if (scrollingPresenter.Content is Rectangle)
             {
                 cmbContent.SelectedIndex = 3;
             }
-            else if (scroller.Content is Button)
+            else if (scrollingPresenter.Content is Button)
             {
                 cmbContent.SelectedIndex = 4;
             }
-            else if (scroller.Content is Border)
+            else if (scrollingPresenter.Content is Border)
             {
-                if ((scroller.Content as Border).Child is Rectangle)
+                if ((scrollingPresenter.Content as Border).Child is Rectangle)
                 {
                     cmbContent.SelectedIndex = 5;
                 }
@@ -816,15 +816,15 @@ namespace MUXControlsTestApp
                     cmbContent.SelectedIndex = 6;
                 }
             }
-            else if (scroller.Content is StackPanel)
+            else if (scrollingPresenter.Content is StackPanel)
             {
                 cmbContent.SelectedIndex = 7;
             }
-            else if (scroller.Content is TilePanel)
+            else if (scrollingPresenter.Content is TilePanel)
             {
                 cmbContent.SelectedIndex = 8;
             }
-            else if (scroller.Content is Viewbox)
+            else if (scrollingPresenter.Content is Viewbox)
             {
                 cmbContent.SelectedIndex = 9;
             }
@@ -832,41 +832,41 @@ namespace MUXControlsTestApp
 
         private void BtnGetContentMinWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentMinWidth.Text = string.Empty;
             else
-                txtContentMinWidth.Text = ((FrameworkElement)(scroller.Content)).MinWidth.ToString();
+                txtContentMinWidth.Text = ((FrameworkElement)(scrollingPresenter.Content)).MinWidth.ToString();
         }
 
         private void BtnGetContentWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentWidth.Text = string.Empty;
             else
-                txtContentWidth.Text = ((FrameworkElement)(scroller.Content)).Width.ToString();
+                txtContentWidth.Text = ((FrameworkElement)(scrollingPresenter.Content)).Width.ToString();
         }
 
         private void BtnGetContentMaxWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentMaxWidth.Text = string.Empty;
             else
-                txtContentMaxWidth.Text = ((FrameworkElement)(scroller.Content)).MaxWidth.ToString();
+                txtContentMaxWidth.Text = ((FrameworkElement)(scrollingPresenter.Content)).MaxWidth.ToString();
         }
 
         private void BtnSetContentMinWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).MinWidth = Convert.ToDouble(txtContentMinWidth.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).MinWidth = Convert.ToDouble(txtContentMinWidth.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -874,15 +874,15 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).Width = Convert.ToDouble(txtContentWidth.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).Width = Convert.ToDouble(txtContentWidth.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -890,15 +890,15 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).MaxWidth = Convert.ToDouble(txtContentMaxWidth.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).MaxWidth = Convert.ToDouble(txtContentMaxWidth.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -913,7 +913,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -928,7 +928,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -943,47 +943,47 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetContentMinHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentMinHeight.Text = string.Empty;
             else
-                txtContentMinHeight.Text = ((FrameworkElement)(scroller.Content)).MinHeight.ToString();
+                txtContentMinHeight.Text = ((FrameworkElement)(scrollingPresenter.Content)).MinHeight.ToString();
         }
 
         private void BtnGetContentHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentHeight.Text = string.Empty;
             else
-                txtContentHeight.Text = ((FrameworkElement)(scroller.Content)).Height.ToString();
+                txtContentHeight.Text = ((FrameworkElement)(scrollingPresenter.Content)).Height.ToString();
         }
 
         private void BtnGetContentMaxHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentMaxHeight.Text = string.Empty;
             else
-                txtContentMaxHeight.Text = ((FrameworkElement)(scroller.Content)).MaxHeight.ToString();
+                txtContentMaxHeight.Text = ((FrameworkElement)(scrollingPresenter.Content)).MaxHeight.ToString();
         }
 
         private void BtnSetContentMinHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).MinHeight = Convert.ToDouble(txtContentMinHeight.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).MinHeight = Convert.ToDouble(txtContentMinHeight.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -991,15 +991,15 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).Height = Convert.ToDouble(txtContentHeight.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).Height = Convert.ToDouble(txtContentHeight.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1007,15 +1007,15 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).MaxHeight = Convert.ToDouble(txtContentMaxHeight.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).MaxHeight = Convert.ToDouble(txtContentMaxHeight.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1030,7 +1030,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1045,7 +1045,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1060,31 +1060,31 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetContentMargin_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentMargin.Text = string.Empty;
             else
-                txtContentMargin.Text = ((FrameworkElement)(scroller.Content)).Margin.ToString();
+                txtContentMargin.Text = ((FrameworkElement)(scrollingPresenter.Content)).Margin.ToString();
         }
 
         private void BtnSetContentMargin_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Content is FrameworkElement)
+                if (scrollingPresenter.Content is FrameworkElement)
                 {
-                    ((FrameworkElement)(scroller.Content)).Margin = GetThicknessFromString(txtContentMargin.Text);
+                    ((FrameworkElement)(scrollingPresenter.Content)).Margin = GetThicknessFromString(txtContentMargin.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1098,43 +1098,43 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetContentPadding_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is Control || scroller.Content is Border || scroller.Content is StackPanel))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is Control || scrollingPresenter.Content is Border || scrollingPresenter.Content is StackPanel))
                 txtContentPadding.Text = string.Empty;
-            else if (scroller.Content is Control)
-                txtContentPadding.Text = ((Control)(scroller.Content)).Padding.ToString();
-            else if (scroller.Content is Border)
-                txtContentPadding.Text = ((Border)(scroller.Content)).Padding.ToString();
+            else if (scrollingPresenter.Content is Control)
+                txtContentPadding.Text = ((Control)(scrollingPresenter.Content)).Padding.ToString();
+            else if (scrollingPresenter.Content is Border)
+                txtContentPadding.Text = ((Border)(scrollingPresenter.Content)).Padding.ToString();
             else
-                txtContentPadding.Text = ((StackPanel)(scroller.Content)).Padding.ToString();
+                txtContentPadding.Text = ((StackPanel)(scrollingPresenter.Content)).Padding.ToString();
         }
 
         private void BtnSetContentPadding_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (scroller.Content is Control)
+                if (scrollingPresenter.Content is Control)
                 {
-                    ((Control)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
+                    ((Control)(scrollingPresenter.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
-                else if (scroller.Content is Border)
+                else if (scrollingPresenter.Content is Border)
                 {
-                    ((Border)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
+                    ((Border)(scrollingPresenter.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
-                else if (scroller.Content is StackPanel)
+                else if (scrollingPresenter.Content is StackPanel)
                 {
-                    ((StackPanel)(scroller.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
+                    ((StackPanel)(scrollingPresenter.Content)).Padding = GetThicknessFromString(txtContentPadding.Text);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1148,50 +1148,50 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetContentActualWidth_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentActualWidth.Text = string.Empty;
             else
-                txtContentActualWidth.Text = (scroller.Content as FrameworkElement).ActualWidth.ToString();
+                txtContentActualWidth.Text = (scrollingPresenter.Content as FrameworkElement).ActualWidth.ToString();
         }
 
         private void BtnGetContentActualHeight_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null || !(scroller.Content is FrameworkElement))
+            if (scrollingPresenter.Content == null || !(scrollingPresenter.Content is FrameworkElement))
                 txtContentActualHeight.Text = string.Empty;
             else
-                txtContentActualHeight.Text = (scroller.Content as FrameworkElement).ActualHeight.ToString();
+                txtContentActualHeight.Text = (scrollingPresenter.Content as FrameworkElement).ActualHeight.ToString();
         }
 
         private void BtnGetContentDesiredSize_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null)
+            if (scrollingPresenter.Content == null)
                 txtContentDesiredSize.Text = string.Empty;
             else
-                txtContentDesiredSize.Text = scroller.Content.DesiredSize.ToString();
+                txtContentDesiredSize.Text = scrollingPresenter.Content.DesiredSize.ToString();
         }
 
         private void BtnGetContentRenderSize_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller.Content == null)
+            if (scrollingPresenter.Content == null)
                 txtContentRenderSize.Text = string.Empty;
             else
-                txtContentRenderSize.Text = scroller.Content.RenderSize.ToString();
+                txtContentRenderSize.Text = scrollingPresenter.Content.RenderSize.ToString();
         }
 
         private void UpdateMinZoomFactor()
         {
-            txtMinZoomFactor.Text = scroller.MinZoomFactor.ToString();
+            txtMinZoomFactor.Text = scrollingPresenter.MinZoomFactor.ToString();
         }
 
         private void UpdateMaxZoomFactor()
         {
-            txtMaxZoomFactor.Text = scroller.MaxZoomFactor.ToString();
+            txtMaxZoomFactor.Text = scrollingPresenter.MaxZoomFactor.ToString();
         }
 
         private void BtnGetMinZoomFactor_Click(object sender, RoutedEventArgs e)
@@ -1203,12 +1203,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scroller.MinZoomFactor = Convert.ToDouble(txtMinZoomFactor.Text);
+                scrollingPresenter.MinZoomFactor = Convert.ToDouble(txtMinZoomFactor.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1223,7 +1223,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1236,12 +1236,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scroller.MaxZoomFactor = Convert.ToDouble(txtMaxZoomFactor.Text);
+                scrollingPresenter.MaxZoomFactor = Convert.ToDouble(txtMaxZoomFactor.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1256,65 +1256,65 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetHorizontalOffset_Click(object sender, RoutedEventArgs e)
         {
-            tblHorizontalOffset.Text = scroller.HorizontalOffset.ToString();
+            tblHorizontalOffset.Text = scrollingPresenter.HorizontalOffset.ToString();
         }
 
         private void BtnGetVerticalOffset_Click(object sender, RoutedEventArgs e)
         {
-            tblVerticalOffset.Text = scroller.VerticalOffset.ToString();
+            tblVerticalOffset.Text = scrollingPresenter.VerticalOffset.ToString();
         }
 
         private void BtnGetZoomFactor_Click(object sender, RoutedEventArgs e)
         {
-            tblZoomFactor.Text = scroller.ZoomFactor.ToString();
+            tblZoomFactor.Text = scrollingPresenter.ZoomFactor.ToString();
         }
 
         private void BtnGetState_Click(object sender, RoutedEventArgs e)
         {
-            tblState.Text = scroller.State.ToString();
+            tblState.Text = scrollingPresenter.State.ToString();
         }
 
         private void BtnGetExtentWidth_Click(object sender, RoutedEventArgs e)
         {
-            tblExtentWidth.Text = scroller.ExtentWidth.ToString();
+            tblExtentWidth.Text = scrollingPresenter.ExtentWidth.ToString();
         }
 
         private void BtnGetExtentHeight_Click(object sender, RoutedEventArgs e)
         {
-            tblExtentHeight.Text = scroller.ExtentHeight.ToString();
+            tblExtentHeight.Text = scrollingPresenter.ExtentHeight.ToString();
         }
 
         private void BtnGetViewportWidth_Click(object sender, RoutedEventArgs e)
         {
-            tblViewportWidth.Text = scroller.ViewportWidth.ToString();
+            tblViewportWidth.Text = scrollingPresenter.ViewportWidth.ToString();
         }
 
         private void BtnGetViewportHeight_Click(object sender, RoutedEventArgs e)
         {
-            tblViewportHeight.Text = scroller.ViewportHeight.ToString();
+            tblViewportHeight.Text = scrollingPresenter.ViewportHeight.ToString();
         }
 
         private void BtnGetWidth_Click(object sender, RoutedEventArgs e)
         {
-            txtWidth.Text = scroller.Width.ToString();
+            txtWidth.Text = scrollingPresenter.Width.ToString();
         }
 
         private void BtnSetWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scroller.Width = Convert.ToDouble(txtWidth.Text);
+                scrollingPresenter.Width = Convert.ToDouble(txtWidth.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1329,43 +1329,43 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetMaxWidth_Click(object sender, RoutedEventArgs e)
         {
-            txtMaxWidth.Text = scroller.MaxWidth.ToString();
+            txtMaxWidth.Text = scrollingPresenter.MaxWidth.ToString();
         }
 
         private void BtnSetMaxWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scroller.MaxWidth = Convert.ToDouble(txtMaxWidth.Text);
+                scrollingPresenter.MaxWidth = Convert.ToDouble(txtMaxWidth.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetHeight_Click(object sender, RoutedEventArgs e)
         {
-            txtHeight.Text = scroller.Height.ToString();
+            txtHeight.Text = scrollingPresenter.Height.ToString();
         }
 
         private void BtnSetHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scroller.Height = Convert.ToDouble(txtHeight.Text);
+                scrollingPresenter.Height = Convert.ToDouble(txtHeight.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1380,48 +1380,48 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetMaxHeight_Click(object sender, RoutedEventArgs e)
         {
-            txtMaxHeight.Text = scroller.MaxHeight.ToString();
+            txtMaxHeight.Text = scrollingPresenter.MaxHeight.ToString();
         }
 
         private void BtnSetMaxHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scroller.MaxHeight = Convert.ToDouble(txtMaxHeight.Text);
+                scrollingPresenter.MaxHeight = Convert.ToDouble(txtMaxHeight.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetActualWidth_Click(object sender, RoutedEventArgs e)
         {
-            tblActualWidth.Text = scroller.ActualWidth.ToString();
+            tblActualWidth.Text = scrollingPresenter.ActualWidth.ToString();
         }
 
         private void BtnGetActualHeight_Click(object sender, RoutedEventArgs e)
         {
-            tblActualHeight.Text = scroller.ActualHeight.ToString();
+            tblActualHeight.Text = scrollingPresenter.ActualHeight.ToString();
         }
 
-        private void BtnClearScrollerEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnClearScrollingPresenterEvents_Click(object sender, RoutedEventArgs e)
         {
-            lstScrollerEvents.Items.Clear();
+            lstScrollingPresenterEvents.Items.Clear();
         }
 
-        private void BtnCopyScrollerEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnCopyScrollingPresenterEvents_Click(object sender, RoutedEventArgs e)
         {
             string logs = string.Empty;
 
-            foreach (object log in lstScrollerEvents.Items)
+            foreach (object log in lstScrollingPresenterEvents.Items)
             {
                 logs += log.ToString() + "\n";
             }
@@ -1455,7 +1455,7 @@ namespace MUXControlsTestApp
 
                 if (isRelativeChange)
                 {
-                    lastOffsetsChangeId = scroller.ScrollBy(
+                    lastOffsetsChangeId = scrollingPresenter.ScrollBy(
                         Convert.ToDouble(txtScrollHorizontalOffset.Text),
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options).OffsetsChangeId;
@@ -1464,7 +1464,7 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    lastOffsetsChangeId = scroller.ScrollTo(
+                    lastOffsetsChangeId = scrollingPresenter.ScrollTo(
                         Convert.ToDouble(txtScrollHorizontalOffset.Text),
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options).OffsetsChangeId;
@@ -1474,7 +1474,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1485,7 +1485,7 @@ namespace MUXControlsTestApp
                 if (lastOffsetsChangeId != -1)
                 {
                     AppendAsyncEventMessage("Canceling scrollTo/By Id=" + lastOffsetsChangeId);
-                    scroller.ScrollBy(
+                    scrollingPresenter.ScrollBy(
                         0,
                         0,
                         new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1494,11 +1494,11 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollAnimationStartingEventArgs args)
         {
             try
             {
@@ -1517,14 +1517,14 @@ namespace MUXControlsTestApp
                         double targetHorizontalOffset = Convert.ToDouble(txtScrollHorizontalOffset.Text);
                         if (isRelativeChange)
                         {
-                            targetHorizontalOffset += scroller.HorizontalOffset;
+                            targetHorizontalOffset += scrollingPresenter.HorizontalOffset;
                         }
                         float targetHorizontalPosition = ComputeHorizontalPositionFromOffset(targetHorizontalOffset);
 
                         double targetVerticalOffset = Convert.ToDouble(txtScrollVerticalOffset.Text);
                         if (isRelativeChange)
                         {
-                            targetVerticalOffset += scroller.VerticalOffset;
+                            targetVerticalOffset += scrollingPresenter.VerticalOffset;
                         }
                         float targetVerticalPosition = ComputeVerticalPositionFromOffset(targetVerticalOffset);
 
@@ -1532,8 +1532,8 @@ namespace MUXControlsTestApp
                         if (cmbOverriddenOffsetsChangeAnimation.SelectedIndex == 1)
                         {
                             // Accordion case
-                            float deltaHorizontalPosition = 0.1f * (float)(targetHorizontalOffset - scroller.HorizontalOffset);
-                            float deltaVerticalPosition = 0.1f * (float)(targetVerticalOffset - scroller.VerticalOffset);
+                            float deltaHorizontalPosition = 0.1f * (float)(targetHorizontalOffset - scrollingPresenter.HorizontalOffset);
+                            float deltaVerticalPosition = 0.1f * (float)(targetVerticalOffset - scrollingPresenter.VerticalOffset);
 
                             for (int step = 0; step < 3; step++)
                             {
@@ -1549,8 +1549,8 @@ namespace MUXControlsTestApp
                         else
                         {
                             // Teleportation case
-                            float deltaHorizontalPosition = (float)(targetHorizontalOffset - scroller.HorizontalOffset);
-                            float deltaVerticalPosition = (float)(targetVerticalOffset - scroller.VerticalOffset);
+                            float deltaHorizontalPosition = (float)(targetHorizontalOffset - scrollingPresenter.HorizontalOffset);
+                            float deltaVerticalPosition = (float)(targetVerticalOffset - scrollingPresenter.VerticalOffset);
 
                             CubicBezierEasingFunction cubicBezierStart = stockKeyFrameAnimation.Compositor.CreateCubicBezierEasingFunction(
                                 new Vector2(1.0f, 0.0f),
@@ -1590,7 +1590,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1609,7 +1609,7 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastOffsetsChangeWithAdditionalVelocityId = scroller.ScrollFrom(
+                lastOffsetsChangeWithAdditionalVelocityId = scrollingPresenter.ScrollFrom(
                     new Vector2(Convert.ToSingle(txtScrollHorizontalVelocity.Text), Convert.ToSingle(txtScrollVerticalVelocity.Text)),
                     inertiaDecayRate).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
@@ -1617,7 +1617,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1628,7 +1628,7 @@ namespace MUXControlsTestApp
                 if (lastOffsetsChangeWithAdditionalVelocityId != -1)
                 {
                     AppendAsyncEventMessage("Canceling ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
-                    scroller.ScrollBy(
+                    scrollingPresenter.ScrollBy(
                         0,
                         0,
                         new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1637,23 +1637,23 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private float ComputeHorizontalPositionFromOffset(double offset)
         {
-            return (float)(offset + ComputeMinHorizontalPosition(scroller.ZoomFactor));
+            return (float)(offset + ComputeMinHorizontalPosition(scrollingPresenter.ZoomFactor));
         }
 
         private float ComputeVerticalPositionFromOffset(double offset)
         {
-            return (float)(offset + ComputeMinVerticalPosition(scroller.ZoomFactor));
+            return (float)(offset + ComputeMinVerticalPosition(scrollingPresenter.ZoomFactor));
         }
 
         private float ComputeMinHorizontalPosition(float zoomFactor)
         {
-            UIElement content = scroller.Content;
+            UIElement content = scrollingPresenter.Content;
 
             if (content == null)
             {
@@ -1668,7 +1668,7 @@ namespace MUXControlsTestApp
             }
 
             Thickness contentMargin = contentAsFE.Margin;
-            Visual scrollerVisual = ElementCompositionPreview.GetElementVisual(scroller);
+            Visual scrollingPresenterVisual = ElementCompositionPreview.GetElementVisual(scrollingPresenter);
             double contentWidth = double.IsNaN(contentAsFE.Width) ? contentAsFE.ActualWidth : contentAsFE.Width;
             float minPosX = 0.0f;
             float extentWidth = Math.Max(0.0f, (float)(contentWidth + contentMargin.Left + contentMargin.Right));
@@ -1676,11 +1676,11 @@ namespace MUXControlsTestApp
             if (contentAsFE.HorizontalAlignment == HorizontalAlignment.Center ||
                 contentAsFE.HorizontalAlignment == HorizontalAlignment.Stretch)
             {
-                minPosX = Math.Min(0.0f, (extentWidth * zoomFactor - scrollerVisual.Size.X) / 2.0f);
+                minPosX = Math.Min(0.0f, (extentWidth * zoomFactor - scrollingPresenterVisual.Size.X) / 2.0f);
             }
             else if (contentAsFE.HorizontalAlignment == HorizontalAlignment.Right)
             {
-                minPosX = Math.Min(0.0f, extentWidth * zoomFactor - scrollerVisual.Size.X);
+                minPosX = Math.Min(0.0f, extentWidth * zoomFactor - scrollingPresenterVisual.Size.X);
             }
 
             return minPosX;
@@ -1688,7 +1688,7 @@ namespace MUXControlsTestApp
 
         private float ComputeMinVerticalPosition(float zoomFactor)
         {
-            UIElement content = scroller.Content;
+            UIElement content = scrollingPresenter.Content;
 
             if (content == null)
             {
@@ -1703,7 +1703,7 @@ namespace MUXControlsTestApp
             }
 
             Thickness contentMargin = contentAsFE.Margin;
-            Visual scrollerVisual = ElementCompositionPreview.GetElementVisual(scroller);
+            Visual scrollingPresenterVisual = ElementCompositionPreview.GetElementVisual(scrollingPresenter);
             double contentHeight = double.IsNaN(contentAsFE.Height) ? contentAsFE.ActualHeight : contentAsFE.Height;
             float minPosY = 0.0f;
             float extentHeight = Math.Max(0.0f, (float)(contentHeight + contentMargin.Top + contentMargin.Bottom));
@@ -1711,11 +1711,11 @@ namespace MUXControlsTestApp
             if (contentAsFE.VerticalAlignment == VerticalAlignment.Center ||
                 contentAsFE.VerticalAlignment == VerticalAlignment.Stretch)
             {
-                minPosY = Math.Min(0.0f, (extentHeight * zoomFactor - scrollerVisual.Size.Y) / 2.0f);
+                minPosY = Math.Min(0.0f, (extentHeight * zoomFactor - scrollingPresenterVisual.Size.Y) / 2.0f);
             }
             else if (contentAsFE.VerticalAlignment == VerticalAlignment.Bottom)
             {
-                minPosY = Math.Min(0.0f, extentHeight * zoomFactor - scrollerVisual.Size.Y);
+                minPosY = Math.Min(0.0f, extentHeight * zoomFactor - scrollingPresenterVisual.Size.Y);
             }
 
             return minPosY;
@@ -1745,7 +1745,7 @@ namespace MUXControlsTestApp
 
                 if (isRelativeChange)
                 {
-                    lastZoomFactorChangeId = scroller.ZoomBy(
+                    lastZoomFactorChangeId = scrollingPresenter.ZoomBy(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
@@ -1754,7 +1754,7 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    lastZoomFactorChangeId = scroller.ZoomTo(
+                    lastZoomFactorChangeId = scrollingPresenter.ZoomTo(
                         Convert.ToSingle(txtZoomZoomFactor.Text),
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options).ZoomFactorChangeId;
@@ -1764,7 +1764,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1775,7 +1775,7 @@ namespace MUXControlsTestApp
                 if (lastZoomFactorChangeId != -1)
                 {
                     AppendAsyncEventMessage("Canceling ZoomTo/By Id=" + lastZoomFactorChangeId);
-                    scroller.ZoomBy(
+                    scrollingPresenter.ZoomBy(
                         0,
                         Vector2.Zero, 
                         new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1784,11 +1784,11 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void Scroller_ZoomAnimationStarting(Scroller sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ZoomAnimationStartingEventArgs args)
         {
             try
             {
@@ -1805,14 +1805,14 @@ namespace MUXControlsTestApp
                         float targetZoomFactor = Convert.ToSingle(txtZoomZoomFactor.Text);
                         if (relativeChangeIds.Contains(args.ZoomInfo.ZoomFactorChangeId))
                         {
-                            targetZoomFactor += scroller.ZoomFactor;
+                            targetZoomFactor += scrollingPresenter.ZoomFactor;
                         }
 
                         customKeyFrameAnimation = stockKeyFrameAnimation.Compositor.CreateScalarKeyFrameAnimation();
                         if (cmbOverriddenZoomFactorChangeAnimation.SelectedIndex == 1)
                         {
                             // Accordion case
-                            float deltaZoomFactor = 0.1f * (float)(targetZoomFactor - scroller.ZoomFactor);
+                            float deltaZoomFactor = 0.1f * (float)(targetZoomFactor - scrollingPresenter.ZoomFactor);
 
                             for (int step = 0; step < 3; step++)
                             {
@@ -1827,7 +1827,7 @@ namespace MUXControlsTestApp
                         else
                         {
                             // Teleportation case
-                            float deltaZoomFactor = (float)(targetZoomFactor - scroller.ZoomFactor);
+                            float deltaZoomFactor = (float)(targetZoomFactor - scrollingPresenter.ZoomFactor);
 
                             CubicBezierEasingFunction cubicBezierStart = stockKeyFrameAnimation.Compositor.CreateCubicBezierEasingFunction(
                                 new Vector2(1.0f, 0.0f),
@@ -1867,7 +1867,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1879,7 +1879,7 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastZoomFactorChangeWithAdditionalVelocityId = scroller.ZoomFrom(
+                lastZoomFactorChangeWithAdditionalVelocityId = scrollingPresenter.ZoomFrom(
                     Convert.ToSingle(txtZoomFromVelocity.Text),
                     (txtZoomFromCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
                     (txtZoomFromInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtZoomFromInertiaDecayRate.Text)).ZoomFactorChangeId;
@@ -1888,7 +1888,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1899,7 +1899,7 @@ namespace MUXControlsTestApp
                 if (lastZoomFactorChangeWithAdditionalVelocityId != -1)
                 {
                     AppendAsyncEventMessage("Canceling ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
-                    scroller.ZoomBy(
+                    scrollingPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
                         new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
@@ -1908,7 +1908,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1928,17 +1928,17 @@ namespace MUXControlsTestApp
                 if (cmbSnapPointKind.SelectedIndex == 0)
                 {
                     ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text), ScrollSnapPointsAlignment.Near);
-                    scroller.VerticalSnapPoints.Add(snapPoint);
+                    scrollingPresenter.VerticalSnapPoints.Add(snapPoint);
                 }
                 else if(cmbSnapPointKind.SelectedIndex == 1)
                 {
                     ScrollSnapPoint snapPoint = new ScrollSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text), ScrollSnapPointsAlignment.Near);
-                    scroller.HorizontalSnapPoints.Add(snapPoint); 
+                    scrollingPresenter.HorizontalSnapPoints.Add(snapPoint); 
                 }
                 else if(cmbSnapPointKind.SelectedIndex == 2)
                 {
                     ZoomSnapPoint snapPoint = new ZoomSnapPoint(Convert.ToSingle(txtSnapPointValue.Text), Convert.ToSingle(txtSnapPointValueRange.Text));
-                    scroller.ZoomSnapPoints.Add(snapPoint);
+                    scrollingPresenter.ZoomSnapPoints.Add(snapPoint);
                 }
 #else
                 if (cmbSnapPointKind.SelectedIndex == 0)
@@ -1948,25 +1948,25 @@ namespace MUXControlsTestApp
                         (ScrollSnapPointsAlignment)cmbSnapPointAlignment.SelectedIndex);
                     if (cmbSnapPointKind.SelectedIndex == 0)
                     {
-                        scroller.VerticalSnapPoints.Add(snapPoint);
+                        scrollingPresenter.VerticalSnapPoints.Add(snapPoint);
                     }
                     else
                     {
-                        scroller.HorizontalSnapPoints.Add(snapPoint);
+                        scrollingPresenter.HorizontalSnapPoints.Add(snapPoint);
                     }
                 }
                 else if(cmbSnapPointKind.SelectedIndex == 2)
                 {
                     ZoomSnapPoint snapPoint = new ZoomSnapPoint(
                         Convert.ToSingle(txtIrregularSnapPointValue.Text));
-                    scroller.ZoomSnapPoints.Add(snapPoint);
+                    scrollingPresenter.ZoomSnapPoints.Add(snapPoint);
                 }
 #endif
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1984,11 +1984,11 @@ namespace MUXControlsTestApp
                         (ScrollSnapPointsAlignment)cmbSnapPointAlignment.SelectedIndex);
                     if (cmbSnapPointKind.SelectedIndex == 0)
                     {
-                        scroller.VerticalSnapPoints.Add(snapPoint);
+                        scrollingPresenter.VerticalSnapPoints.Add(snapPoint);
                     }
                     else
                     {
-                        scroller.HorizontalSnapPoints.Add(snapPoint);
+                        scrollingPresenter.HorizontalSnapPoints.Add(snapPoint);
                     }
                 }
                 else if (cmbSnapPointKind.SelectedIndex == 2)
@@ -1998,13 +1998,13 @@ namespace MUXControlsTestApp
                         Convert.ToDouble(txtRepeatedSnapPointInterval.Text),
                         Convert.ToDouble(txtRepeatedSnapPointStart.Text),
                         Convert.ToDouble(txtRepeatedSnapPointEnd.Text));
-                    scroller.ZoomSnapPoints.Add(snapPoint);
+                    scrollingPresenter.ZoomSnapPoints.Add(snapPoint);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2022,7 +2022,7 @@ namespace MUXControlsTestApp
                     return;
                 }
 
-                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scroller.ZoomFactor) ? 
+                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scrollingPresenter.ZoomFactor) ? 
                     cmbScrollAnimationMode : cmbZoomAnimationMode;
 
                 switch (((ContentControl)cmbAnimationMode.SelectedItem).Content)
@@ -2037,40 +2037,40 @@ namespace MUXControlsTestApp
                         break;
                 }
 
-                ChangeView(scroller, horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
+                ChangeView(scrollingPresenter, horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private bool ChangeView(Scroller scroller, double? horizontalOffset, double? verticalOffset, float? zoomFactor, bool disableAnimation)
+        private bool ChangeView(ScrollingPresenter scrollingPresenter, double? horizontalOffset, double? verticalOffset, float? zoomFactor, bool disableAnimation)
         {
-            AppendAsyncEventMessage($"ChangeView(horizontalOffset:{horizontalOffset}, verticalOffset:{verticalOffset}, zoomFactor:{zoomFactor}, disableAnimation:{disableAnimation}) from horizontalOffset:{scroller.HorizontalOffset}, verticalOffset:{scroller.VerticalOffset}, zoomFactor:{scroller.ZoomFactor}");
+            AppendAsyncEventMessage($"ChangeView(horizontalOffset:{horizontalOffset}, verticalOffset:{verticalOffset}, zoomFactor:{zoomFactor}, disableAnimation:{disableAnimation}) from horizontalOffset:{scrollingPresenter.HorizontalOffset}, verticalOffset:{scrollingPresenter.VerticalOffset}, zoomFactor:{scrollingPresenter.ZoomFactor}");
 
-            double targetHorizontalOffset = horizontalOffset == null ? scroller.HorizontalOffset : (double)horizontalOffset;
-            double targetVerticalOffset = verticalOffset == null ? scroller.VerticalOffset : (double)verticalOffset;
-            float targetZoomFactor = zoomFactor == null ? scroller.ZoomFactor : (float)Math.Max(Math.Min((double)zoomFactor, scroller.MaxZoomFactor), scroller.MinZoomFactor);
-            float deltaZoomFactor = targetZoomFactor - scroller.ZoomFactor;
+            double targetHorizontalOffset = horizontalOffset == null ? scrollingPresenter.HorizontalOffset : (double)horizontalOffset;
+            double targetVerticalOffset = verticalOffset == null ? scrollingPresenter.VerticalOffset : (double)verticalOffset;
+            float targetZoomFactor = zoomFactor == null ? scrollingPresenter.ZoomFactor : (float)Math.Max(Math.Min((double)zoomFactor, scrollingPresenter.MaxZoomFactor), scrollingPresenter.MinZoomFactor);
+            float deltaZoomFactor = targetZoomFactor - scrollingPresenter.ZoomFactor;
 
             if (disableAnimation)
             {
-                targetHorizontalOffset = Math.Max(Math.Min(targetHorizontalOffset, scroller.ExtentWidth * targetZoomFactor - scroller.ViewportWidth), 0.0);
-                targetVerticalOffset = Math.Max(Math.Min(targetVerticalOffset, scroller.ExtentHeight * targetZoomFactor - scroller.ViewportHeight), 0.0);
+                targetHorizontalOffset = Math.Max(Math.Min(targetHorizontalOffset, scrollingPresenter.ExtentWidth * targetZoomFactor - scrollingPresenter.ViewportWidth), 0.0);
+                targetVerticalOffset = Math.Max(Math.Min(targetVerticalOffset, scrollingPresenter.ExtentHeight * targetZoomFactor - scrollingPresenter.ViewportHeight), 0.0);
             }
             // During an animation, out-of-bounds offsets may become valid as the extents are dynamically updated, so no clamping is performed for animated view changes.
 
             if (deltaZoomFactor == 0.0f)
             {
-                if (targetHorizontalOffset == scroller.HorizontalOffset && targetVerticalOffset == scroller.VerticalOffset)
+                if (targetHorizontalOffset == scrollingPresenter.HorizontalOffset && targetVerticalOffset == scrollingPresenter.VerticalOffset)
                 {
                     AppendAsyncEventMessage("ChangeView no-op");
                     return false;
                 }
 
-                lastOffsetsChangeId = scroller.ScrollTo(
+                lastOffsetsChangeId = scrollingPresenter.ScrollTo(
                     targetHorizontalOffset,
                     targetVerticalOffset,
                     new ScrollOptions(
@@ -2080,15 +2080,15 @@ namespace MUXControlsTestApp
             }
             else
             {
-                FrameworkElement contentAsFE = scroller.Content as FrameworkElement;
+                FrameworkElement contentAsFE = scrollingPresenter.Content as FrameworkElement;
                 HorizontalAlignment contentHorizontalAlignment = contentAsFE == null ? HorizontalAlignment.Stretch : contentAsFE.HorizontalAlignment;
                 VerticalAlignment contentVerticalAlignment = contentAsFE == null ? VerticalAlignment.Stretch : contentAsFE.VerticalAlignment;
-                double currentPositionX = scroller.HorizontalOffset;
-                double currentPositionY = scroller.VerticalOffset;
-                double currentViewportExcessX = scroller.ViewportWidth - scroller.ExtentWidth * scroller.ZoomFactor;
-                double targetViewportExcessX = scroller.ViewportWidth - scroller.ExtentWidth * targetZoomFactor;
-                double currentViewportExcessY = scroller.ViewportHeight - scroller.ExtentHeight * scroller.ZoomFactor;
-                double targetViewportExcessY = scroller.ViewportHeight - scroller.ExtentHeight * targetZoomFactor;
+                double currentPositionX = scrollingPresenter.HorizontalOffset;
+                double currentPositionY = scrollingPresenter.VerticalOffset;
+                double currentViewportExcessX = scrollingPresenter.ViewportWidth - scrollingPresenter.ExtentWidth * scrollingPresenter.ZoomFactor;
+                double targetViewportExcessX = scrollingPresenter.ViewportWidth - scrollingPresenter.ExtentWidth * targetZoomFactor;
+                double currentViewportExcessY = scrollingPresenter.ViewportHeight - scrollingPresenter.ExtentHeight * scrollingPresenter.ZoomFactor;
+                double targetViewportExcessY = scrollingPresenter.ViewportHeight - scrollingPresenter.ExtentHeight * targetZoomFactor;
 
                 switch (contentHorizontalAlignment)
                 {
@@ -2117,11 +2117,11 @@ namespace MUXControlsTestApp
                 }
 
                 Vector2 centerPoint = new Vector2(
-                    (float)(targetHorizontalOffset * scroller.ZoomFactor - currentPositionX * targetZoomFactor) / deltaZoomFactor,
-                    (float)(targetVerticalOffset * scroller.ZoomFactor - currentPositionY * targetZoomFactor) / deltaZoomFactor);
+                    (float)(targetHorizontalOffset * scrollingPresenter.ZoomFactor - currentPositionX * targetZoomFactor) / deltaZoomFactor,
+                    (float)(targetVerticalOffset * scrollingPresenter.ZoomFactor - currentPositionY * targetZoomFactor) / deltaZoomFactor);
 
 
-                lastZoomFactorChangeId = scroller.ZoomTo(
+                lastZoomFactorChangeId = scrollingPresenter.ZoomTo(
                     targetZoomFactor,
                     centerPoint,
                     new ZoomOptions(
@@ -2139,21 +2139,21 @@ namespace MUXControlsTestApp
             {
                 if (cmbSnapPointKind.SelectedIndex == 0)
                 {
-                    scroller.VerticalSnapPoints.Clear();
+                    scrollingPresenter.VerticalSnapPoints.Clear();
                 }
                 else if (cmbSnapPointKind.SelectedIndex == 1)
                 {
-                    scroller.HorizontalSnapPoints.Clear();
+                    scrollingPresenter.HorizontalSnapPoints.Clear();
                 }
                 else if (cmbSnapPointKind.SelectedIndex == 2)
                 {
-                    scroller.ZoomSnapPoints.Clear();
+                    scrollingPresenter.ZoomSnapPoints.Clear();
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2196,7 +2196,7 @@ namespace MUXControlsTestApp
             {
                 foreach (string asyncEventMessage in lstAsyncEventMessage)
                 {
-                    lstScrollerEvents.Items.Add(asyncEventMessage);
+                    lstScrollingPresenterEvents.Items.Add(asyncEventMessage);
                 }
                 lstAsyncEventMessage.Clear();
             }
@@ -2221,105 +2221,105 @@ namespace MUXControlsTestApp
             txtExceptionReport.Text = string.Empty;
         }
 
-        private void BtnParentMarkupScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnParentMarkupScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                root.Children.Add(markupScroller);
+                root.Children.Add(markupScrollingPresenter);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnUnparentMarkupScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnUnparentMarkupScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                root.Children.Remove(markupScroller);
+                root.Children.Remove(markupScrollingPresenter);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnUnparentReparentMarkupScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnUnparentReparentMarkupScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                root.Children.Remove(markupScroller);
-                root.Children.Add(markupScroller);
+                root.Children.Remove(markupScrollingPresenter);
+                root.Children.Add(markupScrollingPresenter);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnCreateDynamicScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnCreateDynamicScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                dynamicScroller = new Scroller();
-                dynamicScroller.Name = "dynamicScroller";
-                dynamicScroller.Width = 300.0;
-                dynamicScroller.Height = 400.0;
-                dynamicScroller.Margin = new Thickness(1);
-                dynamicScroller.Background = new SolidColorBrush(Colors.HotPink);
-                dynamicScroller.VerticalAlignment = VerticalAlignment.Top;
-                Grid.SetRow(dynamicScroller, 1);
+                dynamicScrollingPresenter = new ScrollingPresenter();
+                dynamicScrollingPresenter.Name = "dynamicScrollingPresenter";
+                dynamicScrollingPresenter.Width = 300.0;
+                dynamicScrollingPresenter.Height = 400.0;
+                dynamicScrollingPresenter.Margin = new Thickness(1);
+                dynamicScrollingPresenter.Background = new SolidColorBrush(Colors.HotPink);
+                dynamicScrollingPresenter.VerticalAlignment = VerticalAlignment.Top;
+                Grid.SetRow(dynamicScrollingPresenter, 1);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnParentDynamicScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnParentDynamicScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                root.Children.Add(dynamicScroller);
+                root.Children.Add(dynamicScrollingPresenter);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnUnparentDynamicScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnUnparentDynamicScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                root.Children.Remove(dynamicScroller);
+                root.Children.Remove(dynamicScrollingPresenter);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnUseMarkupScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnUseMarkupScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
-            UseScroller(markupScroller);
+            UseScrollingPresenter(markupScrollingPresenter);
         }
 
-        private void BtnUseDynamicScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnUseDynamicScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
-            UseScroller(dynamicScroller);
+            UseScrollingPresenter(dynamicScrollingPresenter);
         }
 
-        private void BtnReleaseDynamicScroller_Click(object sender, RoutedEventArgs e)
+        private void BtnReleaseDynamicScrollingPresenter_Click(object sender, RoutedEventArgs e)
         {
-            dynamicScroller = null;
+            dynamicScrollingPresenter = null;
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -2342,14 +2342,14 @@ namespace MUXControlsTestApp
             {
                 float contentLayoutOffsetX = 0.0f;
 
-                ScrollerTestHooks.GetContentLayoutOffsetX(scroller, out contentLayoutOffsetX);
+                ScrollingPresenterTestHooks.GetContentLayoutOffsetX(scrollingPresenter, out contentLayoutOffsetX);
 
                 txtContentLayoutOffsetX.Text = contentLayoutOffsetX.ToString();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2357,12 +2357,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.SetContentLayoutOffsetX(scroller, Convert.ToSingle(txtContentLayoutOffsetX.Text));
+                ScrollingPresenterTestHooks.SetContentLayoutOffsetX(scrollingPresenter, Convert.ToSingle(txtContentLayoutOffsetX.Text));
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2372,14 +2372,14 @@ namespace MUXControlsTestApp
             {
                 float contentLayoutOffsetY = 0.0f;
 
-                ScrollerTestHooks.GetContentLayoutOffsetY(scroller, out contentLayoutOffsetY);
+                ScrollingPresenterTestHooks.GetContentLayoutOffsetY(scrollingPresenter, out contentLayoutOffsetY);
 
                 txtContentLayoutOffsetY.Text = contentLayoutOffsetY.ToString();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2387,12 +2387,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.SetContentLayoutOffsetY(scroller, Convert.ToSingle(txtContentLayoutOffsetY.Text));
+                ScrollingPresenterTestHooks.SetContentLayoutOffsetY(scrollingPresenter, Convert.ToSingle(txtContentLayoutOffsetY.Text));
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2400,12 +2400,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                txtArrangeRenderSizesDelta.Text = ScrollerTestHooks.GetArrangeRenderSizesDelta(scroller).ToString();
+                txtArrangeRenderSizesDelta.Text = ScrollingPresenterTestHooks.GetArrangeRenderSizesDelta(scrollingPresenter).ToString();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2413,12 +2413,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                txtMinPosition.Text = ScrollerTestHooks.GetMinPosition(scroller).ToString();
+                txtMinPosition.Text = ScrollingPresenterTestHooks.GetMinPosition(scrollingPresenter).ToString();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2426,52 +2426,52 @@ namespace MUXControlsTestApp
         {
             try
             {
-                txtMaxPosition.Text = ScrollerTestHooks.GetMaxPosition(scroller).ToString();
+                txtMaxPosition.Text = ScrollingPresenterTestHooks.GetMaxPosition(scrollingPresenter).ToString();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void UseScroller(Scroller s)
+        private void UseScrollingPresenter(ScrollingPresenter s)
         {
-            if (scroller == s || s == null)
+            if (scrollingPresenter == s || s == null)
                 return;
 
             try
             {
-                if (scroller != null)
+                if (scrollingPresenter != null)
                 {
-                    if (chkLogScrollerMessages.IsChecked == true)
+                    if (chkLogScrollingPresenterMessages.IsChecked == true)
                     {
-                        MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
                         MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
                     }
 
-                    if (chkLogScrollerEvents.IsChecked == true)
+                    if (chkLogScrollingPresenterEvents.IsChecked == true)
                     {
-                        scroller.ExtentChanged -= Scroller_ExtentChanged;
-                        scroller.StateChanged -= Scroller_StateChanged;
-                        scroller.ViewChanged -= Scroller_ViewChanged;
-                        scroller.ScrollCompleted -= Scroller_ScrollCompleted;
-                        scroller.ZoomCompleted -= Scroller_ZoomCompleted;
-                        scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
-                        scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
+                        scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
+                        scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
+                        scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
+                        scrollingPresenter.ScrollCompleted -= ScrollingPresenter_ScrollCompleted;
+                        scrollingPresenter.ZoomCompleted -= ScrollingPresenter_ZoomCompleted;
+                        scrollingPresenter.ScrollAnimationStarting -= ScrollingPresenter_ScrollAnimationStarting;
+                        scrollingPresenter.ZoomAnimationStarting -= ScrollingPresenter_ZoomAnimationStarting;
                     }
 
-                    if (chkLogScrollerEvents.IsChecked == true)
+                    if (chkLogScrollingPresenterEvents.IsChecked == true)
                     {
                         UnhookContentEffectiveViewportChanged();
                     }
                 }
 
-                scroller = s;
+                scrollingPresenter = s;
 
-                if (chkLogScrollerMessages.IsChecked == true)
+                if (chkLogScrollingPresenterMessages.IsChecked == true)
                 {
-                    MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
                 }
 
@@ -2487,7 +2487,7 @@ namespace MUXControlsTestApp
                 UpdateCmbIgnoredInputKind();
                 UpdateCmbContentHorizontalAlignment();
                 UpdateCmbContentVerticalAlignment();
-                UpdateCmbScrollerManipulationMode();
+                UpdateCmbScrollingPresenterManipulationMode();
                 UpdateCmbContentManipulationMode();
                 UpdateCmbBackground();
                 UpdateCmbContent();
@@ -2497,20 +2497,20 @@ namespace MUXControlsTestApp
                 txtWidth.Text = string.Empty;
                 txtHeight.Text = string.Empty;
 
-                if (scroller != null)
+                if (scrollingPresenter != null)
                 {
-                    if (chkLogScrollerEvents.IsChecked == true)
+                    if (chkLogScrollingPresenterEvents.IsChecked == true)
                     {
-                        scroller.ExtentChanged += Scroller_ExtentChanged;
-                        scroller.StateChanged += Scroller_StateChanged;
-                        scroller.ViewChanged += Scroller_ViewChanged;
-                        scroller.ScrollCompleted += Scroller_ScrollCompleted;
-                        scroller.ZoomCompleted += Scroller_ZoomCompleted;
-                        scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
-                        scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
+                        scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
+                        scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+                        scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
+                        scrollingPresenter.ScrollCompleted += ScrollingPresenter_ScrollCompleted;
+                        scrollingPresenter.ZoomCompleted += ScrollingPresenter_ZoomCompleted;
+                        scrollingPresenter.ScrollAnimationStarting += ScrollingPresenter_ScrollAnimationStarting;
+                        scrollingPresenter.ZoomAnimationStarting += ScrollingPresenter_ZoomAnimationStarting;
                     }
 
-                    if (chkLogScrollerEvents.IsChecked == true)
+                    if (chkLogScrollingPresenterEvents.IsChecked == true)
                     {
                         HookContentEffectiveViewportChanged();
                     }
@@ -2519,7 +2519,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -2544,54 +2544,54 @@ namespace MUXControlsTestApp
                     switch (qo.Type)
                     {
                         case QueuedOperationType.SetMinZoomFactor:
-                            scroller.MinZoomFactor = qo.DoubleValue;
+                            scrollingPresenter.MinZoomFactor = qo.DoubleValue;
                             AppendAsyncEventMessage("Unqueued SetMinZoomFactor " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetMaxZoomFactor:
-                            scroller.MaxZoomFactor = qo.DoubleValue;
+                            scrollingPresenter.MaxZoomFactor = qo.DoubleValue;
                             AppendAsyncEventMessage("Unqueued SetMaxZoomFactor " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetWidth:
-                            scroller.Width = qo.DoubleValue;
+                            scrollingPresenter.Width = qo.DoubleValue;
                             AppendAsyncEventMessage("Unqueued SetWidth " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetHeight:
-                            scroller.Height = qo.DoubleValue;
+                            scrollingPresenter.Height = qo.DoubleValue;
                             AppendAsyncEventMessage("Unqueued SetHeight " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetContentWidth:
-                            if (scroller.Content is FrameworkElement)
+                            if (scrollingPresenter.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Content)).Width = qo.DoubleValue;
+                                ((FrameworkElement)(scrollingPresenter.Content)).Width = qo.DoubleValue;
                             }
                             AppendAsyncEventMessage("Unqueued SetContentWidth " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetContentHeight:
-                            if (scroller.Content is FrameworkElement)
+                            if (scrollingPresenter.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Content)).Height = qo.DoubleValue;
+                                ((FrameworkElement)(scrollingPresenter.Content)).Height = qo.DoubleValue;
                             }
                             AppendAsyncEventMessage("Unqueued SetContentHeight " + qo.DoubleValue);
                             break;
                         case QueuedOperationType.SetContentMargin:
-                            if (scroller.Content is FrameworkElement)
+                            if (scrollingPresenter.Content is FrameworkElement)
                             {
-                                ((FrameworkElement)(scroller.Content)).Margin = GetThicknessFromString(qo.StringValue);
+                                ((FrameworkElement)(scrollingPresenter.Content)).Margin = GetThicknessFromString(qo.StringValue);
                             }
                             AppendAsyncEventMessage("Unqueued SetContentMargin " + qo.StringValue);
                             break;
                         case QueuedOperationType.SetContentPadding:
-                            if (scroller.Content is Control)
+                            if (scrollingPresenter.Content is Control)
                             {
-                                ((Control)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((Control)(scrollingPresenter.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
-                            else if (scroller.Content is Border)
+                            else if (scrollingPresenter.Content is Border)
                             {
-                                ((Border)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((Border)(scrollingPresenter.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
-                            else if (scroller.Content is StackPanel)
+                            else if (scrollingPresenter.Content is StackPanel)
                             {
-                                ((StackPanel)(scroller.Content)).Padding = GetThicknessFromString(qo.StringValue);
+                                ((StackPanel)(scrollingPresenter.Content)).Padding = GetThicknessFromString(qo.StringValue);
                             }
                             AppendAsyncEventMessage("Unqueued SetContentPadding " + qo.StringValue);
                             break;
@@ -2603,7 +2603,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
+                lstScrollingPresenterEvents.Items.Add(ex.ToString());
             }
         }
     }

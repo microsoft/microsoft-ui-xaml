@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ResourceAccessor.h"
-#include "ScrollerTrace.h"
+#include "ScrollingPresenterTrace.h"
 #include "ScrollAnimationStartingEventArgs.h"
 
 winrt::CompositionAnimation ScrollAnimationStartingEventArgs::Animation()

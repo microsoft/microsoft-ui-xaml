@@ -8,70 +8,70 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerLeakDetectionPage : TestPage
+    public sealed partial class ScrollingPresenterLeakDetectionPage : TestPage
     {
-        private Scroller scroller = null;
+        private ScrollingPresenter scrollingPresenter = null;
         
-        public ScrollerLeakDetectionPage()
+        public ScrollingPresenterLeakDetectionPage()
         {
             this.InitializeComponent();
         }
 
-        private void BtnCreateScroller_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void BtnCreateScrollingPresenter_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            scroller = new Scroller();
-            scroller.Name = "dynamicScroller";
-            scroller.Width = 300.0;
-            scroller.Height = 400.0;
-            scroller.Margin = new Thickness(1);
-            scroller.Background = new SolidColorBrush(Colors.HotPink);
-            scroller.VerticalAlignment = VerticalAlignment.Top;
+            scrollingPresenter = new ScrollingPresenter();
+            scrollingPresenter.Name = "dynamicScrollingPresenter";
+            scrollingPresenter.Width = 300.0;
+            scrollingPresenter.Height = 400.0;
+            scrollingPresenter.Margin = new Thickness(1);
+            scrollingPresenter.Background = new SolidColorBrush(Colors.HotPink);
+            scrollingPresenter.VerticalAlignment = VerticalAlignment.Top;
 
             Rectangle rect = new Rectangle();
             rect.Width = 900.0;
             rect.Height = 1200.0;
             rect.Fill = new SolidColorBrush(Colors.DarkRed);
-            scroller.Content = rect;
+            scrollingPresenter.Content = rect;
 
-            btnCreateScroller.IsEnabled = false;
-            btnAddScroller.IsEnabled = true;
-            btnDeleteScroller.IsEnabled = true;
+            btnCreateScrollingPresenter.IsEnabled = false;
+            btnAddScrollingPresenter.IsEnabled = true;
+            btnDeleteScrollingPresenter.IsEnabled = true;
         }
 
-        private void BtnAddScroller_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void BtnAddScrollingPresenter_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            Grid.SetRow(scroller, 5);
-            grid.Children.Add(scroller);
+            Grid.SetRow(scrollingPresenter, 5);
+            grid.Children.Add(scrollingPresenter);
 
-            btnAddScroller.IsEnabled = false;
-            btnDeleteScroller.IsEnabled = false;
-            btnRemoveScroller.IsEnabled = true;
+            btnAddScrollingPresenter.IsEnabled = false;
+            btnDeleteScrollingPresenter.IsEnabled = false;
+            btnRemoveScrollingPresenter.IsEnabled = true;
         }
 
-        private void BtnRemoveScroller_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void BtnRemoveScrollingPresenter_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            grid.Children.Remove(scroller);
+            grid.Children.Remove(scrollingPresenter);
 
-            btnRemoveScroller.IsEnabled = false;
-            btnAddScroller.IsEnabled = true;
-            btnDeleteScroller.IsEnabled = true;
+            btnRemoveScrollingPresenter.IsEnabled = false;
+            btnAddScrollingPresenter.IsEnabled = true;
+            btnDeleteScrollingPresenter.IsEnabled = true;
         }
 
-        private void BtnDeleteScroller_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
+        private void BtnDeleteScrollingPresenter_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
-            if (scroller == null || grid.Children.Count == 6)
+            if (scrollingPresenter == null || grid.Children.Count == 6)
                 return;
 
-            scroller.Content = null;
-            scroller = null;
+            scrollingPresenter.Content = null;
+            scrollingPresenter = null;
 
-            btnDeleteScroller.IsEnabled = false;
-            btnAddScroller.IsEnabled = false;
-            btnCreateScroller.IsEnabled = true;
+            btnDeleteScrollingPresenter.IsEnabled = false;
+            btnAddScrollingPresenter.IsEnabled = false;
+            btnCreateScrollingPresenter.IsEnabled = true;
         }
 
         private void BtnGarbageCollect_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)

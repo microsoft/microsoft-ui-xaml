@@ -25,7 +25,7 @@ using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using TreeView = Microsoft.UI.Xaml.Controls.TreeView;
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 
@@ -69,8 +69,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var parallaxView = new ParallaxView();
                 objects["ParallaxView"] = new WeakReference(parallaxView);
 
-                var scroller = new Scroller();
-                objects["Scroller"] = new WeakReference(scroller);
+                var scrollingPresenter = new ScrollingPresenter();
+                objects["ScrollingPresenter"] = new WeakReference(scrollingPresenter);
 
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                 {

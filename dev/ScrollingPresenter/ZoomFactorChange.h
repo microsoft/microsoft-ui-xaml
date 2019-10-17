@@ -11,7 +11,7 @@ public:
     ZoomFactorChange(
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
-        ScrollerViewKind zoomFactorKind,
+        ScrollingPresenterViewKind zoomFactorKind,
         winrt::IInspectable const& options);
     ~ZoomFactorChange();
 

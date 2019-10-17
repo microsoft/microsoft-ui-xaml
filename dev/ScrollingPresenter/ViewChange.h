@@ -5,11 +5,11 @@
 
 #include "ViewChangeBase.h"
 
-enum class ScrollerViewKind
+enum class ScrollingPresenterViewKind
 {
     Absolute,
     RelativeToCurrentView,
-#ifdef ScrollerViewKind_RelativeToEndOfInertiaView
+#ifdef ScrollingPresenterViewKind_RelativeToEndOfInertiaView
     RelativeToEndOfInertiaView,
 #endif
 };
@@ -18,11 +18,11 @@ class ViewChange : public ViewChangeBase
 {
 public:
     ViewChange(
-        ScrollerViewKind viewKind,
+        ScrollingPresenterViewKind viewKind,
         winrt::IInspectable const& options);
     ~ViewChange();
 
-    ScrollerViewKind ViewKind() const
+    ScrollingPresenterViewKind ViewKind() const
     {
         return m_viewKind;
     }
@@ -33,7 +33,7 @@ public:
     }
 
 private:
-    ScrollerViewKind m_viewKind{ ScrollerViewKind::Absolute };
+    ScrollingPresenterViewKind m_viewKind{ ScrollingPresenterViewKind::Absolute };
     // ScrollOptions or ZoomOptions instance associated with this view change.
     winrt::IInspectable m_options{ nullptr };
 };

@@ -6,24 +6,24 @@ using Windows.UI.Xaml;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerWithBiDirectionalScrollControllerPage : TestPage
+    public sealed partial class ScrollingPresenterWithBiDirectionalScrollControllerPage : TestPage
     {
-        public ScrollerWithBiDirectionalScrollControllerPage()
+        public ScrollingPresenterWithBiDirectionalScrollControllerPage()
         {
             this.InitializeComponent();
             biDirectionalScrollController.LogMessage += BiDirectionalScrollController_LogMessage;
         }
 
-        private void BtnSetScrollerScrollControllers_Click(object sender, RoutedEventArgs e)
+        private void BtnSetScrollingPresenterScrollControllers_Click(object sender, RoutedEventArgs e)
         {
-            scroller.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
-            scroller.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
+            scrollingPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
+            scrollingPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
         }
 
-        private void BtnResetScrollerScrollControllers_Click(object sender, RoutedEventArgs e)
+        private void BtnResetScrollingPresenterScrollControllers_Click(object sender, RoutedEventArgs e)
         {
-            scroller.HorizontalScrollController = null;
-            scroller.VerticalScrollController = null;
+            scrollingPresenter.HorizontalScrollController = null;
+            scrollingPresenter.VerticalScrollController = null;
         }
 
         private void ChkIsBiDirectionalScrollControllerRailing_Checked(object sender, RoutedEventArgs e)

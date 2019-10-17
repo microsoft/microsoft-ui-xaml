@@ -4,13 +4,13 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTrace.h"
+#include "ScrollingPresenterTrace.h"
 #include "OffsetsChange.h"
 
 OffsetsChange::OffsetsChange(
     double zoomedHorizontalOffset,
     double zoomedVerticalOffset,
-    ScrollerViewKind offsetsKind,
+    ScrollingPresenterViewKind offsetsKind,
     winrt::IInspectable const& options) :
         m_zoomedHorizontalOffset(zoomedHorizontalOffset),
         m_zoomedVerticalOffset(zoomedVerticalOffset),

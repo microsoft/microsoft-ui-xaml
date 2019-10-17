@@ -4,18 +4,18 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollingPresenterTypeLogging.h"
 #include "ViewChange.h"
 
 ViewChange::ViewChange(
-    ScrollerViewKind viewKind,
+    ScrollingPresenterViewKind viewKind,
     winrt::IInspectable const& options)
     : m_viewKind(viewKind)
     , m_options(options)
 {
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         options,
-        TypeLogging::ScrollerViewKindToString(viewKind).c_str());
+        TypeLogging::ScrollingPresenterViewKindToString(viewKind).c_str());
 }
 
 ViewChange::~ViewChange()

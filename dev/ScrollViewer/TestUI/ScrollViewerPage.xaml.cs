@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 
 namespace MUXControlsTestApp
 {
@@ -34,7 +34,7 @@ namespace MUXControlsTestApp
             navigateToKeyboardAndGamepadNavigation.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerKeyboardAndGamepadNavigationPage), 0); };
             navigateToBlank.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollViewerBlankPage), 0); };
 
-            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
+            chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
         }
 
         private void CmbScrollViewerOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -45,19 +45,19 @@ namespace MUXControlsTestApp
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
 
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                "Scroller",
+                "ScrollingPresenter",
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2,
                 cmbScrollViewerOutputDebugStringLevel.SelectedIndex == 2);
         }
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
+            ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
         }
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
+            ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
         }
     }
 }

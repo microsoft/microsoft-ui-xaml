@@ -28,7 +28,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private enum SourceType
         {
             ScrollViewer,
-            Scroller,
+            ScrollingPresenter,
         }
 
         [ClassInitialize]
@@ -223,11 +223,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             ChangeSourceAndTargetProperties(SourceType.ScrollViewer);
         }
 
-        // Sets ParallaxView's Source and Child properties and pans the Scroller source.
+        // Sets ParallaxView's Source and Child properties and pans the ScrollingPresenter source.
         [TestMethod]
-        public void ChangeSourceAndTargetPropertiesUsingScroller()
+        public void ChangeSourceAndTargetPropertiesUsingScrollingPresenter()
         {
-            ChangeSourceAndTargetProperties(SourceType.Scroller);
+            ChangeSourceAndTargetProperties(SourceType.ScrollingPresenter);
         }
 
         private void ChangeSourceAndTargetProperties(SourceType sourceType)
@@ -244,7 +244,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 navigateToDynamicButton.Invoke();
                 Wait.ForIdle();
 
-                string sourceName = sourceType == SourceType.ScrollViewer ? "scrollViewer" : "scroller";
+                string sourceName = sourceType == SourceType.ScrollViewer ? "scrollViewer" : "scrollingPresenter";
 
                 SelectSource(sourceName);
                 Wait.ForIdle();

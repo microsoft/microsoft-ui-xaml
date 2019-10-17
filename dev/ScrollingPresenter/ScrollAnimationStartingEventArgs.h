@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScrollerTrace.h"
+#include "ScrollingPresenterTrace.h"
 #include "ScrollAnimationStartingEventArgs.g.h"
 
 class ScrollAnimationStartingEventArgs :

@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Shapes;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
@@ -68,16 +68,16 @@ namespace MUXControlsTestApp
                 grdScrollViewerProperties.Visibility = Visibility.Collapsed;
         }
 
-        private void ChkScrollerClonedProperties_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterClonedProperties_Checked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerClonedProperties != null)
-                grdScrollerClonedProperties.Visibility = Visibility.Visible;
+            if (grdScrollingPresenterClonedProperties != null)
+                grdScrollingPresenterClonedProperties.Visibility = Visibility.Visible;
         }
 
-        private void ChkScrollerClonedProperties_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollingPresenterClonedProperties_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (grdScrollerClonedProperties != null)
-                grdScrollerClonedProperties.Visibility = Visibility.Collapsed;
+            if (grdScrollingPresenterClonedProperties != null)
+                grdScrollingPresenterClonedProperties.Visibility = Visibility.Collapsed;
         }
 
         private void ChkContentProperties_Checked(object sender, RoutedEventArgs e)
@@ -1655,13 +1655,13 @@ namespace MUXControlsTestApp
 
             try
             {
-                if (scrollViewer == null && (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollerMessages.IsChecked == true))
+                if (scrollViewer == null && (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollingPresenterMessages.IsChecked == true))
                 {
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
 
-                    if (chkLogScrollerMessages.IsChecked == true)
+                    if (chkLogScrollingPresenterMessages.IsChecked == true)
                     {
-                        MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     }
                     if (chkLogScrollViewerMessages.IsChecked == true)
                     {
@@ -1685,15 +1685,15 @@ namespace MUXControlsTestApp
                         scrollViewer.ZoomAnimationStarting -= ScrollViewer_ZoomAnimationStarting;
                     }
 
-                    Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                    ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
 
-                    if (scroller != null && chkLogScrollerEvents.IsChecked == true)
+                    if (scrollingPresenter != null && chkLogScrollingPresenterEvents.IsChecked == true)
                     {
-                        scroller.ExtentChanged -= Scroller_ExtentChanged;
-                        scroller.StateChanged -= Scroller_StateChanged;
-                        scroller.ViewChanged -= Scroller_ViewChanged;
-                        scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
-                        scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
+                        scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
+                        scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
+                        scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
+                        scrollingPresenter.ScrollAnimationStarting -= ScrollingPresenter_ScrollAnimationStarting;
+                        scrollingPresenter.ZoomAnimationStarting -= ScrollingPresenter_ZoomAnimationStarting;
                     }
                 }
 
@@ -1753,15 +1753,15 @@ namespace MUXControlsTestApp
                         scrollViewer.ZoomAnimationStarting += ScrollViewer_ZoomAnimationStarting;
                     }
 
-                    Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                    ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
 
-                    if (scroller != null && chkLogScrollerEvents.IsChecked == true)
+                    if (scrollingPresenter != null && chkLogScrollingPresenterEvents.IsChecked == true)
                     {
-                        scroller.ExtentChanged += Scroller_ExtentChanged;
-                        scroller.StateChanged += Scroller_StateChanged;
-                        scroller.ViewChanged += Scroller_ViewChanged;
-                        scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
-                        scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
+                        scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
+                        scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+                        scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
+                        scrollingPresenter.ScrollAnimationStarting += ScrollingPresenter_ScrollAnimationStarting;
+                        scrollingPresenter.ZoomAnimationStarting += ScrollingPresenter_ZoomAnimationStarting;
                     }
                 }
             }
@@ -1848,29 +1848,29 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ScrollViewer.GotFocus");
         }
 
-        private void Scroller_ExtentChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ExtentChanged(ScrollingPresenter sender, object args)
         {
-            AppendAsyncEventMessage("Scroller.ExtentChanged ExtentWidth=" + sender.ExtentWidth + ", ExtentHeight=" + sender.ExtentHeight);
+            AppendAsyncEventMessage("ScrollingPresenter.ExtentChanged ExtentWidth=" + sender.ExtentWidth + ", ExtentHeight=" + sender.ExtentHeight);
         }
 
-        private void Scroller_StateChanged(Scroller sender, object args)
+        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
         {
-            AppendAsyncEventMessage("Scroller.StateChanged " + sender.State.ToString());
+            AppendAsyncEventMessage("ScrollingPresenter.StateChanged " + sender.State.ToString());
         }
 
-        private void Scroller_ViewChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
         {
-            AppendAsyncEventMessage("Scroller.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
+            AppendAsyncEventMessage("ScrollingPresenter.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void Scroller_ScrollAnimationStarting(Scroller sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage("Scroller.ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y +") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y +")");
+            AppendAsyncEventMessage("ScrollingPresenter.ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y +") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y +")");
         }
 
-        private void Scroller_ZoomAnimationStarting(Scroller sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ZoomAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage("Scroller.ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
+            AppendAsyncEventMessage("ScrollingPresenter.ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
         }
 
         private void ScrollViewer_ExtentChanged(ScrollViewer sender, object args)
@@ -1903,36 +1903,36 @@ namespace MUXControlsTestApp
             lstLogs.Items.Clear();
         }
 
-        private void ChkLogScrollerEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
             if (scrollViewer != null)
             {
-                Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
 
-                if (scroller != null)
+                if (scrollingPresenter != null)
                 {
-                    scroller.ExtentChanged += Scroller_ExtentChanged;
-                    scroller.StateChanged += Scroller_StateChanged;
-                    scroller.ViewChanged += Scroller_ViewChanged;
-                    scroller.ScrollAnimationStarting += Scroller_ScrollAnimationStarting;
-                    scroller.ZoomAnimationStarting += Scroller_ZoomAnimationStarting;
+                    scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
+                    scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+                    scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
+                    scrollingPresenter.ScrollAnimationStarting += ScrollingPresenter_ScrollAnimationStarting;
+                    scrollingPresenter.ZoomAnimationStarting += ScrollingPresenter_ZoomAnimationStarting;
                 }
             }
         }
 
-        private void ChkLogScrollerEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
             if (scrollViewer != null)
             {
-                Scroller scroller = ScrollViewerTestHooks.GetScrollerPart(scrollViewer);
+                ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
 
-                if (scroller != null)
+                if (scrollingPresenter != null)
                 {
-                    scroller.ExtentChanged -= Scroller_ExtentChanged;
-                    scroller.StateChanged -= Scroller_StateChanged;
-                    scroller.ViewChanged -= Scroller_ViewChanged;
-                    scroller.ScrollAnimationStarting -= Scroller_ScrollAnimationStarting;
-                    scroller.ZoomAnimationStarting -= Scroller_ZoomAnimationStarting;
+                    scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
+                    scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
+                    scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
+                    scrollingPresenter.ScrollAnimationStarting -= ScrollingPresenter_ScrollAnimationStarting;
+                    scrollingPresenter.ZoomAnimationStarting -= ScrollingPresenter_ZoomAnimationStarting;
                 }
             }
         }
@@ -1961,16 +1961,16 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
             if (chkLogScrollViewerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("Scroller", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
             if (chkLogScrollViewerMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
@@ -1978,14 +1978,14 @@ namespace MUXControlsTestApp
         private void ChkLogScrollViewerMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollerMessages.IsChecked == false)
+            if (chkLogScrollingPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
         private void ChkLogScrollViewerMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollerMessages.IsChecked == false)
+            if (chkLogScrollingPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 

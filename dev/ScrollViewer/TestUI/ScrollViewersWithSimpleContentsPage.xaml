@@ -58,7 +58,7 @@
                 <ComboBoxItem>scrollViewer_52</ComboBoxItem>
             </ComboBox>
             <TextBlock Text="State:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScrollerState" AutomationProperties.AutomationId="txtScrollerState" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="275"/>
+            <TextBox x:Name="txtScrollingPresenterState" AutomationProperties.AutomationId="txtScrollingPresenterState" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="275"/>
             <Button x:Name="btnResetViews" AutomationProperties.Name="btnResetViews" Margin="6,2,2,2" VerticalAlignment="Center" Content="Reset views" Click="btnResetViews_Click"/>
             <TextBox x:Name="txtResetStatus" AutomationProperties.AutomationId="txtResetStatus" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="125"/>
             <Button x:Name="btnGetFullLog" Margin="6,2,2,2" AutomationProperties.AutomationId="btnGetFullLog" VerticalAlignment="Center" Content="Get log" Click="btnGetFullLog_Click"/>
@@ -69,11 +69,11 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="20" Margin="2">
             <TextBlock Text="HorizontalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScrollerHorizontalOffset" AutomationProperties.AutomationId="txtScrollerHorizontalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
+            <TextBox x:Name="txtScrollingPresenterHorizontalOffset" AutomationProperties.AutomationId="txtScrollingPresenterHorizontalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="VerticalOffset:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScrollerVerticalOffset" AutomationProperties.AutomationId="txtScrollerVerticalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
+            <TextBox x:Name="txtScrollingPresenterVerticalOffset" AutomationProperties.AutomationId="txtScrollingPresenterVerticalOffset" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="ZoomFactor:" Margin="6,2,2,2" VerticalAlignment="Center"/>
-            <TextBox x:Name="txtScrollerZoomFactor" AutomationProperties.AutomationId="txtScrollerZoomFactor" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
+            <TextBox x:Name="txtScrollingPresenterZoomFactor" AutomationProperties.AutomationId="txtScrollingPresenterZoomFactor" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="175"/>
             <TextBlock Text="IgnoredInputKind:" Margin="6,2,2,2" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbIgnoredInputKind" AutomationProperties.Name="cmbIgnoredInputKind" VerticalAlignment="Center"
                     SelectedIndex="0" SelectionChanged="CmbIgnoredInputKind_SelectionChanged" Width="140" IsEnabled="False" IsTabStop="False">
@@ -86,7 +86,7 @@
                 <ComboBoxItem>Gamepad</ComboBoxItem>
                 <ComboBoxItem>All</ComboBoxItem>
             </ComboBox>
-            <CheckBox x:Name="chkLogScrollerMessages" AutomationProperties.Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="6,2,2,2" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+            <CheckBox x:Name="chkLogScrollingPresenterMessages" AutomationProperties.Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="6,2,2,2" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
             <CheckBox x:Name="chkLogScrollViewerMessages" AutomationProperties.Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="6,2,2,2" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
         </StackPanel>
 

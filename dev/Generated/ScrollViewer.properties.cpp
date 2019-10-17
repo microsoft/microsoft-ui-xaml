@@ -21,7 +21,7 @@ GlobalDependencyProperty ScrollViewerProperties::s_HorizontalScrollRailingModePr
 GlobalDependencyProperty ScrollViewerProperties::s_IgnoredInputKindProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_MaxZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_MinZoomFactorProperty{ nullptr };
-GlobalDependencyProperty ScrollViewerProperties::s_ScrollerProperty{ nullptr };
+GlobalDependencyProperty ScrollViewerProperties::s_ScrollingPresenterProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_VerticalAnchorRatioProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_VerticalScrollBarVisibilityProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_VerticalScrollChainingModeProperty{ nullptr };
@@ -190,16 +190,16 @@ void ScrollViewerProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(ScrollViewer::s_defaultMinZoomFactor),
                 winrt::PropertyChangedCallback(&OnMinZoomFactorPropertyChanged));
     }
-    if (!s_ScrollerProperty)
+    if (!s_ScrollingPresenterProperty)
     {
-        s_ScrollerProperty =
+        s_ScrollingPresenterProperty =
             InitializeDependencyProperty(
-                L"Scroller",
-                winrt::name_of<winrt::Scroller>(),
+                L"ScrollingPresenter",
+                winrt::name_of<winrt::ScrollingPresenter>(),
                 winrt::name_of<winrt::ScrollViewer>(),
                 true /* isAttached */,
-                ValueHelper<winrt::Scroller>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnScrollerPropertyChanged));
+                ValueHelper<winrt::ScrollingPresenter>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnScrollingPresenterPropertyChanged));
     }
     if (!s_VerticalAnchorRatioProperty)
     {
@@ -306,7 +306,7 @@ void ScrollViewerProperties::ClearProperties()
     s_IgnoredInputKindProperty = nullptr;
     s_MaxZoomFactorProperty = nullptr;
     s_MinZoomFactorProperty = nullptr;
-    s_ScrollerProperty = nullptr;
+    s_ScrollingPresenterProperty = nullptr;
     s_VerticalAnchorRatioProperty = nullptr;
     s_VerticalScrollBarVisibilityProperty = nullptr;
     s_VerticalScrollChainingModeProperty = nullptr;
@@ -451,7 +451,7 @@ void ScrollViewerProperties::OnMinZoomFactorPropertyChanged(
     winrt::get_self<ScrollViewer>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollViewerProperties::OnScrollerPropertyChanged(
+void ScrollViewerProperties::OnScrollingPresenterPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -752,7 +752,7 @@ winrt::ZoomMode ScrollViewerProperties::ZoomMode()
     return ValueHelper<winrt::ZoomMode>::CastOrUnbox(static_cast<ScrollViewer*>(this)->GetValue(s_ZoomModeProperty));
 }
 
-winrt::event_token ScrollViewerProperties::AnchorRequested(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerAnchorRequestedEventArgs> const& value)
+winrt::event_token ScrollViewerProperties::AnchorRequested(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterAnchorRequestedEventArgs> const& value)
 {
     return m_anchorRequestedEventSource.add(value);
 }
@@ -762,7 +762,7 @@ void ScrollViewerProperties::AnchorRequested(winrt::event_token const& token)
     m_anchorRequestedEventSource.remove(token);
 }
 
-winrt::event_token ScrollViewerProperties::BringingIntoView(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerBringingIntoViewEventArgs> const& value)
+winrt::event_token ScrollViewerProperties::BringingIntoView(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterBringingIntoViewEventArgs> const& value)
 {
     return m_bringingIntoViewEventSource.add(value);
 }

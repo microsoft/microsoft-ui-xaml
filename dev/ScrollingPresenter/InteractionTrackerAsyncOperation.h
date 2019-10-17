@@ -4,7 +4,7 @@
 #pragma once
 
 #include "ViewChangeBase.h"
-#include "ScrollerTrace.h"
+#include "ScrollingPresenterTrace.h"
 
 enum class InteractionTrackerAsyncOperationType
 {
@@ -20,7 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to Scroller's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
+    // Operation is triggered by a direct call to ScrollingPresenter's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -227,8 +227,8 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
-    // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
+    // Positive between the time the operation is queued in ScrollingPresenter::ScrollTo/By/From, ScrollingPresenter::ZoomTo/By/From or
+    // ScrollingPresenter::OnCompositionTargetRendering and the time it is processed in ScrollingPresenter::ProcessOffsetsChange or ScrollingPresenter::ProcessZoomFactorChange.
     int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
     // Initial value of m_preProcessingTicksCountdown when this operation is queued up.
@@ -240,10 +240,10 @@ private:
     // Set to True when the operation was canceled early enough to take effect.
     bool m_isCanceled{ false };
 
-    // Set to True when the operation is delayed until the scroller is loaded.
+    // Set to True when the operation is delayed until the scrollingPresenter is loaded.
     bool m_isDelayed{ false };
 
-    // Set to True when the operation completed and was assigned a final ScrollerViewChangeResult result.
+    // Set to True when the operation completed and was assigned a final ScrollingPresenterViewChangeResult result.
     bool m_isCompleted{ false };
 
     // OffsetsChange or ZoomFactorChange instance associated with this operation.

@@ -16,33 +16,33 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
-using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
+using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "Scroller", Icon = "ScrollViewer.png")]
-    public sealed partial class ScrollerPage : TestPage
+    [TopLevelTestPage(Name = "ScrollingPresenter", Icon = "ScrollViewer.png")]
+    public sealed partial class ScrollingPresenterPage : TestPage
     {
-        public ScrollerPage()
+        public ScrollingPresenterPage()
         {
             LogController.InitializeLogging();
 
             this.InitializeComponent();
 
-            navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollersWithSimpleContentsPage), 0); };
-            navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerDynamicPage), 0); };
-            navigateToExpressionAnimationSources.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerExpressionAnimationSourcesPage), 0); };
-            navigateToChainingAndRailing.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerChainingAndRailingPage), 0); };
-            navigateToStackPanelAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerStackPanelAnchoringPage), 0); };
-            navigateToRepeaterAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerRepeaterAnchoringPage), 0); };
-            navigateToSnapPoints.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerSnapPointsPage), 0); };
-            navigateToBringIntoView.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerBringIntoViewPage), 0); };
-            navigateToManipulationMode.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerManipulationModePage), 0); };
-            navigateToAccessibility.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerAccessibilityPage), 0); };
-            navigateToSimpleScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerWithSimpleScrollControllersPage), 0); };
-            navigateToCompositionScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerWithCompositionScrollControllersPage), 0); };
-            navigateToBiDirectionalScrollController.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerWithBiDirectionalScrollControllerPage), 0); };
-            navigateToLeakDetection.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerLeakDetectionPage), 0); };
+            navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresentersWithSimpleContentsPage), 0); };
+            navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterDynamicPage), 0); };
+            navigateToExpressionAnimationSources.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterExpressionAnimationSourcesPage), 0); };
+            navigateToChainingAndRailing.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterChainingAndRailingPage), 0); };
+            navigateToStackPanelAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterStackPanelAnchoringPage), 0); };
+            navigateToRepeaterAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterRepeaterAnchoringPage), 0); };
+            navigateToSnapPoints.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterSnapPointsPage), 0); };
+            navigateToBringIntoView.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterBringIntoViewPage), 0); };
+            navigateToManipulationMode.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterManipulationModePage), 0); };
+            navigateToAccessibility.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterAccessibilityPage), 0); };
+            navigateToSimpleScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithSimpleScrollControllersPage), 0); };
+            navigateToCompositionScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithCompositionScrollControllersPage), 0); };
+            navigateToBiDirectionalScrollController.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithBiDirectionalScrollControllerPage), 0); };
+            navigateToLeakDetection.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterLeakDetectionPage), 0); };
 
             try
             {
@@ -50,7 +50,7 @@ namespace MUXControlsTestApp
                 int minMilliseconds;
                 int maxMilliseconds;
 
-                ScrollerTestHooks.GetOffsetsChangeVelocityParameters(
+                ScrollingPresenterTestHooks.GetOffsetsChangeVelocityParameters(
                     out millisecondsPerUnit,
                     out minMilliseconds,
                     out maxMilliseconds);
@@ -59,7 +59,7 @@ namespace MUXControlsTestApp
                 txtOffsetsChangeMinMilliseconds.Text = minMilliseconds.ToString();
                 txtOffsetsChangeMaxMilliseconds.Text = maxMilliseconds.ToString();
 
-                ScrollerTestHooks.GetZoomFactorChangeVelocityParameters(
+                ScrollingPresenterTestHooks.GetZoomFactorChangeVelocityParameters(
                     out millisecondsPerUnit,
                     out minMilliseconds,
                     out maxMilliseconds);
@@ -68,7 +68,7 @@ namespace MUXControlsTestApp
                 txtZoomFactorChangeMinMilliseconds.Text = minMilliseconds.ToString();
                 txtZoomFactorChangeMaxMilliseconds.Text = maxMilliseconds.ToString();
 
-                switch (ScrollerTestHooks.MouseWheelDeltaForVelocityUnit)
+                switch (ScrollingPresenterTestHooks.MouseWheelDeltaForVelocityUnit)
                 {
                     case 15:
                         cmbMouseWheelDeltaForVelocityUnit.SelectedIndex = 0;
@@ -87,11 +87,11 @@ namespace MUXControlsTestApp
                         break;
                 }
 
-                txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
-                txtMouseWheelScrollLines.Text = ScrollerTestHooks.MouseWheelScrollLines.ToString();
-                txtMouseWheelScrollChars.Text = ScrollerTestHooks.MouseWheelScrollChars.ToString();
+                txtMouseWheelInertiaDecayRate.Text = ScrollingPresenterTestHooks.MouseWheelInertiaDecayRate.ToString();
+                txtMouseWheelScrollLines.Text = ScrollingPresenterTestHooks.MouseWheelScrollLines.ToString();
+                txtMouseWheelScrollChars.Text = ScrollingPresenterTestHooks.MouseWheelScrollChars.ToString();
 
-                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
+                chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
             catch (Exception ex)
             {
@@ -99,24 +99,24 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbScrollerOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbScrollingPresenterOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                "Scroller",
-                cmbScrollerOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollerOutputDebugStringLevel.SelectedIndex == 2,
-                cmbScrollerOutputDebugStringLevel.SelectedIndex == 2);
+                "ScrollingPresenter",
+                cmbScrollingPresenterOutputDebugStringLevel.SelectedIndex == 1 || cmbScrollingPresenterOutputDebugStringLevel.SelectedIndex == 2,
+                cmbScrollingPresenterOutputDebugStringLevel.SelectedIndex == 2);
         }
 
         private void CmbMouseWheelDeltaForVelocityUnit_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ScrollerTestHooks.MouseWheelDeltaForVelocityUnit = Convert.ToInt32((cmbMouseWheelDeltaForVelocityUnit.SelectedItem as ComboBoxItem).Content);
+            ScrollingPresenterTestHooks.MouseWheelDeltaForVelocityUnit = Convert.ToInt32((cmbMouseWheelDeltaForVelocityUnit.SelectedItem as ComboBoxItem).Content);
         }
 
         private void TxtMouseWheelDeltaForVelocityUnit_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
             {
-                ScrollerTestHooks.MouseWheelInertiaDecayRate = Convert.ToSingle(txtMouseWheelInertiaDecayRate.Text);
+                ScrollingPresenterTestHooks.MouseWheelInertiaDecayRate = Convert.ToSingle(txtMouseWheelInertiaDecayRate.Text);
             }
             catch (Exception ex)
             {
@@ -128,7 +128,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.MouseWheelScrollLines = Convert.ToInt32(txtMouseWheelScrollLines.Text);
+                ScrollingPresenterTestHooks.MouseWheelScrollLines = Convert.ToInt32(txtMouseWheelScrollLines.Text);
             }
             catch (Exception ex)
             {
@@ -140,7 +140,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.MouseWheelScrollChars = Convert.ToInt32(txtMouseWheelScrollChars.Text);
+                ScrollingPresenterTestHooks.MouseWheelScrollChars = Convert.ToInt32(txtMouseWheelScrollChars.Text);
             }
             catch (Exception ex)
             {
@@ -152,7 +152,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.SetOffsetsChangeVelocityParameters(
+                ScrollingPresenterTestHooks.SetOffsetsChangeVelocityParameters(
                     Convert.ToInt32(txtOffsetsChangeMillisecondsPerUnit.Text),
                     Convert.ToInt32(txtOffsetsChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtOffsetsChangeMaxMilliseconds.Text));
@@ -167,7 +167,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollerTestHooks.SetZoomFactorChangeVelocityParameters(
+                ScrollingPresenterTestHooks.SetZoomFactorChangeVelocityParameters(
                     Convert.ToInt32(txtZoomFactorChangeMillisecondsPerUnit.Text),
                     Convert.ToInt32(txtZoomFactorChangeMinMilliseconds.Text),
                     Convert.ToInt32(txtZoomFactorChangeMaxMilliseconds.Text));
@@ -180,12 +180,12 @@ namespace MUXControlsTestApp
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
+            ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = true;
         }
 
         private void ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked(object sender, RoutedEventArgs e)
         {
-            ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
+            ScrollingPresenterTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled = false;
         }
     }
 }

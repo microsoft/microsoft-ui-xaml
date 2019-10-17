@@ -3,6 +3,6 @@
 
 #pragma once
 
-#include "ScrollerTestHooks.h"
+#include "ScrollingPresenterTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollerTestHooks)
+CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterTestHooks)

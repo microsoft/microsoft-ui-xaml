@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTrace.h"
+#include "ScrollingPresenterTrace.h"
 #include "ScrollControllerInteractionRequestedEventArgs.h"
 
 CppWinRTActivatableClassWithBasicFactory(ScrollControllerInteractionRequestedEventArgs)

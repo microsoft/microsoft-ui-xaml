@@ -18,7 +18,7 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="ScrollViewer &amp; Scroller OutputDebugString Levels:" VerticalAlignment="Center" Margin="2"/>
+            <TextBlock Text="ScrollViewer &amp; ScrollingPresenter OutputDebugString Levels:" VerticalAlignment="Center" Margin="2"/>
             <ComboBox x:Name="cmbScrollViewerOutputDebugStringLevel" Margin="2" MinWidth="100" HorizontalAlignment="Stretch" SelectedIndex="0" Grid.Column="1" SelectionChanged="CmbScrollViewerOutputDebugStringLevel_SelectionChanged">
                 <ComboBoxItem>None</ComboBoxItem>
                 <ComboBoxItem>Info</ComboBoxItem>

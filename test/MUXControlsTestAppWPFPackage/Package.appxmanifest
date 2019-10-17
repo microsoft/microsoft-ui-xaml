@@ -48,7 +48,7 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.SpectrumBrush" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.RepeaterTestHooks" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.ScrollViewerIRefreshInfoProviderAdapter" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.ScrollerTestHooks" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.SplitButtonTestApi" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Automation.Peers.NavigationViewItemAutomationPeer" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Automation.Peers.TreeViewListAutomationPeer" ThreadingModel="both" />
@@ -67,7 +67,7 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.LayoutContext" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.TwoPaneView" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.NavigationViewItemBase" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollerAutomationPeer" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenterAutomationPeer" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.DataSource" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.MenuBar" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.NavigationView" ThreadingModel="both" />
@@ -122,7 +122,7 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.SelectionModel" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RatingItemFontInfo" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RatingItemInfo" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.Scroller" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint" ThreadingModel="both" />

@@ -4,13 +4,13 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollerTypeLogging.h"
+#include "ScrollingPresenterTypeLogging.h"
 #include "ZoomFactorChange.h"
 
 ZoomFactorChange::ZoomFactorChange(
     float zoomFactor,
     winrt::IReference<winrt::float2> centerPoint,
-    ScrollerViewKind zoomFactorKind,
+    ScrollingPresenterViewKind zoomFactorKind,
     winrt::IInspectable const& options) :
         m_zoomFactor(zoomFactor),
         m_centerPoint(centerPoint),

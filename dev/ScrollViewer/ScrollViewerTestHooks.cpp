@@ -60,11 +60,11 @@ void ScrollViewerTestHooks::SetAutoHideScrollControllers(const winrt::ScrollView
     }
 }
 
-winrt::Scroller ScrollViewerTestHooks::GetScrollerPart(const winrt::ScrollViewer& scrollViewer)
+winrt::ScrollingPresenter ScrollViewerTestHooks::GetScrollingPresenterPart(const winrt::ScrollViewer& scrollViewer)
 {
     if (scrollViewer)
     {
-        return winrt::get_self<ScrollViewer>(scrollViewer)->GetScrollerPart();
+        return winrt::get_self<ScrollViewer>(scrollViewer)->GetScrollingPresenterPart();
     }
 
     return nullptr;

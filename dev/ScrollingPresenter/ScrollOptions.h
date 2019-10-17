@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Scroller.h"
+#include "ScrollingPresenter.h"
 #include "ScrollOptions.g.h"
 
 class ScrollOptions :

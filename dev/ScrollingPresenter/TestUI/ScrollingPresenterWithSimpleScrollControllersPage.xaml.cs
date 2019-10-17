@@ -27,16 +27,16 @@ using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerWithSimpleScrollControllersPage : TestPage
+    public sealed partial class ScrollingPresenterWithSimpleScrollControllersPage : TestPage
     {
         private CanvasScrollControllerConsumer canvasScrollControllerConsumer = null;
         private IScrollController horizontalScrollController = null;
         private IScrollController verticalScrollController = null;
 
-        public ScrollerWithSimpleScrollControllersPage()
+        public ScrollingPresenterWithSimpleScrollControllersPage()
         {
             this.InitializeComponent();
-            this.Loaded += ScrollerWithSimpleScrollControllersPageOnLoaded;
+            this.Loaded += ScrollingPresenterWithSimpleScrollControllersPageOnLoaded;
         }
 
         private void LogMessage(string message)
@@ -47,7 +47,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollerWithSimpleScrollControllersPageOnLoaded(object sender, RoutedEventArgs e)
+        private void ScrollingPresenterWithSimpleScrollControllersPageOnLoaded(object sender, RoutedEventArgs e)
         {
             Rect rect = new Rect(0.0, 0.0, 300.0, 500.0);
             RectangleGeometry rectGeo = new RectangleGeometry();
@@ -68,10 +68,10 @@ namespace MUXControlsTestApp
 
             if (cmbIScrollControllerConsumer.SelectedIndex == 0)
             {
-                if (scroller.HorizontalScrollController != horizontalScrollController)
+                if (scrollingPresenter.HorizontalScrollController != horizontalScrollController)
                 {
-                    scroller.HorizontalScrollController = horizontalScrollController;
-                    LogMessage("Scroller.HorizontalScrollController set");
+                    scrollingPresenter.HorizontalScrollController = horizontalScrollController;
+                    LogMessage("ScrollingPresenter.HorizontalScrollController set");
                 }
             }
             else if (canvasScrollControllerConsumer.HorizontalScrollController != horizontalScrollController)
@@ -92,10 +92,10 @@ namespace MUXControlsTestApp
 
             if (cmbIScrollControllerConsumer.SelectedIndex == 0)
             {
-                if (scroller.VerticalScrollController != verticalScrollController)
+                if (scrollingPresenter.VerticalScrollController != verticalScrollController)
                 {
-                    scroller.VerticalScrollController = verticalScrollController;
-                    LogMessage("Scroller.VerticalScrollController set");
+                    scrollingPresenter.VerticalScrollController = verticalScrollController;
+                    LogMessage("ScrollingPresenter.VerticalScrollController set");
                 }
             }
             else if (canvasScrollControllerConsumer.VerticalScrollController != verticalScrollController)
@@ -107,10 +107,10 @@ namespace MUXControlsTestApp
 
         private void BtnResetHorizontalScrollController_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller != null && scroller.HorizontalScrollController != null)
+            if (scrollingPresenter != null && scrollingPresenter.HorizontalScrollController != null)
             {
-                scroller.HorizontalScrollController = null;
-                LogMessage("Scroller.HorizontalScrollController reset");
+                scrollingPresenter.HorizontalScrollController = null;
+                LogMessage("ScrollingPresenter.HorizontalScrollController reset");
             }
 
             if (canvasScrollControllerConsumer != null && canvasScrollControllerConsumer.HorizontalScrollController != null)
@@ -125,10 +125,10 @@ namespace MUXControlsTestApp
 
         private void BtnResetVerticalScrollController_Click(object sender, RoutedEventArgs e)
         {
-            if (scroller != null && scroller.VerticalScrollController != null)
+            if (scrollingPresenter != null && scrollingPresenter.VerticalScrollController != null)
             {
-                scroller.VerticalScrollController = null;
-                LogMessage("Scroller.VerticalScrollController reset");
+                scrollingPresenter.VerticalScrollController = null;
+                LogMessage("ScrollingPresenter.VerticalScrollController reset");
             }
             if (canvasScrollControllerConsumer != null && canvasScrollControllerConsumer.VerticalScrollController != null)
             {
@@ -154,12 +154,12 @@ namespace MUXControlsTestApp
 
                 if (cmbIScrollControllerConsumer.SelectedIndex == 0)
                 {
-                    scroller.Visibility = Visibility.Visible;
+                    scrollingPresenter.Visibility = Visibility.Visible;
                     canvas.Visibility = Visibility.Collapsed;
                 }
                 else
                 {
-                    scroller.Visibility = Visibility.Collapsed;
+                    scrollingPresenter.Visibility = Visibility.Collapsed;
                     canvas.Visibility = Visibility.Visible;
                 }
 
@@ -177,7 +177,7 @@ namespace MUXControlsTestApp
                     canvasScrollControllerConsumer.IsEnabled = false;
                 }
 
-                LogMessage(cmbIScrollControllerConsumer.SelectedIndex == 0 ? "Scroller is consumer" : "CanvasScrollControllerConsumer is consumer");
+                LogMessage(cmbIScrollControllerConsumer.SelectedIndex == 0 ? "ScrollingPresenter is consumer" : "CanvasScrollControllerConsumer is consumer");
             }
         }
 

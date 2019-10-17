@@ -25,9 +25,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
+using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
@@ -38,10 +38,10 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollingPresenterTests
     {
-        private const double c_defaultAnchoringUIScrollerNonConstrainedSize = 600.0;
-        private const double c_defaultAnchoringUIScrollerConstrainedSize = 300.0;
+        private const double c_defaultAnchoringUIScrollingPresenterNonConstrainedSize = 600.0;
+        private const double c_defaultAnchoringUIScrollingPresenterConstrainedSize = 300.0;
         private const int c_defaultAnchoringUIStackPanelChildrenCount = 16;
         private const int c_defaultAnchoringUIRepeaterChildrenCount = 16;
 
@@ -61,41 +61,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Inserting child at near edge");
-                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scrollingPresenter.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
                 });
 
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("No Scroller offset change expected");
+                    Log.Comment("No ScrollingPresenter offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(0, scroller.VerticalOffset);
+                        Verify.AreEqual(0, scrollingPresenter.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(0, scroller.HorizontalOffset);
+                        Verify.AreEqual(0, scrollingPresenter.HorizontalOffset);
                     }
                 });
             }
@@ -151,25 +151,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -178,66 +178,66 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = scroller.ExtentHeight * 2.0 - scroller.Height;
-                        scroller.VerticalAnchorRatio = 1.0;
+                        verticalOffset = scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height;
+                        scrollingPresenter.VerticalAnchorRatio = 1.0;
                     }
                     else
                     {
-                        horizontalOffset = scroller.ExtentWidth * 2.0 - scroller.Width;
-                        scroller.HorizontalAnchorRatio = 1.0;
+                        horizontalOffset = scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width;
+                        scrollingPresenter.HorizontalAnchorRatio = 1.0;
                     }
                 });
 
-                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollingPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                         if ((orientation == Orientation.Vertical && expectedFinalOffset == sender.VerticalOffset) ||
                             (orientation == Orientation.Horizontal && expectedFinalOffset == sender.HorizontalOffset))
                         {
-                            scrollerViewChangedEvent.Set();
+                            scrollingPresenterViewChangedEvent.Set();
                         }                        
                     };
 
                     Log.Comment("Inserting child at far edge");
-                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scrollingPresenter.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
 
                     if (viewportSizeChange != 0)
                     {
                         if (orientation == Orientation.Vertical)
                         {
                             Log.Comment("Changing viewport height");
-                            scroller.Height += viewportSizeChange;
+                            scrollingPresenter.Height += viewportSizeChange;
                         }
                         else
                         {
                             Log.Comment("Changing viewport width");
-                            scroller.Width += viewportSizeChange;
+                            scrollingPresenter.Width += viewportSizeChange;
                         }
                     }
                 });
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = scroller.ExtentHeight * 2.0 - scroller.Height;
+                        verticalOffset = scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height;
                     }
                     else
                     {
-                        horizontalOffset = scroller.ExtentWidth * 2.0 - scroller.Width;
+                        horizontalOffset = scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width;
                     }
 
-                    Log.Comment("Scroller offset change expected");
-                    Verify.AreEqual(scroller.HorizontalOffset, horizontalOffset);
-                    Verify.AreEqual(scroller.VerticalOffset, verticalOffset);
+                    Log.Comment("ScrollingPresenter offset change expected");
+                    Verify.AreEqual(scrollingPresenter.HorizontalOffset, horizontalOffset);
+                    Verify.AreEqual(scrollingPresenter.VerticalOffset, verticalOffset);
                 });
             }
         }
@@ -264,25 +264,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -291,56 +291,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = scroller.ExtentHeight * 2.0 - scroller.Height;
-                        scroller.VerticalAnchorRatio = 1.0;
+                        verticalOffset = scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height;
+                        scrollingPresenter.VerticalAnchorRatio = 1.0;
                     }
                     else
                     {
-                        horizontalOffset = scroller.ExtentWidth * 2.0 - scroller.Width;
-                        scroller.HorizontalAnchorRatio = 1.0;
+                        horizontalOffset = scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width;
+                        scrollingPresenter.HorizontalAnchorRatio = 1.0;
                     }
                 });
 
-                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollingPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                        scrollerViewChangedEvent.Set();
+                        scrollingPresenterViewChangedEvent.Set();
                     };
 
                     if (orientation == Orientation.Vertical)
                     {
                         Log.Comment("Decreasing viewport height");
-                        scroller.Height -= 100;
+                        scrollingPresenter.Height -= 100;
                     }
                     else
                     {
                         Log.Comment("Decreasing viewport width");
-                        scroller.Width -= 100;
+                        scrollingPresenter.Width -= 100;
                     }
                 });
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = scroller.ExtentHeight * 2.0 - scroller.Height;
+                        verticalOffset = scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height;
                     }
                     else
                     {
-                        horizontalOffset = scroller.ExtentWidth * 2.0 - scroller.Width;
+                        horizontalOffset = scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width;
                     }
 
-                    Log.Comment("Scroller offset change expected");
-                    Verify.AreEqual(scroller.HorizontalOffset, horizontalOffset);
-                    Verify.AreEqual(scroller.VerticalOffset, verticalOffset);
+                    Log.Comment("ScrollingPresenter offset change expected");
+                    Verify.AreEqual(scrollingPresenter.HorizontalOffset, horizontalOffset);
+                    Verify.AreEqual(scrollingPresenter.VerticalOffset, verticalOffset);
                 });
             }
         }
@@ -361,55 +361,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
                 double horizontalOffset = orientation == Orientation.Vertical ? 0.0 : 1.0;
                 double verticalOffset = orientation == Orientation.Vertical ? 1.0 : 0.0;
 
-                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ScrollTo(scrollingPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                        scrollerViewChangedEvent.Set();
+                        scrollingPresenterViewChangedEvent.Set();
                     };
 
                     Log.Comment("Inserting child at near edge");
-                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scrollingPresenter.Content as Border).Child as StackPanel, 1 /*operationCount*/, 0 /*newIndex*/, 1 /*newCount*/);
                 });
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Scroller offset change expected");
+                    Log.Comment("ScrollingPresenter offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(127.0, scroller.VerticalOffset);
+                        Verify.AreEqual(127.0, scrollingPresenter.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(127.0, scroller.HorizontalOffset);
+                        Verify.AreEqual(127.0, scrollingPresenter.HorizontalOffset);
                     }
                 });
             }
@@ -431,24 +431,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostFarEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -457,36 +457,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = scroller.ExtentHeight * 2.0 - scroller.Height - 1.0;
-                        scroller.VerticalAnchorRatio = 1.0;
+                        verticalOffset = scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height - 1.0;
+                        scrollingPresenter.VerticalAnchorRatio = 1.0;
                     }
                     else
                     {
-                        horizontalOffset = scroller.ExtentWidth * 2.0 - scroller.Width - 1.0;
-                        scroller.HorizontalAnchorRatio = 1.0;
+                        horizontalOffset = scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width - 1.0;
+                        scrollingPresenter.HorizontalAnchorRatio = 1.0;
                     }
                 });
 
-                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollingPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Inserting child at far edge");
-                    InsertStackPanelChild((scroller.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
+                    InsertStackPanelChild((scrollingPresenter.Content as Border).Child as StackPanel, 1 /*operationCount*/, c_defaultAnchoringUIStackPanelChildrenCount /*newIndex*/, 1 /*newCount*/);
                 });
 
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("No Scroller offset change expected");
+                    Log.Comment("No ScrollingPresenter offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, verticalOffset);
+                        Verify.AreEqual(scrollingPresenter.VerticalOffset, verticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, horizontalOffset);
+                        Verify.AreEqual(scrollingPresenter.HorizontalOffset, horizontalOffset);
                     }
                 });
             }
@@ -508,25 +508,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringElementWithResizedViewport(Orientation orientation, double viewportSizeChange)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
+                ScrollingPresenter scrollingPresenter = null;
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    scroller = new Scroller();
+                    scrollingPresenter = new ScrollingPresenter();
 
-                    SetupDefaultAnchoringUI(orientation, scroller, scrollerLoadedEvent);
+                    SetupDefaultAnchoringUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
                 });
 
-                WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-                ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 double horizontalOffset = 0.0;
                 double verticalOffset = 0.0;
@@ -535,57 +535,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     if (orientation == Orientation.Vertical)
                     {
-                        verticalOffset = (scroller.ExtentHeight * 2.0 - scroller.Height) / 2.0;
-                        scroller.VerticalAnchorRatio = 0.5;
+                        verticalOffset = (scrollingPresenter.ExtentHeight * 2.0 - scrollingPresenter.Height) / 2.0;
+                        scrollingPresenter.VerticalAnchorRatio = 0.5;
                     }
                     else
                     {
-                        horizontalOffset = (scroller.ExtentWidth * 2.0 - scroller.Width) / 2.0;
-                        scroller.HorizontalAnchorRatio = 0.5;
+                        horizontalOffset = (scrollingPresenter.ExtentWidth * 2.0 - scrollingPresenter.Width) / 2.0;
+                        scrollingPresenter.HorizontalAnchorRatio = 0.5;
                     }
                 });
 
-                ScrollTo(scroller, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                ScrollTo(scrollingPresenter, horizontalOffset, verticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Scroller view prior to viewport size change: HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    Log.Comment("ScrollingPresenter view prior to viewport size change: HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                            scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
 
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                        scrollerViewChangedEvent.Set();
+                        scrollingPresenterViewChangedEvent.Set();
                     };
 
                     if (orientation == Orientation.Vertical)
                     {
                         Log.Comment("Changing viewport height");
-                        scroller.Height += viewportSizeChange;
+                        scrollingPresenter.Height += viewportSizeChange;
                     }
                     else
                     {
                         Log.Comment("Changing viewport width");
-                        scroller.Width += viewportSizeChange;
+                        scrollingPresenter.Width += viewportSizeChange;
                     }
                 });
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Log.Comment("Scroller view after viewport size change: HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                            scroller.HorizontalOffset, scroller.VerticalOffset, scroller.ZoomFactor);
+                    Log.Comment("ScrollingPresenter view after viewport size change: HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
+                            scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
                     Log.Comment("Expecting offset change equal to half the viewport size change");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, verticalOffset - viewportSizeChange / 2.0);
+                        Verify.AreEqual(scrollingPresenter.VerticalOffset, verticalOffset - viewportSizeChange / 2.0);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, horizontalOffset - viewportSizeChange / 2.0);
+                        Verify.AreEqual(scrollingPresenter.HorizontalOffset, horizontalOffset - viewportSizeChange / 2.0);
                     }
                 });
             }
@@ -593,10 +593,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void SetupDefaultAnchoringUI(
             Orientation orientation,
-            Scroller scroller,
-            AutoResetEvent scrollerLoadedEvent)
+            ScrollingPresenter scrollingPresenter,
+            AutoResetEvent scrollingPresenterLoadedEvent)
         {
-            Log.Comment("Setting up default anchoring UI with Scroller");
+            Log.Comment("Setting up default anchoring UI with ScrollingPresenter");
 
             StackPanel stackPanel = new StackPanel();
             stackPanel.Name = "stackPanel";
@@ -611,37 +611,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             border.Background = new SolidColorBrush(Colors.Beige);
             border.Child = stackPanel;
 
-            Verify.IsNotNull(scroller);
-            scroller.Name = "scroller";
+            Verify.IsNotNull(scrollingPresenter);
+            scrollingPresenter.Name = "scrollingPresenter";
             if (orientation == Orientation.Vertical)
             {
-                scroller.ContentOrientation = ContentOrientation.Vertical;
-                scroller.Width = c_defaultAnchoringUIScrollerConstrainedSize;
-                scroller.Height = c_defaultAnchoringUIScrollerNonConstrainedSize;
+                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollingPresenter.Width = c_defaultAnchoringUIScrollingPresenterConstrainedSize;
+                scrollingPresenter.Height = c_defaultAnchoringUIScrollingPresenterNonConstrainedSize;
             }
             else
             {
-                scroller.ContentOrientation = ContentOrientation.Horizontal;
-                scroller.Width = c_defaultAnchoringUIScrollerNonConstrainedSize;
-                scroller.Height = c_defaultAnchoringUIScrollerConstrainedSize;
+                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.Width = c_defaultAnchoringUIScrollingPresenterNonConstrainedSize;
+                scrollingPresenter.Height = c_defaultAnchoringUIScrollingPresenterConstrainedSize;
             }
-            scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Content = border;
+            scrollingPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
+            scrollingPresenter.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultAnchoringUIStackPanelChildrenCount /*newCount*/);
 
-            if (scrollerLoadedEvent != null)
+            if (scrollingPresenterLoadedEvent != null)
             {
-                scroller.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
-                    scrollerLoadedEvent.Set();
+                    Log.Comment("ScrollingPresenter.Loaded event handler");
+                    scrollingPresenterLoadedEvent.Set();
                 };
             }
 
-            scroller.AnchorRequested += (Scroller sender, ScrollerAnchorRequestedEventArgs args) =>
+            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
             {
-                Log.Comment("Scroller.AnchorRequested event handler");
+                Log.Comment("ScrollingPresenter.AnchorRequested event handler");
 
                 Verify.IsNull(args.AnchorElement);
                 Verify.AreEqual(0, args.AnchorCandidates.Count);
@@ -654,7 +654,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             };
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scroller;
+            MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
         }
 
         private void InsertStackPanelChild(StackPanel stackPanel, int operationCount, int newIndex, int newCount, string namePrefix = "")
@@ -704,18 +704,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringWithOffsetCoercion(bool reduceAnchorOffset)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                Scroller scroller = null;
+                ScrollingPresenter scrollingPresenter = null;
                 Border anchorElement = null;
-                AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
-                AutoResetEvent scrollerAnchorRequestedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
+                AutoResetEvent scrollingPresenterAnchorRequestedEvent = new AutoResetEvent(false);
 
-                // This test validates that the Scroller accounts for maximum vertical offset (based on viewport and content extent) 
+                // This test validates that the ScrollingPresenter accounts for maximum vertical offset (based on viewport and content extent) 
                 // when calculating the vertical offset shift for anchoring. The vertical offset cannot exceed content extent - viewport.
 
                 RunOnUIThread.Execute(() =>
@@ -736,67 +736,67 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     grid.Height = 1000;
                     grid.Background = new SolidColorBrush(Colors.Gray);
 
-                    scroller = new Scroller
+                    scrollingPresenter = new ScrollingPresenter
                     {
                         Content = grid,
                         Width = 200,
                         Height = 200
                     };
 
-                    scroller.Loaded += (object sender, RoutedEventArgs e) =>
+                    scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                     {
-                        Log.Comment("Scroller.Loaded event handler");
-                        scrollerLoadedEvent.Set();
+                        Log.Comment("ScrollingPresenter.Loaded event handler");
+                        scrollingPresenterLoadedEvent.Set();
                     };
 
-                    scroller.ViewChanged += delegate (Scroller sender, object args)
+                    scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
                     {
                         Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                             sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
                         if ((reduceAnchorOffset && sender.VerticalOffset == 400) ||
                             (!reduceAnchorOffset && sender.VerticalOffset == 500))
                         {
-                            scrollerViewChangedEvent.Set();
+                            scrollingPresenterViewChangedEvent.Set();
                         }
                     };
 
-                    scroller.AnchorRequested += delegate (Scroller sender, ScrollerAnchorRequestedEventArgs args)
+                    scrollingPresenter.AnchorRequested += delegate (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args)
                     {
-                        Log.Comment("Scroller.AnchorRequested event handler. Forcing the red Border to be the Scroller anchor.");
+                        Log.Comment("ScrollingPresenter.AnchorRequested event handler. Forcing the red Border to be the ScrollingPresenter anchor.");
                         args.AnchorElement = anchorElement;
-                        scrollerAnchorRequestedEvent.Set();
+                        scrollingPresenterAnchorRequestedEvent.Set();
                     };
 
                     Log.Comment("Setting window content");
-                    MUXControlsTestApp.App.TestContentRoot = scroller;
+                    MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
                 });
 
-                WaitForEvent("Waiting for Scroller.Loaded event", scrollerLoadedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.Loaded event", scrollingPresenterLoadedEvent);
                 IdleSynchronizer.Wait();
 
-                ScrollTo(scroller, 0.0, 600.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ScrollTo(scrollingPresenter, 0.0, 600.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(600, scroller.VerticalOffset);
+                    Verify.AreEqual(600, scrollingPresenter.VerticalOffset);
 
-                    Log.Comment("Scroller.Content height is reduced by 300px. Scroller.VerticalOffset is expected to be reduced by 100px (600 -> 500).");
-                    (scroller.Content as Grid).Height = 700;
+                    Log.Comment("ScrollingPresenter.Content height is reduced by 300px. ScrollingPresenter.VerticalOffset is expected to be reduced by 100px (600 -> 500).");
+                    (scrollingPresenter.Content as Grid).Height = 700;
                     if (reduceAnchorOffset)
                     {
-                        Log.Comment("Tracked element is shifted up by 200px within the Scroller.Content (600 -> 400). Anchoring is expected to reduce the VerticalOffset by half of that (500 -> 400).");
+                        Log.Comment("Tracked element is shifted up by 200px within the ScrollingPresenter.Content (600 -> 400). Anchoring is expected to reduce the VerticalOffset by half of that (500 -> 400).");
                         anchorElement.Margin = new Thickness(0, 400, 0, 0);
                     }
-                    scrollerViewChangedEvent.Reset();
+                    scrollingPresenterViewChangedEvent.Reset();
                 });
 
-                WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
-                WaitForEvent("Waiting for Scroller.AnchorRequested event", scrollerAnchorRequestedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
+                WaitForEvent("Waiting for ScrollingPresenter.AnchorRequested event", scrollingPresenterAnchorRequestedEvent);
                 IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {
-                    Verify.AreEqual(reduceAnchorOffset ? 400 : 500, scroller.VerticalOffset);
+                    Verify.AreEqual(reduceAnchorOffset ? 400 : 500, scrollingPresenter.VerticalOffset);
                 });
             }
         }
@@ -805,80 +805,80 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies VerticalOffset adjusts when inserting and removing items at the beginning (VerticalAnchorRatio=0.5).")]
         public void AnchoringAtRepeaterMiddle()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+            using (ScrollingPresenterTestHooksHelper scrollingPresenterTestHooksHelper = new ScrollingPresenterTestHooksHelper(
                 enableAnchorNotifications: true,
                 enableInteractionSourcesNotifications: true,
                 enableExpressionAnimationStatusNotifications: false))
             {
-                using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
+                using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
                 {
-                    Scroller scroller = null;
-                    AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-                    AutoResetEvent scrollerViewChangedEvent = new AutoResetEvent(false);
+                    ScrollingPresenter scrollingPresenter = null;
+                    AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+                    AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
 
                     RunOnUIThread.Execute(() =>
                     {
-                        scroller = new Scroller();
+                        scrollingPresenter = new ScrollingPresenter();
 
-                        SetupRepeaterAnchoringUI(scroller, scrollerLoadedEvent);
+                        SetupRepeaterAnchoringUI(scrollingPresenter, scrollingPresenterLoadedEvent);
 
-                        scroller.HorizontalAnchorRatio = double.NaN;
-                        scroller.VerticalAnchorRatio = 0.5;
+                        scrollingPresenter.HorizontalAnchorRatio = double.NaN;
+                        scrollingPresenter.VerticalAnchorRatio = 0.5;
                     });
 
-                    WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+                    WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-                    ZoomTo(scroller, 2.0f, 0.0f, 0.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
-                    ScrollTo(scroller, 0.0, 250.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
+                    ZoomTo(scrollingPresenter, 2.0f, 0.0f, 0.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+                    ScrollTo(scrollingPresenter, 0.0, 250.0, AnimationMode.Enabled, SnapPointsMode.Ignore, false /*hookViewChanged*/);
 
                     ItemsRepeater repeater = null;
                     TestDataSource dataSource = null;
 
                     RunOnUIThread.Execute(() =>
                     {
-                        repeater = (scroller.Content as Border).Child as ItemsRepeater;
+                        repeater = (scrollingPresenter.Content as Border).Child as ItemsRepeater;
                         dataSource = repeater.ItemsSource as TestDataSource;
 
-                        scroller.ViewChanged += delegate (Scroller sender, object args) {
-                            scrollerViewChangedEvent.Set();
+                        scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args) {
+                            scrollingPresenterViewChangedEvent.Set();
                         };
 
                         Log.Comment("Inserting items at the beginning");
                         dataSource.Insert(0 /*index*/, 2 /*count*/);
                     });
 
-                    WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                    WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
 
                     RunOnUIThread.Execute(() =>
                     {
-                        Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(520.0, scroller.VerticalOffset);
+                        Log.Comment("ScrollingPresenter offset change expected");
+                        Verify.AreEqual(520.0, scrollingPresenter.VerticalOffset);
                     });
 
                     RunOnUIThread.Execute(() =>
                     {
-                        scrollerViewChangedEvent.Reset();
+                        scrollingPresenterViewChangedEvent.Reset();
 
                         Log.Comment("Removing items from the beginning");
                         dataSource.Remove(0 /*index*/, 2 /*count*/);
                     });
 
-                    WaitForEvent("Waiting for Scroller.ViewChanged event", scrollerViewChangedEvent);
+                    WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
 
                     RunOnUIThread.Execute(() =>
                     {
-                        Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(250.0, scroller.VerticalOffset);
+                        Log.Comment("ScrollingPresenter offset change expected");
+                        Verify.AreEqual(250.0, scrollingPresenter.VerticalOffset);
                     });
                 }
             }
         }
 
         private void SetupRepeaterAnchoringUI(
-            Scroller scroller,
-            AutoResetEvent scrollerLoadedEvent)
+            ScrollingPresenter scrollingPresenter,
+            AutoResetEvent scrollingPresenterLoadedEvent)
         {
-            Log.Comment("Setting up ItemsRepeater anchoring UI with Scroller and ItemsRepeater");
+            Log.Comment("Setting up ItemsRepeater anchoring UI with ScrollingPresenter and ItemsRepeater");
 
             TestDataSource dataSource = new TestDataSource(
                 Enumerable.Range(0, c_defaultAnchoringUIRepeaterChildrenCount).Select(i => string.Format("Item #{0}", i)).ToList());
@@ -917,33 +917,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Child = repeater
             };
 
-            Verify.IsNotNull(scroller);
-            scroller.Name = "scroller";
-            scroller.ContentOrientation = ContentOrientation.Vertical;
-            scroller.Width = 400;
-            scroller.Height = 600;
-            scroller.Background = new SolidColorBrush(Colors.AliceBlue);
-            scroller.Content = border;
+            Verify.IsNotNull(scrollingPresenter);
+            scrollingPresenter.Name = "scrollingPresenter";
+            scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+            scrollingPresenter.Width = 400;
+            scrollingPresenter.Height = 600;
+            scrollingPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
+            scrollingPresenter.Content = border;
 
-            if (scrollerLoadedEvent != null)
+            if (scrollingPresenterLoadedEvent != null)
             {
-                scroller.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Scroller.Loaded event handler");
-                    scrollerLoadedEvent.Set();
+                    Log.Comment("ScrollingPresenter.Loaded event handler");
+                    scrollingPresenterLoadedEvent.Set();
                 };
             }
 
-            scroller.AnchorRequested += (Scroller sender, ScrollerAnchorRequestedEventArgs args) =>
+            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
             {
-                Log.Comment("Scroller.AnchorRequested event handler");
+                Log.Comment("ScrollingPresenter.AnchorRequested event handler");
 
                 Verify.IsNull(args.AnchorElement);
                 Verify.IsGreaterThan(args.AnchorCandidates.Count, 0);
             };
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scroller;
+            MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
         }
 
         private class TestDataSource : CustomItemsSourceViewWithUniqueIdMapping

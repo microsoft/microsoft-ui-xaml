@@ -42,7 +42,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <controlsPrimitives:Scroller x:Name="PART_Scroller"
+                            <controlsPrimitives:ScrollingPresenter x:Name="PART_ScrollingPresenter"
                                 Grid.ColumnSpan="2" Grid.RowSpan="2"
                                 Background="{TemplateBinding Background}"
                                 Content="{TemplateBinding Content}"
@@ -111,10 +111,10 @@
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
-            <CheckBox x:Name="chkScrollerAttachedProperties" 
-                      Content="Scroller Attached Properties" 
-                      Checked="ChkScrollerAttachedProperties_Checked" 
-                      Unchecked="ChkScrollerAttachedProperties_Unchecked" 
+            <CheckBox x:Name="chkScrollingPresenterAttachedProperties" 
+                      Content="ScrollingPresenter Attached Properties" 
+                      Checked="ChkScrollingPresenterAttachedProperties_Checked" 
+                      Unchecked="ChkScrollingPresenterAttachedProperties_Unchecked" 
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
@@ -198,7 +198,7 @@
             <CheckBox x:Name="chkIsTabStop" Content="IsTabStop?" Grid.Row="7" Grid.ColumnSpan="4" Checked="ChkIsTabStop_Checked" Unchecked="ChkIsTabStop_Unchecked"/>
         </Grid>
 
-        <Grid x:Name="grdScrollerAttachedProperties" Grid.Row="1" Grid.Column="2" Margin="2">
+        <Grid x:Name="grdScrollingPresenterAttachedProperties" Grid.Row="1" Grid.Column="2" Margin="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -214,7 +214,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Scroller Cloned Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
+            <TextBlock Text="ScrollingPresenter Cloned Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
 
             <TextBlock Text="ContentOrientation:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbContentOrientation" Width="105" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
@@ -301,7 +301,7 @@
 
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <Button x:Name="btnClearLogs" Content="Clear" Click="BtnClearLogs_Click" Margin="1"/>
-                <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
                 <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
             </StackPanel>
             <ListBox x:Name="lstLogs" Margin="1" Grid.Row="2"/>

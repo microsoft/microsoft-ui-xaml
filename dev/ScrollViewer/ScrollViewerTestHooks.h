@@ -20,7 +20,7 @@ public:
     static winrt::IReference<bool> GetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer);
     static void SetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer, winrt::IReference<bool> value);
 
-    static winrt::Scroller GetScrollerPart(const winrt::ScrollViewer& scrollViewer);
+    static winrt::ScrollingPresenter GetScrollingPresenterPart(const winrt::ScrollViewer& scrollViewer);
 
 private:
     static com_ptr<ScrollViewerTestHooks> s_testHooks;

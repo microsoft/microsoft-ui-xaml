@@ -85,7 +85,7 @@ public:
     static winrt::DependencyProperty IgnoredInputKindProperty() { return s_IgnoredInputKindProperty; }
     static winrt::DependencyProperty MaxZoomFactorProperty() { return s_MaxZoomFactorProperty; }
     static winrt::DependencyProperty MinZoomFactorProperty() { return s_MinZoomFactorProperty; }
-    static winrt::DependencyProperty ScrollerProperty() { return s_ScrollerProperty; }
+    static winrt::DependencyProperty ScrollingPresenterProperty() { return s_ScrollingPresenterProperty; }
     static winrt::DependencyProperty VerticalAnchorRatioProperty() { return s_VerticalAnchorRatioProperty; }
     static winrt::DependencyProperty VerticalScrollBarVisibilityProperty() { return s_VerticalScrollBarVisibilityProperty; }
     static winrt::DependencyProperty VerticalScrollChainingModeProperty() { return s_VerticalScrollChainingModeProperty; }
@@ -108,7 +108,7 @@ public:
     static GlobalDependencyProperty s_IgnoredInputKindProperty;
     static GlobalDependencyProperty s_MaxZoomFactorProperty;
     static GlobalDependencyProperty s_MinZoomFactorProperty;
-    static GlobalDependencyProperty s_ScrollerProperty;
+    static GlobalDependencyProperty s_ScrollingPresenterProperty;
     static GlobalDependencyProperty s_VerticalAnchorRatioProperty;
     static GlobalDependencyProperty s_VerticalScrollBarVisibilityProperty;
     static GlobalDependencyProperty s_VerticalScrollChainingModeProperty;
@@ -118,9 +118,9 @@ public:
     static GlobalDependencyProperty s_ZoomChainingModeProperty;
     static GlobalDependencyProperty s_ZoomModeProperty;
 
-    winrt::event_token AnchorRequested(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerAnchorRequestedEventArgs> const& value);
+    winrt::event_token AnchorRequested(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterAnchorRequestedEventArgs> const& value);
     void AnchorRequested(winrt::event_token const& token);
-    winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerBringingIntoViewEventArgs> const& value);
+    winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterBringingIntoViewEventArgs> const& value);
     void BringingIntoView(winrt::event_token const& token);
     winrt::event_token ExtentChanged(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::IInspectable> const& value);
     void ExtentChanged(winrt::event_token const& token);
@@ -137,8 +137,8 @@ public:
     winrt::event_token ZoomCompleted(winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ZoomCompletedEventArgs> const& value);
     void ZoomCompleted(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollerBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollingPresenterBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::IInspectable>> m_extentChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollAnimationStartingEventArgs>> m_scrollAnimationStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollViewer, winrt::ScrollCompletedEventArgs>> m_scrollCompletedEventSource;
@@ -202,7 +202,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnScrollerPropertyChanged(
+    static void OnScrollingPresenterPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

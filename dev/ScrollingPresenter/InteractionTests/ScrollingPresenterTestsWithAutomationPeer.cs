@@ -24,7 +24,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
     [TestClass]
-    public class ScrollerTestsWithAutomationPeer : ScrollerTestsBase
+    public class ScrollingPresenterTestsWithAutomationPeer : ScrollingPresenterTestsBase
     {
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
@@ -42,14 +42,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Vertically scrolls a Rectangle in a Scroller, using its automation peer.")]
+        [TestProperty("Description", "Vertically scrolls a Rectangle in a ScrollingPresenter, using its automation peer.")]
         public void ScrollVertically()
         {
-            Log.Comment("Selecting Scroller tests");
+            Log.Comment("Selecting ScrollingPresenter tests");
 
-            using (var setup = new TestSetupHelper("Scroller Tests"))
+            using (var setup = new TestSetupHelper("ScrollingPresenter Tests"))
             {
-                Log.Comment("Navigating to ScrollersWithSimpleContentsPage");
+                Log.Comment("Navigating to ScrollingPresentersWithSimpleContentsPage");
                 UIObject navigateToSimpleContentsUIObject = FindElement.ByName("navigateToSimpleContents");
                 Verify.IsNotNull(navigateToSimpleContentsUIObject, "Verifying that navigateToSimpleContents Button was found");
 
@@ -57,40 +57,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 navigateToSimpleContentsButton.Invoke();
                 Wait.ForIdle();
 
-                Log.Comment("Retrieving Scroller");
-                Scroller scroller11UIObject = new Scroller(FindElement.ByName("Scroller11"));
-                Verify.IsNotNull(scroller11UIObject, "Verifying that Scroller was found");
+                Log.Comment("Retrieving ScrollingPresenter");
+                ScrollingPresenter scrollingPresenter11UIObject = new ScrollingPresenter(FindElement.ByName("ScrollingPresenter11"));
+                Verify.IsNotNull(scrollingPresenter11UIObject, "Verifying that ScrollingPresenter was found");
 
-                Verify.IsTrue(scroller11UIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
-                Verify.IsTrue(scroller11UIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
-                Verify.AreEqual(scroller11UIObject.VerticalScrollPercent, 0.0, "Verifying VerticalScrollPercent is zero");
+                Verify.IsTrue(scrollingPresenter11UIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
+                Verify.IsTrue(scrollingPresenter11UIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
+                Verify.AreEqual(scrollingPresenter11UIObject.VerticalScrollPercent, 0.0, "Verifying VerticalScrollPercent is zero");
 
-                Log.Comment("Scrolling Scroller vertically");
-                scroller11UIObject.ScrollVertical(ScrollAmount.LargeIncrement);
+                Log.Comment("Scrolling ScrollingPresenter vertically");
+                scrollingPresenter11UIObject.ScrollVertical(ScrollAmount.LargeIncrement);
 
-                Log.Comment("Waiting for VerticalScrollPercent={0} to change", scroller11UIObject.VerticalScrollPercent);
-                Wait.ForScrollChanged(scroller11UIObject, ScrollProperty.VerticalScrollPercent);
+                Log.Comment("Waiting for VerticalScrollPercent={0} to change", scrollingPresenter11UIObject.VerticalScrollPercent);
+                Wait.ForScrollChanged(scrollingPresenter11UIObject, ScrollProperty.VerticalScrollPercent);
 
-                Log.Comment("Final VerticalScrollPercent={0}", scroller11UIObject.VerticalScrollPercent);
+                Log.Comment("Final VerticalScrollPercent={0}", scrollingPresenter11UIObject.VerticalScrollPercent);
 
-                Verify.IsTrue(scroller11UIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
-                Verify.IsTrue(scroller11UIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
-                Verify.IsTrue(scroller11UIObject.VerticalScrollPercent > 0.0, "Verifying VerticalScrollPercent is positive");
+                Verify.IsTrue(scrollingPresenter11UIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
+                Verify.IsTrue(scrollingPresenter11UIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
+                Verify.IsTrue(scrollingPresenter11UIObject.VerticalScrollPercent > 0.0, "Verifying VerticalScrollPercent is positive");
 
-                Log.Comment("Returning to the main Scroller test page");
+                Log.Comment("Returning to the main ScrollingPresenter test page");
                 TestSetupHelper.GoBack();
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Horizontally scrolls an Image in a Scroller, using its automation peer.")]
+        [TestProperty("Description", "Horizontally scrolls an Image in a ScrollingPresenter, using its automation peer.")]
         public void ScrollHorizontally()
         {
-            Log.Comment("Selecting Scroller tests");
+            Log.Comment("Selecting ScrollingPresenter tests");
 
-            using (var setup = new TestSetupHelper("Scroller Tests"))
+            using (var setup = new TestSetupHelper("ScrollingPresenter Tests"))
             {
-                Log.Comment("Navigating to ScrollersWithSimpleContentsPage");
+                Log.Comment("Navigating to ScrollingPresentersWithSimpleContentsPage");
                 UIObject navigateToSimpleContentsUIObject = FindElement.ByName("navigateToSimpleContents");
                 Verify.IsNotNull(navigateToSimpleContentsUIObject, "Verifying that navigateToSimpleContents Button was found");
 
@@ -98,42 +98,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 navigateToSimpleContentsButton.Invoke();
                 Wait.ForIdle();
 
-                Log.Comment("Retrieving Scroller");
-                Scroller scroller31UIObject = new Scroller(FindElement.ByName("Scroller31"));
-                Verify.IsNotNull(scroller31UIObject, "Verifying that Scroller was found");
+                Log.Comment("Retrieving ScrollingPresenter");
+                ScrollingPresenter scrollingPresenter31UIObject = new ScrollingPresenter(FindElement.ByName("ScrollingPresenter31"));
+                Verify.IsNotNull(scrollingPresenter31UIObject, "Verifying that ScrollingPresenter was found");
 
-                Verify.IsTrue(scroller31UIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
-                Verify.IsTrue(scroller31UIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
-                Verify.AreEqual(scroller31UIObject.HorizontalScrollPercent, 0.0, "Verifying HorizontalScrollPercent is zero");
+                Verify.IsTrue(scrollingPresenter31UIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
+                Verify.IsTrue(scrollingPresenter31UIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
+                Verify.AreEqual(scrollingPresenter31UIObject.HorizontalScrollPercent, 0.0, "Verifying HorizontalScrollPercent is zero");
 
-                Log.Comment("Scrolling Scroller horizontally");
-                scroller31UIObject.ScrollHorizontal(ScrollAmount.LargeIncrement);
+                Log.Comment("Scrolling ScrollingPresenter horizontally");
+                scrollingPresenter31UIObject.ScrollHorizontal(ScrollAmount.LargeIncrement);
 
-                Log.Comment("Waiting for HorizontalScrollPercent={0} to change", scroller31UIObject.HorizontalScrollPercent);
-                Wait.ForScrollChanged(scroller31UIObject, ScrollProperty.HorizontalScrollPercent);
+                Log.Comment("Waiting for HorizontalScrollPercent={0} to change", scrollingPresenter31UIObject.HorizontalScrollPercent);
+                Wait.ForScrollChanged(scrollingPresenter31UIObject, ScrollProperty.HorizontalScrollPercent);
 
-                Log.Comment("Final HorizontalScrollPercent={0}", scroller31UIObject.HorizontalScrollPercent);
+                Log.Comment("Final HorizontalScrollPercent={0}", scrollingPresenter31UIObject.HorizontalScrollPercent);
 
-                Verify.IsTrue(scroller31UIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
-                Verify.IsTrue(scroller31UIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
-                Verify.IsTrue(scroller31UIObject.HorizontalScrollPercent > 0.0, "Verifying HorizontalScrollPercent is positive");
+                Verify.IsTrue(scrollingPresenter31UIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
+                Verify.IsTrue(scrollingPresenter31UIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
+                Verify.IsTrue(scrollingPresenter31UIObject.HorizontalScrollPercent > 0.0, "Verifying HorizontalScrollPercent is positive");
 
-                Log.Comment("Returning to the main Scroller test page");
+                Log.Comment("Returning to the main ScrollingPresenter test page");
                 TestSetupHelper.GoBack();
             }
         }
 
         [TestMethod]
-        [TestProperty("Description", "Scrolls an Image, using the Scroller automation peer, while its ExpressionAnimationSources property is being consumed.")]
+        [TestProperty("Description", "Scrolls an Image, using the ScrollingPresenter automation peer, while its ExpressionAnimationSources property is being consumed.")]
         public void ScrollWhileUsingExpressionAnimationSources()
         {
-            Log.Comment("Selecting Scroller tests");
+            Log.Comment("Selecting ScrollingPresenter tests");
 
-            using (var setup = new TestSetupHelper("Scroller Tests"))
+            using (var setup = new TestSetupHelper("ScrollingPresenter Tests"))
             {
                 SetOutputDebugStringLevel("Verbose");
 
-                Log.Comment("Navigating to ScrollerExpressionAnimationSourcesPage");
+                Log.Comment("Navigating to ScrollingPresenterExpressionAnimationSourcesPage");
                 UIObject navigateToExpressionAnimationSourcesUIObject = FindElement.ByName("navigateToExpressionAnimationSources");
                 Verify.IsNotNull(navigateToExpressionAnimationSourcesUIObject, "Verifying that navigateToExpressionAnimationSources Button was found");
 
@@ -143,13 +143,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 SetLoggingLevel(isPrivateLoggingEnabled: true);
 
-                Log.Comment("Retrieving Scroller");
-                Scroller scrollerUIObject = new Scroller(FindElement.ByName("scroller"));
-                Verify.IsNotNull(scrollerUIObject, "Verifying that Scroller was found");
+                Log.Comment("Retrieving ScrollingPresenter");
+                ScrollingPresenter scrollingPresenterUIObject = new ScrollingPresenter(FindElement.ByName("scrollingPresenter"));
+                Verify.IsNotNull(scrollingPresenterUIObject, "Verifying that ScrollingPresenter was found");
 
-                Verify.IsTrue(scrollerUIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
-                Verify.IsTrue(scrollerUIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
-                Verify.AreEqual(scrollerUIObject.HorizontalScrollPercent, 0.0, "Verifying HorizontalScrollPercent is zero");
+                Verify.IsTrue(scrollingPresenterUIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
+                Verify.IsTrue(scrollingPresenterUIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
+                Verify.AreEqual(scrollingPresenterUIObject.HorizontalScrollPercent, 0.0, "Verifying HorizontalScrollPercent is zero");
 
                 Log.Comment("Waiting for final layout");
                 WaitForEditValue(editName: "txtLayoutCompleted", editValue: "Yes");
@@ -160,34 +160,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Extent: " + textBox.Value);
                 textBox = new Edit(FindElement.ById("txtBarVisualWidth"));
 
-                Log.Comment("Scrolling Scroller horizontally and vertically");
-                scrollerUIObject.SetScrollPercent(10.0, 20.0);
+                Log.Comment("Scrolling ScrollingPresenter horizontally and vertically");
+                scrollingPresenterUIObject.SetScrollPercent(10.0, 20.0);
 
-                Log.Comment("Waiting for HorizontalScrollPercent={0} to change", scrollerUIObject.HorizontalScrollPercent);
-                Wait.ForScrollChanged(scrollerUIObject, ScrollProperty.HorizontalScrollPercent);
+                Log.Comment("Waiting for HorizontalScrollPercent={0} to change", scrollingPresenterUIObject.HorizontalScrollPercent);
+                Wait.ForScrollChanged(scrollingPresenterUIObject, ScrollProperty.HorizontalScrollPercent);
 
-                Log.Comment("Final HorizontalScrollPercent={0}", scrollerUIObject.HorizontalScrollPercent);
-                Log.Comment("Final VerticalScrollPercent={0}", scrollerUIObject.VerticalScrollPercent);
+                Log.Comment("Final HorizontalScrollPercent={0}", scrollingPresenterUIObject.HorizontalScrollPercent);
+                Log.Comment("Final VerticalScrollPercent={0}", scrollingPresenterUIObject.VerticalScrollPercent);
 
-                if (Math.Abs(scrollerUIObject.HorizontalScrollPercent - 10.0) >= 0.0001 || 
-                    Math.Abs(scrollerUIObject.VerticalScrollPercent - 20.0) >= 0.0001)
+                if (Math.Abs(scrollingPresenterUIObject.HorizontalScrollPercent - 10.0) >= 0.0001 || 
+                    Math.Abs(scrollingPresenterUIObject.VerticalScrollPercent - 20.0) >= 0.0001)
                 {
                     LogAndClearTraces();
                 }
 
                 SetLoggingLevel(isPrivateLoggingEnabled: false);
 
-                Verify.IsTrue(scrollerUIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
-                Verify.IsTrue(scrollerUIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
-                Verify.IsLessThan(Math.Abs(scrollerUIObject.HorizontalScrollPercent - 10.0), 0.0001, "Verifying HorizontalScrollPercent is close to 10.0");
+                Verify.IsTrue(scrollingPresenterUIObject.HorizontallyScrollable, "Verifying HorizontallyScrollable is true");
+                Verify.IsTrue(scrollingPresenterUIObject.HorizontalViewSize > 0.0, "Verifying HorizontalViewSize is positive");
+                Verify.IsLessThan(Math.Abs(scrollingPresenterUIObject.HorizontalScrollPercent - 10.0), 0.0001, "Verifying HorizontalScrollPercent is close to 10.0");
 
-                Verify.IsTrue(scrollerUIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
-                Verify.IsTrue(scrollerUIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
-                Verify.IsLessThan(Math.Abs(scrollerUIObject.VerticalScrollPercent - 20.0), 0.0001, "Verifying VerticalScrollPercent is close to 20.0");
+                Verify.IsTrue(scrollingPresenterUIObject.VerticallyScrollable, "Verifying VerticallyScrollable is true");
+                Verify.IsTrue(scrollingPresenterUIObject.VerticalViewSize > 0.0, "Verifying VerticalViewSize is positive");
+                Verify.IsLessThan(Math.Abs(scrollingPresenterUIObject.VerticalScrollPercent - 20.0), 0.0001, "Verifying VerticalScrollPercent is close to 20.0");
 
-                Log.Comment("Returning to the main Scroller test page");
+                Log.Comment("Returning to the main ScrollingPresenter test page");
                 TestSetupHelper.GoBack();
-                // Output-debug-string-level "None" is automatically restored when landing back on the Scroller test page.
+                // Output-debug-string-level "None" is automatically restored when landing back on the ScrollingPresenter test page.
             }
         }
     }

@@ -7,14 +7,14 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollerWithCompositionScrollControllersPage : TestPage
+    public sealed partial class ScrollingPresenterWithCompositionScrollControllersPage : TestPage
     {
-        public ScrollerWithCompositionScrollControllersPage()
+        public ScrollingPresenterWithCompositionScrollControllersPage()
         {
             this.InitializeComponent();
             horizontalCompositionScrollController.LogMessage += CompositionScrollController_LogMessage;
@@ -29,25 +29,25 @@ namespace MUXControlsTestApp
         private void CmbHorizontalScrollController_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
         {
             ComboBox cmbHorizontalScrollController = sender as ComboBox;
-            Scroller scroller = cmbHorizontalScrollController == cmbHorizontalScrollController1 ? scroller1 : scroller2;
-            CompositionScrollController oldCompositionScrollController = scroller.HorizontalScrollController as CompositionScrollController;
+            ScrollingPresenter scrollingPresenter = cmbHorizontalScrollController == cmbHorizontalScrollController1 ? scrollingPresenter1 : scrollingPresenter2;
+            CompositionScrollController oldCompositionScrollController = scrollingPresenter.HorizontalScrollController as CompositionScrollController;
 
             switch (cmbHorizontalScrollController.SelectedIndex)
             {
                 case 0:
-                    if (scroller.HorizontalScrollController != null)
+                    if (scrollingPresenter.HorizontalScrollController != null)
                     {
-                        scroller.HorizontalScrollController = null;
-                        LogMessage(scroller.Name + ".HorizontalScrollController reset");
+                        scrollingPresenter.HorizontalScrollController = null;
+                        LogMessage(scrollingPresenter.Name + ".HorizontalScrollController reset");
                     }
                     break;
                 case 1:
-                    scroller.HorizontalScrollController = horizontalCompositionScrollController;
-                    LogMessage(scroller.Name + ".HorizontalScrollController set to horizontalScrollController");
+                    scrollingPresenter.HorizontalScrollController = horizontalCompositionScrollController;
+                    LogMessage(scrollingPresenter.Name + ".HorizontalScrollController set to horizontalScrollController");
                     break;
                 case 2:
-                    scroller.HorizontalScrollController = verticalCompositionScrollController;
-                    LogMessage(scroller.Name + ".HorizontalScrollController set to verticalScrollController");
+                    scrollingPresenter.HorizontalScrollController = verticalCompositionScrollController;
+                    LogMessage(scrollingPresenter.Name + ".HorizontalScrollController set to verticalScrollController");
                     break;
             }
 
@@ -58,25 +58,25 @@ namespace MUXControlsTestApp
         private void CmbVerticalScrollController_SelectionChanged(object sender, Windows.UI.Xaml.Controls.SelectionChangedEventArgs e)
         {
             ComboBox cmbVerticalScrollController = sender as ComboBox;
-            Scroller scroller = cmbVerticalScrollController == cmbVerticalScrollController1 ? scroller1 : scroller2;
-            CompositionScrollController oldCompositionScrollController = scroller.VerticalScrollController as CompositionScrollController;
+            ScrollingPresenter scrollingPresenter = cmbVerticalScrollController == cmbVerticalScrollController1 ? scrollingPresenter1 : scrollingPresenter2;
+            CompositionScrollController oldCompositionScrollController = scrollingPresenter.VerticalScrollController as CompositionScrollController;
 
             switch (cmbVerticalScrollController.SelectedIndex)
             {
                 case 0:
-                    if (scroller.VerticalScrollController != null)
+                    if (scrollingPresenter.VerticalScrollController != null)
                     {
-                        scroller.VerticalScrollController = null;
-                        LogMessage(scroller.Name + ".VerticalScrollController reset");
+                        scrollingPresenter.VerticalScrollController = null;
+                        LogMessage(scrollingPresenter.Name + ".VerticalScrollController reset");
                     }
                     break;
                 case 1:
-                    scroller.VerticalScrollController = verticalCompositionScrollController;
-                    LogMessage(scroller.Name + ".VerticalScrollController set to verticalScrollController");
+                    scrollingPresenter.VerticalScrollController = verticalCompositionScrollController;
+                    LogMessage(scrollingPresenter.Name + ".VerticalScrollController set to verticalScrollController");
                     break;
                 case 2:
-                    scroller.VerticalScrollController = horizontalCompositionScrollController;
-                    LogMessage(scroller.Name + ".VerticalScrollController set to horizontalScrollController");
+                    scrollingPresenter.VerticalScrollController = horizontalCompositionScrollController;
+                    LogMessage(scrollingPresenter.Name + ".VerticalScrollController set to horizontalScrollController");
                     break;
             }
 
@@ -101,9 +101,9 @@ namespace MUXControlsTestApp
         {
             CheckBox chkIsHorizontallyScrollable = sender as CheckBox;
             ComboBox cmbHorizontalScrollController = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? cmbHorizontalScrollController1 : cmbHorizontalScrollController2;
-            Scroller scroller = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scroller1 : scroller2;
+            ScrollingPresenter scrollingPresenter = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scrollingPresenter1 : scrollingPresenter2;
 
-            scroller.HorizontalScrollMode = ScrollMode.Enabled;
+            scrollingPresenter.HorizontalScrollMode = ScrollMode.Enabled;
             switch (cmbHorizontalScrollController.SelectedIndex)
             {
                 case 1:
@@ -119,9 +119,9 @@ namespace MUXControlsTestApp
         {
             CheckBox chkIsHorizontallyScrollable = sender as CheckBox;
             ComboBox cmbHorizontalScrollController = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? cmbHorizontalScrollController1 : cmbHorizontalScrollController2;
-            Scroller scroller = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scroller1 : scroller2;
+            ScrollingPresenter scrollingPresenter = chkIsHorizontallyScrollable == chkIsHorizontallyScrollable1 ? scrollingPresenter1 : scrollingPresenter2;
 
-            scroller.HorizontalScrollMode = ScrollMode.Disabled;
+            scrollingPresenter.HorizontalScrollMode = ScrollMode.Disabled;
             switch (cmbHorizontalScrollController.SelectedIndex)
             {
                 case 1:
@@ -137,9 +137,9 @@ namespace MUXControlsTestApp
         {
             CheckBox chkIsVerticallyScrollable = sender as CheckBox;
             ComboBox cmbVerticalScrollController = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? cmbVerticalScrollController1 : cmbVerticalScrollController2;
-            Scroller scroller = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scroller1 : scroller2;
+            ScrollingPresenter scrollingPresenter = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scrollingPresenter1 : scrollingPresenter2;
 
-            scroller.VerticalScrollMode = ScrollMode.Enabled;
+            scrollingPresenter.VerticalScrollMode = ScrollMode.Enabled;
             switch (cmbVerticalScrollController.SelectedIndex)
             {
                 case 1:
@@ -155,9 +155,9 @@ namespace MUXControlsTestApp
         {
             CheckBox chkIsVerticallyScrollable = sender as CheckBox;
             ComboBox cmbVerticalScrollController = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? cmbVerticalScrollController1 : cmbVerticalScrollController2;
-            Scroller scroller = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scroller1 : scroller2;
+            ScrollingPresenter scrollingPresenter = chkIsVerticallyScrollable == chkIsVerticallyScrollable1 ? scrollingPresenter1 : scrollingPresenter2;
 
-            scroller.VerticalScrollMode = ScrollMode.Disabled;
+            scrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
             switch (cmbVerticalScrollController.SelectedIndex)
             {
                 case 1:
@@ -171,12 +171,12 @@ namespace MUXControlsTestApp
 
         private void ChkIsVisible_Checked(object sender, RoutedEventArgs e)
         {
-            scroller2.Visibility = Visibility.Visible;
+            scrollingPresenter2.Visibility = Visibility.Visible;
         }
 
         private void ChkIsVisible_Unchecked(object sender, RoutedEventArgs e)
         {
-            scroller2.Visibility = Visibility.Collapsed;
+            scrollingPresenter2.Visibility = Visibility.Collapsed;
         }
 
         private void ChkIsThumbPositionMirrored_Checked(object sender, RoutedEventArgs e)

@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Common;
 
-using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace MUXControlsTestApp
@@ -35,7 +35,7 @@ namespace MUXControlsTestApp
 
             this.VerticalOffsetAnimation1 = null;
             this.VerticalOffsetAnimation2 = null;
-            SetupScroller();
+            SetupScrollingPresenter();
 
             SetupAnimatedValuesSpy();
             TickForValuesSpy();
@@ -304,7 +304,7 @@ namespace MUXControlsTestApp
             SpyAnimatedValues();
         }
 
-        private void SetupScroller()
+        private void SetupScrollingPresenter()
         {
             LinearGradientBrush threeColorsLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -322,7 +322,7 @@ namespace MUXControlsTestApp
             rectSC.Height = 900;
             rectSC.Fill = threeColorsLGB;
 
-            Scroller s = new Scroller();
+            ScrollingPresenter s = new ScrollingPresenter();
             s.Name = "s";
             s.Width = 500;
             s.Height = 300;
@@ -331,7 +331,7 @@ namespace MUXControlsTestApp
             s.HorizontalScrollMode = ScrollMode.Enabled;
             s.VerticalScrollMode = ScrollMode.Enabled;
             s.Content = rectSC;
-            s.ViewChanged += Scroller_ViewChanged;
+            s.ViewChanged += ScrollingPresenter_ViewChanged;
 
             sp.Children.Insert(0, s);
 
@@ -339,7 +339,7 @@ namespace MUXControlsTestApp
             parallaxView4.Source = s;
         }
 
-        private void Scroller_ViewChanged(Scroller sender, object args)
+        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
         {
             SpyAnimatedValues();
         }

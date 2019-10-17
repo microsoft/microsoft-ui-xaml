@@ -76,11 +76,11 @@
                 <Button x:Name="btnClearLogs" Content="Clear" Click="BtnClearLogs_Click" Margin="1"/>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <CheckBox x:Name="chkLogScrollerEvents" Content="Log Scroller Events?" Margin="1" Checked="ChkLogScrollerEvents_Checked" Unchecked="ChkLogScrollerEvents_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingPresenterEvents" Content="Log ScrollingPresenter Events?" Margin="1" Checked="ChkLogScrollingPresenterEvents_Checked" Unchecked="ChkLogScrollingPresenterEvents_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerEvents" Content="Log ScrollViewer Events?" IsChecked="True" Margin="1" Checked="ChkLogScrollViewerEvents_Checked" Unchecked="ChkLogScrollViewerEvents_Unchecked"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
                     </StackPanel>
                 </StackPanel>

@@ -11,7 +11,7 @@ public:
     OffsetsChange(
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
-        ScrollerViewKind offsetsKind,
+        ScrollingPresenterViewKind offsetsKind,
         winrt::IInspectable const& options);
     ~OffsetsChange();
 

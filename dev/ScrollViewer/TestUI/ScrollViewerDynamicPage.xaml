@@ -32,10 +32,10 @@
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
-            <CheckBox x:Name="chkScrollerClonedProperties" 
-                      Content="Scroller Cloned Properties" 
-                      Checked="ChkScrollerClonedProperties_Checked" 
-                      Unchecked="ChkScrollerClonedProperties_Unchecked" 
+            <CheckBox x:Name="chkScrollingPresenterClonedProperties" 
+                      Content="ScrollingPresenter Cloned Properties" 
+                      Checked="ChkScrollingPresenterClonedProperties_Checked" 
+                      Unchecked="ChkScrollingPresenterClonedProperties_Unchecked" 
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
@@ -180,7 +180,7 @@
             </ComboBox>
         </Grid>
 
-        <Grid x:Name="grdScrollerClonedProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="2">
+        <Grid x:Name="grdScrollingPresenterClonedProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -210,7 +210,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Scroller Cloned Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
+            <TextBlock Text="ScrollingPresenter Cloned Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
 
             <TextBlock Text="ContentOrientation:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
             <ComboBox x:Name="cmbContentOrientation" Width="105" Margin="1" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center">
@@ -471,11 +471,11 @@
                 <Button x:Name="btnClearLogs" Content="Clear" Click="BtnClearLogs_Click" Margin="1"/>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <CheckBox x:Name="chkLogScrollerEvents" Content="Log Scroller Events?" Margin="1" Checked="ChkLogScrollerEvents_Checked" Unchecked="ChkLogScrollerEvents_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingPresenterEvents" Content="Log ScrollingPresenter Events?" Margin="1" Checked="ChkLogScrollingPresenterEvents_Checked" Unchecked="ChkLogScrollingPresenterEvents_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerEvents" Content="Log ScrollViewer Events?" Margin="1" Checked="ChkLogScrollViewerEvents_Checked" Unchecked="ChkLogScrollViewerEvents_Unchecked"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <CheckBox x:Name="chkLogScrollerMessages" Content="Log Scroller Messages?" Margin="1" Checked="ChkLogScrollerMessages_Checked" Unchecked="ChkLogScrollerMessages_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
                         <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
                     </StackPanel>
                     <CheckBox x:Name="chkAutoHideScrollControllers" Content="AutoHideScrollControllers?" Margin="1" IsThreeState="True" IsChecked="{x:Null}"

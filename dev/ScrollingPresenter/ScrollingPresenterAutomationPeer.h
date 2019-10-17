@@ -3,17 +3,17 @@
 
 #pragma once
 
-#include "Scroller.h"
+#include "ScrollingPresenter.h"
 
-#include "ScrollerAutomationPeer.g.h"
+#include "ScrollingPresenterAutomationPeer.g.h"
 
-class ScrollerAutomationPeer :
-    public ReferenceTracker<ScrollerAutomationPeer, winrt::implementation::ScrollerAutomationPeerT, winrt::IScrollProvider>
+class ScrollingPresenterAutomationPeer :
+    public ReferenceTracker<ScrollingPresenterAutomationPeer, winrt::implementation::ScrollingPresenterAutomationPeerT, winrt::IScrollProvider>
 {
 public:
-    ScrollerAutomationPeer(winrt::Scroller const& owner);
+    ScrollingPresenterAutomationPeer(winrt::ScrollingPresenter const& owner);
 
-    ~ScrollerAutomationPeer()
+    ~ScrollingPresenterAutomationPeer()
     {
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
@@ -43,7 +43,7 @@ private:
     bool get_VerticallyScrollableImpl();
 
     winrt::IInspectable GetPatternCoreImpl(winrt::PatternInterface patternInterface);
-    winrt::Scroller GetScroller();
+    winrt::ScrollingPresenter GetScrollingPresenter();
     
     static double GetViewPercent(double zoomedExtent, double viewport);
     static double GetScrollPercent(double zoomedExtent, double viewport, double offset);
