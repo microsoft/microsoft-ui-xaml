@@ -3,27 +3,27 @@
 
 #pragma once
 
-#include "ScrollViewer.h"
-#include "ScrollViewerTestHooks.g.h"
+#include "ScrollingView.h"
+#include "ScrollingViewTestHooks.g.h"
 
-class ScrollViewerTestHooks :
-    public winrt::implementation::ScrollViewerTestHooksT<ScrollViewerTestHooks>
+class ScrollingViewTestHooks :
+    public winrt::implementation::ScrollingViewTestHooksT<ScrollingViewTestHooks>
 {
 public:
-    static com_ptr<ScrollViewerTestHooks> GetGlobalTestHooks()
+    static com_ptr<ScrollingViewTestHooks> GetGlobalTestHooks()
     {
         return s_testHooks;
     }
 
-    static com_ptr<ScrollViewerTestHooks> EnsureGlobalTestHooks();
+    static com_ptr<ScrollingViewTestHooks> EnsureGlobalTestHooks();
 
-    static winrt::IReference<bool> GetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer);
-    static void SetAutoHideScrollControllers(const winrt::ScrollViewer& scrollViewer, winrt::IReference<bool> value);
+    static winrt::IReference<bool> GetAutoHideScrollControllers(const winrt::ScrollingView& scrollingView);
+    static void SetAutoHideScrollControllers(const winrt::ScrollingView& scrollingView, winrt::IReference<bool> value);
 
-    static winrt::ScrollingPresenter GetScrollingPresenterPart(const winrt::ScrollViewer& scrollViewer);
+    static winrt::ScrollingPresenter GetScrollingPresenterPart(const winrt::ScrollingView& scrollingView);
 
 private:
-    static com_ptr<ScrollViewerTestHooks> s_testHooks;
+    static com_ptr<ScrollingViewTestHooks> s_testHooks;
 
-    std::map<winrt::IScrollViewer, winrt::IReference<bool>> m_autoHideScrollControllersMap;
+    std::map<winrt::IScrollingView, winrt::IReference<bool>> m_autoHideScrollControllersMap;
 };

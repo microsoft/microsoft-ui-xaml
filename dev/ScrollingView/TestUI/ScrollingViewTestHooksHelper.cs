@@ -11,27 +11,27 @@ using WEX.Logging.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
+using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHooks;
 
 namespace MUXControlsTestApp.Utilities
 {
-    // Utility class used to set up ScrollViewer test hooks and automatically reset them when the instance gets disposed.
-    public class ScrollViewerTestHooksHelper : IDisposable
+    // Utility class used to set up ScrollingView test hooks and automatically reset them when the instance gets disposed.
+    public class ScrollingViewTestHooksHelper : IDisposable
     {
-        public ScrollViewerTestHooksHelper(ScrollViewer scrollViewer, bool? autoHideScrollControllers = null)
+        public ScrollingViewTestHooksHelper(ScrollingView scrollingView, bool? autoHideScrollControllers = null)
         {
             RunOnUIThread.Execute(() =>
             {
-                if (scrollViewer != null)
+                if (scrollingView != null)
                 {
-                    ScrollViewer = scrollViewer;
+                    ScrollingView = scrollingView;
 
-                    ScrollViewerTestHooks.SetAutoHideScrollControllers(scrollViewer, autoHideScrollControllers);
+                    ScrollingViewTestHooks.SetAutoHideScrollControllers(scrollingView, autoHideScrollControllers);
                 }
             });
         }
 
-        public ScrollViewer ScrollViewer
+        public ScrollingView ScrollingView
         {
             get;
             set;
@@ -41,17 +41,17 @@ namespace MUXControlsTestApp.Utilities
         {
             get
             {
-                return ScrollViewer == null ? true : ScrollViewerTestHooks.GetAutoHideScrollControllers(ScrollViewer);
+                return ScrollingView == null ? true : ScrollingViewTestHooks.GetAutoHideScrollControllers(ScrollingView);
             }
 
             set
             {
                 if (value != AutoHideScrollControllers)
                 {
-                    Log.Comment($"ScrollViewerTestHooksHelper: AutoHideScrollControllers set to {value}.");
-                    if (ScrollViewer != null)
+                    Log.Comment($"ScrollingViewTestHooksHelper: AutoHideScrollControllers set to {value}.");
+                    if (ScrollingView != null)
                     {
-                         ScrollViewerTestHooks.SetAutoHideScrollControllers(ScrollViewer, value);
+                         ScrollingViewTestHooks.SetAutoHideScrollControllers(ScrollingView, value);
                     }
                 }
             }

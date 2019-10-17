@@ -19,7 +19,7 @@ CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterAutomationPeer);
 ScrollingPresenterAutomationPeer::ScrollingPresenterAutomationPeer(winrt::ScrollingPresenter const& owner)
     : ReferenceTracker(owner)
 {
-    SCROLLER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);
 }
 
 // IAutomationPeerOverrides implementation
@@ -41,7 +41,7 @@ winrt::IInspectable ScrollingPresenterAutomationPeer::GetPatternCore(winrt::Patt
 // and vertically provides simple panning support.
 void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount)
 {
-    SCROLLER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_STR_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::ScrollAmountToString(horizontalAmount).c_str(), TypeLogging::ScrollAmountToString(verticalAmount).c_str());
 
     if (!IsEnabled())
@@ -112,7 +112,7 @@ void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizon
 // The ability to call this method and simultaneously scroll horizontally and vertically provides simple panning support.
 void ScrollingPresenterAutomationPeer::SetScrollPercent(double horizontalPercent, double verticalPercent)
 {
-    SCROLLER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalPercent, verticalPercent);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalPercent, verticalPercent);
 
     if (!IsEnabled())
     {
@@ -212,7 +212,7 @@ bool ScrollingPresenterAutomationPeer::VerticallyScrollable()
 // Raise relevant Scroll Pattern events for UIAutomation clients.
 void ScrollingPresenterAutomationPeer::UpdateScrollPatternProperties()
 {
-    SCROLLER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH, METH_NAME, this);
 
     double newHorizontalScrollPercent = get_HorizontalScrollPercentImpl();
     double newVerticalScrollPercent = get_VerticalScrollPercentImpl();

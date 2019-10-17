@@ -73,7 +73,7 @@ winrt::Rect ScrollingPresenter::GetRelativeViewport(
         (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
 
     return result;
 }
@@ -96,14 +96,14 @@ winrt::UIElement ScrollingPresenter::AnchorElement()
     }
 
     auto value = m_anchorElement.get();
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     return value;
 }
 
 void ScrollingPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {
@@ -132,7 +132,7 @@ void ScrollingPresenter::RegisterAnchorCandidate(winrt::UIElement const& element
 
 void ScrollingPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {

@@ -8,14 +8,14 @@
 
 InteractionTrackerOwner::InteractionTrackerOwner(const winrt::ScrollingPresenter& scrollingPresenter)
 {
-    SCROLLER_TRACE_VERBOSE(scrollingPresenter, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(scrollingPresenter, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
 
     m_owner = scrollingPresenter;
 }
 
 InteractionTrackerOwner::~InteractionTrackerOwner()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_owner = nullptr;
 }

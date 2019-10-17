@@ -104,7 +104,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::VectorChangedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::MenuBarItem>>();
 #endif
 
-#ifdef SCROLLER_INCLUDED
+#ifdef SCROLLINGPRESENTER_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::SnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ScrollSnapPointBase>>();
     winrt::guid_of<struct winrt::Windows::Foundation::Collections::IIterable<struct winrt::Microsoft::UI::Xaml::Controls::Primitives::ZoomSnapPointBase>>();
@@ -178,7 +178,7 @@ void specialize_guids()
     winrt::guid_of<struct winrt::Windows::Foundation::TypedEventHandler<struct winrt::Microsoft::UI::Xaml::Controls::RefreshVisualizer, struct winrt::Microsoft::UI::Xaml::Controls::RefreshRequestedEventArgs>>();
 #endif
 
-#ifdef SCROLLVIEWER_INCLUDED
+#ifdef SCROLLINGVIEW_INCLUDED
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::ChainingMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::InputKind>>();

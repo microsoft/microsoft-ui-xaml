@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollViewerDynamicPage"
+    x:Class="MUXControlsTestApp.ScrollingViewDynamicPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -25,10 +25,10 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Orientation="Horizontal" Grid.ColumnSpan="4">
-            <CheckBox x:Name="chkScrollViewerProperties" 
-                      Content="ScrollViewer Properties" 
-                      Checked="ChkScrollViewerProperties_Checked" 
-                      Unchecked="ChkScrollViewerProperties_Unchecked" 
+            <CheckBox x:Name="chkScrollingViewProperties" 
+                      Content="ScrollingView Properties" 
+                      Checked="ChkScrollingViewProperties_Checked" 
+                      Unchecked="ChkScrollingViewProperties_Unchecked" 
                       IsChecked="True" 
                       IsThreeState="False"
                       Margin="2,0,0,0"/>
@@ -55,16 +55,16 @@
                       Margin="2,0,0,0"/>
         </StackPanel>
 
-        <controls:ScrollViewer 
-            x:Name="markupScrollViewer"
+        <controls:ScrollingView 
+            x:Name="markupScrollingView"
             Width="300" Height="400"
             Grid.Row="1" Margin="1"
             Background="AliceBlue" VerticalAlignment="Top">
             <Image x:Name="smallImg" Source="Assets/ingredient8.png" Width="900" Height="900"/>
-        </controls:ScrollViewer>
+        </controls:ScrollingView>
         <!--
-        <controls:ScrollViewer x:Name="markupScrollViewer" Width="300" Height="500" Grid.Row="1" Margin="1" Background="Aqua" VerticalAlignment="Top">
-            <controls:ScrollViewer.Content>
+        <controls:ScrollingView x:Name="markupScrollingView" Width="300" Height="500" Grid.Row="1" Margin="1" Background="Aqua" VerticalAlignment="Top">
+            <controls:ScrollingView.Content>
                 <Rectangle Width="900" Height="900">
                     <Rectangle.Fill>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
@@ -74,8 +74,8 @@
                         </LinearGradientBrush>
                     </Rectangle.Fill>
                 </Rectangle>
-            </controls:ScrollViewer.Content>
-        </controls:ScrollViewer>
+            </controls:ScrollingView.Content>
+        </controls:ScrollingView>
         -->
 
         <ScrollViewer 
@@ -86,7 +86,7 @@
             <Image x:Name="wuxSmallImg" Source="Assets/ingredient8.png" Width="900" Height="900"/>
         </ScrollViewer>
 
-        <Grid x:Name="grdScrollViewerProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="2" Background="LightYellow">
+        <Grid x:Name="grdScrollingViewProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="2" Background="LightYellow">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -108,7 +108,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="ScrollViewer Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
+            <TextBlock Text="ScrollingView Properties" Grid.Row="0" Grid.ColumnSpan="4" Foreground="Red"/>
 
             <TextBlock Text="Width:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
             <TextBox x:Name="txtWidth" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"/>
@@ -472,11 +472,11 @@
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <CheckBox x:Name="chkLogScrollingPresenterEvents" Content="Log ScrollingPresenter Events?" Margin="1" Checked="ChkLogScrollingPresenterEvents_Checked" Unchecked="ChkLogScrollingPresenterEvents_Unchecked"/>
-                        <CheckBox x:Name="chkLogScrollViewerEvents" Content="Log ScrollViewer Events?" Margin="1" Checked="ChkLogScrollViewerEvents_Checked" Unchecked="ChkLogScrollViewerEvents_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingViewEvents" Content="Log ScrollingView Events?" Margin="1" Checked="ChkLogScrollingViewEvents_Checked" Unchecked="ChkLogScrollingViewEvents_Unchecked"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
-                        <CheckBox x:Name="chkLogScrollViewerMessages" Content="Log ScrollViewer Messages?" Margin="1" Checked="ChkLogScrollViewerMessages_Checked" Unchecked="ChkLogScrollViewerMessages_Unchecked"/>
+                        <CheckBox x:Name="chkLogScrollingViewMessages" Content="Log ScrollingView Messages?" Margin="1" Checked="ChkLogScrollingViewMessages_Checked" Unchecked="ChkLogScrollingViewMessages_Unchecked"/>
                     </StackPanel>
                     <CheckBox x:Name="chkAutoHideScrollControllers" Content="AutoHideScrollControllers?" Margin="1" IsThreeState="True" IsChecked="{x:Null}"
                         Indeterminate="ChkAutoHideScrollControllers_Indeterminate" Checked="ChkAutoHideScrollControllers_Checked" Unchecked="ChkAutoHideScrollControllers_Unchecked"/>

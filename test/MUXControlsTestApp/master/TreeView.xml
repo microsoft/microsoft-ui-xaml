@@ -40,13 +40,13 @@
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
         RenderSize=400,400
-      [Windows.UI.Xaml.Controls.ScrollViewer]
+      [Windows.UI.Xaml.Controls.ScrollingView]
           Padding=0,0,0,0
           Foreground=#FF000000
           BorderThickness=0,0,0,0
           BorderBrush=#00FFFFFF
           Background=#00FFFFFF
-          Name=ScrollViewer
+          Name=ScrollingView
           Margin=0,0,0,0
           FocusVisualSecondaryThickness=1,1,1,1
           FocusVisualSecondaryBrush=#99FFFFFF

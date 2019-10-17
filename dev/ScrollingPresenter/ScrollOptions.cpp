@@ -12,7 +12,7 @@ CppWinRTActivatableClassWithBasicFactory(ScrollOptions);
 ScrollOptions::ScrollOptions(
     winrt::AnimationMode const& animationMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
@@ -22,7 +22,7 @@ ScrollOptions::ScrollOptions(
     winrt::AnimationMode const& animationMode,
     winrt::SnapPointsMode const& snapPointsMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str(),
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
@@ -37,7 +37,7 @@ winrt::AnimationMode ScrollOptions::AnimationMode() const
 
 void ScrollOptions::AnimationMode(winrt::AnimationMode const& animationMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
 
     m_animationMode = animationMode;
@@ -50,7 +50,7 @@ winrt::SnapPointsMode ScrollOptions::SnapPointsMode() const
 
 void ScrollOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
 
     m_snapPointsMode = snapPointsMode;

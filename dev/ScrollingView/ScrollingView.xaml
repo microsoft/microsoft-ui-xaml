@@ -6,9 +6,9 @@
     xmlns:localPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:ScrollViewer" BasedOn="{StaticResource DefaultScrollViewerStyle}" />
+    <Style TargetType="local:ScrollingView" BasedOn="{StaticResource DefaultScrollingViewStyle}" />
 
-    <Style x:Key="DefaultScrollViewerStyle" TargetType="local:ScrollViewer">
+    <Style x:Key="DefaultScrollingViewStyle" TargetType="local:ScrollingView">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="IsTabStop" Value="False"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
@@ -29,7 +29,7 @@
         <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local:ScrollViewer">
+                <ControlTemplate TargetType="local:ScrollingView">
                     <Grid x:Name="PART_Root">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ScrollingIndicatorStates">
@@ -37,14 +37,14 @@
                                     <VisualTransition From="MouseIndicator" To="NoIndicator">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelay}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
                                                 </DiscreteObjectKeyFrame>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelay}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
@@ -56,14 +56,14 @@
                                     <VisualTransition From="TouchIndicator" To="NoIndicator">
                                         <Storyboard>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsNoTouchDuration}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollingViewScrollBarsNoTouchDuration}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
                                                 </DiscreteObjectKeyFrame>
                                             </ObjectAnimationUsingKeyFrames>
                                             <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PART_VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
-                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerScrollBarsNoTouchDuration}">
+                                                <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollingViewScrollBarsNoTouchDuration}">
                                                     <DiscreteObjectKeyFrame.Value>
                                                         <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
                                                     </DiscreteObjectKeyFrame.Value>
@@ -118,8 +118,8 @@
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="ScrollBarsSeparatorExpanded" To="ScrollBarsSeparatorCollapsed">
                                         <Storyboard>
-                                            <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
-                                                BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelay}"
+                                            <DoubleAnimation Duration="{ThemeResource ScrollingViewScrollBarsSeparatorContractDuration}"
+                                                BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelay}"
                                                 Storyboard.TargetName="PART_ScrollBarsSeparator"
                                                 Storyboard.TargetProperty="Opacity"
                                                 To="0"/>
@@ -127,8 +127,8 @@
                                     </VisualTransition>
                                     <VisualTransition From="ScrollBarsSeparatorExpanded" To="ScrollBarsSeparatorCollapsedDisabled">
                                         <Storyboard>
-                                            <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
-                                                BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayDisabled}"
+                                            <DoubleAnimation Duration="{ThemeResource ScrollingViewScrollBarsSeparatorContractDuration}"
+                                                BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelayDisabled}"
                                                 Storyboard.TargetName="PART_ScrollBarsSeparator"
                                                 Storyboard.TargetProperty="Opacity"
                                                 To="0"/>
@@ -140,8 +140,8 @@
 
                                 <VisualState x:Name="ScrollBarsSeparatorCollapsedDisabled">
                                     <Storyboard>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorContractDuration}"
-                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayDisabled}"
+                                        <DoubleAnimation Duration="{ThemeResource ScrollingViewScrollBarsSeparatorContractDuration}"
+                                            BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelayDisabled}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"/>
@@ -150,8 +150,8 @@
 
                                 <VisualState x:Name="ScrollBarsSeparatorExpanded">
                                     <Storyboard>
-                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDuration}"
-                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDelay}"
+                                        <DoubleAnimation Duration="{ThemeResource ScrollingViewScrollBarsSeparatorExpandDuration}"
+                                            BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorExpandDelay}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"/>
@@ -161,7 +161,7 @@
                                 <VisualState x:Name="ScrollBarsSeparatorDisplayedWithoutAnimation">
                                     <Storyboard>
                                         <DoubleAnimation Duration="0"
-                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorDisplayDelayWithoutAnimation}"
+                                            BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorDisplayDelayWithoutAnimation}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"/>
@@ -171,7 +171,7 @@
                                 <VisualState x:Name="ScrollBarsSeparatorExpandedWithoutAnimation">
                                     <Storyboard>
                                         <DoubleAnimation Duration="0"
-                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorExpandDelayWithoutAnimation}"
+                                            BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorExpandDelayWithoutAnimation}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="1"/>
@@ -181,7 +181,7 @@
                                 <VisualState x:Name="ScrollBarsSeparatorCollapsedWithoutAnimation">
                                     <Storyboard>
                                         <DoubleAnimation Duration="0"
-                                            BeginTime="{ThemeResource ScrollViewerScrollBarsSeparatorContractDelayWithoutAnimation}"
+                                            BeginTime="{ThemeResource ScrollingViewScrollBarsSeparatorContractDelayWithoutAnimation}"
                                             Storyboard.TargetName="PART_ScrollBarsSeparator"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"/>
@@ -233,7 +233,7 @@
                             Grid.Row="1"
                             Grid.Column="1"
                             Opacity="0"
-                            Background="{ThemeResource ScrollViewerScrollBarsSeparatorBackground}"/>
+                            Background="{ThemeResource ScrollingViewScrollBarsSeparatorBackground}"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

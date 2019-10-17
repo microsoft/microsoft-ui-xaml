@@ -4,18 +4,18 @@
 #pragma once
 
 #include "ScrollBarController.h"
-#include "ScrollViewerTrace.h"
-#include "ScrollViewer.g.h"
-#include "ScrollViewer.properties.h"
-#include "ScrollViewerBringIntoViewOperation.h"
+#include "ScrollingViewTrace.h"
+#include "ScrollingView.g.h"
+#include "ScrollingView.properties.h"
+#include "ScrollingViewBringIntoViewOperation.h"
 
-class ScrollViewer :
-    public ReferenceTracker<ScrollViewer, winrt::implementation::ScrollViewerT>,
-    public ScrollViewerProperties
+class ScrollingView :
+    public ReferenceTracker<ScrollingView, winrt::implementation::ScrollingViewT>,
+    public ScrollingViewProperties
 {
 public:
-    ScrollViewer();
-    ~ScrollViewer();
+    ScrollingView();
+    ~ScrollingView();
 
     // Properties' default values.
     static const winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility s_defaultHorizontalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility::Auto };
@@ -46,7 +46,7 @@ public:
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultAnchorRatio{ 0.0 };
 
-#pragma region IScrollViewer
+#pragma region IScrollingView
 
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
@@ -80,7 +80,7 @@ public:
     winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
-    // Invoked by ScrollViewerTestHooks
+    // Invoked by ScrollingViewTestHooks
     void ScrollControllersAutoHidingChanged();
     winrt::ScrollingPresenter GetScrollingPresenterPart() const;
 
@@ -105,31 +105,31 @@ public:
 #pragma endregion
 
 private:
-    void OnScrollViewerGettingFocus(
+    void OnScrollingViewGettingFocus(
         const winrt::IInspectable& sender,
         const winrt::GettingFocusEventArgs& args);
-    void OnScrollViewerIsEnabledChanged(
+    void OnScrollingViewIsEnabledChanged(
         const winrt::IInspectable& sender,
         const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnScrollViewerUnloaded(
+    void OnScrollingViewUnloaded(
         const winrt::IInspectable& sender,
         const winrt::RoutedEventArgs& args);
-    void OnScrollViewerPointerEntered(
+    void OnScrollingViewPointerEntered(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-    void OnScrollViewerPointerMoved(
+    void OnScrollingViewPointerMoved(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-    void OnScrollViewerPointerExited(
+    void OnScrollingViewPointerExited(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-    void OnScrollViewerPointerPressed(
+    void OnScrollingViewPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-    void OnScrollViewerPointerReleased(
+    void OnScrollingViewPointerReleased(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
-    void OnScrollViewerPointerCanceled(
+    void OnScrollingViewPointerCanceled(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
@@ -203,8 +203,8 @@ private:
     void HookUISettingsEvent();
     void HookCompositionTargetRendering();
     void UnhookCompositionTargetRendering();
-    void HookScrollViewerEvents();
-    void UnhookScrollViewerEvents();
+    void HookScrollingViewEvents();
+    void UnhookScrollingViewEvents();
     void HookScrollingPresenterEvents();
     void UnhookScrollingPresenterEvents(bool isForDestructor);
     void HookHorizontalScrollControllerEvents();
@@ -352,9 +352,9 @@ private:
     int m_horizontalScrollFromDirection{ 0 };
     int m_horizontalScrollFromOffsetChangeId{ -1 };
 
-    // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
+    // List of temporary ScrollingViewBringIntoViewOperation instances used to track expected
     // ScrollingPresenter::BringingIntoView occurrences due to navigation.
-    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations;
+    std::list<std::shared_ptr<ScrollingViewBringIntoViewOperation>> m_bringIntoViewOperations;
 
     // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.

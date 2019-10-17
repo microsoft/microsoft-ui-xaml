@@ -10,7 +10,7 @@
 
 ScrollingPresenterAnchorRequestedEventArgs::ScrollingPresenterAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
 
     m_scrollingPresenter.set(scrollingPresenter);
 }
@@ -29,7 +29,7 @@ winrt::UIElement ScrollingPresenterAnchorRequestedEventArgs::AnchorElement()
 
 void ScrollingPresenterAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& value)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     const winrt::UIElement& anchorElement{ value };
     com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(m_scrollingPresenter.get())->get_strong();

@@ -13,7 +13,7 @@ ScrollControllerScrollByRequestedEventArgs::ScrollControllerScrollByRequestedEve
     double offsetDelta,
     winrt::ScrollOptions const & options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offsetDelta);
 
     m_offsetDelta = offsetDelta;
@@ -37,7 +37,7 @@ winrt::ScrollInfo ScrollControllerScrollByRequestedEventArgs::Info() const
 
 void ScrollControllerScrollByRequestedEventArgs::Info(winrt::ScrollInfo info)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
     m_info = info;
 }

@@ -77,7 +77,7 @@ public:
 
     void SetIsCanceled(bool isCanceled)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCanceled);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCanceled);
 
         m_isCanceled = isCanceled;
     }
@@ -89,7 +89,7 @@ public:
 
     void SetIsDelayed(bool isDelayed)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isDelayed);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isDelayed);
 
         m_isDelayed = isDelayed;
     }
@@ -111,7 +111,7 @@ public:
 
     void SetIsCompleted(bool isCompleted)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCompleted);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCompleted);
 
         m_isCompleted = isCompleted;
     }
@@ -123,7 +123,7 @@ public:
 
     void SetTicksCountdown(int ticksCountdown)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, ticksCountdown);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, ticksCountdown);
 
         MUX_ASSERT(ticksCountdown > 0);
         m_preProcessingTicksCountdown = m_queuedOperationTicks = ticksCountdown;
@@ -148,7 +148,7 @@ public:
 
     void SetIsScrollControllerRequest(bool isFromHorizontalScrollController)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isFromHorizontalScrollController);
 
         if (isFromHorizontalScrollController)
             m_operationTrigger = static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(m_operationTrigger) | 
@@ -166,7 +166,7 @@ public:
 
         m_postProcessingTicksCountdown--;
         
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
         return m_postProcessingTicksCountdown == 0;
     }
 
@@ -177,7 +177,7 @@ public:
 
         m_preProcessingTicksCountdown--;        
 
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
         return m_preProcessingTicksCountdown == 0;
     }
 
@@ -193,7 +193,7 @@ public:
 
     void SetRequestId(int requestId)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, requestId);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, requestId);
 
         m_requestId = requestId;
     }
@@ -210,7 +210,7 @@ public:
 
     void SetRequiredOperation(std::shared_ptr<InteractionTrackerAsyncOperation> requiredOperation)
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
 
         m_requiredOperation = requiredOperation;
     }

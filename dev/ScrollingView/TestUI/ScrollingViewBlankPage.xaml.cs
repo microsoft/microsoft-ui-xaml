@@ -5,27 +5,27 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollViewer = Microsoft.UI.Xaml.Controls.ScrollViewer;
+using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
 using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
 using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-using ScrollViewerTestHooks = Microsoft.UI.Private.Controls.ScrollViewerTestHooks;
+using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHooks;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollViewerBlankPage : TestPage
+    public sealed partial class ScrollingViewBlankPage : TestPage
     {
         private object asyncEventReportingLock = new object();
         private List<string> lstAsyncEventMessage = new List<string>();
 
-        public ScrollViewerBlankPage()
+        public ScrollingViewBlankPage()
         {
             this.InitializeComponent();
 
-            if (chkLogScrollViewerMessages.IsChecked == true || chkLogScrollingPresenterMessages.IsChecked == true)
+            if (chkLogScrollingViewMessages.IsChecked == true || chkLogScrollingPresenterMessages.IsChecked == true)
             {
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
 
@@ -33,9 +33,9 @@ namespace MUXControlsTestApp
                 {
                     MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                 }
-                if (chkLogScrollViewerMessages.IsChecked == true)
+                if (chkLogScrollingViewMessages.IsChecked == true)
                 {
-                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollingView", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                 }
             }
         }
@@ -64,73 +64,73 @@ namespace MUXControlsTestApp
                 grdLogs.Visibility = Visibility.Collapsed;
         }
 
-        private void ScrollViewer_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollingView_Loaded(object sender, RoutedEventArgs e)
         {
-            AppendAsyncEventMessage($"ScrollViewer.Loaded");
+            AppendAsyncEventMessage($"ScrollingView.Loaded");
             if (chkLogScrollingPresenterEvents.IsChecked == true)
             {
                 LogScrollingPresenterInfo();
             }
-            LogScrollViewerInfo();
+            LogScrollingViewInfo();
         }
 
-        private void ScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ScrollingView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            AppendAsyncEventMessage($"ScrollViewer.SizeChanged Size={scrollViewer.ActualWidth}, {scrollViewer.ActualHeight}");
+            AppendAsyncEventMessage($"ScrollingView.SizeChanged Size={scrollingView.ActualWidth}, {scrollingView.ActualHeight}");
             if (chkLogScrollingPresenterEvents.IsChecked == true)
             {
                 LogScrollingPresenterInfo();
             }
-            LogScrollViewerInfo();
+            LogScrollingViewInfo();
         }
 
-        private void ScrollViewer_GettingFocus(UIElement sender, Windows.UI.Xaml.Input.GettingFocusEventArgs args)
+        private void ScrollingView_GettingFocus(UIElement sender, Windows.UI.Xaml.Input.GettingFocusEventArgs args)
         {
             FrameworkElement oldFE = args.OldFocusedElement as FrameworkElement;
             string oldFEName = (oldFE == null) ? "null" : oldFE.Name;
             FrameworkElement newFE = args.NewFocusedElement as FrameworkElement;
             string newFEName = (newFE == null) ? "null" : newFE.Name;
 
-            AppendAsyncEventMessage($"ScrollViewer.GettingFocus FocusState={args.FocusState}, Direction={args.Direction}, InputDevice={args.InputDevice}, oldFE={oldFEName}, newFE={newFEName}");
+            AppendAsyncEventMessage($"ScrollingView.GettingFocus FocusState={args.FocusState}, Direction={args.Direction}, InputDevice={args.InputDevice}, oldFE={oldFEName}, newFE={newFEName}");
         }
 
-        private void ScrollViewer_LostFocus(object sender, RoutedEventArgs e)
+        private void ScrollingView_LostFocus(object sender, RoutedEventArgs e)
         {
-            AppendAsyncEventMessage("ScrollViewer.LostFocus");
+            AppendAsyncEventMessage("ScrollingView.LostFocus");
         }
 
-        private void ScrollViewer_LosingFocus(UIElement sender, Windows.UI.Xaml.Input.LosingFocusEventArgs args)
+        private void ScrollingView_LosingFocus(UIElement sender, Windows.UI.Xaml.Input.LosingFocusEventArgs args)
         {
             FrameworkElement oldFE = args.OldFocusedElement as FrameworkElement;
             string oldFEName = (oldFE == null) ? "null" : oldFE.Name;
             FrameworkElement newFE = args.NewFocusedElement as FrameworkElement;
             string newFEName = (newFE == null) ? "null" : newFE.Name;
 
-            AppendAsyncEventMessage($"ScrollViewer.LosingFocus FocusState={args.FocusState}, Direction={args.Direction}, InputDevice={args.InputDevice}, oldFE={oldFEName}, newFE={newFEName}");
+            AppendAsyncEventMessage($"ScrollingView.LosingFocus FocusState={args.FocusState}, Direction={args.Direction}, InputDevice={args.InputDevice}, oldFE={oldFEName}, newFE={newFEName}");
         }
 
-        private void ScrollViewer_GotFocus(object sender, RoutedEventArgs e)
+        private void ScrollingView_GotFocus(object sender, RoutedEventArgs e)
         {
-            AppendAsyncEventMessage("ScrollViewer.GotFocus");
+            AppendAsyncEventMessage("ScrollingView.GotFocus");
         }
 
         private void ScrollingPresenter_Loaded(object sender, RoutedEventArgs e)
         {
             AppendAsyncEventMessage($"ScrollingPresenter.Loaded");
             LogScrollingPresenterInfo();
-            if (chkLogScrollViewerEvents.IsChecked == true)
+            if (chkLogScrollingViewEvents.IsChecked == true)
             {
-                LogScrollViewerInfo();
+                LogScrollingViewInfo();
             }
         }
 
         private void ScrollingPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            AppendAsyncEventMessage($"ScrollingPresenter.SizeChanged Size={scrollViewer.ActualWidth}, {scrollViewer.ActualHeight}");
+            AppendAsyncEventMessage($"ScrollingPresenter.SizeChanged Size={scrollingView.ActualWidth}, {scrollingView.ActualHeight}");
             LogScrollingPresenterInfo();
-            if (chkLogScrollViewerEvents.IsChecked == true)
+            if (chkLogScrollingViewEvents.IsChecked == true)
             {
-                LogScrollViewerInfo();
+                LogScrollingViewInfo();
             }
         }
 
@@ -169,44 +169,44 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage($"ScrollingPresenter.ZoomCompleted ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}");
         }
 
-        private void ScrollViewer_ExtentChanged(ScrollViewer sender, object args)
+        private void ScrollingView_ExtentChanged(ScrollingView sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ExtentChanged ExtentWidth={sender.ExtentWidth}, ExtentHeight={sender.ExtentHeight}");
+            AppendAsyncEventMessage($"ScrollingView.ExtentChanged ExtentWidth={sender.ExtentWidth}, ExtentHeight={sender.ExtentHeight}");
         }
 
-        private void ScrollViewer_StateChanged(ScrollViewer sender, object args)
+        private void ScrollingView_StateChanged(ScrollingView sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.StateChanged {sender.State.ToString()}");
+            AppendAsyncEventMessage($"ScrollingView.StateChanged {sender.State.ToString()}");
         }
 
-        private void ScrollViewer_ViewChanged(ScrollViewer sender, object args)
+        private void ScrollingView_ViewChanged(ScrollingView sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ViewChanged HorizontalOffset={sender.HorizontalOffset.ToString()}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
+            AppendAsyncEventMessage($"ScrollingView.ViewChanged HorizontalOffset={sender.HorizontalOffset.ToString()}, VerticalOffset={sender.VerticalOffset}, ZoomFactor={sender.ZoomFactor}");
         }
 
-        private void ScrollViewer_ScrollAnimationStarting(ScrollViewer sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingView_ScrollAnimationStarting(ScrollingView sender, ScrollAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ScrollAnimationStarting OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollingView.ScrollAnimationStarting OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
         }
 
-        private void ScrollViewer_ZoomAnimationStarting(ScrollViewer sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingView_ZoomAnimationStarting(ScrollingView sender, ZoomAnimationStartingEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ZoomAnimationStarting ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}, CenterPoint={args.CenterPoint}");
+            AppendAsyncEventMessage($"ScrollingView.ZoomAnimationStarting ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}, CenterPoint={args.CenterPoint}");
         }
 
-        private void ScrollViewer_ScrollCompleted(ScrollViewer sender, ScrollCompletedEventArgs args)
+        private void ScrollingView_ScrollCompleted(ScrollingView sender, ScrollCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ScrollCompleted OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollingView.ScrollCompleted OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}");
         }
 
-        private void ScrollViewer_ZoomCompleted(ScrollViewer sender, ZoomCompletedEventArgs args)
+        private void ScrollingView_ZoomCompleted(ScrollingView sender, ZoomCompletedEventArgs args)
         {
-            AppendAsyncEventMessage($"ScrollViewer.ZoomCompleted ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}");
+            AppendAsyncEventMessage($"ScrollingView.ZoomCompleted ZoomFactorChangeId={args.ZoomInfo.ZoomFactorChangeId}");
         }
 
         private void LogScrollingPresenterInfo()
         {
-            ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
+            ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
 
             AppendAsyncEventMessage($"ScrollingPresenter Info: HorizontalOffset={scrollingPresenter.HorizontalOffset}, VerticalOffset={scrollingPresenter.VerticalOffset}, ZoomFactor={scrollingPresenter.ZoomFactor}");
             AppendAsyncEventMessage($"ScrollingPresenter Info: ViewportWidth={scrollingPresenter.ViewportWidth}, ExtentHeight={scrollingPresenter.ViewportHeight}");
@@ -214,12 +214,12 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage($"ScrollingPresenter Info: ScrollableWidth={scrollingPresenter.ScrollableWidth}, ScrollableHeight={scrollingPresenter.ScrollableHeight}");
         }
 
-        private void LogScrollViewerInfo()
+        private void LogScrollingViewInfo()
         {
-            AppendAsyncEventMessage($"ScrollViewer Info: HorizontalOffset={scrollViewer.HorizontalOffset}, VerticalOffset={scrollViewer.VerticalOffset}, ZoomFactor={scrollViewer.ZoomFactor}");
-            AppendAsyncEventMessage($"ScrollViewer Info: ViewportWidth={scrollViewer.ViewportWidth}, ExtentHeight={scrollViewer.ViewportHeight}");
-            AppendAsyncEventMessage($"ScrollViewer Info: ExtentWidth={scrollViewer.ExtentWidth}, ExtentHeight={scrollViewer.ExtentHeight}");
-            AppendAsyncEventMessage($"ScrollViewer Info: ScrollableWidth={scrollViewer.ScrollableWidth}, ScrollableHeight={scrollViewer.ScrollableHeight}");
+            AppendAsyncEventMessage($"ScrollingView Info: HorizontalOffset={scrollingView.HorizontalOffset}, VerticalOffset={scrollingView.VerticalOffset}, ZoomFactor={scrollingView.ZoomFactor}");
+            AppendAsyncEventMessage($"ScrollingView Info: ViewportWidth={scrollingView.ViewportWidth}, ExtentHeight={scrollingView.ViewportHeight}");
+            AppendAsyncEventMessage($"ScrollingView Info: ExtentWidth={scrollingView.ExtentWidth}, ExtentHeight={scrollingView.ExtentHeight}");
+            AppendAsyncEventMessage($"ScrollingView Info: ScrollableWidth={scrollingView.ScrollableWidth}, ScrollableHeight={scrollingView.ScrollableHeight}");
         }
 
         private void BtnClearLogs_Click(object sender, RoutedEventArgs e)
@@ -229,9 +229,9 @@ namespace MUXControlsTestApp
 
         private void ChkLogScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
-            if (scrollViewer != null)
+            if (scrollingView != null)
             {
-                ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
+                ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
 
                 if (scrollingPresenter != null)
                 {
@@ -250,9 +250,9 @@ namespace MUXControlsTestApp
 
         private void ChkLogScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (scrollViewer != null)
+            if (scrollingView != null)
             {
-                ScrollingPresenter scrollingPresenter = ScrollViewerTestHooks.GetScrollingPresenterPart(scrollViewer);
+                ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
 
                 if (scrollingPresenter != null)
                 {
@@ -269,70 +269,70 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollViewerEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingViewEvents_Checked(object sender, RoutedEventArgs e)
         {
-            if (scrollViewer != null)
+            if (scrollingView != null)
             {
-                scrollViewer.GettingFocus += ScrollViewer_GettingFocus;
-                scrollViewer.GotFocus += ScrollViewer_GotFocus;
-                scrollViewer.LosingFocus += ScrollViewer_LosingFocus;
-                scrollViewer.LostFocus += ScrollViewer_LostFocus;
-                scrollViewer.Loaded += ScrollViewer_Loaded;
-                scrollViewer.SizeChanged += ScrollViewer_SizeChanged;
-                scrollViewer.ExtentChanged += ScrollViewer_ExtentChanged;
-                scrollViewer.StateChanged += ScrollViewer_StateChanged;
-                scrollViewer.ViewChanged += ScrollViewer_ViewChanged;
-                scrollViewer.ScrollAnimationStarting += ScrollViewer_ScrollAnimationStarting;
-                scrollViewer.ZoomAnimationStarting += ScrollViewer_ZoomAnimationStarting;
-                scrollViewer.ScrollCompleted += ScrollViewer_ScrollCompleted;
-                scrollViewer.ZoomCompleted += ScrollViewer_ZoomCompleted;
+                scrollingView.GettingFocus += ScrollingView_GettingFocus;
+                scrollingView.GotFocus += ScrollingView_GotFocus;
+                scrollingView.LosingFocus += ScrollingView_LosingFocus;
+                scrollingView.LostFocus += ScrollingView_LostFocus;
+                scrollingView.Loaded += ScrollingView_Loaded;
+                scrollingView.SizeChanged += ScrollingView_SizeChanged;
+                scrollingView.ExtentChanged += ScrollingView_ExtentChanged;
+                scrollingView.StateChanged += ScrollingView_StateChanged;
+                scrollingView.ViewChanged += ScrollingView_ViewChanged;
+                scrollingView.ScrollAnimationStarting += ScrollingView_ScrollAnimationStarting;
+                scrollingView.ZoomAnimationStarting += ScrollingView_ZoomAnimationStarting;
+                scrollingView.ScrollCompleted += ScrollingView_ScrollCompleted;
+                scrollingView.ZoomCompleted += ScrollingView_ZoomCompleted;
             }
         }
 
-        private void ChkLogScrollViewerEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingViewEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (scrollViewer != null)
+            if (scrollingView != null)
             {
-                scrollViewer.GettingFocus -= ScrollViewer_GettingFocus;
-                scrollViewer.GotFocus -= ScrollViewer_GotFocus;
-                scrollViewer.LosingFocus -= ScrollViewer_LosingFocus;
-                scrollViewer.LostFocus -= ScrollViewer_LostFocus;
-                scrollViewer.Loaded -= ScrollViewer_Loaded;
-                scrollViewer.SizeChanged -= ScrollViewer_SizeChanged;
-                scrollViewer.ExtentChanged -= ScrollViewer_ExtentChanged;
-                scrollViewer.StateChanged -= ScrollViewer_StateChanged;
-                scrollViewer.ViewChanged -= ScrollViewer_ViewChanged;
-                scrollViewer.ScrollAnimationStarting -= ScrollViewer_ScrollAnimationStarting;
-                scrollViewer.ZoomAnimationStarting -= ScrollViewer_ZoomAnimationStarting;
-                scrollViewer.ScrollCompleted -= ScrollViewer_ScrollCompleted;
-                scrollViewer.ZoomCompleted -= ScrollViewer_ZoomCompleted;
+                scrollingView.GettingFocus -= ScrollingView_GettingFocus;
+                scrollingView.GotFocus -= ScrollingView_GotFocus;
+                scrollingView.LosingFocus -= ScrollingView_LosingFocus;
+                scrollingView.LostFocus -= ScrollingView_LostFocus;
+                scrollingView.Loaded -= ScrollingView_Loaded;
+                scrollingView.SizeChanged -= ScrollingView_SizeChanged;
+                scrollingView.ExtentChanged -= ScrollingView_ExtentChanged;
+                scrollingView.StateChanged -= ScrollingView_StateChanged;
+                scrollingView.ViewChanged -= ScrollingView_ViewChanged;
+                scrollingView.ScrollAnimationStarting -= ScrollingView_ScrollAnimationStarting;
+                scrollingView.ZoomAnimationStarting -= ScrollingView_ZoomAnimationStarting;
+                scrollingView.ScrollCompleted -= ScrollingView_ScrollCompleted;
+                scrollingView.ZoomCompleted -= ScrollingView_ZoomCompleted;
             }
         }
 
         private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-            if (chkLogScrollViewerMessages.IsChecked == false)
+            if (chkLogScrollingViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
         private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-            if (chkLogScrollViewerMessages.IsChecked == false)
+            if (chkLogScrollingViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollViewerMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingViewMessages_Checked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingView", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
             if (chkLogScrollingPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollViewerMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollingViewMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollViewer", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingView", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
             if (chkLogScrollingPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }

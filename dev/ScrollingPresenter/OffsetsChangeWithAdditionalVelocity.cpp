@@ -15,7 +15,7 @@ OffsetsChangeWithAdditionalVelocity::OffsetsChangeWithAdditionalVelocity(
         m_anticipatedOffsetsChange(anticipatedOffsetsChange),
         m_inertiaDecayRate(inertiaDecayRate)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(),
         TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str(),
         TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
@@ -23,26 +23,26 @@ OffsetsChangeWithAdditionalVelocity::OffsetsChangeWithAdditionalVelocity(
 
 OffsetsChangeWithAdditionalVelocity::~OffsetsChangeWithAdditionalVelocity()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void OffsetsChangeWithAdditionalVelocity::OffsetsVelocity(winrt::float2 const& offsetsVelocity)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(offsetsVelocity).c_str());
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(offsetsVelocity).c_str());
 
     m_offsetsVelocity = offsetsVelocity;
 }
 
 void OffsetsChangeWithAdditionalVelocity::AnticipatedOffsetsChange(winrt::float2 const& anticipatedOffsetsChange)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str());
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(anticipatedOffsetsChange).c_str());
 
     m_anticipatedOffsetsChange = anticipatedOffsetsChange;
 }
 
 void OffsetsChangeWithAdditionalVelocity::InertiaDecayRate(winrt::IReference<winrt::float2> const& inertiaDecayRate)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 
     m_inertiaDecayRate = inertiaDecayRate;
 }

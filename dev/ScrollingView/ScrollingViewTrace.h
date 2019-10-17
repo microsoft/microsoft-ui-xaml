@@ -8,60 +8,60 @@
 #include "Utils.h"
 #include "MUXControlsTestHooks.h"
 
-inline bool IsScrollViewerTracingEnabled()
+inline bool IsScrollingViewTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_LoggingProviderMatchAnyKeyword == 0);
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLINGVIEW || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
-inline bool IsScrollViewerVerboseTracingEnabled()
+inline bool IsScrollingViewVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_LoggingProviderMatchAnyKeyword == 0);
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLINGVIEW || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
-inline bool IsScrollViewerPerfTracingEnabled()
+inline bool IsScrollingViewPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLVIEWER || g_PerfProviderMatchAnyKeyword == 0);
+        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLINGVIEW || g_PerfProviderMatchAnyKeyword == 0);
 }
 
-#define SCROLLVIEWER_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
-ScrollViewerTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
+#define SCROLLINGVIEW_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
+ScrollingViewTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
-#define SCROLLVIEWER_TRACE_INFO(sender, message, ...) \
-if (IsScrollViewerTracingEnabled()) \
+#define SCROLLINGVIEW_TRACE_INFO(sender, message, ...) \
+if (IsScrollingViewTracingEnabled()) \
 { \
-    SCROLLVIEWER_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGVIEW_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
-else if (ScrollViewerTrace::s_IsDebugOutputEnabled || ScrollViewerTrace::s_IsVerboseDebugOutputEnabled) \
+else if (ScrollingViewTrace::s_IsDebugOutputEnabled || ScrollingViewTrace::s_IsVerboseDebugOutputEnabled) \
 { \
-    SCROLLVIEWER_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
-
-#define SCROLLVIEWER_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
-ScrollViewerTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
-
-#define SCROLLVIEWER_TRACE_VERBOSE(sender, message, ...) \
-if (IsScrollViewerVerboseTracingEnabled()) \
-{ \
-    SCROLLVIEWER_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
-} \
-else if (ScrollViewerTrace::s_IsVerboseDebugOutputEnabled) \
-{ \
-    SCROLLVIEWER_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGVIEW_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
-#define SCROLLVIEWER_TRACE_PERF(info) \
-if (IsScrollViewerPerfTracingEnabled()) \
+#define SCROLLINGVIEW_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
+ScrollingViewTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
+
+#define SCROLLINGVIEW_TRACE_VERBOSE(sender, message, ...) \
+if (IsScrollingViewVerboseTracingEnabled()) \
 { \
-    ScrollViewerTrace::TracePerfInfo(info); \
+    SCROLLINGVIEW_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+} \
+else if (ScrollingViewTrace::s_IsVerboseDebugOutputEnabled) \
+{ \
+    SCROLLINGVIEW_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
-class ScrollViewerTrace
+#define SCROLLINGVIEW_TRACE_PERF(info) \
+if (IsScrollingViewPerfTracingEnabled()) \
+{ \
+    ScrollingViewTrace::TracePerfInfo(info); \
+} \
+
+class ScrollingViewTrace
 {
 public:
     static bool s_IsDebugOutputEnabled;
@@ -81,9 +81,9 @@ public:
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
-                    "ScrollViewerInfo" /* eventName */,
+                    "ScrollingViewInfo" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-                    TraceLoggingKeyword(KEYWORD_SCROLLVIEWER),
+                    TraceLoggingKeyword(KEYWORD_SCROLLINGVIEW),
                     TraceLoggingWideString(buffer, "Message"));
             }
 
@@ -95,7 +95,7 @@ public:
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
             if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"ScrollViewer") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
+                (globalTestHooks->GetLoggingLevelForType(L"ScrollingView") >= WINEVENT_LEVEL_INFO || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_INFO))
             {
                 globalTestHooks->LogMessage(sender, buffer, false /*isVerboseLevel*/);
             }
@@ -117,9 +117,9 @@ public:
                 // http://fastetw/index.aspx
                 TraceLoggingWrite(
                     g_hLoggingProvider,
-                    "ScrollViewerVerbose" /* eventName */,
+                    "ScrollingViewVerbose" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-                    TraceLoggingKeyword(KEYWORD_SCROLLVIEWER),
+                    TraceLoggingKeyword(KEYWORD_SCROLLINGVIEW),
                     TraceLoggingWideString(buffer, "Message"));
             }
 
@@ -131,7 +131,7 @@ public:
             com_ptr<MUXControlsTestHooks> globalTestHooks = MUXControlsTestHooks::GetGlobalTestHooks();
 
             if (globalTestHooks &&
-                (globalTestHooks->GetLoggingLevelForType(L"ScrollViewer") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
+                (globalTestHooks->GetLoggingLevelForType(L"ScrollingView") >= WINEVENT_LEVEL_VERBOSE || globalTestHooks->GetLoggingLevelForInstance(sender) >= WINEVENT_LEVEL_VERBOSE))
             {
                 globalTestHooks->LogMessage(sender, buffer, true /*isVerboseLevel*/);
             }
@@ -146,9 +146,9 @@ public:
         // http://fastetw/index.aspx
         TraceLoggingWrite(
             g_hPerfProvider,
-            "ScrollViewerPerf" /* eventName */,
+            "ScrollingViewPerf" /* eventName */,
             TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-            TraceLoggingKeyword(KEYWORD_SCROLLVIEWER),
+            TraceLoggingKeyword(KEYWORD_SCROLLINGVIEW),
             TraceLoggingWideString(info, "Info"));
     }
 };

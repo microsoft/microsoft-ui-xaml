@@ -12,50 +12,50 @@ inline bool IsScrollingPresenterTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLER || g_LoggingProviderMatchAnyKeyword == 0);
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLINGPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollingPresenterVerboseTracingEnabled()
 {
     return g_IsLoggingProviderEnabled &&
         g_LoggingProviderLevel >= WINEVENT_LEVEL_VERBOSE &&
-        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLER || g_LoggingProviderMatchAnyKeyword == 0);
+        (g_LoggingProviderMatchAnyKeyword & KEYWORD_SCROLLINGPRESENTER || g_LoggingProviderMatchAnyKeyword == 0);
 }
 
 inline bool IsScrollingPresenterPerfTracingEnabled()
 {
     return g_IsPerfProviderEnabled &&
         g_PerfProviderLevel >= WINEVENT_LEVEL_INFO &&
-        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLER || g_PerfProviderMatchAnyKeyword == 0);
+        (g_PerfProviderMatchAnyKeyword & KEYWORD_SCROLLINGPRESENTER || g_PerfProviderMatchAnyKeyword == 0);
 }
 
-#define SCROLLER_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
+#define SCROLLINGPRESENTER_TRACE_INFO_ENABLED(includeTraceLogging, sender, message, ...) \
 ScrollingPresenterTrace::TraceInfo(includeTraceLogging, sender, message, __VA_ARGS__); \
 
-#define SCROLLER_TRACE_INFO(sender, message, ...) \
+#define SCROLLINGPRESENTER_TRACE_INFO(sender, message, ...) \
 if (IsScrollingPresenterTracingEnabled()) \
 { \
-    SCROLLER_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGPRESENTER_TRACE_INFO_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 else if (ScrollingPresenterTrace::s_IsDebugOutputEnabled || ScrollingPresenterTrace::s_IsVerboseDebugOutputEnabled) \
 { \
-    SCROLLER_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGPRESENTER_TRACE_INFO_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
-#define SCROLLER_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
+#define SCROLLINGPRESENTER_TRACE_VERBOSE_ENABLED(includeTraceLogging, sender, message, ...) \
 ScrollingPresenterTrace::TraceVerbose(includeTraceLogging, sender, message, __VA_ARGS__); \
 
-#define SCROLLER_TRACE_VERBOSE(sender, message, ...) \
+#define SCROLLINGPRESENTER_TRACE_VERBOSE(sender, message, ...) \
 if (IsScrollingPresenterVerboseTracingEnabled()) \
 { \
-    SCROLLER_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGPRESENTER_TRACE_VERBOSE_ENABLED(true /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 else if (ScrollingPresenterTrace::s_IsVerboseDebugOutputEnabled) \
 { \
-    SCROLLER_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
+    SCROLLINGPRESENTER_TRACE_VERBOSE_ENABLED(false /*includeTraceLogging*/, sender, message, __VA_ARGS__); \
 } \
 
-#define SCROLLER_TRACE_PERF(info) \
+#define SCROLLINGPRESENTER_TRACE_PERF(info) \
 if (IsScrollingPresenterPerfTracingEnabled()) \
 { \
     ScrollingPresenterTrace::TracePerfInfo(info); \
@@ -83,7 +83,7 @@ public:
                     g_hLoggingProvider,
                     "ScrollingPresenterInfo" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-                    TraceLoggingKeyword(KEYWORD_SCROLLER),
+                    TraceLoggingKeyword(KEYWORD_SCROLLINGPRESENTER),
                     TraceLoggingWideString(buffer, "Message"));
             }
 
@@ -120,7 +120,7 @@ public:
                     g_hLoggingProvider,
                     "ScrollingPresenterVerbose" /* eventName */,
                     TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-                    TraceLoggingKeyword(KEYWORD_SCROLLER),
+                    TraceLoggingKeyword(KEYWORD_SCROLLINGPRESENTER),
                     TraceLoggingWideString(buffer, "Message"));
             }
 
@@ -149,7 +149,7 @@ public:
             g_hPerfProvider,
             "ScrollingPresenterPerf" /* eventName */,
             TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-            TraceLoggingKeyword(KEYWORD_SCROLLER),
+            TraceLoggingKeyword(KEYWORD_SCROLLINGPRESENTER),
             TraceLoggingWideString(info, "Info"));
     }
 };

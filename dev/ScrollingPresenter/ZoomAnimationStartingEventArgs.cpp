@@ -29,7 +29,7 @@ winrt::CompositionAnimation ZoomAnimationStartingEventArgs::Animation()
 
 void ZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
     if (!value)
     {
         throw winrt::hresult_invalid_argument(L"Animation cannot be set to null.");

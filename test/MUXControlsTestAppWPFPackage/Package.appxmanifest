@@ -42,7 +42,7 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.PullToRefreshHelperTestApi" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.MUXControlsTestHooks" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.SliderInteraction" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.ScrollViewerTestHooks" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.ScrollingViewTestHooks" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.SwipeTestHooks" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.DisplayRegionHelperTestApi" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.SpectrumBrush" ThreadingModel="both" />
@@ -116,7 +116,7 @@
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ElementAnimator" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.DefaultRepeaterFocusManager" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.IndexPath" ThreadingModel="both" />
-        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ScrollViewer" ThreadingModel="both" />
+        <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.ScrollingView" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.TreeViewNode" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.RefreshContainer" ThreadingModel="both" />
         <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.SelectionModel" ThreadingModel="both" />

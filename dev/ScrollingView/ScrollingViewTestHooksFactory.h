@@ -3,6 +3,6 @@
 
 #pragma once
 
-#include "ScrollViewerTestHooks.h"
+#include "ScrollingViewTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollViewerTestHooks)
+CppWinRTActivatableClassWithBasicFactory(ScrollingViewTestHooks)

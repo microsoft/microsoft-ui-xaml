@@ -13,12 +13,12 @@ ViewChange::ViewChange(
     : m_viewKind(viewKind)
     , m_options(options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_STR, METH_NAME, this,
         options,
         TypeLogging::ScrollingPresenterViewKindToString(viewKind).c_str());
 }
 
 ViewChange::~ViewChange()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }

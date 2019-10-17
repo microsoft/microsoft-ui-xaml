@@ -14,7 +14,7 @@ ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEve
     double offset,
     winrt::ScrollOptions const & options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offset);
 
     m_offset = offset;
@@ -38,7 +38,7 @@ winrt::ScrollInfo ScrollControllerScrollToRequestedEventArgs::Info() const
 
 void ScrollControllerScrollToRequestedEventArgs::Info(winrt::ScrollInfo info)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
     m_info = info;
 }

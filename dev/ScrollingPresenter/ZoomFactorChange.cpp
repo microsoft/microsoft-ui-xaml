@@ -16,11 +16,11 @@ ZoomFactorChange::ZoomFactorChange(
         m_centerPoint(centerPoint),
         ViewChange(zoomFactorKind, options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(), zoomFactor);
 }
 
 ZoomFactorChange::~ZoomFactorChange()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }

@@ -5,9 +5,9 @@
 #include "common.h"
 #include "MUXControlsTestHooksFactory.h"
 
-#ifdef SCROLLER_INCLUDED
+#ifdef SCROLLINGPRESENTER_INCLUDED
 #include "ScrollingPresenterTrace.h"
-#include "ScrollViewerTrace.h"
+#include "ScrollingViewTrace.h"
 #endif
 
 #ifdef SWIPECONTROL_INCLUDED
@@ -67,16 +67,16 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForInstance(const winrt::IInspectable
 
 void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_view& type, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)
 {
-#ifdef SCROLLER_INCLUDED
+#ifdef SCROLLINGPRESENTER_INCLUDED
     if (type == L"ScrollingPresenter" || type.empty())
     {
         ScrollingPresenterTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollingPresenterTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    if (type == L"ScrollViewer" || type.empty())
+    if (type == L"ScrollingView" || type.empty())
     {
-        ScrollViewerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
-        ScrollViewerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+        ScrollingViewTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        ScrollingViewTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
 #endif
 #ifdef SWIPECONTROL_INCLUDED

@@ -17,7 +17,7 @@ void ScrollingPresenter::RaiseConfigurationChanged()
 {
     if (m_configurationChanged)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_configurationChanged(*this);
     }
@@ -27,7 +27,7 @@ void ScrollingPresenter::RaisePostArrange()
 {
     if (m_postArrange)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_postArrange(*this);
     }
@@ -37,7 +37,7 @@ void ScrollingPresenter::RaiseViewportChanged(const bool isFinal)
 {
     if (m_viewportChanged)
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_viewportChanged(*this, isFinal);
     }
@@ -47,7 +47,7 @@ void ScrollingPresenter::RaiseAnchorRequested()
 {
     if (m_anchorRequestedEventSource)
     {
-        SCROLLER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
         if (!m_anchorRequestedEventArgs)
         {
@@ -171,7 +171,7 @@ void ScrollingPresenter::ComputeViewportAnchorPoint(
 
     ComputeAnchorPoint(viewportAnchorBounds, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
 
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *viewportAnchorPointHorizontalOffset, *viewportAnchorPointVerticalOffset);
 }
 
 // Returns:
@@ -193,7 +193,7 @@ void ScrollingPresenter::ComputeElementAnchorPoint(
 
         ComputeAnchorPoint(anchorElementBounds, elementAnchorPointHorizontalOffset, elementAnchorPointVerticalOffset);
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, *elementAnchorPointHorizontalOffset, *elementAnchorPointVerticalOffset);
     }
 }
 
@@ -269,7 +269,7 @@ winrt::Size ScrollingPresenter::ComputeViewportToElementAnchorPointsDistance(
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)
         };
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, viewportToElementAnchorPointsDistance.Width, viewportToElementAnchorPointsDistance.Height);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this, viewportToElementAnchorPointsDistance.Width, viewportToElementAnchorPointsDistance.Height);
 
         return viewportToElementAnchorPointsDistance;
     }
@@ -281,7 +281,7 @@ winrt::Size ScrollingPresenter::ComputeViewportToElementAnchorPointsDistance(
 
 void ScrollingPresenter::ClearAnchorCandidates()
 {
-    SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     m_anchorCandidates.clear();
     m_isAnchorElementDirty = true;
@@ -291,7 +291,7 @@ void ScrollingPresenter::ResetAnchorElement()
 {
     if (m_anchorElement.get())
     {
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
         m_anchorElement.set(nullptr);
         m_anchorElementBounds = winrt::Rect{};
@@ -354,7 +354,7 @@ void ScrollingPresenter::EnsureAnchorElementSelection()
             globalTestHooks->NotifyAnchorEvaluated(*this, requestedAnchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
         }
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
 
         return;
     }
@@ -409,7 +409,7 @@ void ScrollingPresenter::EnsureAnchorElementSelection()
         m_anchorElement.set(bestAnchorCandidate);
         m_anchorElementBounds = bestAnchorCandidateBounds;
 
-        SCROLLER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::RectToString(m_anchorElementBounds).c_str());
     }
 
     if (globalTestHooks && globalTestHooks->AreAnchorNotificationsRaised())

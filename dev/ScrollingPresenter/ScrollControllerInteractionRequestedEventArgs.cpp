@@ -12,7 +12,7 @@ CppWinRTActivatableClassWithBasicFactory(ScrollControllerInteractionRequestedEve
 ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionRequestedEventArgs(
     const winrt::PointerPoint& pointerPoint)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::PointerPointToString(pointerPoint).c_str());
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::PointerPointToString(pointerPoint).c_str());
 
     m_pointerPoint = pointerPoint;
 }
@@ -29,6 +29,6 @@ bool ScrollControllerInteractionRequestedEventArgs::Handled() const
 
 void ScrollControllerInteractionRequestedEventArgs::Handled(bool handled)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, handled);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, handled);
     m_handled = handled;
 }

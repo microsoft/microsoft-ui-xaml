@@ -11,12 +11,12 @@ class ZoomAnimationStartingEventArgs :
 public:
     ZoomAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ZoomAnimationStartingEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IZoomAnimationStartingEventArgs overrides

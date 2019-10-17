@@ -11,7 +11,7 @@ class ScrollControllerScrollToRequestedEventArgs :
 public:
     ~ScrollControllerScrollToRequestedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ScrollControllerScrollToRequestedEventArgs(

@@ -5,7 +5,7 @@
 
 #include "common.h"
 
-class ScrollViewer;
+class ScrollingView;
 
 using namespace std;
 

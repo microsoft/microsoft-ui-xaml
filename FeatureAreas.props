@@ -35,7 +35,7 @@
     <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
     <FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
     <FeatureScrollingPresenterEnabled>false</FeatureScrollingPresenterEnabled>
-    <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
+    <FeatureScrollingViewEnabled>false</FeatureScrollingViewEnabled>
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
@@ -82,7 +82,7 @@
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
     <FeatureScrollingPresenterEnabled>true</FeatureScrollingPresenterEnabled>
-    <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
+    <FeatureScrollingViewEnabled>true</FeatureScrollingViewEnabled>
     <FeatureSliderEnabled>true</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>true</FeatureSwipeControlEnabled>

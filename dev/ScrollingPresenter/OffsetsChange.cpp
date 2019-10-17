@@ -16,25 +16,25 @@ OffsetsChange::OffsetsChange(
         m_zoomedVerticalOffset(zoomedVerticalOffset),
         ViewChange(offsetsKind, options)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
         zoomedHorizontalOffset, zoomedVerticalOffset);
 }
 
 OffsetsChange::~OffsetsChange()
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void OffsetsChange::ZoomedHorizontalOffset(double zoomedHorizontalOffset)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedHorizontalOffset);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedHorizontalOffset);
 
     m_zoomedHorizontalOffset = zoomedHorizontalOffset;
 }
 
 void OffsetsChange::ZoomedVerticalOffset(double zoomedVerticalOffset)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedVerticalOffset);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedVerticalOffset);
 
     m_zoomedVerticalOffset = zoomedVerticalOffset;
 }

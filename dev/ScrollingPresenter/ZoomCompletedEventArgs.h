@@ -12,12 +12,12 @@ class ZoomCompletedEventArgs :
 public:
     ZoomCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ZoomCompletedEventArgs()
     {
-        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IZoomCompletedEventArgs overrides

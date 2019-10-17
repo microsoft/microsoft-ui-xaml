@@ -13,7 +13,7 @@ ScrollControllerScrollFromRequestedEventArgs::ScrollControllerScrollFromRequeste
     float offsetVelocity,
     winrt::IReference<float> inertiaDecayRate)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(), offsetVelocity);
 
     m_offsetVelocity = offsetVelocity;
@@ -37,7 +37,7 @@ winrt::ScrollInfo ScrollControllerScrollFromRequestedEventArgs::Info() const
 
 void ScrollControllerScrollFromRequestedEventArgs::Info(winrt::ScrollInfo info)
 {
-    SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
     m_info = info;
 }

@@ -2,41 +2,41 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "ScrollViewerBringIntoViewOperation.h"
-#include "ScrollViewerTrace.h"
+#include "ScrollingViewBringIntoViewOperation.h"
+#include "ScrollingViewTrace.h"
 
-ScrollViewerBringIntoViewOperation::ScrollViewerBringIntoViewOperation(winrt::UIElement const& targetElement)
+ScrollingViewBringIntoViewOperation::ScrollingViewBringIntoViewOperation(winrt::UIElement const& targetElement)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, targetElement);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, targetElement);
 
     m_targetElement = winrt::make_weak(targetElement);
 }
 
-ScrollViewerBringIntoViewOperation::~ScrollViewerBringIntoViewOperation()
+ScrollingViewBringIntoViewOperation::~ScrollingViewBringIntoViewOperation()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_INT, METH_NAME, this, m_targetElement.get(), m_ticksCount);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_INT, METH_NAME, this, m_targetElement.get(), m_ticksCount);
 }
 
-bool ScrollViewerBringIntoViewOperation::HasMaxTicksCount() const
+bool ScrollingViewBringIntoViewOperation::HasMaxTicksCount() const
 {
     MUX_ASSERT(m_ticksCount <= s_maxTicksCount);
 
     return m_ticksCount == s_maxTicksCount;
 }
 
-winrt::UIElement ScrollViewerBringIntoViewOperation::TargetElement() const
+winrt::UIElement ScrollingViewBringIntoViewOperation::TargetElement() const
 {
     return m_targetElement.get();
 }
 
-int8_t ScrollViewerBringIntoViewOperation::TicksCount() const
+int8_t ScrollingViewBringIntoViewOperation::TicksCount() const
 {
     return m_ticksCount;
 }
 
-int8_t ScrollViewerBringIntoViewOperation::TickOperation()
+int8_t ScrollingViewBringIntoViewOperation::TickOperation()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_INT, METH_NAME, this, m_targetElement.get(), m_ticksCount);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR_INT, METH_NAME, this, m_targetElement.get(), m_ticksCount);
 
     MUX_ASSERT(m_ticksCount < s_maxTicksCount);
 

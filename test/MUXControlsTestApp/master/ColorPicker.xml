@@ -804,7 +804,7 @@
                         FocusVisualPrimaryBrush=#FF000000
                         Visibility=Visible
                         RenderSize=120,33
-                    [Windows.UI.Xaml.Controls.ScrollViewer]
+                    [Windows.UI.Xaml.Controls.ScrollingView]
                         Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
@@ -1023,7 +1023,7 @@
                         FocusVisualPrimaryBrush=#FF000000
                         Visibility=Visible
                         RenderSize=120,33
-                    [Windows.UI.Xaml.Controls.ScrollViewer]
+                    [Windows.UI.Xaml.Controls.ScrollingView]
                         Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
@@ -1242,7 +1242,7 @@
                         FocusVisualPrimaryBrush=#FF000000
                         Visibility=Visible
                         RenderSize=120,33
-                    [Windows.UI.Xaml.Controls.ScrollViewer]
+                    [Windows.UI.Xaml.Controls.ScrollingView]
                         Padding=10,6,6,5
                         Foreground=#FF000000
                         BorderThickness=0,0,0,0
@@ -1599,7 +1599,7 @@
                     FocusVisualPrimaryBrush=#FF000000
                     Visibility=Visible
                     RenderSize=120,33
-                [Windows.UI.Xaml.Controls.ScrollViewer]
+                [Windows.UI.Xaml.Controls.ScrollingView]
                     Padding=10,6,6,5
                     Foreground=#FF000000
                     BorderThickness=0,0,0,0
@@ -1805,7 +1805,7 @@
                 FocusVisualPrimaryBrush=#FF000000
                 Visibility=Visible
                 RenderSize=132,33
-            [Windows.UI.Xaml.Controls.ScrollViewer]
+            [Windows.UI.Xaml.Controls.ScrollingView]
                 Padding=10,6,6,5
                 Foreground=#FF000000
                 BorderThickness=0,0,0,0

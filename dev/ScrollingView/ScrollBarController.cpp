@@ -5,7 +5,7 @@
 #include "common.h"
 #include "ScrollOptions.h"
 #include "ScrollBarController.h"
-#include "ScrollViewer.h"
+#include "ScrollingView.h"
 #include "TypeLogging.h"
 #include "ScrollingPresenterTypeLogging.h"
 #include "ScrollControllerScrollToRequestedEventArgs.h"
@@ -14,12 +14,12 @@
 
 ScrollBarController::ScrollBarController()
 {
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 ScrollBarController::~ScrollBarController()
 {
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     UnhookScrollBarEvent();
     UnhookScrollBarPropertyChanged();
@@ -27,7 +27,7 @@ ScrollBarController::~ScrollBarController()
 
 void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
 {
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     UnhookScrollBarEvent();
 
@@ -81,13 +81,13 @@ void ScrollBarController::SetExpressionAnimationSources(
     winrt::hstring const& multiplierPropertyName)
 {
     // Unused because InteractionVisual returns null.
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void ScrollBarController::SetScrollMode(
     winrt::ScrollMode const& scrollMode)
 {
-    SCROLLVIEWER_TRACE_INFO(
+    SCROLLINGVIEW_TRACE_INFO(
         nullptr,
         TRACE_MSG_METH_STR,
         METH_NAME,
@@ -104,7 +104,7 @@ void ScrollBarController::SetValues(
     double offset,
     double viewport)
 {
-    SCROLLVIEWER_TRACE_INFO(
+    SCROLLINGVIEW_TRACE_INFO(
         nullptr,
         L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewport:%lf, operationsCount:%d)\n",
         METH_NAME,
@@ -172,7 +172,7 @@ winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
     winrt::float2 const& currentPosition,
     winrt::CompositionAnimation const& defaultAnimation)
 {
-    SCROLLVIEWER_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
 
     // Using the consumer's default animation.
     return nullptr;
@@ -181,7 +181,7 @@ winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
 void ScrollBarController::OnScrollCompleted(
     winrt::ScrollInfo info)
 {
-    SCROLLVIEWER_TRACE_INFO(
+    SCROLLINGVIEW_TRACE_INFO(
         nullptr,
         TRACE_MSG_METH_INT,
         METH_NAME,
@@ -200,49 +200,49 @@ void ScrollBarController::OnScrollCompleted(
 
 winrt::event_token ScrollBarController::ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     return m_scrollToRequested.add(value);
 }
 
 void ScrollBarController::ScrollToRequested(winrt::event_token const& token)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_scrollToRequested.remove(token);
 }
 
 winrt::event_token ScrollBarController::ScrollByRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollByRequestedEventArgs> const& value)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     return m_scrollByRequested.add(value);
 }
 
 void ScrollBarController::ScrollByRequested(winrt::event_token const& token)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_scrollByRequested.remove(token);
 }
 
 winrt::event_token ScrollBarController::ScrollFromRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollFromRequestedEventArgs> const& value)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     return m_scrollFromRequested.add(value);
 }
 
 void ScrollBarController::ScrollFromRequested(winrt::event_token const& token)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_scrollFromRequested.remove(token);
 }
 
 winrt::event_token ScrollBarController::InteractionRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     // Because this IScrollController implementation does not expose an InteractionVisual, 
     // this InteractionRequested event is not going to be raised.
     return {};
@@ -250,21 +250,21 @@ winrt::event_token ScrollBarController::InteractionRequested(winrt::TypedEventHa
 
 void ScrollBarController::InteractionRequested(winrt::event_token const& token)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     // Because this IScrollController implementation does not expose an InteractionVisual, 
     // this InteractionRequested event is not going to be raised.
 }
 
 winrt::event_token ScrollBarController::InteractionInfoChanged(winrt::TypedEventHandler<winrt::IScrollController, winrt::IInspectable> const& value)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     return m_interactionInfoChanged.add(value);
 }
 
 void ScrollBarController::InteractionInfoChanged(winrt::event_token const& token)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_interactionInfoChanged.remove(token);
 }
@@ -273,7 +273,7 @@ void ScrollBarController::InteractionInfoChanged(winrt::event_token const& token
 
 void ScrollBarController::HookScrollBarPropertyChanged()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
 #ifdef _DEBUG
     MUX_ASSERT(m_scrollBarIndicatorModeChangedToken.value == 0);
@@ -298,7 +298,7 @@ void ScrollBarController::HookScrollBarPropertyChanged()
 
 void ScrollBarController::UnhookScrollBarPropertyChanged()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     if (m_scrollBar)
     {
@@ -342,7 +342,7 @@ void ScrollBarController::UpdateAreInteractionsAllowed()
 
 void ScrollBarController::HookScrollBarEvent()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     MUX_ASSERT(m_scrollBarScrollToken.value == 0);
 
@@ -354,7 +354,7 @@ void ScrollBarController::HookScrollBarEvent()
 
 void ScrollBarController::UnhookScrollBarEvent()
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     if (m_scrollBar && m_scrollBarScrollToken.value != 0)
     {
@@ -371,7 +371,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
 
     if (args == winrt::Control::IsEnabledProperty())
     {
-        SCROLLVIEWER_TRACE_VERBOSE(
+        SCROLLINGVIEW_TRACE_VERBOSE(
             nullptr,
             TRACE_MSG_METH_STR_INT,
             METH_NAME,
@@ -386,7 +386,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
 #ifdef _DEBUG
     else if (args == winrt::UIElement::VisibilityProperty())
     {
-        SCROLLVIEWER_TRACE_VERBOSE(
+        SCROLLINGVIEW_TRACE_VERBOSE(
             nullptr,
             TRACE_MSG_METH_STR_INT,
             METH_NAME,
@@ -396,7 +396,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
     }
     else if (args == winrt::ScrollBar::IndicatorModeProperty())
     {
-        SCROLLVIEWER_TRACE_VERBOSE(
+        SCROLLINGVIEW_TRACE_VERBOSE(
             nullptr,
             TRACE_MSG_METH_STR_STR,
             METH_NAME,
@@ -413,7 +413,7 @@ void ScrollBarController::OnScroll(
 {
     winrt::ScrollEventType scrollEventType = args.ScrollEventType();
 
-    SCROLLVIEWER_TRACE_VERBOSE(
+    SCROLLINGVIEW_TRACE_VERBOSE(
         nullptr,
         TRACE_MSG_METH_STR,
         METH_NAME,
@@ -533,7 +533,7 @@ void ScrollBarController::OnScroll(
 bool ScrollBarController::RaiseScrollToRequested(
     double offset)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offset);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offset);
 
     if (!m_scrollToRequested)
     {
@@ -566,7 +566,7 @@ bool ScrollBarController::RaiseScrollToRequested(
 bool ScrollBarController::RaiseScrollByRequested(
     double offsetChange)
 {
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
 
     if (!m_scrollByRequested)
     {
@@ -604,7 +604,7 @@ bool ScrollBarController::RaiseScrollFromRequested(
         return false;
     }
 
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, offsetChange);
 
     double offsetVelocity = m_operationsCount == 0 ? s_minimumVelocity : 0.0;
 
@@ -643,7 +643,7 @@ void ScrollBarController::RaiseInteractionInfoChanged()
         return;
     }
 
-    SCROLLVIEWER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_interactionInfoChanged(*this, nullptr);
 }
