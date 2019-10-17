@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -440,7 +440,7 @@
                                             Grid.Row="4" />
 
                                         <!-- Left nav list -->
-                                        <local:NavigationViewList
+                                        <!--<local:NavigationViewList
                                             x:Name="MenuItemsHost"
                                             AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                             Grid.Row="6"
@@ -453,7 +453,23 @@
                                             ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
                                             ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
                                             ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                            SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}"/>
+                                            SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}"/>-->
+
+                                        <local:ItemsRepeaterScrollHost Grid.Row="1">
+                                            <ScrollViewer>
+                                                <local:ItemsRepeater 
+                                                        x:Name="MenuItemsHost"
+                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                        Grid.Row="6"
+                                                        Margin="0,0,0,20"
+                                                        HorizontalAlignment="Stretch">
+                                                    <local:ItemsRepeater.Layout>
+                                                        <local:StackLayout Orientation="Vertical"/>
+                                                    </local:ItemsRepeater.Layout>
+                                                </local:ItemsRepeater>
+                                            </ScrollViewer>
+                                        </local:ItemsRepeaterScrollHost>
+
 
                                         <ContentControl
                                             x:Name="FooterContentBorder"

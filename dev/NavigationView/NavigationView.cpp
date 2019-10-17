@@ -130,6 +130,10 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneHeaderCloseButtonColumn.set(nullptr);
     m_paneHeaderToggleButtonColumn.set(nullptr);
     m_paneHeaderContentBorderRow.set(nullptr);
+
+    m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
+    m_leftNavItemsRepeaterElementClearingRevoker.revoke();
+    m_leftNavItemsRepeaterElementIndexChangedRevoker.revoke();
 }
 
 NavigationView::NavigationView()
@@ -216,22 +220,26 @@ void NavigationView::OnApplyTemplate()
     m_topNavGrid.set(GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected));
 
     // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
-    if (auto leftNavListView = GetTemplateChildT<winrt::ListView>(c_menuItemsHost, controlProtected))
+    if (auto leftNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_menuItemsHost, controlProtected))
     {
-        m_leftNavListView.set(leftNavListView);
+        m_leftNavRepeater.set(leftNavRepeater);
 
-        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+        m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
+        m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
+        m_leftNavItemsRepeaterElementIndexChangedRevoker = leftNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
 
-        m_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
-        m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
+        //m_leftNavListViewLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
-        SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
+        //m_leftNavListViewSelectionChangedRevokerm_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
+        //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
-        // Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
-        if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
-        {
-            leftNavListView.SingleSelectionFollowsFocus(false);
-        }
+        //SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
+
+        //// Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
+        //if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
+        //{
+        //    leftNavListView.SingleSelectionFollowsFocus(false);
+        //}
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -383,6 +391,68 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
+
+    // Initial setup for ItemsRepeater
+    UpdateRepeaterItemsSource();
+}
+
+void NavigationView::UpdateRepeaterItemsSource()
+{
+    auto dataSource = MenuItemsSource();
+    if (!dataSource)
+    {
+        dataSource = MenuItems();
+        UpdateSelectionForMenuItems();
+    }
+
+    if (IsTopNavigationView())
+    {
+        //TODO: Unhook LeftNav repeaters
+        //TODO: Hook up TopNav repeaters
+        MUX_FAIL_FAST_MSG("TopNavigationView not implement yet.");
+    }
+    else
+    {
+        //TODO: Unhook TopNav repeaters
+        if (auto ir = m_leftNavRepeater.get())
+        {
+            ir.ItemsSource(dataSource);
+        }
+    }
+}
+
+
+void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
+{
+    //if (winrt::NavigationViewItemBase nvib = args.Element.try_as<winrt::NavigationViewItemBase>(nvib))
+    //{
+    //    nvib.RepeatedIndex = args.Index;
+    //    nvib.navView = this;
+    //    nvib.Depth = 0;
+    //    // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
+    //    if (nvi.MenuItemTemplate == null && MenuItemTemplate != null)
+    //    {
+    //        nvi.MenuItemTemplate = MenuItemTemplate;
+    //    }
+    //    // Propagate the SelectionModel
+    //    nvi.SelectionModel = SelectionModel;
+    //    nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
+    //}
+}
+
+void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args)
+{
+    //RepNavigationViewItem nvi = args.Element as RepNavigationViewItem;
+    //if (nvi != null)
+    //{
+    //    nvi.navView = null;
+    //    nvi.Depth = 0;
+    //}
+}
+
+void NavigationView::RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args)
+{
+    //(args.Element as RepNavigationViewItemBase).RepeatedIndex = args.NewIndex;
 }
 
 // Hook up the Settings Item Invoked event listener
