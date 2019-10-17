@@ -61,9 +61,15 @@
 
             <controls:NumberBox x:Name="StepNumberBox" AutomationProperties.Name="StepNumberBox" Value="1" Header="SmallChange"/>
 
-            <controls:NumberBox x:Name="MinNumberBox" AutomationProperties.Name="MinNumberBox" Value="{x:Bind TestNumberBox.Minimum}" Header="Minimum"/>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox x:Name="MinCheckBox" AutomationProperties.Name="MinCheckBox" IsChecked="False" Checked="MinCheckBox_CheckChanged" Unchecked="MinCheckBox_CheckChanged" MinWidth="32" VerticalAlignment="Bottom"/>
+                <controls:NumberBox x:Name="MinNumberBox" AutomationProperties.Name="MinNumberBox" Header="Minimum" Value="0" IsEnabled="False" ValueChanged="MinValueChanged"/>
+            </StackPanel>
 
-            <controls:NumberBox x:Name="MaxNumberBox" AutomationProperties.Name="MaxNumberBox" Value="{x:Bind TestNumberBox.Maximum}" Header="Maximum"/>
+            <StackPanel Orientation="Horizontal">
+                <CheckBox x:Name="MaxCheckBox" AutomationProperties.Name="MaxCheckBox" IsChecked="False" Checked="MaxCheckBox_CheckChanged" Unchecked="MaxCheckBox_CheckChanged" MinWidth="32" VerticalAlignment="Bottom"/>
+                <controls:NumberBox x:Name="MaxNumberBox" AutomationProperties.Name="MaxNumberBox" Header="Maximum" Value="100" IsEnabled="False" ValueChanged="MaxValueChanged"/>
+            </StackPanel>
 
             <controls:NumberBox x:Name="frac" Value="0" Header="Fraction Digits"/>
 
@@ -112,10 +118,8 @@
                     x:Name="TestNumberBox"
                     AutomationProperties.Name="TestNumberBox"
                     Header="NumberBox"
-                    Maximum="100"
-                    Minimum="0"
                     Value="10"
-                    SmallChange="{x:Bind StepNumberBox.Value, Mode=OneWay}"
+                    Step="{x:Bind StepNumberBox.Value, Mode=OneWay}"
                     BasicValidationMode="{x:Bind ValidationComboBox.SelectedValue, Converter={StaticResource ValidationConverter}, Mode=OneWay}"
                     FractionDigits="{x:Bind frac.Value, Converter={StaticResource intconverter}, Mode=OneWay}"
                     IntegerDigits="{x:Bind intdig.Value, Converter={StaticResource intconverter}, Mode=OneWay}"

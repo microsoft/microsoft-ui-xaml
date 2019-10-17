@@ -59,10 +59,8 @@ public:
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    // ### These are not implemented???
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    //void OnMinMaxModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     bool m_hasError{ false };
 

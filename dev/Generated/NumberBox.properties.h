@@ -36,6 +36,12 @@ public:
     void IsZeroSigned(bool value);
     bool IsZeroSigned();
 
+    void Maximum(double value);
+    double Maximum();
+
+    void Minimum(double value);
+    double Minimum();
+
     void NumberRounder(winrt::NumberBoxNumberRounder const& value);
     winrt::NumberBoxNumberRounder NumberRounder();
 
@@ -54,8 +60,14 @@ public:
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
 
+    void Step(double value);
+    double Step();
+
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
+
+    void Value(double value);
+    double Value();
 
     void WrapEnabled(bool value);
     bool WrapEnabled();
@@ -69,13 +81,17 @@ public:
     static winrt::DependencyProperty IntegerDigitsProperty() { return s_IntegerDigitsProperty; }
     static winrt::DependencyProperty IsDecimalPointAlwaysDisplayedProperty() { return s_IsDecimalPointAlwaysDisplayedProperty; }
     static winrt::DependencyProperty IsZeroSignedProperty() { return s_IsZeroSignedProperty; }
+    static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
+    static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
     static winrt::DependencyProperty NumberRounderProperty() { return s_NumberRounderProperty; }
     static winrt::DependencyProperty PlaceholderTextProperty() { return s_PlaceholderTextProperty; }
     static winrt::DependencyProperty RoundingAlgorithmProperty() { return s_RoundingAlgorithmProperty; }
     static winrt::DependencyProperty SignificantDigitPrecisionProperty() { return s_SignificantDigitPrecisionProperty; }
     static winrt::DependencyProperty SignificantDigitsProperty() { return s_SignificantDigitsProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
+    static winrt::DependencyProperty StepProperty() { return s_StepProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
+    static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
     static winrt::DependencyProperty WrapEnabledProperty() { return s_WrapEnabledProperty; }
 
     static GlobalDependencyProperty s_AcceptsCalculationProperty;
@@ -87,14 +103,23 @@ public:
     static GlobalDependencyProperty s_IntegerDigitsProperty;
     static GlobalDependencyProperty s_IsDecimalPointAlwaysDisplayedProperty;
     static GlobalDependencyProperty s_IsZeroSignedProperty;
+    static GlobalDependencyProperty s_MaximumProperty;
+    static GlobalDependencyProperty s_MinimumProperty;
     static GlobalDependencyProperty s_NumberRounderProperty;
     static GlobalDependencyProperty s_PlaceholderTextProperty;
     static GlobalDependencyProperty s_RoundingAlgorithmProperty;
     static GlobalDependencyProperty s_SignificantDigitPrecisionProperty;
     static GlobalDependencyProperty s_SignificantDigitsProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
+    static GlobalDependencyProperty s_StepProperty;
     static GlobalDependencyProperty s_TextProperty;
+    static GlobalDependencyProperty s_ValueProperty;
     static GlobalDependencyProperty s_WrapEnabledProperty;
+
+    winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value);
+    void ValueChanged(winrt::event_token const& token);
+
+    event_source<winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable>> m_valueChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();
@@ -123,6 +148,14 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
+    static void OnMaximumPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinimumPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnNumberRounderPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
@@ -144,6 +177,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnTextPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnValuePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

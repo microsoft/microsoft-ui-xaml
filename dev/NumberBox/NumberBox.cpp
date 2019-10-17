@@ -13,20 +13,6 @@ NumberBox::NumberBox()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
     SetDefaultStyleKey(this);
-
-    if (ReadLocalValue(winrt::RangeBase::MaximumProperty()) == winrt::DependencyProperty::UnsetValue())
-    {
-        Maximum(std::numeric_limits<double>::max());
-    }
-
-    if (ReadLocalValue(winrt::RangeBase::MinimumProperty()) == winrt::DependencyProperty::UnsetValue())
-    {
-        Minimum(-std::numeric_limits<double>::max());
-    }
-
-    //### need to implement this! ....or do I? Won't it do that for me?
-    //RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &NumberBox::OnMinimumPropertyChanged });
-    //RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &NumberBox::OnMaximumPropertyChanged });
 }
 
 void NumberBox::OnApplyTemplate()
@@ -81,6 +67,16 @@ void NumberBox::OnApplyTemplate()
     UpdateTextToValue();
 }
 
+void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // ### implement
+}
+
+void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // ### implement
+}
+
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetSpinButtonVisualState();
@@ -88,8 +84,7 @@ void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::Dependency
 
 void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-
- m_formatter.FractionDigits(FractionDigits());
+    m_formatter.FractionDigits(FractionDigits());
 }
 
 void NumberBox::OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -143,6 +138,9 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // ### pretty sure this should return at least the old value.
+    m_valueChangedEventSource(*this, nullptr);
+
     UpdateTextToValue();
 }
 
@@ -269,7 +267,6 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
 
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    // ### Gamepad Interactions still untested
     switch (args.OriginalKey())
     {
         case winrt::VirtualKey::Enter:
@@ -320,26 +317,13 @@ void NumberBox::StepValue(bool isPositive)
 
     if (isPositive)
     {
-        newVal += SmallChange();
+        newVal += Step();
     }
     else
     {
-        newVal -= SmallChange();
+        newVal -= Step();
     }
 
-    //### hmmmm
-    /*if (WrapEnabled() && GetBoundState(newVal) != BoundState::InBounds)
-    {
-        while (newVal > Maximum())
-        {
-            newVal = Minimum() + (newVal - Maximum()) - 1;
-        }
-        while (newVal < Minimum())
-        {
-            newVal = Maximum() - abs(newVal - Minimum()) + 1;
-        }
-    }*/
-    //### how is wrap supposed to work? because I don't think it makes sense as it was before.
     if (WrapEnabled())
     {
         if (newVal > Maximum())
@@ -351,22 +335,20 @@ void NumberBox::StepValue(bool isPositive)
             newVal = Maximum();
         }
     }
-
-    //### don't think I need to do this
-    // Input Overwriting - Coerce to min or max
-    /*else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
+    else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
     {
-        if (newVal > Maximum() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MaxEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled))
+        // Input Overwriting - Coerce to min or max
+        if (newVal > Maximum())
         {
             newVal = Maximum();
         }
-        else if (newVal < Minimum() && (MinMaxMode() == winrt::NumberBoxMinMaxMode::MinEnabled || MinMaxMode() == winrt::NumberBoxMinMaxMode::MinAndMaxEnabled))
+        else if (newVal < Minimum())
         {
             newVal = Minimum();
         }
-    }*/
+    }
 
-    //### maybe not this either?
+    //### What is this doing?
     // Safeguard for floating point imprecision errors
     int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
     m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);
@@ -396,7 +378,7 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 
     // Run formatter on both values to discard trailing and leading 0's.
     std::wstring formattedVal(m_stepPrecisionFormatter.Format(oldVal));
-    std::wstring formattedStep(m_stepPrecisionFormatter.Format(SmallChange()));
+    std::wstring formattedStep(m_stepPrecisionFormatter.Format(Step()));
     std::wstring formattedNew(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
@@ -474,6 +456,7 @@ void NumberBox::SetErrorState(ValidationState state)
     switch (state)
     {
         case ValidationState::InvalidInput:
+        {
             if (AcceptsCalculation())
             {
                 errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersAndSymbols);
@@ -483,14 +466,19 @@ void NumberBox::SetErrorState(ValidationState state)
                 errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersOnly);
             }
             break;
+        }
 
         case ValidationState::InvalidMin:
         case ValidationState::InvalidMax:
+        {
+            auto formattedMin = m_formatter.Format(Minimum());
+            auto formattedMax = m_formatter.Format(Maximum());
             errorMessage = StringUtil::FormatString(
                 ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorRange),
-                Minimum(),
-                Maximum());
+                formattedMin.data(),
+                formattedMax.data());
             break;
+        }
 
         case ValidationState::InvalidDivide:
             errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorDivByZero);
@@ -531,39 +519,17 @@ void NumberBox::SetSpinButtonVisualState()
     }
 }
 
-// ### not sure I need ANY of this
 // checks if val is in Min/Max bounds based on user's MinMax mode setting
 NumberBox::BoundState NumberBox::GetBoundState(double val)
 {
-/*
-    switch (  MinMaxMode() )
+    if (val < Minimum())
     {
-        case winrt::NumberBoxMinMaxMode::None:
-            return BoundState::InBounds;
-        case winrt::NumberBoxMinMaxMode::WrapEnabled:
-        case winrt::NumberBoxMinMaxMode::MinAndMaxEnabled:
-            if (val < Minimum())
-            {
-                return BoundState::UnderMin;
-            }
-            else if (val > Maximum())
-            {
-                return BoundState::OverMax;
-            }
-            break;
-        case winrt::NumberBoxMinMaxMode::MinEnabled:
-            if (val < Minimum())
-            {
-                return BoundState::UnderMin;
-            }
-            break;
-        case winrt::NumberBoxMinMaxMode::MaxEnabled:
-            if (val > Maximum())
-            {
-                return BoundState::OverMax;
-            }
-            break;
-    }*/
+        return BoundState::UnderMin;
+    }
+    else if (val > Maximum())
+    {
+        return BoundState::OverMax;
+    }
     return BoundState::InBounds;
 }
 

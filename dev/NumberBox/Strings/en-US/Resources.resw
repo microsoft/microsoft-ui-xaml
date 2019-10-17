@@ -134,7 +134,7 @@
     <comment>Error message for invalid characters when NumberBox only accepts numbers.</comment>
   </data>
   <data name="NumberBoxErrorRange" xml:space="preserve">
-    <value>Value must be between %1-%2.</value>
-    <comment>Error message for when input is out of range.</comment>
+    <value>Value must be between %1!s!-%2!s!.</value>
+    <comment>Error message for when input is out of range. %1 is the minimum value, %2 is the maximum value.</comment>
   </data>
 </root>

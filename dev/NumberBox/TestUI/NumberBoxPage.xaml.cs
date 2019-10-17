@@ -51,5 +51,33 @@ namespace MUXControlsTestApp
         {
             TestNumberBox.WrapEnabled = WrapCheckBox.IsEnabled;
         }
+
+        private void MinCheckBox_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            MinNumberBox.IsEnabled = (bool)MinCheckBox.IsChecked;
+            MinValueChanged(null, null);
+        }
+
+        private void MaxCheckBox_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            MaxNumberBox.IsEnabled = (bool)MaxCheckBox.IsChecked;
+            MaxValueChanged(null, null);
+        }
+
+        private void MinValueChanged(object sender, object e)
+        {
+            if (TestNumberBox != null)
+            {
+                TestNumberBox.Minimum = (bool)MinCheckBox.IsChecked ? MinNumberBox.Value : double.MinValue;
+            }
+        }
+
+        private void MaxValueChanged(object sender, object e)
+        {
+            if (TestNumberBox != null)
+            {
+                TestNumberBox.Maximum = (bool)MaxCheckBox.IsChecked ? MaxNumberBox.Value : double.MaxValue;
+            }
+        }
     }
 }
