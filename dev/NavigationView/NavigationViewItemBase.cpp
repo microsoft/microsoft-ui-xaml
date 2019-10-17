@@ -72,3 +72,13 @@ winrt::NavigationViewList NavigationViewItemBase::GetNavigationViewList()
     // Find parent NavigationViewList
     return SharedHelpers::GetAncestorOfType<winrt::NavigationViewList>(winrt::VisualTreeHelper::GetParent(*this));
 }
+
+void NavigationViewItemBase::OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+
+}
+
+void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+
+}

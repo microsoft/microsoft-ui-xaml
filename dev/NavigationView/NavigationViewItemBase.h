@@ -5,11 +5,14 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
+
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.
     // IFrameworkElementOverrides
     virtual void OnApplyTemplate()
@@ -48,6 +51,9 @@ public:
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
     winrt::NavigationViewList GetNavigationViewList();
+
+    void OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };

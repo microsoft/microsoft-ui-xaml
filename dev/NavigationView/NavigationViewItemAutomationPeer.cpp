@@ -199,7 +199,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
     
     if (auto navview = GetParentNavigationView())
     {
-        if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
+        /*if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
         {
             if (auto parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
             {
@@ -247,7 +247,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                     }
                 }
             }
-        }
+        }*/
     }
 
     return returnValue;

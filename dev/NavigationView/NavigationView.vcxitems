@@ -18,6 +18,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItem.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemBase.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />

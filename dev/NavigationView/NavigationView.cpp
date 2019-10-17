@@ -97,16 +97,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
-    m_leftNavListViewSelectionChangedRevoker.revoke();
-    m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();       
-    m_leftNavListView.set(nullptr);
-
-    m_leftNavListViewSelectionChangedRevoker.revoke();
-    m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();      
-    m_leftNavListView.set(nullptr);
-
     m_topNavListViewSelectionChangedRevoker.revoke();
     m_topNavListViewItemClickRevoker.revoke();
     m_topNavListViewLoadedRevoker.revoke();
@@ -134,6 +124,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavItemsRepeaterElementIndexChangedRevoker.revoke();
+    m_leftNavRepeater.set(nullptr);
 }
 
 NavigationView::NavigationView()
@@ -393,7 +384,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
 
     // Initial setup for ItemsRepeater
-    UpdateRepeaterItemsSource();
+    //UpdateRepeaterItemsSource();
 }
 
 void NavigationView::UpdateRepeaterItemsSource()
@@ -1964,11 +1955,18 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
 
 winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::IInspectable const& itemData)
 {
+    if (!IsTopNavigationView())
+    {
+        // Has not been implemented for ItemsRepeater yet
+        MUX_FAIL_FAST_MSG("GetContainerForClickedItem has not been implement for LeftNavRepeater yet.");
+    }
+
+
     // ListViewBase::OnItemClick raises ItemClicked event, but it doesn't provide the container of a item
     // If it's an virtualized panel like ItemsStackPanel, IsItemItsOwnContainer is called before raise the event in ListViewBase::OnItemClick.
     // Here we assume the LastItemCalledInIsItemItsOwnContainerOverride is the container.
     winrt::NavigationViewItemBase container{ nullptr };
-    auto listView = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
+    auto listView = m_topNavListView.get();
     MUX_ASSERT(listView);
 
     if (auto navListView = listView.try_as<winrt::NavigationViewList>())
@@ -2255,7 +2253,7 @@ void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagat
     if (NavigationViewPropagateTarget::LeftListView == target || 
         NavigationViewPropagateTarget::All == target)
     {
-        PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
+        //PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
     }
     if (NavigationViewPropagateTarget::TopListView == target ||
         NavigationViewPropagateTarget::All == target)
@@ -2803,10 +2801,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     else if (property == s_MenuItemsSourceProperty)
     {
         UpdateListViewItemSource();
+        UpdateRepeaterItemsSource();
     }
     else if (property == s_MenuItemsProperty)
     {
         UpdateListViewItemSource();
+        UpdateRepeaterItemsSource();
     }
     else if (property == s_PaneDisplayModeProperty)
     {
@@ -3347,11 +3347,6 @@ void NavigationView::UpdatePaneTitleMargins()
     }
 }
 
-void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
-{
-    UpdateListViewItemsSource(m_leftNavListView.get(), items);
-}
-
 void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
 {
     if (m_topDataProvider.ShouldChangeDataSource(items))
@@ -3394,13 +3389,11 @@ void NavigationView::UpdateListViewItemSource()
     // Always unset the data source first from old ListView, then set data source for new ListView.
     if (IsTopNavigationView())
     {
-        UpdateLeftNavListViewItemSource(nullptr);
         UpdateTopNavListViewItemSource(dataSource);
     }
     else
     {
         UpdateTopNavListViewItemSource(nullptr);
-        UpdateLeftNavListViewItemSource(dataSource);
     }
  
     if (IsTopNavigationView())
@@ -3605,10 +3598,11 @@ void NavigationView::UpdateSelectedItem()
     }
     else
     {
-        auto lv = m_leftNavListView.get();
-        if (IsTopNavigationView())
+        auto lv = m_topNavListView.get();
+        if (!IsTopNavigationView())
         {
-            lv = m_topNavListView.get();
+            //TODO: Update for LeftNavigationView
+            lv = NULL;
         }
 
         if (lv)
