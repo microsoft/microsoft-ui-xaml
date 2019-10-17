@@ -792,7 +792,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            if (auto paneList = m_leftNavListView)
+            if (auto paneList = m_leftNavRepeater)
             {
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline)
                 {
@@ -812,7 +812,7 @@ void NavigationView::OnSplitViewPaneOpened(const winrt::DependencyObject& /*send
 
 void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
-    if (m_leftNavListView)
+    if (m_leftNavRepeater)
     {
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
@@ -1798,9 +1798,18 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
         }
         else
         {
-            if (auto lv = m_leftNavListView.get())
+            if (auto ir = m_leftNavRepeater.get())
             {
-                auto item = lv.ItemFromContainer(nvi);
+                //auto item = lv.ItemFromContainer(nvi);
+                winrt::IInspectable item = NULL;
+                if (auto element = nvi.try_as<winrt::UIElement>())
+                {
+                    int index = ir.GetElementIndex(element);
+                    if (index != -1)
+                    {
+                        item = ir.TryGetElement(index);
+                    }
+                }
                 return item;
             }
         }

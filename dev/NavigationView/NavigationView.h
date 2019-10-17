@@ -74,7 +74,7 @@ public:
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
-    winrt::ListView LeftNavListView() { return m_leftNavListView.get(); };
+    //winrt::ListView LeftNavListView() { return m_leftNavListView.get(); };
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);
