@@ -289,11 +289,14 @@ unsealed runtimeclass NavigationViewList : Windows.UI.Xaml.Controls.ListView
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
 unsealed runtimeclass NavigationViewItemBase : Windows.UI.Xaml.Controls.ListViewItem
 {
-    Microsoft.UI.Xaml.Controls.SelectionModel SelectionModel { get; set; };
-    Int32 RepeatedIndex{ get; set; };   
+    [WUXC_VERSION_PREVIEW]
+    {
+        SelectionModel SelectionModel { get; set; };
+        Int32 RepeatedIndex{ get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty SelectionModelProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty RepeatedIndexProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty SelectionModelProperty{ get; };
+        static Windows.UI.Xaml.DependencyProperty RepeatedIndexProperty{ get; };
+    }
 }
 
 [WUXC_VERSION_RS3]

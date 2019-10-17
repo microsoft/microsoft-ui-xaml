@@ -157,7 +157,6 @@ private:
     void UpdatePaneToggleSize();
     void UpdateBackAndCloseButtonsVisibility();
     void UpdatePaneTitleMargins();
-    void UpdateLeftNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
@@ -228,7 +227,7 @@ private:
             return nvi;
         }
 
-        if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get())
+        if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : nullptr)
         {
             if (auto itemContainer = lv.ContainerFromItem(data))
             {
@@ -335,9 +334,6 @@ private:
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
-    winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
-    winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
-    winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};
     winrt::ListView::ItemClick_revoker m_topNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_topNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_topNavListViewSelectionChangedRevoker{};
