@@ -6,10 +6,25 @@
 #include "pch.h"
 #include "common.h"
 #include "NumberBox.g.h"
+#include "NumberBoxValueChangedEventArgs.g.h"
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
 #include "NumberBoxParser.h"
 #include <regex>
+
+class NumberBoxValueChangedEventArgs :
+    public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
+{
+public:
+    NumberBoxValueChangedEventArgs(double oldValue, double newValue) : m_oldValue(oldValue), m_newValue(newValue) {}
+
+    double OldValue() { return m_oldValue; }
+    double NewValue() { return m_newValue; }
+
+private:
+    double m_oldValue;
+    double m_newValue;
+};
 
 class NumberBox :
     public ReferenceTracker<NumberBox, winrt::implementation::NumberBoxT>,
@@ -36,6 +51,9 @@ public:
     };
 
     NumberBox();
+
+    // IUIElement
+    virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
     // IFrameworkElement
     void OnApplyTemplate();

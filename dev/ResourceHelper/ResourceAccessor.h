@@ -154,5 +154,7 @@ public:
 #define SR_NumberBoxErrorDivByZero L"NumberBoxErrorDivByZero"
 #define SR_NumberBoxErrorInvalidInput L"NumberBoxErrorInvalidInput"
 #define SR_NumberBoxErrorRange L"NumberBoxErrorRange"
+#define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
+#define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

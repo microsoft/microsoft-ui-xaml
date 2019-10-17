@@ -30,9 +30,10 @@ enum NumberBoxNumberRounder
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass NumberBoxValueChangingEventArgs
+runtimeclass NumberBoxValueChangedEventArgs
 {
-    Boolean IsContentChanging;
+    Double OldValue{ get; };
+    Double NewValue{ get; };
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -117,7 +118,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Int32 SignificantDigitPrecision;
 
-    event Windows.Foundation.TypedEventHandler<NumberBox, Object> ValueChanged;
+    event Windows.Foundation.TypedEventHandler<NumberBox, NumberBoxValueChangedEventArgs> ValueChanged;
 
     static Windows.UI.Xaml.DependencyProperty MinimumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
@@ -143,10 +144,18 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty NumberRounderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IncrementPrecisionProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SignificantDigitPrecisionProperty{ get; };
+}
 
+}
 
+namespace MU_XAP_NAMESPACE
+{
 
-
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass NumberBoxAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    NumberBoxAutomationPeer(MU_XC_NAMESPACE.NumberBox owner);
 }
 
 }

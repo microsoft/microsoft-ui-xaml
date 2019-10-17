@@ -116,10 +116,10 @@ public:
     static GlobalDependencyProperty s_ValueProperty;
     static GlobalDependencyProperty s_WrapEnabledProperty;
 
-    winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value);
+    winrt::event_token ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::NumberBoxValueChangedEventArgs> const& value);
     void ValueChanged(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable>> m_valueChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::NumberBox, winrt::NumberBoxValueChangedEventArgs>> m_valueChangedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

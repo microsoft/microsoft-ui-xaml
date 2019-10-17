@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "NumberBox.h"
+#include "NumberBoxAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
@@ -13,6 +14,11 @@ NumberBox::NumberBox()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
     SetDefaultStyleKey(this);
+}
+
+winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
+{
+    return winrt::make<NumberBoxAutomationPeer>(*this);
 }
 
 void NumberBox::OnApplyTemplate()
@@ -34,11 +40,25 @@ void NumberBox::OnApplyTemplate()
     if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected))
     {
         spinDown.Click({ this, &NumberBox::OnSpinDownClick });
+
+        // Do localization for the down button
+        if (winrt::AutomationProperties::GetName(spinDown).empty())
+        {
+            auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
+            winrt::AutomationProperties::SetName(spinDown, spinDownName);
+        }
     }
 
     if (auto spinUp = GetTemplateChildT<winrt::RepeatButton>(L"UpSpinButton", controlProtected))
     {
         spinUp.Click({ this, &NumberBox::OnSpinUpClick });
+
+        // Do localization for the up button
+        if (winrt::AutomationProperties::GetName(spinUp).empty())
+        {
+            auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
+            winrt::AutomationProperties::SetName(spinUp, spinUpName);
+        }
     }
 
     m_textBox.set([this, controlProtected]() {
@@ -67,14 +87,23 @@ void NumberBox::OnApplyTemplate()
     UpdateTextToValue();
 }
 
+void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(unbox_value<double>(args.OldValue()), unbox_value<double>(args.NewValue()));
+    m_valueChangedEventSource(*this, *valueChangedArgs);
+
+    // ### this never validates the value!
+    UpdateTextToValue();
+}
+
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // ### implement
+    // ### validate
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // ### implement
+    // ### validate
 }
 
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -135,26 +164,17 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
 }
 
-
-void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    // ### pretty sure this should return at least the old value.
-    m_valueChangedEventSource(*this, nullptr);
-
-    UpdateTextToValue();
-}
-
 void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
-        {
-            SetErrorState(ValidationState::Valid);
-        }
-        else
-        {
-            // Revalidate input if it's changed
-            ValidateInput();
-        }
+    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
+    {
+        SetErrorState(ValidationState::Valid);
+    }
+    else
+    {
+        // Revalidate input if it's changed
+        ValidateInput();
+    }
 }
 
 // Trigger any validation, rounding, and processing done onLostFocus

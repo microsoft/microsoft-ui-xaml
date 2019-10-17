@@ -115,7 +115,6 @@
 
     <Style x:Name="NumberBoxSpinButtonStyle" TargetType="RepeatButton">
         <Style.Setters>
-            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="MinWidth" Value="34"/>
             <Setter Property="Height" Value="{ThemeResource TextControlThemeMinHeight}"/>

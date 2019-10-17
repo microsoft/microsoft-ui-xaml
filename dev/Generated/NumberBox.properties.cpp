@@ -626,7 +626,7 @@ bool NumberBoxProperties::WrapEnabled()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_WrapEnabledProperty));
 }
 
-winrt::event_token NumberBoxProperties::ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::IInspectable> const& value)
+winrt::event_token NumberBoxProperties::ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::NumberBoxValueChangedEventArgs> const& value)
 {
     return m_valueChangedEventSource.add(value);
 }

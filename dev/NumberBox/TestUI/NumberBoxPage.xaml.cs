@@ -32,18 +32,16 @@ namespace MUXControlsTestApp
 
         private void SpinMode_Changed(object sender, RoutedEventArgs e)
         {
-            ComboBox spinmode = (ComboBox)sender;
-            if (TestNumberBox == null)
+            if (TestNumberBox != null)
             {
-                return;
-            }
-            if ((string) spinmode.SelectedValue == "Inline")
-            {
-                TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
-            }
-            else if ((string) spinmode.SelectedValue == "Hidden")
-            {
-                TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
+                if (SpinModeComboBox.SelectedIndex == 0)
+                {
+                    TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Hidden;
+                }
+                else if (SpinModeComboBox.SelectedIndex == 1)
+                {
+                    TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
+                }
             }
         }
 
@@ -77,6 +75,15 @@ namespace MUXControlsTestApp
             if (TestNumberBox != null)
             {
                 TestNumberBox.Maximum = (bool)MaxCheckBox.IsChecked ? MaxNumberBox.Value : double.MaxValue;
+            }
+        }
+
+        private void NumberBoxValueChanged(object sender, NumberBoxValueChangedEventArgs e)
+        {
+            if (TestNumberBox != null)
+            {
+                CurrentValueTextBox.Text = e.NewValue.ToString();
+                OldValueTextBox.Text = e.OldValue.ToString();
             }
         }
     }

@@ -41,33 +41,52 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TestCleanupHelper.Cleanup();
         }
 
-        public string GetTextBoxString()
-        {
-            UIObject numberBox = FindElement.ByName("TestNumberBox");
-            foreach (UIObject elem in numberBox.Children)
-            {
-                if (elem.ClassName.Equals("TextBox"))
-                {
-                    return elem.GetText();
-                }
-            }
-            return null;
-        }
-
         [TestMethod]
-        public void DefaultStateTest()
+        public void UpDownTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
-                Log.Comment("Verify NumberBox exists");
-                UIObject Numbox = FindElement.ByName("TestNumberBox");
-                Verify.IsNotNull(Numbox);
-                Log.Comment("NumberBox Exists");
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                Verify.AreEqual(0, numBox.Value);
 
-                Log.Comment("Verifying Default Text is 0");
-                Verify.AreEqual("0", GetTextBoxString());
-                Log.Comment("Text is 0");
+                ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
+                spinModeComboBox.SelectItemByName("Inline");
+                Wait.ForIdle();
+
+                Button upButton = FindButton(numBox, "Increase");
+                Button downButton = FindButton(numBox, "Decrease");
+
+                Log.Comment("Verify that up button increases value by 1");
+                upButton.InvokeAndWait();
+                Verify.AreEqual(1, numBox.Value);
+
+                Log.Comment("Verify that down button decreases value by 1");
+                downButton.InvokeAndWait();
+                Verify.AreEqual(0, numBox.Value);
+
+                Log.Comment("Change Step value to 5");
+                RangeValueSpinner stepNumBox = FindElement.ByName<RangeValueSpinner>("StepNumberBox");
+                stepNumBox.SetValue(5);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that up button increases value by 5");
+                upButton.InvokeAndWait();
+                Verify.AreEqual(5, numBox.Value);
             }
+        }
+
+        Button FindButton(UIObject parent, string buttonName)
+        {
+            foreach (UIObject elem in parent.Children)
+            {
+                if (elem.Name.Equals(buttonName))
+                {
+                    Log.Comment("Found " + buttonName + " button for object " + parent.Name);
+                    return new Button(elem);
+                }
+            }
+            Log.Comment("Did not find " + buttonName + " button for object " + parent.Name);
+            return null;
         }
     }
 }

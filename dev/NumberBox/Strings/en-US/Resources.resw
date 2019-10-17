@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="NumberBoxDownSpinButtonName" xml:space="preserve">
+    <value>Decrease</value>
+    <comment>Automation name for the down button</comment>
+  </data>
   <data name="NumberBoxErrorDivByZero" xml:space="preserve">
     <value>Division by 0 is not supported.</value>
     <comment>Error message for division by zero.</comment>
@@ -136,5 +140,9 @@
   <data name="NumberBoxErrorRange" xml:space="preserve">
     <value>Value must be between %1!s!-%2!s!.</value>
     <comment>Error message for when input is out of range. %1 is the minimum value, %2 is the maximum value.</comment>
+  </data>
+  <data name="NumberBoxUpSpinButtonName" xml:space="preserve">
+    <value>Increase</value>
+    <comment>Automation name for the up button</comment>
   </data>
 </root>
