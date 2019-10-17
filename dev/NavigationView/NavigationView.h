@@ -164,6 +164,8 @@ private:
     void UpdateSelectionForMenuItems();
     bool m_InitialNonForcedModeUpdate{ true };
 
+    void UpdateRepeaterItemsSource();
+
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
     void UpdateAdaptiveLayout(double width, bool forceSetDisplayMode = false);
@@ -205,6 +207,10 @@ private:
     void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
+
+    void RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args);
+    void RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args);
+    void RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
@@ -282,7 +288,7 @@ private:
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
-    tracker_ref<winrt::ListView> m_leftNavListView{ this };
+    tracker_ref<winrt::ItemsRepeater> m_leftNavRepeater{ this };
     tracker_ref<winrt::ListView> m_topNavListView{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
     tracker_ref<winrt::ListView> m_topNavListOverflowView{ this };
@@ -345,6 +351,10 @@ private:
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
+
+    winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_leftNavItemsRepeaterElementIndexChangedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
