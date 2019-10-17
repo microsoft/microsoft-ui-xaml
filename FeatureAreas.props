@@ -39,6 +39,7 @@
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureTeachingTipEnabled>false</FeatureTeachingTipEnabled>
     <FeatureTimePickerEnabled>false</FeatureTimePickerEnabled>
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
