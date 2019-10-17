@@ -140,8 +140,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        //Disabling until issue #1455 is resolved.
-        //[TestMethod]
+        [TestMethod]
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
