@@ -15,6 +15,7 @@
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="ClosedDisplayMode" Value="Compact" />
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
+        <Setter Property="CommandBarOverflowPresenterStyle" Value="{ThemeResource DefaultCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBar">
