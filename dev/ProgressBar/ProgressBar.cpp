@@ -15,10 +15,9 @@ ProgressBar::ProgressBar()
 
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
-    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBaseValueChanged });
-
-    // NOTE: You can also hook up to events on your control from here.
-    Loaded({ this, &ProgressBar::OnLoaded });
+    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MinimumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::RangeBase::MaximumProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
@@ -29,35 +28,14 @@ void ProgressBar::OnApplyTemplate()
 
     // NOTE: Example of how named parts are loaded from the template. Important to remember that it's possible for
     // any of them not to be found, since devs can replace the template with their own.
-    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(L"LayoutRoot", controlProtected));
-    if (auto layoutRoot = m_layoutRoot.get())
-    {
-        // NOTE: You can hook up to events or property changes on your template parts here, but you have to hook up revokers also
-        // because the template can change or the control could be removed and readded to the tree, etc.
-        // (I can think of no reason you would want to handle grid loading, this is just an example of how it works.)
-        m_layoutRootLoadedRevoker = layoutRoot.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
-    }
 
-    m_progressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(L"ProgressBarIndicator", controlProtected));
-    if (auto progressBarIndicator = m_progressBarIndicator.get())
-    {
-        m_progressBarIndicatorRevoker = progressBarIndicator.Loaded(winrt::auto_revoke, { this, &ProgressBar::OnLayoutRootLoaded });
-    }
+    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
+    m_progressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(s_ProgressBarIndicatorName, controlProtected));
 
     UpdateStates();
 }
 
-void ProgressBar::OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
-{
-    // TODO: things
-}
-
-void ProgressBar::OnLayoutRootLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&)
-{
-    // TODO: things
-}
-
-void ProgressBar::OnRangeBaseValueChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
 
@@ -83,72 +61,89 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
+    m_sizeChangedRevoker.revoke();
+
     if (ShowError())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Error", true);
+        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
     }
     else if (ShowPaused() && IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Error", true); // Paused-Indeterminate state same visual treatment as Error state
+        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true); // Paused-Indeterminate state same visual treatment as Error state
     }
     else if (ShowPaused())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Paused", true);
+        winrt::VisualStateManager::GoToState(*this, s_PausedStateName, true);
     }
     else if (IsIndeterminate())
     {
-        UpdateWidthBasedTemplateSettings();
-        winrt::VisualStateManager::GoToState(*this, L"Indeterminate", true);
+        UpdateWidthBasedTemplateSettings(nullptr, nullptr);
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+        m_sizeChangedRevoker = this->SizeChanged(winrt::auto_revoke, { this, &ProgressBar::UpdateWidthBasedTemplateSettings });
     }
     else if (!IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, L"Determinate", true);
+        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
     }
 }
 
 void ProgressBar::SetProgressBarIndicatorWidth()
 {
-    if (auto progressBarIndicator = m_progressBarIndicator.get())
+    if (auto&& progressBar = m_layoutRoot.get())
     {
-        double progressBarWidth = m_layoutRoot.get().ActualWidth();
-        double maximum = Maximum();
-        double minimum = Minimum();
-        double increment = 0;
-        
-        increment = progressBarWidth / (maximum - minimum);
-        progressBarIndicator.Width(increment * (Value() - minimum));
+        if (auto&& progressBarIndicator = m_progressBarIndicator.get())
+        {
+            const double progressBarWidth = progressBar.ActualWidth();
+            const double maximum = Maximum();
+            const double minimum = Minimum();
+
+            if (std::abs(maximum - minimum) > DBL_EPSILON)
+            {
+                const double increment = progressBarWidth / (maximum - minimum);
+                progressBarIndicator.Width(increment * (Value() - minimum));
+            }
+            else
+            {
+                progressBarIndicator.Width(0); // Error
+            }
+        }
     }
 }
 
-void ProgressBar::UpdateWidthBasedTemplateSettings()
+void ProgressBar::UpdateWidthBasedTemplateSettings(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    auto const templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
-    auto progressBar = m_layoutRoot.get();
-    auto progressBarIndicator = m_progressBarIndicator.get();
+    const auto templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
 
-    auto const [width, height] = [progressBar]()
+    if (auto&& progressBarIndicator = m_progressBarIndicator.get())
     {
-        if (progressBar)
+        auto const [width, height] = [progressBar = m_layoutRoot.get()]()
         {
-            float const width = static_cast<float>(progressBar.ActualWidth());
-            float const height = static_cast<float>(progressBar.ActualHeight());
-            return std::make_tuple(width, height);
-        }
-        return std::make_tuple(0.0f, 0.0f);
-    }();
+            if (progressBar)
+            {
+                const float width = static_cast<float>(progressBar.ActualWidth());
+                const float height = static_cast<float>(progressBar.ActualHeight());
+                return std::make_tuple(width, height);
+            }
+            return std::make_tuple(0.0f, 0.0f);
+        }();
 
-    progressBarIndicator.Width(width / 3);
+        progressBarIndicator.Width(width / 3);
 
-    templateSettings->ContainerAnimationEndPosition(width);
-    templateSettings->ContainerAnimationStartPosition(0);
+        templateSettings->ContainerAnimationEndPosition(width);
 
-    winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangle = [width, height]()
-    {
-        auto const returnValue = winrt::RectangleGeometry();
-        winrt::Rect rect{ 0, 0, width, height };
-        returnValue.Rect(rect);
-        return returnValue;
-    }();
+        const winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangle = [width, height, padding = Padding()]()
+        {
+            
+            const auto returnValue = winrt::RectangleGeometry();
+            returnValue.Rect({
+                static_cast<float>(padding.Left),
+                static_cast<float>(padding.Top),
+                width - static_cast<float>(padding.Right + padding.Left),
+                height - static_cast<float>(padding.Bottom + padding.Top)
+                });
+            return returnValue;
+        }();
 
-    templateSettings->ClipRect(rectangle);
+        templateSettings->ClipRect(rectangle);
+    }
 }

@@ -18,7 +18,6 @@ class ProgressBar :
 
 public:
     ProgressBar();
-    ~ProgressBar() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -28,19 +27,25 @@ public:
     void OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+private:
+    void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+
     void SetProgressBarIndicatorWidth();
     void UpdateStates();
-    void UpdateWidthBasedTemplateSettings();
-
-private:
-    void OnLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
-    void OnLayoutRootLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
-
-    void OnRangeBaseValueChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void UpdateWidthBasedTemplateSettings(const winrt::IInspectable&, const winrt::IInspectable&);
 
     winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
     winrt::Rectangle::Loaded_revoker m_progressBarIndicatorRevoker{};
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
+
+    winrt::ProgressBar::SizeChanged_revoker m_sizeChangedRevoker{};
+
+    static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
+    static constexpr wstring_view s_ProgressBarIndicatorName{ L"ProgressBarIndicator" };
+    static constexpr wstring_view s_ErrorStateName{ L"Error" };
+    static constexpr wstring_view s_PausedStateName{ L"Paused" };
+    static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+    static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
 };

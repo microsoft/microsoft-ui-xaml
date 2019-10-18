@@ -33,5 +33,4 @@
   <Import Project="..\..\dev\Interactions\ButtonInteraction\InteractionTests\ButtonInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\Interactions\SliderInteraction\InteractionTests\SliderInteraction_InteractionTests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true'" />
   <Import Project="..\..\dev\TabView\InteractionTests\TabView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\InteractionTests\ProgressBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
 </Project>

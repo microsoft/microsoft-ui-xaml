@@ -95,18 +95,19 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderBrush}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
-                            Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
+                            CornerRadius="{TemplateBinding CornerRadius}">
 
-                            <Rectangle x:Name="ProgressBarIndicator"
-                                Margin="{TemplateBinding Padding}"
-                                Fill="{TemplateBinding Foreground}"         
-                                HorizontalAlignment="Left"
->
-                                <Rectangle.RenderTransform>
-                                    <CompositeTransform/>
-                                </Rectangle.RenderTransform>
-                            </Rectangle>
+                            <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
+                                <Rectangle x:Name="ProgressBarIndicator"
+                                    Margin="{TemplateBinding Padding}"
+                                    Fill="{TemplateBinding Foreground}"         
+                                    HorizontalAlignment="Left"
+    >
+                                    <Rectangle.RenderTransform>
+                                        <CompositeTransform/>
+                                    </Rectangle.RenderTransform>
+                                </Rectangle>
+                            </Border>
                         </Border>
                     </Grid>
                     

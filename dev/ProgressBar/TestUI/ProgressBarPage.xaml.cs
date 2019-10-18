@@ -13,6 +13,7 @@ using System.Windows.Input;
 using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
 //using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Data;
+using System.Numerics;
 
 namespace MUXControlsTestApp
 {
@@ -24,16 +25,21 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
-        private static int _clicks = 0;
-
-        public void Button_Click(object sender, RoutedEventArgs e)
+        public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
         {
-            _clicks += 1;
-            TestProgressBar.Value = _clicks;
-
-            double minimum = TestProgressBar.Minimum;
-
-            if (_clicks >= TestProgressBar.Maximum) _clicks = (int)(minimum + 0.5);
+            TestProgressBar.Maximum = Double.Parse(MaximumInput.Text);
+            TestProgressBar.Minimum = Double.Parse(MinimumInput.Text);
+        }
+        public void ChangeValue(object sender, RoutedEventArgs e)
+        {
+            if (TestProgressBar.Value + 1 > TestProgressBar.Maximum)
+            {
+                TestProgressBar.Value = (int)(TestProgressBar.Minimum + 0.5);
+            }
+            else
+            {
+                TestProgressBar.Value += 1;
+            }           
         }
     }
 

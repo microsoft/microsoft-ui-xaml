@@ -19,10 +19,9 @@
             <controls:ProgressBar
                 x:Name="TestProgressBar"
                 AutomationProperties.Name="TestProgressBar"
-                Maximum ="{Binding ElementName=MaximumInput, Path=Text, FallbackValue=100, Mode=OneWay}"
-                Minimum="{Binding ElementName=MinimumInput, Path=Text, FallbackValue=0, Mode=Oneway}"
                 Width="100"
-                HorizontalAlignment="Left"
+                HorizontalAlignment="Right"
+                Padding="20 1 10 2"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
@@ -30,7 +29,8 @@
             <TextBox x:Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" />
             <TextBox x:Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" />
             <TextBlock Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
-            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="Button_Click" />
+            <Button x:Name="UpdateMinMax" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue" />
 
             <TextBlock Text="{x:Bind ShowPausedCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowPausedCheckBox" Content="Show Paused"/>
