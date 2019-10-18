@@ -39,11 +39,13 @@ public:
         bool isWrapping,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const ScrollOrientation& orientation,
         const wstring_view& layoutId);
     winrt::Size Arrange(
         const winrt::Size& finalSize,
         const winrt::VirtualizingLayoutContext& context,
+        bool isWrapping,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
     void OnItemsSourceChanged(
@@ -68,7 +70,7 @@ private:
         Backward
     };
 
-    // Methods  
+    // Methods
 #pragma region Measure related private methods
     int GetAnchorIndex(
         const winrt::Size& availableSize,
@@ -81,6 +83,7 @@ private:
         const winrt::Size& availableSize,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const wstring_view& layoutId);
     void MakeAnchor(
         const winrt::VirtualizingLayoutContext& context,
@@ -98,6 +101,7 @@ private:
     void ArrangeVirtualizingLayout(
         const winrt::Size& finalSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
         const wstring_view& layoutId);
     void PerformLineAlignment(
         int lineStartIndex,
@@ -106,6 +110,8 @@ private:
         float spaceAtLineEnd,
         float lineSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
+        const winrt::Size& finalSize,
         const wstring_view& layoutId);
 #pragma endregion
 
@@ -133,6 +139,6 @@ private:
     // we do not want to align the line. We could potentially switch the
     // meaning of line alignment in this case, but I'll hold off on that
     // feature until someone asks for it - This is not a common scenario
-    // anyway. 
+    // anyway.
     bool m_scrollOrientationSameAsFlow{ false };
 };

@@ -68,6 +68,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\APITests\CalendarView_APITests.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
 
   <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.

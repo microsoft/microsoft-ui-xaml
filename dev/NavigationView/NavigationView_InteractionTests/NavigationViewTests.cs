@@ -372,6 +372,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        public void PaneNotOpeningTopMode()
+        {
+
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+                {
+                    Log.Warning("Test is disabled on pre-RS4 because NavigationView Gamepad interaction is not supported pre-RS4");
+                    return;
+                }
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView TopNav Test" }))
+                {
+                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
+
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be false");
+
+                    GamepadHelper.PressButton(FindElement.ById("NavView"), GamepadButton.View);
+
+                    Wait.ForIdle();
+                    Verify.AreEqual(ToggleState.Off, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True after increasing the width of the control from compact to expanded");
+                }
+            }
+        }
+
         [TestMethod] // Bug 18159731
         [TestProperty("TestSuite", "A")]
         public void PaneOpenForceCloseTest()
@@ -418,18 +445,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
-        public void PaneClosedWhenAutoAndNarrow()
+        public void PaneClosedUponLaunch()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Navigation Minimal Test" }))
                 {
-
-                    CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsAutoPaneOpenCheckBox"));
-                    Log.Comment("Checking that a NavigationView with displaymode set to 'Auto' and a narrow width does not display pane");
+                    Log.Comment("Verify that NavigationView with DisplayMode set to 'Auto' and a narrow width does not display pane on load.");
+                    CheckBox isAutoPaneOpenCheckBox = new CheckBox(FindElement.ById("IsAutoPaneOpenCheckBox"));
                     Wait.ForIdle();
-                    Verify.IsTrue(isPaneOpenCheckBox.ToggleState == ToggleState.Off);
+                    Verify.IsTrue(isAutoPaneOpenCheckBox.ToggleState == ToggleState.Off);
+
+                    Log.Comment("Verify that NavigationView with DisplayMode set to 'LeftMinimal' does not display pane on load.");
+                    CheckBox isLeftMinimalPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftMinimalPaneOpenCheckBox"));
+                    Verify.IsTrue(isLeftMinimalPaneOpenCheckBox.ToggleState == ToggleState.Off);
+
+                    Log.Comment("Verify that NavigationView with DisplayMode set to 'LeftCompact' does not display pane on load.");
+                    CheckBox isLeftCompactPaneOpenCheckBox = new CheckBox(FindElement.ById("IsLeftCompactPaneOpenCheckBox"));
+                    Verify.IsTrue(isLeftCompactPaneOpenCheckBox.ToggleState == ToggleState.Off);
                 }
 
             }
@@ -742,7 +776,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var myLocationButton = FindElement.ByName<Button>("MyLocation");
                 var switchFrameButton = FindElement.ByName<Button>("SwitchFrame");
                 var result = new TextBlock(FindElement.ByName("MyLocationResult"));
- 
+
                 Log.Comment("Click on MyLocation Item and verify it's on Frame1");
                 myLocationButton.Invoke();
                 Wait.ForIdle();
@@ -1072,7 +1106,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     titleBarCheckbox.Uncheck();
                     Wait.ForIdle();
 
-                    if(!testScenario.IsUsingRS4Style)
+                    if (!testScenario.IsUsingRS4Style)
                     {
                         // If we extend the backbutton to titlebar area, the button is not clickable. so the new implementation keeps backbutton not in titlebar area.
                         Log.Comment("Verify that the toggle button y = height of title bar + back button spacing");
@@ -1424,7 +1458,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Select the longest nav item
                 OpenOverflowMenuAndInvokeItem(longNavItemPartialContent);
-                
+
                 count = GetTopNavigationItems(TopNavPosition.Primary).Count;
                 Verify.IsTrue(primaryCount - count >= 2, "Longest nav item make more than 1 items to overflow " + primaryCount + " vs " + count);
 
@@ -1433,11 +1467,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(
                     GetTopNavigationItems(TopNavPosition.Primary).
                         Where(item => UIObjectContains(item, longNavItemPartialContent)).
-                        Count() == 0, 
+                        Count() == 0,
                     "Longest nav item is pushed to overflow");
 
                 count = GetTopNavigationItems(TopNavPosition.Primary).Count;
-                Verify.IsTrue(primaryCount <= count, 
+                Verify.IsTrue(primaryCount <= count,
                     "Select the shortest item make more item to primary " + primaryCount + " vs " + count);
             }
         }
@@ -1815,7 +1849,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     return;
                 }
 
-               
+
                 Button resetResultButton = new Button(FindElement.ById("ResetResult"));
                 UIObject home = FindElement.ByName("Home");
                 UIObject apps = FindElement.ById("AppsItem");
@@ -1876,7 +1910,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Click home again, it raise two events. transition from right to left
                 Verify.AreEqual(invokeResult.Value, "Home");
                 Verify.AreEqual(selectResult.Value, "Home");
-                
+
                 // Only RS5 or above supports SlideNavigationTransitionInfo
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
@@ -1961,7 +1995,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Verify.AreEqual(invokeRecommendedTransition.Value, "FromLeft");
                     Verify.AreEqual(selectionChangeRecommendedTransition.Value, "Default");
-                }                
+                }
             }
         }
 
@@ -1971,7 +2005,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "Top NavigationView Test" }))
             {
-              
+
                 Button setInvalidSelectedItemButton = new Button(FindElement.ById("SetInvalidSelectedItem"));
                 var apps = new Button(FindElement.ById("AppsItem"));
 
@@ -1989,7 +2023,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 setInvalidSelectedItemButton.Invoke();
                 Wait.ForIdle();
-               
+
                 Verify.AreEqual(selectResult.Value, "Null");
             }
         }
@@ -2014,12 +2048,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // didn't figure out why, retry helps the stability.
                 Wait.RetryUntilEvalFuncSuccessOrTimeout(
-                    () => {
+                    () =>
+                    {
                         getActiveVisualStateButton.Click();
                         Wait.ForIdle();
                         return activeVisualStates.GetText().Contains("OnTopNavigationPrimaryReveal");
                     },
-                    retryTimoutByMilliseconds : 3000
+                    retryTimoutByMilliseconds: 3000
                 );
 
                 Log.Comment("Visual states: " + activeVisualStates.GetText());
@@ -2061,7 +2096,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Wait.RetryUntilEvalFuncSuccessOrTimeout(
                         () => { return togglePaneButton.HasKeyboardFocus; },
-                        retryTimoutByMilliseconds : 3000
+                        retryTimoutByMilliseconds: 3000
                     );
 
                     Log.Comment("Verify pressing shift-tab from the first menu item goes to the toggle button");
@@ -2393,7 +2428,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(1, positionInSet, "Position in set");
                 Verify.AreEqual(4, sizeOfSet, "Size of set");
-                    
+
 
                 Log.Comment("Add ten items to make overflow happen");
                 Button addTenItems = new Button(FindElement.ByName("AddTenItems"));
@@ -2818,7 +2853,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // ToolTip is not reliable on RS2, try many times
                 bool foundToolTip = false;
                 for (int i = 0; i < 5; i++)
-                { 
+                {
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
                     togglePaneButton.SetFocus();
                     Wait.ForIdle();
@@ -3268,7 +3303,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         Log.Warning("Test is disabled on RS2 and older due to lack of SplitView events");
                         return;
                     }
-                    
+
                     CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
                     Verify.AreEqual(ToggleState.On, isPaneOpenCheckBox.ToggleState, "IsPaneOpen expected to be True");
 
@@ -3410,7 +3445,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Warning("This test is only designed to run on RS4+ machines");
                     return;
                 }
-                
+
                 CheckBox isPaneOpenCheckBox = new CheckBox(FindElement.ById("IsPaneOpenCheckBox"));
 
                 // On phone, the pane will initially be in the closed compact state, so open it before
@@ -3433,7 +3468,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 using (var waiter = new ValueChangedEventWaiter(result))
                 {
                     Button button = new Button(FindElement.ById("GetTopPaddingHeight"));
-                    button.Invoke();                    
+                    button.Invoke();
                     waiter.Wait();
                 }
                 var togglePaneTopPadding = Convert.ToInt32(result.Value);
@@ -3458,7 +3493,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         [TestProperty("TestSuite", "D")]
         [TestProperty("Description", "Temporary bootstrapping test, can be retired once Horizontal Nav View is out of incubation")]
-        public void EnsureNoCrashesInHorizontalFlipMenuItems() 
+        public void EnsureNoCrashesInHorizontalFlipMenuItems()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
             foreach (var testScenario in testScenarios)
@@ -4038,7 +4073,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             TextBlock text = new TextBlock(paneHeaderContent.FirstChild);
             Verify.AreEqual("Modified Pane Header", text.DocumentText);
 
-            if(navviewMode == RegressionTestType.LeftNav)
+            if (navviewMode == RegressionTestType.LeftNav)
             {
                 // In Closed Compact mode, the PaneHeader should not be visible:
 
@@ -4089,7 +4124,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Invoke More button to open/close Overflow menu");
             var moreButton = TryFindElement.ById("TopNavOverflowButton");
             Verify.IsNotNull(moreButton, "Overflow button should exist");
-            new Button(moreButton).InvokeAndWait();               
+            new Button(moreButton).InvokeAndWait();
         }
 
         private string UIObjectToString(UIObject uIObject)

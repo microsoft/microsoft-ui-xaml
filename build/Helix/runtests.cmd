@@ -68,6 +68,7 @@ move te.wtl te_rerun_multiple.wtl
 
 copy /y te_rerun_multiple.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
 copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
+powershell -ExecutionPolicy Bypass .\CopyVisualTreeMasters.ps1
 
 :SkipReruns
 

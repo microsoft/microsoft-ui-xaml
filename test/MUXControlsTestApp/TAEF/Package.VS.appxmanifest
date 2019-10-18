@@ -27,5 +27,6 @@
     <Capability Name="internetClient" />
     <Capability Name="internetClientServer" />
     <uap:Capability Name="musicLibrary" />
+    <uap:Capability Name="picturesLibrary"/>
   </Capabilities>
 </Package>

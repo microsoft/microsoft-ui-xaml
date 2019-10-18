@@ -584,8 +584,10 @@ void NavigationView::UpdateAdaptiveLayout(double width, bool forceSetDisplayMode
     {
         MUX_FAIL_FAST();
     }
+
     if (!forceSetDisplayMode && m_InitialNonForcedModeUpdate) {
-        if (displayMode == winrt::NavigationViewDisplayMode::Minimal && PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Auto) {
+        if (displayMode == winrt::NavigationViewDisplayMode::Minimal ||
+            displayMode == winrt::NavigationViewDisplayMode::Compact) {
             ClosePane();
         }
         m_InitialNonForcedModeUpdate = false;
@@ -1600,7 +1602,7 @@ void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     switch (key)
     {
     case winrt::VirtualKey::GamepadView:
-        if (!IsPaneOpen())
+        if (!IsPaneOpen() && !IsTopNavigationView())
         {
             OpenPane();
             handled = true;
@@ -3594,6 +3596,12 @@ void NavigationView::UpdatePaneShadow()
             if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGridName, *this))
             {
                 contentGrid.SetRowSpan(shadowReceiver, contentGrid.RowDefinitions().Size());
+                contentGrid.SetRow(shadowReceiver, 0);
+                // Only register to columns if those are actually defined
+                if (contentGrid.ColumnDefinitions().Size() > 0) {
+                    contentGrid.SetColumn(shadowReceiver, 0);
+                    contentGrid.SetColumnSpan(shadowReceiver, contentGrid.ColumnDefinitions().Size());
+                }
                 contentGrid.Children().Append(shadowReceiver);
 
                 winrt::ThemeShadow shadow;
@@ -3611,9 +3619,16 @@ void NavigationView::UpdatePaneShadow()
             }
         }
 
+
         // Shadow will get clipped if casting on the splitView.Content directly
         // Creating a canvas with negative margins as receiver to allow shadow to be drawn outside the content grid 
-        winrt::Thickness shadowReceiverMargin = { -CompactPaneLength(), -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+        winrt::Thickness shadowReceiverMargin = { 0, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ, -c_paneElevationTranslationZ };
+
+        // Ensuring shadow is aligned to the left
+        shadowReceiver.HorizontalAlignment(winrt::HorizontalAlignment::Left);
+
+        // Ensure shadow is as wide as the pane when it is open
+        shadowReceiver.Width(OpenPaneLength());
         shadowReceiver.Margin(shadowReceiverMargin);
     }
 }

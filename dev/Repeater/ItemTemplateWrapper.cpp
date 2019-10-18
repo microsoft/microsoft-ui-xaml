@@ -55,6 +55,14 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
         // no element was found in recycle pool, create a new element
         element = selectedTemplate.LoadContent().as<winrt::FrameworkElement>();
 
+        // Template returned null, so insert empty element to render nothing
+        if (!element) {
+            auto rectangle = winrt::Rectangle();
+            rectangle.Width(0);
+            rectangle.Height(0);
+            element = rectangle;
+        }
+
         // Associate template with element
         element.SetValue(RecyclePool::GetOriginTemplateProperty(), selectedTemplate);
     }

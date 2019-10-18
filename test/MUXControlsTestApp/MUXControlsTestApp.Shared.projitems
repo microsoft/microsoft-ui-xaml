@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildThisFileDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
@@ -155,6 +155,7 @@
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\ExtendedObservableCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\TopLevelTestPageAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">

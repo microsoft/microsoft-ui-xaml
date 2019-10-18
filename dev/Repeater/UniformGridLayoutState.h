@@ -32,7 +32,8 @@ public:
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,
-        double minColumnSpacing);
+        double minColumnSpacing,
+        unsigned int maxItemsPerLine);
     void ClearElementOnDataSourceChange(winrt::VirtualizingLayoutContext const& context, winrt::NotifyCollectionChangedEventArgs const& args);
 
 private:
@@ -47,12 +48,13 @@ private:
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,
-        double minColumnSpacing);
+        double minColumnSpacing,
+        unsigned int maxItemsPerLine);
 
-    // We need to measure the element at index 0 to know what size to measure all other items. 
-    // If FlowlayoutAlgorithm has already realized element 0 then we can use that. 
+    // We need to measure the element at index 0 to know what size to measure all other items.
+    // If FlowlayoutAlgorithm has already realized element 0 then we can use that.
     // If it does not, then we need to do context.GetElement(0) at which point we have requested an element and are on point to clear it.
-    // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid. 
+    // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid.
     // If we are not (because FlowLayoutAlgorithm is holding it for us) then we just null out this field and use the one from FlowLayoutAlgorithm.
     winrt::UIElement m_cachedFirstElement = nullptr;
 };

@@ -16,7 +16,7 @@ namespace MUXControlsTestApp
 
         private void ShowDialog_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new ContentDialog { Title = "Title", Content = "Content", IsPrimaryButtonEnabled = true, PrimaryButtonText = "PrimaryButton" };
+            var dialog = new ContentDialog { Title = "Title", Content = "Content", IsPrimaryButtonEnabled = true, PrimaryButtonText = "PrimaryButton", SecondaryButtonText = "SecondaryButton", CloseButtonText = "CloseButton" };
             _ = dialog.ShowAsync();
         }
     }
