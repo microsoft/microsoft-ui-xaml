@@ -384,7 +384,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
 
     // Initial setup for ItemsRepeater
-    //UpdateRepeaterItemsSource();
+    UpdateRepeaterItemsSource();
 }
 
 void NavigationView::UpdateRepeaterItemsSource()
@@ -415,20 +415,20 @@ void NavigationView::UpdateRepeaterItemsSource()
 
 void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    //if (winrt::NavigationViewItemBase nvib = args.Element.try_as<winrt::NavigationViewItemBase>(nvib))
-    //{
-    //    nvib.RepeatedIndex = args.Index;
-    //    nvib.navView = this;
-    //    nvib.Depth = 0;
-    //    // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
-    //    if (nvi.MenuItemTemplate == null && MenuItemTemplate != null)
-    //    {
-    //        nvi.MenuItemTemplate = MenuItemTemplate;
-    //    }
-    //    // Propagate the SelectionModel
-    //    nvi.SelectionModel = SelectionModel;
-    //    nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
-    //}
+    if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
+    {
+        nvib.RepeatedIndex(args.Index());
+        //nvib.navView(this);
+        //nvib.Depth = 0;
+        // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
+        //if (nvi.MenuItemTemplate == null && MenuItemTemplate != null)
+        //{
+        //    nvi.MenuItemTemplate = MenuItemTemplate;
+        //}
+        // Propagate the SelectionModel
+        nvib.SelectionModel(SelectionModel());
+        //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
+    }
 }
 
 void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args)

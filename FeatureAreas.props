@@ -9,7 +9,7 @@
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
     <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
-    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -22,10 +22,10 @@
     <FeatureIconSourceEnabled>productOnly</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
-    <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
+    <FeatureRepeaterEnabled>productOnly</FeatureRepeaterEnabled>
     <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
-    <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
+    <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
     <FeatureParallaxViewEnabled>false</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>false</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>false</FeaturePivotEnabled>

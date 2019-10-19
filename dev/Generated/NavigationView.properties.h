@@ -105,6 +105,9 @@ public:
     void SelectionFollowsFocus(winrt::NavigationViewSelectionFollowsFocus const& value);
     winrt::NavigationViewSelectionFollowsFocus SelectionFollowsFocus();
 
+    void SelectionModel(winrt::SelectionModel const& value);
+    winrt::SelectionModel SelectionModel();
+
     void SettingsItem(winrt::IInspectable const& value);
     winrt::IInspectable SettingsItem();
 
@@ -146,6 +149,7 @@ public:
     static winrt::DependencyProperty PaneToggleButtonStyleProperty() { return s_PaneToggleButtonStyleProperty; }
     static winrt::DependencyProperty SelectedItemProperty() { return s_SelectedItemProperty; }
     static winrt::DependencyProperty SelectionFollowsFocusProperty() { return s_SelectionFollowsFocusProperty; }
+    static winrt::DependencyProperty SelectionModelProperty() { return s_SelectionModelProperty; }
     static winrt::DependencyProperty SettingsItemProperty() { return s_SettingsItemProperty; }
     static winrt::DependencyProperty ShoulderNavigationEnabledProperty() { return s_ShoulderNavigationEnabledProperty; }
     static winrt::DependencyProperty TemplateSettingsProperty() { return s_TemplateSettingsProperty; }
@@ -182,6 +186,7 @@ public:
     static GlobalDependencyProperty s_PaneToggleButtonStyleProperty;
     static GlobalDependencyProperty s_SelectedItemProperty;
     static GlobalDependencyProperty s_SelectionFollowsFocusProperty;
+    static GlobalDependencyProperty s_SelectionModelProperty;
     static GlobalDependencyProperty s_SettingsItemProperty;
     static GlobalDependencyProperty s_ShoulderNavigationEnabledProperty;
     static GlobalDependencyProperty s_TemplateSettingsProperty;
@@ -328,6 +333,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSelectionFollowsFocusPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSelectionModelPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

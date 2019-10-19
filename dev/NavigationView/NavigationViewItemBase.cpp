@@ -75,10 +75,140 @@ winrt::NavigationViewList NavigationViewItemBase::GetNavigationViewList()
 
 void NavigationViewItemBase::OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-
+    auto indexPath = GetIndexPath();
+    if (auto selectionModel = SelectionModel())
+    {
+        bool isSelectedNullable = false;
+        if (IsRealized(indexPath))
+        {
+            isSelectedNullable = selectionModel.IsSelectedAt(indexPath).Value();
+        }
+        IsSelected(isSelectedNullable);
+    }
 }
 
 void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    if (args.OldValue())
+    {
+        //(args.OldValue().try_as<winrt::SelectionModel>()).SelectionChanged(m_selectionChangedEventToken);
+        m_selectionChangedEventToken.revoke();
+    }
 
+    if (args.NewValue())
+    {
+        //m_selectionChangedEventToken = (args.NewValue().try_as<winrt::SelectionModel>()).SelectionChanged(&OnSelectionChanged);
+        m_selectionChangedEventToken = (args.NewValue().try_as<winrt::SelectionModel>()).SelectionChanged(winrt::auto_revoke, { this, &NavigationViewItemBase::OnSelectionChanged });
+    }
+}
+void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
+{
+    bool oldValue = IsSelected();
+    auto indexPath = GetIndexPath();
+
+    bool newValue = false;
+    if (IsRealized(indexPath))
+    {
+        newValue = SelectionModel().IsSelectedAt(indexPath).Value();
+    }
+
+    if (oldValue != newValue)
+    {
+        IsSelected(newValue);
+
+        //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
+        //AutomationEvents eventToRaise =
+        //    oldValue ?
+        //        (SelectionModel.SingleSelect ? AutomationEvents.PropertyChanged : AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection) :
+        //        (SelectionModel.SingleSelect ? AutomationEvents.SelectionItemPatternOnElementSelected : AutomationEvents.SelectionItemPatternOnElementAddedToSelection);
+
+        //if (eventToRaise != AutomationEvents.PropertyChanged && AutomationPeer.ListenerExists(eventToRaise))
+        //{
+        //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(this);
+        //    peer.RaiseAutomationEvent(eventToRaise);
+        //}
+    }
+}
+
+winrt::IndexPath NavigationViewItemBase::GetIndexPath()
+{
+    auto child = (*this).try_as<winrt::FrameworkElement>();
+    auto parent = child.Parent().try_as<winrt::FrameworkElement>();
+    if (!parent)
+    {
+        parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
+    }
+
+    auto path = winrt::make<Vector<int>>();
+    //auto path = new std::vector<int>();
+    if (parent == nullptr)
+    {
+        return winrt::IndexPath::CreateFromIndices(path);
+    }
+
+    // TOOD: Hack to know when to stop
+    while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            path.InsertAt(0, parentIR.GetElementIndex(child));
+        }
+
+        child = parent;
+        parent = parent.Parent().try_as<winrt::FrameworkElement>();
+        if (!parent)
+        {
+            parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
+        }
+    }
+
+    if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+    {
+        path.InsertAt(0, parentIR.GetElementIndex(child));
+    }
+
+    // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
+    //if ((parent as ItemsRepeater).Name == RepNavigationView.c_flyoutItemsRepeater)
+    //{
+
+    //}
+    //else if ((parent as ItemsRepeater).Name == RepNavigationView.c_overflowRepeater)
+    //{
+
+    //}
+
+    return winrt::IndexPath::CreateFromIndices(path);
+}
+
+bool NavigationViewItemBase::IsRootItemsRepeater(winrt::hstring name)
+{
+    return (name == c_topNavRepeater ||
+        name == c_leftRepeater ||
+        name == c_overflowRepeater ||
+        name == c_flyoutItemsRepeater);
+}
+
+bool NavigationViewItemBase::IsRealized(winrt::IndexPath indexPath)
+{
+    bool isRealized = true;
+    for (int i = 0; i < indexPath.GetSize(); i++)
+    {
+        if (indexPath.GetAt(i) < 0)
+        {
+            isRealized = false;
+            break;
+        }
+    }
+
+    return isRealized;
+}
+
+void NavigationViewItemBase::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+{
+    __super::OnPointerReleased(args);
+    if (auto selectionModel = SelectionModel())
+    {
+        winrt::IndexPath ip = GetIndexPath();
+        SelectionModel().SelectAt(ip);
+    }
 }

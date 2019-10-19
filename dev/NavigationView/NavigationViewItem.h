@@ -33,6 +33,7 @@ public:
 
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer() override;
+    //void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
 
     // IContentControlOverrides / IContentControlOverridesHelper
     void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent) override;
@@ -49,6 +50,7 @@ public:
     
     bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
     void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);

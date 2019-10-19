@@ -55,6 +55,19 @@ public:
     void OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
+
+protected:
+    winrt::IndexPath GetIndexPath();
+    bool IsRootItemsRepeater(winrt::hstring name);
+
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
+
+    bool IsRealized(winrt::IndexPath indexPath);
+    void OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
+
+    // Event Tokens
+    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
+
 };

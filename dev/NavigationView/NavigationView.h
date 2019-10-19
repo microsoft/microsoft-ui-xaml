@@ -34,6 +34,11 @@ enum class NavigationRecommendedTransitionDirection
     Default // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
 };
 
+static constexpr auto c_topNavRepeater = L"topNavRepeater"sv;
+static constexpr auto c_leftRepeater = L"leftRepeater"sv;
+static constexpr auto c_overflowRepeater = L"overflowRepeater"sv;
+static constexpr auto c_flyoutItemsRepeater = L"flyoutItemsRepeater"sv;
+
 class NavigationView :
     public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>,
     public NavigationViewProperties
@@ -74,7 +79,6 @@ public:
     int GetNavigationViewItemCountInTopNav();
     winrt::SplitView GetSplitView();
     TopNavigationViewDataProvider& GetTopDataProvider() { return m_topDataProvider; };
-    //winrt::ListView LeftNavListView() { return m_leftNavListView.get(); };
     void TopNavigationViewItemContentChanged();
 
     void CoerceToGreaterThanZero(double& value);

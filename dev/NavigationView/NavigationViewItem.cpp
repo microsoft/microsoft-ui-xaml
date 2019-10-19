@@ -352,3 +352,23 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
         UpdateVisualStateNoTransition();
     }
 }
+
+//void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+//{
+//    NavigationViewItemBase::OnPointerReleased(args);
+//    // Select if item is selectable
+//    if (auto selectionModel = SelectionModel() && SelectsOnInvoked())
+//    {
+//        winrt::IndexPath ip = GetIndexPath();
+//        SelectionModel().SelectAt(ip);
+//        // We need to move this item from Overflow ItemsRepeater to the main TopNavigationView Repeater
+//        //if (IsInOverflow())
+//        //{
+//        //    navView.MoveItemToMainItemsRepeater(RepeatedIndex);
+//        //}
+//        //this.Focus(FocusState.Keyboard);
+//    }
+//
+//    //e.Handled = true;
+//    //base.OnPointerReleased(e);
+//}

@@ -455,14 +455,14 @@
                                             ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
                                             SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}"/>-->
 
-                                        <local:ItemsRepeaterScrollHost Grid.Row="1">
+                                        <local:ItemsRepeaterScrollHost
+                                            Grid.Row="6"
+                                            Margin="0,0,0,20"
+                                            HorizontalAlignment="Stretch">
                                             <ScrollViewer>
                                                 <local:ItemsRepeater 
                                                         x:Name="MenuItemsHost"
-                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                                        Grid.Row="6"
-                                                        Margin="0,0,0,20"
-                                                        HorizontalAlignment="Stretch">
+                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
                                                     <local:ItemsRepeater.Layout>
                                                         <local:StackLayout Orientation="Vertical"/>
                                                     </local:ItemsRepeater.Layout>
