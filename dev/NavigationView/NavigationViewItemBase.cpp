@@ -6,6 +6,7 @@
 #include "NavigationViewItemBase.h"
 #include "NavigationViewList.h"
 #include "NavigationView.h"
+#include "IndexPath.h"
 
 // NOTE: We need to manually define this factory because the IDL does not specify a create method which means that
 // technically in the ABI this type is not activatable. However we might get asked for this factory so we need to provide it.
@@ -139,11 +140,10 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
         parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
     }
 
-    auto path = winrt::make<Vector<int>>();
-    //auto path = new std::vector<int>();
+    auto path = std::vector<int>();
     if (parent == nullptr)
     {
-        return winrt::IndexPath::CreateFromIndices(path);
+        return IndexPath::CreateFromIndices(path);
     }
 
     // TOOD: Hack to know when to stop
@@ -151,7 +151,7 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
     {
         if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
         {
-            path.InsertAt(0, parentIR.GetElementIndex(child));
+            //path.InsertAt(0, parentIR.GetElementIndex(child));
         }
 
         child = parent;
@@ -164,7 +164,7 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
 
     if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
     {
-        path.InsertAt(0, parentIR.GetElementIndex(child));
+       // path.InsertAt(0, parentIR.GetElementIndex(child));
     }
 
     // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
@@ -177,7 +177,7 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
 
     //}
 
-    return winrt::IndexPath::CreateFromIndices(path);
+    return IndexPath::CreateFromIndices(path);
 }
 
 bool NavigationViewItemBase::IsRootItemsRepeater(winrt::hstring name)
