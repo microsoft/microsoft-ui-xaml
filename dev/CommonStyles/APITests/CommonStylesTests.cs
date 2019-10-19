@@ -140,8 +140,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        //Disabling until issue #1455 is resolved.
-        //[TestMethod]
+        [TestMethod]
         public void VerifyVisualTreeForCommandBarOverflowMenu()
         {
             StackPanel root = null;
@@ -185,7 +184,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 overflowContent = popup.Child;
             });
 
-            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu");
+            var visualTreeDumperFilter = new VisualTreeDumper.DefaultFilter();
+            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxWidth");
+            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxHeight");
+            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
         }
 
         private string XamlStringForControl(string controlName)
