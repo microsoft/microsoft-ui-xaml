@@ -270,13 +270,6 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     Boolean IsTitleBarAutoPaddingEnabled { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty IsTitleBarAutoPaddingEnabledProperty { get; };
-
-    [WUXC_VERSION_PREVIEW]
-    {
-        SelectionModel SelectionModel{ get; set; };
-
-        static Windows.UI.Xaml.DependencyProperty SelectionModelProperty{ get; };
-    }
 }
 
 [WUXC_VERSION_RS3]

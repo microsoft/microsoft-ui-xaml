@@ -117,6 +117,13 @@ void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionM
     {
         IsSelected(newValue);
 
+        // Updated selected item in NavigationView 
+        if (newValue)
+        {
+            auto item = SelectionModel().SelectedItem();
+            m_navigationView.get().SelectedItem(item);
+        }
+
         //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
         //AutomationEvents eventToRaise =
         //    oldValue ?
@@ -146,15 +153,20 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
         return IndexPath::CreateFromIndices(path);
     }
 
+    bool  test = !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name());
+    auto testName = (parent.try_as<winrt::ItemsRepeater>()).Name();
+    bool nameComparison = (testName == c_leftRepeater);
+    bool  test1 = !(parent.try_as<winrt::ItemsRepeater>());
     // TOOD: Hack to know when to stop
     while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
     {
         if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
         {
-            //path.InsertAt(0, parentIR.GetElementIndex(child));
+            path.insert(path.begin(), parentIR.GetElementIndex(child));
         }
 
         child = parent;
+        auto name = parent.Name();
         parent = parent.Parent().try_as<winrt::FrameworkElement>();
         if (!parent)
         {
@@ -164,7 +176,7 @@ winrt::IndexPath NavigationViewItemBase::GetIndexPath()
 
     if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
     {
-       // path.InsertAt(0, parentIR.GetElementIndex(child));
+        path.insert(path.begin(), parentIR.GetElementIndex(child));
     }
 
     // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
@@ -211,4 +223,9 @@ void NavigationViewItemBase::OnPointerReleased(winrt::PointerRoutedEventArgs con
         winrt::IndexPath ip = GetIndexPath();
         SelectionModel().SelectAt(ip);
     }
+}
+
+void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
+{
+    m_navigationView = winrt::make_weak(navigationView);
 }

@@ -149,6 +149,8 @@ NavigationView::NavigationView()
 
     Unloaded({ this, &NavigationView::OnUnloaded });
     Loaded({ this, &NavigationView::OnLoaded });
+
+    m_selectionModel.SingleSelect(true);
 }
 
 void NavigationView::OnApplyTemplate()
@@ -396,6 +398,8 @@ void NavigationView::UpdateRepeaterItemsSource()
         UpdateSelectionForMenuItems();
     }
 
+    m_selectionModel.Source(dataSource);
+
     if (IsTopNavigationView())
     {
         //TODO: Unhook LeftNav repeaters
@@ -417,16 +421,22 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
 {
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
+        auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+
         nvib.RepeatedIndex(args.Index());
-        //nvib.navView(this);
+
+        nvibImpl->SetNavigationViewParent(*this);
+
         //nvib.Depth = 0;
         // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
         //if (nvi.MenuItemTemplate == null && MenuItemTemplate != null)
         //{
         //    nvi.MenuItemTemplate = MenuItemTemplate;
         //}
+
         // Propagate the SelectionModel
-        nvib.SelectionModel(SelectionModel());
+        nvib.SelectionModel(m_selectionModel);
+
         //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
     }
 }

@@ -40,7 +40,6 @@ GlobalDependencyProperty NavigationViewProperties::s_PaneTitleProperty{ nullptr 
 GlobalDependencyProperty NavigationViewProperties::s_PaneToggleButtonStyleProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_SelectedItemProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_SelectionFollowsFocusProperty{ nullptr };
-GlobalDependencyProperty NavigationViewProperties::s_SelectionModelProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_SettingsItemProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_ShoulderNavigationEnabledProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_TemplateSettingsProperty{ nullptr };
@@ -412,17 +411,6 @@ void NavigationViewProperties::EnsureProperties()
                 ValueHelper<winrt::NavigationViewSelectionFollowsFocus>::BoxValueIfNecessary(winrt::NavigationViewSelectionFollowsFocus::Disabled),
                 winrt::PropertyChangedCallback(&OnSelectionFollowsFocusPropertyChanged));
     }
-    if (!s_SelectionModelProperty)
-    {
-        s_SelectionModelProperty =
-            InitializeDependencyProperty(
-                L"SelectionModel",
-                winrt::name_of<winrt::SelectionModel>(),
-                winrt::name_of<winrt::NavigationView>(),
-                false /* isAttached */,
-                ValueHelper<winrt::SelectionModel>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnSelectionModelPropertyChanged));
-    }
     if (!s_SettingsItemProperty)
     {
         s_SettingsItemProperty =
@@ -492,7 +480,6 @@ void NavigationViewProperties::ClearProperties()
     s_PaneToggleButtonStyleProperty = nullptr;
     s_SelectedItemProperty = nullptr;
     s_SelectionFollowsFocusProperty = nullptr;
-    s_SelectionModelProperty = nullptr;
     s_SettingsItemProperty = nullptr;
     s_ShoulderNavigationEnabledProperty = nullptr;
     s_TemplateSettingsProperty = nullptr;
@@ -763,14 +750,6 @@ void NavigationViewProperties::OnSelectedItemPropertyChanged(
 }
 
 void NavigationViewProperties::OnSelectionFollowsFocusPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NavigationView>();
-    winrt::get_self<NavigationView>(owner)->OnPropertyChanged(args);
-}
-
-void NavigationViewProperties::OnSelectionModelPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -1120,16 +1099,6 @@ void NavigationViewProperties::SelectionFollowsFocus(winrt::NavigationViewSelect
 winrt::NavigationViewSelectionFollowsFocus NavigationViewProperties::SelectionFollowsFocus()
 {
     return ValueHelper<winrt::NavigationViewSelectionFollowsFocus>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_SelectionFollowsFocusProperty));
-}
-
-void NavigationViewProperties::SelectionModel(winrt::SelectionModel const& value)
-{
-    static_cast<NavigationView*>(this)->SetValue(s_SelectionModelProperty, ValueHelper<winrt::SelectionModel>::BoxValueIfNecessary(value));
-}
-
-winrt::SelectionModel NavigationViewProperties::SelectionModel()
-{
-    return ValueHelper<winrt::SelectionModel>::CastOrUnbox(static_cast<NavigationView*>(this)->GetValue(s_SelectionModelProperty));
 }
 
 void NavigationViewProperties::SettingsItem(winrt::IInspectable const& value)
