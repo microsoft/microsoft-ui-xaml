@@ -6,8 +6,6 @@
     Background=[NULL]
     Name=OverflowContentRoot
     MinWidth=160
-    MaxWidth=480
-    MaxHeight=300
     Margin=0,0,0,0
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
@@ -23,7 +21,6 @@
       Background=Microsoft.UI.Xaml.Media.AcrylicBrush
       CornerRadius=4,4,4,4
       Name=SecondaryItemsControl
-      MaxWidth=480
       Margin=0,0,0,0
       FocusVisualSecondaryThickness=1,1,1,1
       FocusVisualSecondaryBrush=#99FFFFFF
