@@ -83,6 +83,11 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
+    void RaiseItemInvoked(winrt::IInspectable const& item,
+        bool isSettings,
+        winrt::NavigationViewItemBase const& container = nullptr,
+        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
+
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool ShouldIgnoreMeasureOverride();
@@ -186,10 +191,6 @@ private:
     void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
-    void RaiseItemInvoked(winrt::IInspectable const& item, 
-        bool isSettings, 
-        winrt::NavigationViewItemBase const& container = nullptr, 
-        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
 
     void OnSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
@@ -355,6 +356,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_leftNavItemsRepeaterElementIndexChangedRevoker{};
+    winrt::ItemsRepeater::Loaded_revoker m_leftNavRepeaterLoadedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };

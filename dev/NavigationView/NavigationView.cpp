@@ -124,6 +124,7 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
     m_leftNavItemsRepeaterElementIndexChangedRevoker.revoke();
+    m_leftNavRepeaterLoadedRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 }
 
@@ -220,10 +221,10 @@ void NavigationView::OnApplyTemplate()
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
         m_leftNavItemsRepeaterElementIndexChangedRevoker = leftNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
-
+ 
+        m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
         //m_leftNavListViewLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
 
-        //m_leftNavListViewSelectionChangedRevokerm_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
         //SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
