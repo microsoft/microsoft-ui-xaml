@@ -27,6 +27,8 @@ public:
     double LargeChange();
     void SetValue(double value);
 
+    void RaiseValueChangedEvent(double oldValue, double newValue);
+
 private:
     com_ptr<NumberBox> GetImpl();
     winrt::NumberBox GetNumberBox() { return Owner().as<winrt::NumberBox>(); }

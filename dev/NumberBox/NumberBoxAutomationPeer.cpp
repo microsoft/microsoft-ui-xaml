@@ -59,7 +59,6 @@ double NumberBoxAutomationPeer::Maximum()
 
 double NumberBoxAutomationPeer::Value()
 {
-    // ### also need to notify when value changes -- check RatingControl
     return GetNumberBox().Value();
 }
 
@@ -76,4 +75,11 @@ double NumberBoxAutomationPeer::LargeChange()
 void NumberBoxAutomationPeer::SetValue(double value)
 {
     GetNumberBox().Value(value);
+}
+
+void NumberBoxAutomationPeer::RaiseValueChangedEvent(double oldValue, double newValue)
+{
+    __super::RaisePropertyChangedEvent(winrt::RangeValuePatternIdentifiers::ValueProperty(),
+        winrt::PropertyValue::CreateDouble(oldValue),
+        winrt::PropertyValue::CreateDouble(newValue));
 }

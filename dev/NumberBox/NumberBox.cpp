@@ -89,10 +89,20 @@ void NumberBox::OnApplyTemplate()
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(unbox_value<double>(args.OldValue()), unbox_value<double>(args.NewValue()));
+    // ### this never validates the value!
+
+    auto oldValue = unbox_value<double>(args.OldValue());
+    auto newValue = unbox_value<double>(args.NewValue());
+
+    auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
     m_valueChangedEventSource(*this, *valueChangedArgs);
 
-    // ### this never validates the value!
+    // Fire property change for UIA
+    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+    {
+        winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
+    }
+
     UpdateTextToValue();
 }
 
@@ -190,10 +200,9 @@ void NumberBox::ValidateInput()
     {
         auto text = textBox.Text();
         
-        // ### well, 0 might not be in bounds, we'd be better defaulting to min probably?
-        // ### prefer some IsEmpty method
+        // ### well, 0 might not be in bounds, we'd be better defaulting to min probably? 
         // Handles Empty TextBox Case, current behavior is to set Value to default (0)
-        if (text == L"")
+        if (text.empty())
         {
             Value(0);
             m_hasError = false;
