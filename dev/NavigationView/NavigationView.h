@@ -35,7 +35,7 @@ enum class NavigationRecommendedTransitionDirection
 };
 
 static constexpr auto c_topNavRepeater = L"topNavRepeater"sv;
-static constexpr auto c_leftRepeater = L"leftRepeater"sv;
+static constexpr auto c_leftRepeater = L"MenuItemsHost"sv;
 static constexpr auto c_overflowRepeater = L"overflowRepeater"sv;
 static constexpr auto c_flyoutItemsRepeater = L"flyoutItemsRepeater"sv;
 
@@ -362,6 +362,8 @@ private:
     bool m_initialListSizeStateSet{ false };
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
+
+    winrt::SelectionModel m_selectionModel{ };
 
     bool m_appliedTemplate{ false };
 

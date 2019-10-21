@@ -57,6 +57,8 @@ public:
 
     void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
 
+    void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+
 protected:
     winrt::IndexPath GetIndexPath();
     bool IsRootItemsRepeater(winrt::hstring name);
@@ -70,4 +72,5 @@ private:
     // Event Tokens
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
 
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 };
