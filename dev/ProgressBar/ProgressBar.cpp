@@ -83,6 +83,7 @@ void ProgressBar::UpdateStates()
     }
     else if (!IsIndeterminate())
     {
+        SetProgressBarIndicatorWidth();
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
     }
 }
