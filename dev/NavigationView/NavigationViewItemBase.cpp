@@ -121,7 +121,8 @@ void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionM
         if (newValue)
         {
             auto item = SelectionModel().SelectedItem();
-            m_navigationView.get().SelectedItem(item);
+            auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+            nv->SelectedItem(item);
         }
 
         //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
@@ -218,6 +219,7 @@ bool NavigationViewItemBase::IsRealized(winrt::IndexPath indexPath)
 void NavigationViewItemBase::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerReleased(args);
+    //TODO: Check whether SelectionSurpressed is not set before selecting item
     if (auto selectionModel = SelectionModel())
     {
         winrt::IndexPath ip = GetIndexPath();
