@@ -1,21 +1,21 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 struct ScrollInfo 
 { 
     Int32 OffsetsChangeId;
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 struct ZoomInfo
 {
     Int32 ZoomFactorChangeId;
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum ContentOrientation
 {
@@ -25,7 +25,7 @@ enum ContentOrientation
     Both = 3,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum InteractionState
 {
@@ -35,7 +35,7 @@ enum InteractionState
     Animation = 3,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum ScrollMode
 {
@@ -46,7 +46,7 @@ enum ScrollMode
 #endif
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum ZoomMode
 {
@@ -54,7 +54,7 @@ enum ZoomMode
     Disabled = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum ChainingMode
 {
@@ -63,7 +63,7 @@ enum ChainingMode
     Never = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum RailingMode
 {
@@ -71,7 +71,7 @@ enum RailingMode
     Disabled = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [flags]
 enum InputKind
@@ -85,7 +85,7 @@ enum InputKind
     All = 255,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum AnimationMode 
 { 
@@ -94,7 +94,7 @@ enum AnimationMode
    Auto = 2,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 enum SnapPointsMode
 {
@@ -102,7 +102,7 @@ enum SnapPointsMode
     Ignore = 1,
 };
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -115,7 +115,7 @@ unsealed runtimeclass ScrollOptions
     SnapPointsMode SnapPointsMode { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [marshaling_behavior(agile)]
 [threading(both)]
@@ -128,7 +128,7 @@ unsealed runtimeclass ZoomOptions
     SnapPointsMode SnapPointsMode { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollAnimationStartingEventArgs
 {
@@ -138,7 +138,7 @@ runtimeclass ScrollAnimationStartingEventArgs
     ScrollInfo ScrollInfo { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ZoomAnimationStartingEventArgs
 {
@@ -149,21 +149,21 @@ runtimeclass ZoomAnimationStartingEventArgs
     ZoomInfo ZoomInfo { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollCompletedEventArgs
 {
     ScrollInfo ScrollInfo { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ZoomCompletedEventArgs
 {
     ZoomInfo ZoomInfo { get; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingPresenterBringingIntoViewEventArgs
 {
@@ -175,7 +175,7 @@ runtimeclass ScrollingPresenterBringingIntoViewEventArgs
     Boolean Cancel { get; set; };
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingPresenterAnchorRequestedEventArgs
 {
