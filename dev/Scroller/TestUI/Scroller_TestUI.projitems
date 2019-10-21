@@ -16,6 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml.cs">
       <DependentUpon>ScrollerBringIntoViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml.cs">
+      <DependentUpon>ScrollerMousePanningPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml.cs">
       <DependentUpon>ScrollerSnapPointsPage.xaml</DependentUpon>
     </Compile>
@@ -67,6 +70,10 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml">
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

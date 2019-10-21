@@ -29,6 +29,7 @@
             <Button x:Name="navigateToCompositionScrollControllers" AutomationProperties.Name="navigateToCompositionScrollControllers" Margin="2" HorizontalAlignment="Stretch">Scroller with composition scroll controllers</Button>
             <Button x:Name="navigateToBiDirectionalScrollController" AutomationProperties.Name="navigateToBiDirectionalScrollController" Margin="2" HorizontalAlignment="Stretch">Scroller with composition bi-directional scroll controller</Button>
             <Button x:Name="navigateToLeakDetection" AutomationProperties.Name="navigateToLeakDetection" Margin="2" HorizontalAlignment="Stretch">Detect Scroller Memory Leak</Button>
+            <Button x:Name="navigateToMousePanning" AutomationProperties.Name="navigateToMousePanning" Margin="2" HorizontalAlignment="Stretch">Mouse-based panning</Button>
         </StackPanel>
         
         <StackPanel Grid.Column="1">
