@@ -113,28 +113,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
             VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
-        }
-
-        [TestMethod]
-        public void VerifyVisualTree1()
-        {
-            var leftNavViewCompact = SetupNavigationView(NavigationViewPaneDisplayMode.LeftCompact);
-            VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewCompact, masterFilePrefix: "NavigationViewCompact");
-        }
-
-        [TestMethod]
-        public void VerifyVisualTree2()
-        {
-            var leftNavViewMinimal = SetupNavigationView(NavigationViewPaneDisplayMode.LeftMinimal);
-            VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewMinimal, masterFilePrefix: "NavigationViewMinimal");
-        }
-
-        [TestMethod]
-        public void VerifyVisualTree3()
-        {
-            var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-            VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
-        }
+        } 
 
         [TestMethod]
         public void VerifyPaneDisplayModeAndDisplayModeMapping()
