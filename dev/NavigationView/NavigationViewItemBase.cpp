@@ -220,3 +220,22 @@ void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const
 {
     m_navigationView = winrt::make_weak(navigationView);
 }
+
+winrt::ItemsRepeater NavigationViewItemBase::GetParentItemsRepeater()
+{
+    auto child = (*this).try_as<winrt::FrameworkElement>();
+    auto parent = child.Parent().try_as<winrt::FrameworkElement>();
+    if (!parent)
+    {
+        parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
+    }
+
+    if (parent != nullptr)
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            return parentIR;
+        }
+    }
+    return nullptr;
+}
