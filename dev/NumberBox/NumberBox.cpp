@@ -13,6 +13,12 @@ NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
+    // Default values for the number formatter
+    auto formatter = winrt::DecimalFormatter();
+    formatter.IntegerDigits(1);
+    formatter.FractionDigits(0);
+    NumberFormatter(formatter);
+
     SetDefaultStyleKey(this);
 }
 
@@ -73,10 +79,6 @@ void NumberBox::OnApplyTemplate()
 
     PointerWheelChanged({ this, &NumberBox::OnScroll });
 
-    // Initializations - Tools, etc.
-    UpdateFormatter();
-    UpdateRounder();
-
     // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
     m_stepPrecisionFormatter.FractionDigits(0);
     m_stepPrecisionFormatter.IntegerDigits(1);
@@ -89,18 +91,20 @@ void NumberBox::OnApplyTemplate()
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // ### this never validates the value!
+    ValidateValue();
 
     auto oldValue = unbox_value<double>(args.OldValue());
-    auto newValue = unbox_value<double>(args.NewValue());
-
-    auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
-    m_valueChangedEventSource(*this, *valueChangedArgs);
-
-    // Fire property change for UIA
-    if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+    if (Value() != oldValue)
     {
-        winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
+        // Fire ValueChanged event
+        auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, Value());
+        m_valueChangedEventSource(*this, *valueChangedArgs);
+
+        // Fire value property change for UIA
+        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+        {
+            winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, Value());
+        }
     }
 
     UpdateTextToValue();
@@ -108,62 +112,32 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // ### validate
+    ValidateValue();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // ### validate
+    ValidateValue();
+}
+
+void NumberBox::OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // Update text with new formatting
+    UpdateTextToValue();
+}
+
+void NumberBox::ValidateNumberFormatter(winrt::INumberFormatter2 value)
+{
+    // NumberFormatter also needs to be an INumberParser
+    if (!value.try_as<winrt::INumberParser>())
+    {
+        throw winrt::hresult_error(E_INVALIDARG);
+    }
 }
 
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     SetSpinButtonVisualState();
-}
-
-void NumberBox::OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    m_formatter.FractionDigits(FractionDigits());
-}
-
-void NumberBox::OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    m_formatter.IntegerDigits(IntegerDigits());
-}
-
-void NumberBox::OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    m_formatter.SignificantDigits(SignificantDigits());
-}
-
-void NumberBox::OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
-}
-
-void NumberBox::OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    m_formatter.IsZeroSigned(IsZeroSigned());
-}
-
-void NumberBox::OnRoundingAlgorithmPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateRounder();
-}
-
-void NumberBox::OnNumberRounderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateRounder();
-}
-
-void NumberBox::OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateRounder();
-}
-
-void NumberBox::OnSignificantDigitPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateRounder();
 }
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -193,14 +167,43 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
     ValidateInput();
 }
 
+void NumberBox::ValidateValue()
+{
+    // Parsable value that is not in bounds
+    auto value = Value();
+    if (!IsInBounds(value))
+    {
+        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+        {
+            // Coerse value to be within range
+            if (value > Maximum())
+            {
+                Value(Maximum());
+            }
+            else if (value < Minimum())
+            {
+                Value(Minimum());
+            }
+        }
+        else
+        {
+            SetErrorState(ValidationState::InvalidRange);
+        }
+    }
+    else
+    {
+        SetErrorState(ValidationState::Valid);
+    }
+}
+
 // Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
 void NumberBox::ValidateInput()
 {
+    SetErrorState(ValidationState::Valid);
     if (auto textBox = m_textBox.get())
     {
         auto text = textBox.Text();
         
-        // ### well, 0 might not be in bounds, we'd be better defaulting to min probably? 
         // Handles Empty TextBox Case, current behavior is to set Value to default (0)
         if (text.empty())
         {
@@ -212,7 +215,7 @@ void NumberBox::ValidateInput()
         if (AcceptsCalculation() && IsFormulaic(text))
         {
             NormalizeShorthandOperations();
-            EvaluateInput();
+            EvaluateInputCalculation();
 
             // Divide by 0 error state
             if (fpclassify(Value()) == FP_NAN)
@@ -222,63 +225,25 @@ void NumberBox::ValidateInput()
             }
         }
 
-        auto parsedNum = m_formatter.ParseDouble(text);
+        // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
+        auto numberParser = NumberFormatter().as<winrt::INumberParser>();
+        auto parsedNum = numberParser.ParseDouble(text);
 
-        // Rounding separately because rounding affects Value property while formatting does not
-        if (parsedNum && NumberRounder() != winrt::NumberBoxNumberRounder::None)
+        if (!parsedNum)
         {
-            if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder)
+            if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
             {
-                parsedNum = m_iRounder.RoundDouble(parsedNum.Value());
+                // Override value to last valid value
+                UpdateTextToValue();
             }
             else
             {
-                parsedNum = m_sRounder.RoundDouble(parsedNum.Value());
+                SetErrorState(ValidationState::InvalidInput);
             }
-        }
-
-        // Valid, in bounds value
-        if (parsedNum && GetBoundState(parsedNum.Value()) == BoundState::InBounds )
-        {
-            SetErrorState(ValidationState::Valid);
-            Value(parsedNum.Value());
-            UpdateTextToValue();
         }
         else
         {
-            // No parsable value
-            if (!parsedNum && BasicValidationMode() != winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-            {
-                SetErrorState(ValidationState::InvalidInput);
-                return;
-            }
-
-            // Value needs to be overwritten
-            if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-            {
-                // Revert to previous value
-                SetErrorState(ValidationState::Valid);
-                UpdateTextToValue();
-                return;
-            }
-
-            // Parsable value that is not in bounds
-            BoundState invalidState = GetBoundState(parsedNum.Value());
-
-            switch (invalidState)
-            {
-                case BoundState::OverMax:
-                    SetErrorState(ValidationState::InvalidMax);
-                    break;
-                case BoundState::UnderMin:
-                    SetErrorState(ValidationState::InvalidMin);
-                    break;
-                default:
-                    SetErrorState(ValidationState::Invalid);
-            }
-
             Value(parsedNum.Value());
-            UpdateTextToValue();
         }
     }
 }
@@ -364,20 +329,7 @@ void NumberBox::StepValue(bool isPositive)
             newVal = Maximum();
         }
     }
-    else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten && GetBoundState(newVal) != BoundState::InBounds)
-    {
-        // Input Overwriting - Coerce to min or max
-        if (newVal > Maximum())
-        {
-            newVal = Maximum();
-        }
-        else if (newVal < Minimum())
-        {
-            newVal = Minimum();
-        }
-    }
 
-    //### What is this doing?
     // Safeguard for floating point imprecision errors
     int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
     m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);
@@ -385,8 +337,6 @@ void NumberBox::StepValue(bool isPositive)
 
     // Update Text and Revalidate new value
     Value(newVal);
-    UpdateTextToValue();
-    ValidateInput();
 }
 
 
@@ -399,7 +349,6 @@ bool NumberBox::IsFormulaic(const winrt::hstring& in)
     return (std::regex_match(input, formula) && !std::regex_match(input, negval));
 }
 
-// ### what does this do???
 // Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
 int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 {
@@ -438,7 +387,7 @@ void NumberBox::NormalizeShorthandOperations()
 }
 
 // Run value entered through NumberParser
-void NumberBox::EvaluateInput()
+void NumberBox::EvaluateInputCalculation()
 {
     if (auto textBox = m_textBox.get())
     {
@@ -464,7 +413,7 @@ void NumberBox::UpdateTextToValue()
 {
     if (auto textBox = m_textBox.get())
     {
-        auto formattedValue = m_formatter.Format(Value());
+        auto formattedValue = NumberFormatter().FormatDouble(Value());
         textBox.Text(formattedValue);
     }
 }
@@ -497,11 +446,11 @@ void NumberBox::SetErrorState(ValidationState state)
             break;
         }
 
-        case ValidationState::InvalidMin:
-        case ValidationState::InvalidMax:
+        case ValidationState::InvalidRange:
         {
-            auto formattedMin = m_formatter.Format(Minimum());
-            auto formattedMax = m_formatter.Format(Maximum());
+            auto formatter = NumberFormatter();
+            auto formattedMin = formatter.FormatDouble(Minimum());
+            auto formattedMax = formatter.FormatDouble(Maximum());
             errorMessage = StringUtil::FormatString(
                 ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorRange),
                 formattedMin.data(),
@@ -548,52 +497,8 @@ void NumberBox::SetSpinButtonVisualState()
     }
 }
 
-// checks if val is in Min/Max bounds based on user's MinMax mode setting
-NumberBox::BoundState NumberBox::GetBoundState(double val)
+bool NumberBox::IsInBounds(double value)
 {
-    if (val < Minimum())
-    {
-        return BoundState::UnderMin;
-    }
-    else if (val > Maximum())
-    {
-        return BoundState::OverMax;
-    }
-    return BoundState::InBounds;
+    return (value >= Minimum() && value <= Maximum());
 }
-
-// Builds number formatter based on properties set
-void NumberBox::UpdateFormatter()
-{
-    m_formatter.IntegerDigits(IntegerDigits());
-    m_formatter.FractionDigits(FractionDigits());
-    m_formatter.SignificantDigits(SignificantDigits());
-    m_formatter.IsDecimalPointAlwaysDisplayed(IsDecimalPointAlwaysDisplayed());
-    m_formatter.IsZeroSigned(IsZeroSigned());
-}
-
-// Initializes NumberRounder based on properties set.
-void NumberBox::UpdateRounder()
-{
-    // Setting a number rounder's RoundingAlgorithm to None can cause a crash because it's not a true value - safer to set Rounder to a null pointer instead
-    if ( NumberRounder() == winrt::NumberBoxNumberRounder::None || RoundingAlgorithm() == winrt::RoundingAlgorithm::None)
-    {
-        m_formatter.NumberRounder(nullptr);
-        return;
-    }
-
-    else if (NumberRounder() == winrt::NumberBoxNumberRounder::IncrementNumberRounder) {
-        m_iRounder.Increment(IncrementPrecision());
-        m_iRounder.RoundingAlgorithm(RoundingAlgorithm());
-        m_formatter.NumberRounder(m_iRounder);
-    }
-    else
-    {
-        m_sRounder.SignificantDigits(static_cast<int>(abs(SignificantDigitPrecision())));
-        m_sRounder.RoundingAlgorithm(RoundingAlgorithm());
-        m_formatter.NumberRounder(m_sRounder); 
-    }
-}
-
-
 

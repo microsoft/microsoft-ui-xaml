@@ -5,7 +5,7 @@ using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls;
-
+using Windows.Globalization.NumberFormatting;
 
 namespace MUXControlsTestApp
 {
@@ -85,6 +85,13 @@ namespace MUXControlsTestApp
                 CurrentValueTextBox.Text = e.NewValue.ToString();
                 OldValueTextBox.Text = e.OldValue.ToString();
             }
+        }
+        private void CustomFormatterButton_Click(object sender, RoutedEventArgs e)
+        {
+            DecimalFormatter formatter = new DecimalFormatter();
+            formatter.IntegerDigits = 1;
+            formatter.FractionDigits = 2;
+            TestNumberBox.NumberFormatter = formatter;
         }
     }
 }

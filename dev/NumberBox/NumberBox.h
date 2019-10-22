@@ -37,17 +37,9 @@ public:
     {
         Valid,
         Invalid,
-        InvalidMax,
-        InvalidMin,
+        InvalidRange,
         InvalidInput,
         InvalidDivide
-    };
-
-    enum BoundState
-    {
-        InBounds,
-        OverMax,
-        UnderMin
     };
 
     NumberBox();
@@ -60,54 +52,40 @@ public:
 
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnFractionDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIntegerDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsDecimalPointAlwaysDisplayedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsZeroSignedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnSignificantDigitsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnRoundingAlgorithmPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnNumberRounderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnSignificantDigitPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIncrementPrecisionPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnAcceptsCalculationsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
+    void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    bool m_hasError{ false };
-
+    void OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void ValidateNumberFormatter(winrt::INumberFormatter2 value);
 
 private:
 
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-    void ValidateInput();
-    void UpdateTextToValue();
-    void SetErrorState(ValidationState state);
-    void SetSpinButtonVisualState();
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
-    int ComputePrecisionRounderSigDigits(double newVal);
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+
+    void ValidateInput();
+    void ValidateValue();
+    void UpdateTextToValue();
+    void SetErrorState(ValidationState state);
+    void SetSpinButtonVisualState();
+    int ComputePrecisionRounderSigDigits(double newVal);
     void StepValue(bool sign);
-    void UpdateFormatter();
-    void UpdateRounder();
-    void SetHeader();
-    void SetPlaceHolderText();
-    void EvaluateInput();
+    void EvaluateInputCalculation();
     bool IsFormulaic(const winrt::hstring& in);
     void NormalizeShorthandOperations();
-    BoundState GetBoundState(double val);
+    bool IsInBounds(double value);
 
-    winrt::DecimalFormatter m_formatter{};
-    winrt::IncrementNumberRounder m_iRounder{};
-    winrt::SignificantDigitsNumberRounder m_sRounder{};
     winrt::DecimalFormatter m_stepPrecisionFormatter{};
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
 
@@ -115,5 +93,7 @@ private:
     tracker_ref<winrt::TextBlock> m_errorTextBlock{ this };
 
     winrt::ToolTip m_errorToolTip{};
+
+    bool m_hasError{ false };
 
 };

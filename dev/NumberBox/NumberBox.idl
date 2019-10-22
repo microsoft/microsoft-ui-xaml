@@ -21,15 +21,6 @@ enum NumberBoxBasicValidationMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum NumberBoxNumberRounder
-{
-    None,
-    IncrementNumberRounder,
-    SignificantDigitsNumberRounder
-};
-
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
 runtimeclass NumberBoxValueChangedEventArgs
 {
     Double OldValue{ get; };
@@ -80,43 +71,9 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean WrapEnabled;
 
-    // ### remove all this and just make the formatter a property
-
-    [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 IntegerDigits;
-
-    [MUX_DEFAULT_VALUE("0")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 FractionDigits;
-
-    [MUX_DEFAULT_VALUE("0")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 SignificantDigits;
-
-    [MUX_DEFAULT_VALUE("false")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsDecimalPointAlwaysDisplayed;
-
-    [MUX_DEFAULT_VALUE("false")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsZeroSigned;
-
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    [MUX_DEFAULT_VALUE("winrt::RoundingAlgorithm::RoundAwayFromZero")]
-    Windows.Globalization.NumberFormatting.RoundingAlgorithm RoundingAlgorithm{ get; set; };
-
-    [MUX_DEFAULT_VALUE("winrt::NumberBoxNumberRounder::None")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    NumberBoxNumberRounder NumberRounder{ get; set; };
-
-    [MUX_DEFAULT_VALUE("1")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Double IncrementPrecision;
-
-    [MUX_DEFAULT_VALUE("1")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 SignificantDigitPrecision;
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateNumberFormatter")]
+    Windows.Globalization.NumberFormatting.INumberFormatter2 NumberFormatter;
 
     event Windows.Foundation.TypedEventHandler<NumberBox, NumberBoxValueChangedEventArgs> ValueChanged;
 
@@ -135,15 +92,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty WrapEnabledProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty IntegerDigitsProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty FractionDigitsProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SignificantDigitsProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IsDecimalPointAlwaysDisplayedProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IsZeroSignedProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty RoundingAlgorithmProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty NumberRounderProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty IncrementPrecisionProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty SignificantDigitPrecisionProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty NumberFormatterProperty{ get; };
 }
 
 }
