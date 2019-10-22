@@ -358,6 +358,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock effectiveForegroundOfTeachingTipContentTextBlock;
 
+        public Button GetRemoveTeachingTipButton()
+        {
+            return GetElement(ref effectiveRemoveTeachingTipButton, "RemoveTeachingTipButton");
+        }
+        private Button effectiveRemoveTeachingTipButton;
+
+        public TextBlock GetTeachingTipContent()
+        {
+            return GetElement(ref effectiveTeachingTipContent, "TeachingTipContentTextBlock");
+        }
+        private TextBlock effectiveTeachingTipContent;
+
+        public CheckBox GetTeachingTipContentUnloadedCheck()
+        {
+            return GetElement(ref effectiveTeachingTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
+        }
+        private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
+
+        public Button GetRemoveOpenButtonFromVisualTreeButton()
+        {
+            return GetElement(ref effectiveRemoveOpenButton, "RemoveButtonFromVisualTreeButton");
+        }
+        private Button effectiveRemoveOpenButton;
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
