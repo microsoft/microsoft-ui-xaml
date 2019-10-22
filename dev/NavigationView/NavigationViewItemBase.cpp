@@ -216,17 +216,6 @@ bool NavigationViewItemBase::IsRealized(winrt::IndexPath indexPath)
     return isRealized;
 }
 
-void NavigationViewItemBase::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
-{
-    __super::OnPointerReleased(args);
-    //TODO: Check whether SelectionSurpressed is not set before selecting item
-    if (auto selectionModel = SelectionModel())
-    {
-        winrt::IndexPath ip = GetIndexPath();
-        SelectionModel().SelectAt(ip);
-    }
-}
-
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
