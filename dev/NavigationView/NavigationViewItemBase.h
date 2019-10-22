@@ -64,6 +64,9 @@ public:
 protected:
     winrt::IndexPath GetIndexPath();
     bool IsRootItemsRepeater(winrt::hstring name);
+    winrt::ItemsRepeater GetParentItemsRepeater();
+
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
@@ -74,5 +77,4 @@ private:
     // Event Tokens
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
 
-    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 };

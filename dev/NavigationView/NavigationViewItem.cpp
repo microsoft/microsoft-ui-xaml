@@ -8,6 +8,7 @@
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
+#include <InspectingDataSource.h>
 
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
@@ -356,7 +357,24 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
 void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     NavigationViewItemBase::OnPointerReleased(args);
-    //TODO: Check whether SelectionSurpressed is not set before selecting item
+
+    // Get required info to raise ItemInvoked
+    // TODO: Clean up into separate methods
+    winrt::IInspectable item = nullptr;
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+    auto parentIR = GetParentItemsRepeater();
+    auto itemIndex = parentIR.GetElementIndex(*this);
+    auto itemsSource = parentIR.ItemsSource();
+    winrt::ItemsSourceView dataSource = nullptr;
+    if (itemsSource)
+    {
+        dataSource = winrt::ItemsSourceView(itemsSource);
+        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
+        item = inspectingDataSource->GetAtCore(itemIndex);
+    }
+    nv->RaiseItemInvoked(item, false /*isSettings*/, *this);
+
+    // Set item as selected
     if (auto selectionModel = SelectionModel() && SelectsOnInvoked())
     {
         winrt::IndexPath ip = GetIndexPath();
