@@ -20,7 +20,7 @@ using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPrese
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ScrollingPresenter", Icon = "ScrollViewer.png")]
+    [TopLevelTestPage(Name = "ScrollingPresenter", Icon = "ScrollingPresenter.png")]
     public sealed partial class ScrollingPresenterPage : TestPage
     {
         public ScrollingPresenterPage()
