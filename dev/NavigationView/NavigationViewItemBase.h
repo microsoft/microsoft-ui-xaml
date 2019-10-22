@@ -26,6 +26,10 @@ public:
         return __super::OnCreateAutomationPeer();
     }
 
+    virtual void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) {
+        __super::OnPointerReleased(args);
+    };
+
     // IContentControlOverrides
     virtual void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
     {
@@ -54,8 +58,6 @@ public:
 
     void OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
-    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
 
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 

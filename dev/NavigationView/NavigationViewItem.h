@@ -33,7 +33,7 @@ public:
 
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer() override;
-    //void OnPointerReleased(winrt::PointerRoutedEventArgs const& args);
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) override;
 
     // IContentControlOverrides / IContentControlOverridesHelper
     void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent) override;

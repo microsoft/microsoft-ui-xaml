@@ -353,6 +353,17 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
     }
 }
 
+void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+{
+    NavigationViewItemBase::OnPointerReleased(args);
+    //TODO: Check whether SelectionSurpressed is not set before selecting item
+    if (auto selectionModel = SelectionModel() && SelectsOnInvoked())
+    {
+        winrt::IndexPath ip = GetIndexPath();
+        SelectionModel().SelectAt(ip);
+    }
+}
+
 //void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 //{
 //    NavigationViewItemBase::OnPointerReleased(args);
