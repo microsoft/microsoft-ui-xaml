@@ -6,6 +6,7 @@
 #include "TreeView.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemAutomationPeer.h"
+#include "SharedHelpers.h"
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewItemAutomationPeer);
 
@@ -88,11 +89,7 @@ winrt::hstring TreeViewItemAutomationPeer::GetNameCore()
         auto treeViewNode = GetTreeViewNode();
         if (treeViewNode)
         {
-            auto inspectableName = treeViewNode.Content();
-            if (auto stringableName = inspectableName ? inspectableName.try_as<winrt::IStringable>() : nullptr)
-            {
-                nameHString = stringableName.ToString();
-            }
+            nameHString = SharedHelpers::TryGetStringRepresentationFromObject(treeViewNode.Content());
         }
 
         if (nameHString.empty())

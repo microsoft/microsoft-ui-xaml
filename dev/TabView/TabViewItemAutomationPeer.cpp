@@ -7,6 +7,7 @@
 #include "TabViewItem.h"
 #include "TabViewItemAutomationPeer.h"
 #include "Utils.h"
+#include "SharedHelpers.h"
 
 TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& owner)
     : ReferenceTracker(owner)
@@ -34,13 +35,7 @@ winrt::hstring TabViewItemAutomationPeer::GetNameCore()
     {
         if (auto tvi = Owner().try_as<winrt::TabViewItem>())
         {
-            if (auto content = tvi.Header())
-            {
-                if (auto stringableName = content.try_as<winrt::IStringable>())
-                {
-                    returnHString = stringableName.ToString();
-                }
-            }
+            returnHString = SharedHelpers::TryGetStringRepresentationFromObject(tvi.Header());
         }
     }
 
