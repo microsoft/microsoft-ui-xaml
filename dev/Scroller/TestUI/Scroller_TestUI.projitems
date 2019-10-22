@@ -69,13 +69,14 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml">
       <SubType>Designer</SubType>
@@ -83,9 +84,9 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerStackPanelAnchoringPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerRepeaterAnchoringPage.xaml">
       <SubType>Designer</SubType>
