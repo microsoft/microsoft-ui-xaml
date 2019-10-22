@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using Common;
@@ -69,7 +69,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     ItemsSource = Enumerable.Range(0, numItems),
                     ItemTemplate = elementFactory,
                 };
-
 
                 var context = (ElementFactoryGetArgs)RepeaterTestHooks.CreateRepeaterElementFactoryGetArgs();
                 context.Parent = repeater;
@@ -563,6 +562,39 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 var element = (Button)repeater.TryGetElement(i);
                 Verify.AreEqual(i.ToString(), element.Content);
             }
+        }
+
+        [TestMethod]
+        public void ValidateNullItemTemplateAndContainerInItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                const int numItems = 10;
+                ItemsRepeater repeater = null;
+                Content = CreateAndInitializeRepeater
+                (
+                    itemsSource: Enumerable.Range(0, numItems).Select(i => new Button() { Content = i }), // ItemsSource is UIElements
+                    elementFactory: null, // No ItemTemplate
+                    layout: new StackLayout(),
+                    repeater: ref repeater
+                );
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(numItems, VisualTreeHelper.GetChildrenCount(repeater));
+                
+                for (int i = 0; i < numItems; i++)
+                {
+                    var element = (Button)repeater.TryGetElement(i);
+                    Verify.AreEqual(i, element.Content);
+                }
+
+                Button button0 = (Button)repeater.TryGetElement(0);
+                Verify.IsNotNull(button0.Parent);
+
+                repeater.ItemsSource = null;
+                Verify.IsNull(button0.Parent);
+            });
         }
 
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(

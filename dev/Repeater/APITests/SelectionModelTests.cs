@@ -69,7 +69,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.Source = Enumerable.Range(0, 10).ToList();
 
                 int selectionChangedFiredCount = 0;
-                selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args)
+                selectionModel.SelectionChanged += delegate (SelectionModel sender, SelectionModelSelectionChangedEventArgs args) 
                 {
                     selectionChangedFiredCount++;
                     ValidateSelection(selectionModel, new List<IndexPath>() { Path(4) }, new List<IndexPath>() { Path() });
@@ -127,7 +127,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Path(6)
                     },
                     new List<IndexPath>() { Path() });
-                
+
                 SetAnchorIndex(selectionModel, 4);
                 SelectRangeFromAnchor(selectionModel, 5, false /* select */);
                 ValidateSelection(selectionModel,
@@ -280,12 +280,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             RunOnUIThread.Execute(() =>
             {
                 SelectionModel selectionModel = new SelectionModel();
+                List<IndexPath> sourcePaths = new List<IndexPath>();
+
                 Log.Comment("Setting the source");
                 selectionModel.Source = CreateNestedData(3 /* levels */ , 2 /* groupsAtLevel */, 4 /* countAtLeaf */);
                 if (handleChildrenRequested)
                 {
                     selectionModel.ChildrenRequested += (SelectionModel sender, SelectionModelChildrenRequestedEventArgs args) =>
                     {
+                        Log.Comment("ChildrenRequestedIndexPath:" + args.SourceIndex);
+                        sourcePaths.Add(args.SourceIndex);
                         args.Children = args.Source is IEnumerable ? args.Source : null;
                     };
                 }
@@ -304,6 +308,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 var endPath = Path(1, 1, 1, 0);
                 SelectRangeFromAnchor(selectionModel, endPath, true /* select */);
+
+                if (handleChildrenRequested)
+                {
+                    // Validate SourceIndices.
+                    var expectedSourceIndices = new List<IndexPath>()
+                    {
+                        Path(),
+                        Path(1),
+                        Path(1, 0),
+                        Path(1),
+                        Path(1, 0, 1),
+                        Path(1, 0, 1),
+                        Path(1, 0, 1),
+                        Path(1, 0, 1),
+                        Path(1, 1),
+                        Path(1, 1),
+                        Path(1, 1, 0),
+                        Path(1, 1, 0),
+                        Path(1, 1, 0),
+                        Path(1, 1, 0),
+                        Path(1, 1, 1)
+                    };
+
+                    Verify.AreEqual(expectedSourceIndices.Count, sourcePaths.Count);
+                    for (int i = 0; i < expectedSourceIndices.Count; i++)
+                    {
+                        Verify.IsTrue(AreEqual(expectedSourceIndices[i], sourcePaths[i]));
+                    }
+                }
+
                 ValidateSelection(selectionModel,
                     new List<IndexPath>()
                     {
@@ -1078,6 +1112,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             }
 
             return data;
+        }
+
+        private bool AreEqual(IndexPath a, IndexPath b)
+        {
+            if (a.GetSize() != b.GetSize())
+            {
+                return false;
+            }
+
+            for (int i = 0; i < a.GetSize(); i++)
+            {
+                if (a.GetAt(i) != b.GetAt(i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private List<IndexPath> GetIndexPathsInSource(object source)

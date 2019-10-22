@@ -114,7 +114,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             var controlsToVerify = new List<string> {
                 "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
-                "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
+                "CommandBar", "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
                 "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
                 "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
 
@@ -138,6 +138,54 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.Fail("One or more visual tree verification failed, see details above");
             }
+        }
+
+        //Disabling until issue #1455 is resolved.
+        //[TestMethod]
+        public void VerifyVisualTreeForCommandBarOverflowMenu()
+        {
+            StackPanel root = null;
+            CommandBar commandBar = null;
+            UIElement overflowContent = null;
+
+            RunOnUIThread.Execute(() => {
+                root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                            <CommandBar x:Name='TestCommandBar'>
+                                <AppBarButton Icon='AddFriend'/>
+                                <AppBarButton Icon='World' Label='World'/>
+                                <AppBarToggleButton Icon='Volume' Label='Volume'/>
+                                <CommandBar.SecondaryCommands>
+                                    <AppBarButton Label='Like'/>
+                                    <AppBarButton Label='Dislike'/>
+                                    <AppBarToggleButton Label='Toggle'/>
+                                </CommandBar.SecondaryCommands>
+                                <CommandBar.Content>
+                                    <TextBlock Text='Hello World' Margin='12'/>
+                                </CommandBar.Content>
+                            </CommandBar>
+                      </StackPanel>");
+
+                commandBar = (CommandBar)root.FindName("TestCommandBar");
+                Verify.IsNotNull(commandBar);
+            });
+
+            TestUtilities.SetAsVisualTreeRoot(root);
+
+            RunOnUIThread.Execute(() => {
+                commandBar.IsOpen = true;
+            });
+
+            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => {
+                var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                Verify.IsNotNull(popup);
+                overflowContent = popup.Child;
+            });
+
+            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu");
         }
 
         private string XamlStringForControl(string controlName)

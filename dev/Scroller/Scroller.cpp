@@ -2747,8 +2747,7 @@ void Scroller::SetupVisualInteractionSourcePointerWheelConfig(
 #endif
 
 void Scroller::SetupVisualInteractionSourceRedirectionMode(
-    const winrt::VisualInteractionSource& visualInteractionSource,
-    const winrt::InputKind& ignoredInputKind)
+    const winrt::VisualInteractionSource& visualInteractionSource)
 {
     MUX_ASSERT(visualInteractionSource);
 
@@ -4699,26 +4698,6 @@ void Scroller::OnPointerPressed(
     }
 }
 
-void Scroller::OnXamlRootKeyDownOrUp(
-    const winrt::IInspectable& /*sender*/,
-    const winrt::KeyRoutedEventArgs& args)
-{
-    if (args.Key() == winrt::VirtualKey::Control)
-    {
-        UpdateManipulationRedirectionMode();
-    }
-}
-
-void Scroller::OnCoreWindowKeyDownOrUp(
-    const winrt::CoreWindow& /*sender*/,
-    const winrt::KeyEventArgs& args)
-{
-    if (args.VirtualKey() == winrt::VirtualKey::Control)
-    {
-        UpdateManipulationRedirectionMode();
-    }
-}
-
 // Invoked by an IScrollController implementation when a call to InteractionTracker::TryRedirectForManipulation
 // is required to track a finger.
 void Scroller::OnScrollControllerInteractionRequested(
@@ -5701,9 +5680,7 @@ void Scroller::UpdateManipulationRedirectionMode()
 {
     if (m_scrollerVisualInteractionSource)
     {
-        SetupVisualInteractionSourceRedirectionMode(
-            m_scrollerVisualInteractionSource,
-            IgnoredInputKind());
+        SetupVisualInteractionSourceRedirectionMode(m_scrollerVisualInteractionSource);
     }
 }
 
