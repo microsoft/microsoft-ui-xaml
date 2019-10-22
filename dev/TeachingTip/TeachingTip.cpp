@@ -15,6 +15,7 @@ TeachingTip::TeachingTip()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TeachingTip);
     SetDefaultStyleKey(this);
     EnsureProperties();
+    Unloaded({ this, &TeachingTip::ClosePopupOnUnloadEvent });
     m_automationNameChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::NameProperty(), { this, &TeachingTip::OnAutomationNameChanged });
     m_automationIdChangedRevoker = RegisterPropertyChanged(*this, winrt::AutomationProperties::AutomationIdProperty(), { this, &TeachingTip::OnAutomationIdChanged });
     SetValue(s_TemplateSettingsProperty, winrt::make<::TeachingTipTemplateSettings>());
@@ -23,6 +24,12 @@ TeachingTip::TeachingTip()
 winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
 {
     return winrt::make<TeachingTipAutomationPeer>(*this);
+}
+
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& , winrt::RoutedEventArgs const&)
+{
+    IsOpen(false);
+    ClosePopup();
 }
 
 void TeachingTip::OnApplyTemplate()
@@ -119,6 +126,16 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     }
     else if (property == s_TargetProperty)
     {
+        // Unregister from old target if it exists
+        if (args.OldValue()) {
+            m_TargetUnloadedRevoker.revoke();
+        }
+
+        // Register to new target if it exists
+        if (const auto& value = args.NewValue()) {
+            winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(value);
+            m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke, { this,&TeachingTip::ClosePopupOnUnloadEvent });
+        }
         OnTargetChanged();
     }
     else if (property == s_ActionButtonContentProperty ||

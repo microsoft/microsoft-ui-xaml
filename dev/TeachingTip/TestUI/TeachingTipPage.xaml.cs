@@ -85,23 +85,14 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (this.TeachingTipInResources != null && this.TeachingTipInResources.IsOpen)
-            {
-                this.TeachingTipInResources.IsOpen = false;
+            if (testWindowBounds != null && testWindowBounds.IsOpen)	
+            {	
+                testWindowBounds.IsOpen = false;	
+            }	
+            if(testScreenBounds != null && testScreenBounds.IsOpen)	
+            {	
+                testScreenBounds.IsOpen = false;	
             }
-            if (this.TeachingTipInVisualTree != null && this.TeachingTipInVisualTree.IsOpen)
-            {
-                this.TeachingTipInVisualTree.IsOpen = false;
-            }
-            if (testWindowBounds != null && testWindowBounds.IsOpen)
-            {
-                testWindowBounds.IsOpen = false;
-            }
-            if(testScreenBounds != null && testScreenBounds.IsOpen)
-            {
-                testScreenBounds.IsOpen = false;
-            }
-
             base.OnNavigatedFrom(e);
         }
 
@@ -941,5 +932,22 @@ namespace MUXControlsTestApp
 
             return "Unknown";
         }
+
+        private void RemoveTeachingTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentStackPanel.Children.Remove(TeachingTipInVisualTree);
+            ContentStackPanel.Children.Remove(TeachingTipInResources);
+        }
+        
+        private void RemoveTeachingTipTextBlockContent_Unloaded(object sender, RoutedEventArgs e)
+        {
+            VisualTreeTeachingTipContentTextBlockUnloaded.IsChecked = true;
+        }
+    
+        private void RemoveOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentStackPanel.Children.Remove(targetButton);
+        }
+        
     }
 }
