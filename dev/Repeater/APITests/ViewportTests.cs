@@ -39,12 +39,12 @@ using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrollingSurface;
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
@@ -222,12 +222,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 300), realizationRects[1]);
                 realizationRects.Clear();
 
-                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     scrollCompletedEvent.Set();
                 };
 
-                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ZoomCompletedEventArgs args) =>
+                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     zoomCompletedEvent.Set();
                 };
@@ -236,7 +236,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                scrollingPresenter.ScrollTo(0.0, 100.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                scrollingPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -249,7 +249,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scrollCompletedEvent.Reset();
                 // Max viewport offset is (300, 400). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
-                scrollingPresenter.ScrollTo(400.0, 100.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                scrollingPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -262,7 +262,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scrollingPresenter.ZoomTo(
                     2.0f,
                     Vector2.Zero,
-                    new ZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                    new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(zoomCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -322,12 +322,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(new Rect(0, 0, 200, 200), realizationRects[1]);
                 realizationRects.Clear();
 
-                horizontalScrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                horizontalScrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     horizontalScrollCompletedEvent.Set();
                 };
 
-                verticalScrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                verticalScrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     verticalScrollCompletedEvent.Set();
                 };
@@ -336,7 +336,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
             RunOnUIThread.Execute(() =>
             {
-                verticalScrollingPresenter.ScrollTo(0.0, 100.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                verticalScrollingPresenter.ScrollTo(0.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(verticalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -348,7 +348,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 // Max viewport offset is (300, 300). Horizontal viewport offset
                 // is expected to get coerced from 400 to 300.
-                horizontalScrollingPresenter.ScrollTo(400.0, 100.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                horizontalScrollingPresenter.ScrollTo(400.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             });
             Verify.IsTrue(horizontalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
             CompositionPropertySpy.SynchronouslyTickUIThread(1);
@@ -438,7 +438,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 for (int i = 0; i < scrollingPresenters.Length; ++i)
                 {
-                    scrollingPresenters[i].ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                    scrollingPresenters[i].ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                     {
                         scrollCompletedEvent.Set();
                     };
@@ -475,12 +475,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     if (scrollOrientation == ScrollOrientation.Vertical)
                     {
                         Log.Comment("Scrolling ScrollingPresenter #1 to vertical offset 100");
-                        scrollingPresenters[1].ScrollTo(0.0, 100.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                        scrollingPresenters[1].ScrollTo(0.0, 100.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                     }
                     else
                     {
                         Log.Comment("Scrolling ScrollingPresenter #2 to horizontal offset 150");
-                        scrollingPresenters[2].ScrollTo(150.0, 0.0, new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));                        
+                        scrollingPresenters[2].ScrollTo(150.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));                        
                     }
                 });
                 Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));

@@ -18,7 +18,7 @@ using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollControlle
 using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
@@ -820,7 +820,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollToRequestedEventArgs e = 
                     new ScrollControllerScrollToRequestedEventArgs(
                         offset,
-                        new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
                 if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {
@@ -842,7 +842,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollByRequestedEventArgs e =
                     new ScrollControllerScrollByRequestedEventArgs(
                         offsetDelta,
-                        new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
                 if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {

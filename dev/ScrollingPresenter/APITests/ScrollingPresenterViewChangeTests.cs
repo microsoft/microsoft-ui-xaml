@@ -24,12 +24,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
-using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
+using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
+using ScrollingZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -203,7 +203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("Canceling view change");
                         operationCanceled = true;
-                        sender.ScrollBy(0, 0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        sender.ScrollBy(0, 0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                     }
                 };
             });
@@ -272,7 +272,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ZoomBy(0, Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                            sender.ZoomBy(0, Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                         }
                     };
                 });
@@ -292,7 +292,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [TestMethod]
         [TestProperty("Description", "Checks to make sure the exposed startPosition, endPosition, StartZoomFactor, and EndZoomFactor " +
-            "on ScrollAnimationStartingEventArgs and ZoomAnimationStartingEventArgs respectively are accurate.")]
+            "on ScrollingScrollAnimationStartingEventArgs and ScrollingZoomAnimationStartingEventArgs respectively are accurate.")]
         public void ValidateScrollAnimationStartingAndZoomFactorEventArgsHaveValidStartAndEndPositions()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -325,7 +325,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Log.Comment("Attach to ScrollAnimationStarting");
 
-                scrollingPresenter.ZoomAnimationStarting += (ScrollingPresenter sender, ZoomAnimationStartingEventArgs e) =>
+                scrollingPresenter.ZoomAnimationStarting += (ScrollingPresenter sender, ScrollingZoomAnimationStartingEventArgs e) =>
                 {
                     Log.Comment("ScrollingPresenter.ZoomAnimationStarting event handler");
                     if (numZoomFactorChanges == 0)
@@ -341,7 +341,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 };
 
-                scrollingPresenter.ScrollAnimationStarting += (ScrollingPresenter sender, ScrollAnimationStartingEventArgs e) =>
+                scrollingPresenter.ScrollAnimationStarting += (ScrollingPresenter sender, ScrollingScrollAnimationStartingEventArgs e) =>
                 {
                     Log.Comment("ScrollingPresenter.ScrollAnimationStarting event handler");
                     if (numOffsetChanges == 0)
@@ -1649,7 +1649,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             operation.Id = scrollingPresenter.ScrollTo(
                 horizontalOffset,
                 verticalOffset,
-                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
+                new ScrollingScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
@@ -1657,7 +1657,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
@@ -1692,7 +1692,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             operation.Id = scrollingPresenter.ScrollBy(
                 horizontalOffsetDelta,
                 verticalOffsetDelta,
-                new ScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
+                new ScrollingScrollOptions(animationMode, snapPointsMode)).OffsetsChangeId;
 
             if (operation.Id == -1)
             {
@@ -1700,7 +1700,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
@@ -1749,7 +1749,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollCompletedEventArgs args) =>
+                scrollingPresenter.ScrollCompleted += (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
                     if (args.ScrollInfo.OffsetsChangeId == operation.Id)
                     {
@@ -2000,7 +2000,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             operation.Id = scrollingPresenter.ZoomTo(
                 zoomFactor,
                 new Vector2(centerPointX, centerPointY), 
-                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
@@ -2008,7 +2008,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ZoomCompletedEventArgs args) =>
+                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
@@ -2044,7 +2044,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             operation.Id = scrollingPresenter.ZoomBy(
                 zoomFactorDelta,
                 new Vector2(centerPointX, centerPointY),
-                new ZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
             {
@@ -2052,7 +2052,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ZoomCompletedEventArgs args) =>
+                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {
@@ -2093,7 +2093,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ZoomCompletedEventArgs args) =>
+                scrollingPresenter.ZoomCompleted += (ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
                     if (args.ZoomInfo.ZoomFactorChangeId == operation.Id)
                     {

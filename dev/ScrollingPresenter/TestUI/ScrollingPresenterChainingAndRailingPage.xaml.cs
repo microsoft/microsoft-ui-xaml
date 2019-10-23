@@ -12,9 +12,9 @@ using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
 using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
@@ -79,7 +79,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
+        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             if (args.ZoomInfo.ZoomFactorChangeId == scrollingPresenter3ZoomFactorChangeId)
                 this.txtResetStatus.Text = "Views reset";
@@ -278,12 +278,12 @@ namespace MUXControlsTestApp
                 scrollingPresenter.ScrollTo(
                     0.0,
                     0.0,
-                    new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                    new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
 
                 int viewChangeId = scrollingPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
-                    new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                    new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
 
                 if (this.scrollingPresenter3 == scrollingPresenter)
                     scrollingPresenter3ZoomFactorChangeId = viewChangeId;

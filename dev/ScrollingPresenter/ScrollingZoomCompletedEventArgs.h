@@ -20,7 +20,7 @@ public:
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IZoomCompletedEventArgs overrides
+    // IScrollingZoomCompletedEventArgs overrides
     winrt::ScrollingZoomInfo ZoomInfo();
     ScrollingPresenterViewChangeResult Result();
 

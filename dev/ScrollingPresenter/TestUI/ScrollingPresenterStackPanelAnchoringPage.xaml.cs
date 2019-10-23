@@ -17,10 +17,10 @@ using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresen
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
-using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
+using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -557,7 +557,7 @@ namespace MUXControlsTestApp
             lastScrollingPresenterOffset = newScrollingPresenterOffset;
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollCompletedEventArgs args)
+        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
             if (chkLogScrollingPresenterEvents.IsChecked == true)
             {
@@ -567,7 +567,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_AnchorRequested(ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args)
+        private void ScrollingPresenter_AnchorRequested(ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args)
         {
             try
             {
@@ -774,7 +774,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scrollingPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
+                    new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)
@@ -784,7 +784,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
         {
             try
             {

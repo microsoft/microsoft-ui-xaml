@@ -19,7 +19,7 @@ public:
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IZoomAnimationStartingEventArgs overrides
+    // IScrollingZoomAnimationStartingEventArgs overrides
     winrt::float2 CenterPoint();
     float StartZoomFactor();
     float EndZoomFactor();

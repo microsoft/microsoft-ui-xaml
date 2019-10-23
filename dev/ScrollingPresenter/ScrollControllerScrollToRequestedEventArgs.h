@@ -16,15 +16,15 @@ public:
 
     ScrollControllerScrollToRequestedEventArgs(
         double offset,
-        winrt::ScrollOptions const & options);
+        winrt::ScrollingScrollOptions const & options);
 
     double Offset() const;
-    winrt::ScrollOptions Options() const;
+    winrt::ScrollingScrollOptions Options() const;
     winrt::ScrollingScrollInfo ScrollInfo() const;
     void ScrollInfo(winrt::ScrollingScrollInfo scrollInfo);
 
 private:
     double m_offset{ 0.0 };
-    winrt::ScrollOptions m_options{ nullptr };
+    winrt::ScrollingScrollOptions m_options{ nullptr };
     winrt::ScrollingScrollInfo m_scrollInfo{ -1 };
 };

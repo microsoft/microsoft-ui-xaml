@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollOptions.h"
+#include "ScrollingScrollOptions.h"
 #include "ScrollBarController.h"
 #include "ScrollingView.h"
 #include "TypeLogging.h"
@@ -540,7 +540,7 @@ bool ScrollBarController::RaiseScrollToRequested(
         return false;
     }
 
-    auto options = winrt::make_self<ScrollOptions>(
+    auto options = winrt::make_self<ScrollingScrollOptions>(
         winrt::ScrollingAnimationMode::Disabled,
         winrt::ScrollingSnapPointsMode::Ignore);
 
@@ -573,7 +573,7 @@ bool ScrollBarController::RaiseScrollByRequested(
         return false;
     }
 
-    auto options = winrt::make_self<ScrollOptions>(
+    auto options = winrt::make_self<ScrollingScrollOptions>(
         winrt::ScrollingAnimationMode::Disabled,
         winrt::ScrollingSnapPointsMode::Ignore);
 

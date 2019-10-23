@@ -20,7 +20,7 @@ public:
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollCompletedEventArgs overrides
+    // IScrollingScrollCompletedEventArgs overrides
     winrt::ScrollingScrollInfo ScrollInfo();
     ScrollingPresenterViewChangeResult Result();
 

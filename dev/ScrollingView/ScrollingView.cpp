@@ -215,7 +215,7 @@ winrt::ScrollingScrollInfo ScrollingView::ScrollTo(double horizontalOffset, doub
     return s_noOpScrollInfo;
 }
 
-winrt::ScrollingScrollInfo ScrollingView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
+winrt::ScrollingScrollInfo ScrollingView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -240,7 +240,7 @@ winrt::ScrollingScrollInfo ScrollingView::ScrollBy(double horizontalOffsetDelta,
     return s_noOpScrollInfo;
 }
 
-winrt::ScrollingScrollInfo ScrollingView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
+winrt::ScrollingScrollInfo ScrollingView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -279,7 +279,7 @@ winrt::ScrollingZoomInfo ScrollingView::ZoomTo(float zoomFactor, winrt::IReferen
     return s_noOpZoomInfo;
 }
 
-winrt::ScrollingZoomInfo ScrollingView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+winrt::ScrollingZoomInfo ScrollingView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -308,7 +308,7 @@ winrt::ScrollingZoomInfo ScrollingView::ZoomBy(float zoomFactorDelta, winrt::IRe
     return s_noOpZoomInfo;
 }
 
-winrt::ScrollingZoomInfo ScrollingView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+winrt::ScrollingZoomInfo ScrollingView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -947,7 +947,7 @@ void ScrollingView::OnScrollingPresenterStateChanged(
 
 void ScrollingView::OnScrollAnimationStarting(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollAnimationStartingEventArgs& args)
+    const winrt::ScrollingScrollAnimationStartingEventArgs& args)
 {
     if (m_scrollAnimationStartingEventSource)
     {
@@ -959,7 +959,7 @@ void ScrollingView::OnScrollAnimationStarting(
 
 void ScrollingView::OnZoomAnimationStarting(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ZoomAnimationStartingEventArgs& args)
+    const winrt::ScrollingZoomAnimationStartingEventArgs& args)
 {
     if (m_zoomAnimationStartingEventSource)
     {
@@ -996,7 +996,7 @@ void ScrollingView::OnScrollingPresenterViewChanged(
 
 void ScrollingView::OnScrollingPresenterScrollCompleted(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollCompletedEventArgs& args)
+    const winrt::ScrollingScrollCompletedEventArgs& args)
 {
     if (args.ScrollInfo().OffsetsChangeId == m_horizontalScrollFromOffsetChangeId)
     {
@@ -1017,7 +1017,7 @@ void ScrollingView::OnScrollingPresenterScrollCompleted(
 
 void ScrollingView::OnScrollingPresenterZoomCompleted(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ZoomCompletedEventArgs& args)
+    const winrt::ScrollingZoomCompletedEventArgs& args)
 {
     if (m_zoomCompletedEventSource)
     {
@@ -1029,7 +1029,7 @@ void ScrollingView::OnScrollingPresenterZoomCompleted(
 
 void ScrollingView::OnScrollingPresenterBringingIntoView(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollingPresenterBringingIntoViewEventArgs& args)
+    const winrt::ScrollingBringingIntoViewEventArgs& args)
 {
     if (!m_bringIntoViewOperations.empty())
     {
@@ -1061,7 +1061,7 @@ void ScrollingView::OnScrollingPresenterBringingIntoView(
 
 void ScrollingView::OnScrollingPresenterAnchorRequested(
     const winrt::IInspectable& /*sender*/,
-    const winrt::ScrollingPresenterAnchorRequestedEventArgs& args)
+    const winrt::ScrollingAnchorRequestedEventArgs& args)
 {
     if (m_anchorRequestedEventSource)
     {

@@ -18,7 +18,7 @@ using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
@@ -26,9 +26,9 @@ using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.
 
 namespace MUXControlsTestApp.Utilities
 {
-    public class BiDirectionalScrollControllerScrollCompletedEventArgs
+    public class BiDirectionalScrollControllerScrollingScrollCompletedEventArgs
     {
-        internal BiDirectionalScrollControllerScrollCompletedEventArgs(int offsetsChangeId)
+        internal BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(int offsetsChangeId)
         {
             OffsetsChangeId = offsetsChangeId;
         }
@@ -42,9 +42,9 @@ namespace MUXControlsTestApp.Utilities
 
     public sealed class BiDirectionalScrollController : ContentControl
     {
-        private class UniScrollControllerScrollCompletedEventArgs
+        private class UniScrollControllerScrollingScrollCompletedEventArgs
         {
-            public UniScrollControllerScrollCompletedEventArgs(int offsetChangeId)
+            public UniScrollControllerScrollingScrollCompletedEventArgs(int offsetChangeId)
             {
                 OffsetChangeId = offsetChangeId;
             }
@@ -63,7 +63,7 @@ namespace MUXControlsTestApp.Utilities
             public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
-            public event TypedEventHandler<IScrollController, UniScrollControllerScrollCompletedEventArgs> ScrollCompleted;
+            public event TypedEventHandler<IScrollController, UniScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
 
             public UniScrollController(BiDirectionalScrollController owner, Orientation orientation)
             {
@@ -323,7 +323,7 @@ namespace MUXControlsTestApp.Utilities
                     "UniScrollController: OnScrollCompleted for Orientation=" + Orientation +
                     " with OffsetsChangeId=" + info.OffsetsChangeId);
 
-                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollCompletedEventArgs(info.OffsetsChangeId));
+                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info.OffsetsChangeId));
             }
 
             internal bool UpdateAreInteractionsAllowed()
@@ -386,7 +386,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollToRequestedEventArgs e =
                         new ScrollControllerScrollToRequestedEventArgs(
                             offset,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
                     return e.ScrollInfo.OffsetsChangeId;
                 }
@@ -404,7 +404,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollByRequestedEventArgs e =
                         new ScrollControllerScrollByRequestedEventArgs(
                             offsetDelta,
-                            new ScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
                     return e.ScrollInfo.OffsetsChangeId;
                 }
@@ -517,7 +517,7 @@ namespace MUXControlsTestApp.Utilities
         private Point preManipulationThumbOffset;
 
         public event TypedEventHandler<BiDirectionalScrollController, string> LogMessage;
-        public event TypedEventHandler<BiDirectionalScrollController, BiDirectionalScrollControllerScrollCompletedEventArgs> ScrollCompleted;
+        public event TypedEventHandler<BiDirectionalScrollController, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
 
         public BiDirectionalScrollController()
         {
@@ -1102,7 +1102,7 @@ namespace MUXControlsTestApp.Utilities
             return maxThumbOffset;
         }
 
-        private void UniScrollController_ScrollCompleted(IScrollController sender, UniScrollControllerScrollCompletedEventArgs args)
+        private void UniScrollController_ScrollCompleted(IScrollController sender, UniScrollControllerScrollingScrollCompletedEventArgs args)
         {
             if (lstScrollToIds.Contains(args.OffsetChangeId))
             {
@@ -1363,7 +1363,7 @@ namespace MUXControlsTestApp.Utilities
         {
             if (ScrollCompleted != null)
             {
-                BiDirectionalScrollControllerScrollCompletedEventArgs args = new BiDirectionalScrollControllerScrollCompletedEventArgs(viewChangeId);
+                BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args = new BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(viewChangeId);
 
                 ScrollCompleted(this, args);
             }

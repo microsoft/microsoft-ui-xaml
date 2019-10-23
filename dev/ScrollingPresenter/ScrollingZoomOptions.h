@@ -4,16 +4,16 @@
 #pragma once
 
 #include "ScrollingPresenter.h"
-#include "ZoomOptions.g.h"
+#include "ScrollingZoomOptions.g.h"
 
-class ZoomOptions :
-    public winrt::implementation::ZoomOptionsT<ZoomOptions>
+class ScrollingZoomOptions :
+    public winrt::implementation::ScrollingZoomOptionsT<ScrollingZoomOptions>
 {
 public:
-    ZoomOptions(winrt::ScrollingAnimationMode const& animationMode);
-    ZoomOptions(winrt::ScrollingAnimationMode const& animationMode, winrt::ScrollingSnapPointsMode const& snapPointsMode);
+    ScrollingZoomOptions(winrt::ScrollingAnimationMode const& animationMode);
+    ScrollingZoomOptions(winrt::ScrollingAnimationMode const& animationMode, winrt::ScrollingSnapPointsMode const& snapPointsMode);
 
-    ~ZoomOptions()
+    ~ScrollingZoomOptions()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }

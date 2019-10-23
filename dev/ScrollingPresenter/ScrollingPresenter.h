@@ -5,12 +5,12 @@
 
 #include "FloatUtil.h"
 #include "InteractionTrackerAsyncOperation.h"
-#include "ScrollAnimationStartingEventArgs.h"
-#include "ZoomAnimationStartingEventArgs.h"
-#include "ScrollCompletedEventArgs.h"
-#include "ZoomCompletedEventArgs.h"
-#include "ScrollingPresenterBringingIntoViewEventArgs.h"
-#include "ScrollingPresenterAnchorRequestedEventArgs.h"
+#include "ScrollingScrollAnimationStartingEventArgs.h"
+#include "ScrollingZoomAnimationStartingEventArgs.h"
+#include "ScrollingScrollCompletedEventArgs.h"
+#include "ScrollingZoomCompletedEventArgs.h"
+#include "ScrollingBringingIntoViewEventArgs.h"
+#include "ScrollingAnchorRequestedEventArgs.h"
 #include "SnapPointWrapper.h"
 #include "ScrollingPresenterTrace.h"
 #include "ViewChange.h"
@@ -170,14 +170,14 @@ public:
     winrt::IVector<winrt::ZoomSnapPointBase> ZoomSnapPoints();
 
     winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
-    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollingScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
     winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
 #pragma endregion
@@ -424,7 +424,7 @@ private:
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
         ScrollingPresenterViewKind offsetsKind,
-        winrt::ScrollOptions const& options,
+        winrt::ScrollingScrollOptions const& options,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         int32_t existingViewChangeId,
         _Out_opt_ int32_t* viewChangeId);
@@ -439,7 +439,7 @@ private:
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
         ScrollingPresenterViewKind zoomFactorKind,
-        winrt::ZoomOptions const& options,
+        winrt::ScrollingZoomOptions const& options,
         _Out_opt_ int32_t* viewChangeId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
         float zoomFactorVelocity,
@@ -510,7 +510,7 @@ private:
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         ScrollingPresenterViewKind const& viewKind,
-        winrt::ScrollOptions const& options) const;
+        winrt::ScrollingScrollOptions const& options) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger) const;
@@ -807,7 +807,7 @@ private:
     tracker_ref<winrt::IScrollController> m_horizontalScrollController{ this };
     tracker_ref<winrt::IScrollController> m_verticalScrollController{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
-    tracker_ref<winrt::ScrollingPresenterAnchorRequestedEventArgs> m_anchorRequestedEventArgs{ this };
+    tracker_ref<winrt::ScrollingAnchorRequestedEventArgs> m_anchorRequestedEventArgs{ this };
     std::vector<tracker_ref<winrt::UIElement>> m_anchorCandidates;
     std::list<std::shared_ptr<InteractionTrackerAsyncOperation>> m_interactionTrackerAsyncOperations;
     winrt::Rect m_anchorElementBounds{};

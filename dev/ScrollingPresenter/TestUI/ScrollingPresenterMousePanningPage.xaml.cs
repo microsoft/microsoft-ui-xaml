@@ -146,7 +146,7 @@ namespace MUXControlsTestApp
                     scrollingPresenter.ScrollTo(
                         _preMousePanPosition.X - position.X + _preMousePanHorizontalOffset,
                         _preMousePanPosition.Y - position.Y + _preMousePanVerticalOffset,
-                        new ScrollOptions(ScrollingAnimationMode.Disabled));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled));
                 }
                 else
                 {

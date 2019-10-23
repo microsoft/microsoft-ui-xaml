@@ -10,10 +10,10 @@ using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresen
 using InteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
 using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -113,14 +113,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollCompletedEventArgs args)
+        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
             ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
 
             this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
         }
 
-        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
+        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
 
@@ -335,13 +335,13 @@ namespace MUXControlsTestApp
             int viewChangeId = scrollingPresenter.ScrollTo(
                 0.0,
                 0.0,
-                new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
             this.fullLogs.Add(scrollingPresenter.Name + " ScrollTo requested. Id=" + viewChangeId);
 
             viewChangeId = scrollingPresenter.ZoomTo(
                 1.0f,
                 System.Numerics.Vector2.Zero,
-                new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
             this.fullLogs.Add(scrollingPresenter.Name + " ZoomTo requested. Id=" + viewChangeId);
             if (this.scrollingPresenter52 == scrollingPresenter)
             {

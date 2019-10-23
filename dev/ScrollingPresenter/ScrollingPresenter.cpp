@@ -9,8 +9,8 @@
 #include "RuntimeProfiler.h"
 #include "InteractionTrackerOwner.h"
 #include "ScrollingPresenter.h"
-#include "ScrollOptions.h"
-#include "ZoomOptions.h"
+#include "ScrollingScrollOptions.h"
+#include "ScrollingZoomOptions.h"
 #include "ScrollingPresenterAutomationPeer.h"
 #include "ScrollingPresenterTestHooks.h"
 #include "Vector.h"
@@ -155,8 +155,8 @@ void ScrollingPresenter::ScrollToOffsets(
 
     if (m_interactionTracker)
     {
-        com_ptr<ScrollOptions> options =
-            winrt::make_self<ScrollOptions>(
+        com_ptr<ScrollingScrollOptions> options =
+            winrt::make_self<ScrollingScrollOptions>(
                 winrt::ScrollingAnimationMode::Disabled,
                 winrt::ScrollingSnapPointsMode::Ignore);
 
@@ -442,7 +442,7 @@ winrt::ScrollingScrollInfo ScrollingPresenter::ScrollTo(double horizontalOffset,
     return ScrollTo(horizontalOffset, verticalOffset, nullptr /*options*/);
 }
 
-winrt::ScrollingScrollInfo ScrollingPresenter::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options)
+winrt::ScrollingScrollInfo ScrollingPresenter::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffset, verticalOffset, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -472,7 +472,7 @@ winrt::ScrollingScrollInfo ScrollingPresenter::ScrollBy(double horizontalOffsetD
     return ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, nullptr /*options*/);
 }
 
-winrt::ScrollingScrollInfo ScrollingPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options)
+winrt::ScrollingScrollInfo ScrollingPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         horizontalOffsetDelta, verticalOffsetDelta, TypeLogging::ScrollOptionsToString(options).c_str());
@@ -524,7 +524,7 @@ winrt::ScrollingZoomInfo ScrollingPresenter::ZoomTo(float zoomFactor, winrt::IRe
     return ZoomTo(zoomFactor, centerPoint, nullptr /*options*/);
 }
 
-winrt::ScrollingZoomInfo ScrollingPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+winrt::ScrollingZoomInfo ScrollingPresenter::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -556,7 +556,7 @@ winrt::ScrollingZoomInfo ScrollingPresenter::ZoomBy(float zoomFactorDelta, winrt
     return ZoomBy(zoomFactorDelta, centerPoint, nullptr /*options*/);
 }
 
-winrt::ScrollingZoomInfo ScrollingPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options)
+winrt::ScrollingZoomInfo ScrollingPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -4560,8 +4560,8 @@ void ScrollingPresenter::OnBringIntoViewRequestedHandler(
     if (targetZoomedHorizontalOffset != m_zoomedHorizontalOffset ||
         targetZoomedVerticalOffset != m_zoomedVerticalOffset)
     {
-        com_ptr<ScrollOptions> options =
-            winrt::make_self<ScrollOptions>(
+        com_ptr<ScrollingScrollOptions> options =
+            winrt::make_self<ScrollingScrollOptions>(
                 args.AnimationDesired() ? winrt::ScrollingAnimationMode::Auto : winrt::ScrollingAnimationMode::Disabled,
                 snapPointsMode);
 
@@ -4822,7 +4822,7 @@ void ScrollingPresenter::OnScrollControllerScrollToRequested(
     int32_t viewChangeId = -1;
 
     // Attempt to find an offset change request from an IScrollController with the same ScrollingPresenterViewKind,
-    // the same ScrollOptions settings and same tick.
+    // the same ScrollingScrollOptions settings and same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
         true /*isOperationTypeForOffsetsChange*/,
         static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
@@ -4886,7 +4886,7 @@ void ScrollingPresenter::OnScrollControllerScrollByRequested(
     int32_t viewChangeId = -1;
 
     // Attempt to find an offset change request from an IScrollController with the same ScrollingPresenterViewKind,
-    // the same ScrollOptions settings and same tick.
+    // the same ScrollingScrollOptions settings and same tick.
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation = GetInteractionTrackerOperationFromKinds(
         true /*isOperationTypeForOffsetsChange*/,
         static_cast<InteractionTrackerAsyncOperationTrigger>(static_cast<int>(InteractionTrackerAsyncOperationTrigger::HorizontalScrollControllerRequest) + static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest)),
@@ -5797,7 +5797,7 @@ void ScrollingPresenter::ChangeOffsetsPrivate(
     double zoomedHorizontalOffset,
     double zoomedVerticalOffset,
     ScrollingPresenterViewKind offsetsKind,
-    winrt::ScrollOptions const& options,
+    winrt::ScrollingScrollOptions const& options,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     int32_t existingViewChangeId,
     _Out_opt_ int32_t* viewChangeId)
@@ -5815,8 +5815,8 @@ void ScrollingPresenter::ChangeOffsetsPrivate(
         *viewChangeId = -1;
     }
 
-    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
-    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
+    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
     animationMode = GetComputedAnimationMode(animationMode);
@@ -5875,7 +5875,7 @@ void ScrollingPresenter::ChangeOffsetsPrivate(
     // is interrupted with TryUpdatePositionBy operation).
     bool offsetsChangeWithAnimationInterrupted = false;
 
-    com_ptr<ScrollOptions> optionsClone{ nullptr };
+    com_ptr<ScrollingScrollOptions> optionsClone{ nullptr };
 
     // Clone the options for this request if needed. The clone or original options will be used if the operation ever gets processed.
     const bool isScrollControllerRequest =
@@ -5886,7 +5886,7 @@ void ScrollingPresenter::ChangeOffsetsPrivate(
     if (options && !isScrollControllerRequest)
     {
         // Options are cloned so that they can be modified by the caller after this offsets change call without affecting the outcome of the operation.
-        optionsClone = winrt::make_self<ScrollOptions>(
+        optionsClone = winrt::make_self<ScrollingScrollOptions>(
             animationMode,
             snapPointsMode);
     }
@@ -6030,7 +6030,7 @@ void ScrollingPresenter::ChangeZoomFactorPrivate(
     float zoomFactor,
     winrt::IReference<winrt::float2> centerPoint,
     ScrollingPresenterViewKind zoomFactorKind,
-    winrt::ZoomOptions const& options,
+    winrt::ScrollingZoomOptions const& options,
     _Out_opt_ int32_t* viewChangeId)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
@@ -6051,8 +6051,8 @@ void ScrollingPresenter::ChangeZoomFactorPrivate(
         return;
     }
 
-    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ZoomOptions::s_defaultAnimationMode;
-    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ZoomOptions::s_defaultSnapPointsMode;
+    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingZoomOptions::s_defaultAnimationMode;
+    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingZoomOptions::s_defaultSnapPointsMode;
     InteractionTrackerAsyncOperationType operationType;
 
     animationMode = GetComputedAnimationMode(animationMode);
@@ -6101,13 +6101,13 @@ void ScrollingPresenter::ChangeZoomFactorPrivate(
     // is interrupted with TryUpdateScale operation).
     bool scaleChangeWithAnimationInterrupted = false;
 
-    com_ptr<ZoomOptions> optionsClone{ nullptr };
+    com_ptr<ScrollingZoomOptions> optionsClone{ nullptr };
 
     // Clone the original options if any. The clone will be used if the operation ever gets processed.
     if (options)
     {
         // Options are cloned so that they can be modified by the caller after this zoom factor change call without affecting the outcome of the operation.
-        optionsClone = winrt::make_self<ZoomOptions>(
+        optionsClone = winrt::make_self<ScrollingZoomOptions>(
             animationMode,
             snapPointsMode);
     }
@@ -6625,15 +6625,15 @@ void ScrollingPresenter::ProcessOffsetsChange(
 
     double zoomedHorizontalOffset = offsetsChange->ZoomedHorizontalOffset();
     double zoomedVerticalOffset = offsetsChange->ZoomedVerticalOffset();
-    winrt::ScrollOptions options = offsetsChange->Options().try_as<winrt::ScrollOptions>();
+    winrt::ScrollingScrollOptions options = offsetsChange->Options().try_as<winrt::ScrollingScrollOptions>();
 
     SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_DBL_DBL_STR, METH_NAME, this,
         zoomedHorizontalOffset,
         zoomedVerticalOffset,
         TypeLogging::ScrollOptionsToString(options).c_str());
 
-    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
-    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
+    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
 
     animationMode = GetComputedAnimationMode(animationMode);
 
@@ -6812,7 +6812,7 @@ void ScrollingPresenter::ProcessZoomFactorChange(
     float zoomFactor = zoomFactorChange->ZoomFactor();
     winrt::IReference<winrt::float2> nullableCenterPoint = zoomFactorChange->CenterPoint();
     ScrollingPresenterViewKind viewKind = zoomFactorChange->ViewKind();
-    winrt::ZoomOptions options = zoomFactorChange->Options().try_as<winrt::ZoomOptions>();
+    winrt::ScrollingZoomOptions options = zoomFactorChange->Options().try_as<winrt::ScrollingZoomOptions>();
 
     SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_INT, METH_NAME, this,
         TypeLogging::ScrollingPresenterViewKindToString(viewKind).c_str(),
@@ -6842,8 +6842,8 @@ void ScrollingPresenter::ProcessZoomFactorChange(
         }
     }
 
-    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
-    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+    winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
+    winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
 
     animationMode = GetComputedAnimationMode(animationMode);
 
@@ -7270,7 +7270,7 @@ std::shared_ptr<InteractionTrackerAsyncOperation> ScrollingPresenter::GetInterac
     bool isOperationTypeForOffsetsChange,
     InteractionTrackerAsyncOperationTrigger operationTrigger,
     ScrollingPresenterViewKind const& viewKind,
-    winrt::ScrollOptions const& options) const
+    winrt::ScrollingScrollOptions const& options) const
 {
     for (auto& interactionTrackerAsyncOperation : m_interactionTrackerAsyncOperations)
     {
@@ -7303,17 +7303,17 @@ std::shared_ptr<InteractionTrackerAsyncOperation> ScrollingPresenter::GetInterac
                 continue;
             }
 
-            winrt::ScrollOptions optionsClone = viewChange->Options().try_as<winrt::ScrollOptions>();
-            winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
-            winrt::ScrollingAnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::ScrollingScrollOptions optionsClone = viewChange->Options().try_as<winrt::ScrollingScrollOptions>();
+            winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
+            winrt::ScrollingAnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
 
             if (animationModeClone != animationMode)
             {
                 continue;
             }
 
-            winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
-            winrt::ScrollingSnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
+            winrt::ScrollingSnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
 
             if (snapPointsModeClone != snapPointsMode)
             {
@@ -7336,17 +7336,17 @@ std::shared_ptr<InteractionTrackerAsyncOperation> ScrollingPresenter::GetInterac
                 continue;
             }
 
-            winrt::ZoomOptions optionsClone = viewChange->Options().try_as<winrt::ZoomOptions>();
-            winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
-            winrt::ScrollingAnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollOptions::s_defaultAnimationMode;
+            winrt::ScrollingZoomOptions optionsClone = viewChange->Options().try_as<winrt::ScrollingZoomOptions>();
+            winrt::ScrollingAnimationMode animationMode = options ? options.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
+            winrt::ScrollingAnimationMode animationModeClone = optionsClone ? optionsClone.AnimationMode() : ScrollingScrollOptions::s_defaultAnimationMode;
 
             if (animationModeClone != animationMode)
             {
                 continue;
             }
 
-            winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
-            winrt::ScrollingSnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollOptions::s_defaultSnapPointsMode;
+            winrt::ScrollingSnapPointsMode snapPointsMode = options ? options.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
+            winrt::ScrollingSnapPointsMode snapPointsModeClone = optionsClone ? optionsClone.SnapPointsMode() : ScrollingScrollOptions::s_defaultSnapPointsMode;
 
             if (snapPointsModeClone != snapPointsMode)
             {
@@ -7750,7 +7750,7 @@ winrt::CompositionAnimation ScrollingPresenter::RaiseScrollAnimationStarting(
 
     if (m_scrollAnimationStartingEventSource)
     {
-        auto scrollAnimationStartingEventArgs = winrt::make_self<ScrollAnimationStartingEventArgs>();
+        auto scrollAnimationStartingEventArgs = winrt::make_self<ScrollingScrollAnimationStartingEventArgs>();
 
         if (offsetsChangeId != -1)
         {
@@ -7783,7 +7783,7 @@ winrt::CompositionAnimation ScrollingPresenter::RaiseZoomAnimationStarting(
 
     if (m_zoomAnimationStartingEventSource)
     {
-        auto zoomAnimationStartingEventArgs = winrt::make_self<ZoomAnimationStartingEventArgs>();
+        auto zoomAnimationStartingEventArgs = winrt::make_self<ScrollingZoomAnimationStartingEventArgs>();
 
         if (zoomFactorChangeId != -1)
         {
@@ -7816,7 +7816,7 @@ void ScrollingPresenter::RaiseViewChangeCompleted(
                 TypeLogging::ScrollingPresenterViewChangeResultToString(result).c_str(),
                 viewChangeId);
 
-            auto scrollCompletedEventArgs = winrt::make_self<ScrollCompletedEventArgs>();
+            auto scrollCompletedEventArgs = winrt::make_self<ScrollingScrollCompletedEventArgs>();
 
             scrollCompletedEventArgs->Result(result);
             scrollCompletedEventArgs->OffsetsChangeId(viewChangeId);
@@ -7828,7 +7828,7 @@ void ScrollingPresenter::RaiseViewChangeCompleted(
                 TypeLogging::ScrollingPresenterViewChangeResultToString(result).c_str(),
                 viewChangeId);
 
-            auto zoomCompletedEventArgs = winrt::make_self<ZoomCompletedEventArgs>();
+            auto zoomCompletedEventArgs = winrt::make_self<ScrollingZoomCompletedEventArgs>();
 
             zoomCompletedEventArgs->Result(result);
             zoomCompletedEventArgs->ZoomFactorChangeId(viewChangeId);
@@ -7849,7 +7849,7 @@ void ScrollingPresenter::RaiseViewChangeCompleted(
     }
 }
 
-// Returns False when ScrollingPresenterBringingIntoViewEventArgs.Cancel is set to True to skip the operation.
+// Returns False when ScrollingBringingIntoViewEventArgs.Cancel is set to True to skip the operation.
 bool ScrollingPresenter::RaiseBringingIntoView(
     double targetZoomedHorizontalOffset,
     double targetZoomedVerticalOffset,
@@ -7861,7 +7861,7 @@ bool ScrollingPresenter::RaiseBringingIntoView(
     {
         SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
-        auto bringingIntoViewEventArgs = winrt::make_self<ScrollingPresenterBringingIntoViewEventArgs>();
+        auto bringingIntoViewEventArgs = winrt::make_self<ScrollingBringingIntoViewEventArgs>();
 
         bringingIntoViewEventArgs->SnapPointsMode(*snapPointsMode);
         bringingIntoViewEventArgs->OffsetsChangeId(offsetsChangeId);

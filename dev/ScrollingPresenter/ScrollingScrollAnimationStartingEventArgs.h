@@ -20,7 +20,7 @@ public:
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollAnimationStartingEventArgs overrides
+    // IScrollingScrollAnimationStartingEventArgs overrides
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
     winrt::ScrollingScrollInfo ScrollInfo();

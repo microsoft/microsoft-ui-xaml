@@ -21,8 +21,8 @@ using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
-using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
-using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
+using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
+using ScrollingZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHooks;
@@ -1863,12 +1863,12 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ScrollingPresenter.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
         {
             AppendAsyncEventMessage("ScrollingPresenter.ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + " SP=(" + args.StartPosition.X + "," + args.StartPosition.Y +") EP=(" + args.EndPosition.X + "," + args.EndPosition.Y +")");
         }
 
-        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ScrollingZoomAnimationStartingEventArgs args)
         {
             AppendAsyncEventMessage("ScrollingPresenter.ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
         }
@@ -1888,12 +1888,12 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ScrollingView.ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void ScrollingView_ScrollAnimationStarting(ScrollingView sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingView_ScrollAnimationStarting(ScrollingView sender, ScrollingScrollAnimationStartingEventArgs args)
         {
             AppendAsyncEventMessage("ScrollingView.ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
         }
 
-        private void ScrollingView_ZoomAnimationStarting(ScrollingView sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingView_ZoomAnimationStarting(ScrollingView sender, ScrollingZoomAnimationStartingEventArgs args)
         {
             AppendAsyncEventMessage("ScrollingView.ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint);
         }
