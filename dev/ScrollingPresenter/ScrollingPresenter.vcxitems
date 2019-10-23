@@ -56,10 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollingPresenter.properties.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.cpp" />
@@ -67,25 +63,29 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingBringingIntoViewEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPoint.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)SnapPointWrapper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterPrivate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAnchoring.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ViewChange.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomCompletedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChange.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomOptions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooks.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksAnchorEvaluatedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTypeLogging.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SnapPoint.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SnapPointWrapper.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ViewChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChange.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.cpp" />
   </ItemGroup>
 </Project>
