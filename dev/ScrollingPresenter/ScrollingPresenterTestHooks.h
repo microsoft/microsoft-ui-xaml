@@ -52,8 +52,8 @@ public:
     static winrt::float2 GetArrangeRenderSizesDelta(const winrt::ScrollingPresenter& scrollingPresenter);
     static winrt::float2 GetMinPosition(const winrt::ScrollingPresenter& scrollingPresenter);
     static winrt::float2 GetMaxPosition(const winrt::ScrollingPresenter& scrollingPresenter);
-    static winrt::ScrollingPresenterViewChangeResult GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs);
-    static winrt::ScrollingPresenterViewChangeResult GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs);
+    static winrt::ScrollingPresenterViewChangeResult GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs);
+    static winrt::ScrollingPresenterViewChangeResult GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs);
 
     static void NotifyAnchorEvaluated(const winrt::ScrollingPresenter& sender, const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAnchorPointVerticalOffset);
     static winrt::event_token AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksAnchorEvaluatedEventArgs> const& value);

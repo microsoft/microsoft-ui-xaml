@@ -4,30 +4,30 @@
 #pragma once
 
 #include "ScrollingPresenter.h"
-#include "ScrollingScrollCompletedEventArgs.g.h"
+#include "ScrollingZoomCompletedEventArgs.g.h"
 
-class ScrollingScrollCompletedEventArgs :
-    public winrt::implementation::ScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
+class ScrollingZoomCompletedEventArgs :
+    public winrt::implementation::ScrollingZoomCompletedEventArgsT<ScrollingZoomCompletedEventArgs>
 {
 public:
-    ScrollingScrollCompletedEventArgs()
+    ScrollingZoomCompletedEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollingScrollCompletedEventArgs()
+    ~ScrollingZoomCompletedEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollCompletedEventArgs overrides
-    winrt::ScrollInfo ScrollInfo();
+    // IZoomCompletedEventArgs overrides
+    winrt::ZoomInfo ZoomInfo();
     ScrollingPresenterViewChangeResult Result();
 
-    void OffsetsChangeId(int32_t offsetsChangeId);
+    void ZoomFactorChangeId(int32_t zoomFactorChangeId);
     void Result(ScrollingPresenterViewChangeResult result);
 
 private:
-    int32_t m_offsetsChangeId{ -1 };
+    int32_t m_zoomFactorChangeId{ -1 };
     ScrollingPresenterViewChangeResult m_result{ ScrollingPresenterViewChangeResult::Completed };
 };

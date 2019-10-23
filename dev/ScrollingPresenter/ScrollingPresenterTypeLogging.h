@@ -22,8 +22,8 @@ namespace TypeLogging
     winrt::hstring ScrollingPresenterViewKindToString(ScrollingPresenterViewKind viewKind);
     winrt::hstring ScrollingPresenterViewChangeResultToString(ScrollingPresenterViewChangeResult result);
     winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount);
-    winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options);
-    winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options);
+    winrt::hstring ScrollOptionsToString(const winrt::ScrollingScrollOptions& options);
+    winrt::hstring ZoomOptionsToString(const winrt::ScrollingZoomOptions& options);
     winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAsyncOperationType operationType);
     winrt::hstring InteractionTrackerAsyncOperationTriggerToString(InteractionTrackerAsyncOperationTrigger operationTrigger);
 };

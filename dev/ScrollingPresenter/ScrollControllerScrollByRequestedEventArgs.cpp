@@ -11,7 +11,7 @@ CppWinRTActivatableClassWithBasicFactory(ScrollControllerScrollByRequestedEventA
 
 ScrollControllerScrollByRequestedEventArgs::ScrollControllerScrollByRequestedEventArgs(
     double offsetDelta,
-    winrt::ScrollOptions const & options)
+    winrt::ScrollingScrollOptions const & options)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offsetDelta);
@@ -25,7 +25,7 @@ double ScrollControllerScrollByRequestedEventArgs::OffsetDelta() const
     return m_offsetDelta;
 }
 
-winrt::ScrollOptions ScrollControllerScrollByRequestedEventArgs::Options() const
+winrt::ScrollingScrollOptions ScrollControllerScrollByRequestedEventArgs::Options() const
 {
     return m_options;
 }

@@ -69,14 +69,14 @@ public:
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
     winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
-    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
     winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
@@ -170,10 +170,10 @@ private:
         const winrt::IInspectable& args);
     void OnScrollAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ScrollAnimationStartingEventArgs& args);
+        const winrt::ScrollingScrollAnimationStartingEventArgs& args);
     void OnZoomAnimationStarting(
         const winrt::IInspectable& sender,
-        const winrt::ZoomAnimationStartingEventArgs& args);
+        const winrt::ScrollingZoomAnimationStartingEventArgs& args);
     void OnScrollingPresenterViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
@@ -184,16 +184,16 @@ private:
 #endif
     void OnScrollingPresenterScrollCompleted(
         const winrt::IInspectable& sender,
-        const winrt::ScrollCompletedEventArgs& args);
+        const winrt::ScrollingScrollCompletedEventArgs& args);
     void OnScrollingPresenterZoomCompleted(
         const winrt::IInspectable& sender,
-        const winrt::ZoomCompletedEventArgs& args);
+        const winrt::ScrollingZoomCompletedEventArgs& args);
     void OnScrollingPresenterBringingIntoView(
         const winrt::IInspectable& sender,
-        const winrt::ScrollingPresenterBringingIntoViewEventArgs& args);
+        const winrt::ScrollingBringingIntoViewEventArgs& args);
     void OnScrollingPresenterAnchorRequested(
         const winrt::IInspectable& sender,
-        const winrt::ScrollingPresenterAnchorRequestedEventArgs& args);
+        const winrt::ScrollingAnchorRequestedEventArgs& args);
     void OnCompositionTargetRendering(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);

@@ -89,7 +89,7 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     ScrollInfo ScrollTo(
         Double horizontalOffset,
         Double verticalOffset,
-        ScrollOptions options);
+        ScrollingScrollOptions options);
     [method_name("ScrollBy")]
     ScrollInfo ScrollBy(
         Double horizontalOffsetDelta,
@@ -98,7 +98,7 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     ScrollInfo ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
-        ScrollOptions options);
+        ScrollingScrollOptions options);
     ScrollInfo ScrollFrom(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
@@ -110,7 +110,7 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     ZoomInfo ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
-        ZoomOptions options);
+        ScrollingZoomOptions options);
     [method_name("ZoomBy")]
     ZoomInfo ZoomBy(
         Single zoomFactorDelta,
@@ -119,7 +119,7 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     ZoomInfo ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
-        ZoomOptions options);
+        ScrollingZoomOptions options);
     ZoomInfo ZoomFrom(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
@@ -128,12 +128,12 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     event Windows.Foundation.TypedEventHandler<ScrollingView, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollingView, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<ScrollingView, Object> ViewChanged;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollAnimationStartingEventArgs> ScrollAnimationStarting;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ZoomAnimationStartingEventArgs> ZoomAnimationStarting;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollCompletedEventArgs> ScrollCompleted;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ZoomCompletedEventArgs> ZoomCompleted;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingPresenterBringingIntoViewEventArgs> BringingIntoView;
-    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingPresenterAnchorRequestedEventArgs> AnchorRequested;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingScrollAnimationStartingEventArgs> ScrollAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingZoomAnimationStartingEventArgs> ZoomAnimationStarting;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingScrollCompletedEventArgs> ScrollCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingZoomCompletedEventArgs> ZoomCompleted;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingBringingIntoViewEventArgs> BringingIntoView;
+    event Windows.Foundation.TypedEventHandler<ScrollingView, ScrollingAnchorRequestedEventArgs> AnchorRequested;
 
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
     [MUX_PROPERTY_TYPE("winrt::ScrollingPresenter")]

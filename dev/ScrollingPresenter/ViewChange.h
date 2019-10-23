@@ -34,7 +34,7 @@ public:
 
 private:
     ScrollingPresenterViewKind m_viewKind{ ScrollingPresenterViewKind::Absolute };
-    // ScrollOptions or ZoomOptions instance associated with this view change.
+    // ScrollingScrollOptions or ScrollingZoomOptions instance associated with this view change.
     winrt::IInspectable m_options{ nullptr };
 };
 

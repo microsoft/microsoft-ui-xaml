@@ -191,33 +191,33 @@ winrt::hstring ScrollAmountToString(const winrt::ScrollAmount& scrollAmount)
     }
 }
 
-winrt::hstring ScrollOptionsToString(const winrt::ScrollOptions& options)
+winrt::hstring ScrollOptionsToString(const winrt::ScrollingScrollOptions& options)
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(L"ScrollingScrollOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
     }
     else
     {
-        return L"ScrollOptions[null]";
+        return L"ScrollingScrollOptions[null]";
     }
 }
 
-winrt::hstring ZoomOptionsToString(const winrt::ZoomOptions& options)
+winrt::hstring ZoomOptionsToString(const winrt::ScrollingZoomOptions& options)
 {
     if (options)
     {
-        return StringUtil::FormatString(L"ZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
+        return StringUtil::FormatString(L"ScrollingZoomOptions[0x%1!p!]: AnimationMode: %2!s!, SnapPointsMode: %3!s!",
             options,
             AnimationModeToString(options.AnimationMode()).c_str(),
             SnapPointsModeToString(options.SnapPointsMode()).c_str());
     }
     else
     {
-        return L"ZoomOptions[null]";
+        return L"ScrollingZoomOptions[null]";
     }
 }
 

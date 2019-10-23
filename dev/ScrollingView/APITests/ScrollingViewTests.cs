@@ -30,7 +30,7 @@ using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
+using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHooks;
 
@@ -497,7 +497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     SetupDefaultUI(scrollingView, rectangleScrollingViewContent, scrollingViewLoadedEvent);
 
-                    scrollingView.AnchorRequested += (ScrollingView sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
+                    scrollingView.AnchorRequested += (ScrollingView sender, ScrollingAnchorRequestedEventArgs args) =>
                     {
                         Log.Comment("ScrollingView.AnchorRequested event handler. args.AnchorCandidates.Count: " + args.AnchorCandidates.Count);
                         Verify.IsNull(args.AnchorElement);
