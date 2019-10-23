@@ -14,7 +14,7 @@ using System.Collections.Specialized;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
+using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
@@ -334,7 +334,7 @@ namespace MUXControlsTestApp
             lastScrollingPresenterOffset = newScrollingPresenterOffset;
         }
 
-        private void ScrollingPresenter_AnchorRequested(ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args)
+        private void ScrollingPresenter_AnchorRequested(ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args)
         {
             try
             {

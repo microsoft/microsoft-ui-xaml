@@ -4,18 +4,18 @@
 #pragma once
 
 #include "ScrollingPresenterTrace.h"
-#include "ScrollAnimationStartingEventArgs.g.h"
+#include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
-class ScrollAnimationStartingEventArgs :
-    public winrt::implementation::ScrollAnimationStartingEventArgsT<ScrollAnimationStartingEventArgs>
+class ScrollingScrollAnimationStartingEventArgs :
+    public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
 {
 public:
-    ScrollAnimationStartingEventArgs()
+    ScrollingScrollAnimationStartingEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollAnimationStartingEventArgs()
+    ~ScrollingScrollAnimationStartingEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }

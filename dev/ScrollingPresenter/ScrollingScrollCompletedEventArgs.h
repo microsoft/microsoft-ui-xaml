@@ -4,18 +4,18 @@
 #pragma once
 
 #include "ScrollingPresenter.h"
-#include "ScrollCompletedEventArgs.g.h"
+#include "ScrollingScrollCompletedEventArgs.g.h"
 
-class ScrollCompletedEventArgs :
-    public winrt::implementation::ScrollCompletedEventArgsT<ScrollCompletedEventArgs>
+class ScrollingScrollCompletedEventArgs :
+    public winrt::implementation::ScrollingScrollCompletedEventArgsT<ScrollingScrollCompletedEventArgs>
 {
 public:
-    ScrollCompletedEventArgs()
+    ScrollingScrollCompletedEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollCompletedEventArgs()
+    ~ScrollingScrollCompletedEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }

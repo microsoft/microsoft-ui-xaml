@@ -19,8 +19,8 @@ using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 
@@ -1232,7 +1232,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ScrollTo(
                         Convert.ToSingle(this.txtHorizontalOffset.Text),
                         this.ScrollingPresenter.VerticalOffset,
-                        new ScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1265,7 +1265,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ScrollTo(
                         this.ScrollingPresenter.HorizontalOffset,
                         Convert.ToSingle(this.txtVerticalOffset.Text),
-                        new ScrollOptions(
+                        new ScrollingScrollOptions(
                             ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
@@ -1299,7 +1299,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ZoomTo(
                         Convert.ToSingle(this.txtZoomFactor.Text),
                         System.Numerics.Vector2.Zero,
-                        new ZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)

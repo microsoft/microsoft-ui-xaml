@@ -3,20 +3,20 @@
 
 #pragma once
 
-#include "ScrollingPresenterAnchorRequestedEventArgs.g.h"
+#include "ScrollingAnchorRequestedEventArgs.g.h"
 
-class ScrollingPresenterAnchorRequestedEventArgs :
-    public ReferenceTracker<ScrollingPresenterAnchorRequestedEventArgs, winrt::implementation::ScrollingPresenterAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
+class ScrollingAnchorRequestedEventArgs :
+    public ReferenceTracker<ScrollingAnchorRequestedEventArgs, winrt::implementation::ScrollingAnchorRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ~ScrollingPresenterAnchorRequestedEventArgs()
+    ~ScrollingAnchorRequestedEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollingPresenterAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter);
+    ScrollingAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter);
 
-#pragma region IScrollingPresenterAnchorRequestedEventArgs
+#pragma region IScrollingAnchorRequestedEventArgs
     winrt::IVector<winrt::UIElement> AnchorCandidates();
     winrt::UIElement AnchorElement();
     void AnchorElement(winrt::UIElement const& value);

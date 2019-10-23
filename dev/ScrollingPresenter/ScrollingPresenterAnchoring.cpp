@@ -51,10 +51,10 @@ void ScrollingPresenter::RaiseAnchorRequested()
 
         if (!m_anchorRequestedEventArgs)
         {
-            m_anchorRequestedEventArgs = tracker_ref<winrt::ScrollingPresenterAnchorRequestedEventArgs>(this, winrt::make<ScrollingPresenterAnchorRequestedEventArgs>(*this));
+            m_anchorRequestedEventArgs = tracker_ref<winrt::ScrollingAnchorRequestedEventArgs>(this, winrt::make<ScrollingAnchorRequestedEventArgs>(*this));
         }
 
-        com_ptr<ScrollingPresenterAnchorRequestedEventArgs> anchorRequestedEventArgs = winrt::get_self<ScrollingPresenterAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
+        com_ptr<ScrollingAnchorRequestedEventArgs> anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get())->get_strong();
 
         anchorRequestedEventArgs->SetAnchorElement(nullptr);
         anchorRequestedEventArgs->SetAnchorCandidates(m_anchorCandidates);
@@ -333,7 +333,7 @@ void ScrollingPresenter::EnsureAnchorElementSelection()
 
     RaiseAnchorRequested();
 
-    auto anchorRequestedEventArgs = winrt::get_self<ScrollingPresenterAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
+    auto anchorRequestedEventArgs = winrt::get_self<ScrollingAnchorRequestedEventArgs>(m_anchorRequestedEventArgs.get());
     winrt::UIElement requestedAnchorElement{ nullptr };
     winrt::IVector<winrt::UIElement> anchorCandidates{ nullptr };
     const winrt::UIElement content = Content();
