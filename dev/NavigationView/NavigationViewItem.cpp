@@ -358,10 +358,19 @@ void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& 
 {
     NavigationViewItemBase::OnPointerReleased(args);
 
+    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+
+    // Let NavigationView handle selection when SelectedItem is the Settings Item
+    // TODO: Add logic that syncs selection state between the settings item and the SelectionModel
+    if (nv->IsSettingsItem(*this))
+    {
+        nv->OnSettingsInvoked();
+        return;
+    }
+
     // Get required info to raise ItemInvoked
     // TODO: Clean up into separate methods
     winrt::IInspectable item = nullptr;
-    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
     auto parentIR = GetParentItemsRepeater();
     auto itemIndex = parentIR.GetElementIndex(*this);
     auto itemsSource = parentIR.ItemsSource();

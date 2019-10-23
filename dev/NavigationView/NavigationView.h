@@ -87,6 +87,7 @@ public:
         bool isSettings,
         winrt::NavigationViewItemBase const& container = nullptr,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
+    bool IsSettingsItem(winrt::IInspectable const& item);
 
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
@@ -103,7 +104,6 @@ private:
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     bool DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
-    bool IsSettingsItem(winrt::IInspectable const& item);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
     void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
     void CloseTopNavigationViewFlyout();
