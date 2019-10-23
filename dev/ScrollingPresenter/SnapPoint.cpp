@@ -5,7 +5,7 @@
 #include "common.h"
 #include "TypeLogging.h"
 #include "ScrollingPresenterTypeLogging.h"
-#include "ScrollingPresenterSnapPoint.h"
+#include "SnapPoint.h"
 
 // Required for Modern Idl bug, should never be called.
 SnapPointBase::SnapPointBase()
@@ -26,8 +26,8 @@ winrt::hstring SnapPointBase::GetIsInertiaFromImpulseExpression(winrt::hstring c
 
 bool SnapPointBase::operator<(SnapPointBase* snapPoint)
 {
-    ScrollingPresenterSnapPointSortPredicate mySortPredicate = SortPredicate();
-    ScrollingPresenterSnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
+    SnapPointSortPredicate mySortPredicate = SortPredicate();
+    SnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
     if (mySortPredicate.primary < theirSortPredicate.primary)
     {
         return true;
@@ -55,8 +55,8 @@ bool SnapPointBase::operator<(SnapPointBase* snapPoint)
 
 bool SnapPointBase::operator==(SnapPointBase* snapPoint)
 {
-    ScrollingPresenterSnapPointSortPredicate mySortPredicate = SortPredicate();
-    ScrollingPresenterSnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
+    SnapPointSortPredicate mySortPredicate = SortPredicate();
+    SnapPointSortPredicate theirSortPredicate = snapPoint->SortPredicate();
     if (std::abs(mySortPredicate.primary - theirSortPredicate.primary) < s_equalityEpsilon
         && std::abs(mySortPredicate.secondary - theirSortPredicate.secondary) < s_equalityEpsilon
         && mySortPredicate.tertiary == theirSortPredicate.tertiary)
@@ -298,12 +298,12 @@ void ScrollSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     // thus this method has no job to do.
 }
 
-ScrollingPresenterSnapPointSortPredicate ScrollSnapPoint::SortPredicate()
+SnapPointSortPredicate ScrollSnapPoint::SortPredicate()
 {
     double actualValue = ActualValue();
 
     // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
-    return ScrollingPresenterSnapPointSortPredicate{ actualValue, actualValue, 0 };
+    return SnapPointSortPredicate{ actualValue, actualValue, 0 };
 }
 
 std::tuple<double, double> ScrollSnapPoint::DetermineActualApplicableZone(
@@ -796,10 +796,10 @@ void RepeatedScrollSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     SetScalarParameter(restingValueExpressionAnimation, s_impulseIgnoredValue, static_cast<float>(ignoredValue));
 }
 
-ScrollingPresenterSnapPointSortPredicate RepeatedScrollSnapPoint::SortPredicate()
+SnapPointSortPredicate RepeatedScrollSnapPoint::SortPredicate()
 {
     // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollingPresenterSnapPointSortPredicate{ ActualStart(), ActualEnd(), 1 };
+    return SnapPointSortPredicate{ ActualStart(), ActualEnd(), 1 };
 }
 
 std::tuple<double, double> RepeatedScrollSnapPoint::DetermineActualApplicableZone(
@@ -1198,10 +1198,10 @@ void ZoomSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     // thus this method has no job to do.
 }
 
-ScrollingPresenterSnapPointSortPredicate ZoomSnapPoint::SortPredicate()
+SnapPointSortPredicate ZoomSnapPoint::SortPredicate()
 {
     // Irregular snap point should be sorted before repeated snap points so it gives a tertiary sort value of 0 (repeated snap points get 1)
-    return ScrollingPresenterSnapPointSortPredicate{ m_value, m_value, 0 };
+    return SnapPointSortPredicate{ m_value, m_value, 0 };
 }
 
 std::tuple<double, double> ZoomSnapPoint::DetermineActualApplicableZone(
@@ -1685,10 +1685,10 @@ void RepeatedZoomSnapPoint::UpdateRestingPointExpressionAnimationForImpulse(
     SetScalarParameter(restingValueExpressionAnimation, s_impulseIgnoredValue, static_cast<float>(ignoredValue));
 }
 
-ScrollingPresenterSnapPointSortPredicate RepeatedZoomSnapPoint::SortPredicate()
+SnapPointSortPredicate RepeatedZoomSnapPoint::SortPredicate()
 {
     // Repeated snap points should be sorted after irregular snap points, so give it a tertiary sort value of 1 (irregular snap points get 0)
-    return ScrollingPresenterSnapPointSortPredicate{ m_start, m_end, 1 };
+    return SnapPointSortPredicate{ m_start, m_end, 1 };
 }
 
 std::tuple<double, double> RepeatedZoomSnapPoint::DetermineActualApplicableZone(
