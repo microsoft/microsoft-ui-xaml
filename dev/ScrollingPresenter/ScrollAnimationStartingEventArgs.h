@@ -7,7 +7,7 @@
 #include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
 class ScrollingScrollAnimationStartingEventArgs :
-    public winrt::implementation::ScrollingScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
+    public winrt::implementation::ScrollAnimationStartingEventArgsT<ScrollingScrollAnimationStartingEventArgs>
 {
 public:
     ScrollingScrollAnimationStartingEventArgs()

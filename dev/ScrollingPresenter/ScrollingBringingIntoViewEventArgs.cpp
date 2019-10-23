@@ -4,59 +4,59 @@
 #include "pch.h"
 #include "common.h"
 #include "ScrollingPresenterTrace.h"
-#include "ScrollingPresenterBringingIntoViewEventArgs.h"
+#include "ScrollingBringingIntoViewEventArgs.h"
 
-winrt::SnapPointsMode ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode()
+winrt::SnapPointsMode ScrollingBringingIntoViewEventArgs::SnapPointsMode()
 {
     return m_snapPointsMode;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode(winrt::SnapPointsMode snapPointsMode)
+void ScrollingBringingIntoViewEventArgs::SnapPointsMode(winrt::SnapPointsMode snapPointsMode)
 {
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::BringIntoViewRequestedEventArgs ScrollingPresenterBringingIntoViewEventArgs::RequestEventArgs()
+winrt::BringIntoViewRequestedEventArgs ScrollingBringingIntoViewEventArgs::RequestEventArgs()
 {
     return m_requestEventArgs;
 }
 
-double ScrollingPresenterBringingIntoViewEventArgs::TargetHorizontalOffset()
+double ScrollingBringingIntoViewEventArgs::TargetHorizontalOffset()
 {
     return m_targetHorizontalOffset;
 }
 
-double ScrollingPresenterBringingIntoViewEventArgs::TargetVerticalOffset()
+double ScrollingBringingIntoViewEventArgs::TargetVerticalOffset()
 {
     return m_targetVerticalOffset;
 }
 
-winrt::ScrollInfo ScrollingPresenterBringingIntoViewEventArgs::ScrollInfo()
+winrt::ScrollInfo ScrollingBringingIntoViewEventArgs::ScrollInfo()
 {
     return winrt::ScrollInfo{ m_offsetsChangeId };
 }
 
-bool ScrollingPresenterBringingIntoViewEventArgs::Cancel()
+bool ScrollingBringingIntoViewEventArgs::Cancel()
 {
     return m_cancel;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::Cancel(bool value)
+void ScrollingBringingIntoViewEventArgs::Cancel(bool value)
 {
     m_cancel = value;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingBringingIntoViewEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
 {
     m_offsetsChangeId = offsetsChangeId;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs)
+void ScrollingBringingIntoViewEventArgs::RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs)
 {
     m_requestEventArgs = requestEventArgs;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset)
+void ScrollingBringingIntoViewEventArgs::TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset)
 {
     m_targetHorizontalOffset = targetHorizontalOffset;
     m_targetVerticalOffset = targetVerticalOffset;

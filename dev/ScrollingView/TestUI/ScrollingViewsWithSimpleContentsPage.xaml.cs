@@ -10,10 +10,10 @@ using Windows.UI.Xaml.Media;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 
@@ -194,7 +194,7 @@ namespace MUXControlsTestApp
             chkLogUpdated.IsChecked = false;
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollCompletedEventArgs args)
+        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -209,7 +209,7 @@ namespace MUXControlsTestApp
             chkLogUpdated.IsChecked = false;
         }
 
-        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
+        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -441,10 +441,10 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
             string scrollingPresenterId = (VisualTreeHelper.GetParent(scrollingPresenter) as FrameworkElement).Name + "." + scrollingPresenter.Name;
 
-            int viewChangeId = scrollingPresenter.ScrollTo(0.0, 0.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+            int viewChangeId = scrollingPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
             this.fullLogs.Add(scrollingPresenterId + " ScrollTo requested. Id=" + viewChangeId);
 
-            viewChangeId = scrollingPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+            viewChangeId = scrollingPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
             this.fullLogs.Add(scrollingPresenterId + " ZoomTo requested. Id=" + viewChangeId);
 
             chkLogUpdated.IsChecked = false;

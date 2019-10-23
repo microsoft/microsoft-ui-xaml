@@ -229,21 +229,21 @@ winrt::float2 ScrollingPresenterTestHooks::GetMaxPosition(const winrt::Scrolling
     return winrt::float2{ 0.0f, 0.0f };
 }
 
-winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs)
+winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs)
 {
     if (scrollCompletedEventArgs)
     {
-        ScrollingPresenterViewChangeResult result = winrt::get_self<ScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
+        ScrollingPresenterViewChangeResult result = winrt::get_self<ScrollingScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
     return winrt::ScrollingPresenterViewChangeResult::Completed;
 }
 
-winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetZoomCompletedResult(const winrt::ZoomCompletedEventArgs& zoomCompletedEventArgs)
+winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs)
 {
     if (zoomCompletedEventArgs)
     {
-        ScrollingPresenterViewChangeResult result = winrt::get_self<ZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
+        ScrollingPresenterViewChangeResult result = winrt::get_self<ScrollingZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
     return winrt::ScrollingPresenterViewChangeResult::Completed;

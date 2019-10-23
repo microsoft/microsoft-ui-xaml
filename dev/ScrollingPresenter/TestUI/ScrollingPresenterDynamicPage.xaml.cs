@@ -26,17 +26,17 @@ using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
 using RepeatedZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
-using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
-using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
-using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
-using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
+using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
+using ScrollingZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomAnimationStartingEventArgs;
+using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
+using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -124,21 +124,21 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollCompletedEventArgs args)
+        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
             ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
 
             AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
         }
 
-        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
+        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
 
             AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
         }
 
-        private void ZoomCompleted(ScrollingPresenter sender, ZoomCompletedEventArgs args)
+        private void ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
 
@@ -1447,7 +1447,7 @@ namespace MUXControlsTestApp
             {
                 AnimationMode animatioMode = (AnimationMode)cmbScrollAnimationMode.SelectedIndex;
                 SnapPointsMode snapPointsMode = (SnapPointsMode)cmbScrollSnapPointsMode.SelectedIndex;
-                ScrollOptions options = new ScrollOptions(animatioMode, snapPointsMode);
+                ScrollingScrollOptions options = new ScrollingScrollOptions(animatioMode, snapPointsMode);
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
@@ -1488,7 +1488,7 @@ namespace MUXControlsTestApp
                     scrollingPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1498,7 +1498,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
         {
             try
             {
@@ -1631,7 +1631,7 @@ namespace MUXControlsTestApp
                     scrollingPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1737,7 +1737,7 @@ namespace MUXControlsTestApp
             {
                 AnimationMode animationMode = (AnimationMode)cmbZoomAnimationMode.SelectedIndex;
                 SnapPointsMode snapPointsMode = (SnapPointsMode)cmbZoomSnapPointsMode.SelectedIndex;
-                ZoomOptions options = new ZoomOptions(animationMode, snapPointsMode);
+                ScrollingZoomOptions options = new ScrollingZoomOptions(animationMode, snapPointsMode);
 
                 txtStockZoomFactorChangeDuration.Text = string.Empty;
 
@@ -1778,7 +1778,7 @@ namespace MUXControlsTestApp
                     scrollingPresenter.ZoomBy(
                         0,
                         Vector2.Zero, 
-                        new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -1788,7 +1788,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ZoomAnimationStartingEventArgs args)
+        private void ScrollingPresenter_ZoomAnimationStarting(ScrollingPresenter sender, ScrollingZoomAnimationStartingEventArgs args)
         {
             try
             {
@@ -1902,7 +1902,7 @@ namespace MUXControlsTestApp
                     scrollingPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
-                        new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (Exception ex)
@@ -2073,7 +2073,7 @@ namespace MUXControlsTestApp
                 lastOffsetsChangeId = scrollingPresenter.ScrollTo(
                     targetHorizontalOffset,
                     targetVerticalOffset,
-                    new ScrollOptions(
+                    new ScrollingScrollOptions(
                         disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
                         disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).OffsetsChangeId;
                 AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) Id={lastOffsetsChangeId}");
@@ -2124,7 +2124,7 @@ namespace MUXControlsTestApp
                 lastZoomFactorChangeId = scrollingPresenter.ZoomTo(
                     targetZoomFactor,
                     centerPoint,
-                    new ZoomOptions(
+                    new ScrollingZoomOptions(
                         disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
                         disableAnimation ? SnapPointsMode.Ignore : SnapPointsMode.Default)).ZoomFactorChangeId;
                 AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} Id={lastZoomFactorChangeId}");

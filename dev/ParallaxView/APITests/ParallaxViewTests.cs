@@ -32,8 +32,8 @@ using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
@@ -1956,7 +1956,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     int viewChangeId = scrollingPresenter.ZoomTo(
                         (float)zoomFactor,
                         Vector2.Zero,
-                        new ZoomOptions(
+                        new ScrollingZoomOptions(
                             disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
                             SnapPointsMode.Ignore)).ZoomFactorChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);
@@ -1968,7 +1968,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     int viewChangeId = scrollingPresenter.ScrollTo(
                         horizontalOffset == null ? scrollingPresenter.HorizontalOffset : (double)horizontalOffset,
                         verticalOffset == null ? scrollingPresenter.VerticalOffset : (double)verticalOffset,
-                        new ScrollOptions(
+                        new ScrollingScrollOptions(
                             disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled, 
                             SnapPointsMode.Ignore)).OffsetsChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);

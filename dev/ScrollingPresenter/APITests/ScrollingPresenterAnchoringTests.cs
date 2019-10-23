@@ -27,7 +27,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollingPresenterAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingPresenterAnchorRequestedEventArgs;
+using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
@@ -639,7 +639,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             }
 
-            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
+            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args) =>
             {
                 Log.Comment("ScrollingPresenter.AnchorRequested event handler");
 
@@ -760,7 +760,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         }
                     };
 
-                    scrollingPresenter.AnchorRequested += delegate (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args)
+                    scrollingPresenter.AnchorRequested += delegate (ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args)
                     {
                         Log.Comment("ScrollingPresenter.AnchorRequested event handler. Forcing the red Border to be the ScrollingPresenter anchor.");
                         args.AnchorElement = anchorElement;
@@ -934,7 +934,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             }
 
-            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingPresenterAnchorRequestedEventArgs args) =>
+            scrollingPresenter.AnchorRequested += (ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args) =>
             {
                 Log.Comment("ScrollingPresenter.AnchorRequested event handler");
 

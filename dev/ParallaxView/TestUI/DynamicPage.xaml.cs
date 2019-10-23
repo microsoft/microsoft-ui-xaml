@@ -19,8 +19,8 @@ using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
-using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
+using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
 
@@ -1232,7 +1232,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ScrollTo(
                         Convert.ToSingle(this.txtHorizontalOffset.Text),
                         this.ScrollingPresenter.VerticalOffset,
-                        new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)
@@ -1265,7 +1265,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ScrollTo(
                         this.ScrollingPresenter.HorizontalOffset,
                         Convert.ToSingle(this.txtVerticalOffset.Text),
-                        new ScrollOptions(
+                        new ScrollingScrollOptions(
                             AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
@@ -1299,7 +1299,7 @@ namespace MUXControlsTestApp
                     this.ScrollingPresenter.ZoomTo(
                         Convert.ToSingle(this.txtZoomFactor.Text),
                         System.Numerics.Vector2.Zero,
-                        new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
                 }
             }
             catch (FormatException)

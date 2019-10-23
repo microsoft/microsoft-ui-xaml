@@ -91,34 +91,34 @@ public:
     static GlobalDependencyProperty s_ZoomChainingModeProperty;
     static GlobalDependencyProperty s_ZoomModeProperty;
 
-    winrt::event_token AnchorRequested(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterAnchorRequestedEventArgs> const& value);
+    winrt::event_token AnchorRequested(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingAnchorRequestedEventArgs> const& value);
     void AnchorRequested(winrt::event_token const& token);
-    winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterBringingIntoViewEventArgs> const& value);
+    winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingBringingIntoViewEventArgs> const& value);
     void BringingIntoView(winrt::event_token const& token);
     winrt::event_token ExtentChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value);
     void ExtentChanged(winrt::event_token const& token);
-    winrt::event_token ScrollAnimationStarting(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollAnimationStartingEventArgs> const& value);
+    winrt::event_token ScrollAnimationStarting(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollAnimationStartingEventArgs> const& value);
     void ScrollAnimationStarting(winrt::event_token const& token);
-    winrt::event_token ScrollCompleted(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollCompletedEventArgs> const& value);
+    winrt::event_token ScrollCompleted(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollCompletedEventArgs> const& value);
     void ScrollCompleted(winrt::event_token const& token);
     winrt::event_token StateChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value);
     void StateChanged(winrt::event_token const& token);
     winrt::event_token ViewChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value);
     void ViewChanged(winrt::event_token const& token);
-    winrt::event_token ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ZoomAnimationStartingEventArgs> const& value);
+    winrt::event_token ZoomAnimationStarting(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingZoomAnimationStartingEventArgs> const& value);
     void ZoomAnimationStarting(winrt::event_token const& token);
-    winrt::event_token ZoomCompleted(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ZoomCompletedEventArgs> const& value);
+    winrt::event_token ZoomCompleted(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingZoomCompletedEventArgs> const& value);
     void ZoomCompleted(winrt::event_token const& token);
 
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable>> m_extentChangedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollAnimationStartingEventArgs>> m_scrollAnimationStartingEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollCompletedEventArgs>> m_scrollCompletedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollAnimationStartingEventArgs>> m_scrollAnimationStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollCompletedEventArgs>> m_scrollCompletedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable>> m_stateChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable>> m_viewChangedEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ZoomAnimationStartingEventArgs>> m_zoomAnimationStartingEventSource;
-    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ZoomCompletedEventArgs>> m_zoomCompletedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingZoomAnimationStartingEventArgs>> m_zoomAnimationStartingEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingZoomCompletedEventArgs>> m_zoomCompletedEventSource;
 
     static void EnsureProperties();
     static void ClearProperties();

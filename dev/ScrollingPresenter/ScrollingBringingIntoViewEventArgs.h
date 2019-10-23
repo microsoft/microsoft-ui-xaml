@@ -3,23 +3,23 @@
 
 #pragma once
 
-#include "ScrollingPresenterBringingIntoViewEventArgs.g.h"
+#include "ScrollingBringingIntoViewEventArgs.g.h"
 
-class ScrollingPresenterBringingIntoViewEventArgs :
-    public winrt::implementation::ScrollingPresenterBringingIntoViewEventArgsT<ScrollingPresenterBringingIntoViewEventArgs>
+class ScrollingBringingIntoViewEventArgs :
+    public winrt::implementation::ScrollingBringingIntoViewEventArgsT<ScrollingBringingIntoViewEventArgs>
 {
 public:
-    ScrollingPresenterBringingIntoViewEventArgs()
+    ScrollingBringingIntoViewEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ~ScrollingPresenterBringingIntoViewEventArgs()
+    ~ScrollingBringingIntoViewEventArgs()
     {
         SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    // IScrollingPresenterBringingIntoViewEventArgs overrides
+    // IScrollingBringingIntoViewEventArgs overrides
     winrt::SnapPointsMode SnapPointsMode();
     void SnapPointsMode(winrt::SnapPointsMode snapPointsMode);
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
