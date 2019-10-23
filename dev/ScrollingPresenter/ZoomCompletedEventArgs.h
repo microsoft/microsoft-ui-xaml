@@ -21,7 +21,7 @@ public:
     }
 
     // IZoomCompletedEventArgs overrides
-    winrt::ZoomInfo ZoomInfo();
+    winrt::ScrollingZoomInfo ZoomInfo();
     ScrollingPresenterViewChangeResult Result();
 
     void ZoomFactorChangeId(int32_t zoomFactorChangeId);

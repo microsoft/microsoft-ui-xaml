@@ -10,7 +10,7 @@
 CppWinRTActivatableClassWithBasicFactory(ZoomOptions);
 
 ZoomOptions::ZoomOptions(
-    winrt::AnimationMode const& animationMode)
+    winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
@@ -19,8 +19,8 @@ ZoomOptions::ZoomOptions(
 }
 
 ZoomOptions::ZoomOptions(
-    winrt::AnimationMode const& animationMode,
-    winrt::SnapPointsMode const& snapPointsMode)
+    winrt::ScrollingAnimationMode const& animationMode,
+    winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str(),
@@ -30,24 +30,24 @@ ZoomOptions::ZoomOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::AnimationMode ZoomOptions::AnimationMode() const
+winrt::ScrollingAnimationMode ZoomOptions::AnimationMode() const
 {
     return m_animationMode;
 }
 
-void ZoomOptions::AnimationMode(winrt::AnimationMode const& animationMode)
+void ZoomOptions::AnimationMode(winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
     m_animationMode = animationMode;
 }
 
-winrt::SnapPointsMode ZoomOptions::SnapPointsMode() const
+winrt::ScrollingSnapPointsMode ZoomOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }
 
-void ZoomOptions::SnapPointsMode(winrt::SnapPointsMode const& snapPointsMode)
+void ZoomOptions::SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());

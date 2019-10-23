@@ -15,15 +15,15 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
+using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
 using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
@@ -723,7 +723,7 @@ namespace MUXControlsTestApp
         }
 
         public CompositionAnimation GetScrollAnimation(
-            ScrollInfo info,
+            ScrollingScrollInfo info,
             Vector2 currentPosition,
             CompositionAnimation defaultAnimation)
         {
@@ -734,7 +734,7 @@ namespace MUXControlsTestApp
         }
 
         public void OnScrollCompleted(
-            ScrollInfo info)
+            ScrollingScrollInfo info)
         {
             int offsetChangeId = info.OffsetsChangeId;
 
@@ -822,12 +822,12 @@ namespace MUXControlsTestApp
                         offset,
                         new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.Info.OffsetsChangeId))
+                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstScrollToIds.Add(e.Info.OffsetsChangeId);
+                    lstScrollToIds.Add(e.ScrollInfo.OffsetsChangeId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.ScrollInfo.OffsetsChangeId;
             }
             return -1;
         }
@@ -844,12 +844,12 @@ namespace MUXControlsTestApp
                         offsetDelta,
                         new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.Info.OffsetsChangeId))
+                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstScrollByIds.Add(e.Info.OffsetsChangeId);
+                    lstScrollByIds.Add(e.ScrollInfo.OffsetsChangeId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.ScrollInfo.OffsetsChangeId;
             }
             return -1;
         }
@@ -865,12 +865,12 @@ namespace MUXControlsTestApp
                         offsetVelocity,
                         inertiaDecayRate);
                 ScrollFromRequested(this, e);
-                if (e.Info.OffsetsChangeId != -1 && !lstScrollFromIds.Contains(e.Info.OffsetsChangeId))
+                if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollFromIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {
                     operationsCount++;
-                    lstScrollFromIds.Add(e.Info.OffsetsChangeId);
+                    lstScrollFromIds.Add(e.ScrollInfo.OffsetsChangeId);
                 }
-                return e.Info.OffsetsChangeId;
+                return e.ScrollInfo.OffsetsChangeId;
             }
             return -1;
         }

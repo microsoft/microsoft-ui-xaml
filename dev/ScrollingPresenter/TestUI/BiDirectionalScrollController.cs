@@ -14,10 +14,10 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ScrollInfo = Microsoft.UI.Xaml.Controls.ScrollInfo;
+using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
@@ -306,7 +306,7 @@ namespace MUXControlsTestApp.Utilities
             }
 
             public CompositionAnimation GetScrollAnimation(
-                ScrollInfo info,
+                ScrollingScrollInfo info,
                 Vector2 currentPosition,
                 CompositionAnimation defaultAnimation)
             {
@@ -317,7 +317,7 @@ namespace MUXControlsTestApp.Utilities
             }
 
             public void OnScrollCompleted(
-                ScrollInfo info)
+                ScrollingScrollInfo info)
             {
                 RaiseLogMessage(
                     "UniScrollController: OnScrollCompleted for Orientation=" + Orientation +
@@ -388,7 +388,7 @@ namespace MUXControlsTestApp.Utilities
                             offset,
                             new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
-                    return e.Info.OffsetsChangeId;
+                    return e.ScrollInfo.OffsetsChangeId;
                 }
                 return -1;
             }
@@ -406,7 +406,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetDelta,
                             new ScrollOptions(animationMode, SnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
-                    return e.Info.OffsetsChangeId;
+                    return e.ScrollInfo.OffsetsChangeId;
                 }
                 return -1;
             }
@@ -423,7 +423,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetVelocity,
                             inertiaDecayRate);
                     ScrollFromRequested(this, e);
-                    return e.Info.OffsetsChangeId;
+                    return e.ScrollInfo.OffsetsChangeId;
                 }
                 return -1;
             }

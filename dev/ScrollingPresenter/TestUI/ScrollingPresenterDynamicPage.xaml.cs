@@ -18,14 +18,14 @@ using Windows.UI.Xaml.Shapes;
 using MUXControlsTestApp.Utilities;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
+using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
@@ -437,26 +437,26 @@ namespace MUXControlsTestApp
             cmbHorizontalScrollMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollMode;
         }
 
-        private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollingPresenter != null)
-                scrollingPresenter.HorizontalScrollChainingMode = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
+                scrollingPresenter.HorizontalScrollChainMode = (ChainingMode)cmbHorizontalScrollChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbHorizontalScrollChainingMode()
+        private void UpdateCmbHorizontalScrollChainMode()
         {
-            cmbHorizontalScrollChainingMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollChainingMode;
+            cmbHorizontalScrollChainMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollChainMode;
         }
 
-        private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollingPresenter != null)
-                scrollingPresenter.HorizontalScrollRailingMode = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
+                scrollingPresenter.HorizontalScrollRailMode = (RailingMode)cmbHorizontalScrollRailMode.SelectedIndex;
         }
 
-        private void UpdateCmbHorizontalScrollRailingMode()
+        private void UpdateCmbHorizontalScrollRailMode()
         {
-            cmbHorizontalScrollRailingMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollRailingMode;
+            cmbHorizontalScrollRailMode.SelectedIndex = (int)scrollingPresenter.HorizontalScrollRailMode;
         }
 
         private void CmbVerticalScrollMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -470,26 +470,26 @@ namespace MUXControlsTestApp
             cmbVerticalScrollMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollMode;
         }
 
-        private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollingPresenter != null)
-                scrollingPresenter.VerticalScrollChainingMode = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
+                scrollingPresenter.VerticalScrollChainMode = (ChainingMode)cmbVerticalScrollChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbVerticalScrollChainingMode()
+        private void UpdateCmbVerticalScrollChainMode()
         {
-            cmbVerticalScrollChainingMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollChainingMode;
+            cmbVerticalScrollChainMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollChainMode;
         }
 
-        private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollingPresenter != null)
-                scrollingPresenter.VerticalScrollRailingMode = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
+                scrollingPresenter.VerticalScrollRailMode = (RailingMode)cmbVerticalScrollRailMode.SelectedIndex;
         }
 
-        private void UpdateCmbVerticalScrollRailingMode()
+        private void UpdateCmbVerticalScrollRailMode()
         {
-            cmbVerticalScrollRailingMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollRailingMode;
+            cmbVerticalScrollRailMode.SelectedIndex = (int)scrollingPresenter.VerticalScrollRailMode;
         }
 
         private void CmbZoomMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -503,15 +503,15 @@ namespace MUXControlsTestApp
             cmbZoomMode.SelectedIndex = (int)scrollingPresenter.ZoomMode;
         }
 
-        private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbZoomChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollingPresenter != null)
-                scrollingPresenter.ZoomChainingMode = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
+                scrollingPresenter.ZoomChainMode = (ChainingMode)cmbZoomChainMode.SelectedIndex;
         }
 
-        private void UpdateCmbZoomChainingMode()
+        private void UpdateCmbZoomChainMode()
         {
-            cmbZoomChainingMode.SelectedIndex = (int)scrollingPresenter.ZoomChainingMode;
+            cmbZoomChainMode.SelectedIndex = (int)scrollingPresenter.ZoomChainMode;
         }
 
         private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -521,25 +521,25 @@ namespace MUXControlsTestApp
                 switch (cmbIgnoredInputKind.SelectedIndex)
                 {
                     case 0:
-                        scrollingPresenter.IgnoredInputKind = InputKind.None;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.None;
                         break;
                     case 1:
-                        scrollingPresenter.IgnoredInputKind = InputKind.Touch;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.Touch;
                         break;
                     case 2:
-                        scrollingPresenter.IgnoredInputKind = InputKind.Pen;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.Pen;
                         break;
                     case 3:
-                        scrollingPresenter.IgnoredInputKind = InputKind.MouseWheel;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.MouseWheel;
                         break;
                     case 4:
-                        scrollingPresenter.IgnoredInputKind = InputKind.Keyboard;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.Keyboard;
                         break;
                     case 5:
-                        scrollingPresenter.IgnoredInputKind = InputKind.Gamepad;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.Gamepad;
                         break;
                     case 6:
-                        scrollingPresenter.IgnoredInputKind = InputKind.All;
+                        scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.All;
                         break;
                 }
             }
@@ -549,25 +549,25 @@ namespace MUXControlsTestApp
         {
             switch (scrollingPresenter.IgnoredInputKind)
             {
-                case InputKind.None:
+                case ScrollingInputKinds.None:
                     cmbIgnoredInputKind.SelectedIndex = 0;
                     break;
-                case InputKind.Touch:
+                case ScrollingInputKinds.Touch:
                     cmbIgnoredInputKind.SelectedIndex = 1;
                     break;
-                case InputKind.Pen:
+                case ScrollingInputKinds.Pen:
                     cmbIgnoredInputKind.SelectedIndex = 2;
                     break;
-                case InputKind.MouseWheel:
+                case ScrollingInputKinds.MouseWheel:
                     cmbIgnoredInputKind.SelectedIndex = 3;
                     break;
-                case InputKind.Keyboard:
+                case ScrollingInputKinds.Keyboard:
                     cmbIgnoredInputKind.SelectedIndex = 4;
                     break;
-                case InputKind.Gamepad:
+                case ScrollingInputKinds.Gamepad:
                     cmbIgnoredInputKind.SelectedIndex = 5;
                     break;
-                case InputKind.All:
+                case ScrollingInputKinds.All:
                     cmbIgnoredInputKind.SelectedIndex = 6;
                     break;
             }
@@ -2477,13 +2477,13 @@ namespace MUXControlsTestApp
 
                 UpdateCmbContentOrientation();
                 UpdateCmbHorizontalScrollMode();
-                UpdateCmbHorizontalScrollChainingMode();
-                UpdateCmbHorizontalScrollRailingMode();
+                UpdateCmbHorizontalScrollChainMode();
+                UpdateCmbHorizontalScrollRailMode();
                 UpdateCmbVerticalScrollMode();
-                UpdateCmbVerticalScrollChainingMode();
-                UpdateCmbVerticalScrollRailingMode();
+                UpdateCmbVerticalScrollChainMode();
+                UpdateCmbVerticalScrollRailMode();
                 UpdateCmbZoomMode();
-                UpdateCmbZoomChainingMode();
+                UpdateCmbZoomChainMode();
                 UpdateCmbIgnoredInputKind();
                 UpdateCmbContentHorizontalAlignment();
                 UpdateCmbContentVerticalAlignment();

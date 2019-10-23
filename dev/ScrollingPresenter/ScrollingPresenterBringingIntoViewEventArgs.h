@@ -20,12 +20,12 @@ public:
     }
 
     // IScrollingPresenterBringingIntoViewEventArgs overrides
-    winrt::SnapPointsMode SnapPointsMode();
-    void SnapPointsMode(winrt::SnapPointsMode snapPointsMode);
+    winrt::ScrollingSnapPointsMode SnapPointsMode();
+    void SnapPointsMode(winrt::ScrollingSnapPointsMode snapPointsMode);
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
-    winrt::ScrollInfo ScrollInfo();
+    winrt::ScrollingScrollInfo ScrollInfo();
     bool Cancel();
     void Cancel(bool value); 
 
@@ -49,7 +49,7 @@ public:
     void TargetOffsets(double targetHorizontalOffset, double targetVerticalOffset);
 
 private:
-    winrt::SnapPointsMode m_snapPointsMode{ winrt::SnapPointsMode::Ignore };
+    winrt::ScrollingSnapPointsMode m_snapPointsMode{ winrt::ScrollingSnapPointsMode::Ignore };
     winrt::BringIntoViewRequestedEventArgs m_requestEventArgs{ nullptr };
     double m_targetHorizontalOffset{ 0.0 };
     double m_targetVerticalOffset{ 0.0 };

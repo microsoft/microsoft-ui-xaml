@@ -85,7 +85,7 @@ void ScrollBarController::SetExpressionAnimationSources(
 }
 
 void ScrollBarController::SetScrollMode(
-    winrt::ScrollMode const& scrollMode)
+    winrt::ScrollingScrollMode const& scrollMode)
 {
     SCROLLINGVIEW_TRACE_INFO(
         nullptr,
@@ -168,7 +168,7 @@ void ScrollBarController::SetValues(
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
-    winrt::ScrollInfo info,
+    winrt::ScrollingScrollInfo info,
     winrt::float2 const& currentPosition,
     winrt::CompositionAnimation const& defaultAnimation)
 {
@@ -179,7 +179,7 @@ winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
 }
 
 void ScrollBarController::OnScrollCompleted(
-    winrt::ScrollInfo info)
+    winrt::ScrollingScrollInfo info)
 {
     SCROLLINGVIEW_TRACE_INFO(
         nullptr,
@@ -332,7 +332,7 @@ void ScrollBarController::UpdateAreInteractionsAllowed()
         m_scrollBar &&
         m_scrollBar.IsEnabled() &&
         m_scrollBar.Maximum() > m_scrollBar.Minimum() &&
-        m_scrollMode != winrt::ScrollMode::Disabled;
+        m_scrollMode != winrt::ScrollingScrollMode::Disabled;
 
     if (oldAreInteractionsAllowed != m_areInteractionsAllowed)
     {
@@ -425,7 +425,7 @@ void ScrollBarController::OnScroll(
         return;
     }
 
-    if (m_scrollMode == winrt::ScrollMode::Disabled && scrollEventType != winrt::ScrollEventType::ThumbPosition)
+    if (m_scrollMode == winrt::ScrollingScrollMode::Disabled && scrollEventType != winrt::ScrollEventType::ThumbPosition)
     {
         // This ScrollBar is not interactive. Restore its previous Value.
         m_scrollBar.Value(m_lastScrollBarValue);
@@ -541,8 +541,8 @@ bool ScrollBarController::RaiseScrollToRequested(
     }
 
     auto options = winrt::make_self<ScrollOptions>(
-        winrt::AnimationMode::Disabled,
-        winrt::SnapPointsMode::Ignore);
+        winrt::ScrollingAnimationMode::Disabled,
+        winrt::ScrollingSnapPointsMode::Ignore);
 
     auto scrollToRequestedEventArgs = winrt::make_self<ScrollControllerScrollToRequestedEventArgs>(
         offset,
@@ -550,7 +550,7 @@ bool ScrollBarController::RaiseScrollToRequested(
 
     m_scrollToRequested(*this, *scrollToRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().Info().OffsetsChangeId;
+    int32_t offsetChangeId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollTo)
@@ -574,8 +574,8 @@ bool ScrollBarController::RaiseScrollByRequested(
     }
 
     auto options = winrt::make_self<ScrollOptions>(
-        winrt::AnimationMode::Disabled,
-        winrt::SnapPointsMode::Ignore);
+        winrt::ScrollingAnimationMode::Disabled,
+        winrt::ScrollingSnapPointsMode::Ignore);
 
     auto scrollByRequestedEventArgs = winrt::make_self<ScrollControllerScrollByRequestedEventArgs>(
         offsetChange,
@@ -583,7 +583,7 @@ bool ScrollBarController::RaiseScrollByRequested(
 
     m_scrollByRequested(*this, *scrollByRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().Info().OffsetsChangeId;
+    int32_t offsetChangeId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollBy)
@@ -623,7 +623,7 @@ bool ScrollBarController::RaiseScrollFromRequested(
 
     m_scrollFromRequested(*this, *scrollFromRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollFromRequestedEventArgs.as<winrt::ScrollControllerScrollFromRequestedEventArgs>().Info().OffsetsChangeId;
+    int32_t offsetChangeId = scrollFromRequestedEventArgs.as<winrt::ScrollControllerScrollFromRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollFrom)

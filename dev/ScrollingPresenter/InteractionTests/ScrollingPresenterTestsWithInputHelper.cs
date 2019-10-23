@@ -1050,11 +1050,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Comment("Retrieving scrollingPresenter1");
                     ScrollingPresenter scrollingPresenter1UIObject = new ScrollingPresenter(FindElement.ByName("scrollingPresenter1"));
 
-                    Log.Comment("Retrieving cmbHorizontalScrollChainingMode1");
-                    ComboBox cmbHorizontalScrollChainingMode1 = new ComboBox(FindElement.ByName("cmbHorizontalScrollChainingMode1"));
+                    Log.Comment("Retrieving cmbHorizontalScrollChainMode1");
+                    ComboBox cmbHorizontalScrollChainMode1 = new ComboBox(FindElement.ByName("cmbHorizontalScrollChainMode1"));
 
-                    Log.Comment("Retrieving cmbVerticalScrollChainingMode1");
-                    ComboBox cmbVerticalScrollChainingMode1 = new ComboBox(FindElement.ByName("cmbVerticalScrollChainingMode1"));
+                    Log.Comment("Retrieving cmbVerticalScrollChainMode1");
+                    ComboBox cmbVerticalScrollChainMode1 = new ComboBox(FindElement.ByName("cmbVerticalScrollChainMode1"));
 
                     // Tapping button before attempting pan operation to guarantee effective touch input
                     TapResetViewsButton();
@@ -1076,12 +1076,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     if (useChainingModeAlways)
                     {
                         Log.Comment("Changing horizontal chaining to Always");
-                        cmbHorizontalScrollChainingMode1.SelectItemByName("Always");
-                        Log.Comment("Selection is now {0}", cmbHorizontalScrollChainingMode1.Selection[0].Name);
+                        cmbHorizontalScrollChainMode1.SelectItemByName("Always");
+                        Log.Comment("Selection is now {0}", cmbHorizontalScrollChainMode1.Selection[0].Name);
 
                         Log.Comment("Changing vertical chaining to Always");
-                        cmbVerticalScrollChainingMode1.SelectItemByName("Always");
-                        Log.Comment("Selection is now {0}", cmbVerticalScrollChainingMode1.Selection[0].Name);
+                        cmbVerticalScrollChainMode1.SelectItemByName("Always");
+                        Log.Comment("Selection is now {0}", cmbVerticalScrollChainMode1.Selection[0].Name);
                     }
 
                     Log.Comment("Panning scrollingPresenter1 horizontally");

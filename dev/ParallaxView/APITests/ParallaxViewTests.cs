@@ -30,12 +30,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
+using ScrollingInteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
@@ -1503,7 +1503,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
             scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            scrollingPresenter.ZoomMode = ZoomMode.Disabled;
+            scrollingPresenter.ZoomMode = ScrollingZoomMode.Disabled;
             scrollingPresenter.Content = rectangleScrollingPresenterContent;
 
             Verify.IsNotNull(rectanglePVChild);
@@ -1570,7 +1570,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
             scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            scrollingPresenter.ZoomMode = ZoomMode.Disabled;
+            scrollingPresenter.ZoomMode = ScrollingZoomMode.Disabled;
 
             Grid gridScrollingPresenterContent = new Grid();
             scrollingPresenter.Content = gridScrollingPresenterContent;
@@ -1938,7 +1938,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     try
                     { 
                         Log.Comment("ScrollingPresenter.StateChanged - State={0}", scrollingPresenter.State);
-                        if (scrollingPresenter.State == InteractionState.Idle)
+                        if (scrollingPresenter.State == ScrollingInteractionState.Idle)
                         {
                             Log.Comment("ScrollingPresenter - idling notification. Final view: {0}, {1}, {2}", scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
                             scrollingPresenterStateChangedEvent.Set();
@@ -1957,8 +1957,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         (float)zoomFactor,
                         Vector2.Zero,
                         new ZoomOptions(
-                            disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled,
-                            SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                            disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
+                            ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
 
@@ -1969,8 +1969,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         horizontalOffset == null ? scrollingPresenter.HorizontalOffset : (double)horizontalOffset,
                         verticalOffset == null ? scrollingPresenter.VerticalOffset : (double)verticalOffset,
                         new ScrollOptions(
-                            disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled, 
-                            SnapPointsMode.Ignore)).OffsetsChangeId;
+                            disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
+                            ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
             });

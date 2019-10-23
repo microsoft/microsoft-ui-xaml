@@ -5,9 +5,9 @@
 #include "common.h"
 #include "ZoomCompletedEventArgs.h"
 
-winrt::ZoomInfo ZoomCompletedEventArgs::ZoomInfo()
+winrt::ScrollingZoomInfo ZoomCompletedEventArgs::ZoomInfo()
 {
-    return winrt::ZoomInfo{ m_zoomFactorChangeId };
+    return winrt::ScrollingZoomInfo{ m_zoomFactorChangeId };
 }
 
 ScrollingPresenterViewChangeResult ZoomCompletedEventArgs::Result()

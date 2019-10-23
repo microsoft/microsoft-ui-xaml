@@ -39,7 +39,7 @@ public:
         winrt::hstring const& multiplierPropertyName);
 
     void SetScrollMode(
-        winrt::ScrollMode const& scrollMode);
+        winrt::ScrollingScrollMode const& scrollMode);
 
     void SetValues(
         double minOffset,
@@ -48,12 +48,12 @@ public:
         double viewport);
 
     winrt::CompositionAnimation GetScrollAnimation(
-        winrt::ScrollInfo info,
+        winrt::ScrollingScrollInfo info,
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
     void OnScrollCompleted(
-        winrt::ScrollInfo info);
+        winrt::ScrollingScrollInfo info);
 
     winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);
     void ScrollToRequested(winrt::event_token const& token);
@@ -114,7 +114,7 @@ private:
     static constexpr double s_minMaxEpsilon{ 0.001 };
 
     winrt::ScrollBar m_scrollBar;
-    winrt::ScrollMode m_scrollMode{ winrt::ScrollMode::Disabled };
+    winrt::ScrollingScrollMode m_scrollMode{ winrt::ScrollingScrollMode::Disabled };
     int32_t m_lastOffsetChangeIdForScrollTo{ -1 };
     int32_t m_lastOffsetChangeIdForScrollBy{ -1 };
     int32_t m_lastOffsetChangeIdForScrollFrom{ -1 };

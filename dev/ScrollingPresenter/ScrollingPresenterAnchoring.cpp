@@ -87,7 +87,7 @@ void ScrollingPresenter::IsAnchoring(
     // removing the check is the correct fix due to dcomp bug 17523225. I filed a 
     // tracking bug to follow up once the dcomp bug is fixed.
     // Bug 17523266: ScrollingPresenter is not anchoring during mouse wheel
-    if (!m_interactionTracker || m_state == winrt::InteractionState::Animation)
+    if (!m_interactionTracker || m_state == winrt::ScrollingInteractionState::Animation)
     {
         // Skip calls to SetContentLayoutOffsetX / SetContentLayoutOffsetY when the InteractionTracker has not been set up yet,
         // or when it is performing a custom animation because if would result in a visual flicker.

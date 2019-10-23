@@ -18,29 +18,29 @@ public:
     ~ScrollingView();
 
     // Properties' default values.
-    static const winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility s_defaultHorizontalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility::Auto };
-    static const winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility s_defaultVerticalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollBarVisibility::Auto };
-    static const winrt::ChainingMode s_defaultHorizontalScrollChainingMode{ winrt::ChainingMode::Auto };
-    static const winrt::ChainingMode s_defaultVerticalScrollChainingMode{ winrt::ChainingMode::Auto };
-    static const winrt::RailingMode s_defaultHorizontalScrollRailingMode{ winrt::RailingMode::Enabled };
-    static const winrt::RailingMode s_defaultVerticalScrollRailingMode{ winrt::RailingMode::Enabled };    
+    static const winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility s_defaultHorizontalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility::Auto };
+    static const winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility s_defaultVerticalScrollBarVisibility{ winrt::Microsoft::UI::Xaml::Controls::ScrollingScrollBarVisibility::Auto };
+    static const winrt::ScrollingChainMode s_defaultHorizontalScrollChainMode{ winrt::ScrollingChainMode::Auto };
+    static const winrt::ScrollingChainMode s_defaultVerticalScrollChainMode{ winrt::ScrollingChainMode::Auto };
+    static const winrt::ScrollingRailMode s_defaultHorizontalScrollRailMode{ winrt::ScrollingRailMode::Enabled };
+    static const winrt::ScrollingRailMode s_defaultVerticalScrollRailMode{ winrt::ScrollingRailMode::Enabled };
     static const winrt::Visibility s_defaultComputedHorizontalScrollBarVisibility{ winrt::Visibility::Collapsed };
     static const winrt::Visibility s_defaultComputedVerticalScrollBarVisibility{ winrt::Visibility::Collapsed };
 #ifdef USE_SCROLLMODE_AUTO
-    static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Auto };
-    static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Auto };
-    static const winrt::ScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollMode::Disabled };
-    static const winrt::ScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollMode::Disabled };
+    static const winrt::ScrollingScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollingScrollMode::Auto };
+    static const winrt::ScrollingScrollMode s_defaultVerticalScrollMode{ winrt::ScrollingScrollMode::Auto };
+    static const winrt::ScrollingScrollMode s_defaultComputedHorizontalScrollMode{ winrt::ScrollingScrollMode::Disabled };
+    static const winrt::ScrollingScrollMode s_defaultComputedVerticalScrollMode{ winrt::ScrollingScrollMode::Disabled };
 #else
-    static const winrt::ScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollMode::Enabled };
-    static const winrt::ScrollMode s_defaultVerticalScrollMode{ winrt::ScrollMode::Enabled };
+    static const winrt::ScrollingScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollingScrollMode::Enabled };
+    static const winrt::ScrollingScrollMode s_defaultVerticalScrollMode{ winrt::ScrollingScrollMode::Enabled };
 #endif
-    static const winrt::ScrollInfo s_noOpScrollInfo;
-    static const winrt::ZoomInfo s_noOpZoomInfo;
-    static const winrt::ChainingMode s_defaultZoomChainingMode{ winrt::ChainingMode::Auto };
-    static const winrt::ZoomMode s_defaultZoomMode{ winrt::ZoomMode::Disabled };
-    static const winrt::InputKind s_defaultIgnoredInputKind{ winrt::InputKind::None };
-    static const winrt::ContentOrientation s_defaultContentOrientation{ winrt::ContentOrientation::Vertical };
+    static const winrt::ScrollingScrollInfo s_noOpScrollInfo;
+    static const winrt::ScrollingZoomInfo s_noOpZoomInfo;
+    static const winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
+    static const winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
+    static const winrt::ScrollingInputKinds s_defaultIgnoredInputKind{ winrt::ScrollingInputKinds::None };
+    static const winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
     static constexpr bool s_defaultAnchorAtExtent{ true };
@@ -60,24 +60,24 @@ public:
     double ScrollableWidth();
     double ScrollableHeight();
 
-    winrt::InteractionState State();
+    winrt::ScrollingInteractionState State();
 
-    winrt::InputKind IgnoredInputKind();
-    void IgnoredInputKind(winrt::InputKind const& value);
+    winrt::ScrollingInputKinds IgnoredInputKind();
+    void IgnoredInputKind(winrt::ScrollingInputKinds const& value);
 
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
-    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
-    winrt::ScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
-    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    winrt::ScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
-    winrt::ScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
-    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
-    winrt::ZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
+    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollOptions const& options);
+    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollOptions const& options);
+    winrt::ScrollingScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ZoomOptions const& options);
+    winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
     // Invoked by ScrollingViewTestHooks
@@ -224,7 +224,7 @@ private:
     void UpdateScrollingPresenterVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
-    bool IsInputKindIgnored(winrt::InputKind const& inputKind);
+    bool IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind);
 
     bool AreAllScrollControllersCollapsed() const;
     bool AreBothScrollControllersVisible() const;

@@ -7,10 +7,10 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 

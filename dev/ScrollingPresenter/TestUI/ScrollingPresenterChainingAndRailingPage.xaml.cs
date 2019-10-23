@@ -8,10 +8,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
 using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
@@ -85,14 +85,14 @@ namespace MUXControlsTestApp
                 this.txtResetStatus.Text = "Views reset";
         }
 
-        private void CmbHorizontalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.HorizontalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.HorizontalScrollChainMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -104,14 +104,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbVerticalScrollChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.VerticalScrollChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.VerticalScrollChainMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -123,14 +123,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbZoomChainingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbZoomChainMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.ZoomChainingMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.ZoomChainMode = (ChainingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -142,14 +142,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbHorizontalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbHorizontalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.HorizontalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollingPresenter.HorizontalScrollRailMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -161,14 +161,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void CmbVerticalScrollRailingMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbVerticalScrollRailMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ComboBox cmb = sender as ComboBox;
             string suffix = cmb.Name.Substring(cmb.Name.Length - 1);
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.VerticalScrollRailingMode = (RailingMode)cmb.SelectedIndex;
+                scrollingPresenter.VerticalScrollRailMode = (RailingMode)cmb.SelectedIndex;
             }
             else
             {
@@ -212,25 +212,25 @@ namespace MUXControlsTestApp
             if (scrollingPresenter == null)
                 return;
 
-            ComboBox cmb = FindName("cmbHorizontalScrollChainingMode" + suffix) as ComboBox;
+            ComboBox cmb = FindName("cmbHorizontalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollingPresenter.HorizontalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollingPresenter.HorizontalScrollChainMode;
 
-            cmb = FindName("cmbVerticalScrollChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollingPresenter.VerticalScrollChainingMode;
+                cmb.SelectedIndex = (int)scrollingPresenter.VerticalScrollChainMode;
 
-            cmb = FindName("cmbZoomChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbZoomChainMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollingPresenter.ZoomChainingMode;
+                cmb.SelectedIndex = (int)scrollingPresenter.ZoomChainMode;
 
-            cmb = FindName("cmbHorizontalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbHorizontalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollingPresenter.HorizontalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollingPresenter.HorizontalScrollRailMode;
 
-            cmb = FindName("cmbVerticalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
-                cmb.SelectedIndex = (int)scrollingPresenter.VerticalScrollRailingMode;
+                cmb.SelectedIndex = (int)scrollingPresenter.VerticalScrollRailMode;
         }
 
         private void InitializeUIFromScrollViewer(string suffix)
@@ -239,23 +239,23 @@ namespace MUXControlsTestApp
             if (scrollViewer == null)
                 return;
 
-            ComboBox cmb = FindName("cmbHorizontalScrollChainingMode" + suffix) as ComboBox;
+            ComboBox cmb = FindName("cmbHorizontalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsHorizontalScrollChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbVerticalScrollChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsVerticalScrollChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbZoomChainingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbZoomChainMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsZoomChainingEnabled ? 0 : 1;
 
-            cmb = FindName("cmbHorizontalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbHorizontalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsHorizontalRailEnabled ? 0 : 1;
 
-            cmb = FindName("cmbVerticalScrollRailingMode" + suffix) as ComboBox;
+            cmb = FindName("cmbVerticalScrollRailMode" + suffix) as ComboBox;
             if (cmb != null)
                 cmb.SelectedIndex = scrollViewer.IsVerticalRailEnabled ? 0 : 1;
         }

@@ -111,7 +111,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controlsPrimitives:ScrollingPresenter x:Name="scrollingPresenter51" AutomationProperties.Name="ScrollingPresenter51" 
-                HorizontalAnchorRatio="1.0" VerticalAnchorRatio="1.0" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                HorizontalAnchorRatio="1.0" VerticalAnchorRatio="1.0" HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled">
                 <Image x:Name="img4" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controlsPrimitives:ScrollingPresenter>
         </Border>
@@ -150,7 +150,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controlsPrimitives:ScrollingPresenter x:Name="scrollingPresenter52" AutomationProperties.Name="ScrollingPresenter52" 
-                HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img42" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controlsPrimitives:ScrollingPresenter>
         </Border>

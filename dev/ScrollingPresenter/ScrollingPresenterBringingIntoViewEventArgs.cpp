@@ -6,12 +6,12 @@
 #include "ScrollingPresenterTrace.h"
 #include "ScrollingPresenterBringingIntoViewEventArgs.h"
 
-winrt::SnapPointsMode ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode()
+winrt::ScrollingSnapPointsMode ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode()
 {
     return m_snapPointsMode;
 }
 
-void ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode(winrt::SnapPointsMode snapPointsMode)
+void ScrollingPresenterBringingIntoViewEventArgs::SnapPointsMode(winrt::ScrollingSnapPointsMode snapPointsMode)
 {
     m_snapPointsMode = snapPointsMode;
 }
@@ -31,9 +31,9 @@ double ScrollingPresenterBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-winrt::ScrollInfo ScrollingPresenterBringingIntoViewEventArgs::ScrollInfo()
+winrt::ScrollingScrollInfo ScrollingPresenterBringingIntoViewEventArgs::ScrollInfo()
 {
-    return winrt::ScrollInfo{ m_offsetsChangeId };
+    return winrt::ScrollingScrollInfo{ m_offsetsChangeId };
 }
 
 bool ScrollingPresenterBringingIntoViewEventArgs::Cancel()

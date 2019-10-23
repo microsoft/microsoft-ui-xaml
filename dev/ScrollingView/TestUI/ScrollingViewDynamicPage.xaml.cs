@@ -14,13 +14,13 @@ using Windows.UI.Xaml.Shapes;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ZoomMode;
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
-using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
+using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 using ScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollAnimationStartingEventArgs;
 using ZoomAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ZoomAnimationStartingEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
@@ -114,14 +114,14 @@ namespace MUXControlsTestApp
             UpdateHorizontalScrollMode();
         }
 
-        private void BtnGetHorizontalScrollChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnGetHorizontalScrollChainMode_Click(object sender, RoutedEventArgs e)
         {
-            UpdateHorizontalScrollChainingMode();
+            UpdateHorizontalScrollChainMode();
         }
 
-        private void BtnGetHorizontalScrollRailingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnGetHorizontalScrollRailMode_Click(object sender, RoutedEventArgs e)
         {
-            UpdateHorizontalScrollRailingMode();
+            UpdateHorizontalScrollRailMode();
         }
 
         private void BtnGetVerticalScrollMode_Click(object sender, RoutedEventArgs e)
@@ -129,14 +129,14 @@ namespace MUXControlsTestApp
             UpdateVerticalScrollMode();
         }
 
-        private void BtnGetVerticalScrollChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnGetVerticalScrollChainMode_Click(object sender, RoutedEventArgs e)
         {
-            UpdateVerticalScrollChainingMode();
+            UpdateVerticalScrollChainMode();
         }
 
-        private void BtnGetVerticalScrollRailingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnGetVerticalScrollRailMode_Click(object sender, RoutedEventArgs e)
         {
-            UpdateVerticalScrollRailingMode();
+            UpdateVerticalScrollRailMode();
         }
 
         private void BtnGetZoomMode_Click(object sender, RoutedEventArgs e)
@@ -144,9 +144,9 @@ namespace MUXControlsTestApp
             UpdateZoomMode();
         }
 
-        private void BtnGetZoomChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnGetZoomChainMode_Click(object sender, RoutedEventArgs e)
         {
-            UpdateZoomChainingMode();
+            UpdateZoomChainMode();
         }
 
         private void BtnGetIgnoredInputKind_Click(object sender, RoutedEventArgs e)
@@ -214,12 +214,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetHorizontalScrollChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnSetHorizontalScrollChainMode_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbHorizontalScrollChainingMode.SelectedIndex;
-                scrollingView.HorizontalScrollChainingMode = scm;
+                ChainingMode scm = (ChainingMode)cmbHorizontalScrollChainMode.SelectedIndex;
+                scrollingView.HorizontalScrollChainMode = scm;
             }
             catch (Exception ex)
             {
@@ -228,12 +228,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetHorizontalScrollRailingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnSetHorizontalScrollRailMode_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                RailingMode srm = (RailingMode)cmbHorizontalScrollRailingMode.SelectedIndex;
-                scrollingView.HorizontalScrollRailingMode = srm;
+                RailingMode srm = (RailingMode)cmbHorizontalScrollRailMode.SelectedIndex;
+                scrollingView.HorizontalScrollRailMode = srm;
 
                 wuxScrollViewer.IsHorizontalRailEnabled = MuxRailModeToWuxRailMode(srm);
             }
@@ -260,12 +260,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetVerticalScrollChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnSetVerticalScrollChainMode_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbVerticalScrollChainingMode.SelectedIndex;
-                scrollingView.VerticalScrollChainingMode = scm;
+                ChainingMode scm = (ChainingMode)cmbVerticalScrollChainMode.SelectedIndex;
+                scrollingView.VerticalScrollChainMode = scm;
             }
             catch (Exception ex)
             {
@@ -274,12 +274,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetVerticalScrollRailingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnSetVerticalScrollRailMode_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                RailingMode srm = (RailingMode)cmbVerticalScrollRailingMode.SelectedIndex;
-                scrollingView.VerticalScrollRailingMode = srm;
+                RailingMode srm = (RailingMode)cmbVerticalScrollRailMode.SelectedIndex;
+                scrollingView.VerticalScrollRailMode = srm;
 
                 wuxScrollViewer.IsVerticalRailEnabled = MuxRailModeToWuxRailMode(srm);
             }
@@ -306,12 +306,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetZoomChainingMode_Click(object sender, RoutedEventArgs e)
+        private void BtnSetZoomChainMode_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbZoomChainingMode.SelectedIndex;
-                scrollingView.ZoomChainingMode = scm;
+                ChainingMode scm = (ChainingMode)cmbZoomChainMode.SelectedIndex;
+                scrollingView.ZoomChainMode = scm;
             }
             catch (Exception ex)
             {
@@ -324,30 +324,30 @@ namespace MUXControlsTestApp
         {
             try
             {
-                InputKind ignoredInputKind;
+                ScrollingInputKinds ignoredInputKind;
 
                 switch (cmbIgnoredInputKind.SelectedIndex)
                 {
                     case 0:
-                        ignoredInputKind = InputKind.None;
+                        ignoredInputKind = ScrollingInputKinds.None;
                         break;
                     case 1:
-                        ignoredInputKind = InputKind.Touch;
+                        ignoredInputKind = ScrollingInputKinds.Touch;
                         break;
                     case 2:
-                        ignoredInputKind = InputKind.Pen;
+                        ignoredInputKind = ScrollingInputKinds.Pen;
                         break;
                     case 3:
-                        ignoredInputKind = InputKind.MouseWheel;
+                        ignoredInputKind = ScrollingInputKinds.MouseWheel;
                         break;
                     case 4:
-                        ignoredInputKind = InputKind.Keyboard;
+                        ignoredInputKind = ScrollingInputKinds.Keyboard;
                         break;
                     case 5:
-                        ignoredInputKind = InputKind.Gamepad;
+                        ignoredInputKind = ScrollingInputKinds.Gamepad;
                         break;
                     default:
-                        ignoredInputKind = InputKind.All;
+                        ignoredInputKind = ScrollingInputKinds.All;
                         break;
                 }
 
@@ -1322,11 +1322,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateHorizontalScrollChainingMode()
+        private void UpdateHorizontalScrollChainMode()
         {
             try
             {
-                cmbHorizontalScrollChainingMode.SelectedIndex = (int)scrollingView.HorizontalScrollChainingMode;
+                cmbHorizontalScrollChainMode.SelectedIndex = (int)scrollingView.HorizontalScrollChainMode;
             }
             catch (Exception ex)
             {
@@ -1335,11 +1335,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateHorizontalScrollRailingMode()
+        private void UpdateHorizontalScrollRailMode()
         {
             try
             {
-                cmbHorizontalScrollRailingMode.SelectedIndex = (int)scrollingView.HorizontalScrollRailingMode;
+                cmbHorizontalScrollRailMode.SelectedIndex = (int)scrollingView.HorizontalScrollRailMode;
             }
             catch (Exception ex)
             {
@@ -1361,11 +1361,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateVerticalScrollChainingMode()
+        private void UpdateVerticalScrollChainMode()
         {
             try
             {
-                cmbVerticalScrollChainingMode.SelectedIndex = (int)scrollingView.VerticalScrollChainingMode;
+                cmbVerticalScrollChainMode.SelectedIndex = (int)scrollingView.VerticalScrollChainMode;
             }
             catch (Exception ex)
             {
@@ -1374,11 +1374,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateVerticalScrollRailingMode()
+        private void UpdateVerticalScrollRailMode()
         {
             try
             {
-                cmbVerticalScrollRailingMode.SelectedIndex = (int)scrollingView.VerticalScrollRailingMode;
+                cmbVerticalScrollRailMode.SelectedIndex = (int)scrollingView.VerticalScrollRailMode;
             }
             catch (Exception ex)
             {
@@ -1426,11 +1426,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateZoomChainingMode()
+        private void UpdateZoomChainMode()
         {
             try
             {
-                cmbZoomChainingMode.SelectedIndex = (int)scrollingView.ZoomChainingMode;
+                cmbZoomChainMode.SelectedIndex = (int)scrollingView.ZoomChainMode;
             }
             catch (Exception ex)
             {
@@ -1445,25 +1445,25 @@ namespace MUXControlsTestApp
             {
                 switch (scrollingView.IgnoredInputKind)
                 {
-                    case InputKind.None:
+                    case ScrollingInputKinds.None:
                         cmbIgnoredInputKind.SelectedIndex = 0;
                         break;
-                    case InputKind.Touch:
+                    case ScrollingInputKinds.Touch:
                         cmbIgnoredInputKind.SelectedIndex = 1;
                         break;
-                    case InputKind.Pen:
+                    case ScrollingInputKinds.Pen:
                         cmbIgnoredInputKind.SelectedIndex = 2;
                         break;
-                    case InputKind.MouseWheel:
+                    case ScrollingInputKinds.MouseWheel:
                         cmbIgnoredInputKind.SelectedIndex = 3;
                         break;
-                    case InputKind.Keyboard:
+                    case ScrollingInputKinds.Keyboard:
                         cmbIgnoredInputKind.SelectedIndex = 4;
                         break;
-                    case InputKind.Gamepad:
+                    case ScrollingInputKinds.Gamepad:
                         cmbIgnoredInputKind.SelectedIndex = 5;
                         break;
-                    case InputKind.All:
+                    case ScrollingInputKinds.All:
                         cmbIgnoredInputKind.SelectedIndex = 6;
                         break;
                     default:
@@ -1701,13 +1701,13 @@ namespace MUXControlsTestApp
 
                 UpdateContentOrientation();
                 UpdateHorizontalScrollMode();
-                UpdateHorizontalScrollChainingMode();
-                UpdateHorizontalScrollRailingMode();
+                UpdateHorizontalScrollChainMode();
+                UpdateHorizontalScrollRailMode();
                 UpdateVerticalScrollMode();
-                UpdateVerticalScrollChainingMode();
-                UpdateVerticalScrollRailingMode();
+                UpdateVerticalScrollChainMode();
+                UpdateVerticalScrollRailMode();
                 UpdateZoomMode();
-                UpdateZoomChainingMode();
+                UpdateZoomChainMode();
                 UpdateIgnoredInputKind();
                 UpdateMinZoomFactor();
                 UpdateMaxZoomFactor();

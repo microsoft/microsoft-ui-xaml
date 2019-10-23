@@ -7,15 +7,15 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
-using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
+using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
 using ScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollCompletedEventArgs;
 using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
 using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
 using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -310,25 +310,25 @@ namespace MUXControlsTestApp
 
                     switch (scrollingView.IgnoredInputKind)
                     {
-                        case InputKind.None:
+                        case ScrollingInputKinds.None:
                             cmbIgnoredInputKind.SelectedIndex = 1;
                             break;
-                        case InputKind.Touch:
+                        case ScrollingInputKinds.Touch:
                             cmbIgnoredInputKind.SelectedIndex = 2;
                             break;
-                        case InputKind.Pen:
+                        case ScrollingInputKinds.Pen:
                             cmbIgnoredInputKind.SelectedIndex = 3;
                             break;
-                        case InputKind.MouseWheel:
+                        case ScrollingInputKinds.MouseWheel:
                             cmbIgnoredInputKind.SelectedIndex = 4;
                             break;
-                        case InputKind.Keyboard:
+                        case ScrollingInputKinds.Keyboard:
                             cmbIgnoredInputKind.SelectedIndex = 5;
                             break;
-                        case InputKind.Gamepad:
+                        case ScrollingInputKinds.Gamepad:
                             cmbIgnoredInputKind.SelectedIndex = 6;
                             break;
-                        case InputKind.All:
+                        case ScrollingInputKinds.All:
                             cmbIgnoredInputKind.SelectedIndex = 7;
                             break;
                         default:
@@ -341,7 +341,7 @@ namespace MUXControlsTestApp
 
         private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            InputKind ignoredInputKind;
+            ScrollingInputKinds ignoredInputKind;
             ScrollingView scrollingView = SelectedScrollingView;
 
             switch (cmbIgnoredInputKind.SelectedIndex)
@@ -349,25 +349,25 @@ namespace MUXControlsTestApp
                 case 0:
                     return;
                 case 1:
-                    ignoredInputKind = InputKind.None;
+                    ignoredInputKind = ScrollingInputKinds.None;
                     break;
                 case 2:
-                    ignoredInputKind = InputKind.Touch;
+                    ignoredInputKind = ScrollingInputKinds.Touch;
                     break;
                 case 3:
-                    ignoredInputKind = InputKind.Pen;
+                    ignoredInputKind = ScrollingInputKinds.Pen;
                     break;
                 case 4:
-                    ignoredInputKind = InputKind.MouseWheel;
+                    ignoredInputKind = ScrollingInputKinds.MouseWheel;
                     break;
                 case 5:
-                    ignoredInputKind = InputKind.Keyboard;
+                    ignoredInputKind = ScrollingInputKinds.Keyboard;
                     break;
                 case 6:
-                    ignoredInputKind = InputKind.Gamepad;
+                    ignoredInputKind = ScrollingInputKinds.Gamepad;
                     break;
                 default:
-                    ignoredInputKind = InputKind.All;
+                    ignoredInputKind = ScrollingInputKinds.All;
                     break;
             }
 

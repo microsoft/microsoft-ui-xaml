@@ -135,7 +135,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="2" Grid.Column="4">
             <controls:ScrollingView x:Name="scrollingView51" AutomationProperties.Name="scrollingView51" IsTabStop="True"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled">
+                ContentOrientation="None" HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled">
                 <Image x:Name="img51" AutomationProperties.Name="img51" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollingView>
         </Border>
@@ -174,7 +174,7 @@
         </Border>
         <Border Margin="1" Background="CadetBlue" Grid.Row="3" Grid.Column="4">
             <controls:ScrollingView x:Name="scrollingView52" AutomationProperties.Name="scrollingView52"
-                ContentOrientation="None" HorizontalScrollRailingMode="Disabled" VerticalScrollRailingMode="Disabled" ZoomMode="Enabled">
+                ContentOrientation="None" HorizontalScrollRailMode="Disabled" VerticalScrollRailMode="Disabled" ZoomMode="Enabled">
                 <Image x:Name="img52" AutomationProperties.Name="img52" Source="Assets/ingredient5.png" Width="800" Height="800"/>
             </controls:ScrollingView>
         </Border>

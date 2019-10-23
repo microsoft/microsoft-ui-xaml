@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Shapes;
 using Common;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
+using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
