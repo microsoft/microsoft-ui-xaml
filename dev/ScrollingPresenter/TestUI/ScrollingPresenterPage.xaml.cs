@@ -20,7 +20,7 @@ using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPrese
 
 namespace MUXControlsTestApp
 {
-    [TopLevelTestPage(Name = "ScrollingPresenter", Icon = "ScrollViewer.png")]
+    [TopLevelTestPage(Name = "ScrollingPresenter", Icon = "ScrollingPresenter.png")]
     public sealed partial class ScrollingPresenterPage : TestPage
     {
         public ScrollingPresenterPage()
@@ -43,6 +43,7 @@ namespace MUXControlsTestApp
             navigateToCompositionScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithCompositionScrollControllersPage), 0); };
             navigateToBiDirectionalScrollController.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithBiDirectionalScrollControllerPage), 0); };
             navigateToLeakDetection.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterLeakDetectionPage), 0); };
+            navigateToMousePanning.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterMousePanningPage), 0); };
 
             try
             {

@@ -16,6 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterBringIntoViewPage.xaml.cs">
       <DependentUpon>ScrollingPresenterBringIntoViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterMousePanningPage.xaml.cs">
+      <DependentUpon>ScrollingPresenterMousePanningPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPointsPage.xaml.cs">
       <DependentUpon>ScrollingPresenterSnapPointsPage.xaml</DependentUpon>
     </Compile>
@@ -66,9 +69,14 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterBringIntoViewPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterMousePanningPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPointsPage.xaml">
       <SubType>Designer</SubType>
@@ -76,9 +84,9 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterStackPanelAnchoringPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollingPresenterRepeaterAnchoringPage.xaml">
       <SubType>Designer</SubType>
