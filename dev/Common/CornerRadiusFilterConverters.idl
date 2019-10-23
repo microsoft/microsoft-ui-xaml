@@ -12,6 +12,15 @@ runtimeclass CornerRadiusFilterConverter : Windows.UI.Xaml.DependencyObject, Win
     CornerRadiusFilterKind Filter{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty FilterProperty{ get; };
+
+    [WUXC_VERSION_MUXONLY]
+    [interface_name("ICornerRadiusFilterConverter2")]
+    {
+        [MUX_DEFAULT_VALUE("1.0")]
+        Double Scale{ get; set; };
+        static Windows.UI.Xaml.DependencyProperty ScaleProperty{ get; };
+    }
+
 };
 
 [WUXC_VERSION_MUXONLY]
