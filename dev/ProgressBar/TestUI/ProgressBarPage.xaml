@@ -24,20 +24,38 @@
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
-            
-            <TextBox x:Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" />
-            <TextBox x:Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" />
-            <TextBlock Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
-            <Button x:Name="UpdateMinMax" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
-            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue" />
 
-            <TextBlock Text="{x:Bind ShowPausedCheckBox.IsChecked, Mode=OneWay}"/>
+            <Grid Width="200px" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBox x:Name="MaximumInput" AutomationProperties.Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MaximumInputText" AutomationProperties.Name="MaximumInputText" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Maximum, Mode=TwoWay}"/>
+
+                <TextBox x:Name="MinimumInput" AutomationProperties.Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="1" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MinimumInputText" AutomationProperties.Name="MinimumInputText" Grid.Row="1" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Minimum, Mode=TwoWay}"/>
+
+                <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="2" Grid.ColumnSpan="1" Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
+            </Grid>
+
+            <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+
+            <TextBlock AutomationProperties.Name="ShowPausedText" Text="{x:Bind ShowPausedCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowPausedCheckBox" Content="Show Paused"/>
 
-            <TextBlock Text="{x:Bind ShowErrorCheckBox.IsChecked, Mode=OneWay}"/>
+            <TextBlock AutomationProperties.Name="ShowErrorText" Text="{x:Bind ShowErrorCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowErrorCheckBox" Content="Show Error"/>
 
-            <TextBlock Text="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Mode=OneWay}"/>
+            <TextBlock AutomationProperties.Name="ShowIsDeterminateText" Text="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowIsDeterminateCheckBox" Content="Show IsDeterminate"/>
         </StackPanel>
     </Grid>

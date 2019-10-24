@@ -27,10 +27,24 @@ namespace MUXControlsTestApp
 
         public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
         {
-            TestProgressBar.Maximum = Double.Parse(MaximumInput.Text);
-            TestProgressBar.Minimum = Double.Parse(MinimumInput.Text);
+            if (!String.IsNullOrEmpty(MaximumInput.Text))
+            {
+                TestProgressBar.Maximum = Double.Parse(MaximumInput.Text);
+            } else
+            {
+                TestProgressBar.Maximum = Double.Parse(MaximumInput.PlaceholderText);
+            }
+
+            if (!String.IsNullOrEmpty(MinimumInput.Text))
+            {
+                TestProgressBar.Minimum = Double.Parse(MinimumInput.Text);
+            }
+            else
+            {
+                TestProgressBar.Minimum = Double.Parse(MinimumInput.PlaceholderText);
+            }
         }
-        public void ChangeValue(object sender, RoutedEventArgs e)
+        public void ChangeValue_Click(object sender, RoutedEventArgs e)
         {
             if (TestProgressBar.Value + 1 > TestProgressBar.Maximum)
             {

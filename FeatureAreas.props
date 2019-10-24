@@ -3,6 +3,13 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
+    <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
+    <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
+    <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
+    <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
+    <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
+    <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
