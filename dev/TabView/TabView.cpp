@@ -236,13 +236,10 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         {
             if (auto const lvItems = listView.Items())
             {
-                auto items = TabItems();
-                auto numItemsToCopy = static_cast<int>(items.Size());
-
                 // copy the list, because clearing lvItems may also clear items
                 winrt::IVector<winrt::IInspectable> const itemList{ winrt::single_threaded_vector<winrt::IInspectable>() };
 
-                for (auto const item : items)
+                for (auto const item : TabItems())
                 {
                     itemList.Append(item);
                 }
@@ -253,7 +250,9 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
                 {
                     // App put items in our Items collection; copy them over to ListView.Items
                     if (item)
+                    {
                         lvItems.Append(item);
+                    }
                 }
                 TabItems(lvItems);
             }
