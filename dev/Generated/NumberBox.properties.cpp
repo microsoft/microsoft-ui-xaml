@@ -17,7 +17,7 @@ GlobalDependencyProperty NumberBoxProperties::s_MinimumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_NumberFormatterProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_PlaceholderTextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_StepProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_WrapEnabledProperty{ nullptr };
@@ -129,11 +129,11 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(winrt::NumberBoxSpinButtonPlacementMode::Hidden),
                 winrt::PropertyChangedCallback(&OnSpinButtonPlacementModePropertyChanged));
     }
-    if (!s_StepProperty)
+    if (!s_StepFrequencyProperty)
     {
-        s_StepProperty =
+        s_StepFrequencyProperty =
             InitializeDependencyProperty(
-                L"Step",
+                L"StepFrequency",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
@@ -186,7 +186,7 @@ void NumberBoxProperties::ClearProperties()
     s_NumberFormatterProperty = nullptr;
     s_PlaceholderTextProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
-    s_StepProperty = nullptr;
+    s_StepFrequencyProperty = nullptr;
     s_TextProperty = nullptr;
     s_ValueProperty = nullptr;
     s_WrapEnabledProperty = nullptr;
@@ -350,14 +350,14 @@ winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacement
     return ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SpinButtonPlacementModeProperty));
 }
 
-void NumberBoxProperties::Step(double value)
+void NumberBoxProperties::StepFrequency(double value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_StepProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_StepFrequencyProperty, ValueHelper<double>::BoxValueIfNecessary(value));
 }
 
-double NumberBoxProperties::Step()
+double NumberBoxProperties::StepFrequency()
 {
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepFrequencyProperty));
 }
 
 void NumberBoxProperties::Text(winrt::hstring const& value)

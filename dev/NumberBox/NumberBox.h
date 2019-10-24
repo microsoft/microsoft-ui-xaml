@@ -77,7 +77,6 @@ private:
     void ValidateInput();
     void ValidateValue();
     void UpdateTextToValue();
-    void SetErrorState(ValidationState state);
     void SetSpinButtonVisualState();
     int ComputePrecisionRounderSigDigits(double newVal);
     void StepValue(bool sign);
@@ -90,10 +89,4 @@ private:
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
-    tracker_ref<winrt::TextBlock> m_errorTextBlock{ this };
-
-    winrt::ToolTip m_errorToolTip{};
-
-    bool m_hasError{ false };
-
 };

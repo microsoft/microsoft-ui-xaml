@@ -25,9 +25,7 @@
 
         <StackPanel Orientation="Vertical" contract5Present:Spacing="4" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="12">
 
-            <ComboBox x:Name="ValidationComboBox" AutomationProperties.Name="ValidationComboBox" Header="Validation Mode (WIP)" SelectedValue="TextBlockMessage">
-                <x:String>TextBlockMessage</x:String>
-                <x:String>IconMessage</x:String>
+            <ComboBox x:Name="ValidationComboBox" AutomationProperties.Name="ValidationComboBox" Header="Validation Mode" SelectedValue="InvalidInputOverwritten">
                 <x:String>InvalidInputOverwritten</x:String>
                 <x:String>Disabled</x:String>
             </ComboBox>
@@ -74,7 +72,7 @@
                     AutomationProperties.Name="TestNumberBox"
                     Header="NumberBox"
                     ValueChanged="NumberBoxValueChanged"
-                    Step="{x:Bind StepNumberBox.Value, Mode=OneWay}"
+                    StepFrequency="{x:Bind StepNumberBox.Value, Mode=OneWay}"
                     BasicValidationMode="{x:Bind ValidationComboBox.SelectedValue, Converter={StaticResource ValidationConverter}, Mode=OneWay}"
                     AcceptsCalculation="{x:Bind CalculationCheckBox.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"/>
 

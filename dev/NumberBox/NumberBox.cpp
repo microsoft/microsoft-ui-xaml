@@ -19,6 +19,8 @@ NumberBox::NumberBox()
     formatter.FractionDigits(0);
     NumberFormatter(formatter);
 
+    PointerWheelChanged({ this, &NumberBox::OnScroll });
+
     SetDefaultStyleKey(this);
 }
 
@@ -29,19 +31,7 @@ winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
 
 void NumberBox::OnApplyTemplate()
 {
-    // Initializations - Visual Components
     winrt::IControlProtected controlProtected = *this;
-
-    m_errorTextBlock.set(GetTemplateChildT<winrt::TextBlock>(L"ErrorTextMessage", controlProtected));
-
-    // Initializations - Visual States
-    SetSpinButtonVisualState();
-    
-    // Initializations - Interactions
-    if (auto warningIcon = GetTemplateChildT<winrt::FontIcon>(L"ValidationIcon", controlProtected))
-    {
-        winrt::ToolTipService::SetToolTip(warningIcon, m_errorToolTip);
-    }
 
     if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected))
     {
@@ -77,15 +67,13 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
-    PointerWheelChanged({ this, &NumberBox::OnScroll });
-
     // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
     m_stepPrecisionFormatter.FractionDigits(0);
     m_stepPrecisionFormatter.IntegerDigits(1);
     m_stepPrecisionFormatter.NumberRounder(nullptr);
     m_stepPrecisionRounder.RoundingAlgorithm(winrt::RoundingAlgorithm::RoundHalfAwayFromZero);
 
-    // Set Text to reflect preset Value
+    SetSpinButtonVisualState();
     UpdateTextToValue();
 }
 
@@ -150,18 +138,9 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
 
 void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
-    {
-        SetErrorState(ValidationState::Valid);
-    }
-    else
-    {
-        // Revalidate input if it's changed
-        ValidateInput();
-    }
+    ValidateInput();
 }
 
-// Trigger any validation, rounding, and processing done onLostFocus
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
@@ -169,37 +148,25 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 
 void NumberBox::ValidateValue()
 {
-    // Parsable value that is not in bounds
+    // Validate that the value is in bounds
     auto value = Value();
-    if (!IsInBounds(value))
+    if (!IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
     {
-        if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+        // Coerse value to be within range
+        if (value > Maximum())
         {
-            // Coerse value to be within range
-            if (value > Maximum())
-            {
-                Value(Maximum());
-            }
-            else if (value < Minimum())
-            {
-                Value(Minimum());
-            }
+            Value(Maximum());
         }
-        else
+        else if (value < Minimum())
         {
-            SetErrorState(ValidationState::InvalidRange);
+            Value(Minimum());
         }
-    }
-    else
-    {
-        SetErrorState(ValidationState::Valid);
     }
 }
 
-// Performs all validation steps on input given in textbox. Runs on LoseFocus and stepping.
 void NumberBox::ValidateInput()
 {
-    SetErrorState(ValidationState::Valid);
+    // Validate the content of the inner textbox
     if (auto textBox = m_textBox.get())
     {
         auto text = textBox.Text();
@@ -208,7 +175,6 @@ void NumberBox::ValidateInput()
         if (text.empty())
         {
             Value(0);
-            m_hasError = false;
             return;
         }
 
@@ -216,13 +182,6 @@ void NumberBox::ValidateInput()
         {
             NormalizeShorthandOperations();
             EvaluateInputCalculation();
-
-            // Divide by 0 error state
-            if (fpclassify(Value()) == FP_NAN)
-            {
-                SetErrorState(ValidationState::InvalidDivide);
-                return;
-            }
         }
 
         // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
@@ -236,10 +195,6 @@ void NumberBox::ValidateInput()
                 // Override value to last valid value
                 UpdateTextToValue();
             }
-            else
-            {
-                SetErrorState(ValidationState::InvalidInput);
-            }
         }
         else
         {
@@ -248,7 +203,6 @@ void NumberBox::ValidateInput()
     }
 }
 
-// SpinClicks call to decrement or increment, 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
     StepValue(false);
@@ -301,21 +255,18 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
     }
 }
 
-// Increments or decrements value by StepFrequency, wrapping if necessary
 void NumberBox::StepValue(bool isPositive)
 {
-    // Validating input before and after
-    ValidateInput();
     double oldVal = Value();
     double newVal = oldVal;
 
     if (isPositive)
     {
-        newVal += Step();
+        newVal += StepFrequency();
     }
     else
     {
-        newVal -= Step();
+        newVal -= StepFrequency();
     }
 
     if (WrapEnabled())
@@ -339,7 +290,6 @@ void NumberBox::StepValue(bool isPositive)
     Value(newVal);
 }
 
-
 // Check if text resembles formulaic input to determine if parser should be executed
 bool NumberBox::IsFormulaic(const winrt::hstring& in)
 {
@@ -356,7 +306,7 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 
     // Run formatter on both values to discard trailing and leading 0's.
     std::wstring formattedVal(m_stepPrecisionFormatter.Format(oldVal));
-    std::wstring formattedStep(m_stepPrecisionFormatter.Format(Step()));
+    std::wstring formattedStep(m_stepPrecisionFormatter.Format(StepFrequency()));
     std::wstring formattedNew(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
@@ -404,7 +354,6 @@ void NumberBox::EvaluateInputCalculation()
         }
 
         Value(val.value());
-        UpdateTextToValue();
    }
 }
 
@@ -416,72 +365,6 @@ void NumberBox::UpdateTextToValue()
         auto formattedValue = NumberFormatter().FormatDouble(Value());
         textBox.Text(formattedValue);
     }
-}
-
-// Handler for swapping visual states of textbox
-void NumberBox::SetErrorState(ValidationState state)
-{
-    // No Error Raised
-    if (state == ValidationState::Valid || BasicValidationMode() == winrt::NumberBoxBasicValidationMode::Disabled)
-    {
-        m_hasError = false;
-        winrt::VisualStateManager::GoToState(*this, L"Valid", false);
-        return;
-    }
-
-    // Build Validation message based on error that user made
-    winrt::hstring errorMessage;
-    switch (state)
-    {
-        case ValidationState::InvalidInput:
-        {
-            if (AcceptsCalculation())
-            {
-                errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersAndSymbols);
-            }
-            else
-            {
-                errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorNumbersOnly);
-            }
-            break;
-        }
-
-        case ValidationState::InvalidRange:
-        {
-            auto formatter = NumberFormatter();
-            auto formattedMin = formatter.FormatDouble(Minimum());
-            auto formattedMax = formatter.FormatDouble(Maximum());
-            errorMessage = StringUtil::FormatString(
-                ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorRange),
-                formattedMin.data(),
-                formattedMax.data());
-            break;
-        }
-
-        case ValidationState::InvalidDivide:
-            errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorDivByZero);
-            break;
-
-        case ValidationState::Invalid:
-            errorMessage = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxErrorInvalidInput);
-            break;
-    }
-
-    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::IconMessage)
-    {
-        winrt::VisualStateManager::GoToState(*this, L"InvalidIcon", false);
-        m_errorToolTip.Content(box_value(errorMessage));
-    }
-    else if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::TextBlockMessage)
-    {
-        winrt::VisualStateManager::GoToState(*this, L"InvalidText", false);
-        if (auto errorTextBlock = m_errorTextBlock.get())
-        {
-            errorTextBlock.Text(errorMessage);
-        }
-    }
-
-    m_hasError = true;
 }
 
 // Enables or Disables Spin Buttons

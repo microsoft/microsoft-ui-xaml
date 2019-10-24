@@ -5,42 +5,12 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <Style TargetType="local:NumberBox">
+<Style TargetType="local:NumberBox">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
-
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="ValidationStates">
-                                <VisualState x:Name="Valid" />
-
-                                <VisualState x:Name="Invalid">
-                                    <VisualState.Setters>
-                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="InvalidIcon">
-                                    <VisualState.Setters>
-                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
-                                        <Setter Target="ValidationIcon.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-
-                                <VisualState x:Name="InvalidText">
-                                    <VisualState.Setters>
-                                        <Setter Target="InputBox.BorderBrush" Value="{ThemeResource NumberBoxInvalidStateBrush}" />
-                                        <Setter Target="ErrorTextMessage.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-
                             <VisualStateGroup x:Name="SpinButtonStates">
                                 <VisualState x:Name="SpinButtonsCollapsed" />
 
@@ -92,21 +62,7 @@
                                 Content="&#xE70D;"
                                 Style="{StaticResource NumberBoxSpinButtonStyle}"
                                 contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
-
-                            <FontIcon x:Name="ValidationIcon"
-                                Visibility="Collapsed"
-                                Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
-                                FontFamily="{ThemeResource SymbolThemeFontFamily}"
-                                Margin="{ThemeResource NumberBoxIconMargin}"
-                                VerticalAlignment="Bottom"
-                                Glyph="&#xE7BA;"/>
                         </StackPanel>
-
-                        <TextBlock x:Name="ErrorTextMessage"
-                            Grid.Row="1"
-                            Visibility="Collapsed"
-                            Foreground="{ThemeResource NumberBoxInvalidStateBrush}"
-                            IsColorFontEnabled="True" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

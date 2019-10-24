@@ -14,8 +14,6 @@ enum NumberBoxSpinButtonPlacementMode
 enum NumberBoxBasicValidationMode
 {
     InvalidInputOverwritten,
-    IconMessage,
-    TextBlockMessage,
     Disabled
 };
 
@@ -46,7 +44,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Double Value;
 
     [MUX_DEFAULT_VALUE("1")]
-    Double Step;
+    Double StepFrequency;
 
     String Header;
 
@@ -80,7 +78,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MinimumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty StepProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };

@@ -36,8 +36,8 @@ public:
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
 
-    void Step(double value);
-    double Step();
+    void StepFrequency(double value);
+    double StepFrequency();
 
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
@@ -57,7 +57,7 @@ public:
     static winrt::DependencyProperty NumberFormatterProperty() { return s_NumberFormatterProperty; }
     static winrt::DependencyProperty PlaceholderTextProperty() { return s_PlaceholderTextProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
-    static winrt::DependencyProperty StepProperty() { return s_StepProperty; }
+    static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
     static winrt::DependencyProperty WrapEnabledProperty() { return s_WrapEnabledProperty; }
@@ -71,7 +71,7 @@ public:
     static GlobalDependencyProperty s_NumberFormatterProperty;
     static GlobalDependencyProperty s_PlaceholderTextProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
-    static GlobalDependencyProperty s_StepProperty;
+    static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_TextProperty;
     static GlobalDependencyProperty s_ValueProperty;
     static GlobalDependencyProperty s_WrapEnabledProperty;
