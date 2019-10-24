@@ -2888,6 +2888,16 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateTitleBarPadding();
     }
+    else if (property == s_MenuItemTemplateProperty ||
+             property == s_MenuItemTemplateSelectorProperty)
+    {
+        SyncItemTemplates();
+    }
+}
+
+void NavigationView::SyncItemTemplates()
+{
+
 }
 
 void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
