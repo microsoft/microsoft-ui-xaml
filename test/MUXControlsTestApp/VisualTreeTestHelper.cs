@@ -98,13 +98,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return content;
         }
 
-        public static void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public static bool VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             var root = SetupVisualTree(xaml);
-            VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
+            return VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
         }
 
-        public static void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public static bool VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             VisualTreeLog.LogInfo("VerifyVisualTree for theme " + theme.ToString());
             TestExecution helper = new TestExecution(translator, filter, logger, AlwaysLogMasterFile);
@@ -141,7 +141,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (helper.HasError())
             {
                 Verify.Fail(helper.GetTestResult(), "Test Failed");
+                return false;
             }
+            return true;
         }
 
         private class TestExecution

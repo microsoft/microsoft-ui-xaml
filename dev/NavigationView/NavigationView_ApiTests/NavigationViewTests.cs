@@ -100,51 +100,48 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyVisualTree()
         {
             bool failed = false;
-
-            // Generate a basic NavigationView master file for all the pane display modes
-            foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
-            {
-                var filePrefix = "NavigationView" + paneDisplayMode;
-                NavigationViewPaneDisplayMode displayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
-
-                // We can skip generating a master file for Left mode since Auto is achieving the same result.
-                if(displayMode == NavigationViewPaneDisplayMode.Left)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
-                    var navigationView = SetupNavigationView(displayMode);
-                    VisualTreeTestHelper.VerifyVisualTree(root: navigationView, masterFilePrefix: filePrefix);
-                }
-                catch (Exception e)
-                {
-                    failed = true;
-                    Log.Error(e.Message);
-                }
-
-            }
-
-            // Generate a master file for a special case NavigationView with more items and item variety
+            Verify.DisableVerifyFailureExceptions = true;
             try
             {
+                // Generate a basic NavigationView master file for all the pane display modes
+                foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
+                {
+                    var filePrefix = "NavigationView" + paneDisplayMode;
+                    NavigationViewPaneDisplayMode displayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
+
+                    // We can skip generating a master file for Left mode since Auto is achieving the same result.
+                    if (displayMode == NavigationViewPaneDisplayMode.Left)
+                    {
+                        continue;
+                    }
+
+                    Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
+                    var navigationView = SetupNavigationView(displayMode);
+                    if(!VisualTreeTestHelper.VerifyVisualTree(root: navigationView, masterFilePrefix: filePrefix))
+                    {
+                        failed = true;
+                    }
+                }
+
+                // Generate a master file for a special case NavigationView with more items and item variety
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                if(!VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling"))
+                {
+                    failed = true;
+                }
+
             }
-            catch (Exception e)
+            finally
             {
-                failed = true;
-                Log.Error(e.Message);
+                Verify.DisableVerifyFailureExceptions = false;
             }
 
             if (failed)
             {
                 Verify.Fail("One or more visual tree verification failed, see details above");
             }
-        } 
+        }
 
         [TestMethod]
         public void VerifyPaneDisplayModeAndDisplayModeMapping()
