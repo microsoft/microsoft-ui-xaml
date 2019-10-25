@@ -41,6 +41,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItems.Add(new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) });
                 navView.MenuItems.Add(new NavigationViewItem() { Content = "Cut", Icon = new SymbolIcon(Symbol.Cut) });
 
+                navView.PaneTitle = "Title";
                 navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
                 navView.IsSettingsVisible = true;
                 navView.PaneDisplayMode = paneDisplayMode;
@@ -96,12 +97,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return navView;
         }
 
+        private NavigationView SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Cut", Icon = new SymbolIcon(Symbol.Cut) });
+
+                // Navigation View Pane Elements
+                Button headerButton = new Button();
+                headerButton.Content = "Header Button";
+
+                Button footerButton = new Button();
+                footerButton.Content = "Footer Button";
+
+                // NavigationView Content Elements
+                Button contentButtonOne = new Button();
+                contentButtonOne.Content = "Content Button One";
+
+                Button contentButtonTwo = new Button();
+                contentButtonTwo.Content = "Content Button Two";
+                contentButtonTwo.Margin = new Thickness(50, 0, 0, 0);
+
+                StackPanel contentStackPanel = new StackPanel();
+                contentStackPanel.Children.Add(contentButtonOne);
+                contentStackPanel.Children.Add(contentButtonTwo);
+
+                // Set NavigationView Properties
+
+                navView.PaneHeader = headerButton;
+                navView.PaneFooter = footerButton;
+                navView.Header = "NavigationView Header";
+                navView.AutoSuggestBox = new AutoSuggestBox();
+                navView.Content = contentStackPanel;
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.IsSettingsVisible = true;
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.OpenPaneLength = 300.0;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                MUXControlsTestApp.App.TestContentRoot = navView;
+            });
+
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
         [TestMethod]
         public void VerifyVisualTree()
         {
-            bool failed = false;
-            Verify.DisableVerifyFailureExceptions = true;
-            try
+            using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
             {
                 // Generate a basic NavigationView master file for all the pane display modes
                 foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
@@ -117,29 +166,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
                     var navigationView = SetupNavigationView(displayMode);
-                    if(!VisualTreeTestHelper.VerifyVisualTree(root: navigationView, masterFilePrefix: filePrefix))
-                    {
-                        failed = true;
-                    }
+                    visualTreeVerifier.VerifyVisualTree(root: navigationView, masterFilePrefix: filePrefix);
                 }
 
-                // Generate a master file for a special case NavigationView with more items and item variety
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                if(!VisualTreeTestHelper.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling"))
-                {
-                    failed = true;
-                }
+                visualTreeVerifier.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                
+                Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
+                var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);
+                visualTreeVerifier.VerifyVisualTree(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
 
-            }
-            finally
-            {
-                Verify.DisableVerifyFailureExceptions = false;
-            }
-
-            if (failed)
-            {
-                Verify.Fail("One or more visual tree verification failed, see details above");
+                Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
+                var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
+                visualTreeVerifier.VerifyVisualTree(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
             }
         }
 
