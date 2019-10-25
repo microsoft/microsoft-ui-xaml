@@ -258,6 +258,18 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
             }
         }
 
+        // if there is an itemsSource, we need to copy the values to TabItems, so that they are also accessible by TabItems property
+        else if (auto itemsSource = listView.ItemsSource().try_as<winrt::IIterable<winrt::IInspectable>>())
+        {
+            winrt::IVector<winrt::IInspectable> const itemList{ winrt::single_threaded_vector<winrt::IInspectable>() };
+
+            for (auto const item : itemsSource)
+            {
+                itemList.Append(item);
+            }
+            TabItems(itemList);
+        }
+
         if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
         {
             UpdateSelectedItem();
