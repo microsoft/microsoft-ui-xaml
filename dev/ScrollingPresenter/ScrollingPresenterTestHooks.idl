@@ -59,6 +59,7 @@ runtimeclass ScrollingPresenterTestHooks
     static Windows.Foundation.Numerics.Vector2 GetArrangeRenderSizesDelta(MU_XCP_NAMESPACE.ScrollingPresenter scrollingPresenter);
     static Windows.Foundation.Numerics.Vector2 GetMinPosition(MU_XCP_NAMESPACE.ScrollingPresenter scrollingPresenter);
     static Windows.Foundation.Numerics.Vector2 GetMaxPosition(MU_XCP_NAMESPACE.ScrollingPresenter scrollingPresenter);
+    static Windows.UI.Composition.Interactions.InteractionTracker GetInteractionTracker(MU_XCP_NAMESPACE.ScrollingPresenter scrollingPresenter);
     static ScrollingPresenterViewChangeResult GetScrollCompletedResult(MU_XC_NAMESPACE.ScrollingScrollCompletedEventArgs scrollCompletedEventArgs);
     static ScrollingPresenterViewChangeResult GetZoomCompletedResult(MU_XC_NAMESPACE.ScrollingZoomCompletedEventArgs zoomCompletedEventArgs);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(MU_XCP_NAMESPACE.ScrollingPresenter scrollingPresenter);

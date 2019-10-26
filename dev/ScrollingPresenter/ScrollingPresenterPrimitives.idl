@@ -297,6 +297,8 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
     MU_XC_NAMESPACE.ScrollingScrollInfo ScrollFrom(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollWith(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity);
     [method_name("ZoomTo")]
     MU_XC_NAMESPACE.ScrollingZoomInfo ZoomTo(
         Single zoomFactor,

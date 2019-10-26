@@ -26,6 +26,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChange.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChangeWithVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.h" />
@@ -82,6 +83,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChangeWithVelocity.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SnapPoint.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SnapPointWrapper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewChange.cpp" />

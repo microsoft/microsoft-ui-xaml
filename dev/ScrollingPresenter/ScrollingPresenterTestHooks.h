@@ -50,6 +50,7 @@ public:
     static void GetContentLayoutOffsetY(const winrt::ScrollingPresenter& scrollingPresenter, float& contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(const winrt::ScrollingPresenter& scrollingPresenter, float contentLayoutOffsetY);
     static winrt::float2 GetArrangeRenderSizesDelta(const winrt::ScrollingPresenter& scrollingPresenter);
+    static winrt::InteractionTracker GetInteractionTracker(const winrt::ScrollingPresenter& scrollingPresenter);
     static winrt::float2 GetMinPosition(const winrt::ScrollingPresenter& scrollingPresenter);
     static winrt::float2 GetMaxPosition(const winrt::ScrollingPresenter& scrollingPresenter);
     static winrt::ScrollingPresenterViewChangeResult GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs);

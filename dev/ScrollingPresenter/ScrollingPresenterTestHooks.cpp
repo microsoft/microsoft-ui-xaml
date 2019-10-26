@@ -211,6 +211,15 @@ winrt::float2 ScrollingPresenterTestHooks::GetArrangeRenderSizesDelta(const winr
     return winrt::float2{ 0.0f, 0.0f };
 }
 
+winrt::InteractionTracker ScrollingPresenterTestHooks::GetInteractionTracker(const winrt::ScrollingPresenter& scrollingPresenter)
+{
+    if (scrollingPresenter)
+    {
+        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetInteractionTracker();
+    }
+    return nullptr;
+}
+
 winrt::float2 ScrollingPresenterTestHooks::GetMinPosition(const winrt::ScrollingPresenter& scrollingPresenter)
 {
     if (scrollingPresenter)

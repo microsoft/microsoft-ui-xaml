@@ -12,6 +12,7 @@ enum class InteractionTrackerAsyncOperationType
     TryUpdatePosition,
     TryUpdatePositionBy,
     TryUpdatePositionWithAnimation,
+    TryUpdatePositionWithVelocity,
     TryUpdatePositionWithAdditionalVelocity,
     TryUpdateScale,
     TryUpdateScaleWithAnimation,

@@ -231,6 +231,8 @@ winrt::hstring InteractionTrackerAsyncOperationTypeToString(InteractionTrackerAs
         return L"TryUpdatePosition";
     case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
         return L"TryUpdatePositionBy";
+    case InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity:
+        return L"TryUpdatePositionWithVelocity";
     case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
         return L"TryUpdatePositionWithAdditionalVelocity";
     case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:

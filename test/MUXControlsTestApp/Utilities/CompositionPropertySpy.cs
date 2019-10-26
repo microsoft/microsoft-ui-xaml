@@ -127,6 +127,24 @@ namespace MUXControlsTestApp.Utilities
         }
 
         /// <summary>
+        /// Starts spying on the vector3 property of the provided object.
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="originalValue"></param>
+        public static void StartSpyingVector3Property(CompositionObject sourceObject, string propertyName, Vector3 originalValue)
+        {
+            CompositionPropertySet propertySet = null;
+            ExpressionAnimation expressionAnimation = null;
+            string propertySetPropertyName = null;
+
+            StartSpyingProperty(sourceObject, ref propertyName, out propertySet, out expressionAnimation, out propertySetPropertyName);
+
+            propertySet.InsertVector3(propertySetPropertyName, originalValue);
+            propertySet.StartAnimation(propertySetPropertyName, expressionAnimation);
+        }
+
+        /// <summary>
         /// Stops spying on the translation facade provided UIElement.
         /// </summary>
         /// <param name="sourceElement"></param>
@@ -299,6 +317,26 @@ namespace MUXControlsTestApp.Utilities
             if (objectValue != null)
             {
                 value = (Vector2)objectValue;
+            }
+            return status;
+        }
+
+        /// <summary>
+        /// Accesses the animated Vector3 value for the provided object and its property name.
+        /// </summary>
+        /// <param name="sourceObject"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static CompositionGetValueStatus TryGetVector3(CompositionObject sourceObject, string propertyName, out Vector3 value)
+        {
+            value = Vector3.Zero;
+
+            object objectValue = null;
+            CompositionGetValueStatus status = TryGetPropertyValue(sourceObject, propertyName, CompositionPropertyType.Vector3, out objectValue);
+            if (objectValue != null)
+            {
+                value = (Vector3)objectValue;
             }
             return status;
         }

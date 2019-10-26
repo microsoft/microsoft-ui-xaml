@@ -16,6 +16,7 @@
 #include "ViewChange.h"
 #include "OffsetsChange.h"
 #include "OffsetsChangeWithAdditionalVelocity.h"
+#include "OffsetsChangeWithVelocity.h"
 #include "ZoomFactorChange.h"
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
 
@@ -38,6 +39,7 @@ public:
     static constexpr std::wstring_view s_viewportSourcePropertyName{ L"Viewport"sv };
     static constexpr std::wstring_view s_offsetSourcePropertyName{ L"Offset"sv };
     static constexpr std::wstring_view s_positionSourcePropertyName{ L"Position"sv };
+    static constexpr std::wstring_view s_positionVelocityInPixelsPerSecondSourcePropertyName{ L"PositionVelocityInPixelsPerSecond"sv };
     static constexpr std::wstring_view s_minPositionSourcePropertyName{ L"MinPosition"sv };
     static constexpr std::wstring_view s_maxPositionSourcePropertyName{ L"MaxPosition"sv };
     static constexpr std::wstring_view s_zoomFactorSourcePropertyName{ L"ZoomFactor"sv };
@@ -174,6 +176,7 @@ public:
     winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
     winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollingScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    winrt::ScrollingScrollInfo ScrollWith(winrt::float2 offsetsVelocity);
     winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
     winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
@@ -218,6 +221,12 @@ public:
     void SetContentLayoutOffsetY(float contentLayoutOffsetY);
 
     winrt::float2 GetArrangeRenderSizesDelta();
+
+    winrt::InteractionTracker GetInteractionTracker()
+    {
+        return m_interactionTracker;
+    }
+
     winrt::float2 GetMinPosition();
     winrt::float2 GetMaxPosition();
 
@@ -307,7 +316,8 @@ private:
         _Out_ double* appliedOffsetY,
         _Out_ winrt::Rect* targetRect);
 
-    void EnsureExpressionAnimationSources();
+    void EnsureExpressionAnimationSources(
+        bool justForPositionVelocityInPixelsPerSecond);
     void EnsureInteractionTracker();
     void EnsureScrollingPresenterVisualInteractionSource();
     void EnsureScrollControllerVisualInteractionSource(
@@ -385,7 +395,8 @@ private:
         bool forAnimationsInterruption);
     bool StartTranslationAndZoomFactorExpressionAnimations(bool interruptCountdown = false);
     void StopTranslationAndZoomFactorExpressionAnimations();
-    void StartExpressionAnimationSourcesAnimations();
+    void StartExpressionAnimationSourcesAnimations(
+        bool justForPositionVelocityInPixelsPerSecond);
     void StartScrollControllerExpressionAnimationSourcesAnimations(
         ScrollingPresenterDimension dimension);
     void StopScrollControllerExpressionAnimationSourcesAnimations(
@@ -434,6 +445,8 @@ private:
         winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
+    int32_t ChangeOffsetsWithVelocityPrivate(
+        winrt::float2 offsetsVelocity);
 
     void ChangeZoomFactorPrivate(
         float zoomFactor,
@@ -471,6 +484,11 @@ private:
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity);
+    void ProcessOffsetsChange(
+        std::shared_ptr<OffsetsChangeWithVelocity> offsetsChangeWithVelocity);
+    void ProcessOffsetsChange(
+        const winrt::float2& currentPositionVelocityInPixelsPerSecond,
+        const winrt::float2& requestedPositionVelocityInPixelsPerSecond);
     void PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessZoomFactorChange(
@@ -495,6 +513,7 @@ private:
         bool completePriorNonAnimatedOperations,
         bool completePriorAnimatedOperations);
     void CompleteDelayedOperations();
+    winrt::float2 GetPositionVelocityInPixelsPerSecond();
     winrt::float2 GetMouseWheelAnticipatedOffsetsChange() const;
     float GetMouseWheelAnticipatedZoomFactorChange() const;
     int GetInteractionTrackerOperationsTicksCountdownForTrigger(
@@ -502,6 +521,7 @@ private:
     int GetInteractionTrackerOperationsCount(
         bool includeAnimatedOperations,
         bool includeNonAnimatedOperations) const;
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetLastInteractionTrackerOperation();
     std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
         std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
@@ -830,6 +850,7 @@ private:
     winrt::ExpressionAnimation m_transformMatrixZoomFactorExpressionAnimation{ nullptr };
 
     winrt::ExpressionAnimation m_positionSourceExpressionAnimation{ nullptr };
+    winrt::ExpressionAnimation m_positionVelocityInPixelsPerSecondSourceExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_minPositionSourceExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_maxPositionSourceExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_zoomFactorSourceExpressionAnimation{ nullptr };
@@ -889,6 +910,8 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
+    // Maximum difference for offset velocities to be considered equal. Used for constant velocity scrolling.
+    static constexpr float s_offsetVelocityEqualityEpsilon{ 0.00001f };
     // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
     static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
     // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.

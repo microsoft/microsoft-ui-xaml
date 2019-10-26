@@ -193,7 +193,7 @@ winrt::AutomationPeer ScrollingPresenter::OnCreateAutomationPeer()
 winrt::CompositionPropertySet ScrollingPresenter::ExpressionAnimationSources()
 {
     SetupInteractionTrackerBoundaries();
-    EnsureExpressionAnimationSources();
+    EnsureExpressionAnimationSources(false /*justForPositionVelocityInPixelsPerSecond*/);
 
     return m_expressionAnimationSources;
 }
@@ -512,6 +512,21 @@ winrt::ScrollingScrollInfo ScrollingPresenter::ScrollFrom(winrt::float2 offsetsV
         inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger::DirectViewChange,
         &viewChangeId);
+
+    return winrt::ScrollingScrollInfo{ viewChangeId };
+}
+
+winrt::ScrollingScrollInfo ScrollingPresenter::ScrollWith(winrt::float2 offsetsVelocity)
+{
+    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str());
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        throw winrt::hresult_error(E_NOTIMPL);
+    }
+
+    int32_t viewChangeId = ChangeOffsetsWithVelocityPrivate(offsetsVelocity);
 
     return winrt::ScrollingScrollInfo{ viewChangeId };
 }
@@ -1106,13 +1121,43 @@ void ScrollingPresenter::InertiaStateEntered(
     {
         std::shared_ptr<ViewChangeBase> viewChangeBase = interactionTrackerAsyncOperation->GetViewChangeBase();
 
-        if (viewChangeBase && interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity)
+        if (viewChangeBase)
         {
-            std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
-
-            if (offsetsChangeWithAdditionalVelocity)
+            // Only correct the constant velocity if no new operation has been queued to avoid incorrect sequencing of operations.
+            if (interactionTrackerAsyncOperation == GetLastInteractionTrackerOperation() &&
+                interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity)
             {
-                offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(winrt::float2::zero());
+                std::shared_ptr<OffsetsChangeWithVelocity> offsetsChangeWithVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithVelocity>(viewChangeBase);
+
+                if (offsetsChangeWithVelocity && !offsetsChangeWithVelocity->HasCorrection())
+                {
+                    winrt::float2 currentPositionVelocityInPixelsPerSecond{ args.PositionVelocityInPixelsPerSecond().x, args.PositionVelocityInPixelsPerSecond().y };
+                    winrt::float2 requestedPositionVelocityInPixelsPerSecond = offsetsChangeWithVelocity->OffsetsVelocity();
+
+                    if (abs(requestedPositionVelocityInPixelsPerSecond.x - currentPositionVelocityInPixelsPerSecond.x) > s_offsetVelocityEqualityEpsilon ||
+                        abs(requestedPositionVelocityInPixelsPerSecond.y - currentPositionVelocityInPixelsPerSecond.y) > s_offsetVelocityEqualityEpsilon)
+                    {
+                        // Because the constant velocity scroll was initiated during a moving velocity, the resulting constant velocity differs from the requested one,
+                        // the UI-thread's knowledge being behind the composition thread. Launch a new TryUpdatePositionWithAdditionalVelocity operation to correct the velocity.
+                        ProcessOffsetsChange(currentPositionVelocityInPixelsPerSecond, requestedPositionVelocityInPixelsPerSecond);
+
+                        // The tracked async operation adopts the new InteractionTracker's RequestId.
+                        interactionTrackerAsyncOperation->SetRequestId(m_latestInteractionTrackerRequest);
+
+                        // Mark the operation as having attempted a velocity correction since only one is attempted, for situations
+                        // where corrections are ineffective when the Content edge is reached and the operation is about to complete.
+                        offsetsChangeWithVelocity->HasCorrection(true);
+                    }
+                }
+            }
+            else if (interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity)
+            {
+                std::shared_ptr<OffsetsChangeWithAdditionalVelocity> offsetsChangeWithAdditionalVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithAdditionalVelocity>(viewChangeBase);
+
+                if (offsetsChangeWithAdditionalVelocity)
+                {
+                    offsetsChangeWithAdditionalVelocity->AnticipatedOffsetsChange(winrt::float2::zero());
+                }
             }
         }
     }
@@ -1714,15 +1759,35 @@ void ScrollingPresenter::ComputeBringIntoViewTargetOffsets(
     };
 }
 
-void ScrollingPresenter::EnsureExpressionAnimationSources()
+void ScrollingPresenter::EnsureExpressionAnimationSources(
+    bool justForPositionVelocityInPixelsPerSecond)
 {
+    if (m_expressionAnimationSources &&
+        (justForPositionVelocityInPixelsPerSecond || m_positionSourceExpressionAnimation))
+    {
+        return;
+    }
+
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, justForPositionVelocityInPixelsPerSecond);
+
+    const winrt::Compositor compositor = winrt::ElementCompositionPreview::GetElementVisual(*this).Compositor();
+
+    MUX_ASSERT(m_interactionTracker);
+
     if (!m_expressionAnimationSources)
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
-
-        const winrt::Compositor compositor = winrt::ElementCompositionPreview::GetElementVisual(*this).Compositor();
-
         m_expressionAnimationSources = compositor.CreatePropertySet();
+
+        m_expressionAnimationSources.InsertVector2(s_positionVelocityInPixelsPerSecondSourcePropertyName, { 0.0f, 0.0f });
+
+        MUX_ASSERT(!m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
+
+        m_positionVelocityInPixelsPerSecondSourceExpressionAnimation = compositor.CreateExpressionAnimation(L"Vector2(it.PositionVelocityInPixelsPerSecond.X, it.PositionVelocityInPixelsPerSecond.Y)");
+        m_positionVelocityInPixelsPerSecondSourceExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
+    }
+
+    if (!justForPositionVelocityInPixelsPerSecond)
+    {
         m_expressionAnimationSources.InsertVector2(s_extentSourcePropertyName, { 0.0f, 0.0f });
         m_expressionAnimationSources.InsertVector2(s_viewportSourcePropertyName, { 0.0f, 0.0f });
         m_expressionAnimationSources.InsertVector2(s_offsetSourcePropertyName, { m_contentLayoutOffsetX, m_contentLayoutOffsetY });
@@ -1731,7 +1796,6 @@ void ScrollingPresenter::EnsureExpressionAnimationSources()
         m_expressionAnimationSources.InsertVector2(s_maxPositionSourcePropertyName, { 0.0f, 0.0f });
         m_expressionAnimationSources.InsertScalar(s_zoomFactorSourcePropertyName, 0.0f);
 
-        MUX_ASSERT(m_interactionTracker);
         MUX_ASSERT(!m_positionSourceExpressionAnimation);
         MUX_ASSERT(!m_minPositionSourceExpressionAnimation);
         MUX_ASSERT(!m_maxPositionSourceExpressionAnimation);
@@ -1748,8 +1812,12 @@ void ScrollingPresenter::EnsureExpressionAnimationSources()
 
         m_zoomFactorSourceExpressionAnimation = compositor.CreateExpressionAnimation(L"it.Scale");
         m_zoomFactorSourceExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
+    }
 
-        StartExpressionAnimationSourcesAnimations();
+    StartExpressionAnimationSourcesAnimations(justForPositionVelocityInPixelsPerSecond);
+
+    if (!justForPositionVelocityInPixelsPerSecond)
+    {
         UpdateExpressionAnimationSources();
     }
 }
@@ -3505,26 +3573,35 @@ void ScrollingPresenter::StopTranslationAndZoomFactorExpressionAnimations()
     }
 }
 
-void ScrollingPresenter::StartExpressionAnimationSourcesAnimations()
+void ScrollingPresenter::StartExpressionAnimationSourcesAnimations(
+    bool justForPositionVelocityInPixelsPerSecond)
 {
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(m_expressionAnimationSources);
-    MUX_ASSERT(m_positionSourceExpressionAnimation);
-    MUX_ASSERT(m_minPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_maxPositionSourceExpressionAnimation);
-    MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
+    MUX_ASSERT(m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
 
-    m_expressionAnimationSources.StartAnimation(s_positionSourcePropertyName, m_positionSourceExpressionAnimation);
-    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionSourcePropertyName /*propertyName*/);
+    m_expressionAnimationSources.StartAnimation(s_positionVelocityInPixelsPerSecondSourcePropertyName, m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionVelocityInPixelsPerSecondSourcePropertyName /*propertyName*/);
 
-    m_expressionAnimationSources.StartAnimation(s_minPositionSourcePropertyName, m_minPositionSourceExpressionAnimation);
-    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+    if (!justForPositionVelocityInPixelsPerSecond)
+    {
+        MUX_ASSERT(m_positionSourceExpressionAnimation);
+        MUX_ASSERT(m_minPositionSourceExpressionAnimation);
+        MUX_ASSERT(m_maxPositionSourceExpressionAnimation);
+        MUX_ASSERT(m_zoomFactorSourceExpressionAnimation);
 
-    m_expressionAnimationSources.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionSourceExpressionAnimation);
-    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
+        m_expressionAnimationSources.StartAnimation(s_positionSourcePropertyName, m_positionSourceExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionSourcePropertyName /*propertyName*/);
 
-    m_expressionAnimationSources.StartAnimation(s_zoomFactorSourcePropertyName, m_zoomFactorSourceExpressionAnimation);
-    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_zoomFactorSourcePropertyName /*propertyName*/);
+        m_expressionAnimationSources.StartAnimation(s_minPositionSourcePropertyName, m_minPositionSourceExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_minPositionSourcePropertyName /*propertyName*/);
+
+        m_expressionAnimationSources.StartAnimation(s_maxPositionSourcePropertyName, m_maxPositionSourceExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxPositionSourcePropertyName /*propertyName*/);
+
+        m_expressionAnimationSources.StartAnimation(s_zoomFactorSourcePropertyName, m_zoomFactorSourceExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_zoomFactorSourcePropertyName /*propertyName*/);
+    }
 }
 
 void ScrollingPresenter::StartScrollControllerExpressionAnimationSourcesAnimations(
@@ -4169,6 +4246,17 @@ void ScrollingPresenter::OnCompositionTargetRendering(const winrt::IInspectable&
                             }
                         }
                     }
+                }
+
+                if (interactionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity &&
+                    interactionTrackerAsyncOperation->GetTicksCountdown() > 1)
+                {
+                    // Refresh the ExpressionAnimationSources CompositionPropertySet's PositionVelocityInPixelsPerSecond with the current offsets
+                    // velocity so the imminent TryUpdatePositionWithAdditionalVelocity operation uses the closest approximation.
+                    winrt::float2 currentPositionVelocityInPixelsPerSecond = GetPositionVelocityInPixelsPerSecond();
+
+                    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                        TypeLogging::Float2ToString(winrt::float2(currentPositionVelocityInPixelsPerSecond)).c_str());
                 }
 
                 if (delayProcessingViewChanges)
@@ -5498,7 +5586,7 @@ void ScrollingPresenter::UpdateUnzoomedExtentAndViewport(
     m_viewportWidth = viewportWidth;
     m_viewportHeight = viewportHeight;
 
-    if (m_expressionAnimationSources)
+    if (m_expressionAnimationSources && m_positionSourceExpressionAnimation)
     {
         UpdateExpressionAnimationSources();
     }
@@ -6024,6 +6112,59 @@ void ScrollingPresenter::ChangeOffsetsWithAdditionalVelocityPrivate(
         interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
         *viewChangeId = m_latestViewChangeId;
     }
+}
+
+int32_t ScrollingPresenter::ChangeOffsetsWithVelocityPrivate(
+    winrt::float2 offsetsVelocity)
+{
+    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str());
+
+    if (!Content())
+    {
+        // When there is no content, skip the view change request and return -1, indicating that no action was taken.
+        return -1;
+    }
+
+    // When the ScrollingPresenter is not loaded or not set up yet, delay the offsets change request until it gets loaded.
+    // OnCompositionTargetRendering will launch the delayed changes at that point.
+    bool delayOperation = !IsLoadedAndSetUp();
+
+    std::shared_ptr<ViewChangeBase> offsetsChangeWithVelocity =
+        std::make_shared<OffsetsChangeWithVelocity>(offsetsVelocity);
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation(
+        std::make_shared<InteractionTrackerAsyncOperation>(
+            InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity,
+            InteractionTrackerAsyncOperationTrigger::DirectViewChange,
+            delayOperation,
+            offsetsChangeWithVelocity));
+
+    if (!delayOperation)
+    {
+        MUX_ASSERT(m_interactionTracker);
+
+        if (!m_positionVelocityInPixelsPerSecondSourceExpressionAnimation)
+        {
+            EnsureExpressionAnimationSources(true /*justForPositionVelocityInPixelsPerSecond*/);
+
+            // Use a larger ticks count than the default to allow the newly started expression animation to populate
+            // the ExpressionAnimationSources CompositionPropertySet with the current offsets velocity approximation.
+            interactionTrackerAsyncOperation->SetTicksCountdown(2 * interactionTrackerAsyncOperation->GetTicksCountdown());
+        }
+
+        // Prevent any existing delayed operation from being processed after this request and overriding it.
+        // All delayed operations are completed with the Interrupted result.
+        CompleteDelayedOperations();
+
+        HookCompositionTargetRendering();
+    }
+
+    m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
+
+    m_latestViewChangeId = GetNextViewChangeId();
+    interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+    return m_latestViewChangeId;
 }
 
 void ScrollingPresenter::ChangeZoomFactorPrivate(
@@ -6580,6 +6721,13 @@ void ScrollingPresenter::ProcessDequeuedViewChange(std::shared_ptr<InteractionTr
                 offsetsChangeWithAdditionalVelocity);
             break;
         }
+        case InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity:
+        {
+            std::shared_ptr<OffsetsChangeWithVelocity> offsetsChangeWithVelocity = std::reinterpret_pointer_cast<OffsetsChangeWithVelocity>(viewChangeBase);
+
+            ProcessOffsetsChange(offsetsChangeWithVelocity);
+            break;
+        }
         case InteractionTrackerAsyncOperationType::TryUpdateScale:
         case InteractionTrackerAsyncOperationType::TryUpdateScaleWithAnimation:
         {
@@ -6778,7 +6926,49 @@ void ScrollingPresenter::ProcessOffsetsChange(
     m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity;
 }
 
-// Restores the default scroll inertia decay rate if no offset change with additional velocity operation is in progress.
+// Processes an OffsetsChangeWithVelocity request to start a constant velocity scroll, taking into account the current offsets velocity.
+void ScrollingPresenter::ProcessOffsetsChange(
+    std::shared_ptr<OffsetsChangeWithVelocity> offsetsChangeWithVelocity)
+{
+    MUX_ASSERT(offsetsChangeWithVelocity);
+
+    EnsureExpressionAnimationSources(true /*justForPositionVelocityInPixelsPerSecond*/);
+
+    winrt::float2 currentPositionVelocityInPixelsPerSecond = GetPositionVelocityInPixelsPerSecond();
+    winrt::float2 requestedPositionVelocityInPixelsPerSecond = offsetsChangeWithVelocity->OffsetsVelocity();
+
+    ProcessOffsetsChange(currentPositionVelocityInPixelsPerSecond, requestedPositionVelocityInPixelsPerSecond);
+}
+
+// Launches an InteractionTracker request to change the offsets with a constant velocity (and thus no scroll inertia decay rate).
+// The potential current velocity is substracted from the requested velocity since the TryUpdatePositionWithAdditionalVelocity method
+// applies an additional velocity.
+void ScrollingPresenter::ProcessOffsetsChange(
+    const winrt::float2& currentPositionVelocityInPixelsPerSecond,
+    const winrt::float2& requestedPositionVelocityInPixelsPerSecond)
+{
+    MUX_ASSERT(m_interactionTracker);
+
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(winrt::float2(currentPositionVelocityInPixelsPerSecond)).c_str(),
+        TypeLogging::Float2ToString(winrt::float2(requestedPositionVelocityInPixelsPerSecond)).c_str());
+
+    winrt::float2 additionalVelocityInPixelsPerSecond = requestedPositionVelocityInPixelsPerSecond - currentPositionVelocityInPixelsPerSecond;
+
+    // On pre-RS5 versions, the SnapPointBase::s_isInertiaFromImpulse boolean parameters of the snap points' composition expressions
+    // depend on whether the request was triggere by the mouse wheel or not.
+    UpdateIsInertiaFromImpulse(false /*isInertiaFromImpulse*/);
+
+    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_METH_STR, METH_NAME, this,
+        L"TryUpdatePositionWithAdditionalVelocity", TypeLogging::Float2ToString(winrt::float2(additionalVelocityInPixelsPerSecond)).c_str());
+
+    m_interactionTracker.PositionInertiaDecayRate(winrt::float3(0.0f));
+    m_latestInteractionTrackerRequest = m_interactionTracker.TryUpdatePositionWithAdditionalVelocity(
+        winrt::float3(additionalVelocityInPixelsPerSecond, 0.0f));
+    m_lastInteractionTrackerAsyncOperationType = InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity;
+}
+
+// Restores the default scroll inertia decay rate if no offset change with additional or constant velocity operation is in progress.
 void ScrollingPresenter::PostProcessOffsetsChange(
     std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation)
 {
@@ -6791,9 +6981,10 @@ void ScrollingPresenter::PostProcessOffsetsChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> latestInteractionTrackerAsyncOperation = GetInteractionTrackerOperationFromRequestId(
             m_latestInteractionTrackerRequest);
         if (latestInteractionTrackerAsyncOperation &&
-            latestInteractionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity)
+            (latestInteractionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity ||
+             latestInteractionTrackerAsyncOperation->GetOperationType() == InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity))
         {
-            // Do not reset the scroll inertia decay rate when there is a new ongoing offset change with additional velocity
+            // Do not reset the scroll inertia decay rate when there is a new ongoing offset change with additional or constant velocity
             return;
         }
     }
@@ -7017,6 +7208,7 @@ void ScrollingPresenter::CompleteViewChange(
             case InteractionTrackerAsyncOperationType::TryUpdatePosition:
             case InteractionTrackerAsyncOperationType::TryUpdatePositionBy:
             case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAnimation:
+            case InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity:
             case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
                 RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
                 break;
@@ -7105,6 +7297,7 @@ void ScrollingPresenter::CompleteInteractionTrackerOperations(
 
                 switch (interactionTrackerAsyncOperationRemoved->GetOperationType())
                 {
+                    case InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity:
                     case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
                         PostProcessOffsetsChange(interactionTrackerAsyncOperationRemoved);
                         break;
@@ -7138,6 +7331,24 @@ void ScrollingPresenter::CompleteDelayedOperations()
             m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
         }
     }
+}
+
+winrt::float2 ScrollingPresenter::GetPositionVelocityInPixelsPerSecond()
+{
+    MUX_ASSERT(m_expressionAnimationSources);
+    MUX_ASSERT(m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
+
+    winrt::float2 positionVelocityInPixelsPerSecond{};
+
+    m_expressionAnimationSources.StopAnimation(s_positionVelocityInPixelsPerSecondSourcePropertyName);
+    RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_positionVelocityInPixelsPerSecondSourcePropertyName /*propertyName*/);
+
+    winrt::CompositionGetValueStatus status = m_expressionAnimationSources.TryGetVector2(s_positionVelocityInPixelsPerSecondSourcePropertyName, positionVelocityInPixelsPerSecond);
+
+    m_expressionAnimationSources.StartAnimation(s_positionVelocityInPixelsPerSecondSourcePropertyName, m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
+    RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_positionVelocityInPixelsPerSecondSourcePropertyName /*propertyName*/);
+
+    return positionVelocityInPixelsPerSecond;
 }
 
 winrt::float2 ScrollingPresenter::GetMouseWheelAnticipatedOffsetsChange() const
@@ -7221,6 +7432,19 @@ int ScrollingPresenter::GetInteractionTrackerOperationsCount(bool includeAnimate
     }
 
     return operationsCount;
+}
+
+std::shared_ptr<InteractionTrackerAsyncOperation> ScrollingPresenter::GetLastInteractionTrackerOperation()
+{
+    if (!m_interactionTrackerAsyncOperations.empty())
+    {
+        auto operationsIter = m_interactionTrackerAsyncOperations.end();
+
+        operationsIter--;
+        return *operationsIter;
+    }
+
+    return nullptr;
 }
 
 std::shared_ptr<InteractionTrackerAsyncOperation> ScrollingPresenter::GetLastNonAnimatedInteractionTrackerOperation(
