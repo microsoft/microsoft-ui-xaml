@@ -13,6 +13,7 @@ struct bringintoview_event_revoker;
 #include "TopNavigationViewDataProvider.h"
 #include "NavigationViewHelper.h"
 #include "NavigationView.properties.h"
+#include "NavigationViewItemsFactory.h"
 
 enum class TopNavigationViewLayoutState
 {
@@ -367,7 +368,8 @@ private:
 
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
-    winrt::SelectionModel m_selectionModel{ };
+    winrt::SelectionModel m_selectionModel{};
+    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     bool m_appliedTemplate{ false };
 

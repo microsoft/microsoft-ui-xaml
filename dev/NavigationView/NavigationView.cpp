@@ -152,6 +152,7 @@ NavigationView::NavigationView()
     Loaded({ this, &NavigationView::OnLoaded });
 
     m_selectionModel.SingleSelect(true);
+    m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 }
 
 void NavigationView::OnApplyTemplate()
@@ -224,6 +225,14 @@ void NavigationView::OnApplyTemplate()
  
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
         //m_leftNavListViewLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+
+        winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
+        if (!newIElementFactory)
+        {
+            newIElementFactory = MenuItemTemplateSelector();
+        }
+        (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
+        leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
 
         //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
@@ -387,6 +396,7 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneTitleMargins();
 
     // Initial setup for ItemsRepeater
+    SyncItemTemplates();
     UpdateRepeaterItemsSource();
 }
 
@@ -2895,7 +2905,17 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NavigationView::SyncItemTemplates()
 {
+    //TODO: Implement and force tree rebuild after update
 
+    //winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
+    //if (!newIElementFactory)
+    //{
+    //    newIElementFactory = MenuItemTemplateSelector();
+    //}
+
+    //m_leftNavRepeater.get().ItemTemplate(nullptr);
+    //(*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
+    //m_leftNavRepeater.get().ItemTemplate(*m_navigationViewItemsFactory);
 }
 
 void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
