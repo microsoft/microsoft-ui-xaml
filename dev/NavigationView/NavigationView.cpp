@@ -25,8 +25,7 @@ static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
 static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
 static constexpr auto c_rootSplitViewName = L"RootSplitView"sv;
 static constexpr auto c_menuItemsHost = L"MenuItemsHost"sv;
-static constexpr auto c_settingsName = L"SettingsNavPaneItem"sv;
-static constexpr auto c_settingsNameTopNav = L"SettingsTopNavPaneItem"sv;
+static constexpr auto c_footerMenuItemsHost = L"FooterMenuItemsHost"sv;
 static constexpr auto c_selectionIndicatorName = L"SelectionIndicator"sv;
 static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
@@ -42,6 +41,7 @@ static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonT
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
+static constexpr auto c_topNavFooterMenuItemsHost = L"TopNavFooterMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
 static constexpr auto c_topNavMenuItemsOverflowHost = L"TopNavMenuItemsOverflowHost"sv;
 static constexpr auto c_topNavGrid = L"TopNavGrid"sv;
@@ -92,25 +92,27 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_titleBarIsVisibleChangedRevoker.revoke();
     m_paneToggleButtonClickRevoker.revoke();
 
-    m_settingsItemTappedRevoker.revoke();
-    m_settingsItemKeyDownRevoker.revoke();
-    m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
 
     m_leftNavListViewSelectionChangedRevoker.revoke();
     m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();       
+    m_leftNavListViewLoadedRevoker.revoke();
     m_leftNavListView.set(nullptr);
 
-    m_leftNavListViewSelectionChangedRevoker.revoke();
-    m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();      
-    m_leftNavListView.set(nullptr);
+    m_leftFooterNavListViewSelectionChangedRevoker.revoke();
+    m_leftFooterNavListViewItemClickRevoker.revoke();
+    m_leftFooterNavListViewLoadedRevoker.revoke();
+    m_leftFooterNavListView.set(nullptr);
 
     m_topNavListViewSelectionChangedRevoker.revoke();
     m_topNavListViewItemClickRevoker.revoke();
     m_topNavListViewLoadedRevoker.revoke();
     m_topNavListView.set(nullptr);
+
+    m_topFooterNavListViewSelectionChangedRevoker.revoke();
+    m_topFooterNavListViewItemClickRevoker.revoke();
+    m_topFooterNavListViewLoadedRevoker.revoke();
+    m_topFooterNavListView.set(nullptr);
 
     m_topNavListOverflowViewSelectionChangedRevoker.revoke();
     m_topNavListOverflowView.set(nullptr);
@@ -141,6 +143,9 @@ NavigationView::NavigationView()
     SizeChanged({ this, &NavigationView::OnSizeChanged });
     auto items = winrt::make<Vector<winrt::IInspectable>>();
     SetValue(s_MenuItemsProperty, items);
+
+    auto footerItems = winrt::make<Vector<winrt::IInspectable>>();
+    SetValue(s_FooterMenuItemsProperty, footerItems);
 
     auto weakThis = get_weak();
     m_topDataProvider.OnRawDataChanged(
@@ -234,6 +239,25 @@ void NavigationView::OnApplyTemplate()
         }
     }
 
+    // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
+    if (auto leftNavFooterListView = GetTemplateChildT<winrt::ListView>(c_footerMenuItemsHost, controlProtected))
+    {
+        m_leftFooterNavListView.set(leftNavFooterListView);
+
+        m_leftFooterNavListViewLoadedRevoker = leftNavFooterListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+
+        m_leftFooterNavListViewSelectionChangedRevoker = leftNavFooterListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
+        m_leftFooterNavListViewItemClickRevoker = leftNavFooterListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
+
+        SetNavigationViewListPosition(leftNavFooterListView, NavigationViewListPosition::LeftNav);
+
+        // Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
+        if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
+        {
+            leftNavFooterListView.SingleSelectionFollowsFocus(false);
+        }
+    }
+
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
     if (auto topNavListView = GetTemplateChildT<winrt::ListView>(c_topNavMenuItemsHost, controlProtected))
     {
@@ -245,6 +269,19 @@ void NavigationView::OnApplyTemplate()
         m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
         SetNavigationViewListPosition(topNavListView, NavigationViewListPosition::TopPrimary);
+    }
+
+    // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
+    if (auto topNavFooterListView = GetTemplateChildT<winrt::ListView>(c_topNavFooterMenuItemsHost, controlProtected))
+    {
+        m_topFooterNavListView.set(topNavFooterListView);
+
+        m_topFooterNavListViewLoadedRevoker = topNavFooterListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+
+        m_topFooterNavListViewSelectionChangedRevoker = topNavFooterListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
+        m_topFooterNavListViewItemClickRevoker = topNavFooterListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
+
+        SetNavigationViewListPosition(topNavFooterListView, NavigationViewListPosition::TopPrimary);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -371,7 +408,8 @@ void NavigationView::OnApplyTemplate()
     m_appliedTemplate = true;
 
     // Do initial setup
-    UpdatePaneDisplayMode();    
+    CreateAndHookEventsToSettings();
+    UpdatePaneDisplayMode();
     UpdateHeaderVisibility();
     UpdatePaneTitleFrameworkElementParents();
     UpdateTitleBarPadding();
@@ -386,49 +424,37 @@ void NavigationView::OnApplyTemplate()
 }
 
 // Hook up the Settings Item Invoked event listener
-void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsName)
+void NavigationView::CreateAndHookEventsToSettings()
 {
     winrt::IControlProtected controlProtected = *this;
-    auto settingsItem = GetTemplateChildT<winrt::NavigationViewItem>(settingsName, controlProtected);
-    if (settingsItem && settingsItem != m_settingsItem.get())
-     {
-        // If the old settings item is selected, move the selection to the new one.
-        auto selectedItem = SelectedItem();
-        bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
 
-        if (shouldSelectSetting)
-        { 
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
-        }
+    if (!m_settingsItem)
+    {
+        m_settingsItem.set(winrt::make < ::NavigationViewItem>());
 
-        m_settingsItemTappedRevoker.revoke();
-        m_settingsItemKeyDownRevoker.revoke();
-        m_settingsItemKeyUpRevoker.revoke();
-
-        m_settingsItem.set(settingsItem);
-        m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnSettingsTapped });
-        m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyDown });
-        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyUp });
-
-        // Do localization for settings item label and Automation Name
-        auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
-        winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
-        UpdateSettingsItemToolTip();
-
-        // Add the name only in case of horizontal nav
-        if (!IsTopNavigationView())
-        {
-            settingsItem.Content(box_value(localizedSettingsName));
-        }
-
-        // hook up SettingsItem
-        SetValue(s_SettingsItemProperty, settingsItem);
-
-        if (shouldSelectSetting)
-        { 
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(m_settingsItem.get());
-        }
     }
+
+    auto settingsItem = m_settingsItem.get();
+    auto settingsIcon = winrt::SymbolIcon(winrt::Symbol::Setting);
+    settingsItem.Icon(settingsIcon);
+
+    // Do localization for settings item label and Automation Name
+    auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
+    winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
+    UpdateSettingsItemToolTip();
+
+    // Add the name only in case of horizontal nav
+    if (!IsTopNavigationView())
+    {
+        settingsItem.Content(box_value(localizedSettingsName));
+    }
+    else
+    {
+        settingsItem.Content(nullptr);
+    }
+
+    // hook up SettingsItem
+    SetValue(s_SettingsItemProperty, settingsItem);
 }
 
 // Unlike other control, NavigationView only move items into/out of overflow on MeasureOverride. 
@@ -944,37 +970,6 @@ std::function<void ()> NavigationView::SetPaneTitleFrameworkElementParent(const 
     return nullptr;
 }
 
-void NavigationView::OnSettingsTapped(const winrt::IInspectable& /*sender*/, const winrt::TappedRoutedEventArgs& /*args*/)
-{
-    OnSettingsInvoked();
-}
-
-void NavigationView::OnSettingsKeyDown(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    auto key = args.Key();
-
-    // Because ListViewItem eats the events, we only get these keys on KeyDown.
-    if (key == winrt::VirtualKey::Space ||
-        key == winrt::VirtualKey::Enter)
-    {
-        args.Handled(true);
-        OnSettingsInvoked();
-    }
-}
-
-void NavigationView::OnSettingsKeyUp(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    if (!args.Handled())
-    {
-        // Because ListViewItem eats the events, we only get these keys on KeyUp.
-        if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-        {
-            args.Handled(true);
-            OnSettingsInvoked();
-        }
-    }
-}
-
 void NavigationView::OnSettingsInvoked()
 {
     auto prevItem = SelectedItem();
@@ -1266,7 +1261,7 @@ void NavigationView::OnSelectionChanged(const winrt::IInspectable& /*sender*/, c
             nextItem = args.AddedItems().GetAt(0);
         }
 
-        if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
+        if (prevItem && !nextItem) // try to unselect an item but it's not allowed
         {
             // Aways keep one item is selected except Settings
 
@@ -1707,9 +1702,10 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 {
     if (const auto& nvi = container)
     {
+        winrt::IInspectable item{ nullptr };
+
         if (IsTopNavigationView())
         {
-            winrt::IInspectable item{ nullptr };
             // Search topnav first, if not found, search overflow
             if (auto lv = m_topNavListView.get())
             {
@@ -1723,16 +1719,38 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             if (auto lv = m_topNavListOverflowView.get())
             {
                 item = lv.ItemFromContainer(nvi);
+                if (item)
+                {
+                    return item;
+                }
             }
+
+            // if still not found search footer
+            if (auto flv = m_topFooterNavListView.get())
+            {
+                item = flv.ItemFromContainer(nvi);
+            }
+
             return item;
         }
         else
         {
             if (auto lv = m_leftNavListView.get())
             {
-                auto item = lv.ItemFromContainer(nvi);
-                return item;
+                item = lv.ItemFromContainer(nvi);
+
+                if (item)
+                {
+                    return item;
+                }
+
+                // if not found search footer
+                if (auto flv = m_leftFooterNavListView.get())
+                {
+                    item = flv.ItemFromContainer(nvi);
+                }
             }
+            return item;
         }
     }
 
@@ -1889,6 +1907,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::
     // If it's an virtualized panel like ItemsStackPanel, IsItemItsOwnContainer is called before raise the event in ListViewBase::OnItemClick.
     // Here we assume the LastItemCalledInIsItemItsOwnContainerOverride is the container.
     winrt::NavigationViewItemBase container{ nullptr };
+
     auto listView = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
     MUX_ASSERT(listView);
 
@@ -1901,6 +1920,24 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::
     if (!container && itemData)
     {
         container = listView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
+    }
+
+    // still no container, lats look in footer list
+    if (container.Content() != itemData)
+    {
+        auto footerListView = IsTopNavigationView() ? m_topFooterNavListView.get() : m_leftFooterNavListView.get();
+        MUX_ASSERT(footerListView);
+
+        if (auto navListView = footerListView.try_as<winrt::NavigationViewList>())
+        {
+            container = winrt::get_self<NavigationViewList>(navListView)->GetLastItemCalledInIsItemItsOwnContainerOverride();
+        }
+
+        // Most likely we didn't use ItemStackPanel. but we still try to see if we can find a matched container.
+        if (!container && itemData)
+        {
+            container = footerListView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
+        }
     }
 
     MUX_ASSERT(container && container.Content() == itemData);
@@ -2041,6 +2078,17 @@ bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
     return isSettingsItem;
 }
 
+bool NavigationView::IsFooterMenuItem(winrt::IInspectable const& item)
+{
+    bool isFooterItem = false;
+    if (item && FooterMenuItems())
+    {
+        uint32_t index = 0;
+        isFooterItem = FooterMenuItems().IndexOf(item, index);
+    }
+    return isFooterItem;
+}
+
 void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
 {
     // ListView already handled unselect by itself if ListView raise SelectChanged by itself.
@@ -2050,7 +2098,7 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
     // 3, select from listviewitem to null from API.
     if (prevItem && prevItem != nextItem)
     {
-        if (IsSettingsItem(prevItem) || (nextItem && IsSettingsItem(nextItem)) || !nextItem)
+        if (IsFooterMenuItem(prevItem) || (nextItem && IsFooterMenuItem(nextItem)) || !nextItem)
         {
             ChangeSelectStatusForItem(prevItem, false /*selected*/);
         }
@@ -2100,9 +2148,6 @@ void NavigationView::UpdateVisualState(bool useTransitions)
         auto box = AutoSuggestBox();
         winrt::VisualStateManager::GoToState(*this, box ? L"AutoSuggestBoxVisible" : L"AutoSuggestBoxCollapsed", false /*useTransitions*/);
 
-        bool isVisible = IsSettingsVisible();
-        winrt::VisualStateManager::GoToState(*this, isVisible ? L"SettingsVisible" : L"SettingsCollapsed", false /*useTransitions*/);
-
         if (IsTopNavigationView())
         {
             UpdateVisualStateForOverflowButton();
@@ -2147,6 +2192,20 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
             list->SetShowFocusVisual(showFocusVisual);
         }
         );
+
+        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::LeftFooterListView,
+            [showFocusVisual](NavigationViewList* list)
+            {
+                list->SetShowFocusVisual(showFocusVisual);
+            }
+        );
+
+        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::TopFooterListView,
+            [showFocusVisual](NavigationViewList* list)
+            {
+                list->SetShowFocusVisual(showFocusVisual);
+            }
+        );
     }
 }
 
@@ -2187,6 +2246,16 @@ void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagat
         NavigationViewPropagateTarget::All == target)
     {
         PropagateChangeToNavigationViewList(m_topNavListOverflowView.get(), function);
+    }
+    if (NavigationViewPropagateTarget::LeftFooterListView == target ||
+        NavigationViewPropagateTarget::All == target)
+    {
+        PropagateChangeToNavigationViewList(m_leftFooterNavListView.get(), function);
+    }
+    if (NavigationViewPropagateTarget::TopFooterListView == target ||
+        NavigationViewPropagateTarget::All == target)
+    {
+        PropagateChangeToNavigationViewList(m_topFooterNavListView.get(), function);
     }
 }
 
@@ -2729,6 +2798,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateListViewItemSource();
     }
+    else if (property == s_FooterMenuItemsProperty)
+    {
+        UpdateFooterListViewItemSource();
+    }
     else if (property == s_PaneDisplayModeProperty)
     {
         // m_wasForceClosed is set to true because ToggleButton is clicked and Pane is closed.
@@ -2784,7 +2857,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_IsSettingsVisibleProperty)
     {
-        UpdateVisualState();
+        UpdateFooterListViewItemSource();
     }
     else if (property == s_CompactPaneLengthProperty)
     {
@@ -2890,6 +2963,7 @@ void NavigationView::UpdatePaneDisplayMode()
     {
         return; 
     }
+
     if (!IsTopNavigationView())
     {
         UpdateAdaptiveLayout(ActualWidth(), true /*forceSetDisplayMode*/);
@@ -2897,8 +2971,6 @@ void NavigationView::UpdatePaneDisplayMode()
         SwapPaneHeaderContent(m_leftNavPaneHeaderContentBorder, m_paneHeaderOnTopPane, L"PaneHeader");
         SwapPaneHeaderContent(m_leftNavPaneCustomContentBorder, m_paneCustomContentOnTopPane, L"PaneCustomContent");
         SwapPaneHeaderContent(m_leftNavFooterContentBorder, m_paneFooterOnTopPane, L"PaneFooter");
-
-        CreateAndHookEventsToSettings(c_settingsName);
 
         if (winrt::IUIElement8 thisAsUIElement8 = *this)
         {
@@ -2918,8 +2990,6 @@ void NavigationView::UpdatePaneDisplayMode()
         SwapPaneHeaderContent(m_paneCustomContentOnTopPane, m_leftNavPaneCustomContentBorder, L"PaneCustomContent");
         SwapPaneHeaderContent(m_paneFooterOnTopPane, m_leftNavFooterContentBorder, L"PaneFooter");
 
-        CreateAndHookEventsToSettings(c_settingsNameTopNav);
-
         if (winrt::IUIElement8 thisAsUIElement8 = *this)
         {
             if (auto topNavOverflowButton = m_topNavOverflowButton.get())
@@ -2931,6 +3001,7 @@ void NavigationView::UpdatePaneDisplayMode()
 
     UpdateContentBindingsForPaneDisplayMode();
     UpdateListViewItemSource();
+    UpdateFooterListViewItemSource();
 }
 
 void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)
@@ -3331,6 +3402,54 @@ void NavigationView::UpdateListViewItemSource()
     }
 }
 
+void NavigationView::UpdateFooterListViewItemSource()
+{
+    auto footerItems = FooterMenuItems();
+
+    // If the old settings item is selected, move the selection to the new one.
+    auto selectedItem = SelectedItem();
+    bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
+
+    if (shouldSelectSetting)
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
+    }
+
+    if (m_settingsItem)
+    {
+        uint32_t index = 0;
+        if (footerItems.IndexOf(m_settingsItem.get(), index))
+        {
+            m_settingsItem.get().Icon(nullptr);
+            footerItems.RemoveAt(index);
+            m_settingsItem.set(nullptr);
+        }
+    }
+
+    if (IsSettingsVisible() && m_appliedTemplate)
+    {
+        CreateAndHookEventsToSettings();
+        // add settings item to the end of footer
+        footerItems.Append(m_settingsItem.get());
+    }
+
+    if (IsTopNavigationView())
+    {
+        UpdateListViewItemsSource(m_leftFooterNavListView.get(), nullptr);
+        UpdateListViewItemsSource(m_topFooterNavListView.get(), footerItems);
+    }
+    else
+    {
+        UpdateListViewItemsSource(m_topFooterNavListView.get(), nullptr);
+        UpdateListViewItemsSource(m_leftFooterNavListView.get(), footerItems);
+    }
+
+    if (shouldSelectSetting)
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(m_settingsItem.get());
+    }
+}
+
 void NavigationView::UpdateSelectionForMenuItems()
 {
     // Allow customer to set selection by NavigationViewItem.IsSelected.
@@ -3519,23 +3638,21 @@ void NavigationView::UpdateTitleBarPadding()
 void NavigationView::UpdateSelectedItem()
 {
     auto item = SelectedItem();
-    auto settingsItem = m_settingsItem.get();
-    if (settingsItem && item == settingsItem)
+    auto lv = m_leftNavListView.get();
+    auto flv = m_leftFooterNavListView.get();
+    if (IsTopNavigationView())
     {
-        OnSettingsInvoked();
+        lv = m_topNavListView.get();
+        flv = m_topFooterNavListView.get();
     }
-    else
-    {
-        auto lv = m_leftNavListView.get();
-        if (IsTopNavigationView())
-        {
-            lv = m_topNavListView.get();
-        }
 
-        if (lv)
-        {
-            lv.SelectedItem(item);
-        }
+    if (lv)
+    {
+        lv.SelectedItem(item);
+    }
+    if (flv)
+    {
+        flv.SelectedItem(item);
     }
 }
 

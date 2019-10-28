@@ -23,6 +23,8 @@ enum class NavigationViewPropagateTarget
     LeftListView,
     TopListView,
     OverflowListView,
+    LeftFooterListView,
+    TopFooterListView,
     All
 };
 
@@ -55,3 +57,4 @@ static constexpr wstring_view c_OnLeftNavigation = L"OnLeftNavigation"sv;
 static constexpr wstring_view c_OnTopNavigationPrimary = L"OnTopNavigationPrimary"sv;
 static constexpr wstring_view c_OnTopNavigationPrimaryReveal = L"OnTopNavigationPrimaryReveal"sv;
 static constexpr wstring_view c_OnTopNavigationOverflow = L"OnTopNavigationOverflow"sv;
+

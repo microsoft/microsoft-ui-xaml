@@ -95,6 +95,7 @@ private:
     bool DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     bool IsSettingsItem(winrt::IInspectable const& item);
+    bool IsFooterMenuItem(winrt::IInspectable const& item);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
     void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
     void CloseTopNavigationViewFlyout();
@@ -143,7 +144,7 @@ private:
     bool IsTopNavigationView();
     bool IsTopPrimaryListVisible();
 
-    void CreateAndHookEventsToSettings(std::wstring_view settingsName);
+    void CreateAndHookEventsToSettings();
     void OnIsPaneOpenChanged();
     void UpdateHeaderVisibility();
     void UpdateHeaderVisibility(winrt::NavigationViewDisplayMode displayMode);
@@ -161,6 +162,7 @@ private:
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
+    void UpdateFooterListViewItemSource();
     void UpdateSelectionForMenuItems();
     bool m_InitialNonForcedModeUpdate{ true };
 
@@ -230,6 +232,14 @@ private:
             }
         }
 
+        if (auto flv = IsTopNavigationView() ? m_topFooterNavListView.get() : m_leftFooterNavListView.get())
+        {
+            if (auto itemContainer = flv.ContainerFromItem(data))
+            {
+                return itemContainer.try_as<T>();
+            }
+        }
+
         if (auto settingsItem = m_settingsItem.get())
         {
             if (settingsItem == data || settingsItem.Content() == data)
@@ -284,6 +294,8 @@ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ListView> m_leftNavListView{ this };
     tracker_ref<winrt::ListView> m_topNavListView{ this };
+    tracker_ref<winrt::ListView> m_leftFooterNavListView{ this };
+    tracker_ref<winrt::ListView> m_topFooterNavListView{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
     tracker_ref<winrt::ListView> m_topNavListOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
@@ -321,9 +333,6 @@ private:
 
     // Event Tokens
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
-    winrt::UIElement::Tapped_revoker m_settingsItemTappedRevoker{};
-    winrt::UIElement::KeyDown_revoker m_settingsItemKeyDownRevoker{};
-    winrt::UIElement::KeyUp_revoker m_settingsItemKeyUpRevoker{};
     winrt::Button::Click_revoker m_paneSearchButtonClickRevoker{};
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
@@ -332,9 +341,15 @@ private:
     winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};
+    winrt::ListView::ItemClick_revoker m_leftFooterNavListViewItemClickRevoker{};
+    winrt::ListView::Loaded_revoker m_leftFooterNavListViewLoadedRevoker{};
+    winrt::ListView::SelectionChanged_revoker m_leftFooterNavListViewSelectionChangedRevoker{};
     winrt::ListView::ItemClick_revoker m_topNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_topNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_topNavListViewSelectionChangedRevoker{};
+    winrt::ListView::ItemClick_revoker m_topFooterNavListViewItemClickRevoker{};
+    winrt::ListView::Loaded_revoker m_topFooterNavListViewLoadedRevoker{};
+    winrt::ListView::SelectionChanged_revoker m_topFooterNavListViewSelectionChangedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_topNavListOverflowViewSelectionChangedRevoker{};
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

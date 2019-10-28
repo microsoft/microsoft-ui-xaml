@@ -729,7 +729,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewSettingsItemStyleWhenOnTopPane">
+    <Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewFooterItemStyleWhenOnTopPane">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
         <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
@@ -800,11 +800,11 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle 
-                            x:Name="PointerRectangle" 
+                            x:Name="PointerRectangle"
                             Fill="Transparent" />
-                        <Border		
-                            x:Name="RevealBorder"		
-                            BorderBrush="{TemplateBinding BorderBrush}"		
+                        <Border
+                            x:Name="RevealBorder"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}" >
                         </Border>
                         <Grid x:Name="ContentGrid">
@@ -817,7 +817,7 @@
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
                             <Viewbox 
-                                x:Name="IconBox" 
+                                x:Name="IconBox"
                                 Grid.Row="1"
                                 Grid.Column="1"
                                 Height="16"
@@ -836,7 +836,9 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <!--<Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewSettingsItemStyleWhenOnTopPane" BasedOn="{StaticResource MUX_NavigationViewFooterItemStyleWhenOnTopPane}"/>-->
+
     <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPane">
         <Setter Property="Template">
             <Setter.Value>

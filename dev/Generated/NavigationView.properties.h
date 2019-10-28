@@ -30,6 +30,9 @@ public:
     void ExpandedModeThresholdWidth(double value);
     double ExpandedModeThresholdWidth();
 
+    void FooterMenuItems(winrt::IVector<winrt::IInspectable> const& value);
+    winrt::IVector<winrt::IInspectable> FooterMenuItems();
+
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
@@ -121,6 +124,7 @@ public:
     static winrt::DependencyProperty ContentOverlayProperty() { return s_ContentOverlayProperty; }
     static winrt::DependencyProperty DisplayModeProperty() { return s_DisplayModeProperty; }
     static winrt::DependencyProperty ExpandedModeThresholdWidthProperty() { return s_ExpandedModeThresholdWidthProperty; }
+    static winrt::DependencyProperty FooterMenuItemsProperty() { return s_FooterMenuItemsProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IsBackButtonVisibleProperty() { return s_IsBackButtonVisibleProperty; }
@@ -157,6 +161,7 @@ public:
     static GlobalDependencyProperty s_ContentOverlayProperty;
     static GlobalDependencyProperty s_DisplayModeProperty;
     static GlobalDependencyProperty s_ExpandedModeThresholdWidthProperty;
+    static GlobalDependencyProperty s_FooterMenuItemsProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IsBackButtonVisibleProperty;
@@ -236,6 +241,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnExpandedModeThresholdWidthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnFooterMenuItemsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

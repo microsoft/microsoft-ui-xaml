@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -55,15 +55,6 @@
                                 </VisualState>
                             </VisualStateGroup>
 
-                            <VisualStateGroup x:Name="SettingsGroup">
-                                <VisualState x:Name="SettingsVisible" />
-                                <VisualState x:Name="SettingsCollapsed">
-                                    <VisualState.Setters>
-                                        <Setter Target="SettingsNavPaneItem.Visibility" Value="Collapsed" />
-                                        <Setter Target="SettingsTopNavPaneItem.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
 
                             <VisualStateGroup x:Name="AutoSuggestGroup">
                                 <VisualState x:Name="AutoSuggestBoxVisible" />
@@ -90,10 +81,12 @@
                                 <VisualState x:Name="ListSizeCompact">
                                     <VisualState.Setters>
                                         <Setter Target="MenuItemsHost.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="FooterMenuItemsHost.HorizontalAlignment" Value="Left"/>
                                         <!-- This is essentially a TemplateBinding: -->
                                         <Setter Target="MenuItemsHost.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
-                                        <Setter Target="SettingsNavPaneItem.HorizontalAlignment" Value="Left"/>
-                                        <Setter Target="SettingsNavPaneItem.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
+                                        <Setter Target="FooterMenuItemsHost.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>
+                                        <!--<Setter Target="SettingsNavPaneItem.HorizontalAlignment" Value="Left"/>
+                                        <Setter Target="SettingsNavPaneItem.Width" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CompactPaneLength}"/>-->
                                         <Setter Target="PaneTitleTextBlock.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneHeaderContentBorder.Visibility" Value="Collapsed" />
                                         <Setter Target="PaneCustomContentBorder.HorizontalAlignment" Value="Left"/>
@@ -144,7 +137,6 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-
                         <Grid
                             x:Name="PaneToggleButtonGrid"
                             Margin="0,0,0,8"
@@ -217,7 +209,7 @@
                                 Background="{ThemeResource NavigationViewTopPaneBackground}"
                                 Grid.Row="0"
                                 HorizontalAlignment="Stretch"
-                                VerticalAlignment="Top"                                
+                                VerticalAlignment="Top"
                                 Canvas.ZIndex="1"
                                 contract4Present:XYFocusKeyboardNavigation="Enabled">
 
@@ -346,15 +338,32 @@
                                         VerticalContentAlignment="Stretch"
                                         HorizontalContentAlignment="Stretch"
                                         Grid.Column="7" />
-                                    <Grid
-                                        Grid.Column="8" >
-                                        <local:NavigationViewItem
-                                            x:Name="SettingsTopNavPaneItem"
-                                            Style="{ThemeResource MUX_NavigationViewSettingsItemStyleWhenOnTopPane}"
-                                            Icon="Setting"/>
 
-                                    </Grid>
-
+                                    <!-- Top footer nav list -->
+                                    <local:NavigationViewList
+                                        AutomationProperties.LandmarkType="Navigation"
+                                        x:Name="TopNavFooterMenuItemsHost"
+                                        Grid.Column="8"
+                                        SelectionMode="Single"
+                                        IsItemClickEnabled="True"
+                                        ItemTemplate="{TemplateBinding MenuItemTemplate}"
+                                        ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
+                                        ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
+                                        ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
+                                        ScrollViewer.HorizontalScrollMode="Disabled"
+                                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                        SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}">
+                                        <ListView.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <ItemsStackPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ListView.ItemsPanel>
+                                        <ListView.ItemContainerTransitions>
+                                            <TransitionCollection />
+                                        </ListView.ItemContainerTransitions>
+                                    </local:NavigationViewList>
                                 </Grid>
                                 <Border
                                     x:Name="TopNavContentOverlayAreaGrid"
@@ -379,12 +388,13 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.LeftPaneVisibility}">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->                                            
+                                            <RowDefinition Height="0"/> <!-- above button margin + back button space -->
                                             <RowDefinition x:Name="PaneContentGridToggleButtonRow" Height="Auto" MinHeight="{StaticResource NavigationViewPaneHeaderRowMinHeight}"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
                                             <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/>
@@ -461,13 +471,20 @@
                                             VerticalContentAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="7" />
-                                        <Grid
-                                            Grid.Row="8">
-                                            <local:NavigationViewItem
-                                            x:Name="SettingsNavPaneItem"
-                                            Icon="Setting"/>
-                                        </Grid>
-
+                                        <!--bottom left nav list-->
+                                        <local:NavigationViewList
+                                            x:Name="FooterMenuItemsHost"
+                                            Grid.Row="8"
+                                            SelectionMode="Single"
+                                            IsItemClickEnabled="True"
+                                            HorizontalAlignment="Stretch"
+                                            SelectedItem="{TemplateBinding SelectedItem}"
+                                            ItemTemplate="{TemplateBinding MenuItemTemplate}"
+                                            ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
+                                            ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
+                                            ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
+                                            SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}">
+                                        </local:NavigationViewList>
                                     </Grid>
                                 </SplitView.Pane>
 
