@@ -25,6 +25,9 @@
                 ShowPaused="{x:Bind ShowPausedCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 ShowError="{x:Bind ShowErrorCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"/>
 
+            <TextBlock Text="Indicator Width" Margin="0, 20, 0, 0"/>
+            <TextBlock x:Name="IndicatorWidthText" AutomationProperties.Name="IndicatorWidthText" Margin="0, 0, 0, 20"/>
+
             <Grid Width="200px" HorizontalAlignment="Left">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*" />
@@ -57,6 +60,8 @@
 
             <TextBlock AutomationProperties.Name="ShowIsDeterminateText" Text="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Mode=OneWay}"/>
             <CheckBox x:Name="ShowIsDeterminateCheckBox" Content="Show IsDeterminate"/>
+
+            <TextBlock x:Name="VisualStateText" AutomationProperties.Name="VisualStateText"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

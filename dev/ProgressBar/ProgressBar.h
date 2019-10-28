@@ -32,7 +32,8 @@ private:
 
     void SetProgressBarIndicatorWidth();
     void UpdateStates();
-    void UpdateWidthBasedTemplateSettings(const winrt::IInspectable&, const winrt::IInspectable&);
+    void UpdateWidthBasedTemplateSettings();
+    void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
 
     winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
     winrt::Rectangle::Loaded_revoker m_progressBarIndicatorRevoker{};
@@ -41,6 +42,8 @@ private:
     tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
 
     winrt::ProgressBar::SizeChanged_revoker m_sizeChangedRevoker{};
+
+    bool m_shouldUpdateWidthBasedTemplateSettings = false;
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
     static constexpr wstring_view s_ProgressBarIndicatorName{ L"ProgressBarIndicator" };

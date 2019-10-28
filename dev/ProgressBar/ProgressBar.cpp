@@ -13,6 +13,8 @@ ProgressBar::ProgressBar()
 
     SetDefaultStyleKey(this);
 
+    m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &ProgressBar::OnSizeChanged });
+    
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
@@ -33,6 +35,15 @@ void ProgressBar::OnApplyTemplate()
     m_progressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(s_ProgressBarIndicatorName, controlProtected));
 
     UpdateStates();
+}
+
+void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    SetProgressBarIndicatorWidth();
+    if (m_shouldUpdateWidthBasedTemplateSettings)
+    {
+        UpdateWidthBasedTemplateSettings();
+    }
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -61,8 +72,7 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
-    m_sizeChangedRevoker.revoke();
-
+    m_shouldUpdateWidthBasedTemplateSettings = false;
     if (ShowError())
     {
         winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
@@ -77,9 +87,9 @@ void ProgressBar::UpdateStates()
     }
     else if (IsIndeterminate())
     {
-        UpdateWidthBasedTemplateSettings(nullptr, nullptr);
+        m_shouldUpdateWidthBasedTemplateSettings = true;
+        UpdateWidthBasedTemplateSettings();
         winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
-        m_sizeChangedRevoker = this->SizeChanged(winrt::auto_revoke, { this, &ProgressBar::UpdateWidthBasedTemplateSettings });
     }
     else if (!IsIndeterminate())
     {
@@ -111,7 +121,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
     }
 }
 
-void ProgressBar::UpdateWidthBasedTemplateSettings(const winrt::IInspectable&, const winrt::IInspectable&)
+void ProgressBar::UpdateWidthBasedTemplateSettings()
 {
     const auto templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
 

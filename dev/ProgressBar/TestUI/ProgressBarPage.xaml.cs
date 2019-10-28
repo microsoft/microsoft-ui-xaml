@@ -14,6 +14,7 @@ using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
 //using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using Windows.UI.Xaml.Data;
 using System.Numerics;
+using Windows.UI.Xaml.Shapes;
 
 namespace MUXControlsTestApp
 {
@@ -23,26 +24,47 @@ namespace MUXControlsTestApp
         public ProgressBarPage()
         {
             this.InitializeComponent();
+            Loaded += ProgressBarPage_Loaded;  
+        }
+
+        private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            TestProgressBar.Loaded += TestProgressBar_Loaded;
+
+            Loaded -= ProgressBarPage_Loaded;
+        }
+
+        private void TestProgressBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressBar, 0);
+            
+            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressBarPage_CurrentStateChanged;
+            VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
+
+            var progressBarRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
+            var clip = VisualTreeHelper.GetChild(progressBarRoot, 0);
+            var indicator = (Rectangle)VisualTreeHelper.GetChild(clip, 0);
+
+            indicator.SizeChanged += this.Indicator_SizeChanged;
+            IndicatorWidthText.Text = indicator.ActualWidth.ToString();
+
+            TestProgressBar.Loaded -= TestProgressBar_Loaded;
+        }
+
+        private void Indicator_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            IndicatorWidthText.Text = ((Rectangle)sender).ActualWidth.ToString();
+        }
+
+        private void ProgressBarPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+        {
+            VisualStateText.Text = e.NewState.Name;
         }
 
         public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
         {
-            if (!String.IsNullOrEmpty(MaximumInput.Text))
-            {
-                TestProgressBar.Maximum = Double.Parse(MaximumInput.Text);
-            } else
-            {
-                TestProgressBar.Maximum = Double.Parse(MaximumInput.PlaceholderText);
-            }
-
-            if (!String.IsNullOrEmpty(MinimumInput.Text))
-            {
-                TestProgressBar.Minimum = Double.Parse(MinimumInput.Text);
-            }
-            else
-            {
-                TestProgressBar.Minimum = Double.Parse(MinimumInput.PlaceholderText);
-            }
+            TestProgressBar.Maximum = String.IsNullOrEmpty(MaximumInput.Text) ? Double.Parse(MaximumInput.PlaceholderText) : Double.Parse(MaximumInput.Text);
+            TestProgressBar.Minimum = String.IsNullOrEmpty(MinimumInput.Text) ? Double.Parse(MinimumInput.PlaceholderText) : Double.Parse(MinimumInput.Text);
         }
         public void ChangeValue_Click(object sender, RoutedEventArgs e)
         {
