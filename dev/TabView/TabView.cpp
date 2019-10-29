@@ -231,12 +231,11 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
     if (auto listView = m_listView.get())
     {
         // Now that ListView exists, we can start using its Items collection.
-        
-        if (!listView.ItemsSource())
+        if (auto const lvItems = listView.Items())
         {
-            if (auto const lvItems = listView.Items())
+            if (!listView.ItemsSource())
             {
-                // copy the list, because clearing lvItems may also clear items
+                // copy the list, because clearing lvItems may also clear TabItems
                 winrt::IVector<winrt::IInspectable> const itemList{ winrt::single_threaded_vector<winrt::IInspectable>() };
 
                 for (auto const item : TabItems())
@@ -254,20 +253,8 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
                         lvItems.Append(item);
                     }
                 }
-                TabItems(lvItems);
             }
-        }
-
-        // if there is an itemsSource, we need to copy the values to TabItems, so that they are also accessible by TabItems property
-        else if (auto const itemsSource = listView.ItemsSource().try_as<winrt::IIterable<winrt::IInspectable>>())
-        {
-            winrt::IVector<winrt::IInspectable> const itemList{ winrt::single_threaded_vector<winrt::IInspectable>() };
-
-            for (auto const item : itemsSource)
-            {
-                itemList.Append(item);
-            }
-            TabItems(itemList);
+            TabItems(lvItems);
         }
 
         if (ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
