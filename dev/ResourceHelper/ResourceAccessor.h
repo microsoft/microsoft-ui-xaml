@@ -149,5 +149,12 @@ public:
 #define SR_TeachingTipNotificationWithoutAppName L"TeachingTipNotificationWithoutAppName"
 #define SR_TabViewAddButtonName L"TabViewAddButtonName"
 #define SR_TabViewAddButtonTooltip L"TabViewAddButtonTooltip"
+#define SR_NumberBoxErrorNumbersOnly L"NumberBoxErrorNumbersOnly"
+#define SR_NumberBoxErrorNumbersAndSymbols L"NumberBoxErrorNumbersAndSymbols"
+#define SR_NumberBoxErrorDivByZero L"NumberBoxErrorDivByZero"
+#define SR_NumberBoxErrorInvalidInput L"NumberBoxErrorInvalidInput"
+#define SR_NumberBoxErrorRange L"NumberBoxErrorRange"
+#define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
+#define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"

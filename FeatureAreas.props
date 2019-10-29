@@ -26,6 +26,7 @@
     <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
+    <FeatureNumberBoxEnabled>false</FeatureNumberBoxEnabled>
     <FeatureParallaxViewEnabled>false</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>false</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>false</FeaturePivotEnabled>
@@ -74,6 +75,7 @@
     <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
     <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>true</FeaturePivotEnabled>
