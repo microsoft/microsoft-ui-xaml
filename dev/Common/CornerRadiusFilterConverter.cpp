@@ -51,7 +51,17 @@ winrt::IInspectable CornerRadiusFilterConverter::Convert(
     winrt::hstring const& language)
 {
     auto cornerRadius = unbox_value<winrt::CornerRadius>(value);
-    auto filterType = Filter();
+
+    const auto scale = Scale();
+    if (!std::isnan(scale))
+    {
+        cornerRadius.TopLeft *= scale;
+        cornerRadius.TopRight *= scale;
+        cornerRadius.BottomRight *= scale;
+        cornerRadius.BottomLeft *= scale;
+    }
+
+    const auto filterType = Filter();
     if (filterType == winrt::CornerRadiusFilterKind::TopLeftValue ||
         filterType == winrt::CornerRadiusFilterKind::BottomRightValue)
     {
