@@ -1657,7 +1657,7 @@ namespace MUXControlsTestApp
                     int cancelId = scrollingPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
                     AppendAsyncEventMessage("Cancel Id=" + cancelId);
                 }
             }
