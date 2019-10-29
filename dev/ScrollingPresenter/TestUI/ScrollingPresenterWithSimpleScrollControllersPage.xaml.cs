@@ -627,7 +627,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public bool AreInteractionsAllowed
+        public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
@@ -698,7 +698,7 @@ namespace MUXControlsTestApp
         public void SetScrollMode(ScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
-            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreScrollControllerInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
         }
 
         public void SetValues(
