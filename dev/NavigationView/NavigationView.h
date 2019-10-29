@@ -35,9 +35,9 @@ enum class NavigationRecommendedTransitionDirection
     Default // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
 };
 
-static constexpr auto c_topNavRepeater = L"topNavRepeater"sv;
+static constexpr auto c_topNavRepeater = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_leftRepeater = L"MenuItemsHost"sv;
-static constexpr auto c_overflowRepeater = L"overflowRepeater"sv;
+static constexpr auto c_overflowRepeater = L"TopNavMenuItemsOverflowHost"sv;
 static constexpr auto c_flyoutItemsRepeater = L"flyoutItemsRepeater"sv;
 
 class NavigationView :
@@ -169,6 +169,7 @@ private:
     void UpdatePaneTitleMargins();
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
+    void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
     void UpdateSelectionForMenuItems();
     bool m_InitialNonForcedModeUpdate{ true };
@@ -235,12 +236,13 @@ private:
             return nvi;
         }
 
-        if (auto lv = IsTopNavigationView() ? m_topNavListView.get() : nullptr)
+        if (auto ir = IsTopNavigationView() ? m_topNavRepeater.get() : nullptr)
         {
-            if (auto itemContainer = lv.ContainerFromItem(data))
-            {
-                return itemContainer.try_as<T>();
-            }
+            MUX_FAIL_FAST_MSG("IMPLEMENT GET CONTAINER FOR DATA");
+            //if (auto itemContainer = lv.ContainerFromItem(data))
+            //{
+            //    return itemContainer.try_as<T>();
+            //}
         }
 
         if (auto settingsItem = m_settingsItem.get())
@@ -296,9 +298,9 @@ private:
     tracker_ref<winrt::Button> m_backButton{ this };
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ItemsRepeater> m_leftNavRepeater{ this };
-    tracker_ref<winrt::ListView> m_topNavListView{ this };
+    tracker_ref<winrt::ItemsRepeater> m_topNavRepeater{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
-    tracker_ref<winrt::ListView> m_topNavListOverflowView{ this };
+    tracker_ref<winrt::ItemsRepeater> m_topNavRepeaterOverflowView{ this };
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
 
@@ -342,10 +344,6 @@ private:
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
     winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
-    winrt::ListView::ItemClick_revoker m_topNavListViewItemClickRevoker{};
-    winrt::ListView::Loaded_revoker m_topNavListViewLoadedRevoker{};
-    winrt::ListView::SelectionChanged_revoker m_topNavListViewSelectionChangedRevoker{};
-    winrt::ListView::SelectionChanged_revoker m_topNavListOverflowViewSelectionChangedRevoker{};
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     winrt::SplitView::PaneClosed_revoker m_splitViewPaneClosedRevoker{};
@@ -360,6 +358,16 @@ private:
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_leftNavItemsRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavRepeaterLoadedRevoker{};
+
+    winrt::ItemsRepeater::ElementPrepared_revoker m_topNavItemsRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_topNavItemsRepeaterElementClearingRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavItemsRepeaterElementIndexChangedRevoker{};
+    winrt::ItemsRepeater::Loaded_revoker m_topNavRepeaterLoadedRevoker{};
+
+    winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavOverflowItemsRepeaterElementIndexChangedRevoker{};
+    //winrt::ItemsRepeater::Loaded_revoker m_topNavOverflowRepeaterLoadedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
