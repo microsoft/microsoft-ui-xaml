@@ -72,7 +72,6 @@ namespace MUXControlsTestApp
                 item.IconSource = _iconSource;
                 item.Header = "New Tab " + _newTabNumber;
                 item.Content = item.Header;
-                item.SetValue(AutomationProperties.NameProperty, item.Header);
 
                 Tabs.TabItems.Add(item);
 
@@ -319,9 +318,15 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TabViewSizingPageButtton_Click(object sender, RoutedEventArgs e)
+        private void TabViewSizingPageButton_Click(object sender, RoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(TabViewSizingPage));
+        }
+
+        private void ShortLongTextButton_Click(object sender, RoutedEventArgs e)
+        {
+            FirstTab.Header = "s";
+            LongHeaderTab.Header = "long long long long long long long long";
         }
     }
 }

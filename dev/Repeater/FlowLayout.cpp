@@ -70,7 +70,8 @@ winrt::Size FlowLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
-        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),
+        true, /* isWrapping */
+        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),        
         LayoutId());
     return value;
 }

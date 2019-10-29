@@ -38,19 +38,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            AutoSuggestBox autoSuggestBox = null;
-            RunOnUIThread.Execute(() =>
-            {
-                autoSuggestBox = new AutoSuggestBox();
-                List<string> suggestions = new List<string> 
-                {
-                    "Item 1", "Item 2", "Item 3"
-                };
-                autoSuggestBox.ItemsSource = suggestions;
-            });
-            IdleSynchronizer.Wait();
-            Verify.IsNotNull(autoSuggestBox);
-            TestUtilities.SetAsVisualTreeRoot(autoSuggestBox);
+            var autoSuggestBox = SetupAutoSuggestBox();
 
             RunOnUIThread.Execute(() =>
             {
@@ -76,6 +64,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Verify.AreEqual(new CornerRadius(0, 0, overlayCornerRadius.BottomRight, overlayCornerRadius.BottomLeft), popupBorder.CornerRadius);
             });
+        }
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            var autoSuggestBox = SetupAutoSuggestBox();
+            VisualTreeTestHelper.VerifyVisualTree(root: autoSuggestBox, masterFilePrefix: "AutoSuggestBox");
+        }
+
+        private AutoSuggestBox SetupAutoSuggestBox()
+        {
+            AutoSuggestBox autoSuggestBox = null;
+            RunOnUIThread.Execute(() =>
+            {
+                autoSuggestBox = new AutoSuggestBox();
+                List<string> suggestions = new List<string>
+                {
+                    "Item 1", "Item 2", "Item 3"
+                };
+                autoSuggestBox.ItemsSource = suggestions;
+                autoSuggestBox.Width = 400;
+            });
+            TestUtilities.SetAsVisualTreeRoot(autoSuggestBox);
+            Verify.IsNotNull(autoSuggestBox);
+            return autoSuggestBox;
         }
 
     }

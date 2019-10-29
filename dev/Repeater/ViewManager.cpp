@@ -118,6 +118,19 @@ void ViewManager::ClearElementToElementFactory(const winrt::UIElement& element)
         context.Element(nullptr);
         context.Parent(nullptr);
     }
+    else
+    {
+        // No ItemTemplate to recycle to, remove the element from the children collection.
+        auto children = m_owner->Children();
+        unsigned int childIndex = 0;
+        bool found = children.IndexOf(element, childIndex);
+        if (!found)
+        {
+            throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+        }
+
+        children.RemoveAt(childIndex);
+    }
 
     auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);    
     virtInfo->MoveOwnershipToElementFactory();

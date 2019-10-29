@@ -550,6 +550,7 @@ runtimeclass SelectionModelSelectionChangedEventArgs
 runtimeclass SelectionModelChildrenRequestedEventArgs
 {
     Object Source { get; };
+    IndexPath SourceIndex { get; };
     Object Children { get; set; };
 }
 

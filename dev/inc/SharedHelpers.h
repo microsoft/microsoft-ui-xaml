@@ -214,6 +214,8 @@ public:
         }
     }
 
+    static winrt::hstring TryGetStringRepresentationFromObject(winrt::IInspectable obj);
+
 #ifdef ICONSOURCE_INCLUDED
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
 #endif

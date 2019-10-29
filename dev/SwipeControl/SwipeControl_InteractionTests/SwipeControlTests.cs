@@ -150,6 +150,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void CanClearItemsWithoutCrashing()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("SwipeControl Tests"))
+            {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+                {
+                    Log.Warning("Test is disabled because RS1 doesn't have the right interaction tracker APIs.");
+                    return;
+                }
+
+
+                Log.Comment("Navigating to clear items test page");
+                UIObject navigateToClearPageObject = FindElement.ByName("navigateToClear");
+                Verify.IsNotNull(navigateToClearPageObject, "Verifying that navigateToClear Button was found");
+
+                Button navigateToClearPageButton = new Button(navigateToClearPageObject);
+                navigateToClearPageButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Find FindItemsSum textblock");
+                TextBlock sumOfSwipeItemsCount = new TextBlock(FindElement.ByName("SwipeItemsChildSum"));
+                Verify.IsNotNull(sumOfSwipeItemsCount);
+                Verify.AreEqual("2", sumOfSwipeItemsCount.GetText());
+
+                Log.Comment("Find clear SwipeItems button");
+                Button clearItemsButton = new Button(FindElement.ByName("ClearItemsButton"));
+                Verify.IsNotNull(clearItemsButton);
+                clearItemsButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("0", sumOfSwipeItemsCount.GetText());
+
+
+                Log.Comment("Find add SwipeItem button");
+                Button addItemsButton = new Button(FindElement.ByName("AddItemsButton"));
+                Verify.IsNotNull(addItemsButton);
+                addItemsButton.Invoke();
+                Wait.ForIdle();
+                // Only adds horizontal items, see test app for explanation
+                Verify.AreEqual("1", sumOfSwipeItemsCount.GetText());
+
+                Log.Comment("clearing items again");
+                clearItemsButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("0", sumOfSwipeItemsCount.GetText());
+
+
+            }
+        }
+
+
+        [TestMethod]
         public void CanSwipeAndTapFirstRevealedItemHorizontal()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))

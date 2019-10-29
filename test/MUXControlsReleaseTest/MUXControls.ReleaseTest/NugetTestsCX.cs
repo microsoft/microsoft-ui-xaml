@@ -70,5 +70,12 @@ namespace MUXControls.ReleaseTest
             var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
             Verify.AreEqual("2,2", textBlock.DocumentText);
         }
+
+        [TestMethod]
+        public void TreeViewNodeContentTest()
+        {
+            var node = FindElement.ByName("TreeViewNode1");
+            Verify.IsNotNull(node, "Verify TreeViewNode conteins right content");
+        }
     }
 }
