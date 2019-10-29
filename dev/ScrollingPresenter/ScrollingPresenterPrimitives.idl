@@ -193,7 +193,7 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
 [webhosthidden]
 interface IScrollController
 {
-    Boolean AreInteractionsAllowed { get; };
+    Boolean AreScrollControllerInteractionsAllowed { get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
     Boolean IsInteractionVisualRailEnabled { get; };

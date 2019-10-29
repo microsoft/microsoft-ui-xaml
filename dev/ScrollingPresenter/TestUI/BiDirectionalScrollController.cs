@@ -75,7 +75,7 @@ namespace MUXControlsTestApp.Utilities
                 Viewport = 0.0;
             }
 
-            public bool AreInteractionsAllowed
+            public bool AreScrollControllerInteractionsAllowed
             {
                 get;
                 private set;
@@ -247,7 +247,7 @@ namespace MUXControlsTestApp.Utilities
                     "UniScrollController: SetScrollMode for Orientation=" + Orientation +
                     " with scrollMode=" + scrollMode);
                 ScrollMode = scrollMode;
-                UpdateAreInteractionsAllowed();
+                UpdateAreScrollControllerInteractionsAllowed();
             }
 
             public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -326,13 +326,13 @@ namespace MUXControlsTestApp.Utilities
                 ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info.OffsetsChangeId));
             }
 
-            internal bool UpdateAreInteractionsAllowed()
+            internal bool UpdateAreScrollControllerInteractionsAllowed()
             {
-                bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+                bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
 
-                AreInteractionsAllowed = ScrollMode != ScrollingScrollMode.Disabled && Owner.IsEnabled;
+                AreScrollControllerInteractionsAllowed = ScrollMode != ScrollingScrollMode.Disabled && Owner.IsEnabled;
 
-                if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+                if (oldAreScrollControllerInteractionsAllowed != AreScrollControllerInteractionsAllowed)
                 {
                     RaiseInteractionInfoChanged();
                     return true;
@@ -988,8 +988,8 @@ namespace MUXControlsTestApp.Utilities
         private void BiDirectionalScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("BiDirectionalScrollController: IsEnabledChanged with IsEnabled=" + IsEnabled);
-            if (!horizontalScrollController.UpdateAreInteractionsAllowed() ||
-                !verticalScrollController.UpdateAreInteractionsAllowed())
+            if (!horizontalScrollController.UpdateAreScrollControllerInteractionsAllowed() ||
+                !verticalScrollController.UpdateAreScrollControllerInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }

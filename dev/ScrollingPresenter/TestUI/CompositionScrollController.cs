@@ -282,7 +282,7 @@ namespace MUXControlsTestApp.Utilities
                 "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
                 " with scrollMode=" + scrollMode);
             this.scrollMode = scrollMode;
-            UpdateAreInteractionsAllowed();
+            UpdateAreScrollControllerInteractionsAllowed();
         }
 
         public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -493,7 +493,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public bool AreInteractionsAllowed
+        public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
@@ -824,13 +824,13 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private bool UpdateAreInteractionsAllowed()
+        private bool UpdateAreScrollControllerInteractionsAllowed()
         {
-            bool oldAreInteractionsAllowed = AreInteractionsAllowed;
+            bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
 
-            AreInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
+            AreScrollControllerInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
 
-            if (oldAreInteractionsAllowed != AreInteractionsAllowed)
+            if (oldAreScrollControllerInteractionsAllowed != AreScrollControllerInteractionsAllowed)
             {
                 RaiseInteractionInfoChanged();
                 return true;
@@ -1186,7 +1186,7 @@ namespace MUXControlsTestApp.Utilities
         private void CompositionScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("CompositionScrollController: IsEnabledChanged for Orientation=" + Orientation + ", IsEnabled=" + IsEnabled);
-            if (!UpdateAreInteractionsAllowed())
+            if (!UpdateAreScrollControllerInteractionsAllowed())
             {
                 RaiseInteractionInfoChanged();
             }
