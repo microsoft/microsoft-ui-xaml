@@ -845,7 +845,7 @@ void ScrollingView::OnScrollControllerInteractionInfoChanged(
             }
         }
 
-        // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
+        // IScrollController::AreScrollControllerInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(true /*horizontalChange*/, false /*verticalChange*/);
         UpdateVisualStates(true /*useTransitions*/, showIndicators, hideIndicators);
@@ -874,7 +874,7 @@ void ScrollingView::OnScrollControllerInteractionInfoChanged(
             }
         }
 
-        // IScrollController::AreInteractionsAllowed might have changed and affect the scroll controller's visibility
+        // IScrollController::AreScrollControllerInteractionsAllowed might have changed and affect the scroll controller's visibility
         // when its visibility mode is Auto.
         UpdateScrollControllersVisibility(false /*horizontalChange*/, true /*verticalChange*/);
         UpdateVisualStates(true /*useTransitions*/, showIndicators, hideIndicators);
@@ -1584,7 +1584,7 @@ void ScrollingView::UpdateScrollControllersVisibility(
 
         if (scrollBarVisibility == winrt::ScrollingScrollBarVisibility::Auto &&
             m_horizontalScrollController &&
-            m_horizontalScrollController.get().AreInteractionsAllowed())
+            m_horizontalScrollController.get().AreScrollControllerInteractionsAllowed())
         {
             isHorizontalScrollControllerVisible = true;
         }
@@ -1608,7 +1608,7 @@ void ScrollingView::UpdateScrollControllersVisibility(
 
         if (scrollBarVisibility == winrt::ScrollingScrollBarVisibility::Auto &&
             m_verticalScrollController &&
-            m_verticalScrollController.get().AreInteractionsAllowed())
+            m_verticalScrollController.get().AreScrollControllerInteractionsAllowed())
         {
             isVerticalScrollControllerVisible = true;
         }
