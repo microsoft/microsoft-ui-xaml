@@ -17,19 +17,6 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
         }
 
-        private void HyperScroll_Checked(object sender, RoutedEventArgs e)
-        {
-            CheckBox check = (CheckBox) sender;
-            if ( (bool) check.IsChecked)
-            {
-                TestNumberBox.HyperScrollEnabled = true;
-            }
-            else
-            {
-                TestNumberBox.HyperScrollEnabled = false;
-            }
-        }
-
         private void SpinMode_Changed(object sender, RoutedEventArgs e)
         {
             if (TestNumberBox != null)
@@ -59,11 +46,6 @@ namespace MUXControlsTestApp
                     TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.Disabled;
                 }
             }
-        }
-
-        private void Wrap_CheckChanged(object sender, RoutedEventArgs e)
-        {
-            TestNumberBox.WrapEnabled = WrapCheckBox.IsEnabled;
         }
 
         private void MinCheckBox_CheckChanged(object sender, RoutedEventArgs e)

@@ -75,7 +75,7 @@ private:
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
-    void ValidateValue();
+    void CoerseValue();
     void UpdateTextToValue();
     void SetSpinButtonVisualState();
     int ComputePrecisionRounderSigDigits(double newVal);

@@ -79,9 +79,16 @@ void NumberBox::OnApplyTemplate()
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    ValidateValue();
-
     auto oldValue = unbox_value<double>(args.OldValue());
+
+    if (std::isnan(Value()) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    {
+        // In the validation case, we don't consider NaN to be valid.
+        Value(oldValue);
+    }
+
+    CoerseValue();
+
     if (Value() != oldValue)
     {
         // Fire ValueChanged event
@@ -100,12 +107,12 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    ValidateValue();
+    CoerseValue();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    ValidateValue();
+    CoerseValue();
 }
 
 void NumberBox::OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -146,7 +153,7 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
     ValidateInput();
 }
 
-void NumberBox::ValidateValue()
+void NumberBox::CoerseValue()
 {
     // Validate that the value is in bounds
     auto value = Value();
@@ -157,7 +164,7 @@ void NumberBox::ValidateValue()
         {
             Value(Maximum());
         }
-        else if (value < Minimum())
+        else
         {
             Value(Minimum());
         }
@@ -171,34 +178,35 @@ void NumberBox::ValidateInput()
     {
         auto text = textBox.Text();
         
-        // Handles Empty TextBox Case, current behavior is to set Value to default (0)
+        // Handles empty TextBox case, set text to current value
         if (text.empty())
         {
-            Value(0);
-            return;
-        }
-
-        if (AcceptsCalculation() && IsFormulaic(text))
-        {
-            NormalizeShorthandOperations();
-            EvaluateInputCalculation();
-        }
-
-        // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
-        auto numberParser = NumberFormatter().as<winrt::INumberParser>();
-        auto parsedNum = numberParser.ParseDouble(text);
-
-        if (!parsedNum)
-        {
-            if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-            {
-                // Override value to last valid value
-                UpdateTextToValue();
-            }
+            UpdateTextToValue();
         }
         else
         {
-            Value(parsedNum.Value());
+            if (AcceptsCalculation() && IsFormulaic(text))
+            {
+                NormalizeShorthandOperations();
+                EvaluateInputCalculation();
+            }
+
+            // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
+            auto numberParser = NumberFormatter().as<winrt::INumberParser>();
+            auto parsedNum = numberParser.ParseDouble(text);
+
+            if (!parsedNum)
+            {
+                if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                {
+                    // Override text to current value
+                    UpdateTextToValue();
+                }
+            }
+            else
+            {
+                Value(parsedNum.Value());
+            }
         }
     }
 }
@@ -273,7 +281,7 @@ void NumberBox::StepValue(bool isPositive)
         {
             newVal = Minimum();
         }
-        if (newVal < Minimum())
+        else if (newVal < Minimum())
         {
             newVal = Maximum();
         }
@@ -374,12 +382,6 @@ void NumberBox::SetSpinButtonVisualState()
 
 bool NumberBox::IsInBounds(double value)
 {
-    if (std::isnan(value))
-    {
-        // We don't consider NaN to be in bounds.
-        return false;
-    }
-
     return (value >= Minimum() && value <= Maximum());
 }
 
