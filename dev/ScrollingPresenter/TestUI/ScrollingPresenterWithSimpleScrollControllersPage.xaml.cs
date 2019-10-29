@@ -15,15 +15,15 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
 using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
 {
@@ -454,7 +454,7 @@ namespace MUXControlsTestApp
                 LogMessage("CanvasScrollControllerConsumer: OnScrollToRequested for HorizontalScrollController");
                 LogMessage("Offset=" + e.Offset + ", AnimationMode=" + e.Options.AnimationMode + ", SnapPointsMode=" + e.Options.SnapPointsMode);
 
-                if (e.Options.AnimationMode == AnimationMode.Disabled)
+                if (e.Options.AnimationMode == ScrollingAnimationMode.Disabled)
                 {
                     Canvas.SetLeft(scrolledElement, -e.Offset);
                 }
@@ -464,7 +464,7 @@ namespace MUXControlsTestApp
                 LogMessage("CanvasScrollControllerConsumer: OnScrollToRequested for VerticalScrollController");
                 LogMessage("Offset=" + e.Offset + ", AnimationMode=" + e.Options.AnimationMode + ", SnapPointsMode=" + e.Options.SnapPointsMode);
 
-                if (e.Options.AnimationMode == AnimationMode.Disabled)
+                if (e.Options.AnimationMode == ScrollingAnimationMode.Disabled)
                 {
                     Canvas.SetTop(scrolledElement, -e.Offset);
                 }
@@ -695,10 +695,10 @@ namespace MUXControlsTestApp
             */
         }
 
-        public void SetScrollMode(ScrollMode scrollMode)
+        public void SetScrollMode(ScrollingScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
-            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
         }
 
         public void SetValues(
@@ -787,7 +787,7 @@ namespace MUXControlsTestApp
 
                     int offsetChangeId = RaiseScrollToRequested(
                         e.NewValue,
-                        AnimationMode.Disabled);
+                        ScrollingAnimationMode.Disabled);
                     break;
             }
         }
@@ -812,7 +812,7 @@ namespace MUXControlsTestApp
 
         private int RaiseScrollToRequested(
             double offset,
-            AnimationMode animationMode)
+            ScrollingAnimationMode animationMode)
         {
             LogMessage("ScrollBarController: RaiseScrollToRequested for Orientation=" + Orientation + " with offset=" + offset + ", animationMode=" + animationMode);
             if (ScrollToRequested != null)
@@ -820,7 +820,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollToRequestedEventArgs e = 
                     new ScrollControllerScrollToRequestedEventArgs(
                         offset,
-                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollToRequested(this, e);
                 if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollToIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {
@@ -834,7 +834,7 @@ namespace MUXControlsTestApp
 
         private int RaiseScrollByRequested(
             double offsetDelta,
-            AnimationMode animationMode)
+            ScrollingAnimationMode animationMode)
         {
             LogMessage("ScrollBarController: RaiseScrollByRequested for Orientation=" + Orientation + " with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
             if (ScrollToRequested != null)
@@ -842,7 +842,7 @@ namespace MUXControlsTestApp
                 ScrollControllerScrollByRequestedEventArgs e =
                     new ScrollControllerScrollByRequestedEventArgs(
                         offsetDelta,
-                        new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                        new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                 ScrollByRequested(this, e);
                 if (e.ScrollInfo.OffsetsChangeId != -1 && !lstScrollByIds.Contains(e.ScrollInfo.OffsetsChangeId))
                 {

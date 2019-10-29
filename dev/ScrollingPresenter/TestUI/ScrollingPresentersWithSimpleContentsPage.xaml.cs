@@ -7,9 +7,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using InteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingInteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
@@ -83,7 +83,7 @@ namespace MUXControlsTestApp
             this.txtScrollingPresenterState.Text = sender.Name + " " + sender.State.ToString();
             this.fullLogs.Add(sender.Name + " StateChanged S=" + sender.State.ToString());
 
-            if (!canScrollingPresenter51ContentShrink && sender == scrollingPresenter51 && scrollingPresenter51.State == InteractionState.Idle)
+            if (!canScrollingPresenter51ContentShrink && sender == scrollingPresenter51 && scrollingPresenter51.State == ScrollingInteractionState.Idle)
             {
                 canScrollingPresenter51ContentShrink = true;
             }
@@ -335,13 +335,13 @@ namespace MUXControlsTestApp
             int viewChangeId = scrollingPresenter.ScrollTo(
                 0.0,
                 0.0,
-                new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
             this.fullLogs.Add(scrollingPresenter.Name + " ScrollTo requested. Id=" + viewChangeId);
 
             viewChangeId = scrollingPresenter.ZoomTo(
                 1.0f,
                 System.Numerics.Vector2.Zero,
-                new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
             this.fullLogs.Add(scrollingPresenter.Name + " ZoomTo requested. Id=" + viewChangeId);
             if (this.scrollingPresenter52 == scrollingPresenter)
             {

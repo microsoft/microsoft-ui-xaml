@@ -14,9 +14,9 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
@@ -150,7 +150,7 @@ namespace MUXControlsTestApp.Utilities
                 private set;
             }
 
-            private ScrollMode ScrollMode
+            private ScrollingScrollMode ScrollMode
             {
                 get;
                 set;
@@ -241,7 +241,7 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            public void SetScrollMode(ScrollMode scrollMode)
+            public void SetScrollMode(ScrollingScrollMode scrollMode)
             {
                 RaiseLogMessage(
                     "UniScrollController: SetScrollMode for Orientation=" + Orientation +
@@ -330,7 +330,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 bool oldAreInteractionsAllowed = AreInteractionsAllowed;
 
-                AreInteractionsAllowed = ScrollMode != ScrollMode.Disabled && Owner.IsEnabled;
+                AreInteractionsAllowed = ScrollMode != ScrollingScrollMode.Disabled && Owner.IsEnabled;
 
                 if (oldAreInteractionsAllowed != AreInteractionsAllowed)
                 {
@@ -377,7 +377,7 @@ namespace MUXControlsTestApp.Utilities
 
             internal int RaiseScrollToRequested(
                 double offset,
-                AnimationMode animationMode)
+                ScrollingAnimationMode animationMode)
             {
                 RaiseLogMessage("UniScrollController: RaiseScrollToRequested for Orientation=" + Orientation + " with offset=" + offset + ", animationMode=" + animationMode);
 
@@ -386,7 +386,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollToRequestedEventArgs e =
                         new ScrollControllerScrollToRequestedEventArgs(
                             offset,
-                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
                     return e.ScrollInfo.OffsetsChangeId;
                 }
@@ -395,7 +395,7 @@ namespace MUXControlsTestApp.Utilities
 
             internal int RaiseScrollByRequested(
                 double offsetDelta,
-                AnimationMode animationMode)
+                ScrollingAnimationMode animationMode)
             {
                 RaiseLogMessage("UniScrollController: RaiseScrollByRequested for Orientation=" + Orientation + " with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
 
@@ -404,7 +404,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollByRequestedEventArgs e =
                         new ScrollControllerScrollByRequestedEventArgs(
                             offsetDelta,
-                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
                     return e.ScrollInfo.OffsetsChangeId;
                 }
@@ -575,7 +575,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public int ScrollTo(double horizontalOffset, double verticalOffset, AnimationMode animationMode)
+        public int ScrollTo(double horizontalOffset, double verticalOffset, ScrollingAnimationMode animationMode)
         {
             int viewChangeId = RaiseScrollToRequested(
                 new Point(horizontalOffset, verticalOffset),
@@ -584,7 +584,7 @@ namespace MUXControlsTestApp.Utilities
             return viewChangeId;
         }
 
-        public int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, AnimationMode animationMode)
+        public int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, ScrollingAnimationMode animationMode)
         {
             int viewChangeId = RaiseScrollByRequested(
                 new Point(horizontalOffsetDelta, verticalOffsetDelta),
@@ -945,7 +945,7 @@ namespace MUXControlsTestApp.Utilities
             Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
             Point targetScrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-            int viewChangeId = RaiseScrollToRequested(targetScrollingPresenterOffset, AnimationMode.Auto, true /*hookupCompletion*/);
+            int viewChangeId = RaiseScrollToRequested(targetScrollingPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
             if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
             {
                 operations.Add(
@@ -972,7 +972,7 @@ namespace MUXControlsTestApp.Utilities
                 Point scrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int viewChangeId = RaiseScrollToRequested(
-                    scrollingPresenterOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollingPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -1165,7 +1165,7 @@ namespace MUXControlsTestApp.Utilities
 
         private int RaiseScrollToRequested(
             Point offset,
-            AnimationMode animationMode,
+            ScrollingAnimationMode animationMode,
             bool hookupCompletion)
         {
             RaiseLogMessage("BiDirectionalScrollController: RaiseScrollToRequested with offset=" + offset + ", animationMode=" + animationMode);
@@ -1215,7 +1215,7 @@ namespace MUXControlsTestApp.Utilities
 
         private int RaiseScrollByRequested(
             Point offsetDelta,
-            AnimationMode animationMode,
+            ScrollingAnimationMode animationMode,
             bool hookupCompletion)
         {
             RaiseLogMessage("BiDirectionalScrollController: RaiseScrollByRequested with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);

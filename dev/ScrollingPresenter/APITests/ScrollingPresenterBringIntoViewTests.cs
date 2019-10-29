@@ -23,9 +23,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs;
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
@@ -825,12 +825,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalZoomFactor != 1.0f)
             {
-                ZoomTo(scrollingPresenter, originalZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, originalZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalHorizontalOffset != 0 || originalVerticalOffset != 0)
             {
-                ScrollTo(scrollingPresenter, originalHorizontalOffset, originalVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(scrollingPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
@@ -872,7 +872,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -952,22 +952,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             if (originalOuterZoomFactor != 1.0f)
             {
-                ZoomTo(outerScrollingPresenter, originalOuterZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(outerScrollingPresenter, originalOuterZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalOuterHorizontalOffset != 0 || originalOuterVerticalOffset != 0)
             {
-                ScrollTo(outerScrollingPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(outerScrollingPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             if (originalInnerZoomFactor != 1.0f)
             {
-                ZoomTo(innerScrollingPresenter, originalInnerZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(innerScrollingPresenter, originalInnerZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalInnerHorizontalOffset != 0 || originalInnerVerticalOffset != 0)
             {
-                ScrollTo(innerScrollingPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, AnimationMode.Disabled, SnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(innerScrollingPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
@@ -998,7 +998,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -1027,7 +1027,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
                         AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
-                        args.SnapPointsMode = SnapPointsMode.Default;
+                        args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
@@ -1170,13 +1170,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             scrollingPresenter.Name = "scrollingPresenter";
             if (orientation == Orientation.Vertical)
             {
-                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 scrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
                 scrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
             }
             else
             {
-                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 scrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
                 scrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
             }
@@ -1309,13 +1309,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             outerScrollingPresenter.Name = "outerScrollingPresenter";
             if (orientation == Orientation.Vertical)
             {
-                outerScrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                outerScrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 outerScrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
                 outerScrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
             }
             else
             {
-                outerScrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                outerScrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 outerScrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
                 outerScrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
             }

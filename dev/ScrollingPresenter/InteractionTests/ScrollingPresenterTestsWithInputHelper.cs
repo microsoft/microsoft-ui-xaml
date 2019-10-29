@@ -999,12 +999,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("Description", "Pans an inner ScrollingPresenter and chains to an outer ScrollViewer.")]
         public void PanWithChainingFromScrollingPresenterToScrollViewer()
         {
-            // Inner ScrollingPresenter uses ChainingMode.Always
+            // Inner ScrollingPresenter uses ScrollingChainMode.Always
             PanWithChainingFromScrollingPresenterToScrollViewerWithChainingMode(useChainingModeAlways: true);
 
             if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
-                // Inner ScrollingPresenter uses ChainingMode.Auto
+                // Inner ScrollingPresenter uses ScrollingChainMode.Auto
                 // Only running this case in RS4+ since the Auto behavior changed in RS4
                 PanWithChainingFromScrollingPresenterToScrollViewerWithChainingMode(useChainingModeAlways: false);
             }

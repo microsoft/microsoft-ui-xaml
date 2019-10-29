@@ -18,8 +18,8 @@ using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
@@ -230,7 +230,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                markupScrollingPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Default));
+                markupScrollingPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -242,7 +242,7 @@ namespace MUXControlsTestApp
         {
             try
             {                
-                markupScrollingPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
+                markupScrollingPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {
