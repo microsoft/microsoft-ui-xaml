@@ -22,8 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
@@ -82,26 +82,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Jump to absolute offsets
-            ScrollTo(scrollingPresenter, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Ignore);
-            ScrollTo(scrollingPresenter, 22.0, 11.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ScrollTo(scrollingPresenter, 11.0, 22.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+            ScrollTo(scrollingPresenter, 22.0, 11.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Jump to relative offsets
-            ScrollBy(scrollingPresenter, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollBy(scrollingPresenter, 15.0, 4.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ScrollBy(scrollingPresenter, -4.0, 15.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollingPresenter, 15.0, 4.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Animate to absolute offsets
-            ScrollTo(scrollingPresenter, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollTo(scrollingPresenter, 5.0, 75.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ScrollTo(scrollingPresenter, 55.0, 25.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollTo(scrollingPresenter, 5.0, 75.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to absolute offsets based on UISettings.AnimationsEnabled
-            ScrollTo(scrollingPresenter, 55.0, 25.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollTo(scrollingPresenter, 55.0, 25.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Animate to relative offsets
-            ScrollBy(scrollingPresenter, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ScrollBy(scrollingPresenter, -80.0, 200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ScrollBy(scrollingPresenter, 700.0, -8.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollingPresenter, -80.0, 200.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to relative offsets based on UISettings.AnimationsEnabled
-            ScrollBy(scrollingPresenter, 80.0, -200.0, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ScrollBy(scrollingPresenter, 80.0, -200.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional offsets velocity
             ScrollFrom(scrollingPresenter, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
@@ -110,10 +110,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollFrom(scrollingPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f , verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
 
             // Do it all again while respecting snap points
-            ScrollTo(scrollingPresenter, 11.0, 22.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollBy(scrollingPresenter, -4.0, 15.0, AnimationMode.Disabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollTo(scrollingPresenter, 55.0, 25.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
-            ScrollBy(scrollingPresenter, 700.0, -8.0, AnimationMode.Enabled, SnapPointsMode.Default, hookViewChanged: false);
+            ScrollTo(scrollingPresenter, 11.0, 22.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
+            ScrollBy(scrollingPresenter, -4.0, 15.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
+            ScrollTo(scrollingPresenter, 55.0, 25.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
+            ScrollBy(scrollingPresenter, 700.0, -8.0, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
         }
 
         [TestMethod]
@@ -135,26 +135,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Jump to absolute zoomFactor
-            ZoomTo(scrollingPresenter, 2.0f, 22.0f, 33.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
-            ZoomTo(scrollingPresenter, 5.0f, 33.0f, 22.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ZoomTo(scrollingPresenter, 2.0f, 22.0f, 33.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, 5.0f, 33.0f, 22.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Jump to relative zoomFactor
-            ZoomBy(scrollingPresenter, 1.0f, 55.0f, 66.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomBy(scrollingPresenter, 1.0f, 66.0f, 55.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
+            ZoomBy(scrollingPresenter, 1.0f, 55.0f, 66.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollingPresenter, 1.0f, 66.0f, 55.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: false);
 
             // Animate to absolute zoomFactor
-            ZoomTo(scrollingPresenter, 4.0f, -40.0f, -25.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomTo(scrollingPresenter, 6.0f, 25.0f, 40.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ZoomTo(scrollingPresenter, 4.0f, -40.0f, -25.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, 6.0f, 25.0f, 40.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to absolute zoomFactor based on UISettings.AnimationsEnabled
-            ZoomTo(scrollingPresenter, 3.0f, 10.0f, 20.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, 3.0f, 10.0f, 20.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Animate to relative zoomFactor
-            ZoomBy(scrollingPresenter, -2.0f, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore, hookViewChanged: false);
-            ZoomBy(scrollingPresenter, 1.0f, 100.0f, 200.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
+            ZoomBy(scrollingPresenter, -2.0f, 100.0f, 200.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollingPresenter, 1.0f, 100.0f, 200.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false, isAnimationsEnabledOverride: true);
 
             // Jump or animate to relative zoomFactor based on UISettings.AnimationsEnabled
-            ZoomBy(scrollingPresenter, 2.0f, 200.0f, 100.0f, AnimationMode.Auto, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomBy(scrollingPresenter, 2.0f, 200.0f, 100.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional zoomFactor velocity
             ZoomFrom(scrollingPresenter, 2.0f, inertiaDecayRate: null, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
@@ -189,8 +189,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     600.0,
                     400.0,
-                    AnimationMode.Enabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Enabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
 
                 bool operationCanceled = false;
@@ -203,7 +203,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         Log.Comment("Canceling view change");
                         operationCanceled = true;
-                        sender.ScrollBy(0, 0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                        sender.ScrollBy(0, 0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                     }
                 };
             });
@@ -258,8 +258,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         8.0f,
                         100.0f,
                         150.0f,
-                        AnimationMode.Enabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Enabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvent);
 
                     bool operationCanceled = false;
@@ -272,7 +272,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         {
                             Log.Comment("Canceling view change");
                             operationCanceled = true;
-                            sender.ZoomBy(0, Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                            sender.ZoomBy(0, Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                         }
                     };
                 });
@@ -366,16 +366,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Animating to absolute Offset");
-            ScrollTo(scrollingPresenter, newPosition1.X, newPosition1.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ScrollTo(scrollingPresenter, newPosition1.X, newPosition1.Y, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute Offset");
-            ScrollTo(scrollingPresenter, newPosition2.X, newPosition2.Y, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ScrollTo(scrollingPresenter, newPosition2.X, newPosition2.Y, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ZoomTo(scrollingPresenter, newZoomFactor1, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, newZoomFactor1, 100.0f, 200.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
 
             Log.Comment("Animating to absolute zoomFactor");
-            ZoomTo(scrollingPresenter, newZoomFactor2, 100.0f, 200.0f, AnimationMode.Enabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, newZoomFactor2, 100.0f, 200.0f, ScrollingAnimationMode.Enabled, ScrollingSnapPointsMode.Ignore);
 
         }
 
@@ -429,8 +429,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         600.0,
                         400.0,
-                        AnimationMode.Enabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Enabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvent);
                 });
 
@@ -503,8 +503,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         8.0f,
                         100.0f,
                         150.0f,
-                        AnimationMode.Enabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Enabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvent);
                 });
 
@@ -556,8 +556,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     600.0,
                     400.0,
-                    AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Resetting window content to unparent ScrollingPresenter");
@@ -630,8 +630,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     600.0,
                     400.0,
-                    AnimationMode.Enabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Enabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
             });
 
@@ -674,8 +674,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     8.0f,
                     100.0f,
                     150.0f,
-                    AnimationMode.Enabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Enabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
             });
 
@@ -737,8 +737,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     600.0,
                     400.0,
-                    AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvents[0]);
 
                 if (!waitForFirstCompletion)
@@ -747,8 +747,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         500.0,
                         300.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
             });
@@ -763,8 +763,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         500.0,
                         300.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 });
             }
@@ -787,8 +787,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     500.0,
                     300.0,
-                    AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvents[2]);
             });
 
@@ -865,8 +865,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         7.0f,
                         150.0f,
                         120.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
                 else
@@ -876,8 +876,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         8.0f,
                         150.0f,
                         120.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
             });
@@ -896,8 +896,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         -1.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
                 else
@@ -907,8 +907,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         7.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
             });
@@ -936,8 +936,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     7.0f,
                     10.0f,
                     90.0f,
-                    AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvents[2]);
             });
 
@@ -1006,8 +1006,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         80.0,
                         35.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
                 else
@@ -1016,8 +1016,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         80.0,
                         35.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
             });
@@ -1036,8 +1036,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         2.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
                 else
@@ -1047,8 +1047,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         3.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
             });
@@ -1124,8 +1124,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         2.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
                 else
@@ -1135,8 +1135,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         3.0f,
                         10.0f,
                         90.0f,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
             });
@@ -1154,8 +1154,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         80.0,
                         35.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
                 else
@@ -1164,8 +1164,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         80.0,
                         35.0,
-                        AnimationMode.Disabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Disabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[1]);
                 }
             });
@@ -1259,8 +1259,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 c_defaultUIScrollingPresenterContentWidth + 200.0 - c_defaultUIScrollingPresenterWidth,
                 c_defaultVerticalOffset,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
         }
 
         private void ChangeOffsetsBeforeLoading(bool animate)
@@ -1287,8 +1287,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter,
                     600.0,
                     400.0,
-                    animate ? AnimationMode.Enabled : AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    animate ? ScrollingAnimationMode.Enabled : ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
@@ -1336,8 +1336,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     8.0f,
                     100.0f,
                     150.0f,
-                    animate ? AnimationMode.Enabled : AnimationMode.Disabled,
-                    SnapPointsMode.Ignore,
+                    animate ? ScrollingAnimationMode.Enabled : ScrollingAnimationMode.Disabled,
+                    ScrollingSnapPointsMode.Ignore,
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
@@ -1364,8 +1364,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollingPresenter scrollingPresenter,
             double horizontalOffset,
             double verticalOffset,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null,
             double? expectedFinalHorizontalOffset = null,
@@ -1455,8 +1455,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollingPresenter scrollingPresenter,
             double horizontalOffsetDelta,
             double verticalOffsetDelta,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null,
             double? expectedFinalHorizontalOffset = null,
@@ -1636,8 +1636,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollingPresenter scrollingPresenter,
             double horizontalOffset,
             double verticalOffset,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             AutoResetEvent scrollingPresenterViewChangeOperationEvent)
         {
             Log.Comment("ScrollTo - horizontalOffset={0}, verticalOffset={1}, animationMode={2}, snapPointsMode={3}",
@@ -1679,8 +1679,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollingPresenter scrollingPresenter,
             double horizontalOffsetDelta,
             double verticalOffsetDelta,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             AutoResetEvent scrollingPresenterViewChangeOperationEvent)
         {
             Log.Comment("ScrollBy - horizontalOffsetDelta={0}, verticalOffsetDelta={1}, animationMode={2}, snapPointsMode={3}",
@@ -1772,8 +1772,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float zoomFactor,
             float centerPointX,
             float centerPointY,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null)
         {
@@ -1843,8 +1843,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float zoomFactorDelta,
             float centerPointX,
             float centerPointY,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             bool hookViewChanged = true,
             bool? isAnimationsEnabledOverride = null)
         {
@@ -1987,8 +1987,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float zoomFactor,
             float centerPointX,
             float centerPointY,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             AutoResetEvent scrollingPresenterViewChangeOperationEvent)
         {
             Log.Comment("ZoomTo - zoomFactor={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
@@ -2031,8 +2031,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float zoomFactorDelta,
             float centerPointX,
             float centerPointY,
-            AnimationMode animationMode,
-            SnapPointsMode snapPointsMode,
+            ScrollingAnimationMode animationMode,
+            ScrollingSnapPointsMode snapPointsMode,
             AutoResetEvent scrollingPresenterViewChangeOperationEvent)
         {
             Log.Comment("ZoomBy - zoomFactorDelta={0}, centerPoint=({1},{2}), animationMode={3}, snapPointsMode={4}",
@@ -2157,8 +2157,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                                 scrollingPresenter,
                                 500.0,
                                 300.0,
-                                AnimationMode.Enabled,
-                                SnapPointsMode.Ignore,
+                                ScrollingAnimationMode.Enabled,
+                                ScrollingSnapPointsMode.Ignore,
                                 scrollingPresenterViewChangeOperationEvents[1]);
                         }
                         else
@@ -2168,8 +2168,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                                 7.0f,
                                 70.0f,
                                 50.0f,
-                                AnimationMode.Enabled,
-                                SnapPointsMode.Ignore,
+                                ScrollingAnimationMode.Enabled,
+                                ScrollingSnapPointsMode.Ignore,
                                 scrollingPresenterViewChangeOperationEvents[1]);
                         }
                     }
@@ -2181,8 +2181,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         scrollingPresenter,
                         600.0,
                         400.0,
-                        AnimationMode.Enabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Enabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
                 else
@@ -2192,8 +2192,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         8.0f,
                         100.0f,
                         150.0f,
-                        AnimationMode.Enabled,
-                        SnapPointsMode.Ignore,
+                        ScrollingAnimationMode.Enabled,
+                        ScrollingSnapPointsMode.Ignore,
                         scrollingPresenterViewChangeOperationEvents[0]);
                 }
             });
@@ -2275,11 +2275,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private bool GetEffectiveIsAnimationEnabled(AnimationMode animationMode, bool? isAnimationsEnabledOverride)
+        private bool GetEffectiveIsAnimationEnabled(ScrollingAnimationMode animationMode, bool? isAnimationsEnabledOverride)
         {
             switch (animationMode)
             {
-                case AnimationMode.Auto:
+                case ScrollingAnimationMode.Auto:
                     switch (isAnimationsEnabledOverride)
                     {
                         case null:
@@ -2287,7 +2287,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         default :
                             return isAnimationsEnabledOverride.Value;
                     }
-                case AnimationMode.Enabled:
+                case ScrollingAnimationMode.Enabled:
                     return true;
             }
 

@@ -14,9 +14,9 @@ using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
@@ -85,7 +85,7 @@ namespace MUXControlsTestApp.Utilities
         RepeatButton verticalIncrementRepeatButton = null;
         private Visual interactionVisual = null;
         private Orientation orientation = Orientation.Vertical;
-        private ScrollMode scrollMode = ScrollMode.Disabled;
+        private ScrollingScrollMode scrollMode = ScrollingScrollMode.Disabled;
         private bool isThumbDragged = false;
         private bool isThumbPannable = true;
         private bool isThumbPositionMirrored = false;
@@ -276,7 +276,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public void SetScrollMode(ScrollMode scrollMode)
+        public void SetScrollMode(ScrollingScrollMode scrollMode)
         {
             RaiseLogMessage(
                 "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
@@ -585,7 +585,7 @@ namespace MUXControlsTestApp.Utilities
         public event TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
 
         public int ScrollTo(
-            double offset, AnimationMode animationMode)
+            double offset, ScrollingAnimationMode animationMode)
         {
             RaiseLogMessage("CompositionScrollController: ScrollTo for Orientation=" + Orientation + " with offset=" + offset + ", animationMode=" + animationMode);
 
@@ -594,7 +594,7 @@ namespace MUXControlsTestApp.Utilities
         }
 
         public int ScrollBy(
-            double offsetDelta, AnimationMode animationMode)
+            double offsetDelta, ScrollingAnimationMode animationMode)
         {
             RaiseLogMessage("CompositionScrollController: ScrollBy for Orientation=" + Orientation + " with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
 
@@ -644,7 +644,7 @@ namespace MUXControlsTestApp.Utilities
 
         private int RaiseScrollToRequested(
             double offset,
-            AnimationMode animationMode,
+            ScrollingAnimationMode animationMode,
             bool hookupCompletion)
         {
             RaiseLogMessage("CompositionScrollController: RaiseScrollToRequested for Orientation=" + Orientation + " with offset=" + offset + ", animationMode=" + animationMode);
@@ -656,7 +656,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollToRequestedEventArgs e =
                         new ScrollControllerScrollToRequestedEventArgs(
                             offset,
-                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
                     if (e.ScrollInfo.OffsetsChangeId != -1)
                     {
@@ -680,7 +680,7 @@ namespace MUXControlsTestApp.Utilities
 
         private int RaiseScrollByRequested(
             double offsetDelta,
-            AnimationMode animationMode,
+            ScrollingAnimationMode animationMode,
             bool hookupCompletion)
         {
             RaiseLogMessage("CompositionScrollController: RaiseScrollByRequested for Orientation=" + Orientation + " with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
@@ -692,7 +692,7 @@ namespace MUXControlsTestApp.Utilities
                     ScrollControllerScrollByRequestedEventArgs e =
                         new ScrollControllerScrollByRequestedEventArgs(
                             offsetDelta,
-                            new ScrollingScrollOptions(animationMode, SnapPointsMode.Ignore));
+                            new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
                     if (e.ScrollInfo.OffsetsChangeId != -1)
                     {
@@ -774,7 +774,7 @@ namespace MUXControlsTestApp.Utilities
                 double scrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int offsetChangeId = RaiseScrollToRequested(
-                    scrollingPresenterOffset, AnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollingPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -828,7 +828,7 @@ namespace MUXControlsTestApp.Utilities
         {
             bool oldAreInteractionsAllowed = AreInteractionsAllowed;
 
-            AreInteractionsAllowed = scrollMode != ScrollMode.Disabled && IsEnabled;
+            AreInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
 
             if (oldAreInteractionsAllowed != AreInteractionsAllowed)
             {
@@ -1249,7 +1249,7 @@ namespace MUXControlsTestApp.Utilities
             offsetTarget = newOffsetTarget;
 
             int offsetChangeId = RaiseScrollToRequested(
-                offsetTarget, AnimationMode.Auto, true /*hookupCompletion*/);
+                offsetTarget, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
             if (offsetChangeId != -1 && !operations.ContainsKey(offsetChangeId))
             {
                 operations.Add(offsetChangeId, new OperationInfo(offsetChangeId, relativeOffsetChange, offsetTarget));

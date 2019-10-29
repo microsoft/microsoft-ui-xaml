@@ -22,8 +22,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
@@ -134,8 +134,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
                 (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null, 
                 expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0, 
@@ -146,8 +146,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
                 (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0,
-                AnimationMode.Enabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Enabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
@@ -159,8 +159,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 2.0f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
@@ -169,8 +169,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 1.5f,
                 0.0f,
                 0.0f,
-                AnimationMode.Enabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Enabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false);
         }
 
@@ -250,20 +250,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.75f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Jumping to horizontal offset");
                 hOffsetChangeId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0,
-                    AnimationMode.Disabled);
+                    ScrollingAnimationMode.Disabled);
 
                 Log.Comment("Jumping to vertical offset");
                 vOffsetChangeId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0,
-                    AnimationMode.Disabled);
+                    ScrollingAnimationMode.Disabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
             });
@@ -278,12 +278,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Animating to horizontal offset");
                 hOffsetChangeId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0,
-                    AnimationMode.Enabled);
+                    ScrollingAnimationMode.Enabled);
 
                 Log.Comment("Animating to vertical offset");
                 vOffsetChangeId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0,
-                    AnimationMode.Enabled);
+                    ScrollingAnimationMode.Enabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
 
@@ -370,8 +370,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.75f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -494,8 +494,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
                 (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
@@ -506,8 +506,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
                 (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0,
-                AnimationMode.Enabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Enabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
@@ -519,8 +519,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 2.0f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false);
 
             Log.Comment("Animate to zoomFactor 1.5");
@@ -529,8 +529,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 1.5f,
                 0.0f,
                 0.0f,
-                AnimationMode.Enabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Enabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false);
         }
 
@@ -592,8 +592,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.75f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -601,7 +601,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 biDirectionalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0,
                     (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0,
-                    AnimationMode.Disabled);
+                    ScrollingAnimationMode.Disabled);
             });
 
             WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
@@ -615,7 +615,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 biDirectionalScrollController.ScrollTo(
                     (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0,
                     (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0,
-                    AnimationMode.Enabled);
+                    ScrollingAnimationMode.Enabled);
 
                 scrollCompletedEvent.Reset();
             });
@@ -687,8 +687,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 0.75f,
                 0.0f,
                 0.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {

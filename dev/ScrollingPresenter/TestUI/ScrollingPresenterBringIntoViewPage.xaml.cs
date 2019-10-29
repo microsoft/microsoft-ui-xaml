@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs;
@@ -140,7 +140,7 @@ namespace MUXControlsTestApp
                 asyncEventMessage += (args.RequestEventArgs.OriginalSource as FrameworkElement).Name;
             AppendAsyncEventMessage(asyncEventMessage);
 
-            args.SnapPointsMode = chkIgnoreSnapPoints.IsChecked == true ? SnapPointsMode.Ignore : SnapPointsMode.Default;
+            args.SnapPointsMode = chkIgnoreSnapPoints.IsChecked == true ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default;
 
             if (chkCancelOperationInBringingIntoView.IsChecked == true)
             {

@@ -8,10 +8,10 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
@@ -92,7 +92,7 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.HorizontalScrollChainMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.HorizontalScrollChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -111,7 +111,7 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.VerticalScrollChainMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.VerticalScrollChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -130,7 +130,7 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.ZoomChainMode = (ChainingMode)cmb.SelectedIndex;
+                scrollingPresenter.ZoomChainMode = (ScrollingChainMode)cmb.SelectedIndex;
             }
             else
             {
@@ -149,7 +149,7 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.HorizontalScrollRailMode = (RailingMode)cmb.SelectedIndex;
+                scrollingPresenter.HorizontalScrollRailMode = (ScrollingRailMode)cmb.SelectedIndex;
             }
             else
             {
@@ -168,7 +168,7 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = GetScrollingPresenterWithSuffix(suffix);
             if (scrollingPresenter != null)
             {
-                scrollingPresenter.VerticalScrollRailMode = (RailingMode)cmb.SelectedIndex;
+                scrollingPresenter.VerticalScrollRailMode = (ScrollingRailMode)cmb.SelectedIndex;
             }
             else
             {
@@ -278,12 +278,12 @@ namespace MUXControlsTestApp
                 scrollingPresenter.ScrollTo(
                     0.0,
                     0.0,
-                    new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
+                    new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
                 int viewChangeId = scrollingPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
-                    new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+                    new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
 
                 if (this.scrollingPresenter3 == scrollingPresenter)
                     scrollingPresenter3ZoomFactorChangeId = viewChangeId;

@@ -14,8 +14,8 @@ using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingSc
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
 using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
 using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
@@ -441,10 +441,10 @@ namespace MUXControlsTestApp
             ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
             string scrollingPresenterId = (VisualTreeHelper.GetParent(scrollingPresenter) as FrameworkElement).Name + "." + scrollingPresenter.Name;
 
-            int viewChangeId = scrollingPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+            int viewChangeId = scrollingPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
             this.fullLogs.Add(scrollingPresenterId + " ScrollTo requested. Id=" + viewChangeId);
 
-            viewChangeId = scrollingPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
+            viewChangeId = scrollingPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
             this.fullLogs.Add(scrollingPresenterId + " ZoomTo requested. Id=" + viewChangeId);
 
             chkLogUpdated.IsChecked = false;

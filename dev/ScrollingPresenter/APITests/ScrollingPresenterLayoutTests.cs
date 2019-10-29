@@ -21,10 +21,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -74,8 +74,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 c_defaultUIScrollingPresenterContentWidth + 2 * c_Margin - c_defaultUIScrollingPresenterWidth + 10.0,
                 c_defaultUIScrollingPresenterContentHeight + 2 * c_Margin - c_defaultUIScrollingPresenterHeight + 10.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth + 2 * c_Margin - c_defaultUIScrollingPresenterWidth,
@@ -94,8 +94,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 c_defaultUIScrollingPresenterContentWidth - 2 * c_Margin - c_defaultUIScrollingPresenterWidth + 10.0,
                 c_defaultUIScrollingPresenterContentHeight - 2 * c_Margin - c_defaultUIScrollingPresenterHeight + 10.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth - 2 * c_Margin - c_defaultUIScrollingPresenterWidth,
@@ -145,8 +145,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth + 10.0,
                 c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight + 10.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth,
@@ -185,7 +185,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -329,7 +329,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter = new ScrollingPresenter()
                 {
                     Content = stackPanel,
-                    ContentOrientation = ContentOrientation.Vertical,
+                    ContentOrientation = ScrollingContentOrientation.Vertical,
                     VerticalAlignment = scrollingPresenterVerticalAlignment
                 };
 
@@ -467,7 +467,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
             RunOnUIThread.Execute(() =>
             {
@@ -552,7 +552,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.None);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ScrollingContentOrientation.None);
                 // Image is unconstrained and stretches to largest square contained in the 300 x 200 viewport: 200 x 200.
                 ValidateStretchedImageSize(
                     scrollingPresenter,
@@ -562,14 +562,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     extentSize: c_defaultUIScrollingPresenterHeight);
 
                 Log.Comment("Changing ScrollingPresenter.ContentOrientation to Vertical.");
-                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.Vertical);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ScrollingContentOrientation.Vertical);
                 // Image is constrained horizontally to 300 and stretches to the 300 x 300 square.
                 ValidateStretchedImageSize(
                     scrollingPresenter,
@@ -579,14 +579,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     extentSize: c_defaultUIScrollingPresenterWidth);
 
                 Log.Comment("Changing ScrollingPresenter.ContentOrientation to Horizontal.");
-                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scrollingPresenter.ContentOrientation, ContentOrientation.Horizontal);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ScrollingContentOrientation.Horizontal);
                 // Image is constrained vertically to 200 and stretches to the 200 x 200 square.
                 ValidateStretchedImageSize(
                     scrollingPresenter,
@@ -658,8 +658,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 c_UnnaturalImageWidth - c_defaultUIScrollingPresenterWidth + 10.0,
                 c_UnnaturalImageHeight - c_defaultUIScrollingPresenterHeight + 10.0,
-                AnimationMode.Disabled,
-                SnapPointsMode.Ignore,
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
                 expectedFinalHorizontalOffset: c_UnnaturalImageWidth - c_defaultUIScrollingPresenterWidth,
@@ -701,7 +701,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image width and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Height = c_imageHeight;
-                    scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                    scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                     scrollingPresenter.Width = c_scrollingPresenterWidth;
                     compositor = Window.Current.Compositor;
                 });
@@ -758,7 +758,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image width and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Height = c_imageHeight;
-                scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
                 scrollingPresenter.Width = c_scrollingPresenterWidth;
                 compositor = Window.Current.Compositor;
             });
@@ -776,7 +776,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: 1.0f);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -819,7 +819,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedWidth(
                 compositor,
@@ -897,7 +897,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image height and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Width = c_imageWidth;
-                    scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                    scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                     compositor = Window.Current.Compositor;
                 });
 
@@ -914,7 +914,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedZoomFactor: 1.0f);
 
                 // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 ValidateContentWithConstrainedHeight(
                     compositor,
@@ -965,7 +965,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // Constraining the Image height and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Width = c_imageWidth;
-                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 compositor = Window.Current.Compositor;
             });
 
@@ -982,7 +982,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: 1.0f);
 
             // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+            ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -1025,7 +1025,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 expectedZoomFactor: c_smallZoomFactor);
 
             // Jump to absolute large zoomFactor to make the content larger than the viewport.
-            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+            ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             ValidateContentWithConstrainedHeight(
                 compositor,
@@ -1111,7 +1111,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
                 // Constraining the Image width and height, and making the ScrollingPresenter smaller than the Image
-                scrollingPresenter.ContentOrientation = ContentOrientation.Both;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Both;
                     scrollingPresenter.Width = c_scrollingPresenterWidth;
                     scrollingPresenter.Height = c_scrollingPresenterHeight;
                     compositor = Window.Current.Compositor;
@@ -1130,7 +1130,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedZoomFactor: 1.0f);
 
                 // Jump to absolute small zoomFactor to make the content smaller than the viewport.
-                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);
+                ZoomTo(scrollingPresenter, c_smallZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
 
                 ValidateContentWithConstrainedSize(
                     compositor,
@@ -1143,7 +1143,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     expectedZoomFactor: c_smallZoomFactor);
 
                 // Jump to absolute large zoomFactor to make the content larger than the viewport.
-                ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, AnimationMode.Disabled, SnapPointsMode.Ignore, hookViewChanged: false);
+                ZoomTo(scrollingPresenter, c_largeZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
                 ValidateContentWithConstrainedSize(
                     compositor,

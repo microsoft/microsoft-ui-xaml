@@ -29,38 +29,38 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
-using InteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingInteractionState = Microsoft.UI.Xaml.Controls.ScrollingInteractionState;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
 using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
     public partial class ScrollingPresenterTests
     {
-        private const InteractionState c_defaultState = InteractionState.Idle;
-        private const ChainingMode c_defaultHorizontalScrollChainMode = ChainingMode.Auto;
-        private const ChainingMode c_defaultVerticalScrollChainMode = ChainingMode.Auto;
-        private const RailingMode c_defaultHorizontalScrollRailMode = RailingMode.Enabled;
-        private const RailingMode c_defaultVerticalScrollRailMode = RailingMode.Enabled;
+        private const ScrollingInteractionState c_defaultState = ScrollingInteractionState.Idle;
+        private const ScrollingChainMode c_defaultHorizontalScrollChainMode = ScrollingChainMode.Auto;
+        private const ScrollingChainMode c_defaultVerticalScrollChainMode = ScrollingChainMode.Auto;
+        private const ScrollingRailMode c_defaultHorizontalScrollRailMode = ScrollingRailMode.Enabled;
+        private const ScrollingRailMode c_defaultVerticalScrollRailMode = ScrollingRailMode.Enabled;
 #if USE_SCROLLMODE_AUTO
-        private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Auto;
-        private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Auto;
+        private const ScrollingScrollMode c_defaultHorizontalScrollMode = ScrollingScrollMode.Auto;
+        private const ScrollingScrollMode c_defaultVerticalScrollMode = ScrollingScrollMode.Auto;
 #else
-        private const ScrollMode c_defaultHorizontalScrollMode = ScrollMode.Enabled;
-        private const ScrollMode c_defaultVerticalScrollMode = ScrollMode.Enabled;
+        private const ScrollingScrollMode c_defaultHorizontalScrollMode = ScrollingScrollMode.Enabled;
+        private const ScrollingScrollMode c_defaultVerticalScrollMode = ScrollingScrollMode.Enabled;
 #endif
-        private const ChainingMode c_defaultZoomChainMode = ChainingMode.Auto;
+        private const ScrollingChainMode c_defaultZoomChainMode = ScrollingChainMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
         private const ScrollingInputKinds c_defaultIgnoredInputKind = ScrollingInputKinds.None;
-        private const ContentOrientation c_defaultContentOrientation = ContentOrientation.None;
+        private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.None;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultZoomFactor = 1.0;
         private const double c_defaultMaxZoomFactor = 10.0;
@@ -146,16 +146,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 Log.Comment("Setting ScrollingPresenter properties to non-default values");
                 scrollingPresenter.Content = rectangle;
-                scrollingPresenter.HorizontalScrollChainMode = ChainingMode.Always;
-                scrollingPresenter.VerticalScrollChainMode = ChainingMode.Never;
-                scrollingPresenter.HorizontalScrollRailMode = RailingMode.Disabled;
-                scrollingPresenter.VerticalScrollRailMode = RailingMode.Disabled;
-                scrollingPresenter.HorizontalScrollMode = ScrollMode.Disabled;
-                scrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
-                scrollingPresenter.ZoomChainMode = ChainingMode.Never;
-                scrollingPresenter.ZoomMode = ZoomMode.Enabled;
+                scrollingPresenter.HorizontalScrollChainMode = ScrollingChainMode.Always;
+                scrollingPresenter.VerticalScrollChainMode = ScrollingChainMode.Never;
+                scrollingPresenter.HorizontalScrollRailMode = ScrollingRailMode.Disabled;
+                scrollingPresenter.VerticalScrollRailMode = ScrollingRailMode.Disabled;
+                scrollingPresenter.HorizontalScrollMode = ScrollingScrollMode.Disabled;
+                scrollingPresenter.VerticalScrollMode = ScrollingScrollMode.Disabled;
+                scrollingPresenter.ZoomChainMode = ScrollingChainMode.Never;
+                scrollingPresenter.ZoomMode = ScrollingZoomMode.Enabled;
                 scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.MouseWheel;
-                scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
                 scrollingPresenter.MinZoomFactor = 0.5f;
                 scrollingPresenter.MaxZoomFactor = 2.0f;
                 scrollingPresenter.HorizontalAnchorRatio = 0.25f;
@@ -169,16 +169,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying ScrollingPresenter non-default property values");
                 Verify.AreEqual(rectangle, scrollingPresenter.Content);
                 Verify.AreEqual(c_defaultState, scrollingPresenter.State);
-                Verify.AreEqual(ChainingMode.Always, scrollingPresenter.HorizontalScrollChainMode);
-                Verify.AreEqual(ChainingMode.Never, scrollingPresenter.VerticalScrollChainMode);
-                Verify.AreEqual(RailingMode.Disabled, scrollingPresenter.HorizontalScrollRailMode);
-                Verify.AreEqual(RailingMode.Disabled, scrollingPresenter.VerticalScrollRailMode);
+                Verify.AreEqual(ScrollingChainMode.Always, scrollingPresenter.HorizontalScrollChainMode);
+                Verify.AreEqual(ScrollingChainMode.Never, scrollingPresenter.VerticalScrollChainMode);
+                Verify.AreEqual(ScrollingRailMode.Disabled, scrollingPresenter.HorizontalScrollRailMode);
+                Verify.AreEqual(ScrollingRailMode.Disabled, scrollingPresenter.VerticalScrollRailMode);
                 Verify.AreEqual(ScrollMode.Disabled, scrollingPresenter.HorizontalScrollMode);
                 Verify.AreEqual(ScrollMode.Disabled, scrollingPresenter.VerticalScrollMode);
-                Verify.AreEqual(ChainingMode.Never, scrollingPresenter.ZoomChainMode);
+                Verify.AreEqual(ScrollingChainMode.Never, scrollingPresenter.ZoomChainMode);
                 Verify.AreEqual(ZoomMode.Enabled, scrollingPresenter.ZoomMode);
                 Verify.AreEqual(ScrollingInputKinds.MouseWheel, scrollingPresenter.IgnoredInputKind);
-                Verify.AreEqual(ContentOrientation.Horizontal, scrollingPresenter.ContentOrientation);
+                Verify.AreEqual(ScrollingContentOrientation.Horizontal, scrollingPresenter.ContentOrientation);
                 Verify.AreEqual(0.5f, scrollingPresenter.MinZoomFactor);
                 Verify.AreEqual(2.0f, scrollingPresenter.MaxZoomFactor);
                 Verify.AreEqual(0.25f, scrollingPresenter.HorizontalAnchorRatio);
@@ -353,14 +353,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
 
                     Log.Comment("Changing ScrollingPresenter properties that affect the primary VisualInteractionSource");
-                    scrollingPresenter.HorizontalScrollChainMode = ChainingMode.Always;
-                    scrollingPresenter.VerticalScrollChainMode = ChainingMode.Never;
-                    scrollingPresenter.HorizontalScrollRailMode = RailingMode.Disabled;
-                    scrollingPresenter.VerticalScrollRailMode = RailingMode.Disabled;
-                    scrollingPresenter.HorizontalScrollMode = ScrollMode.Enabled;
-                    scrollingPresenter.VerticalScrollMode = ScrollMode.Disabled;
-                    scrollingPresenter.ZoomChainMode = ChainingMode.Never;
-                    scrollingPresenter.ZoomMode = ZoomMode.Enabled;
+                    scrollingPresenter.HorizontalScrollChainMode = ScrollingChainMode.Always;
+                    scrollingPresenter.VerticalScrollChainMode = ScrollingChainMode.Never;
+                    scrollingPresenter.HorizontalScrollRailMode = ScrollingRailMode.Disabled;
+                    scrollingPresenter.VerticalScrollRailMode = ScrollingRailMode.Disabled;
+                    scrollingPresenter.HorizontalScrollMode = ScrollingScrollMode.Enabled;
+                    scrollingPresenter.VerticalScrollMode = ScrollingScrollMode.Disabled;
+                    scrollingPresenter.ZoomChainMode = ScrollingChainMode.Never;
+                    scrollingPresenter.ZoomMode = ScrollingZoomMode.Enabled;
                     scrollingPresenter.IgnoredInputKind = ScrollingInputKinds.All & ~ScrollingInputKinds.Touch;
                 });
 
@@ -709,7 +709,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             Log.Comment("Jumping to absolute zoomFactor");
-            ZoomTo(scrollingPresenter, 2.0f, 100.0f, 200.0f, AnimationMode.Disabled, SnapPointsMode.Ignore);            
+            ZoomTo(scrollingPresenter, 2.0f, 100.0f, 200.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);            
 
             Log.Comment("Waiting for spied properties to be captured");
             CompositionPropertySpy.SynchronouslyTickUIThread(10);
@@ -874,8 +874,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter,
                 horizontalOffset: 250,
                 verticalOffset: 150,
-                animationMode: AnimationMode.Enabled,
-                snapPointsMode: SnapPointsMode.Ignore,
+                animationMode: ScrollingAnimationMode.Enabled,
+                snapPointsMode: ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false);
 
             RunOnUIThread.Execute(() =>

@@ -14,11 +14,11 @@ using Windows.UI.Xaml.Shapes;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
 using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
-using ChainingMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
-using RailingMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
-using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
-using ZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingChainMode = Microsoft.UI.Xaml.Controls.ScrollingChainMode;
+using ScrollingRailMode = Microsoft.UI.Xaml.Controls.ScrollingRailMode;
+using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
+using ScrollingZoomMode = Microsoft.UI.Xaml.Controls.ScrollingZoomMode;
 using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
 using ScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollingScrollBarVisibility;
 using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
@@ -168,24 +168,24 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                ScrollingContentOrientation co = (ScrollingContentOrientation)cmbContentOrientation.SelectedIndex;
                 scrollingView.ContentOrientation = co;
 
                 switch (co)
                 {
-                    case ContentOrientation.Horizontal:
+                    case ScrollingContentOrientation.Horizontal:
                         wuxScrollViewer.HorizontalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.HorizontalScrollBarVisibility);
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
-                    case ContentOrientation.Vertical:
+                    case ScrollingContentOrientation.Vertical:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         wuxScrollViewer.VerticalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.VerticalScrollBarVisibility);
                         break;
-                    case ContentOrientation.None:
+                    case ScrollingContentOrientation.None:
                         wuxScrollViewer.HorizontalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.HorizontalScrollBarVisibility);
                         wuxScrollViewer.VerticalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.VerticalScrollBarVisibility);
                         break;
-                    case ContentOrientation.Both:
+                    case ScrollingContentOrientation.Both:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
@@ -202,7 +202,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollMode ssm = (ScrollMode)cmbHorizontalScrollMode.SelectedIndex;
+                ScrollingScrollMode ssm = (ScrollingScrollMode)cmbHorizontalScrollMode.SelectedIndex;
                 scrollingView.HorizontalScrollMode = ssm;
 
                 wuxScrollViewer.HorizontalScrollMode = MuxScrollModeToWuxScrollMode(ssm);
@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbHorizontalScrollChainMode.SelectedIndex;
+                ScrollingChainMode scm = (ScrollingChainMode)cmbHorizontalScrollChainMode.SelectedIndex;
                 scrollingView.HorizontalScrollChainMode = scm;
             }
             catch (Exception ex)
@@ -232,7 +232,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                RailingMode srm = (RailingMode)cmbHorizontalScrollRailMode.SelectedIndex;
+                ScrollingRailMode srm = (ScrollingRailMode)cmbHorizontalScrollRailMode.SelectedIndex;
                 scrollingView.HorizontalScrollRailMode = srm;
 
                 wuxScrollViewer.IsHorizontalRailEnabled = MuxRailModeToWuxRailMode(srm);
@@ -248,7 +248,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ScrollMode ssm = (ScrollMode)cmbVerticalScrollMode.SelectedIndex;
+                ScrollingScrollMode ssm = (ScrollingScrollMode)cmbVerticalScrollMode.SelectedIndex;
                 scrollingView.VerticalScrollMode = ssm;
 
                 wuxScrollViewer.VerticalScrollMode = MuxScrollModeToWuxScrollMode(ssm);
@@ -264,7 +264,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbVerticalScrollChainMode.SelectedIndex;
+                ScrollingChainMode scm = (ScrollingChainMode)cmbVerticalScrollChainMode.SelectedIndex;
                 scrollingView.VerticalScrollChainMode = scm;
             }
             catch (Exception ex)
@@ -278,7 +278,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                RailingMode srm = (RailingMode)cmbVerticalScrollRailMode.SelectedIndex;
+                ScrollingRailMode srm = (ScrollingRailMode)cmbVerticalScrollRailMode.SelectedIndex;
                 scrollingView.VerticalScrollRailMode = srm;
 
                 wuxScrollViewer.IsVerticalRailEnabled = MuxRailModeToWuxRailMode(srm);
@@ -294,7 +294,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ZoomMode szm = (ZoomMode)cmbZoomMode.SelectedIndex;
+                ScrollingZoomMode szm = (ScrollingZoomMode)cmbZoomMode.SelectedIndex;
                 scrollingView.ZoomMode = szm;
 
                 wuxScrollViewer.ZoomMode = MuxZoomModeToWuxZoomMode(szm);
@@ -310,7 +310,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                ChainingMode scm = (ChainingMode)cmbZoomChainMode.SelectedIndex;
+                ScrollingChainMode scm = (ScrollingChainMode)cmbZoomChainMode.SelectedIndex;
                 scrollingView.ZoomChainMode = scm;
             }
             catch (Exception ex)
@@ -704,11 +704,11 @@ namespace MUXControlsTestApp
             {
                 scrollingView.HorizontalScrollBarVisibility = (ScrollBarVisibility)cmbHorizontalScrollBarVisibility.SelectedIndex;
 
-                ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                ScrollingContentOrientation co = (ScrollingContentOrientation)cmbContentOrientation.SelectedIndex;
                 switch (co)
                 {
-                    case ContentOrientation.Vertical:
-                    case ContentOrientation.Both:
+                    case ScrollingContentOrientation.Vertical:
+                    case ScrollingContentOrientation.Both:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:
@@ -729,11 +729,11 @@ namespace MUXControlsTestApp
             {
                 scrollingView.VerticalScrollBarVisibility = (ScrollBarVisibility)cmbVerticalScrollBarVisibility.SelectedIndex;
 
-                ContentOrientation co = (ContentOrientation)cmbContentOrientation.SelectedIndex;
+                ScrollingContentOrientation co = (ScrollingContentOrientation)cmbContentOrientation.SelectedIndex;
                 switch (co)
                 {
-                    case ContentOrientation.Horizontal:
-                    case ContentOrientation.Both:
+                    case ScrollingContentOrientation.Horizontal:
+                    case ScrollingContentOrientation.Both:
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:
@@ -1785,33 +1785,33 @@ namespace MUXControlsTestApp
             }
         }
 
-        private Windows.UI.Xaml.Controls.ScrollMode MuxScrollModeToWuxScrollMode(ScrollMode muxScrollMode)
+        private Windows.UI.Xaml.Controls.ScrollMode MuxScrollModeToWuxScrollMode(ScrollingScrollMode muxScrollMode)
         {
             switch (muxScrollMode)
             {
-                case ScrollMode.Disabled:
+                case ScrollingScrollMode.Disabled:
                     return Windows.UI.Xaml.Controls.ScrollMode.Disabled;
                 default:
                     return Windows.UI.Xaml.Controls.ScrollMode.Enabled;
             }
         }
 
-        private Windows.UI.Xaml.Controls.ZoomMode MuxZoomModeToWuxZoomMode(ZoomMode muxZoomMode)
+        private Windows.UI.Xaml.Controls.ZoomMode MuxZoomModeToWuxZoomMode(ScrollingZoomMode muxZoomMode)
         {
             switch (muxZoomMode)
             {
-                case ZoomMode.Disabled:
+                case ScrollingZoomMode.Disabled:
                     return Windows.UI.Xaml.Controls.ZoomMode.Disabled;
                 default:
                     return Windows.UI.Xaml.Controls.ZoomMode.Enabled;
             }
         }
 
-        private bool MuxRailModeToWuxRailMode(RailingMode muxRailingMode)
+        private bool MuxRailModeToWuxRailMode(ScrollingRailMode muxRailingMode)
         {
             switch (muxRailingMode)
             {
-                case RailingMode.Disabled:
+                case ScrollingRailMode.Disabled:
                     return false;
                 default:
                     return true;

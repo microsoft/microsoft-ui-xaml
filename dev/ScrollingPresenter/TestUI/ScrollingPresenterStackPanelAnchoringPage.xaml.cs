@@ -14,9 +14,9 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
-using AnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAnchorRequestedEventArgs;
 using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
@@ -774,7 +774,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scrollingPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollingScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
+                    new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)
@@ -887,7 +887,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Checked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Horizontal;
-            scrollingPresenter.ContentOrientation = ContentOrientation.Horizontal;
+            scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
             scrollingPresenter.Width = 600;
             scrollingPresenter.Height = 300;
             cnsAnchorPoint.Width = 600;
@@ -907,7 +907,7 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Unchecked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Vertical;
-            scrollingPresenter.ContentOrientation = ContentOrientation.Vertical;
+            scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
             scrollingPresenter.Width = 300;
             scrollingPresenter.Height = 600;
             cnsAnchorPoint.Width = 300;
