@@ -260,7 +260,7 @@
                                         Grid.Column="2"/>
 
                                     <!-- Top nav list -->
-                                    <local:NavigationViewList
+                                    <!--<local:NavigationViewList
                                         AutomationProperties.LandmarkType="Navigation"
                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                         x:Name="TopNavMenuItemsHost"
@@ -284,7 +284,25 @@
                                         <ListView.ItemContainerTransitions>
                                             <TransitionCollection />
                                         </ListView.ItemContainerTransitions>
-                                    </local:NavigationViewList>
+                                    </local:NavigationViewList>-->
+
+                                    <local:ItemsRepeaterScrollHost
+                                            Grid.Column="3">
+                                        <ScrollViewer
+                                            HorizontalScrollMode="Disabled"
+                                            HorizontalScrollBarVisibility="Hidden"
+                                            VerticalScrollMode="Disabled"
+                                            VerticalScrollBarVisibility="Hidden">
+                                            <local:ItemsRepeater 
+                                                AutomationProperties.LandmarkType="Navigation"
+                                                AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                x:Name="TopNavMenuItemsHost">
+                                                <local:ItemsRepeater.Layout>
+                                                    <local:StackLayout Orientation="Horizontal"/>
+                                                </local:ItemsRepeater.Layout>
+                                            </local:ItemsRepeater>
+                                        </ScrollViewer>
+                                    </local:ItemsRepeaterScrollHost>
 
                                     <Button 
                                         x:Name="TopNavOverflowButton"
@@ -302,7 +320,7 @@
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                                     </Style>
                                                 </Flyout.FlyoutPresenterStyle>
-                                                <local:NavigationViewList                                                     
+                                                <!--<local:NavigationViewList                                                     
                                                     x:Name="TopNavMenuItemsOverflowHost" 
                                                     ItemTemplate="{TemplateBinding MenuItemTemplate}"
                                                     ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
@@ -314,7 +332,17 @@
                                                     <ListView.ItemContainerTransitions>
                                                         <TransitionCollection />
                                                     </ListView.ItemContainerTransitions>
-                                                </local:NavigationViewList>
+                                                </local:NavigationViewList>-->
+                                                <local:ItemsRepeaterScrollHost>
+                                                            <ScrollViewer>
+                                                        <local:ItemsRepeater 
+                                                                    x:Name="TopNavMenuItemsOverflowHost">
+                                                            <local:ItemsRepeater.Layout>
+                                                                <local:StackLayout Orientation="Vertical"/>
+                                                            </local:ItemsRepeater.Layout>
+                                                        </local:ItemsRepeater>
+                                                    </ScrollViewer>
+                                                </local:ItemsRepeaterScrollHost>
                                             </Flyout>
                                         </Button.Flyout>
                                     </Button>
