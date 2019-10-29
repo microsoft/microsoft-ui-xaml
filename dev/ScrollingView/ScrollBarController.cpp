@@ -39,9 +39,9 @@ void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
 
 #pragma region IScrollController
 
-bool ScrollBarController::AreInteractionsAllowed()
+bool ScrollBarController::AreScrollControllerInteractionsAllowed()
 {
-    return m_areInteractionsAllowed;
+    return m_areScrollControllerInteractionsAllowed;
 }
 
 bool ScrollBarController::AreScrollerInteractionsAllowed()
@@ -95,7 +95,7 @@ void ScrollBarController::SetScrollMode(
         TypeLogging::ScrollModeToString(scrollMode).c_str());
     m_scrollMode = scrollMode;
 
-    UpdateAreInteractionsAllowed();
+    UpdateAreScrollControllerInteractionsAllowed();
 }
 
 void ScrollBarController::SetValues(
@@ -163,8 +163,8 @@ void ScrollBarController::SetValues(
     }
 
     // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
-    // on the read-only IScrollController.AreInteractionsAllowed property.
-    UpdateAreInteractionsAllowed();
+    // on the read-only IScrollController.AreScrollControllerInteractionsAllowed property.
+    UpdateAreScrollControllerInteractionsAllowed();
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
@@ -324,17 +324,17 @@ void ScrollBarController::UnhookScrollBarPropertyChanged()
     }
 }
 
-void ScrollBarController::UpdateAreInteractionsAllowed()
+void ScrollBarController::UpdateAreScrollControllerInteractionsAllowed()
 {
-    bool oldAreInteractionsAllowed = m_areInteractionsAllowed;
+    bool oldAreScrollControllerInteractionsAllowed = m_areScrollControllerInteractionsAllowed;
 
-    m_areInteractionsAllowed =
+    m_areScrollControllerInteractionsAllowed =
         m_scrollBar &&
         m_scrollBar.IsEnabled() &&
         m_scrollBar.Maximum() > m_scrollBar.Minimum() &&
         m_scrollMode != winrt::ScrollMode::Disabled;
 
-    if (oldAreInteractionsAllowed != m_areInteractionsAllowed)
+    if (oldAreScrollControllerInteractionsAllowed != m_areScrollControllerInteractionsAllowed)
     {
         RaiseInteractionInfoChanged();
     }
@@ -380,8 +380,8 @@ void ScrollBarController::OnScrollBarPropertyChanged(
             m_scrollBar.IsEnabled());
 
         // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
-        // on the read-only IScrollController.AreInteractionsAllowed property.
-        UpdateAreInteractionsAllowed();
+        // on the read-only IScrollController.AreScrollControllerInteractionsAllowed property.
+        UpdateAreScrollControllerInteractionsAllowed();
     }
 #ifdef _DEBUG
     else if (args == winrt::UIElement::VisibilityProperty())
