@@ -477,7 +477,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 PressButtonAndVerifyText("GetTab0ToolTipButton", "Tab0ToolTipTextBlock", "Custom Tooltip");
 
                 Log.Comment("If the app does not set a custom tooltip, it should be the same as the header text.");
-                PressButtonAndVerifyText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Shop");
+                PressButtonAndVerifyText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "SecondTab");
 
                 Button changeShopTextButton = FindElement.ByName<Button>("ChangeShopTextButton");
                 changeShopTextButton.InvokeAndWait();

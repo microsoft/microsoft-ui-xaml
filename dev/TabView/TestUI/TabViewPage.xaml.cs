@@ -72,7 +72,6 @@ namespace MUXControlsTestApp
                 item.IconSource = _iconSource;
                 item.Header = "New Tab " + _newTabNumber;
                 item.Content = item.Header;
-                item.SetValue(AutomationProperties.NameProperty, item.Header);
 
                 Tabs.TabItems.Add(item);
 
