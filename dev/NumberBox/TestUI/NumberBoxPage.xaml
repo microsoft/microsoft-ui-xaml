@@ -11,11 +11,6 @@
     xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     mc:Ignorable="d">
 
-    <Page.Resources>
-        <local:NullableBooleanToBooleanConverter x:Key="BooleanConverter" />
-        <local:StringToValidationModeConverter x:Key="ValidationConverter" />
-    </Page.Resources>
-
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <Grid.ColumnDefinitions>
@@ -25,9 +20,9 @@
 
         <StackPanel Orientation="Vertical" contract5Present:Spacing="4" Background="{ThemeResource SystemControlBackgroundBaseLowBrush}" Padding="12">
 
-            <ComboBox x:Name="ValidationComboBox" AutomationProperties.Name="ValidationComboBox" Header="Validation Mode" SelectedValue="InvalidInputOverwritten">
-                <x:String>InvalidInputOverwritten</x:String>
-                <x:String>Disabled</x:String>
+            <ComboBox x:Name="ValidationComboBox" AutomationProperties.Name="ValidationComboBox" Header="Validation Mode" SelectedIndex="0" SelectionChanged="Validation_Changed">
+                <ComboBoxItem Content="InvalidInputOverwritten"/>
+                <ComboBoxItem Content="Disabled"/>
             </ComboBox>
 
             <CheckBox x:Name="CalculationCheckBox" AutomationProperties.Name="CalculationCheckBox" IsChecked="False" Content="AcceptsCalculations"/>
@@ -73,8 +68,7 @@
                     Header="NumberBox"
                     ValueChanged="NumberBoxValueChanged"
                     StepFrequency="{x:Bind StepNumberBox.Value, Mode=OneWay}"
-                    BasicValidationMode="{x:Bind ValidationComboBox.SelectedValue, Converter={StaticResource ValidationConverter}, Mode=OneWay}"
-                    AcceptsCalculation="{x:Bind CalculationCheckBox.IsChecked, Converter={StaticResource BooleanConverter}, Mode=OneWay}"/>
+                    AcceptsCalculation="{x:Bind CalculationCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Value:" Margin="0,0,5,0" />

@@ -45,6 +45,22 @@ namespace MUXControlsTestApp
             }
         }
 
+
+        private void Validation_Changed(object sender, RoutedEventArgs e)
+        {
+            if (TestNumberBox != null)
+            {
+                if (ValidationComboBox.SelectedIndex == 0)
+                {
+                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.InvalidInputOverwritten;
+                }
+                else if (ValidationComboBox.SelectedIndex == 1)
+                {
+                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.Disabled;
+                }
+            }
+        }
+
         private void Wrap_CheckChanged(object sender, RoutedEventArgs e)
         {
             TestNumberBox.WrapEnabled = WrapCheckBox.IsEnabled;

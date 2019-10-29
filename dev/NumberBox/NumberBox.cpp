@@ -228,12 +228,10 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
             break;
 
         case winrt::VirtualKey::Up:
-        case winrt::VirtualKey::GamepadDPadUp:
             StepValue(true);
             break;
 
         case winrt::VirtualKey::Down:
-        case winrt::VirtualKey::GamepadDPadDown:
             StepValue(false);
             break;
     }
@@ -344,16 +342,10 @@ void NumberBox::EvaluateInputCalculation()
         auto val = NumberBoxParser::Compute(textBox.Text());
 
         // No calculation could be done
-        if (val == std::nullopt)
-        {
-            return;
-        }
-        if (std::isnan(val.value()))
+        if (val != std::nullopt)
         {
             Value(val.value());
         }
-
-        Value(val.value());
    }
 }
 
@@ -370,11 +362,11 @@ void NumberBox::UpdateTextToValue()
 // Enables or Disables Spin Buttons
 void NumberBox::SetSpinButtonVisualState()
 {
-    if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline )
+    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
-    else if ( SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden )
+    else if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
     }
@@ -382,6 +374,12 @@ void NumberBox::SetSpinButtonVisualState()
 
 bool NumberBox::IsInBounds(double value)
 {
+    if (std::isnan(value))
+    {
+        // We don't consider NaN to be in bounds.
+        return false;
+    }
+
     return (value >= Minimum() && value <= Maximum());
 }
 

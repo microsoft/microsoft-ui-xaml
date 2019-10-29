@@ -16,7 +16,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Converters\Converters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NumberBoxPage.xaml.cs">
       <DependentUpon>NumberBoxPage.xaml</DependentUpon>
     </Compile>
