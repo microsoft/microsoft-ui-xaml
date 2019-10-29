@@ -266,6 +266,19 @@ winrt::ScrollingScrollInfo ScrollingView::ScrollFrom(winrt::float2 offsetsVeloci
     return s_noOpScrollInfo;
 }
 
+winrt::ScrollingScrollInfo ScrollingView::ScrollWith(winrt::float2 offsetsVelocity)
+{
+    SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+        TypeLogging::Float2ToString(offsetsVelocity).c_str());
+
+    if (auto scrollingPresenter = m_scrollingPresenter.get())
+    {
+        return scrollingPresenter.ScrollWith(offsetsVelocity);
+    }
+
+    return s_noOpScrollInfo;
+}
+
 winrt::ScrollingZoomInfo ScrollingView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
 {
     SCROLLINGVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_FLT, METH_NAME, this,

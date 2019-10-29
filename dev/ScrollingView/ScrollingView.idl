@@ -102,6 +102,8 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     ScrollingScrollInfo ScrollFrom(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
+    ScrollingScrollInfo ScrollWith(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity);
     [method_name("ZoomTo")]
     ScrollingZoomInfo ZoomTo(
         Single zoomFactor,
