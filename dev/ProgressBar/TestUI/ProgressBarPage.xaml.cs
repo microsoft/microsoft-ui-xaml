@@ -30,7 +30,6 @@ namespace MUXControlsTestApp
         private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
         {
             TestProgressBar.Loaded += TestProgressBar_Loaded;
-
             Loaded -= ProgressBarPage_Loaded;
         }
 
@@ -66,6 +65,12 @@ namespace MUXControlsTestApp
             TestProgressBar.Maximum = String.IsNullOrEmpty(MaximumInput.Text) ? Double.Parse(MaximumInput.PlaceholderText) : Double.Parse(MaximumInput.Text);
             TestProgressBar.Minimum = String.IsNullOrEmpty(MinimumInput.Text) ? Double.Parse(MinimumInput.PlaceholderText) : Double.Parse(MinimumInput.Text);
         }
+
+        public void UpdateWidth_Click(object sender, RoutedEventArgs e)
+        {
+            TestProgressBar.Width = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
+        }
+
         public void ChangeValue_Click(object sender, RoutedEventArgs e)
         {
             if (TestProgressBar.Value + 1 > TestProgressBar.Maximum)
