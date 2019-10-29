@@ -837,8 +837,6 @@
         </Setter>
     </Style>
 
-    <!--<Style TargetType="local:NavigationViewItem" x:Key="MUX_NavigationViewSettingsItemStyleWhenOnTopPane" BasedOn="{StaticResource MUX_NavigationViewFooterItemStyleWhenOnTopPane}"/>-->
-
     <Style TargetType="primitives:NavigationViewItemPresenter" x:Key="MUX_NavigationViewItemPresenterStyleWhenOnTopPane">
         <Setter Property="Template">
             <Setter.Value>

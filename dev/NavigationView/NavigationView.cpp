@@ -1702,55 +1702,49 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 {
     if (const auto& nvi = container)
     {
-        winrt::IInspectable item{ nullptr };
-
         if (IsTopNavigationView())
         {
             // Search topnav first, if not found, search overflow
-            if (auto lv = m_topNavListView.get())
+            if (const auto lv = m_topNavListView.get())
             {
-                item = lv.ItemFromContainer(nvi);
-                if (item)
+                if (const auto item = lv.ItemFromContainer(nvi))
                 {
                     return item;
                 }
             }
 
-            if (auto lv = m_topNavListOverflowView.get())
+            if (const auto lv = m_topNavListOverflowView.get())
             {
-                item = lv.ItemFromContainer(nvi);
-                if (item)
+                if (const auto item = lv.ItemFromContainer(nvi))
                 {
                     return item;
                 }
             }
 
             // if still not found search footer
-            if (auto flv = m_topFooterNavListView.get())
+            if (const auto flv = m_topFooterNavListView.get())
             {
-                item = flv.ItemFromContainer(nvi);
+                return flv.ItemFromContainer(nvi);
             }
 
-            return item;
+            return nullptr;
         }
         else
         {
-            if (auto lv = m_leftNavListView.get())
+            if (const auto lv = m_leftNavListView.get())
             {
-                item = lv.ItemFromContainer(nvi);
-
-                if (item)
+                if (const auto item = lv.ItemFromContainer(nvi))
                 {
                     return item;
                 }
 
                 // if not found search footer
-                if (auto flv = m_leftFooterNavListView.get())
+                if (const auto flv = m_leftFooterNavListView.get())
                 {
-                    item = flv.ItemFromContainer(nvi);
+                    return flv.ItemFromContainer(nvi);
                 }
             }
-            return item;
+            return nullptr;
         }
     }
 
@@ -1925,7 +1919,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::
     // still no container, lats look in footer list
     if (container.Content() != itemData)
     {
-        auto footerListView = IsTopNavigationView() ? m_topFooterNavListView.get() : m_leftFooterNavListView.get();
+        const auto footerListView = IsTopNavigationView() ? m_topFooterNavListView.get() : m_leftFooterNavListView.get();
         MUX_ASSERT(footerListView);
 
         if (auto navListView = footerListView.try_as<winrt::NavigationViewList>())
@@ -2080,13 +2074,15 @@ bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
 
 bool NavigationView::IsFooterMenuItem(winrt::IInspectable const& item)
 {
-    bool isFooterItem = false;
-    if (item && FooterMenuItems())
+    if (item)
     {
-        uint32_t index = 0;
-        isFooterItem = FooterMenuItems().IndexOf(item, index);
+        if (const auto footerMenuItems = FooterMenuItems())
+        {
+            uint32_t _unused = 0;
+            return footerMenuItems.IndexOf(item, _unused);
+        }
     }
-    return isFooterItem;
+    return false;
 }
 
 void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
@@ -3404,23 +3400,30 @@ void NavigationView::UpdateListViewItemSource()
 
 void NavigationView::UpdateFooterListViewItemSource()
 {
-    auto footerItems = FooterMenuItems();
+    const auto footerItems = FooterMenuItems();
 
     // If the old settings item is selected, move the selection to the new one.
-    auto selectedItem = SelectedItem();
-    bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
+    const auto shouldSelectSetting = [this]()
+    {
+        if (const auto selectedItem = SelectedItem())
+        {
+            return IsSettingsItem(selectedItem);
+        }
+        return false;
+    }();
 
+    // we will recreate settingsItem so deselect old one
     if (shouldSelectSetting)
     {
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
     }
 
-    if (m_settingsItem)
+    if (const auto settingsItem = m_settingsItem.get())
     {
         uint32_t index = 0;
-        if (footerItems.IndexOf(m_settingsItem.get(), index))
+        if (footerItems.IndexOf(settingsItem, index))
         {
-            m_settingsItem.get().Icon(nullptr);
+            settingsItem.Icon(nullptr);
             footerItems.RemoveAt(index);
             m_settingsItem.set(nullptr);
         }
@@ -3428,6 +3431,9 @@ void NavigationView::UpdateFooterListViewItemSource()
 
     if (IsSettingsVisible() && m_appliedTemplate)
     {
+        // when we move sttingsItem to bottom of the list
+        // Icon view in it's template will be corupted (possible bug?)
+        // so create new settings item
         CreateAndHookEventsToSettings();
         // add settings item to the end of footer
         footerItems.Append(m_settingsItem.get());
