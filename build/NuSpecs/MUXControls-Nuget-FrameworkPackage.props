@@ -132,7 +132,7 @@
   
   <!-- Make this URI works in framework package "ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" -->
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" Condition="'$(DisableWinUIXamlPageInjection)' != 'true'">
       <SubType>Designer</SubType>
       <Link>Microsoft.UI.Xaml\DensityStyles\Compact.xaml</Link>
     </Page>
