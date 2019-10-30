@@ -618,6 +618,80 @@ winrt::ScrollingZoomInfo ScrollingPresenter::ZoomFrom(float zoomFactorVelocity, 
     return winrt::ScrollingZoomInfo{ viewChangeId };
 }
 
+
+void ScrollingPresenter::SetHorizontalEdgeScrolling(
+    winrt::PointerDeviceType pointerDeviceType,
+    winrt::Point pointerPositionAdjustment,
+    double leftEdgeApplicableRange,
+    double rightEdgeApplicableRange,
+    float leftEdgeVelocity,
+    float rightEdgeVelocity)
+{
+    switch (pointerDeviceType)
+    {
+        case winrt::PointerDeviceType::Mouse:
+        case winrt::PointerDeviceType::Pen:
+        case winrt::PointerDeviceType::Touch:
+            break;
+        default:
+            throw winrt::hresult_error(E_INVALIDARG, s_invalidPointerDeviceType);
+    }
+
+    if (leftEdgeApplicableRange < 0 || rightEdgeApplicableRange < 0)
+    {
+        throw winrt::hresult_error(E_INVALIDARG, s_negativeEdgeApplicationRange);
+    }
+
+    // TODO: potentially adjust activeVelocity after viewportWidth changed
+    // TODO: decrease activeVelocity when leftEdgeApplicableRange + rightEdgeApplicableRange > viewportWidth proratedly
+
+    auto existingEdgeScrollingInfoIt = m_horizontalEdgeScrollingMap.find(pointerDeviceType);
+
+    if (existingEdgeScrollingInfoIt == m_horizontalEdgeScrollingMap.end())
+    {
+        if (leftEdgeVelocity != 0.0f || rightEdgeVelocity != 0.0f)
+        {
+            EdgeScrollingInfo newEdgeScrollingInfo;
+
+            newEdgeScrollingInfo.pointerPositionAdjustment = pointerPositionAdjustment;
+            newEdgeScrollingInfo.leftEdgeApplicableRange = leftEdgeApplicableRange;
+            newEdgeScrollingInfo.rightEdgeApplicableRange = rightEdgeApplicableRange;
+            newEdgeScrollingInfo.leftEdgeVelocity = leftEdgeVelocity;
+            newEdgeScrollingInfo.rightEdgeVelocity = rightEdgeVelocity;
+            newEdgeScrollingInfo.activeVelocity = 0.0f;
+
+            m_horizontalEdgeScrollingMap.emplace(pointerDeviceType, newEdgeScrollingInfo);
+        }
+    }
+    else
+    {
+        auto existingEdgeScrollingInfo = existingEdgeScrollingInfoIt->second;
+
+        if (leftEdgeVelocity != 0.0f || rightEdgeVelocity != 0.0f)
+        {
+            existingEdgeScrollingInfo.pointerPositionAdjustment = pointerPositionAdjustment;
+            existingEdgeScrollingInfo.leftEdgeApplicableRange = leftEdgeApplicableRange;
+            existingEdgeScrollingInfo.rightEdgeApplicableRange = rightEdgeApplicableRange;
+            existingEdgeScrollingInfo.leftEdgeVelocity = leftEdgeVelocity;
+            existingEdgeScrollingInfo.rightEdgeVelocity = rightEdgeVelocity;
+        }
+        else
+        {
+            m_horizontalEdgeScrollingMap.erase(existingEdgeScrollingInfoIt);
+        }
+    }
+}
+
+void ScrollingPresenter::SetVerticalEdgeScrolling(
+    winrt::PointerDeviceType pointerDeviceType,
+    winrt::Point pointerPositionAdjustment,
+    double topEdgeApplicableRange,
+    double bottomEdgeApplicableRange,
+    float topEdgeVelocity,
+    float bottomEdgeVelocity)
+{
+}
+
 #pragma endregion
 
 #pragma region IFrameworkElementOverridesHelper

@@ -183,6 +183,21 @@ public:
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
+    void SetHorizontalEdgeScrolling(
+        winrt::PointerDeviceType pointerDeviceType,
+        winrt::Point pointerPositionAdjustment,
+        double leftEdgeApplicableRange,
+        double rightEdgeApplicableRange,
+        float leftEdgeVelocity,
+        float rightEdgeVelocity);
+    void SetVerticalEdgeScrolling(
+        winrt::PointerDeviceType pointerDeviceType,
+        winrt::Point pointerPositionAdjustment,
+        double topEdgeApplicableRange,
+        double bottomEdgeApplicableRange,
+        float topEdgeVelocity,
+        float bottomEdgeVelocity);
+
 #pragma endregion
 
     enum class ScrollingPresenterDimension
@@ -791,6 +806,17 @@ private:
 #endif // _DEBUG
 
 private:
+    struct EdgeScrollingInfo
+    {
+        winrt::Point pointerPositionAdjustment;
+        double leftEdgeApplicableRange;
+        double rightEdgeApplicableRange;
+        float leftEdgeVelocity;
+        float rightEdgeVelocity;
+        float activeVelocity;
+    };
+
+private:
     int m_latestViewChangeId{ 0 };
     int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
@@ -910,12 +936,18 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
+    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollingMap;
+    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollingMap;
+
     // Maximum difference for offset velocities to be considered equal. Used for constant velocity scrolling.
     static constexpr float s_offsetVelocityEqualityEpsilon{ 0.00001f };
     // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
     static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
     // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
     static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
+
+    static constexpr std::wstring_view s_invalidPointerDeviceType{ L"Invalid PointerDeviceType value."sv };
+    static constexpr std::wstring_view s_negativeEdgeApplicationRange{ L"Edge scrolling application range must be positive."sv };
 
     // Property names being targeted for the ScrollingPresenter.Content's Visual.
     // RedStone v1 case:
