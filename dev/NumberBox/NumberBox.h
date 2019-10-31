@@ -80,6 +80,8 @@ private:
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
 
+    winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
+    winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
     winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
 };

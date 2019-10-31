@@ -18,7 +18,7 @@ NumberBox::NumberBox()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
     // Default values for the number formatter
-    auto formatter = winrt::DecimalFormatter();
+    const auto formatter = winrt::DecimalFormatter();
     formatter.IntegerDigits(1);
     formatter.FractionDigits(0);
     NumberFormatter(formatter);
@@ -37,9 +37,9 @@ void NumberBox::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected = *this;
 
-    if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
+    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
     {
-        spinDown.Click({ this, &NumberBox::OnSpinDownClick });
+        m_upButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
 
         // Do localization for the down button
         if (winrt::AutomationProperties::GetName(spinDown).empty())
@@ -49,9 +49,9 @@ void NumberBox::OnApplyTemplate()
         }
     }
 
-    if (auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
+    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
     {
-        spinUp.Click({ this, &NumberBox::OnSpinUpClick });
+        m_downButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
 
         // Do localization for the up button
         if (winrt::AutomationProperties::GetName(spinUp).empty())
@@ -62,7 +62,7 @@ void NumberBox::OnApplyTemplate()
     }
 
     m_textBox.set([this, controlProtected]() {
-        auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
+        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
         if (textBox)
         {
             m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
@@ -83,7 +83,7 @@ void NumberBox::OnApplyTemplate()
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto oldValue = unbox_value<double>(args.OldValue());
+    const auto oldValue = unbox_value<double>(args.OldValue());
 
     CoerceValue();
 
@@ -163,7 +163,7 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 void NumberBox::CoerceValue()
 {
     // Validate that the value is in bounds
-    auto value = Value();
+    const auto value = Value();
     if (!std::isnan(value) && !IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
     {
         // Coerce value to be within range
@@ -184,7 +184,7 @@ void NumberBox::ValidateInput()
     // Validate the content of the inner textbox
     if (auto&& textBox = m_textBox.get())
     {
-        auto text = textBox.Text();
+        const auto text = textBox.Text();
         
         // Handles empty TextBox case, set text to current value
         if (text.empty())
@@ -251,7 +251,7 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
 {
     if (HyperScrollEnabled())
     {
-        auto const delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
+        const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
         if (delta > 0)
         {
             StepValueUp();
@@ -303,22 +303,22 @@ void NumberBox::StepValue(bool isPositive)
 // Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
 int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 {
-    auto const oldVal = Value();
+    const auto oldVal = Value();
 
     // Run formatter on both values to discard trailing and leading 0's.
-    auto formattedVal = wstring_view(m_stepPrecisionFormatter.Format(oldVal));
-    auto formattedStep = wstring_view(m_stepPrecisionFormatter.Format(StepFrequency()));
-    auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
+    const auto formattedVal = wstring_view(m_stepPrecisionFormatter.Format(oldVal));
+    const auto formattedStep = wstring_view(m_stepPrecisionFormatter.Format(StepFrequency()));
+    const auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
-    int oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
-    int StepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
+    const int oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
+    const int stepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
 
     // Pick bigger of two decimal sigDigits
-    int result = std::max(oldValSig, StepSig);
+    int result = std::max(oldValSig, stepSig);
 
     // append # of integer digits from new value
-    result += (int) formattedNew.substr(0, formattedNew.find_first_of('.')).size();
+    result += (int)formattedNew.substr(0, formattedNew.find_first_of('.')).size();
     return result;
 }
 
@@ -327,7 +327,7 @@ void NumberBox::UpdateTextToValue()
 {
     if (auto&& textBox = m_textBox.get())
     {
-        auto formattedValue = NumberFormatter().FormatDouble(Value());
+        const auto formattedValue = NumberFormatter().FormatDouble(Value());
         textBox.Text(formattedValue);
     }
 }
