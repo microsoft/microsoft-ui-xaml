@@ -31,7 +31,6 @@ public:
 
 private:
     com_ptr<NumberBox> GetImpl();
-    winrt::NumberBox GetNumberBox() { return Owner().as<winrt::NumberBox>(); }
 };
 
 CppWinRTActivatableClassWithBasicFactory(NumberBoxAutomationPeer);

@@ -56,9 +56,6 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxBasicValidationMode BasicValidationMode;
 
-    [MUX_DEFAULT_VALUE("false")]
-    Boolean AcceptsCalculation;
-
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode{ get; set; };
@@ -84,7 +81,6 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty AcceptsCalculationProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };

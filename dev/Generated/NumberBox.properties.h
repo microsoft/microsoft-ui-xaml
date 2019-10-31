@@ -9,9 +9,6 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
-    void AcceptsCalculation(bool value);
-    bool AcceptsCalculation();
-
     void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
     winrt::NumberBoxBasicValidationMode BasicValidationMode();
 
@@ -48,7 +45,6 @@ public:
     void WrapEnabled(bool value);
     bool WrapEnabled();
 
-    static winrt::DependencyProperty AcceptsCalculationProperty() { return s_AcceptsCalculationProperty; }
     static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
@@ -62,7 +58,6 @@ public:
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
     static winrt::DependencyProperty WrapEnabledProperty() { return s_WrapEnabledProperty; }
 
-    static GlobalDependencyProperty s_AcceptsCalculationProperty;
     static GlobalDependencyProperty s_BasicValidationModeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HyperScrollEnabledProperty;

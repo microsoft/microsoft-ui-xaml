@@ -9,6 +9,10 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+static constexpr wstring_view c_tabViewDownButtonName{ L"DownSpinButton"sv };
+static constexpr wstring_view c_tabViewUpButtonName{ L"UpSpinButton"sv };
+static constexpr wstring_view c_tabViewTextBoxName{ L"InputBox"sv };
+
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
@@ -31,9 +35,9 @@ winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
 
 void NumberBox::OnApplyTemplate()
 {
-    winrt::IControlProtected controlProtected = *this;
+    const winrt::IControlProtected controlProtected = *this;
 
-    if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(L"DownSpinButton", controlProtected))
+    if (auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
     {
         spinDown.Click({ this, &NumberBox::OnSpinDownClick });
 
@@ -45,7 +49,7 @@ void NumberBox::OnApplyTemplate()
         }
     }
 
-    if (auto spinUp = GetTemplateChildT<winrt::RepeatButton>(L"UpSpinButton", controlProtected))
+    if (auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
     {
         spinUp.Click({ this, &NumberBox::OnSpinUpClick });
 
@@ -58,11 +62,11 @@ void NumberBox::OnApplyTemplate()
     }
 
     m_textBox.set([this, controlProtected]() {
-        auto textBox = GetTemplateChildT<winrt::TextBox>(L"InputBox", controlProtected);
+        auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
         if (textBox)
         {
-            textBox.LostFocus({ this, &NumberBox::OnTextBoxLostFocus });
-            textBox.KeyUp({ this, &NumberBox::OnNumberBoxKeyUp });
+            m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
+            m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
     }());
@@ -81,24 +85,27 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 {
     auto oldValue = unbox_value<double>(args.OldValue());
 
-    if (std::isnan(Value()) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    CoerceValue();
+
+    auto newValue = Value();
+
+    if (std::isnan(newValue) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
     {
         // In the validation case, we don't consider NaN to be valid.
-        Value(oldValue);
+        newValue = oldValue;
+        Value(newValue);
     }
 
-    CoerseValue();
-
-    if (Value() != oldValue)
+    if (newValue != oldValue)
     {
         // Fire ValueChanged event
-        auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, Value());
+        auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
         m_valueChangedEventSource(*this, *valueChangedArgs);
 
         // Fire value property change for UIA
         if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
         {
-            winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, Value());
+            winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
         }
     }
 
@@ -107,12 +114,12 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    CoerseValue();
+    CoerceValue();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    CoerseValue();
+    CoerceValue();
 }
 
 void NumberBox::OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -137,7 +144,7 @@ void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::Dependency
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (auto textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         textBox.Text(Text());
     }
@@ -153,16 +160,17 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
     ValidateInput();
 }
 
-void NumberBox::CoerseValue()
+void NumberBox::CoerceValue()
 {
     // Validate that the value is in bounds
     auto value = Value();
-    if (!IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    if (!std::isnan(value) && !IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
     {
-        // Coerse value to be within range
-        if (value > Maximum())
+        // Coerce value to be within range
+        const auto max = Maximum();
+        if (value > max)
         {
-            Value(Maximum());
+            Value(max);
         }
         else
         {
@@ -174,7 +182,7 @@ void NumberBox::CoerseValue()
 void NumberBox::ValidateInput()
 {
     // Validate the content of the inner textbox
-    if (auto textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         auto text = textBox.Text();
         
@@ -185,12 +193,6 @@ void NumberBox::ValidateInput()
         }
         else
         {
-            if (AcceptsCalculation() && IsFormulaic(text))
-            {
-                NormalizeShorthandOperations();
-                EvaluateInputCalculation();
-            }
-
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             auto numberParser = NumberFormatter().as<winrt::INumberParser>();
             auto parsedNum = numberParser.ParseDouble(text);
@@ -213,12 +215,12 @@ void NumberBox::ValidateInput()
 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
-    StepValue(false);
+    StepValueDown();
 }
 
 void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    StepValue(true);
+    StepValueUp();
 }
 
 void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
@@ -236,11 +238,11 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
             break;
 
         case winrt::VirtualKey::Up:
-            StepValue(true);
+            StepValueUp();
             break;
 
         case winrt::VirtualKey::Down:
-            StepValue(false);
+            StepValueDown();
             break;
     }
 }
@@ -249,22 +251,21 @@ void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRouted
 {
     if (HyperScrollEnabled())
     {
-        int delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
+        auto const delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
         if (delta > 0)
         {
-            StepValue(true);
+            StepValueUp();
         }
         else if (delta < 0)
         {
-            StepValue(false);
+            StepValueDown();
         }
     }
 }
 
 void NumberBox::StepValue(bool isPositive)
 {
-    double oldVal = Value();
-    double newVal = oldVal;
+    auto newVal = Value();
 
     if (isPositive)
     {
@@ -277,13 +278,16 @@ void NumberBox::StepValue(bool isPositive)
 
     if (WrapEnabled())
     {
-        if (newVal > Maximum())
+        const auto max = Maximum();
+        const auto min = Minimum();
+
+        if (newVal > max)
         {
-            newVal = Minimum();
+            newVal = min;
         }
-        else if (newVal < Minimum())
+        else if (newVal < min)
         {
-            newVal = Maximum();
+            newVal = max;
         }
     }
 
@@ -296,24 +300,15 @@ void NumberBox::StepValue(bool isPositive)
     Value(newVal);
 }
 
-// Check if text resembles formulaic input to determine if parser should be executed
-bool NumberBox::IsFormulaic(const winrt::hstring& in)
-{
-    std::wstring input(in);
-    std::wregex formula(L"^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
-    std::wregex negval(L"^-([0-9])+(.([0-9])+)?$");
-    return (std::regex_match(input, formula) && !std::regex_match(input, negval));
-}
-
 // Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
 int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
 {
     auto const oldVal = Value();
 
     // Run formatter on both values to discard trailing and leading 0's.
-    std::wstring formattedVal(m_stepPrecisionFormatter.Format(oldVal));
-    std::wstring formattedStep(m_stepPrecisionFormatter.Format(StepFrequency()));
-    std::wstring formattedNew(m_stepPrecisionFormatter.Format(newVal));
+    auto formattedVal = wstring_view(m_stepPrecisionFormatter.Format(oldVal));
+    auto formattedStep = wstring_view(m_stepPrecisionFormatter.Format(StepFrequency()));
+    auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
     int oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
@@ -327,40 +322,10 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
     return result;
 }
 
-// Appends current value to start of special shorthand functions in form "(Operation Operand)*"
-void NumberBox::NormalizeShorthandOperations()
-{
-    if (auto textBox = m_textBox.get())
-    {
-        std::wregex r(L"^\\s*([+-/*^%]+[0-9()\\s]*)+$");
-        if (std::regex_match(textBox.Text().data(), r))
-        {
-            std::wstringstream ss;
-            ss << Value() << textBox.Text().data();
-            textBox.Text(ss.str());
-        }
-    }
-}
-
-// Run value entered through NumberParser
-void NumberBox::EvaluateInputCalculation()
-{
-    if (auto textBox = m_textBox.get())
-    {
-        auto val = NumberBoxParser::Compute(textBox.Text());
-
-        // No calculation could be done
-        if (val != std::nullopt)
-        {
-            Value(val.value());
-        }
-   }
-}
-
 // Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
 void NumberBox::UpdateTextToValue()
 {
-    if (auto textBox = m_textBox.get())
+    if (auto&& textBox = m_textBox.get())
     {
         auto formattedValue = NumberFormatter().FormatDouble(Value());
         textBox.Text(formattedValue);

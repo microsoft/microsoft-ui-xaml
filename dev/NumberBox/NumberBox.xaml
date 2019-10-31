@@ -54,7 +54,8 @@
                                 Visibility="Collapsed"
                                 FontSize="{TemplateBinding FontSize}"
                                 Content="&#xE70E;"
-                                Style="{StaticResource NumberBoxSpinButtonStyle}" />
+                                Style="{StaticResource NumberBoxSpinButtonStyle}"
+                                contract7Present:CornerRadius="0"/>
 
                             <RepeatButton x:Name="DownSpinButton"
                                 Visibility="Collapsed"

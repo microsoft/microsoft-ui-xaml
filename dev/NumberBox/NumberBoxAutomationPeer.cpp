@@ -49,32 +49,32 @@ com_ptr<NumberBox> NumberBoxAutomationPeer::GetImpl()
 // IRangeValueProvider
 double NumberBoxAutomationPeer::Minimum()
 {
-    return GetNumberBox().Minimum();
+    return GetImpl()->Minimum();
 }
 
 double NumberBoxAutomationPeer::Maximum()
 {
-    return GetNumberBox().Maximum();
+    return GetImpl()->Maximum();
 }
 
 double NumberBoxAutomationPeer::Value()
 {
-    return GetNumberBox().Value();
+    return GetImpl()->Value();
 }
 
 double NumberBoxAutomationPeer::SmallChange()
 {
-    return GetNumberBox().StepFrequency();
+    return GetImpl()->StepFrequency();
 }
 
 double NumberBoxAutomationPeer::LargeChange()
 {
-    return GetNumberBox().StepFrequency();
+    return GetImpl()->StepFrequency();
 }
 
 void NumberBoxAutomationPeer::SetValue(double value)
 {
-    GetNumberBox().Value(value);
+    GetImpl()->Value(value);
 }
 
 void NumberBoxAutomationPeer::RaiseValueChangedEvent(double oldValue, double newValue)

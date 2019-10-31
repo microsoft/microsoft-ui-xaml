@@ -9,7 +9,6 @@
 #include "NumberBoxValueChangedEventArgs.g.h"
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
-#include "NumberBoxParser.h"
 #include <regex>
 
 class NumberBoxValueChangedEventArgs :
@@ -33,15 +32,6 @@ class NumberBox :
     
 public:
 
-    enum ValidationState
-    {
-        Valid,
-        Invalid,
-        InvalidRange,
-        InvalidInput,
-        InvalidDivide
-    };
-
     NumberBox();
 
     // IUIElement
@@ -55,7 +45,6 @@ public:
     void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnAcceptsCalculationsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -75,18 +64,22 @@ private:
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
-    void CoerseValue();
+    void CoerceValue();
     void UpdateTextToValue();
-    void SetSpinButtonVisualState();
     int ComputePrecisionRounderSigDigits(double newVal);
-    void StepValue(bool sign);
-    void EvaluateInputCalculation();
-    bool IsFormulaic(const winrt::hstring& in);
-    void NormalizeShorthandOperations();
+
+    void SetSpinButtonVisualState();
+    void StepValue(bool isPositive);
+    void StepValueUp() { StepValue(true); }
+    void StepValueDown() { StepValue(false); }
+
     bool IsInBounds(double value);
 
     winrt::DecimalFormatter m_stepPrecisionFormatter{};
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+
+    winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
+    winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
 };

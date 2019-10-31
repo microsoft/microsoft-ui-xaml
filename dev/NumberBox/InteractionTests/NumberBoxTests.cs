@@ -130,37 +130,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicCalculationTest()
-        {
-            using (var setup = new TestSetupHelper("NumberBox Tests"))
-            {
-                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
-
-                Log.Comment("Verify that calculations don't work if AcceptsCalculations is false");
-                EnterText(numBox, "5 + 3");
-                Verify.AreEqual(0, numBox.Value);
-
-                Check("CalculationCheckBox");
-
-                EnterText(numBox, "5 + 3");
-                Verify.AreEqual(8, numBox.Value);
-
-                EnterText(numBox, "9-3*2");
-                Verify.AreEqual(3, numBox.Value);
-
-                EnterText(numBox, "10 /( 2 + 3 )");
-                Verify.AreEqual(2, numBox.Value);
-
-                EnterText(numBox, "2 3 ^");
-                Verify.AreEqual(8, numBox.Value);
-
-                Log.Comment("Verify that diving by zero doesn't work");
-                EnterText(numBox, "1 / 0");
-                Verify.AreEqual(8, numBox.Value);
-            }
-        }
-
-        [TestMethod]
         public void BasicKeyboardTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
