@@ -52,6 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Height = 600.0;
                 navView.Content = "This is a simple test";
                 MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
             IdleSynchronizer.Wait();
@@ -91,6 +92,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Height = 600.0;
                 navView.Content = "This test should have enough NavigationViewItems to scroll.";
                 MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
             IdleSynchronizer.Wait();
@@ -141,6 +143,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Width = 800.0;
                 navView.Height = 600.0;
                 MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
             IdleSynchronizer.Wait();
