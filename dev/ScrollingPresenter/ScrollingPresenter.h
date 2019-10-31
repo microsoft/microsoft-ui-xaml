@@ -304,6 +304,17 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
 private:
+    struct EdgeScrollingInfo
+    {
+        winrt::Point pointerPositionAdjustment;
+        double nearEdgeApplicableRange;
+        double farEdgeApplicableRange;
+        float nearEdgeVelocity;
+        float farEdgeVelocity;
+        float activeVelocity;
+    };
+
+private:
 #ifdef _DEBUG
     static winrt::hstring DependencyPropertyToString(const winrt::IDependencyProperty& dependencyProperty);
 #endif
@@ -477,6 +488,10 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
+    void ProcessPointerMoved(
+        const EdgeScrollingInfo& edgeScrollingInfo,
+        const winrt::PointerDeviceType& pointerDeviceType,
+        const winrt::Point& pointerPosition);
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
         int32_t mouseWheelDelta,
@@ -675,6 +690,9 @@ private:
     void OnPointerPressed(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    void OnPointerMoved(
+        const winrt::IInspectable& sender,
+        const winrt::PointerRoutedEventArgs& args);
 
     void OnScrollControllerInteractionRequested(
         const winrt::IScrollController& sender,
@@ -801,20 +819,18 @@ private:
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollingPresenterDimension dimension);
 
+    static void SetEdgeScrolling(
+        std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
+        winrt::PointerDeviceType pointerDeviceType,
+        winrt::Point pointerPositionAdjustment,
+        double nearEdgeApplicableRange,
+        double farEdgeApplicableRange,
+        float nearEdgeVelocity,
+        float farEdgeVelocity);
+
 #ifdef _DEBUG
     void DumpMinMaxPositions();
 #endif // _DEBUG
-
-private:
-    struct EdgeScrollingInfo
-    {
-        winrt::Point pointerPositionAdjustment;
-        double leftEdgeApplicableRange;
-        double rightEdgeApplicableRange;
-        float leftEdgeVelocity;
-        float rightEdgeVelocity;
-        float activeVelocity;
-    };
 
 private:
     int m_latestViewChangeId{ 0 };
@@ -859,6 +875,7 @@ private:
     winrt::Rect m_anchorElementBounds{};
     winrt::ScrollingInteractionState m_state{ winrt::ScrollingInteractionState::Idle };
     winrt::IInspectable m_pointerPressedEventHandler{ nullptr };
+    winrt::IInspectable m_pointerMovedEventHandler{ nullptr };
     winrt::CompositionPropertySet m_expressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_horizontalScrollControllerExpressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_verticalScrollControllerExpressionAnimationSources{ nullptr };

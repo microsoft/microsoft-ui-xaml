@@ -44,6 +44,7 @@ namespace MUXControlsTestApp
             navigateToBiDirectionalScrollController.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterWithBiDirectionalScrollControllerPage), 0); };
             navigateToLeakDetection.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterLeakDetectionPage), 0); };
             navigateToMousePanning.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterMousePanningPage), 0); };
+            navigateToEdgeScrolling.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterEdgeScrollingPage), 0); };
 
             try
             {

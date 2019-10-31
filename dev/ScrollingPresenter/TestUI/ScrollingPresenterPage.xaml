@@ -30,6 +30,7 @@
             <Button x:Name="navigateToBiDirectionalScrollController" AutomationProperties.Name="navigateToBiDirectionalScrollController" Margin="2" HorizontalAlignment="Stretch">ScrollingPresenter with composition bi-directional scroll controller</Button>
             <Button x:Name="navigateToLeakDetection" AutomationProperties.Name="navigateToLeakDetection" Margin="2" HorizontalAlignment="Stretch">Detect ScrollingPresenter Memory Leak</Button>
             <Button x:Name="navigateToMousePanning" AutomationProperties.Name="navigateToMousePanning" Margin="2" HorizontalAlignment="Stretch">Mouse-based panning</Button>
+            <Button x:Name="navigateToEdgeScrolling" AutomationProperties.Name="navigateToEdgeScrolling" Margin="2" HorizontalAlignment="Stretch">Edge scrolling</Button>
         </StackPanel>
         
         <StackPanel Grid.Column="1">
