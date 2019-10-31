@@ -107,11 +107,23 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             const double progressBarWidth = progressBar.ActualWidth();
             const double maximum = Maximum();
             const double minimum = Minimum();
+            const auto padding = Padding();
 
             if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
-                const double increment = progressBarWidth / (maximum - minimum);
-                progressBarIndicator.Width(increment * (Value() - minimum));
+                const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
+
+                // checks if padding causes maxIndicatorWidth to be larger than progressBarWidth
+                if (progressBarWidth - padding.Left < maxIndicatorWidth)
+                {
+                    const double adjustedIncrement = (progressBarWidth - padding.Left) / (maximum - minimum);
+                    progressBarIndicator.Width(adjustedIncrement * (Value() - minimum));
+                }
+                else
+                {
+                    const double increment = maxIndicatorWidth / (maximum - minimum);
+                    progressBarIndicator.Width(increment * (Value() - minimum));
+                }
             }
             else
             {
@@ -142,9 +154,8 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 
         templateSettings->ContainerAnimationEndPosition(width);
 
-        const winrt::Windows::UI::Xaml::Media::RectangleGeometry rectangle = [width, height, padding = Padding()]()
+        const auto rectangle = [width, height, padding = Padding()]()
         {
-            
             const auto returnValue = winrt::RectangleGeometry();
             returnValue.Rect({
                 static_cast<float>(padding.Left),

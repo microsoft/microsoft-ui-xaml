@@ -29,14 +29,8 @@ namespace MUXControlsTestApp
 
         private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
         {
-            TestProgressBar.Loaded += TestProgressBar_Loaded;
-            Loaded -= ProgressBarPage_Loaded;
-        }
-
-        private void TestProgressBar_Loaded(object sender, RoutedEventArgs e)
-        {
             var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressBar, 0);
-            
+
             VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressBarPage_CurrentStateChanged;
             VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
 
@@ -47,7 +41,7 @@ namespace MUXControlsTestApp
             indicator.SizeChanged += this.Indicator_SizeChanged;
             IndicatorWidthText.Text = indicator.ActualWidth.ToString();
 
-            TestProgressBar.Loaded -= TestProgressBar_Loaded;
+            Loaded -= ProgressBarPage_Loaded;
         }
 
         private void Indicator_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -88,18 +82,12 @@ namespace MUXControlsTestApp
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool?)
-            {
-                return (bool)value;
-            }
-            return false;
+            return value is bool ? (bool)value : (object)false;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
-            if (value is bool)
-                return (bool)value;
-            return false;
+            return value is bool ? (bool)value : (object)false;
         }
     }
 }
