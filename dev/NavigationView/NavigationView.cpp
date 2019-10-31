@@ -431,7 +431,6 @@ void NavigationView::OnApplyTemplate()
 
     // Initial setup for ItemsRepeater
     SyncItemTemplates();
-    UpdateRepeaterItemsSource();
 }
 
 void NavigationView::UpdateRepeaterItemsSource()
@@ -3142,6 +3141,7 @@ void NavigationView::UpdatePaneDisplayMode()
 
     UpdateContentBindingsForPaneDisplayMode();
     UpdateListViewItemSource();
+    UpdateRepeaterItemsSource();
 }
 
 void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)
