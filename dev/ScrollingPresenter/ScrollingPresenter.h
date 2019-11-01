@@ -311,7 +311,6 @@ private:
         double farEdgeApplicableRange;
         float nearEdgeVelocity;
         float farEdgeVelocity;
-        float activeVelocity;
     };
 
 private:
@@ -488,10 +487,6 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
-    void ProcessPointerMoved(
-        const EdgeScrollingInfo& edgeScrollingInfo,
-        const winrt::PointerDeviceType& pointerDeviceType,
-        const winrt::Point& pointerPosition);
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
         int32_t mouseWheelDelta,
@@ -554,6 +549,8 @@ private:
     std::shared_ptr<InteractionTrackerAsyncOperation> GetLastInteractionTrackerOperation();
     std::shared_ptr<InteractionTrackerAsyncOperation> GetLastNonAnimatedInteractionTrackerOperation(
         std::shared_ptr<InteractionTrackerAsyncOperation> priorToInteractionTrackerOperation) const;
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetPendingInteractionTrackerOperationFromType(
+        InteractionTrackerAsyncOperationType const& interactionTrackerAsyncOperationType) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromRequestId(
         int requestId) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
@@ -623,6 +620,7 @@ private:
     void HookCompositionTargetRendering();
     void HookDpiChangedEvent();
     void HookScrollingPresenterEvents();
+    void HookScrollingPresenterPointerMovedEvent();
     void HookContentPropertyChanged(
         const winrt::UIElement& content);
     void HookHorizontalScrollControllerEvents(
@@ -635,6 +633,7 @@ private:
     void UnhookContentPropertyChanged(
         const winrt::UIElement& content);
     void UnhookScrollingPresenterEvents();
+    void UnhookScrollingPresenterPointerMovedEvent();
     void UnhookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController);
     void UnhookVerticalScrollControllerEvents(
@@ -819,6 +818,28 @@ private:
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollingPresenterDimension dimension);
 
+    static float GetEdgeScrollVelocity(
+        bool isForHorizontalScroll,
+        double offset,
+        double viewportDim,
+        double scrollableDim,
+        const EdgeScrollingInfo& edgeScrollingInfo,
+        const winrt::Point& pointerPosition);
+
+    static float GetAdjustedEdgeScrollVelocity(
+        float edgeScrollingVelocity,
+        float maxEdgeScrollingVelocity);
+
+    static bool CanEdgeScrollAtNearEdge(
+        float edgeScrollingVelocity,
+        double offset,
+        double scrollableDim);
+
+    static bool CanEdgeScrollAtFarEdge(
+        float edgeScrollingVelocity,
+        double offset,
+        double scrollableDim);
+
     static void SetEdgeScrolling(
         std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
         winrt::PointerDeviceType pointerDeviceType,
@@ -953,9 +974,14 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
-    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollingMap;
-    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollingMap;
+    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollMap;
+    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollMap;
+    winrt::ScrollingScrollInfo m_edgeScrollInfo{ -1 };
+    winrt::float2 m_edgeScrollOffsetsVelocity{};
+    winrt::PointerDeviceType m_edgeScrollPointerDeviceType{ winrt::PointerDeviceType::Touch };
 
+    // Any offset impulse velocity smaller than or equal to 30 has no effect on InteractionTracker.
+    static constexpr float c_minImpulseOffsetVelocity = 30.0f;
     // Maximum difference for offset velocities to be considered equal. Used for constant velocity scrolling.
     static constexpr float s_offsetVelocityEqualityEpsilon{ 0.00001f };
     // Maximum difference for offsets to be considered equal. Used for pointer wheel scrolling.
@@ -965,6 +991,7 @@ private:
 
     static constexpr std::wstring_view s_invalidPointerDeviceType{ L"Invalid PointerDeviceType value."sv };
     static constexpr std::wstring_view s_negativeEdgeApplicationRange{ L"Edge scrolling application range must be positive."sv };
+    static constexpr std::wstring_view s_smallEdgeVelocity{ L"Edge velocity must be 0 or have an absolute value greater than 30."sv };
 
     // Property names being targeted for the ScrollingPresenter.Content's Visual.
     // RedStone v1 case:

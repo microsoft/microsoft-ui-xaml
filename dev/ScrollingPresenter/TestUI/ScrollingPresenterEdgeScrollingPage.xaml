@@ -15,40 +15,22 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-
-        <controlsPrimitives:ScrollingPresenter
-            x:Name="scrollingPresenter" Width="500" Height="600"
-            ZoomMode="Enabled" Margin="100" Background="ForestGreen"
-            VerticalAlignment="Top">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <Image x:Name="img00" Source="Assets/ingredient7.png"/>
-                <Rectangle x:Name="rect01" Width="500" Height="700" Grid.Column="1">
-                    <Rectangle.Fill>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="Blue" Offset="0.0"/>
-                            <GradientStop Color="White" Offset="0.5"/>
-                            <GradientStop Color="Red" Offset="1.0"/>
-                        </LinearGradientBrush>
-                    </Rectangle.Fill>
-                </Rectangle>
-                <StackPanel x:Name="sp10" Grid.Row="1" MinWidth="500">
-                    <TextBox FontSize="20" Text="TextBox0" Margin="4"/>
-                    <TextBox FontSize="20" Text="TextBox1" Margin="4"/>
-                    <TextBox FontSize="20" Text="TextBox2" Margin="4"/>
-                    <TextBox FontSize="20" Text="TextBox3" Margin="4"/>
-                    <TextBox FontSize="20" Text="TextBox4" Margin="4"/>
-                    <TextBox FontSize="20" Text="TextBox5" Margin="4"/>
-                </StackPanel>
-                <Canvas x:Name="cnv11" Grid.Row="1" Grid.Column="1" Width="500" Height="400">
-                    <Rectangle x:Name="rect" Width="50" Height="50" Canvas.Left="100" Canvas.Top="100">
+        <Canvas x:Name="canvas" Width="580" Height="780">
+            <controlsPrimitives:ScrollingPresenter
+                x:Name="scrollingPresenter" Width="400" Height="600"
+                ZoomMode="Enabled" Margin="90" Background="ForestGreen"
+                VerticalAlignment="Top">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Image x:Name="img00" Source="Assets/ingredient7.png"/>
+                    <Rectangle x:Name="rect01" Width="500" Height="700" Grid.Column="1">
                         <Rectangle.Fill>
                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                                 <GradientStop Color="Blue" Offset="0.0"/>
@@ -57,10 +39,38 @@
                             </LinearGradientBrush>
                         </Rectangle.Fill>
                     </Rectangle>
-                </Canvas>
-            </Grid>
-        </controlsPrimitives:ScrollingPresenter>
-
+                    <StackPanel x:Name="sp10" Grid.Row="1" MinWidth="500">
+                        <TextBox FontSize="20" Text="TextBox0" Margin="4"/>
+                        <TextBox FontSize="20" Text="TextBox1" Margin="4"/>
+                        <TextBox FontSize="20" Text="TextBox2" Margin="4"/>
+                        <TextBox FontSize="20" Text="TextBox3" Margin="4"/>
+                        <TextBox FontSize="20" Text="TextBox4" Margin="4"/>
+                        <TextBox FontSize="20" Text="TextBox5" Margin="4"/>
+                    </StackPanel>
+                    <Canvas x:Name="cnv11" Grid.Row="1" Grid.Column="1" Width="500" Height="400">
+                        <Rectangle x:Name="rect" Width="50" Height="50" Canvas.Left="100" Canvas.Top="100">
+                            <Rectangle.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="Blue" Offset="0.0"/>
+                                    <GradientStop Color="White" Offset="0.5"/>
+                                    <GradientStop Color="Red" Offset="1.0"/>
+                                </LinearGradientBrush>
+                            </Rectangle.Fill>
+                        </Rectangle>
+                    </Canvas>
+                </Grid>
+            </controlsPrimitives:ScrollingPresenter>
+            
+            <Rectangle x:Name="rectLeftLeftEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectLeftRightEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectRightLeftEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectRightRightEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectTopTopEdge" Width="580" Height="2" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectTopBottomEdge" Width="580" Height="2" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectBottomTopEdge" Width="580" Height="2" Fill="Red" Visibility="Collapsed"/>
+            <Rectangle x:Name="rectBottomBottomEdge" Width="580" Height="2" Fill="Red" Visibility="Collapsed"/>
+        </Canvas>
+        
         <ScrollViewer Grid.Column="1">
             <Grid>
                 <Grid.RowDefinitions>
@@ -79,29 +89,67 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="Horizontal Mouse" Margin="2" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="chkIsHorizontalMouseActive" Content="Is mouse active?" IsEnabled="False" Margin="1" Grid.Row="1"  Grid.ColumnSpan="2"/>
+                    <Button x:Name="btnCancelHorizontalMouseEdgeScrolling" Content="Cancel" IsEnabled="False" Margin="1" Grid.Row="2" Click="BtnCancelHorizontalMouseEdgeScrolling_Click"/>
+                    <Button x:Name="btnUpdateHorizontalMouseEdgeScrolling" Content="Update" Margin="1" Grid.Row="2" Grid.Column="1" Click="BtnUpdateHorizontalMouseEdgeScrolling_Click"/>
+
+                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
+                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
+                    <TextBlock Text="Left/RightEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtMouseLeftEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
+                    <TextBox x:Name="txtMouseRightEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
+                    <TextBlock Text="Left/RightEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="7" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtMouseLeftEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8"
+                             TextChanged="TxtHMouseEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtMouseRightEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1"
+                             TextChanged="TxtHMouseEdgeVelocity_TextChanged"/>
+                </Grid>
+                
+                <Grid Grid.Row="1" Margin="0,6,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Horizontal Mouse" Margin="2"/>
-                    <CheckBox x:Name="chkIsHorizontalMouseActive" Content="Is mouse active?" IsEnabled="False" Margin="1" Grid.Row="1"/>
-                    <Button x:Name="btnCancelHorizontalMouseEdgeScrolling" Content="Cancel" IsEnabled="False" Margin="1" Grid.Row="1" Grid.Column="1" Click="BtnCancelHorizontalMouseEdgeScrolling_Click"/>
-                    <Button x:Name="btnUpdateHorizontalMouseEdgeScrolling" Content="Update" Margin="1" Grid.Row="1" Grid.Column="2" Click="BtnUpdateHorizontalMouseEdgeScrolling_Click"/>
+                    <TextBlock Text="Vertical Mouse" Margin="2" Grid.ColumnSpan="2"/>
+                    <CheckBox x:Name="chkIsVerticalMouseActive" Content="Is mouse active?" IsEnabled="False" Margin="1" Grid.Row="1"  Grid.ColumnSpan="2"/>
+                    <Button x:Name="btnCancelVerticalMouseEdgeScrolling" Content="Cancel" IsEnabled="False" Margin="1" Grid.Row="2" Click="BtnCancelVerticalMouseEdgeScrolling_Click"/>
+                    <Button x:Name="btnUpdateVerticalMouseEdgeScrolling" Content="Update" Margin="1" Grid.Row="2" Grid.Column="1" Click="BtnUpdateVerticalMouseEdgeScrolling_Click"/>
 
-                    <TextBlock Text="PointerPositionAdjustment:" Margin="1" VerticalAlignment="Center" Grid.Row="2"/>
-                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
-                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2" Grid.Column="2"/>
-                    <TextBlock Text="Left/RightEdgeApplicableRange:" Margin="1" VerticalAlignment="Center" Grid.Row="3"/>
-                    <TextBox x:Name="txtMouseLeftEdgeApplicableRange" Text="40" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
-                    <TextBox x:Name="txtMouseRightEdgeApplicableRange" Text="40" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.Column="2"/>
-                    <TextBlock Text="Left/RightEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
-                    <TextBox x:Name="txtMouseLeftEdgeVelocity" Text="30" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"
-                             TextChanged="TxtMouseEdgeVelocity_TextChanged"/>
-                    <TextBox x:Name="txtMouseRightEdgeVelocity" Text="30" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="2"
-                             TextChanged="TxtMouseEdgeVelocity_TextChanged"/>
+                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtVerticalMousePositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
+                    <TextBox x:Name="txtVerticalMousePositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
+                    <TextBlock Text="Top/BottomEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtMouseTopEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
+                    <TextBox x:Name="txtMouseBottomEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
+                    <TextBlock Text="Top/BottomEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="7" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtMouseTopEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8"
+                             TextChanged="TxtVMouseEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtMouseBottomEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1"
+                             TextChanged="TxtVMouseEdgeVelocity_TextChanged"/>
                 </Grid>
             </Grid>
         </ScrollViewer>
@@ -112,9 +160,19 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="Events" Margin="2"/>
-            <Button x:Name="btnClearEvents" Content="Clear" HorizontalAlignment="Stretch" Margin="2" Grid.Row="1" Click="BtnClearEvents_Click"/>
-            <ListBox x:Name="lstEvents" HorizontalAlignment="Stretch" Margin="2" Grid.Row="2"
+            
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text="Events" Margin="1" VerticalAlignment="Center"/>
+                <Button x:Name="btnClearScrollingPresenterEvents" Content="Clear" Margin="1" Click="BtnClearScrollingPresenterEvents_Click"/>
+                <Button x:Name="btnCopyScrollingPresenterEvents" Content="Copy into Clipboard" Margin="1" Click="BtnCopyScrollingPresenterEvents_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="1">
+                <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollingPresenterEvents" Content="Log ScrollingPresenter Events?" Margin="1" Checked="ChkLogScrollingPresenterEvents_Checked" Unchecked="ChkLogScrollingPresenterEvents_Unchecked"/>
+                <CheckBox x:Name="chkLogInteractionTrackerInfo" Content="Log InteractionTracker Info?" Margin="1" Checked="ChkLogInteractionTrackerInfo_Checked" Unchecked="ChkLogInteractionTrackerInfo_Unchecked"/>
+            </StackPanel>
+
+            <ListBox x:Name="lstScrollingPresenterEvents" HorizontalAlignment="Stretch" Margin="2" Grid.Row="2"
                      ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Enabled"/>
         </Grid>
     </Grid>

@@ -149,13 +149,6 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
         }
 
-        private void ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
-        {
-            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
-
-            AppendAsyncEventMessage("ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
-        }
-
         private void CreateChildren()
         {
             viewbox = new Viewbox();
