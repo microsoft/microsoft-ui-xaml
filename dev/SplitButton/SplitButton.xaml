@@ -285,6 +285,7 @@
                                     Text="&#xE70D;"
                                     VerticalAlignment="Center"
                                     HorizontalAlignment="Right"
+                                    IsTextScaleFactorEnabled="False"
                                     AutomationProperties.AccessibilityView="Raw"/>
                             </Button.Content>
                         </Button>
