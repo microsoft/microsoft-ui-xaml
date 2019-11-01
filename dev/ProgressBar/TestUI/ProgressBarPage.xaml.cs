@@ -15,6 +15,7 @@ using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
 using Windows.UI.Xaml.Data;
 using System.Numerics;
 using Windows.UI.Xaml.Shapes;
+using System.Security.Cryptography;
 
 namespace MUXControlsTestApp
 {
@@ -65,6 +66,11 @@ namespace MUXControlsTestApp
             TestProgressBar.Width = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
         }
 
+        public void UpdateValue_Click(object sender, RoutedEventArgs e)
+        {
+            TestProgressBar.Value = String.IsNullOrEmpty(ValueInput.Text) ? Double.Parse(ValueInput.PlaceholderText) : Double.Parse(ValueInput.Text);
+        }
+
         public void ChangeValue_Click(object sender, RoutedEventArgs e)
         {
             if (TestProgressBar.Value + 1 > TestProgressBar.Maximum)
@@ -75,6 +81,14 @@ namespace MUXControlsTestApp
             {
                 TestProgressBar.Value += 1;
             }           
+        }
+
+        public void UpdatePadding_Click(object sender, RoutedEventArgs e)
+        {
+            double paddingLeft = String.IsNullOrEmpty(PaddingLeftInput.Text) ? Double.Parse(PaddingLeftInput.PlaceholderText) : Double.Parse(PaddingLeftInput.Text);
+            double paddingRight = String.IsNullOrEmpty(PaddingRightInput.Text) ? Double.Parse(PaddingRightInput.PlaceholderText) : Double.Parse(PaddingRightInput.Text);
+
+            TestProgressBar.Padding = new Thickness(paddingLeft, 0, paddingRight, 0);
         }
     }
 

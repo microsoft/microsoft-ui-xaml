@@ -78,7 +78,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
                 Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
                 Edit widthInput = FindElement.ByName<Edit>("WidthInput");
-                
+
                 TextBlock minimumInputText = FindElement.ByName<TextBlock>("MinimumInputText");
                 TextBlock maximumInputText = FindElement.ByName<TextBlock>("MaximumInputText");
                 TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
@@ -102,9 +102,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Verify.AreEqual(Convert.ToDouble(valueText.DocumentText), Convert.ToDouble(indicatorWidthText.DocumentText));
 
-                Log.Comment("Updating width of ProgressBar also updates Indicator Width");                
+                Log.Comment("Updating width of ProgressBar also updates Indicator Width");
                 widthInput.SetValue("150");
-                
+
                 updateWidthButton.InvokeAndWait();
 
                 Verify.AreEqual(Math.Ceiling(Convert.ToDouble(valueText.DocumentText) * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
@@ -254,6 +254,70 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
                 Verify.IsTrue(Convert.ToBoolean(showErrorText.DocumentText));
                 Verify.AreEqual(visualStateText.DocumentText, "Error");
+            }
+        }
+
+        [TestMethod]
+        public void PaddingOffsetTest()
+        {
+            using (var setup = new TestSetupHelper("ProgressBar Tests"))
+            {
+                Log.Comment("Set ProgressBar Padding settings to default for testing");
+
+                UIObject testProgressBar = FindElement.ByName("TestProgressBar");
+
+                Edit paddingLeftInput = FindElement.ByName<Edit>("PaddingLeftInput");
+                Edit paddingRightInput = FindElement.ByName<Edit>("PaddingRightInput");
+
+                TextBlock paddingLeftText = FindElement.ByName<TextBlock>("PaddingLeftText");
+                TextBlock paddingRightText = FindElement.ByName<TextBlock>("PaddingRightText");
+                TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");     
+
+                paddingLeftInput.SetValue("0");
+                paddingRightInput.SetValue("0");
+
+                Button updatePaddingButton = FindElement.ByName<Button>("UpdatePaddingButton");
+                updatePaddingButton.InvokeAndWait();
+
+                Verify.AreEqual(Convert.ToDouble(paddingLeftText.DocumentText), 0);
+                Verify.AreEqual(Convert.ToDouble(paddingRightText.DocumentText), 0);
+
+                Log.Comment("IndicatorWidth offsets where ProgressBar has Padding");
+
+                paddingLeftInput.SetValue("10");
+                paddingRightInput.SetValue("10");
+
+                updatePaddingButton.InvokeAndWait();
+
+                Edit valueInput = FindElement.ByName<Edit>("ValueInput");
+                valueInput.SetValue("100");
+
+                Button updateValueButton = FindElement.ByName<Button>("UpdateValueButton");
+                updateValueButton.InvokeAndWait();
+
+                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
+
+                double maxIndicatorWidth = Convert.ToDouble(valueText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
+
+                Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is offset by Padding");
+
+                Log.Comment("IndicatorWidth offsets where ProgressBar has negative padding");
+
+                paddingRightInput.SetValue("-20");
+
+                updatePaddingButton.InvokeAndWait();
+
+                valueInput.SetValue("0");
+                updateValueButton.InvokeAndWait();
+
+                valueInput.SetValue("100");
+                updateValueButton.InvokeAndWait();
+
+                TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
+
+                maxIndicatorWidth = Convert.ToDouble(widthInputText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText);
+
+                Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is capped at ProgressBar width where there is negative Padding");
             }
         }
     }
