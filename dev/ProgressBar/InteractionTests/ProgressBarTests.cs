@@ -300,24 +300,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double maxIndicatorWidth = Convert.ToDouble(valueText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
 
                 Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is offset by Padding");
-
-                Log.Comment("IndicatorWidth offsets where ProgressBar has negative padding");
-
-                paddingRightInput.SetValue("-20");
-
-                updatePaddingButton.InvokeAndWait();
-
-                valueInput.SetValue("0");
-                updateValueButton.InvokeAndWait();
-
-                valueInput.SetValue("100");
-                updateValueButton.InvokeAndWait();
-
-                TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
-
-                maxIndicatorWidth = Convert.ToDouble(widthInputText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText);
-
-                Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is capped at ProgressBar width where there is negative Padding");
             }
         }
     }

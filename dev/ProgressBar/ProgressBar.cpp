@@ -12,8 +12,6 @@ ProgressBar::ProgressBar()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ProgressBar);
 
     SetDefaultStyleKey(this);
-
-    m_sizeChangedRevoker = SizeChanged(winrt::auto_revoke, { this, &ProgressBar::OnSizeChanged });
     
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
@@ -112,18 +110,8 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
-
-                // checks if padding causes maxIndicatorWidth to be larger than progressBarWidth
-                if (progressBarWidth - padding.Left < maxIndicatorWidth)
-                {
-                    const double adjustedIncrement = (progressBarWidth - padding.Left) / (maximum - minimum);
-                    progressBarIndicator.Width(adjustedIncrement * (Value() - minimum));
-                }
-                else
-                {
-                    const double increment = maxIndicatorWidth / (maximum - minimum);
-                    progressBarIndicator.Width(increment * (Value() - minimum));
-                }
+                const double increment = maxIndicatorWidth / (maximum - minimum);
+                progressBarIndicator.Width(increment * (Value() - minimum));
             }
             else
             {
