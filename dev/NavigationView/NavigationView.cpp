@@ -446,11 +446,11 @@ void NavigationView::UpdateRepeaterItemsSource()
 
     if (IsTopNavigationView())
     {
-        //TODO: Unhook LeftNav repeaters
-        //TODO: Hook up TopNav repeaters
-
         if (m_topDataProvider.ShouldChangeDataSource(dataSource))
         {
+            // Unhook LeftNav repeaters
+            UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), nullptr);
+
             // unbinding Data from ListView
             UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
             UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
@@ -473,11 +473,11 @@ void NavigationView::UpdateRepeaterItemsSource()
     }
     else
     {
-        //TODO: Unhook TopNav repeaters
-        if (auto ir = m_leftNavRepeater.get())
-        {
-            ir.ItemsSource(dataSource);
-        }
+        // Unhook TopNav repeaters
+        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+
+        UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), dataSource);
     }
 }
 
@@ -505,6 +505,23 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
         nvib.RepeatedIndex(args.Index());
 
         nvibImpl->SetNavigationViewParent(*this);
+
+        if (IsTopNavigationView())
+        {
+            if (ir == m_topNavRepeater.get())
+            {
+                nvibImpl->Position(NavigationViewListPosition::TopPrimary);
+
+            }
+            else
+            {
+                nvibImpl->Position(NavigationViewListPosition::TopOverflow);
+            }
+        }
+        else
+        {
+            nvibImpl->Position(NavigationViewListPosition::LeftNav);
+        }
 
         //nvib.Depth = 0;
         // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
@@ -2317,21 +2334,23 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 {
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
-        auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
+        //TODO: Implement for repeater 
+        //MUX_FAIL_FAST_MSG("This codepath should not be hit, not updated.");
+        //auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
 
-        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::LeftListView,
-            [showFocusVisual](NavigationViewList* list)
-        {
-            list->SetShowFocusVisual(showFocusVisual);
-        }
-        );
+        //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::LeftListView,
+        //    [showFocusVisual](NavigationViewList* list)
+        //{
+        //    list->SetShowFocusVisual(showFocusVisual);
+        //}
+        //);
 
-        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::TopListView,
-            [showFocusVisual](NavigationViewList* list)
-        {
-            list->SetShowFocusVisual(showFocusVisual);
-        }
-        );
+        //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::TopListView,
+        //    [showFocusVisual](NavigationViewList* list)
+        //{
+        //    list->SetShowFocusVisual(showFocusVisual);
+        //}
+        //);
     }
 }
 
@@ -2465,6 +2484,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
             // In our test environment, m_measureOnInitStep2Count should <= 2 since we didn't hide anything from code
             // so the assert count is different from s_measureOnInitStep2CountThreshold 
             MUX_ASSERT(m_measureOnInitStep2Count <= 2);
+            //MUX_FAIL_FAST_MSG("THIS CODE PATH SHOULD NOT BE ENTERED ANYMORE!");
 
             if (m_measureOnInitStep2Count >= s_measureOnInitStep2CountThreshold || !IsTopNavigationFirstMeasure())
             {
