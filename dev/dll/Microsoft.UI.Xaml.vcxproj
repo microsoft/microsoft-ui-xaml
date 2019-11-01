@@ -285,9 +285,7 @@
     <ClCompile Include="XamlControlsResources.cpp" />
     <ClCompile Include="XamlMember.cpp" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
-    <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="XamlType.cpp" />
-    <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="WinRtType.tt" />
   </ItemGroup>
   <ItemGroup>
@@ -308,68 +306,6 @@
       <ThemeResource>true</ThemeResource>
       <Link>DensityStyles\%(Filename)%(Extension)</Link>
     </Page>
-    <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-      <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
-    </PageRequiringCustomCompilation>
-    <Page Include="@(PageRequiringCustomCompilation)" />
     <CompactPage Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -485,6 +421,39 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="GenericXamlFileNeedsCompilation" />
     </CreateProperty>
+    <ItemGroup>
+      <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
+      <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs2_generic.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs3_generic.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs3_generic.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs4_generic.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs4_generic.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs5_generic.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs5_generic.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)19h1_generic.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\19h1_generic.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+    </ItemGroup>
   </Target>
   <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
@@ -496,6 +465,39 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="ThemeResourceFileNeedsCompilation" />
     </CreateProperty>
+    <ItemGroup>
+      <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
+      <PageRequiringCustomCompilation Include="$(OutDir)rs2_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs2_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs3_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs3_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs4_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs4_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs5_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs5_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)19h1_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\19h1_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+    </ItemGroup>
   </Target>
   <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
@@ -507,11 +509,38 @@
     <CreateProperty Value="True">
       <Output TaskParameter="ValueSetByTask" PropertyName="CompactThemeResourceFileNeedsCompilation" />
     </CreateProperty>
-  </Target>
-  <Target Name="RemovePageRequiringCustomCompilation" AfterTargets="BeforeBuildGenerateSources" BeforeTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
-    <Message Text="RemovePageRequiringCustomCompilation" />
     <ItemGroup>
-      <Page Remove="@(PageRequiringCustomCompilation)" />
+      <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
+      <PageRequiringCustomCompilation Include="$(OutDir)rs2_compact_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs2_compact_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS2ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs3_compact_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs3_compact_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS3ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs4_compact_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs4_compact_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS4ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)rs5_compact_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\rs5_compact_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredForRS5ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
+      <PageRequiringCustomCompilation Include="$(OutDir)19h1_compact_themeresources.xaml">
+        <SubType>Designer</SubType>
+        <ThemeResource>true</ThemeResource>
+        <Link>Themes\19h1_compact_themeresources.xaml</Link>
+        <MinSDKVersionRequired>$(MinSDKVersionRequiredFor19H1ThemeResource)</MinSDKVersionRequired>
+      </PageRequiringCustomCompilation>
     </ItemGroup>
   </Target>
   <Target Name="AddPageRequiringCustomCompilation" BeforeTargets="CompilePageRequiringCustomCompilation" AfterTargets="MarkupCompilePass2" Condition="'@(PageRequiringCustomCompilation)' != ''">
@@ -628,6 +657,7 @@
     <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.cpp from the winmd file -->
     <CallTarget Targets="TransformAll" />
     <ItemGroup>
+      <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
       <FileWrites Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     </ItemGroup>
   </Target>
