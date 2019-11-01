@@ -41,8 +41,6 @@ private:
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
 
-    winrt::ProgressBar::SizeChanged_revoker m_sizeChangedRevoker{};
-
     bool m_shouldUpdateWidthBasedTemplateSettings = false;
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };

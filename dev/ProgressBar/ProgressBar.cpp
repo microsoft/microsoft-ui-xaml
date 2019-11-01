@@ -12,7 +12,9 @@ ProgressBar::ProgressBar()
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ProgressBar);
 
     SetDefaultStyleKey(this);
-    
+
+    SizeChanged({ this, &ProgressBar::OnSizeChanged });
+
     // NOTE: This is necessary only because Value isn't one of OUR properties, it's implemented in RangeBase.
     // If it was one of ProgressBar's properties, defined in the IDL, you'd do it differently (see IsIndeterminate).
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressBar::OnRangeBasePropertyChanged });
