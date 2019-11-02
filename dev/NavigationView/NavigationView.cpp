@@ -292,12 +292,6 @@ void NavigationView::OnApplyTemplate()
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
         m_topNavOverflowItemsRepeaterElementIndexChangedRevoker = topNavListOverflowRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
 
-        winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
-        if (!newIElementFactory)
-        {
-            newIElementFactory = MenuItemTemplateSelector();
-        }
-        (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
@@ -545,6 +539,21 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
     //    nvi.navView = null;
     //    nvi.Depth = 0;
     //}
+
+    // Todo: Only unlink when source defined from MenuItems
+    // Unlink Element from panel
+    auto panel = ir.try_as<winrt::Panel>();
+    if (panel)
+    {
+        auto children = panel.Children();
+        unsigned int childIndex = 0;
+        bool found = children.IndexOf(args.Element(), childIndex);
+        if (!found)
+        {
+            throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+        }
+        children.RemoveAt(childIndex);
+    }
 }
 
 void NavigationView::RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args)
