@@ -436,6 +436,16 @@ winrt::IVector<winrt::ZoomSnapPointBase> ScrollingPresenter::ZoomSnapPoints()
     return m_zoomSnapPoints;
 }
 
+winrt::ScrollingEdgeScrollParameters ScrollingPresenter::HorizontalEdgeScrollParameters()
+{
+    return nullptr;
+}
+
+winrt::ScrollingEdgeScrollParameters ScrollingPresenter::VerticalEdgeScrollParameters()
+{
+    return nullptr;
+}
+
 winrt::ScrollingScrollInfo ScrollingPresenter::ScrollTo(double horizontalOffset, double verticalOffset)
 {
     SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalOffset, verticalOffset);
@@ -699,6 +709,24 @@ void ScrollingPresenter::SetVerticalEdgeScrolling(
     {
         HookScrollingPresenterPointerMovedEvent();
     }
+}
+
+winrt::ScrollingScrollInfo ScrollingPresenter::StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args)
+{
+    return m_edgeScrollInfo;
+}
+
+winrt::ScrollingScrollInfo ScrollingPresenter::StopEdgeScrollWithPointer()
+{
+    return m_edgeScrollInfo;
+}
+
+void ScrollingPresenter::RegisterPointerForEdgeScroll(UINT pointerId)
+{
+}
+
+void ScrollingPresenter::UnregisterPointerForEdgeScroll()
+{
 }
 
 #pragma endregion

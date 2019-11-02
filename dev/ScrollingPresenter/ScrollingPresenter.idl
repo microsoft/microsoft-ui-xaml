@@ -130,6 +130,19 @@ unsealed runtimeclass ScrollingZoomOptions
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[marshaling_behavior(agile)]
+[threading(both)]
+unsealed runtimeclass ScrollingEdgeScrollParameters
+{
+    Windows.Foundation.Point PointerPositionAdjustment { get; set; };
+    Double NearEdgeApplicableRange { get; set; };
+    Double FarEdgeApplicableRange { get; set; };
+    Single NearEdgeVelocity { get; set; };
+    Single FarEdgeVelocity { get; set; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
 runtimeclass ScrollingScrollAnimationStartingEventArgs
 {
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
@@ -181,6 +194,15 @@ runtimeclass ScrollingAnchorRequestedEventArgs
 {
     Windows.Foundation.Collections.IVector<Windows.UI.Xaml.UIElement> AnchorCandidates { get; };
     Windows.UI.Xaml.UIElement AnchorElement { get; set; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+runtimeclass ScrollingEdgeScrollEventArgs
+{
+    ScrollingScrollInfo ScrollInfo { get; };
+    Windows.Foundation.Numerics.Vector2 OffsetsVelocity { get; };
+    UInt32 PointerId { get; };
 }
 
 }

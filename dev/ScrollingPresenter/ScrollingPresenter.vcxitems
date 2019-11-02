@@ -42,6 +42,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SnapPointWrapper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollParameters.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewChange.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewChangeBase.h" />
@@ -69,6 +71,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollParameters.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterPrivate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAnchoring.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.cpp" />

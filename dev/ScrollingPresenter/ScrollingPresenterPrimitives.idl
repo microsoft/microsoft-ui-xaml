@@ -276,6 +276,9 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> HorizontalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> VerticalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ZoomSnapPointBase> ZoomSnapPoints { get; };
+    MU_XC_NAMESPACE.ScrollingEdgeScrollParameters HorizontalEdgeScrollParameters { get; };
+    MU_XC_NAMESPACE.ScrollingEdgeScrollParameters VerticalEdgeScrollParameters { get; };
+
     [method_name("ScrollTo")]
     MU_XC_NAMESPACE.ScrollingScrollInfo ScrollTo(
         Double horizontalOffset,
@@ -336,6 +339,12 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
         Single topEdgeVelocity,
         Single bottomEdgeVelocity);
 
+    MU_XC_NAMESPACE.ScrollingScrollInfo StartEdgeScrollWithPointer(Windows.UI.Xaml.Input.PointerRoutedEventArgs args);
+    MU_XC_NAMESPACE.ScrollingScrollInfo StopEdgeScrollWithPointer();
+
+    void RegisterPointerForEdgeScroll(UInt32 pointerId);
+    void UnregisterPointerForEdgeScroll();
+
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> StateChanged;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> ViewChanged;
@@ -345,6 +354,7 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingZoomCompletedEventArgs> ZoomCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingAnchorRequestedEventArgs> AnchorRequested;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingEdgeScrollEventArgs> EdgeScrollQueued;
 
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };

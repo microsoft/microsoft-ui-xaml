@@ -95,6 +95,8 @@ public:
     void AnchorRequested(winrt::event_token const& token);
     winrt::event_token BringingIntoView(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingBringingIntoViewEventArgs> const& value);
     void BringingIntoView(winrt::event_token const& token);
+    winrt::event_token EdgeScrollQueued(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingEdgeScrollEventArgs> const& value);
+    void EdgeScrollQueued(winrt::event_token const& token);
     winrt::event_token ExtentChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value);
     void ExtentChanged(winrt::event_token const& token);
     winrt::event_token ScrollAnimationStarting(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollAnimationStartingEventArgs> const& value);
@@ -112,6 +114,7 @@ public:
 
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingAnchorRequestedEventArgs>> m_anchorRequestedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingBringingIntoViewEventArgs>> m_bringingIntoViewEventSource;
+    event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingEdgeScrollEventArgs>> m_edgeScrollQueuedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable>> m_extentChangedEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollAnimationStartingEventArgs>> m_scrollAnimationStartingEventSource;
     event_source<winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingScrollCompletedEventArgs>> m_scrollCompletedEventSource;

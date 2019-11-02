@@ -9,8 +9,9 @@
 #include "ScrollingZoomAnimationStartingEventArgs.h"
 #include "ScrollingScrollCompletedEventArgs.h"
 #include "ScrollingZoomCompletedEventArgs.h"
-#include "ScrollingBringingIntoViewEventArgs.h"
 #include "ScrollingAnchorRequestedEventArgs.h"
+#include "ScrollingBringingIntoViewEventArgs.h"
+#include "ScrollingEdgeScrollEventArgs.h"
 #include "SnapPointWrapper.h"
 #include "ScrollingPresenterTrace.h"
 #include "ViewChange.h"
@@ -171,6 +172,9 @@ public:
 
     winrt::IVector<winrt::ZoomSnapPointBase> ZoomSnapPoints();
 
+    winrt::ScrollingEdgeScrollParameters HorizontalEdgeScrollParameters();
+    winrt::ScrollingEdgeScrollParameters VerticalEdgeScrollParameters();
+
     winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
     winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
     winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
@@ -197,6 +201,12 @@ public:
         double bottomEdgeApplicableRange,
         float topEdgeVelocity,
         float bottomEdgeVelocity);
+
+    winrt::ScrollingScrollInfo StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args);
+    winrt::ScrollingScrollInfo StopEdgeScrollWithPointer();
+
+    void RegisterPointerForEdgeScroll(UINT pointerId);
+    void UnregisterPointerForEdgeScroll();
 
 #pragma endregion
 
