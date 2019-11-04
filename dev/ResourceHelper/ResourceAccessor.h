@@ -149,5 +149,6 @@ public:
 #define SR_TeachingTipNotificationWithoutAppName L"TeachingTipNotificationWithoutAppName"
 #define SR_TabViewAddButtonName L"TabViewAddButtonName"
 #define SR_TabViewAddButtonTooltip L"TabViewAddButtonTooltip"
+#define SR_TabViewCloseButtonName L"TabViewCloseButtonName"
 
 #define IR_NoiseAsset_256X256_PNG L"NoiseAsset_256X256_PNG"
