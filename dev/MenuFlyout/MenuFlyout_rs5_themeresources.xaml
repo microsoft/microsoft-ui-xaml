@@ -8,7 +8,6 @@
     <ResourceDictionary.ThemeDictionaries>
 
         <ResourceDictionary x:Key="Default">
-            <Thickness x:Key="MenuFlyoutPresenterThemePadding">1</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />
@@ -48,7 +47,6 @@
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="MenuFlyoutPresenterBorderBrush" ResourceKey="SystemControlTransientBorderBrush" />
             <Thickness x:Key="MenuFlyoutPresenterBorderThemeThickness">1</Thickness>
-            <Thickness x:Key="MenuFlyoutPresenterThemePadding">1</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
             <!-- Resources for Windows.UI.Xaml.Controls.MenuFlyoutItem -->
@@ -83,7 +81,6 @@
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
-            <Thickness x:Key="MenuFlyoutPresenterThemePadding">1</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePadding">11,9,11,10</Thickness>
             <Thickness x:Key="MenuFlyoutItemThemePaddingNarrow">11,4,11,7</Thickness>
             <StaticResource x:Key="MenuFlyoutPresenterBackground" ResourceKey="SystemControlTransientBackgroundBrush" />

@@ -24,8 +24,6 @@ WinUI 2 will eventually be superseded by WinUI 3. WinUI 3 will include all the c
 
 ## WinUI 3
 
-### Overview
-
 **WinUI 3** will greatly expand the scope of WinUI to include the full Windows 10 native UI platform, which will now be fully decoupled from the UWP SDK.
 
 We're focused on enabling three main use cases:
@@ -124,3 +122,4 @@ The next major milestones we're currently working toward are:
 1. **Open sourcing**: our next main focus area is getting the full WinUI 3 Xaml platform migrated to open source development on GitHub in this repo
 
 2. **Preview release**: we're planning to release a more complete preview in the first half of 2020
+

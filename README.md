@@ -8,7 +8,6 @@ WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.c
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
-
 ## WinUI 3.0 Alpha (November 2019)
 
 As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3.0, which will greatly expand the scope of WinUI to include the full native Windows UI platform.

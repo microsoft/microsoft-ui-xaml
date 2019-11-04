@@ -3,26 +3,26 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
-    <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
-    <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
-    <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
-    <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
-    <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
-    <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
-    <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
+    <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureCheckBoxEnabled>false</FeatureCheckBoxEnabled>
+    <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
+    <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
     <FeatureComboBoxEnabled>false</FeatureComboBoxEnabled>
     <FeatureCommandBarFlyoutEnabled>false</FeatureCommandBarFlyoutEnabled>
+    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
     <FeatureDatePickerEnabled>false</FeatureDatePickerEnabled>
     <FeatureDropDownButtonEnabled>productOnly</FeatureDropDownButtonEnabled>
+    <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
     <FeatureFlipViewEnabled>false</FeatureFlipViewEnabled>
     <FeatureIconSourceEnabled>productOnly</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>false</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>false</FeatureLayoutPanelEnabled>
-    <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
+    <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
+    <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
@@ -33,32 +33,37 @@
     <FeatureRadioButtonsEnabled>false</FeatureRadioButtonsEnabled>
     <FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
+    <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
+    <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
     <FeatureScrollBarEnabled>false</FeatureScrollBarEnabled>
     <FeatureScrollerEnabled>false</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>false</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>false</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
+    <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
     <FeatureSwipeControlEnabled>false</FeatureSwipeControlEnabled>
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureTeachingTipEnabled>false</FeatureTeachingTipEnabled>
     <FeatureTimePickerEnabled>false</FeatureTimePickerEnabled>
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
-    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>
-    <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
-    <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
-    <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
   </PropertyGroup>
+  <!-- Import this after inner loop features are declared so that it overrides those properties -->
+  <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'"/>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>true</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>true</FeatureCalendarDatePickerEnabled>
+    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
     <FeatureCheckBoxEnabled>true</FeatureCheckBoxEnabled>
     <FeatureCollectionsEnabled>true</FeatureCollectionsEnabled>
     <FeatureColorPickerEnabled>true</FeatureColorPickerEnabled>
     <FeatureComboBoxEnabled>true</FeatureComboBoxEnabled>
     <FeatureCommandBarFlyoutEnabled>true</FeatureCommandBarFlyoutEnabled>
+    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
     <FeatureDatePickerEnabled>true</FeatureDatePickerEnabled>
     <FeatureDropDownButtonEnabled>true</FeatureDropDownButtonEnabled>
     <FeatureEffectsEnabled>true</FeatureEffectsEnabled>
@@ -66,7 +71,6 @@
     <FeatureIconSourceEnabled>true</FeatureIconSourceEnabled>
     <FeatureInteractionsEnabled>true</FeatureInteractionsEnabled>
     <FeatureLayoutPanelEnabled>true</FeatureLayoutPanelEnabled>
-    <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
     <FeatureLightsEnabled>true</FeatureLightsEnabled>
     <FeatureMaterialsEnabled>true</FeatureMaterialsEnabled>
     <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
@@ -79,12 +83,14 @@
     <FeatureRadioButtonsEnabled>true</FeatureRadioButtonsEnabled>
     <FeatureRadioMenuFlyoutItemEnabled>true</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>true</FeatureRatingControlEnabled>
+    <FeatureRepeaterEnabled>true</FeatureRepeaterEnabled>
     <FeatureResourceHelperEnabled>true</FeatureResourceHelperEnabled>
     <FeatureScrollBarEnabled>true</FeatureScrollBarEnabled>
     <FeatureScrollerEnabled>true</FeatureScrollerEnabled>
     <FeatureScrollViewerEnabled>true</FeatureScrollViewerEnabled>
     <FeatureSliderEnabled>true</FeatureSliderEnabled>
     <FeatureSplitButtonEnabled>true</FeatureSplitButtonEnabled>
+    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
     <FeatureSwipeControlEnabled>true</FeatureSwipeControlEnabled>
     <FeatureTabViewEnabled>true</FeatureTabViewEnabled>
     <FeatureTeachingTipEnabled>true</FeatureTeachingTipEnabled>
@@ -92,10 +98,6 @@
     <FeatureToolTipEnabled>true</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
-    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
-    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
-    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
-    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
