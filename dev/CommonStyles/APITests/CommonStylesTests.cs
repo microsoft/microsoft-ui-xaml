@@ -77,7 +77,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                              xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
                              xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'> 
                             <StackPanel.Resources>
-                                <primitives:CornerRadiusFilterConverter x:Key='TopCornerRadiusFilterConverter' Filter='Top'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='TopCornerRadiusFilterConverter' Filter='Top' Scale='2'/>
                                 <primitives:CornerRadiusFilterConverter x:Key='RightCornerRadiusFilterConverter' Filter='Right'/>
                                 <primitives:CornerRadiusFilterConverter x:Key='BottomCornerRadiusFilterConverter' Filter='Bottom'/>
                                 <primitives:CornerRadiusFilterConverter x:Key='LeftCornerRadiusFilterConverter' Filter='Left'/>
@@ -102,7 +102,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var bottomRadiusGrid = (Grid)root.FindName("BottomRadiusGrid");
                 var leftRadiusGrid = (Grid)root.FindName("LeftRadiusGrid");
 
-                Verify.AreEqual(new CornerRadius(6, 6, 0, 0), topRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(12, 12, 0, 0), topRadiusGrid.CornerRadius);
                 Verify.AreEqual(new CornerRadius(0, 6, 6, 0), rightRadiusGrid.CornerRadius);
                 Verify.AreEqual(new CornerRadius(0, 0, 6, 6), bottomRadiusGrid.CornerRadius);
                 Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);

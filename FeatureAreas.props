@@ -33,6 +33,7 @@
     <FeatureMenuBarEnabled>false</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>false</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>false</FeatureNavigationViewEnabled>
+    <FeatureNumberBoxEnabled>false</FeatureNumberBoxEnabled>
     <FeatureParallaxViewEnabled>false</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>false</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>false</FeaturePivotEnabled>
@@ -61,6 +62,8 @@
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
   </PropertyGroup>
+  <!-- Import this after inner loop features are declared so that it overrides those properties -->
+  <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'"/>
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -86,6 +89,7 @@
     <FeatureMenuBarEnabled>true</FeatureMenuBarEnabled>
     <FeatureMenuFlyoutEnabled>true</FeatureMenuFlyoutEnabled>
     <FeatureNavigationViewEnabled>true</FeatureNavigationViewEnabled>
+    <FeatureNumberBoxEnabled>true</FeatureNumberBoxEnabled>
     <FeatureParallaxViewEnabled>true</FeatureParallaxViewEnabled>
     <FeaturePersonPictureEnabled>true</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>true</FeaturePivotEnabled>
