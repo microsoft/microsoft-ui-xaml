@@ -45,7 +45,7 @@
                                             Storyboard.TargetName="ProgressBarIndicator"
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                             Duration="0:0:1">
-                                            <EasingDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
                                                 <EasingDoubleKeyFrame.EasingFunction>
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>
@@ -69,7 +69,7 @@
                                             Storyboard.TargetName="ProgressBarIndicator"
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                             Duration="0:0:0.75">
-                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}">
+                                            <EasingDoubleKeyFrame KeyTime="0:0:1" Value="0">
                                                 <EasingDoubleKeyFrame.EasingFunction>
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>

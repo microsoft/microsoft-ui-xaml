@@ -15,7 +15,6 @@ using ProgressBar = Microsoft.UI.Xaml.Controls.ProgressBar;
 using Windows.UI.Xaml.Data;
 using System.Numerics;
 using Windows.UI.Xaml.Shapes;
-using System.Security.Cryptography;
 
 namespace MUXControlsTestApp
 {
