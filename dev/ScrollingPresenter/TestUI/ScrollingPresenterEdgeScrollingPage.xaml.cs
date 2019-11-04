@@ -45,10 +45,42 @@ namespace MUXControlsTestApp
 
         private void ScrollingPresenter_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (e.Pointer.PointerId == 1 &&
+                e.KeyModifiers == Windows.System.VirtualKeyModifiers.None &&
+                !e.Handled &&
+                e.GetCurrentPoint(null).Properties.IsLeftButtonPressed)
+            {
+                if ((sender as UIElement).CapturePointer(e.Pointer))
+                {
+                    Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
+                        Windows.UI.Core.CoreCursorType.Hand, 0);
+                    AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollingPresenter).Position.ToString()}");
+                    txtRegisteredPointerId.Text = "1";
+                    BtnRegisterPointerForEdgeScroll_Click(null, null);
+                }
+                else
+                {
+                    AppendAsyncEventMessage("Pointer capture failed");
+                }
+            }
         }
 
         private void ScrollingPresenter_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (e.Pointer.PointerId == 1)
+            {
+                PointerPointProperties ppp = e.GetCurrentPoint(null).Properties;
+
+                if (!ppp.IsLeftButtonPressed)
+                {
+                    Point position = e.GetCurrentPoint(scrollingPresenter).Position;
+                    (sender as UIElement).ReleasePointerCapture(e.Pointer);
+                    AppendAsyncEventMessage($"Pointer capture released @ position {position.ToString()}");
+                    Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
+                        Windows.UI.Core.CoreCursorType.Arrow, 0);
+                    BtnUnregisterPointerForEdgeScroll_Click(null, null);
+                }
+            }
         }
 
         private void ScrollingPresenter_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -69,32 +101,27 @@ namespace MUXControlsTestApp
             lstScrollingPresenterEvents.MaxHeight = ActualHeight - 80;
         }
 
-        private void BtnUpdateHorizontalMouseEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        private void BtnUpdateHorizontalEdgeScrollParameters_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 Point pointerPositionAdjustment = new Point(
-                    Convert.ToDouble(txtHorizontalMousePositionAdjustmentX.Text),
-                    Convert.ToDouble(txtHorizontalMousePositionAdjustmentY.Text));
+                    Convert.ToDouble(txtHorizontalPositionAdjustmentX.Text),
+                    Convert.ToDouble(txtHorizontalPositionAdjustmentY.Text));
 
-                Double leftEdgeApplicableRange = Convert.ToDouble(txtMouseLeftEdgeApplicableRange.Text);
-                Double rightEdgeApplicableRange = Convert.ToDouble(txtMouseRightEdgeApplicableRange.Text);
+                Double leftEdgeApplicableRange = Convert.ToDouble(txtLeftEdgeApplicableRange.Text);
+                Double rightEdgeApplicableRange = Convert.ToDouble(txtRightEdgeApplicableRange.Text);
 
-                Single leftEdgeVelocity = Convert.ToSingle(txtMouseLeftEdgeVelocity.Text);
-                Single rightEdgeVelocity = Convert.ToSingle(txtMouseRightEdgeVelocity.Text);
+                Single leftEdgeVelocity = Convert.ToSingle(txtLeftEdgeVelocity.Text);
+                Single rightEdgeVelocity = Convert.ToSingle(txtRightEdgeVelocity.Text);
 
-                AppendAsyncEventMessage($"Activating Mouse with pointerPositionAdjustment:{pointerPositionAdjustment}, leftEdgeApplicableRange:{leftEdgeApplicableRange}, rightEdgeApplicableRange:{rightEdgeApplicableRange}, leftEdgeVelocity:{leftEdgeVelocity}, rightEdgeVelocity:{rightEdgeVelocity}");
+                AppendAsyncEventMessage($"Updating horizontal parameters with pointerPositionAdjustment:{pointerPositionAdjustment}, leftEdgeApplicableRange:{leftEdgeApplicableRange}, rightEdgeApplicableRange:{rightEdgeApplicableRange}, leftEdgeVelocity:{leftEdgeVelocity}, rightEdgeVelocity:{rightEdgeVelocity}");
 
-                scrollingPresenter.SetHorizontalEdgeScrolling(
-                    PointerDeviceType.Mouse,
-                    pointerPositionAdjustment,
-                    leftEdgeApplicableRange,
-                    rightEdgeApplicableRange,
-                    leftEdgeVelocity,
-                    rightEdgeVelocity);
-
-                btnCancelHorizontalMouseEdgeScrolling.IsEnabled = true;
-                chkIsHorizontalMouseActive.IsChecked = true;
+                scrollingPresenter.HorizontalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
+                scrollingPresenter.HorizontalEdgeScrollParameters.NearEdgeApplicableRange = leftEdgeApplicableRange;
+                scrollingPresenter.HorizontalEdgeScrollParameters.FarEdgeApplicableRange = rightEdgeApplicableRange;
+                scrollingPresenter.HorizontalEdgeScrollParameters.NearEdgeVelocity = leftEdgeVelocity;
+                scrollingPresenter.HorizontalEdgeScrollParameters.FarEdgeVelocity = rightEdgeVelocity;
 
                 if (leftEdgeVelocity == 0)
                 {
@@ -130,75 +157,70 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelHorizontalMouseEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        //private void BtnCancelHorizontalEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        AppendAsyncEventMessage("Deactivating");
+
+        //        scrollingPresenter.SetHorizontalEdgeScrolling(
+        //            pointerDeviceType: PointerDeviceType.Mouse,
+        //            pointerPositionAdjustment: new Point(0, 0),
+        //            leftEdgeApplicableRange: 0.0,
+        //            rightEdgeApplicableRange: 0.0,
+        //            leftEdgeVelocity: 0.0f,
+        //            rightEdgeVelocity: 0.0f);
+
+        //        btnCancelHorizontalEdgeScrolling.IsEnabled = false;
+        //        chkIsHorizontalActive.IsChecked = false;
+
+        //        rectLeftLeftEdge.Visibility = Visibility.Collapsed;
+        //        rectLeftRightEdge.Visibility = Visibility.Collapsed;
+        //        rectRightLeftEdge.Visibility = Visibility.Collapsed;
+        //        rectRightRightEdge.Visibility = Visibility.Collapsed;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        AppendAsyncEventMessage(ex.ToString());
+        //    }
+        //}
+
+        private void TxtHEdgeVelocity_TextChanged(object sender, TextChangedEventArgs e)
         {
-            try
-            {
-                AppendAsyncEventMessage("Deactivating Mouse");
+            //try
+            //{
+            //    Single leftEdgeVelocity = Convert.ToSingle(txtLeftEdgeVelocity.Text);
+            //    Single rightEdgeVelocity = Convert.ToSingle(txtRightEdgeVelocity.Text);
 
-                scrollingPresenter.SetHorizontalEdgeScrolling(
-                    pointerDeviceType: PointerDeviceType.Mouse,
-                    pointerPositionAdjustment: new Point(0, 0),
-                    leftEdgeApplicableRange: 0.0,
-                    rightEdgeApplicableRange: 0.0,
-                    leftEdgeVelocity: 0.0f,
-                    rightEdgeVelocity: 0.0f);
-
-                btnCancelHorizontalMouseEdgeScrolling.IsEnabled = false;
-                chkIsHorizontalMouseActive.IsChecked = false;
-
-                rectLeftLeftEdge.Visibility = Visibility.Collapsed;
-                rectLeftRightEdge.Visibility = Visibility.Collapsed;
-                rectRightLeftEdge.Visibility = Visibility.Collapsed;
-                rectRightRightEdge.Visibility = Visibility.Collapsed;
-            }
-            catch (Exception ex)
-            {
-                AppendAsyncEventMessage(ex.ToString());
-            }
+            //    btnUpdateHorizontalEdgeScrolling.IsEnabled = leftEdgeVelocity != 0.0f || rightEdgeVelocity != 0.0f;
+            //}
+            //catch (Exception ex)
+            //{
+            //    AppendAsyncEventMessage(ex.ToString());
+            //}
         }
 
-        private void TxtHMouseEdgeVelocity_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
-            {
-                Single leftEdgeVelocity = Convert.ToSingle(txtMouseLeftEdgeVelocity.Text);
-                Single rightEdgeVelocity = Convert.ToSingle(txtMouseRightEdgeVelocity.Text);
-
-                btnUpdateHorizontalMouseEdgeScrolling.IsEnabled = leftEdgeVelocity != 0.0f || rightEdgeVelocity != 0.0f;
-            }
-            catch (Exception ex)
-            {
-                AppendAsyncEventMessage(ex.ToString());
-            }
-        }
-
-        private void BtnUpdateVerticalMouseEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        private void BtnUpdateVerticalEdgeScrollParameters_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 Point pointerPositionAdjustment = new Point(
-                    Convert.ToDouble(txtVerticalMousePositionAdjustmentX.Text),
-                    Convert.ToDouble(txtVerticalMousePositionAdjustmentY.Text));
+                    Convert.ToDouble(txtVerticalPositionAdjustmentX.Text),
+                    Convert.ToDouble(txtVerticalPositionAdjustmentY.Text));
 
-                Double topEdgeApplicableRange = Convert.ToDouble(txtMouseTopEdgeApplicableRange.Text);
-                Double bottomEdgeApplicableRange = Convert.ToDouble(txtMouseBottomEdgeApplicableRange.Text);
+                Double topEdgeApplicableRange = Convert.ToDouble(txtTopEdgeApplicableRange.Text);
+                Double bottomEdgeApplicableRange = Convert.ToDouble(txtBottomEdgeApplicableRange.Text);
 
-                Single topEdgeVelocity = Convert.ToSingle(txtMouseTopEdgeVelocity.Text);
-                Single bottomEdgeVelocity = Convert.ToSingle(txtMouseBottomEdgeVelocity.Text);
+                Single topEdgeVelocity = Convert.ToSingle(txtTopEdgeVelocity.Text);
+                Single bottomEdgeVelocity = Convert.ToSingle(txtBottomEdgeVelocity.Text);
 
-                AppendAsyncEventMessage($"Activating Mouse with pointerPositionAdjustment:{pointerPositionAdjustment}, topEdgeApplicableRange:{topEdgeApplicableRange}, bottomEdgeApplicableRange:{bottomEdgeApplicableRange}, topEdgeVelocity:{topEdgeVelocity}, bottomEdgeVelocity:{bottomEdgeVelocity}");
+                AppendAsyncEventMessage($"Updating vertical parameters with pointerPositionAdjustment:{pointerPositionAdjustment}, topEdgeApplicableRange:{topEdgeApplicableRange}, bottomEdgeApplicableRange:{bottomEdgeApplicableRange}, topEdgeVelocity:{topEdgeVelocity}, bottomEdgeVelocity:{bottomEdgeVelocity}");
 
-                scrollingPresenter.SetVerticalEdgeScrolling(
-                    PointerDeviceType.Mouse,
-                    pointerPositionAdjustment,
-                    topEdgeApplicableRange,
-                    bottomEdgeApplicableRange,
-                    topEdgeVelocity,
-                    bottomEdgeVelocity);
-
-                btnCancelVerticalMouseEdgeScrolling.IsEnabled = true;
-                chkIsVerticalMouseActive.IsChecked = true;
+                scrollingPresenter.VerticalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
+                scrollingPresenter.VerticalEdgeScrollParameters.NearEdgeApplicableRange = topEdgeApplicableRange;
+                scrollingPresenter.VerticalEdgeScrollParameters.FarEdgeApplicableRange = bottomEdgeApplicableRange;
+                scrollingPresenter.VerticalEdgeScrollParameters.NearEdgeVelocity = topEdgeVelocity;
+                scrollingPresenter.VerticalEdgeScrollParameters.FarEdgeVelocity = bottomEdgeVelocity;
 
                 if (topEdgeVelocity == 0)
                 {
@@ -234,27 +256,58 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelVerticalMouseEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        //private void BtnCancelVerticalEdgeScrolling_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        AppendAsyncEventMessage("Deactivating");
+
+        //        scrollingPresenter.SetVerticalEdgeScrolling(
+        //            pointerDeviceType: PointerDeviceType.Mouse,
+        //            pointerPositionAdjustment: new Point(0, 0),
+        //            topEdgeApplicableRange: 0.0,
+        //            bottomEdgeApplicableRange: 0.0,
+        //            topEdgeVelocity: 0.0f,
+        //            bottomEdgeVelocity: 0.0f);
+
+        //        btnCancelVerticalEdgeScrolling.IsEnabled = false;
+        //        chkIsVerticalActive.IsChecked = false;
+
+        //        rectTopTopEdge.Visibility = Visibility.Collapsed;
+        //        rectTopBottomEdge.Visibility = Visibility.Collapsed;
+        //        rectBottomTopEdge.Visibility = Visibility.Collapsed;
+        //        rectBottomBottomEdge.Visibility = Visibility.Collapsed;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        AppendAsyncEventMessage(ex.ToString());
+        //    }
+        //}
+
+        private void TxtVEdgeVelocity_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            //try
+            //{
+            //    Single topEdgeVelocity = Convert.ToSingle(txtTopEdgeVelocity.Text);
+            //    Single bottomEdgeVelocity = Convert.ToSingle(txtBottomEdgeVelocity.Text);
+
+            //    btnUpdateVerticalEdgeScrolling.IsEnabled = topEdgeVelocity != 0.0f || bottomEdgeVelocity != 0.0f;
+            //}
+            //catch (Exception ex)
+            //{
+            //    AppendAsyncEventMessage(ex.ToString());
+            //}
+        }
+
+        private void BtnRegisterPointerForEdgeScroll_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                AppendAsyncEventMessage("Deactivating Mouse");
+                UInt32 pointerId = Convert.ToUInt32(txtRegisteredPointerId.Text);
 
-                scrollingPresenter.SetVerticalEdgeScrolling(
-                    pointerDeviceType: PointerDeviceType.Mouse,
-                    pointerPositionAdjustment: new Point(0, 0),
-                    topEdgeApplicableRange: 0.0,
-                    bottomEdgeApplicableRange: 0.0,
-                    topEdgeVelocity: 0.0f,
-                    bottomEdgeVelocity: 0.0f);
-
-                btnCancelVerticalMouseEdgeScrolling.IsEnabled = false;
-                chkIsVerticalMouseActive.IsChecked = false;
-
-                rectTopTopEdge.Visibility = Visibility.Collapsed;
-                rectTopBottomEdge.Visibility = Visibility.Collapsed;
-                rectBottomTopEdge.Visibility = Visibility.Collapsed;
-                rectBottomBottomEdge.Visibility = Visibility.Collapsed;
+                AppendAsyncEventMessage($"RegisterPointerForEdgeScroll {pointerId}");
+                
+                scrollingPresenter.RegisterPointerForEdgeScroll(pointerId);
             }
             catch (Exception ex)
             {
@@ -262,14 +315,14 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TxtVMouseEdgeVelocity_TextChanged(object sender, TextChangedEventArgs e)
+        private void BtnUnregisterPointerForEdgeScroll_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                Single topEdgeVelocity = Convert.ToSingle(txtMouseTopEdgeVelocity.Text);
-                Single bottomEdgeVelocity = Convert.ToSingle(txtMouseBottomEdgeVelocity.Text);
+                AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll");
 
-                btnUpdateVerticalMouseEdgeScrolling.IsEnabled = topEdgeVelocity != 0.0f || bottomEdgeVelocity != 0.0f;
+                scrollingPresenter.UnregisterPointerForEdgeScroll();
+                txtRegisteredPointerId.Text = string.Empty;
             }
             catch (Exception ex)
             {

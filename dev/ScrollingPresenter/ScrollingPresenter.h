@@ -12,6 +12,7 @@
 #include "ScrollingAnchorRequestedEventArgs.h"
 #include "ScrollingBringingIntoViewEventArgs.h"
 #include "ScrollingEdgeScrollEventArgs.h"
+#include "ScrollingEdgeScrollParameters.h"
 #include "SnapPointWrapper.h"
 #include "ScrollingPresenterTrace.h"
 #include "ViewChange.h"
@@ -187,20 +188,20 @@ public:
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
-    void SetHorizontalEdgeScrolling(
-        winrt::PointerDeviceType pointerDeviceType,
-        winrt::Point pointerPositionAdjustment,
-        double leftEdgeApplicableRange,
-        double rightEdgeApplicableRange,
-        float leftEdgeVelocity,
-        float rightEdgeVelocity);
-    void SetVerticalEdgeScrolling(
-        winrt::PointerDeviceType pointerDeviceType,
-        winrt::Point pointerPositionAdjustment,
-        double topEdgeApplicableRange,
-        double bottomEdgeApplicableRange,
-        float topEdgeVelocity,
-        float bottomEdgeVelocity);
+    //void SetHorizontalEdgeScrolling(
+    //    winrt::PointerDeviceType pointerDeviceType,
+    //    winrt::Point pointerPositionAdjustment,
+    //    double leftEdgeApplicableRange,
+    //    double rightEdgeApplicableRange,
+    //    float leftEdgeVelocity,
+    //    float rightEdgeVelocity);
+    //void SetVerticalEdgeScrolling(
+    //    winrt::PointerDeviceType pointerDeviceType,
+    //    winrt::Point pointerPositionAdjustment,
+    //    double topEdgeApplicableRange,
+    //    double bottomEdgeApplicableRange,
+    //    float topEdgeVelocity,
+    //    float bottomEdgeVelocity);
 
     winrt::ScrollingScrollInfo StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args);
     winrt::ScrollingScrollInfo StopEdgeScrollWithPointer();
@@ -313,15 +314,15 @@ public:
     // IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer();
 
-private:
-    struct EdgeScrollingInfo
-    {
-        winrt::Point pointerPositionAdjustment;
-        double nearEdgeApplicableRange;
-        double farEdgeApplicableRange;
-        float nearEdgeVelocity;
-        float farEdgeVelocity;
-    };
+//private:
+//    struct EdgeScrollingInfo
+//    {
+//        winrt::Point pointerPositionAdjustment;
+//        double nearEdgeApplicableRange;
+//        double farEdgeApplicableRange;
+//        float nearEdgeVelocity;
+//        float farEdgeVelocity;
+//    };
 
 private:
 #ifdef _DEBUG
@@ -461,6 +462,8 @@ private:
     void UpdateVisualInteractionSourceMode(ScrollingPresenterDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation);
+    void UpdateEdgeScroll(winrt::float2 const& offsetsVelocity);
+
     void OnContentSizeChanged(
         const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
@@ -828,12 +831,20 @@ private:
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollingPresenterDimension dimension);
 
-    static float GetEdgeScrollVelocity(
+    //static float GetEdgeScrollVelocity(
+    //    bool isForHorizontalScroll,
+    //    double offset,
+    //    double viewportDim,
+    //    double scrollableDim,
+    //    const EdgeScrollingInfo& edgeScrollingInfo,
+    //    const winrt::Point& pointerPosition);
+
+    float GetEdgeScrollVelocity(
         bool isForHorizontalScroll,
         double offset,
         double viewportDim,
         double scrollableDim,
-        const EdgeScrollingInfo& edgeScrollingInfo,
+        const winrt::ScrollingEdgeScrollParameters& edgeScrollParameters,
         const winrt::Point& pointerPosition);
 
     static float GetAdjustedEdgeScrollVelocity(
@@ -850,14 +861,14 @@ private:
         double offset,
         double scrollableDim);
 
-    static void SetEdgeScrolling(
-        std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
-        winrt::PointerDeviceType pointerDeviceType,
-        winrt::Point pointerPositionAdjustment,
-        double nearEdgeApplicableRange,
-        double farEdgeApplicableRange,
-        float nearEdgeVelocity,
-        float farEdgeVelocity);
+    //static void SetEdgeScrolling(
+    //    std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
+    //    winrt::PointerDeviceType pointerDeviceType,
+    //    winrt::Point pointerPositionAdjustment,
+    //    double nearEdgeApplicableRange,
+    //    double farEdgeApplicableRange,
+    //    float nearEdgeVelocity,
+    //    float farEdgeVelocity);
 
 #ifdef _DEBUG
     void DumpMinMaxPositions();
@@ -984,11 +995,14 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
-    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollMap;
-    std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollMap;
+    //std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollMap;
+    //std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollMap;
     winrt::ScrollingScrollInfo m_edgeScrollInfo{ -1 };
     winrt::float2 m_edgeScrollOffsetsVelocity{};
     winrt::PointerDeviceType m_edgeScrollPointerDeviceType{ winrt::PointerDeviceType::Touch };
+    winrt::ScrollingEdgeScrollParameters m_horizontalEdgeScrollParameters{ nullptr };
+    winrt::ScrollingEdgeScrollParameters m_verticalEdgeScrollParameters{ nullptr };
+    UINT m_registeredPointerIdForEdgeScroll{ 0 };
 
     // Any offset impulse velocity smaller than or equal to 30 has no effect on InteractionTracker.
     static constexpr float c_minImpulseOffsetVelocity = 30.0f;

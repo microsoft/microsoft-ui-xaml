@@ -324,20 +324,20 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
-    void SetHorizontalEdgeScrolling(
-        Windows.Devices.Input.PointerDeviceType pointerDeviceType,
-        Windows.Foundation.Point pointerPositionAdjustment,
-        Double leftEdgeApplicableRange,
-        Double rightEdgeApplicableRange,
-        Single leftEdgeVelocity,
-        Single rightEdgeVelocity);
-    void SetVerticalEdgeScrolling(
-        Windows.Devices.Input.PointerDeviceType pointerDeviceType,
-        Windows.Foundation.Point pointerPositionAdjustment,
-        Double topEdgeApplicableRange,
-        Double bottomEdgeApplicableRange,
-        Single topEdgeVelocity,
-        Single bottomEdgeVelocity);
+    //void SetHorizontalEdgeScrolling(
+    //    Windows.Devices.Input.PointerDeviceType pointerDeviceType,
+    //    Windows.Foundation.Point pointerPositionAdjustment,
+    //    Double leftEdgeApplicableRange,
+    //    Double rightEdgeApplicableRange,
+    //    Single leftEdgeVelocity,
+    //    Single rightEdgeVelocity);
+    //void SetVerticalEdgeScrolling(
+    //    Windows.Devices.Input.PointerDeviceType pointerDeviceType,
+    //    Windows.Foundation.Point pointerPositionAdjustment,
+    //    Double topEdgeApplicableRange,
+    //    Double bottomEdgeApplicableRange,
+    //    Single topEdgeVelocity,
+    //    Single bottomEdgeVelocity);
 
     MU_XC_NAMESPACE.ScrollingScrollInfo StartEdgeScrollWithPointer(Windows.UI.Xaml.Input.PointerRoutedEventArgs args);
     MU_XC_NAMESPACE.ScrollingScrollInfo StopEdgeScrollWithPointer();

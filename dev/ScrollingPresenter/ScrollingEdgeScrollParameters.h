@@ -3,14 +3,17 @@
 
 #pragma once
 
-#include "ScrollingPresenter.h"
+//#include "ScrollingPresenter.h"
 #include "ScrollingEdgeScrollParameters.g.h"
 
 class ScrollingEdgeScrollParameters :
-    public ReferenceTracker<ScrollingEdgeScrollParameters, winrt::implementation::ScrollingEdgeScrollParametersT, winrt::composable, winrt::composing>
+    //public ReferenceTracker<ScrollingEdgeScrollParameters, winrt::implementation::ScrollingEdgeScrollParametersT, winrt::composable, winrt::composing>
+    public winrt::implementation::ScrollingEdgeScrollParametersT<ScrollingEdgeScrollParameters>
 {
 public:
-    ScrollingEdgeScrollParameters(const winrt::ScrollingPresenter& scrollingPresenter);
+    //ScrollingEdgeScrollParameters(const winrt::ScrollingPresenter& scrollingPresenter);
+
+    ScrollingEdgeScrollParameters();
 
     ~ScrollingEdgeScrollParameters()
     {
@@ -35,5 +38,10 @@ public:
 #pragma endregion
 
 private:
-    tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
+    //tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
+    winrt::Point m_pointerPositionAdjustment{};
+    double m_nearEdgeApplicableRange{};
+    double m_farEdgeApplicableRange{};
+    float m_nearEdgeVelocity{};
+    float m_farEdgeVelocity{};
 };

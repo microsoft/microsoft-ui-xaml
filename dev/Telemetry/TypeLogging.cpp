@@ -24,6 +24,12 @@ winrt::hstring PointerPointToString(const winrt::PointerPoint& pointerPoint, boo
     }
 }
 
+winrt::hstring PointToString(const winrt::Point& point)
+{
+    return StringUtil::FormatString(L"Point: X: %1!i!, Y: %2!i!",
+        static_cast<int32_t>(point.X), static_cast<int32_t>(point.Y));
+}
+
 winrt::hstring RectToString(const winrt::Rect& rect)
 {
     return StringUtil::FormatString(L"Rect: X: %1!i!, Y: %2!i!, W: %3!u!, H: %4!u!",

@@ -438,12 +438,26 @@ winrt::IVector<winrt::ZoomSnapPointBase> ScrollingPresenter::ZoomSnapPoints()
 
 winrt::ScrollingEdgeScrollParameters ScrollingPresenter::HorizontalEdgeScrollParameters()
 {
-    return nullptr;
+    if (!m_horizontalEdgeScrollParameters)
+    {
+        winrt::com_ptr<ScrollingEdgeScrollParameters> horizontalEdgeScrollParameters = winrt::make_self<ScrollingEdgeScrollParameters>();
+
+        m_horizontalEdgeScrollParameters = *horizontalEdgeScrollParameters;
+    }
+
+    return m_horizontalEdgeScrollParameters;
 }
 
 winrt::ScrollingEdgeScrollParameters ScrollingPresenter::VerticalEdgeScrollParameters()
 {
-    return nullptr;
+    if (!m_verticalEdgeScrollParameters)
+    {
+        winrt::com_ptr<ScrollingEdgeScrollParameters> verticalEdgeScrollParameters = winrt::make_self<ScrollingEdgeScrollParameters>();
+
+        m_verticalEdgeScrollParameters = *verticalEdgeScrollParameters;
+    }
+
+    return m_verticalEdgeScrollParameters;
 }
 
 winrt::ScrollingScrollInfo ScrollingPresenter::ScrollTo(double horizontalOffset, double verticalOffset)
@@ -629,104 +643,134 @@ winrt::ScrollingZoomInfo ScrollingPresenter::ZoomFrom(float zoomFactorVelocity, 
     return winrt::ScrollingZoomInfo{ viewChangeId };
 }
 
-void ScrollingPresenter::SetHorizontalEdgeScrolling(
-    winrt::PointerDeviceType pointerDeviceType,
-    winrt::Point pointerPositionAdjustment,
-    double leftEdgeApplicableRange,
-    double rightEdgeApplicableRange,
-    float leftEdgeVelocity,
-    float rightEdgeVelocity)
-{
-    // TODO raise a new event when a call to ScrollWith is made, with the resulting ScrollingScrollInfo.
-
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_INT, METH_NAME, this,
-        leftEdgeApplicableRange,
-        rightEdgeApplicableRange,
-        pointerDeviceType);
-
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
-        pointerPositionAdjustment.X,
-        pointerPositionAdjustment.Y);
-
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
-        leftEdgeVelocity,
-        rightEdgeVelocity);
-
-    SetEdgeScrolling(
-        &m_horizontalEdgeScrollMap,
-        pointerDeviceType,
-        pointerPositionAdjustment,
-        leftEdgeApplicableRange,
-        rightEdgeApplicableRange,
-        leftEdgeVelocity,
-        rightEdgeVelocity);
-
-    if (m_horizontalEdgeScrollMap.empty() && m_verticalEdgeScrollMap.empty())
-    {
-        UnhookScrollingPresenterPointerMovedEvent();
-    }
-    else
-    {
-        HookScrollingPresenterPointerMovedEvent();
-    }
-}
-
-void ScrollingPresenter::SetVerticalEdgeScrolling(
-    winrt::PointerDeviceType pointerDeviceType,
-    winrt::Point pointerPositionAdjustment,
-    double topEdgeApplicableRange,
-    double bottomEdgeApplicableRange,
-    float topEdgeVelocity,
-    float bottomEdgeVelocity)
-{
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_INT, METH_NAME, this,
-        topEdgeApplicableRange,
-        bottomEdgeApplicableRange,
-        pointerDeviceType);
-
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
-        pointerPositionAdjustment.X,
-        pointerPositionAdjustment.Y);
-
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
-        topEdgeVelocity,
-        bottomEdgeVelocity);
-
-    SetEdgeScrolling(
-        &m_verticalEdgeScrollMap,
-        pointerDeviceType,
-        pointerPositionAdjustment,
-        topEdgeApplicableRange,
-        bottomEdgeApplicableRange,
-        topEdgeVelocity,
-        bottomEdgeVelocity);
-
-    if (m_horizontalEdgeScrollMap.empty() && m_verticalEdgeScrollMap.empty())
-    {
-        UnhookScrollingPresenterPointerMovedEvent();
-    }
-    else
-    {
-        HookScrollingPresenterPointerMovedEvent();
-    }
-}
+//void ScrollingPresenter::SetHorizontalEdgeScrolling(
+//    winrt::PointerDeviceType pointerDeviceType,
+//    winrt::Point pointerPositionAdjustment,
+//    double leftEdgeApplicableRange,
+//    double rightEdgeApplicableRange,
+//    float leftEdgeVelocity,
+//    float rightEdgeVelocity)
+//{
+//    // TODO raise a new event when a call to ScrollWith is made, with the resulting ScrollingScrollInfo.
+//
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_INT, METH_NAME, this,
+//        leftEdgeApplicableRange,
+//        rightEdgeApplicableRange,
+//        pointerDeviceType);
+//
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
+//        pointerPositionAdjustment.X,
+//        pointerPositionAdjustment.Y);
+//
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+//        leftEdgeVelocity,
+//        rightEdgeVelocity);
+//
+//    SetEdgeScrolling(
+//        &m_horizontalEdgeScrollMap,
+//        pointerDeviceType,
+//        pointerPositionAdjustment,
+//        leftEdgeApplicableRange,
+//        rightEdgeApplicableRange,
+//        leftEdgeVelocity,
+//        rightEdgeVelocity);
+//
+//    if (m_horizontalEdgeScrollMap.empty() && m_verticalEdgeScrollMap.empty())
+//    {
+//        UnhookScrollingPresenterPointerMovedEvent();
+//    }
+//    else
+//    {
+//        HookScrollingPresenterPointerMovedEvent();
+//    }
+//}
+//
+//void ScrollingPresenter::SetVerticalEdgeScrolling(
+//    winrt::PointerDeviceType pointerDeviceType,
+//    winrt::Point pointerPositionAdjustment,
+//    double topEdgeApplicableRange,
+//    double bottomEdgeApplicableRange,
+//    float topEdgeVelocity,
+//    float bottomEdgeVelocity)
+//{
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL_INT, METH_NAME, this,
+//        topEdgeApplicableRange,
+//        bottomEdgeApplicableRange,
+//        pointerDeviceType);
+//
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
+//        pointerPositionAdjustment.X,
+//        pointerPositionAdjustment.Y);
+//
+//    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_FLT_FLT, METH_NAME, this,
+//        topEdgeVelocity,
+//        bottomEdgeVelocity);
+//
+//    SetEdgeScrolling(
+//        &m_verticalEdgeScrollMap,
+//        pointerDeviceType,
+//        pointerPositionAdjustment,
+//        topEdgeApplicableRange,
+//        bottomEdgeApplicableRange,
+//        topEdgeVelocity,
+//        bottomEdgeVelocity);
+//
+//    if (m_horizontalEdgeScrollMap.empty() && m_verticalEdgeScrollMap.empty())
+//    {
+//        UnhookScrollingPresenterPointerMovedEvent();
+//    }
+//    else
+//    {
+//        HookScrollingPresenterPointerMovedEvent();
+//    }
+//}
 
 winrt::ScrollingScrollInfo ScrollingPresenter::StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args)
 {
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        return winrt::ScrollingScrollInfo{ -1 };
+    }
+
     return m_edgeScrollInfo;
 }
 
 winrt::ScrollingScrollInfo ScrollingPresenter::StopEdgeScrollWithPointer()
 {
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        return winrt::ScrollingScrollInfo{ -1 };
+    }
+
     return m_edgeScrollInfo;
 }
 
 void ScrollingPresenter::RegisterPointerForEdgeScroll(UINT pointerId)
 {
+    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, pointerId);
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        return;
+    }
+
+    m_registeredPointerIdForEdgeScroll = pointerId;
+    HookScrollingPresenterPointerMovedEvent();
 }
 
 void ScrollingPresenter::UnregisterPointerForEdgeScroll()
 {
+    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+
+    if (SharedHelpers::IsTH2OrLower())
+    {
+        return;
+    }
+
+    m_registeredPointerIdForEdgeScroll = 0;
+    UnhookScrollingPresenterPointerMovedEvent();
+
+    UpdateEdgeScroll(winrt::float2{});
 }
 
 #pragma endregion
@@ -3966,48 +4010,124 @@ wstring_view ScrollingPresenter::GetVisualTargetedPropertyName(ScrollingPresente
     }
 }
 
+//float ScrollingPresenter::GetEdgeScrollVelocity(
+//    bool isForHorizontalScroll,
+//    double offset,
+//    double viewportDim,
+//    double scrollableDim,
+//    const EdgeScrollingInfo& edgeScrollingInfo,
+//    const winrt::Point& pointerPosition)
+//{
+//    const winrt::Point adjustedPointerPosition{
+//        pointerPosition.X + edgeScrollingInfo.pointerPositionAdjustment.X,
+//        pointerPosition.Y + edgeScrollingInfo.pointerPositionAdjustment.Y };
+//    const double nearEdgeDistance = isForHorizontalScroll ? adjustedPointerPosition.X : adjustedPointerPosition.Y;
+//
+//    if (nearEdgeDistance <= 0.0 && -nearEdgeDistance <= edgeScrollingInfo.nearEdgeApplicableRange)
+//    {
+//        if (!CanEdgeScrollAtNearEdge(edgeScrollingInfo.nearEdgeVelocity, offset, scrollableDim))
+//        {
+//            return 0.0f;
+//        }
+//
+//        return GetAdjustedEdgeScrollVelocity(
+//            (-1.0f - static_cast<float>(nearEdgeDistance / edgeScrollingInfo.nearEdgeApplicableRange)) * edgeScrollingInfo.nearEdgeVelocity,
+//            edgeScrollingInfo.nearEdgeVelocity);
+//    }
+//
+//    const double farEdgeDistance = viewportDim - nearEdgeDistance;
+//
+//    if (farEdgeDistance <= 0.0 && -farEdgeDistance <= edgeScrollingInfo.farEdgeApplicableRange)
+//    {
+//        if (!CanEdgeScrollAtFarEdge(edgeScrollingInfo.farEdgeVelocity, offset, scrollableDim))
+//        {
+//            return 0.0f;
+//        }
+//
+//        return GetAdjustedEdgeScrollVelocity(
+//            (1.0f + static_cast<float>(farEdgeDistance / edgeScrollingInfo.farEdgeApplicableRange)) * edgeScrollingInfo.farEdgeVelocity,
+//            edgeScrollingInfo.farEdgeVelocity);
+//    }
+//
+//    const double totalApplicableRange = edgeScrollingInfo.nearEdgeApplicableRange + edgeScrollingInfo.farEdgeApplicableRange;
+//    double reducedNearEdgeApplicableRange = edgeScrollingInfo.nearEdgeApplicableRange;
+//    double reducedFarEdgeApplicableRange = edgeScrollingInfo.farEdgeApplicableRange;
+//
+//    if (totalApplicableRange > viewportDim)
+//    {
+//        reducedNearEdgeApplicableRange *= viewportDim / totalApplicableRange;
+//        reducedFarEdgeApplicableRange *= viewportDim / totalApplicableRange;
+//    }
+//
+//    if (nearEdgeDistance > 0.0 && nearEdgeDistance <= reducedNearEdgeApplicableRange)
+//    {
+//        if (!CanEdgeScrollAtNearEdge(edgeScrollingInfo.nearEdgeVelocity, offset, scrollableDim))
+//        {
+//            return 0.0f;
+//        }
+//
+//        return GetAdjustedEdgeScrollVelocity(
+//            (-1.0f + static_cast<float>(nearEdgeDistance / reducedNearEdgeApplicableRange)) * edgeScrollingInfo.nearEdgeVelocity,
+//            edgeScrollingInfo.nearEdgeVelocity);
+//    }
+//
+//    if (farEdgeDistance > 0.0 && farEdgeDistance <= reducedFarEdgeApplicableRange)
+//    {
+//        if (!CanEdgeScrollAtFarEdge(edgeScrollingInfo.farEdgeVelocity, offset, scrollableDim))
+//        {
+//            return 0.0f;
+//        }
+//
+//        return GetAdjustedEdgeScrollVelocity(
+//            (1.0f - static_cast<float>(farEdgeDistance / reducedFarEdgeApplicableRange)) * edgeScrollingInfo.farEdgeVelocity,
+//            edgeScrollingInfo.farEdgeVelocity);
+//    }
+//
+//    return 0.0f;
+//}
+
 float ScrollingPresenter::GetEdgeScrollVelocity(
     bool isForHorizontalScroll,
     double offset,
     double viewportDim,
     double scrollableDim,
-    const EdgeScrollingInfo& edgeScrollingInfo,
+    const winrt::ScrollingEdgeScrollParameters& edgeScrollParameters,
     const winrt::Point& pointerPosition)
 {
     const winrt::Point adjustedPointerPosition{
-        pointerPosition.X + edgeScrollingInfo.pointerPositionAdjustment.X,
-        pointerPosition.Y + edgeScrollingInfo.pointerPositionAdjustment.Y };
+        pointerPosition.X + edgeScrollParameters.PointerPositionAdjustment().X,
+        pointerPosition.Y + edgeScrollParameters.PointerPositionAdjustment().Y };
     const double nearEdgeDistance = isForHorizontalScroll ? adjustedPointerPosition.X : adjustedPointerPosition.Y;
 
-    if (nearEdgeDistance <= 0.0 && -nearEdgeDistance <= edgeScrollingInfo.nearEdgeApplicableRange)
+    if (nearEdgeDistance <= 0.0 && -nearEdgeDistance <= edgeScrollParameters.NearEdgeApplicableRange())
     {
-        if (!CanEdgeScrollAtNearEdge(edgeScrollingInfo.nearEdgeVelocity, offset, scrollableDim))
+        if (!CanEdgeScrollAtNearEdge(edgeScrollParameters.NearEdgeVelocity(), offset, scrollableDim))
         {
             return 0.0f;
         }
 
         return GetAdjustedEdgeScrollVelocity(
-            (-1.0f - static_cast<float>(nearEdgeDistance / edgeScrollingInfo.nearEdgeApplicableRange)) * edgeScrollingInfo.nearEdgeVelocity,
-            edgeScrollingInfo.nearEdgeVelocity);
+            (-1.0f - static_cast<float>(nearEdgeDistance / edgeScrollParameters.NearEdgeApplicableRange()))* edgeScrollParameters.NearEdgeVelocity(),
+            edgeScrollParameters.NearEdgeVelocity());
     }
 
     const double farEdgeDistance = viewportDim - nearEdgeDistance;
 
-    if (farEdgeDistance <= 0.0 && -farEdgeDistance <= edgeScrollingInfo.farEdgeApplicableRange)
+    if (farEdgeDistance <= 0.0 && -farEdgeDistance <= edgeScrollParameters.FarEdgeApplicableRange())
     {
-        if (!CanEdgeScrollAtFarEdge(edgeScrollingInfo.farEdgeVelocity, offset, scrollableDim))
+        if (!CanEdgeScrollAtFarEdge(edgeScrollParameters.FarEdgeVelocity(), offset, scrollableDim))
         {
             return 0.0f;
         }
 
         return GetAdjustedEdgeScrollVelocity(
-            (1.0f + static_cast<float>(farEdgeDistance / edgeScrollingInfo.farEdgeApplicableRange)) * edgeScrollingInfo.farEdgeVelocity,
-            edgeScrollingInfo.farEdgeVelocity);
+            (1.0f + static_cast<float>(farEdgeDistance / edgeScrollParameters.FarEdgeApplicableRange()))* edgeScrollParameters.FarEdgeVelocity(),
+            edgeScrollParameters.FarEdgeVelocity());
     }
 
-    const double totalApplicableRange = edgeScrollingInfo.nearEdgeApplicableRange + edgeScrollingInfo.farEdgeApplicableRange;
-    double reducedNearEdgeApplicableRange = edgeScrollingInfo.nearEdgeApplicableRange;
-    double reducedFarEdgeApplicableRange = edgeScrollingInfo.farEdgeApplicableRange;
+    const double totalApplicableRange = edgeScrollParameters.NearEdgeApplicableRange() + edgeScrollParameters.FarEdgeApplicableRange();
+    double reducedNearEdgeApplicableRange = edgeScrollParameters.NearEdgeApplicableRange();
+    double reducedFarEdgeApplicableRange = edgeScrollParameters.FarEdgeApplicableRange();
 
     if (totalApplicableRange > viewportDim)
     {
@@ -4017,26 +4137,26 @@ float ScrollingPresenter::GetEdgeScrollVelocity(
 
     if (nearEdgeDistance > 0.0 && nearEdgeDistance <= reducedNearEdgeApplicableRange)
     {
-        if (!CanEdgeScrollAtNearEdge(edgeScrollingInfo.nearEdgeVelocity, offset, scrollableDim))
+        if (!CanEdgeScrollAtNearEdge(edgeScrollParameters.NearEdgeVelocity(), offset, scrollableDim))
         {
             return 0.0f;
         }
 
         return GetAdjustedEdgeScrollVelocity(
-            (-1.0f + static_cast<float>(nearEdgeDistance / reducedNearEdgeApplicableRange)) * edgeScrollingInfo.nearEdgeVelocity,
-            edgeScrollingInfo.nearEdgeVelocity);
+            (-1.0f + static_cast<float>(nearEdgeDistance / reducedNearEdgeApplicableRange))* edgeScrollParameters.NearEdgeVelocity(),
+            edgeScrollParameters.NearEdgeVelocity());
     }
 
     if (farEdgeDistance > 0.0 && farEdgeDistance <= reducedFarEdgeApplicableRange)
     {
-        if (!CanEdgeScrollAtFarEdge(edgeScrollingInfo.farEdgeVelocity, offset, scrollableDim))
+        if (!CanEdgeScrollAtFarEdge(edgeScrollParameters.FarEdgeVelocity(), offset, scrollableDim))
         {
             return 0.0f;
         }
 
         return GetAdjustedEdgeScrollVelocity(
-            (1.0f - static_cast<float>(farEdgeDistance / reducedFarEdgeApplicableRange)) * edgeScrollingInfo.farEdgeVelocity,
-            edgeScrollingInfo.farEdgeVelocity);
+            (1.0f - static_cast<float>(farEdgeDistance / reducedFarEdgeApplicableRange))* edgeScrollParameters.FarEdgeVelocity(),
+            edgeScrollParameters.FarEdgeVelocity());
     }
 
     return 0.0f;
@@ -4113,67 +4233,67 @@ bool ScrollingPresenter::CanEdgeScrollAtFarEdge(
     return true;
 }
 
-void ScrollingPresenter::SetEdgeScrolling(
-    std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
-    winrt::PointerDeviceType pointerDeviceType,
-    winrt::Point pointerPositionAdjustment,
-    double nearEdgeApplicableRange,
-    double farEdgeApplicableRange,
-    float nearEdgeVelocity,
-    float farEdgeVelocity)
-{
-    MUX_ASSERT(edgeScrollingMap);
-
-    if (SharedHelpers::IsTH2OrLower())
-    {
-        return;
-    }
-
-    switch (pointerDeviceType)
-    {
-    case winrt::PointerDeviceType::Mouse:
-    case winrt::PointerDeviceType::Pen:
-    case winrt::PointerDeviceType::Touch:
-        break;
-    default:
-        throw winrt::hresult_error(E_INVALIDARG, s_invalidPointerDeviceType);
-    }
-
-    if (nearEdgeApplicableRange < 0 || farEdgeApplicableRange < 0)
-    {
-        throw winrt::hresult_error(E_INVALIDARG, s_negativeEdgeApplicationRange);
-    }
-
-    if ((nearEdgeVelocity != 0.0f && nearEdgeVelocity >= -c_minImpulseOffsetVelocity && nearEdgeVelocity <= c_minImpulseOffsetVelocity) ||
-        (farEdgeVelocity != 0.0f && farEdgeVelocity >= -c_minImpulseOffsetVelocity && farEdgeVelocity <= c_minImpulseOffsetVelocity))
-    {
-        throw winrt::hresult_error(E_INVALIDARG, s_smallEdgeVelocity);
-    }
-
-    // TODO: potentially adjust activeVelocity after viewportWidth/Height changed
-    // TODO: decrease activeVelocity when nearEdgeApplicableRange + farEdgeApplicableRange > viewportWidth/Height proratedly
-
-    auto existingEdgeScrollingInfoIt = edgeScrollingMap->find(pointerDeviceType);
-
-    if (existingEdgeScrollingInfoIt != edgeScrollingMap->end())
-    {
-        // TODO: potentially stop active edge velocity if present
-        edgeScrollingMap->erase(existingEdgeScrollingInfoIt);
-    }
-
-    if (nearEdgeVelocity != 0.0f || farEdgeVelocity != 0.0f)
-    {
-        EdgeScrollingInfo newEdgeScrollingInfo;
-
-        newEdgeScrollingInfo.pointerPositionAdjustment = pointerPositionAdjustment;
-        newEdgeScrollingInfo.nearEdgeApplicableRange = nearEdgeApplicableRange;
-        newEdgeScrollingInfo.farEdgeApplicableRange = farEdgeApplicableRange;
-        newEdgeScrollingInfo.nearEdgeVelocity = nearEdgeVelocity;
-        newEdgeScrollingInfo.farEdgeVelocity = farEdgeVelocity;
-
-        edgeScrollingMap->emplace(pointerDeviceType, newEdgeScrollingInfo);
-    }
-}
+//void ScrollingPresenter::SetEdgeScrolling(
+//    std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
+//    winrt::PointerDeviceType pointerDeviceType,
+//    winrt::Point pointerPositionAdjustment,
+//    double nearEdgeApplicableRange,
+//    double farEdgeApplicableRange,
+//    float nearEdgeVelocity,
+//    float farEdgeVelocity)
+//{
+//    MUX_ASSERT(edgeScrollingMap);
+//
+//    if (SharedHelpers::IsTH2OrLower())
+//    {
+//        return;
+//    }
+//
+//    switch (pointerDeviceType)
+//    {
+//    case winrt::PointerDeviceType::Mouse:
+//    case winrt::PointerDeviceType::Pen:
+//    case winrt::PointerDeviceType::Touch:
+//        break;
+//    default:
+//        throw winrt::hresult_error(E_INVALIDARG, s_invalidPointerDeviceType);
+//    }
+//
+//    if (nearEdgeApplicableRange < 0 || farEdgeApplicableRange < 0)
+//    {
+//        throw winrt::hresult_error(E_INVALIDARG, s_negativeEdgeApplicationRange);
+//    }
+//
+//    if ((nearEdgeVelocity != 0.0f && nearEdgeVelocity >= -c_minImpulseOffsetVelocity && nearEdgeVelocity <= c_minImpulseOffsetVelocity) ||
+//        (farEdgeVelocity != 0.0f && farEdgeVelocity >= -c_minImpulseOffsetVelocity && farEdgeVelocity <= c_minImpulseOffsetVelocity))
+//    {
+//        throw winrt::hresult_error(E_INVALIDARG, s_smallEdgeVelocity);
+//    }
+//
+//    // TODO: potentially adjust activeVelocity after viewportWidth/Height changed
+//    // TODO: decrease activeVelocity when nearEdgeApplicableRange + farEdgeApplicableRange > viewportWidth/Height proratedly
+//
+//    auto existingEdgeScrollingInfoIt = edgeScrollingMap->find(pointerDeviceType);
+//
+//    if (existingEdgeScrollingInfoIt != edgeScrollingMap->end())
+//    {
+//        // TODO: potentially stop active edge velocity if present
+//        edgeScrollingMap->erase(existingEdgeScrollingInfoIt);
+//    }
+//
+//    if (nearEdgeVelocity != 0.0f || farEdgeVelocity != 0.0f)
+//    {
+//        EdgeScrollingInfo newEdgeScrollingInfo;
+//
+//        newEdgeScrollingInfo.pointerPositionAdjustment = pointerPositionAdjustment;
+//        newEdgeScrollingInfo.nearEdgeApplicableRange = nearEdgeApplicableRange;
+//        newEdgeScrollingInfo.farEdgeApplicableRange = farEdgeApplicableRange;
+//        newEdgeScrollingInfo.nearEdgeVelocity = nearEdgeVelocity;
+//        newEdgeScrollingInfo.farEdgeVelocity = farEdgeVelocity;
+//
+//        edgeScrollingMap->emplace(pointerDeviceType, newEdgeScrollingInfo);
+//    }
+//}
 
 // Invoked by both ScrollingPresenter and ScrollViewer controls
 bool ScrollingPresenter::IsAnchorRatioValid(
@@ -5106,60 +5226,104 @@ void ScrollingPresenter::OnPointerPressed(
     }
 }
 
+//void ScrollingPresenter::OnPointerMoved(
+//    const winrt::IInspectable& /*sender*/,
+//    const winrt::PointerRoutedEventArgs& args)
+//{
+//    const winrt::PointerDeviceType pointerDeviceType = args.Pointer().PointerDeviceType();
+//
+//    //SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, pointerDeviceType);
+//
+//    auto existingHorizontalEdgeScrollingInfoIt = m_horizontalEdgeScrollMap.find(pointerDeviceType);
+//    auto existingVerticalEdgeScrollingInfoIt = m_verticalEdgeScrollMap.find(pointerDeviceType);
+//
+//    bool hasHorizontalEdgeScrollingInfo = existingHorizontalEdgeScrollingInfoIt != m_horizontalEdgeScrollMap.end();
+//    bool hasVerticalEdgeScrollingInfo = existingVerticalEdgeScrollingInfoIt != m_verticalEdgeScrollMap.end();
+//
+//    if (hasHorizontalEdgeScrollingInfo || hasVerticalEdgeScrollingInfo)
+//    {
+//        winrt::Point pointerPosition = args.GetCurrentPoint(*this).Position();
+//        winrt::float2 offsetsVelocity{};
+//
+//        if (hasHorizontalEdgeScrollingInfo && ScrollableWidth() > 0.0)
+//        {
+//            offsetsVelocity.x = GetEdgeScrollVelocity(
+//                true /*isForHorizontalScroll*/,
+//                HorizontalOffset(),
+//                ViewportWidth(),
+//                ScrollableWidth(),
+//                existingHorizontalEdgeScrollingInfoIt->second,
+//                pointerPosition);
+//        }
+//
+//        if (hasVerticalEdgeScrollingInfo && ScrollableHeight() > 0.0)
+//        {
+//            offsetsVelocity.y = GetEdgeScrollVelocity(
+//                false /*isForHorizontalScroll*/,
+//                VerticalOffset(),
+//                ViewportHeight(),
+//                ScrollableHeight(),
+//                existingVerticalEdgeScrollingInfoIt->second,
+//                pointerPosition);
+//        }
+//
+//        if ((m_edgeScrollInfo.OffsetsChangeId == -1 && (abs(offsetsVelocity.x) != 0.0f  || abs(offsetsVelocity.y) != 0.0f)) ||
+//            (m_edgeScrollInfo.OffsetsChangeId != -1 && (offsetsVelocity.x != m_edgeScrollOffsetsVelocity.x || offsetsVelocity.y != m_edgeScrollOffsetsVelocity.y)))
+//        {
+//            m_edgeScrollInfo = ScrollWith(offsetsVelocity);
+//            m_edgeScrollOffsetsVelocity = offsetsVelocity;
+//            m_edgeScrollPointerDeviceType = pointerDeviceType;
+//
+//            SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, m_edgeScrollInfo.OffsetsChangeId, m_edgeScrollPointerDeviceType);
+//            SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(m_edgeScrollOffsetsVelocity).c_str());
+//
+//            // TODO raise event with scrollInfo
+//        }
+//    }
+//}
+
 void ScrollingPresenter::OnPointerMoved(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
-    const winrt::PointerDeviceType pointerDeviceType = args.Pointer().PointerDeviceType();
-
-    //SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, pointerDeviceType);
-
-    auto existingHorizontalEdgeScrollingInfoIt = m_horizontalEdgeScrollMap.find(pointerDeviceType);
-    auto existingVerticalEdgeScrollingInfoIt = m_verticalEdgeScrollMap.find(pointerDeviceType);
-
-    bool hasHorizontalEdgeScrollingInfo = existingHorizontalEdgeScrollingInfoIt != m_horizontalEdgeScrollMap.end();
-    bool hasVerticalEdgeScrollingInfo = existingVerticalEdgeScrollingInfoIt != m_verticalEdgeScrollMap.end();
-
-    if (hasHorizontalEdgeScrollingInfo || hasVerticalEdgeScrollingInfo)
+    if (!m_horizontalEdgeScrollParameters && !m_verticalEdgeScrollParameters)
     {
-        winrt::Point pointerPosition = args.GetCurrentPoint(*this).Position();
-        winrt::float2 offsetsVelocity{};
-
-        if (hasHorizontalEdgeScrollingInfo && ScrollableWidth() > 0.0)
-        {
-            offsetsVelocity.x = GetEdgeScrollVelocity(
-                true /*isForHorizontalScroll*/,
-                HorizontalOffset(),
-                ViewportWidth(),
-                ScrollableWidth(),
-                existingHorizontalEdgeScrollingInfoIt->second,
-                pointerPosition);
-        }
-
-        if (hasVerticalEdgeScrollingInfo && ScrollableHeight() > 0.0)
-        {
-            offsetsVelocity.y = GetEdgeScrollVelocity(
-                false /*isForHorizontalScroll*/,
-                VerticalOffset(),
-                ViewportHeight(),
-                ScrollableHeight(),
-                existingVerticalEdgeScrollingInfoIt->second,
-                pointerPosition);
-        }
-
-        if ((m_edgeScrollInfo.OffsetsChangeId == -1 && (abs(offsetsVelocity.x) != 0.0f  || abs(offsetsVelocity.y) != 0.0f)) ||
-            (m_edgeScrollInfo.OffsetsChangeId != -1 && (offsetsVelocity.x != m_edgeScrollOffsetsVelocity.x || offsetsVelocity.y != m_edgeScrollOffsetsVelocity.y)))
-        {
-            m_edgeScrollInfo = ScrollWith(offsetsVelocity);
-            m_edgeScrollOffsetsVelocity = offsetsVelocity;
-            m_edgeScrollPointerDeviceType = pointerDeviceType;
-
-            SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, m_edgeScrollInfo.OffsetsChangeId, m_edgeScrollPointerDeviceType);
-            SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(m_edgeScrollOffsetsVelocity).c_str());
-
-            // TODO raise event with scrollInfo
-        }
+        return;
     }
+
+    winrt::PointerPoint pointerPoint = args.GetCurrentPoint(*this);
+
+    if (pointerPoint.PointerId() != m_registeredPointerIdForEdgeScroll)
+    {
+        return;
+    }
+
+    winrt::Point pointerPosition = pointerPoint.Position();
+    winrt::float2 offsetsVelocity{};
+    
+    if (m_horizontalEdgeScrollParameters && ScrollableWidth() > 0.0)
+    {
+        offsetsVelocity.x = GetEdgeScrollVelocity(
+            true /*isForHorizontalScroll*/,
+            HorizontalOffset(),
+            ViewportWidth(),
+            ScrollableWidth(),
+            m_horizontalEdgeScrollParameters,
+            pointerPosition);
+    }
+    
+    if (m_verticalEdgeScrollParameters && ScrollableHeight() > 0.0)
+    {
+        offsetsVelocity.y = GetEdgeScrollVelocity(
+            false /*isForHorizontalScroll*/,
+            VerticalOffset(),
+            ViewportHeight(),
+            ScrollableHeight(),
+            m_verticalEdgeScrollParameters,
+            pointerPosition);
+    }
+
+    UpdateEdgeScroll(offsetsVelocity);
 }
 
 // Invoked by an IScrollController implementation when a call to InteractionTracker::TryRedirectForManipulation
@@ -6165,6 +6329,21 @@ void ScrollingPresenter::UpdateDisplayInformation(winrt::DisplayInformation cons
         m_rawPixelsPerViewPixel = 1.0;
         m_screenWidthInRawPixels = 1024;
         m_screenHeightInRawPixels = 738;
+    }
+}
+
+void ScrollingPresenter::UpdateEdgeScroll(winrt::float2 const& offsetsVelocity)
+{
+    if ((m_edgeScrollInfo.OffsetsChangeId == -1 && (abs(offsetsVelocity.x) != 0.0f || abs(offsetsVelocity.y) != 0.0f)) ||
+        (m_edgeScrollInfo.OffsetsChangeId != -1 && (offsetsVelocity.x != m_edgeScrollOffsetsVelocity.x || offsetsVelocity.y != m_edgeScrollOffsetsVelocity.y)))
+    {
+        m_edgeScrollInfo = ScrollWith(offsetsVelocity);
+        m_edgeScrollOffsetsVelocity = offsetsVelocity;
+
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT_INT, METH_NAME, this, m_edgeScrollInfo.OffsetsChangeId, m_edgeScrollPointerDeviceType);
+        SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::Float2ToString(m_edgeScrollOffsetsVelocity).c_str());
+
+        // TODO raise event with scrollInfo
     }
 }
 

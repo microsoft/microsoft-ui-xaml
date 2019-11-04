@@ -79,7 +79,6 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
@@ -92,29 +91,25 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Horizontal Mouse" Margin="2" Grid.ColumnSpan="2"/>
-                    <CheckBox x:Name="chkIsHorizontalMouseActive" Content="Is mouse active?" IsEnabled="False" Margin="1" Grid.Row="1"  Grid.ColumnSpan="2"/>
-                    <Button x:Name="btnCancelHorizontalMouseEdgeScrolling" Content="Cancel" IsEnabled="False" Margin="1" Grid.Row="2" Click="BtnCancelHorizontalMouseEdgeScrolling_Click"/>
-                    <Button x:Name="btnUpdateHorizontalMouseEdgeScrolling" Content="Update" Margin="1" Grid.Row="2" Grid.Column="1" Click="BtnUpdateHorizontalMouseEdgeScrolling_Click"/>
-
-                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
-                    <TextBox x:Name="txtHorizontalMousePositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
-                    <TextBlock Text="Left/RightEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtMouseLeftEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
-                    <TextBox x:Name="txtMouseRightEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
-                    <TextBlock Text="Left/RightEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="7" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtMouseLeftEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8"
-                             TextChanged="TxtHMouseEdgeVelocity_TextChanged"/>
-                    <TextBox x:Name="txtMouseRightEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1"
-                             TextChanged="TxtHMouseEdgeVelocity_TextChanged"/>
+                    <TextBlock Text="Horizontal Parameters" Margin="2" Grid.ColumnSpan="2" Foreground="Red"/>
+                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="1" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtHorizontalPositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2"/>
+                    <TextBox x:Name="txtHorizontalPositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                    <TextBlock Text="Left/RightEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtLeftEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
+                    <TextBox x:Name="txtRightEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
+                    <TextBlock Text="Left/RightEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtLeftEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"
+                             TextChanged="TxtHEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtRightEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"
+                             TextChanged="TxtHEdgeVelocity_TextChanged"/>
+                    <Button x:Name="btnUpdateHorizontalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateHorizontalEdgeScrollParameters_Click"/>
                 </Grid>
                 
                 <Grid Grid.Row="1" Margin="0,6,0,0">
@@ -127,30 +122,33 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Vertical Mouse" Margin="2" Grid.ColumnSpan="2"/>
-                    <CheckBox x:Name="chkIsVerticalMouseActive" Content="Is mouse active?" IsEnabled="False" Margin="1" Grid.Row="1"  Grid.ColumnSpan="2"/>
-                    <Button x:Name="btnCancelVerticalMouseEdgeScrolling" Content="Cancel" IsEnabled="False" Margin="1" Grid.Row="2" Click="BtnCancelVerticalMouseEdgeScrolling_Click"/>
-                    <Button x:Name="btnUpdateVerticalMouseEdgeScrolling" Content="Update" Margin="1" Grid.Row="2" Grid.Column="1" Click="BtnUpdateVerticalMouseEdgeScrolling_Click"/>
-
-                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtVerticalMousePositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
-                    <TextBox x:Name="txtVerticalMousePositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
-                    <TextBlock Text="Top/BottomEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtMouseTopEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
-                    <TextBox x:Name="txtMouseBottomEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
-                    <TextBlock Text="Top/BottomEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="7" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtMouseTopEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8"
-                             TextChanged="TxtVMouseEdgeVelocity_TextChanged"/>
-                    <TextBox x:Name="txtMouseBottomEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="8" Grid.Column="1"
-                             TextChanged="TxtVMouseEdgeVelocity_TextChanged"/>
+                    <TextBlock Text="Vertical Parameters" Margin="2" Grid.ColumnSpan="2" Foreground="Red"/>
+                    <TextBlock Text="PointerPositionAdjust.:" Margin="1" VerticalAlignment="Center" Grid.Row="1" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtVerticalPositionAdjustmentX" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2"/>
+                    <TextBox x:Name="txtVerticalPositionAdjustmentY" Text="0" Margin="1" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                    <TextBlock Text="Top/BottomEdgeAppRng:" Margin="1" VerticalAlignment="Center" Grid.Row="3" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtTopEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
+                    <TextBox x:Name="txtBottomEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
+                    <TextBlock Text="Top/BottomEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txtTopEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"
+                             TextChanged="TxtVEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtBottomEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"
+                             TextChanged="TxtVEdgeVelocity_TextChanged"/>
+                    <Button x:Name="btnUpdateVerticalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateVerticalEdgeScrollParameters_Click"/>
                 </Grid>
+
+                <Button x:Name="btnUnregisterPointerForEdgeScroll" Content="UnregisterPointerForEdgeScroll" Grid.Row="2" Margin="1,6,1,1" Click="BtnUnregisterPointerForEdgeScroll_Click"/>
+                <Button x:Name="btnRegisterPointerForEdgeScroll" Content="RegisterPointerForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="3" Margin="1" Grid.Column="1" Click="BtnRegisterPointerForEdgeScroll_Click"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="1">
+                    <TextBlock Text="Registered PointerId:" Margin="1" VerticalAlignment="Center"/>
+                    <TextBox x:Name="txtRegisteredPointerId" Margin="1"/>
+                </StackPanel>
             </Grid>
         </ScrollViewer>
         
