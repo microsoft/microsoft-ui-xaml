@@ -1,6 +1,6 @@
 # Windows UI Library Roadmap
 
-WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2019 and into 2020. WinUI is under active development by the Microsoft developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
+WinUI is the native UI platform for Windows 10. This document outlines the prospective roadmap for WinUI through 2019 and into 2020. WinUI is under active development by the Microsoft developer platform team and the roadmap will continue to evolve based on market changes and customer feedback, so please note that the plans outlined here aren't exhaustive or guaranteed. We're also [working with the Uno platform](https://platform.uno/WinUI-on-Windows7-via-UnoPlatform/) so that developers can bring their WinUI code anywhere WebAssembly runs – including Windows 7. We welcome your feedback on the roadmap: please feel free to contribute to existing issues or [file a new issue](https://github.com/microsoft/microsoft-ui-xaml/issues).
 
 The WinUI team has two major efforts underway:
 
@@ -14,6 +14,8 @@ The next release of WinUI 2 will be **WinUI 2.3**, ETA Q4 2019.
 
 2.3 will be an incremental release that includes new WinUI Xaml features and fixes for UWP apps on Windows 10. You can find a list of currently planned work in the [WinUI 2.3 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/8).
 
+For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started).
+
 Conceptual overview of WinUI 2 for UWP apps:
 
 ![WinUI 2 platform](roadmap_winui2.png)
@@ -21,8 +23,6 @@ Conceptual overview of WinUI 2 for UWP apps:
 WinUI 2 will eventually be superseded by WinUI 3. WinUI 3 will include all the controls and features in WinUI 2.
 
 ## WinUI 3
-
-### Overview
 
 **WinUI 3** will greatly expand the scope of WinUI to include the full Windows 10 native UI platform, which will now be fully decoupled from the UWP SDK.
 
@@ -34,6 +34,10 @@ We're focused on enabling three main use cases:
     * Enabling you to easily create new modern Windows apps "à la carte" with your choice of app model (Win32 or UWP) and language (.NET Core or C++)
 3. **Enabling other frameworks**
     * Providing the native implementation for other frameworks like [React Native](https://github.com/Microsoft/react-native-windows) when running on Windows
+
+You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see:
+
+[WinUI 3.0 Alpha (November 2019)](https://docs.microsoft.com/uwp/toolkits/winui3/)
 
 Conceptual overview of WinUI 3:
 
@@ -86,7 +90,7 @@ For example, we're planning to base the new high-performance C++ [React Native W
 
 Our primary focus for WinUI 3.0 is to decouple the UWP UI framework (Xaml, composition and input) while maintaining high compatibility with existing UWP APIs and behaviors to help make the update to WinUI 3.0 easy for existing UWP apps.
 
-This means we won't be adding many new features in the first WinUI 3.0 release. 
+This means we won't be adding many new features in the first WinUI 3.0 release.
 
 However, we are planning at least a few new features, including:
 
@@ -101,18 +105,21 @@ Creating a new WinUI app will be easy using the new Visual Studio 2019 project t
 
 It should also be straightforward to add WinUI views to existing Win32 apps using Xaml Islands.
 
-For existing UWP Xaml apps there will be some updates required when migrating to WinUI 3.0. 
+For existing UWP Xaml apps there will be some updates required when migrating to WinUI 3.0.
 
 We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 tooling discussion issue](https://github.com/microsoft/microsoft-ui-xaml/issues/1045).
 
 ### WinUI 3.0 Timelines and Milestones
 
-We're planning to release WinUI 3.0 in 2020. The next major milestones we're working toward are:
+We're planning to release WinUI 3.0 in 2020.
 
-1. **Alpha release**: we plan to release an early alpha version of WinUI 3.0 in Q4 2019 for testing and feedback. It will be missing functionality
+You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see the [discussion issue #1531](https://github.com/microsoft/microsoft-ui-xaml/issues/1531) and the 3.0 Alpha installation info:
 
-2. **Open sourcing**: the next main focus area after the first alpha release is getting the full WinUI 3 Xaml platform migrated to open source development on GitHub in this repo
+[WinUI 3.0 Alpha (November 2019)](https://docs.microsoft.com/uwp/toolkits/winui3/)
 
-3. **Preview release**: we're planning to release a more complete preview in the first half of 2020
+The next major milestones we're currently working toward are:
 
+1. **Open sourcing**: our next main focus area is getting the full WinUI 3 Xaml platform migrated to open source development on GitHub in this repo
+
+2. **Preview release**: we're planning to release a more complete preview in the first half of 2020
 
