@@ -44,7 +44,7 @@ void NumberBox::OnApplyTemplate()
         // Do localization for the down button
         if (winrt::AutomationProperties::GetName(spinDown).empty())
         {
-            auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
+            const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
             winrt::AutomationProperties::SetName(spinDown, spinDownName);
         }
     }
@@ -56,7 +56,7 @@ void NumberBox::OnApplyTemplate()
         // Do localization for the up button
         if (winrt::AutomationProperties::GetName(spinUp).empty())
         {
-            auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
+            const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
     }
@@ -99,11 +99,11 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
     if (newValue != oldValue)
     {
         // Fire ValueChanged event
-        auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
+        const auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
         m_valueChangedEventSource(*this, *valueChangedArgs);
 
         // Fire value property change for UIA
-        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+        if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
         {
             winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
         }
@@ -194,8 +194,8 @@ void NumberBox::ValidateInput()
         else
         {
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
-            auto numberParser = NumberFormatter().as<winrt::INumberParser>();
-            auto parsedNum = numberParser.ParseDouble(text);
+            const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
+            const auto parsedNum = numberParser.ParseDouble(text);
 
             if (!parsedNum)
             {
@@ -292,8 +292,7 @@ void NumberBox::StepValue(bool isPositive)
     }
 
     // Safeguard for floating point imprecision errors
-    int StepFreqSigDigits = ComputePrecisionRounderSigDigits(newVal);
-    m_stepPrecisionRounder.SignificantDigits(StepFreqSigDigits);
+    m_stepPrecisionRounder.SignificantDigits(ComputePrecisionRounderSigDigits(newVal));
     newVal = m_stepPrecisionRounder.RoundDouble(newVal);
 
     // Update Text and Revalidate new value
@@ -311,11 +310,11 @@ int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
     const auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
 
     // Get size of only decimal portion of both old numbers. 
-    const int oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
-    const int stepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
+    const auto oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
+    const auto stepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
 
     // Pick bigger of two decimal sigDigits
-    int result = std::max(oldValSig, stepSig);
+    auto result = std::max(oldValSig, stepSig);
 
     // append # of integer digits from new value
     result += (int)formattedNew.substr(0, formattedNew.find_first_of('.')).size();
