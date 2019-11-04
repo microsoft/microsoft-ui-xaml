@@ -18,6 +18,7 @@ namespace MUXControlsTestApp.Samples
     public sealed partial class CollectionChangeDemo : Page
     {
         MyDataSource _dataSource = new MyDataSource(Enumerable.Range(0, 10).Select(i => i.ToString()).ToList());
+        public List<object> ResettingListItems { get; set; } = new List<object> { "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10" };
         public CollectionChangeDemo()
         {
             this.InitializeComponent();
@@ -36,6 +37,12 @@ namespace MUXControlsTestApp.Samples
             args.TemplateKey = (int.Parse(args.DataContext.ToString()) % 2 == 0) ? "even" : "odd";
         }
 
+        private void ResettingCollectionRemoveItemButton_ItemClick(object sender, RoutedEventArgs e)
+        {
+            ResettingListItems.Remove((sender as Button).Content);
+            ResettingListItems = new List<object>(ResettingListItems);
+            ResettingCollectionRepeater.ItemsSource = ResettingListItems;
+        }
         private void OnItemClicked(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             int index = repeater.GetElementIndex(sender as UIElement);
