@@ -15,7 +15,7 @@ As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3
 
 You can now [download an early build of WinUI 3.0 Alpha](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
 
-For more info see the discussion issue **#1531**.
+For more info see the [discussion issue #1531](https://github.com/microsoft/microsoft-ui-xaml/issues/1531).
 
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.

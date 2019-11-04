@@ -115,7 +115,7 @@ We'd love to hear your thoughts on the developer experience in the [WinUI 3.0 to
 
 We're planning to release WinUI 3.0 in 2020.
 
-You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see #1531 and the 3.0 Alpha installation info:
+You can download an early build of WinUI 3.0 Alpha to try out - we'd love feedback on it, although please note it's a very early build with lots of missing features. For installation info and known issues see the [discussion issue #1531](https://github.com/microsoft/microsoft-ui-xaml/issues/1531) and the 3.0 Alpha installation info:
 
 [WinUI 3.0 Alpha (November 2019)](https://docs.microsoft.com/uwp/toolkits/winui3/)
 
