@@ -19,6 +19,7 @@
             <controlsPrimitives:ScrollingPresenter
                 x:Name="scrollingPresenter" Width="400" Height="600"
                 ZoomMode="Enabled" Margin="90" Background="ForestGreen"
+                IgnoredInputKind="Touch"
                 VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -79,6 +80,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
@@ -105,10 +108,8 @@
                     <TextBox x:Name="txtLeftEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
                     <TextBox x:Name="txtRightEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
                     <TextBlock Text="Left/RightEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtLeftEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"
-                             TextChanged="TxtHEdgeVelocity_TextChanged"/>
-                    <TextBox x:Name="txtRightEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"
-                             TextChanged="TxtHEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtLeftEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
+                    <TextBox x:Name="txtRightEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
                     <Button x:Name="btnUpdateHorizontalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateHorizontalEdgeScrollParameters_Click"/>
                 </Grid>
                 
@@ -136,19 +137,19 @@
                     <TextBox x:Name="txtTopEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4"/>
                     <TextBox x:Name="txtBottomEdgeApplicableRange" Text="80" Margin="1" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
                     <TextBlock Text="Top/BottomEdgeVelocity:" Margin="1" VerticalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2"/>
-                    <TextBox x:Name="txtTopEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"
-                             TextChanged="TxtVEdgeVelocity_TextChanged"/>
-                    <TextBox x:Name="txtBottomEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"
-                             TextChanged="TxtVEdgeVelocity_TextChanged"/>
+                    <TextBox x:Name="txtTopEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6"/>
+                    <TextBox x:Name="txtBottomEdgeVelocity" Text="120" Margin="1" VerticalAlignment="Center" Grid.Row="6" Grid.Column="1"/>
                     <Button x:Name="btnUpdateVerticalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateVerticalEdgeScrollParameters_Click"/>
                 </Grid>
 
-                <Button x:Name="btnUnregisterPointerForEdgeScroll" Content="UnregisterPointerForEdgeScroll" Grid.Row="2" Margin="1,6,1,1" Click="BtnUnregisterPointerForEdgeScroll_Click"/>
-                <Button x:Name="btnRegisterPointerForEdgeScroll" Content="RegisterPointerForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="3" Margin="1" Grid.Column="1" Click="BtnRegisterPointerForEdgeScroll_Click"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="1">
+                <ToggleButton x:Name="tglBtnRegisterPointerIdForEdgeScroll" Content="Register PointerId ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="2" Margin="1" Grid.Column="1" Click="TglBtnRegisterPointerIdForEdgeScroll_Click"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="1">
                     <TextBlock Text="Registered PointerId:" Margin="1" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtRegisteredPointerId" Margin="1"/>
                 </StackPanel>
+                <ToggleButton x:Name="tglBtnRegisterMouseForEdgeScroll" Content="Register Mouse ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="4" Margin="1" Grid.Column="1"/>
+                <ToggleButton x:Name="tglBtnRegisterTouchForEdgeScroll" Content="Register Touch ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="5" Margin="1" Grid.Column="1"/>
+                <ToggleButton x:Name="tglBtnRegisterPenForEdgeScroll" Content="Register Pen ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="6" Margin="1" Grid.Column="1"/>
             </Grid>
         </ScrollViewer>
         
@@ -171,7 +172,7 @@
             </StackPanel>
 
             <ListBox x:Name="lstScrollingPresenterEvents" HorizontalAlignment="Stretch" Margin="2" Grid.Row="2"
-                     ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Enabled"/>
+                ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Enabled"/>
         </Grid>
     </Grid>
 </local:TestPage>

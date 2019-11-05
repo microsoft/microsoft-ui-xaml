@@ -187,22 +187,6 @@ public:
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
     winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
-
-    //void SetHorizontalEdgeScrolling(
-    //    winrt::PointerDeviceType pointerDeviceType,
-    //    winrt::Point pointerPositionAdjustment,
-    //    double leftEdgeApplicableRange,
-    //    double rightEdgeApplicableRange,
-    //    float leftEdgeVelocity,
-    //    float rightEdgeVelocity);
-    //void SetVerticalEdgeScrolling(
-    //    winrt::PointerDeviceType pointerDeviceType,
-    //    winrt::Point pointerPositionAdjustment,
-    //    double topEdgeApplicableRange,
-    //    double bottomEdgeApplicableRange,
-    //    float topEdgeVelocity,
-    //    float bottomEdgeVelocity);
-
     winrt::ScrollingScrollInfo StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args);
     winrt::ScrollingScrollInfo StopEdgeScrollWithPointer();
 
@@ -313,16 +297,6 @@ public:
 
     // IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer();
-
-//private:
-//    struct EdgeScrollingInfo
-//    {
-//        winrt::Point pointerPositionAdjustment;
-//        double nearEdgeApplicableRange;
-//        double farEdgeApplicableRange;
-//        float nearEdgeVelocity;
-//        float farEdgeVelocity;
-//    };
 
 private:
 #ifdef _DEBUG
@@ -462,7 +436,7 @@ private:
     void UpdateVisualInteractionSourceMode(ScrollingPresenterDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation);
-    void UpdateEdgeScroll(winrt::float2 const& offsetsVelocity);
+    void UpdateEdgeScroll(winrt::float2 const& offsetsVelocity, UINT pointerId);
 
     void OnContentSizeChanged(
         const winrt::UIElement& content);
@@ -679,6 +653,10 @@ private:
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
         int32_t offsetsChangeId,
         _Inout_ winrt::ScrollingSnapPointsMode* snapPointsMode);
+    void RaiseEdgeScrollQueued(
+        const winrt::ScrollingScrollInfo& scrollInfo,
+        const winrt::float2& offsetsVelocity,
+        UINT pointerId);
 
     // Event handlers
     void OnDpiChanged(
@@ -831,14 +809,6 @@ private:
     static bool IsVisualTranslationPropertyAvailable();
     static wstring_view GetVisualTargetedPropertyName(ScrollingPresenterDimension dimension);
 
-    //static float GetEdgeScrollVelocity(
-    //    bool isForHorizontalScroll,
-    //    double offset,
-    //    double viewportDim,
-    //    double scrollableDim,
-    //    const EdgeScrollingInfo& edgeScrollingInfo,
-    //    const winrt::Point& pointerPosition);
-
     float GetEdgeScrollVelocity(
         bool isForHorizontalScroll,
         double offset,
@@ -860,15 +830,6 @@ private:
         float edgeScrollingVelocity,
         double offset,
         double scrollableDim);
-
-    //static void SetEdgeScrolling(
-    //    std::map<winrt::PointerDeviceType, EdgeScrollingInfo>* edgeScrollingMap,
-    //    winrt::PointerDeviceType pointerDeviceType,
-    //    winrt::Point pointerPositionAdjustment,
-    //    double nearEdgeApplicableRange,
-    //    double farEdgeApplicableRange,
-    //    float nearEdgeVelocity,
-    //    float farEdgeVelocity);
 
 #ifdef _DEBUG
     void DumpMinMaxPositions();
@@ -995,11 +956,8 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
-    //std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_horizontalEdgeScrollMap;
-    //std::map<winrt::PointerDeviceType, EdgeScrollingInfo> m_verticalEdgeScrollMap;
     winrt::ScrollingScrollInfo m_edgeScrollInfo{ -1 };
     winrt::float2 m_edgeScrollOffsetsVelocity{};
-    winrt::PointerDeviceType m_edgeScrollPointerDeviceType{ winrt::PointerDeviceType::Touch };
     winrt::ScrollingEdgeScrollParameters m_horizontalEdgeScrollParameters{ nullptr };
     winrt::ScrollingEdgeScrollParameters m_verticalEdgeScrollParameters{ nullptr };
     UINT m_registeredPointerIdForEdgeScroll{ 0 };
@@ -1012,10 +970,6 @@ private:
     static constexpr float s_offsetEqualityEpsilon{ 0.00001f };
     // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
     static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
-
-    static constexpr std::wstring_view s_invalidPointerDeviceType{ L"Invalid PointerDeviceType value."sv };
-    static constexpr std::wstring_view s_negativeEdgeApplicationRange{ L"Edge scrolling application range must be positive."sv };
-    static constexpr std::wstring_view s_smallEdgeVelocity{ L"Edge velocity must be 0 or have an absolute value greater than 30."sv };
 
     // Property names being targeted for the ScrollingPresenter.Content's Visual.
     // RedStone v1 case:

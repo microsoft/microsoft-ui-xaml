@@ -324,20 +324,6 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
-    //void SetHorizontalEdgeScrolling(
-    //    Windows.Devices.Input.PointerDeviceType pointerDeviceType,
-    //    Windows.Foundation.Point pointerPositionAdjustment,
-    //    Double leftEdgeApplicableRange,
-    //    Double rightEdgeApplicableRange,
-    //    Single leftEdgeVelocity,
-    //    Single rightEdgeVelocity);
-    //void SetVerticalEdgeScrolling(
-    //    Windows.Devices.Input.PointerDeviceType pointerDeviceType,
-    //    Windows.Foundation.Point pointerPositionAdjustment,
-    //    Double topEdgeApplicableRange,
-    //    Double bottomEdgeApplicableRange,
-    //    Single topEdgeVelocity,
-    //    Single bottomEdgeVelocity);
 
     MU_XC_NAMESPACE.ScrollingScrollInfo StartEdgeScrollWithPointer(Windows.UI.Xaml.Input.PointerRoutedEventArgs args);
     MU_XC_NAMESPACE.ScrollingScrollInfo StopEdgeScrollWithPointer();
@@ -352,8 +338,8 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingZoomAnimationStartingEventArgs> ZoomAnimationStarting;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingScrollCompletedEventArgs> ScrollCompleted;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingZoomCompletedEventArgs> ZoomCompleted;
-    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingAnchorRequestedEventArgs> AnchorRequested;
+    event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingBringingIntoViewEventArgs> BringingIntoView;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, MU_XC_NAMESPACE.ScrollingEdgeScrollEventArgs> EdgeScrollQueued;
 
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty { get; };

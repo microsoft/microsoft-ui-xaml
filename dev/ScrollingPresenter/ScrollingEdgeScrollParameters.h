@@ -3,17 +3,16 @@
 
 #pragma once
 
-//#include "ScrollingPresenter.h"
 #include "ScrollingEdgeScrollParameters.g.h"
 
 class ScrollingEdgeScrollParameters :
-    //public ReferenceTracker<ScrollingEdgeScrollParameters, winrt::implementation::ScrollingEdgeScrollParametersT, winrt::composable, winrt::composing>
     public winrt::implementation::ScrollingEdgeScrollParametersT<ScrollingEdgeScrollParameters>
 {
 public:
-    //ScrollingEdgeScrollParameters(const winrt::ScrollingPresenter& scrollingPresenter);
-
-    ScrollingEdgeScrollParameters();
+    ScrollingEdgeScrollParameters()
+    {
+        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    }
 
     ~ScrollingEdgeScrollParameters()
     {
@@ -38,7 +37,12 @@ public:
 #pragma endregion
 
 private:
-    //tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
+    static constexpr std::wstring_view s_negativeEdgeApplicableRange{ L"Edge scrolling applicable range must be positive."sv };
+    static constexpr std::wstring_view s_smallEdgeVelocity{ L"Edge velocity must be 0 or have an absolute value greater than 30."sv };
+
+    // Any offset impulse velocity smaller than or equal to 30 has no effect on InteractionTracker.
+    static constexpr float c_minImpulseOffsetVelocity = 30.0f;
+
     winrt::Point m_pointerPositionAdjustment{};
     double m_nearEdgeApplicableRange{};
     double m_farEdgeApplicableRange{};

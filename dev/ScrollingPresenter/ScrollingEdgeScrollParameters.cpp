@@ -7,15 +7,6 @@
 #include "ScrollingPresenterTypeLogging.h"
 #include "ScrollingEdgeScrollParameters.h"
 
-ScrollingEdgeScrollParameters::ScrollingEdgeScrollParameters(
-    /*const winrt::ScrollingPresenter& scrollingPresenter*/)
-{
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    //SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
-
-    //m_scrollingPresenter.set(scrollingPresenter);
-}
-
 winrt::Point ScrollingEdgeScrollParameters::PointerPositionAdjustment() const
 {
     return m_pointerPositionAdjustment;
@@ -37,6 +28,11 @@ void ScrollingEdgeScrollParameters::NearEdgeApplicableRange(double nearEdgeAppli
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, nearEdgeApplicableRange);
 
+    if (nearEdgeApplicableRange < 0)
+    {
+        throw winrt::hresult_error(E_INVALIDARG, s_negativeEdgeApplicableRange);
+    }
+
     m_nearEdgeApplicableRange = nearEdgeApplicableRange;
 }
 
@@ -48,6 +44,11 @@ double ScrollingEdgeScrollParameters::FarEdgeApplicableRange() const
 void ScrollingEdgeScrollParameters::FarEdgeApplicableRange(double farEdgeApplicableRange)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, farEdgeApplicableRange);
+
+    if (farEdgeApplicableRange < 0)
+    {
+        throw winrt::hresult_error(E_INVALIDARG, s_negativeEdgeApplicableRange);
+    }
 
     m_farEdgeApplicableRange = farEdgeApplicableRange;
 }
@@ -61,6 +62,11 @@ void ScrollingEdgeScrollParameters::NearEdgeVelocity(float nearEdgeVelocity)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, nearEdgeVelocity);
 
+    if (nearEdgeVelocity != 0.0f && nearEdgeVelocity >= -c_minImpulseOffsetVelocity && nearEdgeVelocity <= c_minImpulseOffsetVelocity)
+    {
+        throw winrt::hresult_error(E_INVALIDARG, s_smallEdgeVelocity);
+    }
+
     m_nearEdgeVelocity = nearEdgeVelocity;
 }
 
@@ -72,6 +78,11 @@ float ScrollingEdgeScrollParameters::FarEdgeVelocity() const
 void ScrollingEdgeScrollParameters::FarEdgeVelocity(float farEdgeVelocity)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, farEdgeVelocity);
+
+    if (farEdgeVelocity != 0.0f && farEdgeVelocity >= -c_minImpulseOffsetVelocity && farEdgeVelocity <= c_minImpulseOffsetVelocity)
+    {
+        throw winrt::hresult_error(E_INVALIDARG, s_smallEdgeVelocity);
+    }
 
     m_farEdgeVelocity = farEdgeVelocity;
 }
