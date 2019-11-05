@@ -5,6 +5,7 @@
 #include "common.h"
 #include "NumberBox.h"
 #include "NumberBoxAutomationPeer.h"
+#include "NumberBoxParser.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
@@ -193,6 +194,25 @@ void NumberBox::ValidateInput()
         }
         else
         {
+            if (AcceptsCalculation())
+            {
+                // ### is this necessary or can we just look for ()+-/*^?
+                std::wstring input(text);
+                std::wregex formula(L"^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
+                std::wregex negval(L"^-([0-9])+(.([0-9])+)?$");
+                if (std::regex_match(input, formula) && !std::regex_match(input, negval))
+                {
+                    auto val = NumberBoxParser::Compute(textBox.Text());
+
+                    // No calculation could be done
+                    // ### but then we go on and do more stuff.... that's not so cool.
+                    if (val != std::nullopt)
+                    {
+                        Value(val.value());
+                    }
+                }
+            }
+
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
             const auto parsedNum = numberParser.ParseDouble(text);

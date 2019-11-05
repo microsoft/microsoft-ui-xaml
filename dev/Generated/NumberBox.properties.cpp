@@ -8,6 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
+GlobalDependencyProperty NumberBoxProperties::s_AcceptsCalculationProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
@@ -29,6 +30,17 @@ NumberBoxProperties::NumberBoxProperties()
 
 void NumberBoxProperties::EnsureProperties()
 {
+    if (!s_AcceptsCalculationProperty)
+    {
+        s_AcceptsCalculationProperty =
+            InitializeDependencyProperty(
+                L"AcceptsCalculation",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
     if (!s_BasicValidationModeProperty)
     {
         s_BasicValidationModeProperty =
@@ -165,6 +177,7 @@ void NumberBoxProperties::EnsureProperties()
 
 void NumberBoxProperties::ClearProperties()
 {
+    s_AcceptsCalculationProperty = nullptr;
     s_BasicValidationModeProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HyperScrollEnabledProperty = nullptr;
@@ -243,6 +256,16 @@ void NumberBoxProperties::OnValuePropertyChanged(
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnValuePropertyChanged(args);
+}
+
+void NumberBoxProperties::AcceptsCalculation(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_AcceptsCalculationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::AcceptsCalculation()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_AcceptsCalculationProperty));
 }
 
 void NumberBoxProperties::BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value)
