@@ -2,8 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
-
-  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared"  />
+  <Import Project="..\..\dev\CommonManaged\CommonManaged.projitems" Label="Shared" />
   <Import Project="..\..\dev\ColorPicker\InteractionTests\ColorPicker_InteractionTests.projitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true'" />
   <Import Project="..\..\dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true'" />
   <Import Project="..\..\dev\ParallaxView\InteractionTests\ParallaxView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true'" />
@@ -22,12 +21,13 @@
   <Import Project="..\..\dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true'" />
   <Import Project="..\..\dev\DropDownButton\InteractionTests\DropDownButton_InteractionTests.projitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true'" />
   <Import Project="..\..\dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
-  <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />  
+  <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />
   <Import Project="..\..\dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="..\..\dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
   <Import Project="..\..\dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
   <Import Project="..\..\dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />
   <Import Project="..\..\dev\AutoSuggestBox\InteractionTests\AutoSuggestBox_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true'" />
+  <Import Project="..\..\dev\ProgressBar\InteractionTests\ProgressBar_InteractionTests.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
   <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
        We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
        to non-public types.  So for now we'll just exclude these from the OS repo. -->

@@ -3,6 +3,13 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Feature to include for inner loop build -->
   <PropertyGroup Condition="$(SolutionName) == 'MUXControlsInnerLoop'">
+    <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
+    <FeatureLightsEnabled>productOnly</FeatureLightsEnabled>
+    <FeatureEffectsEnabled>productOnly</FeatureEffectsEnabled>
+    <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
+    <FeatureCollectionsEnabled>productOnly</FeatureCollectionsEnabled>
+    <FeatureColorPickerEnabled>false</FeatureColorPickerEnabled>
+    <FeatureTabViewEnabled>false</FeatureTabViewEnabled>
     <FeatureAnimatedVisualPlayerEnabled>false</FeatureAnimatedVisualPlayerEnabled>
     <FeatureAutoSuggestBoxEnabled>false</FeatureAutoSuggestBoxEnabled>
     <FeatureCalendarDatePickerEnabled>false</FeatureCalendarDatePickerEnabled>
@@ -49,6 +56,11 @@
     <FeatureToolTipEnabled>false</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>false</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>false</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>false</FeatureContentDialogEnabled>
+    <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
+    <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'"/>
@@ -100,6 +112,11 @@
     <FeatureToolTipEnabled>true</FeatureToolTipEnabled>
     <FeatureTreeViewEnabled>true</FeatureTreeViewEnabled>
     <FeatureTwoPaneViewEnabled>true</FeatureTwoPaneViewEnabled>
+    <FeatureCommonStylesEnabled>true</FeatureCommonStylesEnabled>
+    <FeatureContentDialogEnabled>true</FeatureContentDialogEnabled>
+    <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
+    <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
+    <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
