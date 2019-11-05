@@ -57,6 +57,8 @@ public:
 
 private:
 
+    void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
@@ -79,9 +81,13 @@ private:
     winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
+    winrt::TextBox::GotFocus_revoker m_textBoxGotFocusRevoker{};
     winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
+    winrt::Button::Click_revoker m_popupUpButtonClickRevoker{};
+    winrt::Button::Click_revoker m_popupDownButtonClickRevoker{};
 };

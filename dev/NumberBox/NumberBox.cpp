@@ -9,9 +9,13 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
-static constexpr wstring_view c_tabViewDownButtonName{ L"DownSpinButton"sv };
-static constexpr wstring_view c_tabViewUpButtonName{ L"UpSpinButton"sv };
-static constexpr wstring_view c_tabViewTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
+static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
+static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
+static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
+static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
 
 NumberBox::NumberBox()
 {
@@ -24,6 +28,7 @@ NumberBox::NumberBox()
     NumberFormatter(formatter);
 
     PointerWheelChanged({ this, &NumberBox::OnScroll });
+    LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
 }
@@ -37,39 +42,65 @@ void NumberBox::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected = *this;
 
-    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
+    const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
+    const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
+
+    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxDownButtonName, controlProtected))
     {
-        m_upButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+        m_downButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
 
         // Do localization for the down button
         if (winrt::AutomationProperties::GetName(spinDown).empty())
         {
-            const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
             winrt::AutomationProperties::SetName(spinDown, spinDownName);
         }
     }
 
-    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
+    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxUpButtonName, controlProtected))
     {
-        m_downButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+        m_upButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
 
         // Do localization for the up button
         if (winrt::AutomationProperties::GetName(spinUp).empty())
         {
-            const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
     }
 
     m_textBox.set([this, controlProtected]() {
-        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
+        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
+            m_textBoxGotFocusRevoker = textBox.GotFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxGotFocus });
             m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
     }());
+
+    m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
+
+    if (const auto popupSpinDown = GetTemplateChildT<winrt::Button>(c_numberBoxPopupDownButtonName, controlProtected))
+    {
+        m_popupDownButtonClickRevoker = popupSpinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+
+        // Do localization for the down button
+        if (winrt::AutomationProperties::GetName(popupSpinDown).empty())
+        {
+            winrt::AutomationProperties::SetName(popupSpinDown, spinDownName);
+        }
+    }
+
+    if (const auto popupSpinUp = GetTemplateChildT<winrt::Button>(c_numberBoxPopupUpButtonName, controlProtected))
+    {
+        m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+
+        // Do localization for the up button
+        if (winrt::AutomationProperties::GetName(popupSpinUp).empty())
+        {
+            winrt::AutomationProperties::SetName(popupSpinUp, spinUpName);
+        }
+    }
 
     // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
     m_stepPrecisionFormatter.FractionDigits(0);
@@ -155,9 +186,25 @@ void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyProp
     ValidateInput();
 }
 
+void NumberBox::OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    if (auto && popup = m_popup.get())
+    {
+        popup.IsOpen(true);
+    }
+}
+
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
+}
+
+void NumberBox::OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    if (auto && popup = m_popup.get())
+    {
+        popup.IsOpen(false);
+    }
 }
 
 void NumberBox::CoerceValue()
