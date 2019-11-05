@@ -24,6 +24,7 @@
   <Import Project="..\..\dev\CommandBarFlyout\InteractionTests\CommandBarFlyout_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true'" />
   <Import Project="..\..\dev\CommonStyles\InteractionTests\CommonStyles_InteractionTests.projitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true'" />  
   <Import Project="..\..\dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
+  <Import Project="..\..\dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true'" />
   <Import Project="..\..\dev\RadioMenuFlyoutItem\InteractionTests\RadioMenuFlyoutItem_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true'" />
   <Import Project="..\..\dev\TeachingTip\InteractionTests\TeachingTip_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true'" />
   <Import Project="..\..\dev\AnimatedVisualPlayer\InteractionTests\AnimatedVisualPlayer_InteractionTests.projitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true'" />

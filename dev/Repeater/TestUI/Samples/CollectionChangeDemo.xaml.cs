@@ -18,7 +18,7 @@ namespace MUXControlsTestApp.Samples
     public sealed partial class CollectionChangeDemo : Page
     {
         MyDataSource _dataSource = new MyDataSource(Enumerable.Range(0, 10).Select(i => i.ToString()).ToList());
-        public List<object> ResettingListItems { get; set; } = new List<object> { "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9", "item10" };
+        public List<object> ResettingListItems { get; set; } = new List<object> { "item0","item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
         public CollectionChangeDemo()
         {
             this.InitializeComponent();

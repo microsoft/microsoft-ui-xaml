@@ -66,8 +66,7 @@
             <controls:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
                     <Grid Width="300" HorizontalAlignment="Left">
-                        <TextBlock Text="{Binding}"/>
-                        <Button Width="40" Height="40" HorizontalAlignment="Right" AutomationProperties.Name="{Binding}"
+                        <Button Width="140" Height="40" HorizontalAlignment="Right" AutomationProperties.Name="{Binding}"
                                 Click="ResettingCollectionRemoveItemButton_ItemClick" Content="{Binding}"/>
                     </Grid>
                 </DataTemplate>
