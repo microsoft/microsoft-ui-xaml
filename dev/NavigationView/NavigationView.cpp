@@ -165,7 +165,52 @@ NavigationView::NavigationView()
 
 void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
 {
-    SelectedItem(m_selectionModel.SelectedItem());
+    auto selectedItem = selectionModel.SelectedItem();
+    auto selectedIndex = selectionModel.SelectedIndex();
+    auto selectedContainer = selectedItem.try_as<NavigationViewItem>();
+
+    if (IsTopNavigationView())
+    {
+        if (selectedContainer)
+        {
+            // TODO: Update to work with databinding
+            auto parentIR = GetParentItemsRepeaterForItem(*selectedContainer);
+            bool isInOverflow = parentIR.Name() == c_overflowRepeater;
+            if (isInOverflow)
+            {
+                    // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
+                // also in MeasureOverride, it may raise OnOverflowItemSelectionChanged.
+                // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
+                auto scopeGuard = gsl::finally([this]()
+                    {
+                        m_shouldIgnoreNextMeasureOverride = false;
+                        m_selectionChangeFromOverflowMenu = false;
+                    });
+                m_shouldIgnoreNextMeasureOverride = true;
+                m_selectionChangeFromOverflowMenu = true;
+
+                CloseTopNavigationViewFlyout();
+
+                if (!IsSelectionSuppressed(selectedItem))
+                {
+                    SelectOverflowItem(selectedItem);
+                }
+                else
+                {
+                    //RaiseItemInvoked(nextItem, false /*isSettings*/);
+                }
+            }
+            else
+            {
+                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+            }
+        }
+    }
+    else
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+    }
+
 }
 
 void NavigationView::OnApplyTemplate()
@@ -501,14 +546,24 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
 {
     auto nvi = sender.try_as<NavigationViewItem>();
+    auto parentIR = GetParentItemsRepeaterForItem(*nvi);
+    bool isInOverflow = parentIR.Name() == c_overflowRepeater;
 
-    // Let NavigationView handle selection when SelectedItem is the Settings Item
-    // TODO: Add logic that syncs selection state between the settings item and the SelectionModel
-    if (IsSettingsItem(*nvi))
-    {
-        OnSettingsInvoked();
-        return;
-    }
+    // TODO: Check whether invoked item is already selected (therefore only raise item invoked)
+        //    if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
+    //    {
+    //        // Aways keep one item is selected except Settings
+
+    //        // So you're wondering - wait if the menu was previously selected, how can
+    //        // the removed item not be a NavigationViewItem? Well, if you say clear a
+    //        // NavigationView of MenuItems() and replace it with MenuItemsSource() full
+    //        // of strings, you may end up in this state which necessitates the following
+    //        // check:
+    //        if (auto itemAsNVI = prevItem.try_as<winrt::NavigationViewItem>())
+    //        {
+    //            itemAsNVI.IsSelected(true);
+    //        }
+    //    }
 
     // Get required info to raise ItemInvoked
     // TODO: Clean up into separate methods
@@ -524,12 +579,12 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& send
     //}
     //RaiseItemInvoked(item, false /*isSettings*/, *nvi);
 
-    // Set item as selected
     if (m_selectionModel && nvi->SelectsOnInvoked())
     {
         winrt::IndexPath ip = GetIndexPathForItem(*nvi);
         m_selectionModel.SelectAt(ip);
-        nvi->IsSelected(true);
+        // TODO: Figure out if this is the best place to do this (hint: probably not)
+        //nvi->IsSelected(true);
     }
 }
 
@@ -611,20 +666,24 @@ winrt::IndexPath NavigationView::GetIndexPathForItem(winrt::NavigationViewItemBa
 
     auto rootRepeaterName = (parent.try_as<winrt::ItemsRepeater>()).Name();
 
-
     // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
-    if (rootRepeaterName == c_overflowRepeater || rootRepeaterName == c_flyoutItemsRepeater)
+    if (rootRepeaterName == c_overflowRepeater)
     {
-        if (IsTopNavigationView())
-        {
-            // TODO: Need to get index in DataSource
-            MUX_FAIL_FAST_MSG("NEED TO IMPLEMENT!");
-        }
-        else
-        {
-            // TODO: Need to get index in DataSource
-            MUX_FAIL_FAST_MSG("NEED TO IMPLEMENT!");
-        }
+        // Convert index of selected item in overflow to index in datasource
+        auto containerIndex = m_topNavRepeaterOverflowView.get().GetElementIndex(child);
+        auto item = m_topDataProvider.GetOverflowItems().GetAt(containerIndex);
+        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        path.erase(path.begin());
+        path.insert(path.begin(), indexAtRoot);
+    }
+    else if (rootRepeaterName == c_topNavRepeater)
+    {
+        // Convert index of selected item in overflow to index in datasource
+        auto containerIndex = m_topNavRepeater.get().GetElementIndex(child);
+        auto item = m_topDataProvider.GetPrimaryItems().GetAt(containerIndex);
+        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        path.erase(path.begin());
+        path.insert(path.begin(), indexAtRoot);
     }
 
     return IndexPath::CreateFromIndices(path);
