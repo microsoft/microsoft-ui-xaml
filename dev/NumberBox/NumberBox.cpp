@@ -16,6 +16,7 @@ static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
 static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
 static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoot"sv };
 
 NumberBox::NumberBox()
 {
@@ -79,6 +80,19 @@ void NumberBox::OnApplyTemplate()
     }());
 
     m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
+
+    if (const auto popupRoot = GetTemplateChildT<winrt::UIElement>(c_numberBoxPopupContentRootName, controlProtected))
+    {
+        if (SharedHelpers::IsThemeShadowAvailable())
+        {
+            if (!popupRoot.Shadow())
+            {
+                popupRoot.Shadow(winrt::ThemeShadow{});
+                auto&& translation = popupRoot.Translation();
+                popupRoot.Translation({ translation.x, translation.y, 16 }); // ### magic
+            }
+        }
+    }
 
     if (const auto popupSpinDown = GetTemplateChildT<winrt::Button>(c_numberBoxPopupDownButtonName, controlProtected))
     {

@@ -50,26 +50,26 @@
                                 Header="{TemplateBinding Header}"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"/>
 
-                            <Popup x:Name="UpDownPopup" VerticalOffset="10" HorizontalAlignment="Left">
-                                <Grid Background="White">
+                            <!-- ### obviously none of this is cool -->
+                            <Popup x:Name="UpDownPopup" VerticalOffset="12" HorizontalAlignment="Left">
+
+                                <Grid x:Name="PopupContentRoot" Background="White"
+                                    contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}">
+                                    
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
                                     <Button x:Name="PopupUpSpinButton"
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        IsTabStop="False"
+                                        Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
                                         Grid.Row="0"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Content="&#xE70E;"
                                         contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
 
                                     <Button x:Name="PopupDownSpinButton"
-                                        AutomationProperties.AccessibilityView="Raw"
-                                        IsTabStop="False"
+                                        Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
                                         Grid.Row="1"
-                                        FontFamily="{ThemeResource SymbolThemeFontFamily}"
                                         Content="&#xE70D;"
                                         contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                 </Grid>
@@ -104,6 +104,15 @@
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>
+            <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
+        </Style.Setters>
+    </Style>
+
+    <!-- ### Would prefer that these didn't tilt. -->
+    <Style x:Name="NumberBoxPopupSpinButtonStyle" TargetType="Button">
+        <Style.Setters>
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
     </Style>
