@@ -569,12 +569,12 @@ void TabView::UpdateTabWidths()
                 }
                 else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
                 {
-                    double minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));
-                    double maxTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMaxWidthName, winrt::Application::Current().Resources(), box_value(c_tabMaximumWidth)));
+                    auto const minTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMinWidthName, winrt::Application::Current().Resources(), box_value(c_tabMinimumWidth)));
+                    auto const maxTabWidth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewItemMaxWidthName, winrt::Application::Current().Resources(), box_value(c_tabMaximumWidth)));
 
                     // Calculate the proportional width of each tab given the width of the ScrollViewer.
-                    auto padding = Padding();
-                    double tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
+                    auto const padding = Padding();
+                    auto const tabWidthForScroller = (availableWidth - (padding.Left + padding.Right)) / (double)(TabItems().Size());
 
                     tabWidth = std::clamp(tabWidthForScroller, minTabWidth, maxTabWidth);
 

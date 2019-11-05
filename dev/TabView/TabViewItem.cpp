@@ -33,7 +33,7 @@ void TabViewItem::OnApplyTemplate()
             // Do localization for the close button automation name
             if (winrt::AutomationProperties::GetName(closeButton).empty())
             {
-                auto closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonName);
+                auto const closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonName);
                 winrt::AutomationProperties::SetName(closeButton, closeButtonName);
             }
 
