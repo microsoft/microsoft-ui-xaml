@@ -51,6 +51,11 @@ public:
     bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
     void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
 
+    //winrt::event_token ItemInvoked(winrt::EventHandler<winrt::NavigationViewItem> const& value);
+    //void ItemInvoked(winrt::event_token const& token);
+    //void SetItemInvokedToken(winrt::event_token const& token) { m_itemInvokedEventToken = token; };
+    //void SetItemInvokedEventRevoker(winrt::NavigationViewItem::NavigationViewItemInvoked_revoker const& revoker) {  }
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
@@ -80,6 +85,11 @@ private:
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
+
+    //winrt::NavigationViewItem::NavigationViewItemInvoked_revoker m_itemInvokedEventRevoker{};
+
+    //winrt::event_token m_itemInvokedEventToken{};
+    //event_source<winrt::EventHandler<winrt::NavigationViewItem>> m_itemInvokedSource{ this };
 
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     NavigationViewItemHelper<NavigationViewItem> m_helper{ this };

@@ -90,6 +90,19 @@ public:
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
     bool IsSettingsItem(winrt::IInspectable const& item);
 
+    static winrt::DependencyProperty GetNavigationViewItemRevokersProperty()
+    {
+        static GlobalDependencyProperty s_NavigationViewItemRevokersProperty =
+            InitializeDependencyProperty(
+                L"NavigationViewItemRevokers",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NavigationViewItem>(),
+                true /* isAttached */,
+                nullptr /* defaultValue */);
+
+        return s_NavigationViewItemRevokersProperty;
+    }
+
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool ShouldIgnoreMeasureOverride();
@@ -218,7 +231,15 @@ private:
     void RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args);
     void RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args);
 
+    void OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args);
+    void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
+
     void SyncItemTemplates();
+    winrt::IndexPath GetIndexPathForItem(winrt::NavigationViewItemBase nvib);
+    winrt::ItemsRepeater GetParentItemsRepeaterForItem(winrt::NavigationViewItemBase nvib);
+    winrt::FrameworkElement GetParentForItem(winrt::FrameworkElement fe);
+    bool IsRootItemsRepeater(winrt::hstring name);
+    bool IsRealized(winrt::IndexPath indexPath);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
@@ -368,6 +389,8 @@ private:
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavOverflowItemsRepeaterElementIndexChangedRevoker{};
     //winrt::ItemsRepeater::Loaded_revoker m_topNavOverflowRepeaterLoadedRevoker{};
+
+    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };

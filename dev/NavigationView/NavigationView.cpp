@@ -19,6 +19,9 @@
 #include "NavigationViewList.h"
 #include "Utils.h"
 #include "TraceLogging.h"
+#include "NavigationViewItemRevokers.h"
+#include "IndexPath.h"
+#include "InspectingDataSource.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -156,7 +159,13 @@ NavigationView::NavigationView()
     Loaded({ this, &NavigationView::OnLoaded });
 
     m_selectionModel.SingleSelect(true);
+    m_selectionChangedEventToken = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelSelectionChanged });
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
+}
+
+void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
+{
+    SelectedItem(m_selectionModel.SelectedItem());
 }
 
 void NavigationView::OnApplyTemplate()
@@ -489,6 +498,138 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
     }
 }
 
+void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
+{
+    auto nvi = sender.try_as<NavigationViewItem>();
+
+    // Let NavigationView handle selection when SelectedItem is the Settings Item
+    // TODO: Add logic that syncs selection state between the settings item and the SelectionModel
+    if (IsSettingsItem(*nvi))
+    {
+        OnSettingsInvoked();
+        return;
+    }
+
+    // Get required info to raise ItemInvoked
+    // TODO: Clean up into separate methods
+    //winrt::IInspectable item = nullptr;
+    //auto itemIndex = parentIR.GetElementIndex(*nvi);
+    //auto itemsSource = parentIR.ItemsSource();
+    //winrt::ItemsSourceView dataSource = nullptr;
+    //if (itemsSource)
+    //{
+    //    dataSource = winrt::ItemsSourceView(itemsSource);
+    //    auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
+    //    item = inspectingDataSource->GetAtCore(itemIndex);
+    //}
+    //RaiseItemInvoked(item, false /*isSettings*/, *nvi);
+
+    // Set item as selected
+    if (m_selectionModel && nvi->SelectsOnInvoked())
+    {
+        winrt::IndexPath ip = GetIndexPathForItem(*nvi);
+        m_selectionModel.SelectAt(ip);
+        nvi->IsSelected(true);
+    }
+}
+
+bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
+{
+    return (name == c_topNavRepeater ||
+        name == c_leftRepeater ||
+        name == c_overflowRepeater ||
+        name == c_flyoutItemsRepeater);
+}
+
+bool NavigationView::IsRealized(winrt::IndexPath indexPath)
+{
+    bool isRealized = true;
+    for (int i = 0; i < indexPath.GetSize(); i++)
+    {
+        if (indexPath.GetAt(i) < 0)
+        {
+            isRealized = false;
+            break;
+        }
+    }
+    return isRealized;
+}
+
+winrt::FrameworkElement NavigationView::GetParentForItem(winrt::FrameworkElement fe)
+{
+    auto parent = fe.Parent().try_as<winrt::FrameworkElement>();
+    if (!parent)
+    {
+        parent = (winrt::VisualTreeHelper::GetParent(fe)).try_as<winrt::FrameworkElement>();
+    }
+    return parent;
+}
+
+winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForItem(winrt::NavigationViewItemBase nvib)
+{
+    auto child = nvib.try_as<winrt::FrameworkElement>();
+    auto parent = GetParentForItem(child);
+
+    if (parent != nullptr)
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            return parentIR;
+        }
+    }
+    return nullptr;
+}
+
+winrt::IndexPath NavigationView::GetIndexPathForItem(winrt::NavigationViewItemBase nvib)
+{
+    auto path = std::vector<int>();
+
+    auto child = (nvib).try_as<winrt::FrameworkElement>();
+    auto parent = GetParentForItem(child);
+    if (parent == nullptr)
+    {
+        return IndexPath::CreateFromIndices(path);
+    }
+
+    // TODO: Hack to know when to stop
+    while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            path.insert(path.begin(), parentIR.GetElementIndex(child));
+        }
+
+        child = parent;
+        auto name = parent.Name();
+        parent = GetParentForItem(parent);
+    }
+
+    if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+    {
+        path.insert(path.begin(), parentIR.GetElementIndex(child));
+    }
+
+    auto rootRepeaterName = (parent.try_as<winrt::ItemsRepeater>()).Name();
+
+
+    // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
+    if (rootRepeaterName == c_overflowRepeater || rootRepeaterName == c_flyoutItemsRepeater)
+    {
+        if (IsTopNavigationView())
+        {
+            // TODO: Need to get index in DataSource
+            MUX_FAIL_FAST_MSG("NEED TO IMPLEMENT!");
+        }
+        else
+        {
+            // TODO: Need to get index in DataSource
+            MUX_FAIL_FAST_MSG("NEED TO IMPLEMENT!");
+        }
+    }
+
+    return IndexPath::CreateFromIndices(path);
+}
+
 
 void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
@@ -496,10 +637,13 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
 
+
+        // Old info propagation (remove)
         nvib.RepeatedIndex(args.Index());
-
         nvibImpl->SetNavigationViewParent(*this);
+        nvib.SelectionModel(m_selectionModel);
 
+        // Visual state info propagation
         if (IsTopNavigationView())
         {
             if (ir == m_topNavRepeater.get())
@@ -517,28 +661,28 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
             nvibImpl->Position(NavigationViewListPosition::LeftNav);
         }
 
-        //nvib.Depth = 0;
-        // If there was no special menuitem template specified for the NavigationViewItem, pass in the default specified
-        //if (nvi.MenuItemTemplate == null && MenuItemTemplate != null)
-        //{
-        //    nvi.MenuItemTemplate = MenuItemTemplate;
-        //}
-
-        // Propagate the SelectionModel
-        nvib.SelectionModel(m_selectionModel);
-
         //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
+
+        if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
+        {
+            auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+
+            // Register for item events
+            auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
+            //nviRevokers->pointerPressedRevoker = nvi.PointerPressed(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
+            nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
+            nvi.SetValue(GetNavigationViewItemRevokersProperty(), (*nviRevokers).try_as<winrt::IInspectable>());
+        }
     }
 }
 
 void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args)
 {
-    //RepNavigationViewItem nvi = args.Element as RepNavigationViewItem;
-    //if (nvi != null)
-    //{
-    //    nvi.navView = null;
-    //    nvi.Depth = 0;
-    //}
+    if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
+    {
+        // Revoke all the events that we were listing to on the item
+        nvi.SetValue(GetNavigationViewItemRevokersProperty(), nullptr);
+    }
 
     // Todo: Only unlink when source defined from MenuItems
     // Unlink Element from panel
