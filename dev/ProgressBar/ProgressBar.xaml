@@ -26,6 +26,12 @@
                             <VisualStateGroup x:Name="CommonStates">
 
                                 <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Updating" To="Determinate">
+
+                                        <Storyboard>
+                                            <RepositionThemeAnimation TargetName="ProgressBarIndicator" FromHorizontalOffset="-50" />
+                                        </Storyboard>
+                                    </VisualTransition>
                                     <VisualTransition From="Paused" To="Determinate">
                                         <Storyboard>
                                             <DoubleAnimation
@@ -39,6 +45,7 @@
                                 
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
+                                <VisualState x:Name="Updating" />
                                 <VisualState x:Name="Indeterminate">
                                     <Storyboard RepeatBehavior="Forever">
                                         <DoubleAnimationUsingKeyFrames

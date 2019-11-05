@@ -42,6 +42,7 @@ private:
     tracker_ref<winrt::Rectangle> m_progressBarIndicator{ this };
 
     bool m_shouldUpdateWidthBasedTemplateSettings = false;
+    bool m_isUpdating = true;
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
     static constexpr wstring_view s_ProgressBarIndicatorName{ L"ProgressBarIndicator" };
@@ -49,4 +50,5 @@ private:
     static constexpr wstring_view s_PausedStateName{ L"Paused" };
     static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
     static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
+    static constexpr wstring_view s_UpdatingStateName{ L"Updating" };
 };

@@ -39,18 +39,28 @@ void ProgressBar::OnApplyTemplate()
 
 void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    m_isUpdating = true;
+    UpdateStates();
     SetProgressBarIndicatorWidth();
+
     if (m_shouldUpdateWidthBasedTemplateSettings)
     {
         UpdateWidthBasedTemplateSettings();
     }
+
+    m_isUpdating = false;
+    UpdateStates();
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
-
+    m_isUpdating = true;
+    UpdateStates();
     SetProgressBarIndicatorWidth();
+
+    m_isUpdating = false;
+    UpdateStates();
 }
 
 void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -73,7 +83,12 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 void ProgressBar::UpdateStates()
 {
     m_shouldUpdateWidthBasedTemplateSettings = false;
-    if (ShowError())
+
+    if (m_isUpdating)
+    {
+        winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
+    }
+    else if (ShowError())
     {
         winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
     }
@@ -93,8 +108,12 @@ void ProgressBar::UpdateStates()
     }
     else if (!IsIndeterminate())
     {
+        m_isUpdating = true;
+        UpdateStates();
         SetProgressBarIndicatorWidth();
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+
+        m_isUpdating = false;
     }
 }
 
