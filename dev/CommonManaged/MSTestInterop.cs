@@ -54,101 +54,238 @@ namespace Common
 
     public static class Verify
     {
-        // TODO: implement
         public static bool DisableVerifyFailureExceptions
         {
             get;
             set;
         }
 
+        private static void ThrowOrLogException(Exception e)
+        {
+            if (DisableVerifyFailureExceptions)
+            {
+                Log.Error(e.Message);
+            }
+            else
+            {
+                throw e;
+            }
+        }
+
         public static void AreEqual(object expected, object actual, string message = null)
         {
-            Assert.AreEqual(expected, actual, message);
+            try
+            {
+                Assert.AreEqual(expected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void AreEqual<T>(T expected, T actual, string message = null)
         {
-            Assert.AreEqual(expected, actual, message);
+            try
+            {
+                Assert.AreEqual(expected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void AreNotEqual(object notExpected, object actual, string message = null)
         {
-            Assert.AreNotEqual(notExpected, actual, message);
+            try
+            { 
+                Assert.AreNotEqual(notExpected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void AreNotEqual<T>(T notExpected, T actual, string message = null)
         {
-            Assert.AreNotEqual(notExpected, actual, message);
+            try
+            { 
+                Assert.AreNotEqual(notExpected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void AreSame(object expected, object actual, string message = null)
         {
-            Assert.AreSame(expected, actual, message);
+            try
+            {
+                Assert.AreSame(expected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void AreNotSame(object notExpected, object actual, string message = null)
         {
-            Assert.AreNotSame(notExpected, actual, message);
+            try
+            { 
+                Assert.AreNotSame(notExpected, actual, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsLessThan(IComparable expectedLess, IComparable expectedGreater, string message = null)
         {
-            Assert.IsTrue(expectedLess.CompareTo(expectedGreater) < 0, message);
+            try
+            { 
+                Assert.IsTrue(expectedLess.CompareTo(expectedGreater) < 0, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsLessThanOrEqual(IComparable expectedLess, IComparable expectedGreater, string message = null)
         {
-            Assert.IsTrue(expectedLess.CompareTo(expectedGreater) <= 0, message);
+            try
+            { 
+                Assert.IsTrue(expectedLess.CompareTo(expectedGreater) <= 0, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsGreaterThan(IComparable expectedGreater, IComparable expectedLess, string message = null)
         {
-            Assert.IsTrue(expectedGreater.CompareTo(expectedLess) > 0, message);
+            try
+            {
+                Assert.IsTrue(expectedGreater.CompareTo(expectedLess) > 0, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsGreaterThanOrEqual(IComparable expectedGreater, IComparable expectedLess, string message = null)
         {
-            Assert.IsTrue(expectedGreater.CompareTo(expectedLess) >= 0, message);
+            try
+            {
+                Assert.IsTrue(expectedGreater.CompareTo(expectedLess) >= 0, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsNull(object value, string message = null)
         {
-            Assert.IsNull(value, message);
+            try
+            { 
+                Assert.IsNull(value, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsNotNull(object value, string message = null)
         {
-            Assert.IsNotNull(value, message);
+            try
+            { 
+                Assert.IsNotNull(value, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsTrue(bool condition, string message = null)
         {
-            Assert.IsTrue(condition, message);
+            try
+            {
+                Assert.IsTrue(condition, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void IsFalse(bool condition, string message = null)
         {
-            Assert.IsFalse(condition, message);
+            try
+            { 
+                Assert.IsFalse(condition, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void Fail()
         {
-            Assert.Fail();
+            try 
+            { 
+                Assert.Fail();
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void Fail(string message, params object[] args)
         {
-            Assert.Fail(message, args);
+            try
+            { 
+                Assert.Fail(message, args);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void Throws<T>(Action action, string message) where T : Exception
         {
-            Assert.ThrowsException<T>(action, message);
+            try
+            { 
+                Assert.ThrowsException<T>(action, message);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
 
         public static void Throws<T>(Action action) where T : Exception
         {
-            Assert.ThrowsException<T>(action);
+            try
+            { 
+                Assert.ThrowsException<T>(action);
+            }
+            catch (AssertFailedException e)
+            {
+                ThrowOrLogException(e);
+            }
         }
     }
 }
