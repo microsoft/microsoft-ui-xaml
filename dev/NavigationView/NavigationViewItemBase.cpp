@@ -76,16 +76,16 @@ winrt::NavigationViewList NavigationViewItemBase::GetNavigationViewList()
 
 void NavigationViewItemBase::OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto indexPath = GetIndexPath();
-    if (auto selectionModel = SelectionModel())
-    {
-        bool isSelectedNullable = false;
-        if (IsRealized(indexPath))
-        {
-            isSelectedNullable = selectionModel.IsSelectedAt(indexPath).Value();
-        }
-        IsSelected(isSelectedNullable);
-    }
+    //auto indexPath = GetIndexPath();
+    //if (auto selectionModel = SelectionModel())
+    //{
+    //    bool isSelectedNullable = false;
+    //    if (IsRealized(indexPath))
+    //    {
+    //        isSelectedNullable = selectionModel.IsSelectedAt(indexPath).Value();
+    //    }
+    //    IsSelected(isSelectedNullable);
+    //}
 }
 
 void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -102,140 +102,51 @@ void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::Depend
         m_selectionChangedEventToken = (args.NewValue().try_as<winrt::SelectionModel>()).SelectionChanged(winrt::auto_revoke, { this, &NavigationViewItemBase::OnSelectionChanged });
     }
 }
+
 void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
 {
-    bool oldValue = IsSelected();
-    auto indexPath = GetIndexPath();
+    IsSelected(false);
+    //bool oldValue = IsSelected();
+    //auto indexPath = GetIndexPath();
 
-    bool newValue = false;
-    if (IsRealized(indexPath))
-    {
-        newValue = SelectionModel().IsSelectedAt(indexPath).Value();
-    }
-
-    if (oldValue != newValue)
-    {
-        IsSelected(newValue);
-
-        // Updated selected item in NavigationView 
-        if (newValue)
-        {
-            auto item = SelectionModel().SelectedItem();
-            auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
-            nv->SelectedItem(item);
-        }
-
-        //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
-        //AutomationEvents eventToRaise =
-        //    oldValue ?
-        //        (SelectionModel.SingleSelect ? AutomationEvents.PropertyChanged : AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection) :
-        //        (SelectionModel.SingleSelect ? AutomationEvents.SelectionItemPatternOnElementSelected : AutomationEvents.SelectionItemPatternOnElementAddedToSelection);
-
-        //if (eventToRaise != AutomationEvents.PropertyChanged && AutomationPeer.ListenerExists(eventToRaise))
-        //{
-        //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(this);
-        //    peer.RaiseAutomationEvent(eventToRaise);
-        //}
-    }
-}
-
-winrt::IndexPath NavigationViewItemBase::GetIndexPath()
-{
-    auto child = (*this).try_as<winrt::FrameworkElement>();
-    auto parent = child.Parent().try_as<winrt::FrameworkElement>();
-    if (!parent)
-    {
-        parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
-    }
-
-    auto path = std::vector<int>();
-    if (parent == nullptr)
-    {
-        return IndexPath::CreateFromIndices(path);
-    }
-
-    bool  test = !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name());
-    auto testName = (parent.try_as<winrt::ItemsRepeater>()).Name();
-    bool nameComparison = (testName == c_leftRepeater);
-    bool  test1 = !(parent.try_as<winrt::ItemsRepeater>());
-    // TOOD: Hack to know when to stop
-    while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
-    {
-        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
-        {
-            path.insert(path.begin(), parentIR.GetElementIndex(child));
-        }
-
-        child = parent;
-        auto name = parent.Name();
-        parent = parent.Parent().try_as<winrt::FrameworkElement>();
-        if (!parent)
-        {
-            parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
-        }
-    }
-
-    if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
-    {
-        path.insert(path.begin(), parentIR.GetElementIndex(child));
-    }
-
-    // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
-    //if ((parent as ItemsRepeater).Name == RepNavigationView.c_flyoutItemsRepeater)
+    //if (indexPath.GetSize() == 0)
     //{
-
-    //}
-    //else if ((parent as ItemsRepeater).Name == RepNavigationView.c_overflowRepeater)
-    //{
-
+    //    return;
     //}
 
-    return IndexPath::CreateFromIndices(path);
-}
+    //bool newValue = false;
+    //if (IsRealized(indexPath))
+    //{
+    //    newValue = SelectionModel().IsSelectedAt(indexPath).Value();
+    //}
 
-bool NavigationViewItemBase::IsRootItemsRepeater(winrt::hstring name)
-{
-    return (name == c_topNavRepeater ||
-        name == c_leftRepeater ||
-        name == c_overflowRepeater ||
-        name == c_flyoutItemsRepeater);
-}
+    //if (oldValue != newValue)
+    //{
+    //    IsSelected(newValue);
 
-bool NavigationViewItemBase::IsRealized(winrt::IndexPath indexPath)
-{
-    bool isRealized = true;
-    for (int i = 0; i < indexPath.GetSize(); i++)
-    {
-        if (indexPath.GetAt(i) < 0)
-        {
-            isRealized = false;
-            break;
-        }
-    }
+    //    // Updated selected item in NavigationView 
+    //    if (newValue)
+    //    {
+    //        auto item = SelectionModel().SelectedItem();
+    //        auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
+    //        nv->SelectedItem(item);
+    //    }
 
-    return isRealized;
+    //    //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
+    //    //AutomationEvents eventToRaise =
+    //    //    oldValue ?
+    //    //        (SelectionModel.SingleSelect ? AutomationEvents.PropertyChanged : AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection) :
+    //    //        (SelectionModel.SingleSelect ? AutomationEvents.SelectionItemPatternOnElementSelected : AutomationEvents.SelectionItemPatternOnElementAddedToSelection);
+
+    //    //if (eventToRaise != AutomationEvents.PropertyChanged && AutomationPeer.ListenerExists(eventToRaise))
+    //    //{
+    //    //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(this);
+    //    //    peer.RaiseAutomationEvent(eventToRaise);
+    //    //}
+    //}
 }
 
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
-}
-
-winrt::ItemsRepeater NavigationViewItemBase::GetParentItemsRepeater()
-{
-    auto child = (*this).try_as<winrt::FrameworkElement>();
-    auto parent = child.Parent().try_as<winrt::FrameworkElement>();
-    if (!parent)
-    {
-        parent = (winrt::VisualTreeHelper::GetParent(child)).try_as<winrt::FrameworkElement>();
-    }
-
-    if (parent != nullptr)
-    {
-        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
-        {
-            return parentIR;
-        }
-    }
-    return nullptr;
 }

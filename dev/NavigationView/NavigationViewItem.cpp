@@ -357,56 +357,15 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
 void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
     NavigationViewItemBase::OnPointerReleased(args);
-
-    auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
-
-    // Let NavigationView handle selection when SelectedItem is the Settings Item
-    // TODO: Add logic that syncs selection state between the settings item and the SelectionModel
-    if (nv->IsSettingsItem(*this))
-    {
-        nv->OnSettingsInvoked();
-        return;
-    }
-
-    // Get required info to raise ItemInvoked
-    // TODO: Clean up into separate methods
-    winrt::IInspectable item = nullptr;
-    auto parentIR = GetParentItemsRepeater();
-    auto itemIndex = parentIR.GetElementIndex(*this);
-    auto itemsSource = parentIR.ItemsSource();
-    winrt::ItemsSourceView dataSource = nullptr;
-    if (itemsSource)
-    {
-        dataSource = winrt::ItemsSourceView(itemsSource);
-        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
-        item = inspectingDataSource->GetAtCore(itemIndex);
-    }
-    nv->RaiseItemInvoked(item, false /*isSettings*/, *this);
-
-    // Set item as selected
-    if (auto selectionModel = SelectionModel() && SelectsOnInvoked())
-    {
-        winrt::IndexPath ip = GetIndexPath();
-        SelectionModel().SelectAt(ip);
-    }
+    m_navigationViewItemInvokedEventSource(*this, nullptr);
 }
 
-//void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
+//winrt::event_token NavigationViewItem::ItemInvoked(winrt::EventHandler<winrt::NavigationViewItem> const& value)
 //{
-//    NavigationViewItemBase::OnPointerReleased(args);
-//    // Select if item is selectable
-//    if (auto selectionModel = SelectionModel() && SelectsOnInvoked())
-//    {
-//        winrt::IndexPath ip = GetIndexPath();
-//        SelectionModel().SelectAt(ip);
-//        // We need to move this item from Overflow ItemsRepeater to the main TopNavigationView Repeater
-//        //if (IsInOverflow())
-//        //{
-//        //    navView.MoveItemToMainItemsRepeater(RepeatedIndex);
-//        //}
-//        //this.Focus(FocusState.Keyboard);
-//    }
+//    return m_itemInvokedSource.add(value);
+//}
 //
-//    //e.Handled = true;
-//    //base.OnPointerReleased(e);
+//void NavigationViewItem::ItemInvoked(winrt::event_token const& token)
+//{
+//    m_itemInvokedSource.remove(token);
 //}

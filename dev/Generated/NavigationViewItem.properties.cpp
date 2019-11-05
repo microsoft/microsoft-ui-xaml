@@ -13,6 +13,7 @@ GlobalDependencyProperty NavigationViewItemProperties::s_IconProperty{ nullptr }
 GlobalDependencyProperty NavigationViewItemProperties::s_SelectsOnInvokedProperty{ nullptr };
 
 NavigationViewItemProperties::NavigationViewItemProperties()
+    : m_navigationViewItemInvokedEventSource{static_cast<NavigationViewItem*>(this)}
 {
     EnsureProperties();
 }
@@ -99,4 +100,14 @@ void NavigationViewItemProperties::SelectsOnInvoked(bool value)
 bool NavigationViewItemProperties::SelectsOnInvoked()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationViewItem*>(this)->GetValue(s_SelectsOnInvokedProperty));
+}
+
+winrt::event_token NavigationViewItemProperties::NavigationViewItemInvoked(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::NavigationViewItemInvokedEventArgs> const& value)
+{
+    return m_navigationViewItemInvokedEventSource.add(value);
+}
+
+void NavigationViewItemProperties::NavigationViewItemInvoked(winrt::event_token const& token)
+{
+    m_navigationViewItemInvokedEventSource.remove(token);
 }

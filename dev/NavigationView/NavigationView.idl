@@ -323,6 +323,11 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
 
         static Windows.UI.Xaml.DependencyProperty SelectsOnInvokedProperty { get; };
     }
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        event Windows.Foundation.TypedEventHandler<NavigationViewItem, NavigationViewItemInvokedEventArgs> NavigationViewItemInvoked;
+    }
 }
 
 [WUXC_VERSION_RS3]
@@ -342,5 +347,12 @@ unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
 {
     NavigationViewItemHeader();
 }
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemRevokers
+{
+}
+
 
 }
