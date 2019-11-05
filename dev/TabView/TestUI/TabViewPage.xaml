@@ -115,7 +115,7 @@
                             </StackPanel>
                         </controls:TabViewItem>
 
-                        <controls:TabViewItem x:Name="SecondTab" AutomationProperties.Name="SecondTab" Header="Shop" IsClosable="True">
+                        <controls:TabViewItem x:Name="SecondTab" Header="SecondTab" IsClosable="True">
                             <controls:TabViewItem.IconSource>
                                 <controls:SymbolIconSource Symbol="Shop"/>
                             </controls:TabViewItem.IconSource>

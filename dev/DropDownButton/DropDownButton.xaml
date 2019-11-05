@@ -113,6 +113,7 @@
                                 Text="&#xE70D;"
                                 VerticalAlignment="Center"
                                 Margin="6,0,0,0"
+                                IsTextScaleFactorEnabled="False"
                                 AutomationProperties.AccessibilityView="Raw"/>
                         </Grid>
 

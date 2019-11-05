@@ -688,3 +688,25 @@ winrt::VirtualKey SharedHelpers::GetVirtualKeyFromChar(WCHAR c)
         return winrt::VirtualKey::None;
     }
 }
+
+// Sometimes we want to get a string representation from an arbitrary object. E.g. for constructing a UIA Name
+// from an automation peer. There is no guarantee that an arbitrary object is convertable to a string, so
+// this function may return an empty string.
+winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspectable obj)
+{
+    winrt::hstring returnHString;
+
+    if(obj)
+    {
+        if (auto stringable = obj.try_as<winrt::IStringable>())
+        {
+            returnHString = stringable.ToString();
+        }
+        if(returnHString.empty())
+        {
+            returnHString = winrt::unbox_value_or<winrt::hstring>(obj, returnHString);
+        }
+    }
+    
+    return returnHString;
+}

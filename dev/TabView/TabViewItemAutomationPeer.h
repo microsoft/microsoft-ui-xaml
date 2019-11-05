@@ -14,6 +14,7 @@ public:
     TabViewItemAutomationPeer(winrt::TabViewItem const& owner);
 
     // IAutomationPeerOverrides
+    winrt::hstring GetNameCore();
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 };
