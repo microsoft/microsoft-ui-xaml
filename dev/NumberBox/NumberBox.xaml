@@ -5,7 +5,38 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-<Style TargetType="local:NumberBox">
+    <Style TargetType="local:NumberBox">
+        <Setter Property="ContextFlyout">
+            <Setter.Value>
+                <Flyout>
+                    <Flyout.FlyoutPresenterStyle>
+                        <Style TargetType="FlyoutPresenter">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="MinWidth" Value="0" />
+                            <Setter Property="MinHeight" Value="0" />
+                        </Style>
+                    </Flyout.FlyoutPresenterStyle>
+
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Button
+                            Grid.Row="0"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Content="&#xE70E;"/>
+
+                        <Button
+                            Grid.Row="1"
+                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                            Content="&#xE70D;"/>
+                    </Grid>
+                </Flyout>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NumberBox">
@@ -49,6 +80,8 @@
                             <TextBox x:Name="InputBox"
                                 Header="{TemplateBinding Header}"
                                 PlaceholderText="{TemplateBinding PlaceholderText}"/>
+
+                            <Button x:Name="FlyoutButton" Content="x" VerticalAlignment="Bottom"/>
 
                             <RepeatButton x:Name="UpSpinButton"
                                 Visibility="Collapsed"
