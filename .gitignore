@@ -254,6 +254,7 @@ CodeCoverageOutput/
 
 # Private (not-checked-in) build properties
 local.props
+InnerLoopAreas.props
 
 # Files from OS repo to ignore
 .cachedFileHashes
