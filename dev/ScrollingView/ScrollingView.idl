@@ -31,8 +31,6 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     Double ScrollableWidth{ get; };
     Double ScrollableHeight{ get; };
     ScrollingInteractionState State { get; };
-    MU_XCP_NAMESPACE.IScrollController HorizontalScrollController { get; };
-    MU_XCP_NAMESPACE.IScrollController VerticalScrollController { get; };
     [MUX_DEFAULT_VALUE("ScrollingView::s_defaultHorizontalScrollBarVisibility")]
     ScrollingScrollBarVisibility HorizontalScrollBarVisibility { get; set; };
     [MUX_DEFAULT_VALUE("ScrollingView::s_defaultVerticalScrollBarVisibility")]
@@ -138,8 +136,6 @@ unsealed runtimeclass ScrollingView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty ContentProperty { get; };
     [MUX_PROPERTY_TYPE("winrt::ScrollingPresenter")]
     static Windows.UI.Xaml.DependencyProperty ScrollingPresenterProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty HorizontalScrollControllerProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty VerticalScrollControllerProperty { get; };
     static Windows.UI.Xaml.DependencyProperty HorizontalScrollBarVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty VerticalScrollBarVisibilityProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ContentOrientationProperty { get; };

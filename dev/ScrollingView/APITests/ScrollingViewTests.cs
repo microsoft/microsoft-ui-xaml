@@ -94,8 +94,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Verifying ScrollingView default property values");
                 Verify.IsNull(scrollingView.Content);
                 Verify.IsNull(ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView));
-                Verify.IsNull(scrollingView.HorizontalScrollController);
-                Verify.IsNull(scrollingView.VerticalScrollController);
 #if USE_SCROLLMODE_AUTO
                 Verify.AreEqual(scrollingView.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollingView.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
@@ -237,8 +235,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(scrollingView.Content, rectangleScrollingViewContent);
                     Verify.IsNotNull(ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView));
                     Verify.AreEqual(ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView).Content, rectangleScrollingViewContent);
-                    Verify.IsNotNull(scrollingView.HorizontalScrollController);
-                    Verify.IsNotNull(scrollingView.VerticalScrollController);
                     Verify.AreEqual(scrollingView.ExtentWidth, c_defaultUIScrollingViewContentWidth);
                     Verify.AreEqual(scrollingView.ExtentHeight, c_defaultUIScrollingViewContentHeight);
                     Verify.AreEqual(scrollingView.ViewportWidth, c_defaultUIScrollingViewWidth);

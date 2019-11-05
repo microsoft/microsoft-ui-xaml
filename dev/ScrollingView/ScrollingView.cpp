@@ -1518,8 +1518,6 @@ void ScrollingView::UpdateHorizontalScrollController(
 
     UnhookHorizontalScrollControllerEvents();
 
-    SetValue(s_HorizontalScrollControllerProperty, horizontalScrollController);
-
     m_horizontalScrollController.set(horizontalScrollController);
     m_horizontalScrollControllerElement.set(horizontalScrollControllerElement);
     HookHorizontalScrollControllerEvents();
@@ -1543,8 +1541,6 @@ void ScrollingView::UpdateVerticalScrollController(
     SCROLLINGVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
     UnhookVerticalScrollControllerEvents();
-
-    SetValue(s_VerticalScrollControllerProperty, verticalScrollController);
 
     m_verticalScrollController.set(verticalScrollController);
     m_verticalScrollControllerElement.set(verticalScrollControllerElement);
@@ -2501,14 +2497,6 @@ winrt::hstring ScrollingView::DependencyPropertyToString(const winrt::IDependenc
     else if (dependencyProperty == s_ScrollingPresenterProperty)
     {
         return L"ScrollingPresenter";
-    }
-    else if (dependencyProperty == s_HorizontalScrollControllerProperty)
-    {
-        return L"HorizontalScrollController";
-    }
-    else if (dependencyProperty == s_VerticalScrollControllerProperty)
-    {
-        return L"VerticalScrollController";
     }
     else if (dependencyProperty == s_HorizontalScrollBarVisibilityProperty)
     {
