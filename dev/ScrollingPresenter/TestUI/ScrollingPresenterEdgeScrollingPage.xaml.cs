@@ -29,6 +29,7 @@ namespace MUXControlsTestApp
     {
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
+        private UInt32 capturedPointerId = 0;
 
         public ScrollingPresenterEdgeScrollingPage()
         {
@@ -41,9 +42,15 @@ namespace MUXControlsTestApp
             scrollingPresenter.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(ScrollingPresenter_PointerMoved), true);
             scrollingPresenter.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(ScrollingPresenter_PointerCanceled), true);
             scrollingPresenter.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(ScrollingPresenter_PointerCaptureLost), true);
+
+            canvas.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(Canvas_PointerPressed), true);
+            canvas.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(Canvas_PointerReleased), true);
+            canvas.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(Canvas_PointerMoved), true);
+            canvas.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(Canvas_PointerCanceled), true);
+            canvas.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(Canvas_PointerCaptureLost), true);
         }
 
-        private bool IsPointerDeviceTypeEnabled(PointerDeviceType pointerDeviceType)
+        private bool IsPointerDeviceTypeRegistered(PointerDeviceType pointerDeviceType)
         {
             switch (pointerDeviceType)
             {
@@ -58,7 +65,22 @@ namespace MUXControlsTestApp
             }
         }
 
-        private ToggleButton ToggleButtonFromPointerDeviceType(PointerDeviceType pointerDeviceType)
+        private bool IsPointerDeviceTypeStartedStopped(PointerDeviceType pointerDeviceType)
+        {
+            switch (pointerDeviceType)
+            {
+                case PointerDeviceType.Mouse:
+                    return (bool)tglBtnStartStopMouseForEdgeScroll.IsChecked;
+                case PointerDeviceType.Pen:
+                    return (bool)tglBtnStartStopPenForEdgeScroll.IsChecked;
+                case PointerDeviceType.Touch:
+                    return (bool)tglBtnStartStopTouchForEdgeScroll.IsChecked;
+                default:
+                    return false;
+            }
+        }
+
+        private ToggleButton RegisterUnregisterToggleButtonFromPointerDeviceType(PointerDeviceType pointerDeviceType)
         {
             switch (pointerDeviceType)
             {
@@ -73,6 +95,21 @@ namespace MUXControlsTestApp
             }
         }
 
+        private ToggleButton StartStopToggleButtonFromPointerDeviceType(PointerDeviceType pointerDeviceType)
+        {
+            switch (pointerDeviceType)
+            {
+                case PointerDeviceType.Mouse:
+                    return tglBtnStartStopMouseForEdgeScroll;
+                case PointerDeviceType.Pen:
+                    return tglBtnStartStopPenForEdgeScroll;
+                case PointerDeviceType.Touch:
+                    return tglBtnStartStopTouchForEdgeScroll;
+                default:
+                    return null;
+            }
+        }
+
         private void ScrollingPresenter_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (chkLogScrollingPresenterEvents.IsChecked == true)
@@ -80,7 +117,7 @@ namespace MUXControlsTestApp
                 AppendAsyncEventMessage($"ScrollingPresenter_PointerPressed PointerId {e.Pointer.PointerId}");
             }
 
-            if (IsPointerDeviceTypeEnabled(e.Pointer.PointerDeviceType) &&
+            if (IsPointerDeviceTypeRegistered(e.Pointer.PointerDeviceType) &&
                 e.KeyModifiers == Windows.System.VirtualKeyModifiers.None &&
                 !e.Handled &&
                 (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || e.GetCurrentPoint(null).Properties.IsLeftButtonPressed))
@@ -92,7 +129,7 @@ namespace MUXControlsTestApp
                     AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollingPresenter).Position.ToString()}");
                     AppendAsyncEventMessage($"RegisterPointerForEdgeScroll {e.Pointer.PointerId}");
                     scrollingPresenter.RegisterPointerForEdgeScroll(e.Pointer.PointerId);
-                    ToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = false;
+                    RegisterUnregisterToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = false;
                 }
                 else
                 {
@@ -108,7 +145,7 @@ namespace MUXControlsTestApp
                 AppendAsyncEventMessage($"ScrollingPresenter_PointerReleased PointerId {e.Pointer.PointerId}");
             }
 
-            if (IsPointerDeviceTypeEnabled(e.Pointer.PointerDeviceType))
+            if (IsPointerDeviceTypeRegistered(e.Pointer.PointerDeviceType))
             {
                 PointerPointProperties ppp = e.GetCurrentPoint(null).Properties;
 
@@ -119,15 +156,16 @@ namespace MUXControlsTestApp
                     AppendAsyncEventMessage($"Pointer capture released @ position {position.ToString()}");
                     Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
                         Windows.UI.Core.CoreCursorType.Arrow, 0);
-                    AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll");
-                    scrollingPresenter.UnregisterPointerForEdgeScroll();
-                    ToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = true;
+                    ScrollingScrollInfo scrollInfo = scrollingPresenter.UnregisterPointerForEdgeScroll();
+                    AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+                    RegisterUnregisterToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = true;
                 }
             }
         }
 
         private void ScrollingPresenter_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
+
         }
 
         private void ScrollingPresenter_PointerCanceled(object sender, PointerRoutedEventArgs e)
@@ -143,6 +181,95 @@ namespace MUXControlsTestApp
             if (chkLogScrollingPresenterEvents.IsChecked == true)
             {
                 AppendAsyncEventMessage($"ScrollingPresenter_PointerCaptureLost PointerId {e.Pointer.PointerId}");
+            }
+        }
+
+        private bool IsStartStopMouseForEdgeScrollEnabled
+        {
+            get
+            {
+                return tglBtnStartStopMouseForEdgeScroll.IsChecked == true ||
+                    tglBtnStartStopTouchForEdgeScroll.IsChecked == true ||
+                    tglBtnStartStopPenForEdgeScroll.IsChecked == true;
+            }
+        }
+
+        private void Canvas_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsStartStopMouseForEdgeScrollEnabled)
+            {
+                AppendAsyncEventMessage($"Canvas_PointerPressed PointerId {e.Pointer.PointerId}");
+
+                if (capturedPointerId == 0 &&
+                    IsPointerDeviceTypeStartedStopped(e.Pointer.PointerDeviceType) &&
+                    e.KeyModifiers == Windows.System.VirtualKeyModifiers.None &&
+                    !e.Handled &&
+                    (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || e.GetCurrentPoint(null).Properties.IsLeftButtonPressed))
+                {
+                    if ((sender as UIElement).CapturePointer(e.Pointer))
+                    {
+                        Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
+                            Windows.UI.Core.CoreCursorType.Hand, 0);
+                        AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollingPresenter).Position.ToString()}");
+                        StartStopToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = false;
+                        capturedPointerId = e.Pointer.PointerId;
+                    }
+                    else
+                    {
+                        AppendAsyncEventMessage("Pointer capture failed");
+                    }
+                }
+            }
+        }
+
+        private void Canvas_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsStartStopMouseForEdgeScrollEnabled)
+            {
+                AppendAsyncEventMessage($"Canvas_PointerReleased PointerId {e.Pointer.PointerId}");
+
+                if (capturedPointerId != 0 && IsPointerDeviceTypeStartedStopped(e.Pointer.PointerDeviceType))
+                {
+                    PointerPointProperties ppp = e.GetCurrentPoint(null).Properties;
+
+                    if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || !ppp.IsLeftButtonPressed)
+                    {
+                        Point position = e.GetCurrentPoint(scrollingPresenter).Position;
+                        (sender as UIElement).ReleasePointerCapture(e.Pointer);
+                        AppendAsyncEventMessage($"Pointer capture released @ position {position.ToString()}");
+                        Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
+                            Windows.UI.Core.CoreCursorType.Arrow, 0);
+                        StartStopToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = true;
+                        capturedPointerId = 0;
+                        ScrollingScrollInfo scrollInfo = scrollingPresenter.StopEdgeScrollWithPointer();
+                        AppendAsyncEventMessage($"StopEdgeScrollWithPointer OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+                    }
+                }
+            }
+        }
+
+        private void Canvas_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (capturedPointerId == e.Pointer.PointerId)
+            {
+                ScrollingScrollInfo scrollInfo = scrollingPresenter.StartEdgeScrollWithPointer(e);
+                AppendAsyncEventMessage($"StartEdgeScrollWithPointer OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+            }
+        }
+
+        private void Canvas_PointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsStartStopMouseForEdgeScrollEnabled)
+            {
+                AppendAsyncEventMessage($"Canvas_PointerCanceled PointerId {e.Pointer.PointerId}");
+            }
+        }
+
+        private void Canvas_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            if (IsStartStopMouseForEdgeScrollEnabled)
+            {
+                AppendAsyncEventMessage($"Canvas_PointerCaptureLost PointerId {e.Pointer.PointerId}");
             }
         }
 
@@ -287,6 +414,33 @@ namespace MUXControlsTestApp
             {
                 AppendAsyncEventMessage(ex.ToString());
                 tglBtnRegisterPointerIdForEdgeScroll.IsChecked = false;
+            }
+        }
+
+        private void TglBtnStartStopMouseForEdgeScroll_Click(object sender, RoutedEventArgs e)
+        {
+            StartStopPointerForEdgeScroll(PointerDeviceType.Mouse, sender as ToggleButton);
+        }
+
+        private void TglBtnStartStopTouchForEdgeScroll_Click(object sender, RoutedEventArgs e)
+        {
+            StartStopPointerForEdgeScroll(PointerDeviceType.Touch, sender as ToggleButton);
+        }
+
+        private void TglBtnStartStopPenForEdgeScroll_Click(object sender, RoutedEventArgs e)
+        {
+            StartStopPointerForEdgeScroll(PointerDeviceType.Pen, sender as ToggleButton);
+        }
+
+        private void StartStopPointerForEdgeScroll(PointerDeviceType pointerDeviceType, ToggleButton toggleButton)
+        {
+            if (toggleButton.IsChecked == true)
+            {
+                toggleButton.Content = (toggleButton.Content as string).Replace("Start", "Stop");
+            }
+            else
+            {
+                toggleButton.Content = (toggleButton.Content as string).Replace("Stop", "Start");
             }
         }
 

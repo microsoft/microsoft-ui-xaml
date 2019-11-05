@@ -191,7 +191,7 @@ public:
     winrt::ScrollingScrollInfo StopEdgeScrollWithPointer();
 
     void RegisterPointerForEdgeScroll(UINT pointerId);
-    void UnregisterPointerForEdgeScroll();
+    winrt::ScrollingScrollInfo UnregisterPointerForEdgeScroll();
 
 #pragma endregion
 
@@ -436,7 +436,7 @@ private:
     void UpdateVisualInteractionSourceMode(ScrollingPresenterDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation);
-    void UpdateEdgeScroll(winrt::float2 const& offsetsVelocity, UINT pointerId);
+    bool UpdateEdgeScroll(winrt::float2 const& offsetsVelocity);
 
     void OnContentSizeChanged(
         const winrt::UIElement& content);
@@ -474,6 +474,9 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         _Out_opt_ int32_t* viewChangeId);
 
+    bool ProcessPointerEdgeScroll(
+        const winrt::PointerPoint& pointerPoint,
+        bool raiseEdgeScrollQueued);
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
         int32_t mouseWheelDelta,

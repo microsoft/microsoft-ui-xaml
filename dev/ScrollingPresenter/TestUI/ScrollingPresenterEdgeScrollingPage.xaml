@@ -15,7 +15,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Canvas x:Name="canvas" Width="580" Height="780">
+        <Canvas x:Name="canvas" Width="580" Height="780" Background="LightYellow">
             <controlsPrimitives:ScrollingPresenter
                 x:Name="scrollingPresenter" Width="400" Height="600"
                 ZoomMode="Enabled" Margin="90" Background="ForestGreen"
@@ -82,6 +82,11 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <Grid Grid.Row="0">
@@ -113,7 +118,7 @@
                     <Button x:Name="btnUpdateHorizontalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateHorizontalEdgeScrollParameters_Click"/>
                 </Grid>
                 
-                <Grid Grid.Row="1" Margin="0,6,0,0">
+                <Grid Grid.Row="1" Margin="0,8,0,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -142,14 +147,20 @@
                     <Button x:Name="btnUpdateVerticalEdgeScrollParameters" Content="Update" HorizontalAlignment="Stretch" Margin="1" Grid.Row="7" Grid.ColumnSpan="2" Click="BtnUpdateVerticalEdgeScrollParameters_Click"/>
                 </Grid>
 
-                <ToggleButton x:Name="tglBtnRegisterPointerIdForEdgeScroll" Content="Register PointerId ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="2" Margin="1" Grid.Column="1" Click="TglBtnRegisterPointerIdForEdgeScroll_Click"/>
-                <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="1">
+                <TextBlock Text="Un/RegisterPointerForEdgeScroll" Grid.Row="2" Margin="2,8,2,2" Foreground="Red"/>
+                <ToggleButton x:Name="tglBtnRegisterPointerIdForEdgeScroll" Content="Register PointerId ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="3" Margin="1" Click="TglBtnRegisterPointerIdForEdgeScroll_Click"/>
+                <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="1">
                     <TextBlock Text="Registered PointerId:" Margin="1" VerticalAlignment="Center"/>
                     <TextBox x:Name="txtRegisteredPointerId" Margin="1"/>
                 </StackPanel>
-                <ToggleButton x:Name="tglBtnRegisterMouseForEdgeScroll" Content="Register Mouse ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="4" Margin="1" Grid.Column="1"/>
-                <ToggleButton x:Name="tglBtnRegisterTouchForEdgeScroll" Content="Register Touch ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="5" Margin="1" Grid.Column="1"/>
-                <ToggleButton x:Name="tglBtnRegisterPenForEdgeScroll" Content="Register Pen ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="6" Margin="1" Grid.Column="1"/>
+                <ToggleButton x:Name="tglBtnRegisterMouseForEdgeScroll" Content="Register Mouse ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="5" Margin="1"/>
+                <ToggleButton x:Name="tglBtnRegisterTouchForEdgeScroll" Content="Register Touch ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="6" Margin="1"/>
+                <ToggleButton x:Name="tglBtnRegisterPenForEdgeScroll" Content="Register Pen ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="7" Margin="1"/>
+
+                <TextBlock Text="Start/StopEdgeScrollWithPointer" Grid.Row="8" Margin="2,8,2,2" Foreground="Red"/>
+                <ToggleButton x:Name="tglBtnStartStopMouseForEdgeScroll" Content="Start Mouse ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="9" Margin="1" Click="TglBtnStartStopMouseForEdgeScroll_Click"/>
+                <ToggleButton x:Name="tglBtnStartStopTouchForEdgeScroll" Content="Start Touch ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="10" Margin="1" Click="TglBtnStartStopTouchForEdgeScroll_Click"/>
+                <ToggleButton x:Name="tglBtnStartStopPenForEdgeScroll" Content="Start Pen ForEdgeScroll" HorizontalAlignment="Stretch" Grid.Row="11" Margin="1" Click="TglBtnStartStopPenForEdgeScroll_Click"/>
             </Grid>
         </ScrollViewer>
         

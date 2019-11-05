@@ -329,7 +329,7 @@ unsealed runtimeclass ScrollingPresenter : Windows.UI.Xaml.FrameworkElement
     MU_XC_NAMESPACE.ScrollingScrollInfo StopEdgeScrollWithPointer();
 
     void RegisterPointerForEdgeScroll(UInt32 pointerId);
-    void UnregisterPointerForEdgeScroll();
+    MU_XC_NAMESPACE.ScrollingScrollInfo UnregisterPointerForEdgeScroll();
 
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> ExtentChanged;
     event Windows.Foundation.TypedEventHandler<ScrollingPresenter, Object> StateChanged;
