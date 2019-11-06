@@ -79,8 +79,6 @@ private:
         winrt::Composition::CompositionScopedBatch m_batch{ nullptr };
     };
 
-    void CompleteCurrentPlay();
-
     void OnAutoPlayPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
     void OnFallbackContentPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
