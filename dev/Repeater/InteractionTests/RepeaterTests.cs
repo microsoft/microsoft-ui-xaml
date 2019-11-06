@@ -47,17 +47,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Button navButton = new Button(FindElement.ByName("ItemsRepeater Tests"));
             navButton.InvokeAndWait();
 
-            Wait.ForMilliseconds(1000);
-
             navButton = new Button(FindElement.ByName("Collection Changes Demo"));
             navButton.InvokeAndWait();
 
-            Wait.ForMilliseconds(1000);
-
-
             Random r = new Random();
             int index = r.Next(1, 10);
-            index = 2;
             string elementToRemove = "item" + index;
             Button someRandomElementToRemove = new Button(FindElement.ByName(elementToRemove));
             someRandomElementToRemove.InvokeAndWait();
@@ -68,7 +62,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             for (int i = 0; i < 10; i++)
             {
                 Button currentButton = new Button(FindElement.ByName("item" + i));
-                int buttonIndex = Int32.Parse(currentButton.Name.Replace("item", ""));
+                int buttonIndex = int.Parse(currentButton.Name.Replace("item", ""));
                 foundButtons[buttonIndex] = true;
             }
 
