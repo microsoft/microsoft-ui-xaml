@@ -429,8 +429,11 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
     [MUX_DEFAULT_VALUE("0.0")]
     Double Spacing { get; set; };
 
+    Boolean DisableVirtualization { get; set; };
+
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SpacingProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty DisableVirtualizationProperty{ get; };
 
    // Removing until we are ready to expose.
    // overridable FlowLayoutAnchorInfo GetAnchorForRealizationRect(Windows.Foundation.Size availableSize, VirtualizingLayoutContext context);

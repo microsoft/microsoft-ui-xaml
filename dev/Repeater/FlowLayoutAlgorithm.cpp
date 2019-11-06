@@ -35,6 +35,7 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     double lineSpacing,
     unsigned int maxItemsPerLine,
     const ScrollOrientation& orientation,
+    const bool disableVirtualization,
     const wstring_view& layoutId)
 {
     SetScrollOrientation(orientation);
@@ -60,15 +61,15 @@ winrt::Size FlowLayoutAlgorithm::Measure(
     m_elementManager.OnBeginMeasure(orientation);
 
     int anchorIndex = GetAnchorIndex(availableSize, isWrapping, minItemSpacing, layoutId);
-    Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
-    Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+    Generate(GenerateDirection::Forward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
+    Generate(GenerateDirection::Backward, anchorIndex, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     if (isWrapping && IsReflowRequired())
     {
         REPEATER_TRACE_INFO(L"%*s: \tReflow Pass \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), layoutId.data());
         auto firstElementBounds = m_elementManager.GetLayoutBoundsForRealizedIndex(0);
         firstElementBounds.*MinorStart() = 0;
         m_elementManager.SetLayoutBoundsForRealizedIndex(0, firstElementBounds);
-        Generate(GenerateDirection::Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, layoutId);
+        Generate(GenerateDirection::Forward, 0 /*anchorIndex*/, availableSize, minItemSpacing, lineSpacing, maxItemsPerLine, disableVirtualization, layoutId);
     }
 
     RaiseLineArranged();
@@ -284,6 +285,7 @@ void FlowLayoutAlgorithm::Generate(
     double minItemSpacing,
     double lineSpacing,
     unsigned int maxItemsPerLine,
+    const bool disableVirtualization,
     const wstring_view& layoutId)
 {
     if (anchorIndex != -1)
@@ -305,7 +307,7 @@ void FlowLayoutAlgorithm::Generate(
         bool lineNeedsReposition = false;
 
         while (m_elementManager.IsIndexValidInData(currentIndex) &&
-            ShouldContinueFillingUpSpace(previousIndex, direction))
+              (disableVirtualization || ShouldContinueFillingUpSpace(previousIndex, direction)))
         {
             // Ensure layout element.
             m_elementManager.EnsureElementRealized(direction == GenerateDirection::Forward, currentIndex, layoutId);
