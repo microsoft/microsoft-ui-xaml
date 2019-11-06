@@ -133,7 +133,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="F:\repo\microsoft-ui-xaml\BuildOutput\Debug\\x86\\DensityStyles\Compact.xaml">
+    <Page Include="$CompactXamlFile">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
       <Link>DensityStyles\Compact.xaml</Link>
