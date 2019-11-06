@@ -438,6 +438,20 @@ unsealed runtimeclass StackLayout : VirtualizingLayout
    // overridable void OnElementMeasured(Windows.UI.Xaml.UIElement element, Int32 index, Windows.Foundation.Size availableSize, Windows.Foundation.Size measureSize, Windows.Foundation.Size desiredSize, Windows.Foundation.Size provisionalArrangeSize, VirtualizingLayoutContext context);
 }
 
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+unsealed runtimeclass NonVirtualizingStackLayout : NonVirtualizingLayout
+{
+    NonVirtualizingStackLayout();
+
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
+    Windows.UI.Xaml.Controls.Orientation Orientation{ get; set; };
+
+    static Windows.UI.Xaml.DependencyProperty OrientationProperty{ get; };
+}
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass FlowLayoutState

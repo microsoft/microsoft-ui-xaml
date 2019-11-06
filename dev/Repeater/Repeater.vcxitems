@@ -40,6 +40,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NonVirtualizingStackLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectedItems.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectionModelChildrenRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayout.h" />
@@ -88,6 +89,7 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NonVirtualizingStackLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\StackLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
@@ -110,6 +112,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)NonvirtualizingLayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgsDownlevel.cpp" Condition="$(BuildingWithBuildExe) == 'true'" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NonVirtualizingStackLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionModelChildrenRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayout.cpp" />

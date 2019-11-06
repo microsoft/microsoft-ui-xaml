@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include <pch.h>
@@ -708,7 +708,7 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
     if (auto layout = Layout())
     {
-        if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }
