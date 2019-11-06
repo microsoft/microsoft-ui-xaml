@@ -27,7 +27,6 @@
 
                                 <VisualStateGroup.Transitions>
                                     <VisualTransition From="Updating" To="Determinate">
-
                                         <Storyboard>
                                             <RepositionThemeAnimation TargetName="ProgressBarIndicator" FromHorizontalOffset="-50" />
                                         </Storyboard>

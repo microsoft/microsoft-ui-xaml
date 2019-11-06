@@ -39,34 +39,24 @@ void ProgressBar::OnApplyTemplate()
 
 void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    m_isUpdating = true;
-    UpdateStates();
     SetProgressBarIndicatorWidth();
 
     if (m_shouldUpdateWidthBasedTemplateSettings)
     {
         UpdateWidthBasedTemplateSettings();
     }
-
-    m_isUpdating = false;
-    UpdateStates();
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // NOTE: This hits when the Value property changes, because we called RegisterPropertyChangedCallback.
-    m_isUpdating = true;
-    UpdateStates();
     SetProgressBarIndicatorWidth();
-
-    m_isUpdating = false;
-    UpdateStates();
 }
 
 void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     // NOTE: This hits when IsIndeterminate changes because we set MUX_PROPERTY_CHANGED_CALLBACK to true in the idl.
-
+    SetProgressBarIndicatorWidth();
     UpdateStates();
 }
 
@@ -108,12 +98,7 @@ void ProgressBar::UpdateStates()
     }
     else if (!IsIndeterminate())
     {
-        m_isUpdating = true;
-        UpdateStates();
-        SetProgressBarIndicatorWidth();
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
-
-        m_isUpdating = false;
     }
 }
 
@@ -128,6 +113,9 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             const double minimum = Minimum();
             const auto padding = Padding();
 
+            m_isUpdating = true; // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition in ProgressBar.xaml when reverting back to previous state
+            UpdateStates();
+
             if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
@@ -138,6 +126,9 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             {
                 progressBarIndicator.Width(0); // Error
             }
+
+            m_isUpdating = false; // Reverts back to previous state
+            UpdateStates();
         }
     }
 }
