@@ -234,6 +234,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             NestedRepeaterWithDataTemplateScenario(disableAnimation: false);
         }
 
+
+        [TestMethod]
+        public void FocusedItemGetsRecycledUponCollectionReset()
+        {
+            List<object> ResettingListItems = new List<object> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+            ItemsRepeater repeater;
+            RunOnUIThread.Execute(() => {
+
+                var template = (DataTemplate)XamlReader.Load(
+                        @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
+                            <Button AutomationProperties.Name='{Binding}' Content='{Binding}'/>
+                        </DataTemplate>");
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = ResettingListItems,
+                    ItemTemplate = template
+                };
+
+                Content = new ItemsRepeaterScrollHost() {
+                    Width = 400,
+                    Height = 800,
+                    ScrollViewer = new ScrollViewer {
+                        Content = repeater
+                    }
+                };
+
+                Content.UpdateLayout();
+                
+                Random r = new Random();
+                int index = r.Next(1, 10);
+                string removedText = "item" + index;
+
+                Log.Comment("Focusing a button");
+                Button toFocus = (Button)repeater.TryGetElement(index);
+                Verify.AreEqual(removedText,toFocus.Content as string);
+                toFocus.Focus(FocusState.Programmatic);
+                IdleSynchronizer.Wait();
+
+                Log.Comment("Removing element from collection");
+                ResettingListItems.Remove(removedText);
+                ResettingListItems = new List<object>(ResettingListItems);
+                repeater.ItemsSource = ResettingListItems;
+
+                Log.Comment("Verify rendered elements");
+                bool[] foundButtons = new bool[10];
+
+                // Save all buttons we found
+                for (int i = 0; i < 10; i++)
+                {
+                    Button currentButton = (Button)repeater.TryGetElement(i);
+                    if(currentButton != null)
+                    {
+                        int buttonIndex = int.Parse((currentButton.Content as string).Replace("item", ""));
+                        foundButtons[buttonIndex] = true;
+                    }
+                }
+
+                // Check if every button is present EXCEPT the randomly selected and thus removed button
+                for (int i = 0; i < 10; i++)
+                {
+                    if (i == index)
+                    {
+                        Verify.IsFalse(foundButtons[i]);
+                    }
+                    else
+                    {
+                        Verify.IsTrue(foundButtons[i]);
+                    }
+                }
+            });
+        }
+
         private void NestedRepeaterWithDataTemplateScenario(bool disableAnimation)
         {
             if (!disableAnimation && PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
