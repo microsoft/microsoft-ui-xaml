@@ -3172,11 +3172,6 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollControllerProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController?text=HorizontalScrollController" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController?text=HorizontalScrollController" /> dependency property.</returns>
-    </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</summary>
@@ -3252,11 +3247,6 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollChainingModeProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</returns>
-    </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollControllerProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController?text=VerticalScrollController" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController?text=VerticalScrollController" /> dependency property.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollModeProperty">
