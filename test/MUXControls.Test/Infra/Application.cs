@@ -161,13 +161,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             UIObject coreWindow = null;
 
-            // When running from MUXControls repo we want to install the app.
-            // When running in TestMD we also want to install the app.            
+            if (!_appName.Contains("Gallery"))
+            {
+                // When running from MUXControls repo we want to install the app.
+                // When running in TestMD we also want to install the app.            
 #if USING_TAEF
             TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
 #else
-            BuildAndInstallTestAppIfNeeded();
+                BuildAndInstallTestAppIfNeeded();
 #endif
+            }
 
 
             Log.Comment("Launching app {0}", _appName);
@@ -268,7 +271,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             Debug.Assert(_isUWPApp);
             var nameCondition = UICondition.CreateFromName(packageName);
             var topLevelWindowCondition = CreateTopLevelWindowCondition().AndWith(nameCondition);
-            return UAPApp.Launch(_appName, topLevelWindowCondition);
+            return UAPApp.Launch(_appName, topLevelWindowCondition, 10000);
         }
 
         private UIObject LaunchNonUWPApp(string packageName)

@@ -128,50 +128,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
                     InputHelper.LeftClick(currentPageTextBlock);
 
-                    foreach (string testName in testNames)
+                    if (testNames != null)
                     {
-                        Log.Comment(testName + " initializing TestSetupHelper");
-
-                        var uiObject = FindElement.ByNameAndClassName(testName, "Button");
-                        if (uiObject == null)
+                        foreach (string testName in testNames)
                         {
-                            string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
+                            Log.Comment(testName + " initializing TestSetupHelper");
 
-                            // We'll raise the error message first so the dump has proper context preceding it,
-                            // and will then throw it as an exception so we immediately cease execution.
-                            Log.Error(errorMessage);
-                            DumpHelper.DumpFullContext();
-                            throw new InvalidOperationException(errorMessage);
-                        }
+                            var uiObject = FindElement.ByNameAndClassName(testName, "Button");
+                            if (uiObject == null)
+                            {
+                                string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
 
-                        // We're now entering a new test page, so everything has changed.  As such, we should clear our
-                        // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
-                        ElementCache.Clear();
+                                // We'll raise the error message first so the dump has proper context preceding it,
+                                // and will then throw it as an exception so we immediately cease execution.
+                                Log.Error(errorMessage);
+                                DumpHelper.DumpFullContext();
+                                throw new InvalidOperationException(errorMessage);
+                            }
 
-                        Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
-                        CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
+                            // We're now entering a new test page, so everything has changed.  As such, we should clear our
+                            // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
+                            ElementCache.Clear();
 
-                        if (cb.ToggleState != ToggleState.On)
-                        {
-                            using (var waiter = cb.GetToggledWaiter())
+                            Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
+                            CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
+
+                            if (cb.ToggleState != ToggleState.On)
+                            {
+                                using (var waiter = cb.GetToggledWaiter())
+                                {
+                                    var testButton = new Button(uiObject);
+                                    testButton.Invoke();
+                                    Wait.ForIdle();
+                                    waiter.Wait();
+                                }
+                            }
+                            else
                             {
                                 var testButton = new Button(uiObject);
                                 testButton.Invoke();
-                                Wait.ForIdle();
-                                waiter.Wait();
                             }
+
+                            Wait.ForIdle();
+
+                            Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
+
+                            OpenedTestPages++;
                         }
-                        else
-                        {
-                            var testButton = new Button(uiObject);
-                            testButton.Invoke();
-                        }
-
-                        Wait.ForIdle();
-
-                        Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
-
-                        OpenedTestPages++;
                     }
 
                     TestCleanupHelper.TestSetupHelperPendingDisposals++;

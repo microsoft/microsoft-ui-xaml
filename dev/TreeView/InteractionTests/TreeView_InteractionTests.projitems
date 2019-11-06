@@ -11,5 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)TreeViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XamlControlsGalleryTests.cs" />
   </ItemGroup>
 </Project>

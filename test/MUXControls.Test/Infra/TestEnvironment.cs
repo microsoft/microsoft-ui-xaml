@@ -30,7 +30,7 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland, AppThatUsesMuxIndirectly };
+    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland, AppThatUsesMuxIndirectly, XamlControlsGallery };
 
     // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
     // fixtures get executed.  It won't actually host any tests.
@@ -62,8 +62,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
         private const string _wpfXamlIslandPackageFamilyName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe";
 
-        
-
+        private const string _xamlControlsGalleryPackageName = "XAML Controls Gallery";
+        private const string _xamlControlsGalleryAppName = "Microsoft.XAMLControlsGallery_8wekyb3d8bbwe!App";
+        private const string _xamlControlsGalleryPackageFamilyName = "Microsoft.XAMLControlsGallery_8wekyb3d8bbwe";
 
         public static TestContext TestContext { get; private set; }
 
@@ -162,6 +163,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFamilyName, _nugetTestAppCXName);
             if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFamilyName, _wfpXamlIslandAppName, false /* isUWPApp */);
             if (type == TestType.AppThatUsesMuxIndirectly) return new Application(_appThatUsesMUXIndirectlyPackageName, _appThatUsesMUXIndirectlyPackageFamilyName, _appThatUsesMUXIndirectlyName);
+            if (type == TestType.XamlControlsGallery) return new Application(_xamlControlsGalleryPackageName, _xamlControlsGalleryPackageFamilyName, _xamlControlsGalleryAppName);
             return new Application(_testAppPackageName, _testAppPackageFamilyName, _testAppName);
         }
 
