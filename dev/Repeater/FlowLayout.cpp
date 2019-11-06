@@ -59,6 +59,7 @@ winrt::Size FlowLayout::MeasureOverride(
         LineSpacing(),
         std::numeric_limits<unsigned int>::max() /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
+        false /* disableVirtualization */,
         LayoutId());
     return desiredSize;
 }

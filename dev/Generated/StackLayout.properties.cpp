@@ -8,6 +8,7 @@
 
 CppWinRTActivatableClassWithDPFactory(StackLayout)
 
+GlobalDependencyProperty StackLayoutProperties::s_DisableVirtualizationProperty{ nullptr };
 GlobalDependencyProperty StackLayoutProperties::s_OrientationProperty{ nullptr };
 GlobalDependencyProperty StackLayoutProperties::s_SpacingProperty{ nullptr };
 
@@ -18,6 +19,17 @@ StackLayoutProperties::StackLayoutProperties()
 
 void StackLayoutProperties::EnsureProperties()
 {
+    if (!s_DisableVirtualizationProperty)
+    {
+        s_DisableVirtualizationProperty =
+            InitializeDependencyProperty(
+                L"DisableVirtualization",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::StackLayout>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnDisableVirtualizationPropertyChanged));
+    }
     if (!s_OrientationProperty)
     {
         s_OrientationProperty =
@@ -44,8 +56,17 @@ void StackLayoutProperties::EnsureProperties()
 
 void StackLayoutProperties::ClearProperties()
 {
+    s_DisableVirtualizationProperty = nullptr;
     s_OrientationProperty = nullptr;
     s_SpacingProperty = nullptr;
+}
+
+void StackLayoutProperties::OnDisableVirtualizationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::StackLayout>();
+    winrt::get_self<StackLayout>(owner)->OnPropertyChanged(args);
 }
 
 void StackLayoutProperties::OnOrientationPropertyChanged(
@@ -62,6 +83,16 @@ void StackLayoutProperties::OnSpacingPropertyChanged(
 {
     auto owner = sender.as<winrt::StackLayout>();
     winrt::get_self<StackLayout>(owner)->OnPropertyChanged(args);
+}
+
+void StackLayoutProperties::DisableVirtualization(bool value)
+{
+    static_cast<StackLayout*>(this)->SetValue(s_DisableVirtualizationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool StackLayoutProperties::DisableVirtualization()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<StackLayout*>(this)->GetValue(s_DisableVirtualizationProperty));
 }
 
 void StackLayoutProperties::Orientation(winrt::Orientation const& value)
