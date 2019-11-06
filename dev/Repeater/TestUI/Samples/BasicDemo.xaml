@@ -39,7 +39,11 @@
 
         <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1">
             <ScrollViewer x:Name="scrollViewer">
-                <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" Background="LightBlue"/>
+                <controls:ItemsRepeater x:Name="repeater" VerticalCacheLength="0" Background="LightBlue">
+                    <controls:ItemsRepeater.Layout>
+                        <controls:StackLayout  DisableVirtualization="True"/>
+                    </controls:ItemsRepeater.Layout>
+                </controls:ItemsRepeater>
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
 

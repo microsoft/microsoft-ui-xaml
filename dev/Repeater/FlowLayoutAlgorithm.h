@@ -41,6 +41,7 @@ public:
         double lineSpacing,
         unsigned int maxItemsPerLine,
         const ScrollOrientation& orientation,
+        const bool disableVirtualization,
         const wstring_view& layoutId);
     winrt::Size Arrange(
         const winrt::Size& finalSize,
@@ -84,6 +85,7 @@ private:
         double minItemSpacing,
         double lineSpacing,
         unsigned int maxItemsPerLine,
+        const bool disableVirtualization,
         const wstring_view& layoutId);
     void MakeAnchor(
         const winrt::VirtualizingLayoutContext& context,
