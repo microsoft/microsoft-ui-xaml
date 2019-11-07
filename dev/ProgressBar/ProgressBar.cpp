@@ -39,8 +39,8 @@ void ProgressBar::OnApplyTemplate()
 
 void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    UpdateWidthBasedTemplateSettings();
     SetProgressBarIndicatorWidth();
+    UpdateWidthBasedTemplateSettings();
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -53,7 +53,7 @@ void ProgressBar::OnIsIndeterminatePropertyChanged(const winrt::DependencyProper
 {
     // NOTE: This hits when IsIndeterminate changes because we set MUX_PROPERTY_CHANGED_CALLBACK to true in the idl.
     SetProgressBarIndicatorWidth();
-    UpdateStates();
+    UpdateStates(); 
 }
 
 void ProgressBar::OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -124,7 +124,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
                 const double increment = maxIndicatorWidth / (maximum - minimum);
                 const double indicatorWidth = increment * (Value() - minimum);
-                const double widthDelta = (indicatorWidth - prevIndicatorWidth);
+                const double widthDelta = indicatorWidth - prevIndicatorWidth;
                 templateSettings->IndicatorLengthDelta(-widthDelta);
                 progressBarIndicator.Width(indicatorWidth);
             }
@@ -145,20 +145,19 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 
     if (auto&& progressBarIndicator = m_progressBarIndicator.get())
     {
-        const auto [width, height, indicatorWidth] = [progressBarIndicator, progressBar = m_layoutRoot.get()]()
+        const auto [width, height] = [progressBar = m_layoutRoot.get()]()
         {
             if (progressBar)
             {
                 const float width = static_cast<float>(progressBar.ActualWidth());
                 const float height = static_cast<float>(progressBar.ActualHeight());
-                const float indicatorWidth = static_cast<float>(progressBarIndicator.ActualHeight());
-                return std::make_tuple(width, height, indicatorWidth);
+                return std::make_tuple(width, height);
             }
-            return std::make_tuple(0.0f, 0.0f, 0.0f);
+            return std::make_tuple(0.0f, 0.0f);
         }();
 
-        templateSettings->ContainerAnimationStartPosition(-indicatorWidth);
-        templateSettings->ContainerAnimationEndPosition(width + indicatorWidth);
+        templateSettings->ContainerAnimationStartPosition(width * -0.4);
+        templateSettings->ContainerAnimationEndPosition(width);
 
         const auto rectangle = [width, height, padding = Padding()]()
         {
