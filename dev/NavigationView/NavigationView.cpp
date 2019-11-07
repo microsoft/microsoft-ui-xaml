@@ -183,7 +183,7 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
             bool isInOverflow = parentIR.Name() == c_overflowRepeater;
             if (isInOverflow)
             {
-                    // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
+                // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
                 // also in MeasureOverride, it may raise OnOverflowItemSelectionChanged.
                 // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
                 auto scopeGuard = gsl::finally([this]()
@@ -1807,12 +1807,10 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
         // And SelectionChanged is after we selected the new item.
-        {
-            UnselectPrevItem(prevItem, nextActualItem);
+        UnselectPrevItem(prevItem, nextActualItem);
 
-            ChangeSelectStatusForItem(nextActualItem, true /*selected*/);
-            RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
-        }
+        ChangeSelectStatusForItem(nextActualItem, true /*selected*/);
+        RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
 
         AnimateSelectionChanged(prevItem, nextActualItem);
 
@@ -2375,7 +2373,6 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
 void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item)
 {
     // SelectedItem can be set by API or be clicking/selecting ListViewItem or by clicking on settings
-    // We should not raise ItemInvoke if SelectedItem is changed by API.
     if (IsTopNavigationView())
     {
         bool shouldAnimateToSelectedItemFromFlyout = true;
@@ -2816,7 +2813,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 
     if (!needInvalidMeasure)
     {
-        //
         auto actualWidth = GetTopNavigationViewActualWidth();
         auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
         MUX_ASSERT(desiredWidth <= actualWidth);
