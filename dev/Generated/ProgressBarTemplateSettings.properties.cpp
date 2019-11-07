@@ -10,6 +10,7 @@ CppWinRTActivatableClassWithDPFactory(ProgressBarTemplateSettings)
 
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ClipRectProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_IndicatorLengthDeltaProperty{ nullptr };
 
 ProgressBarTemplateSettingsProperties::ProgressBarTemplateSettingsProperties()
 {
@@ -40,12 +41,24 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_IndicatorLengthDeltaProperty)
+    {
+        s_IndicatorLengthDeltaProperty =
+            InitializeDependencyProperty(
+                L"IndicatorLengthDelta",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
 }
 
 void ProgressBarTemplateSettingsProperties::ClearProperties()
 {
     s_ClipRectProperty = nullptr;
     s_ContainerAnimationEndPositionProperty = nullptr;
+    s_IndicatorLengthDeltaProperty = nullptr;
 }
 
 void ProgressBarTemplateSettingsProperties::ClipRect(winrt::RectangleGeometry const& value)
@@ -66,4 +79,14 @@ void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition(double
 double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationEndPositionProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::IndicatorLengthDelta(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_IndicatorLengthDeltaProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::IndicatorLengthDelta()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_IndicatorLengthDeltaProperty));
 }

@@ -39,8 +39,8 @@ void ProgressBar::OnApplyTemplate()
 
 void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    SetProgressBarIndicatorWidth();
     UpdateWidthBasedTemplateSettings();
+    SetProgressBarIndicatorWidth();
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -100,6 +100,8 @@ void ProgressBar::UpdateStates()
 
 void ProgressBar::SetProgressBarIndicatorWidth()
 {
+    const auto templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
+
     if (auto&& progressBar = m_layoutRoot.get())
     {
         if (auto&& progressBarIndicator = m_progressBarIndicator.get())
@@ -118,9 +120,16 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
+                const double prevIndicatorWidth = progressBarIndicator.ActualWidth();
+
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
                 const double increment = maxIndicatorWidth / (maximum - minimum);
-                progressBarIndicator.Width(increment * (Value() - minimum));
+                const double indicatorWidth = increment * (Value() - minimum);
+
+                const double widthDelta = (indicatorWidth - prevIndicatorWidth);
+                templateSettings->IndicatorLengthDelta(-widthDelta);
+
+                progressBarIndicator.Width(indicatorWidth);
             }
             else
             {
@@ -139,7 +148,7 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 
     if (auto&& progressBarIndicator = m_progressBarIndicator.get())
     {
-        auto const [width, height] = [progressBar = m_layoutRoot.get()]()
+        const auto [width, height] = [ progressBar = m_layoutRoot.get()]()
         {
             if (progressBar)
             {
