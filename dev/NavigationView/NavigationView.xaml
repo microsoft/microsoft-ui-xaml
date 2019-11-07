@@ -298,7 +298,7 @@
                                                 AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                 x:Name="TopNavMenuItemsHost">
                                                 <local:ItemsRepeater.Layout>
-                                                    <local:StackLayout Orientation="Horizontal"/>
+                                                    <local:StackLayout Orientation="Horizontal" DisableVirtualization="True"/>
                                                 </local:ItemsRepeater.Layout>
                                             </local:ItemsRepeater>
                                         </ScrollViewer>

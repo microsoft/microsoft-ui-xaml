@@ -128,7 +128,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_topNavRepeaterLoadedRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
-
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementIndexChangedRevoker.revoke();
@@ -165,6 +164,12 @@ NavigationView::NavigationView()
 
 void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
 {
+
+    if (m_shouldIgnoreNextSelectionChange)
+    {
+        return;
+    }
+
     auto selectedItem = selectionModel.SelectedItem();
     auto selectedIndex = selectionModel.SelectedIndex();
     auto selectedContainer = selectedItem.try_as<NavigationViewItem>();
@@ -194,10 +199,6 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
                 if (!IsSelectionSuppressed(selectedItem))
                 {
                     SelectOverflowItem(selectedItem);
-                }
-                else
-                {
-                    //RaiseItemInvoked(nextItem, false /*isSettings*/);
                 }
             }
             else
@@ -548,6 +549,72 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& send
     auto nvi = sender.try_as<NavigationViewItem>();
     auto parentIR = GetParentItemsRepeaterForItem(*nvi);
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
+    bool itemSelectsOnInvoked = nvi->SelectsOnInvoked();
+
+    // Get required info to raise ItemInvoked
+    // TODO: Clean up into separate methods
+    auto prevItem = SelectedItem();
+    winrt::IInspectable nextItem = nullptr;
+    auto itemIndex = parentIR.GetElementIndex(*nvi);
+    auto itemsSource = parentIR.ItemsSource();
+    winrt::ItemsSourceView dataSource = nullptr;
+    if (itemsSource)
+    {
+        dataSource = winrt::ItemsSourceView(itemsSource);
+        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
+        nextItem = inspectingDataSource->GetAtCore(itemIndex);
+    }
+
+    // This method only gets called when an item has recieved interaction, therefore raise ItemInvoked
+
+    // Other transition other than default only apply to topnav
+    // when clicking overflow on topnav, transition is from bottom
+    // otherwise if prevItem is on left side of nextActualItem, transition is from left
+    //           if prevItem is on right side of nextActualItem, transition is from right
+    // click on Settings item is considered Default
+    NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
+    if (IsTopNavigationView() && itemSelectsOnInvoked)
+    {
+        if (isInOverflow)
+        {
+            recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+        }
+        else if (prevItem && nextItem)
+        {
+            recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
+                NavigationViewItemBaseOrSettingsContentFromData(nextItem));
+        }
+    }
+
+    RaiseItemInvoked(nextItem, false /*isSettings*/, *nvi, recommendedDirection);
+
+    if (m_selectionModel && itemSelectsOnInvoked)
+    {
+        winrt::IndexPath ip = GetIndexPathForItem(*nvi);
+        m_selectionModel.SelectAt(ip);
+        // TODO: Figure out if this is the best place to do this (hint: probably not)
+        //nvi->IsSelected(true);
+    }
+
+
+    //            // In current implementation, when customer clicked a NavigationViewItem, ListView raised ItemInvoke, and we ignored it
+    //        // then ListView raised SelectionChange event. And NavigationView listen to this event and raise ItemInvoked, and then SelectionChanged.
+    //        // This caused a problem that if customer changed SelectedItem in ItemInvoked, ListView.SelectionChanged event doesn't know about it.
+    //        // So need to see make nextActualItem the same as SelectedItem.
+    //auto selectedItem = SelectedItem();
+    //if (nextActualItem != selectedItem)
+    //{
+    //    const auto& invokedItem = nextActualItem;
+    //    nextActualItem = selectedItem;
+    //    isSettingsItem = IsSettingsItem(nextActualItem);
+    //    recommendedDirection = NavigationRecommendedTransitionDirection::Default;
+
+    //    // Customer set SelectedItem to null in ItemInvoked event, so we unselect the old selectedItem.
+    //    if (invokedItem && !nextActualItem)
+    //    {
+    //        UnselectPrevItem(invokedItem, nextActualItem);
+    //    }
+    //}
 
     // TODO: Check whether invoked item is already selected (therefore only raise item invoked)
         //    if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
@@ -565,27 +632,6 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& send
     //        }
     //    }
 
-    // Get required info to raise ItemInvoked
-    // TODO: Clean up into separate methods
-    //winrt::IInspectable item = nullptr;
-    //auto itemIndex = parentIR.GetElementIndex(*nvi);
-    //auto itemsSource = parentIR.ItemsSource();
-    //winrt::ItemsSourceView dataSource = nullptr;
-    //if (itemsSource)
-    //{
-    //    dataSource = winrt::ItemsSourceView(itemsSource);
-    //    auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
-    //    item = inspectingDataSource->GetAtCore(itemIndex);
-    //}
-    //RaiseItemInvoked(item, false /*isSettings*/, *nvi);
-
-    if (m_selectionModel && nvi->SelectsOnInvoked())
-    {
-        winrt::IndexPath ip = GetIndexPathForItem(*nvi);
-        m_selectionModel.SelectAt(ip);
-        // TODO: Figure out if this is the best place to do this (hint: probably not)
-        //nvi->IsSelected(true);
-    }
 }
 
 bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
@@ -836,10 +882,8 @@ winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
         auto scopeGuard = gsl::finally([this]()
         {
             m_shouldIgnoreOverflowItemSelectionChange = false;
-            m_shouldIgnoreNextSelectionChange = false;
         });
         m_shouldIgnoreOverflowItemSelectionChange = true;
-        m_shouldIgnoreNextSelectionChange = true;
 
         if (IsTopNavigationView() && IsTopPrimaryListVisible())
         {
@@ -1636,78 +1680,78 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
 //If SelectionChanged, it changes SelectedItem -> OnPropertyChange -> ChangeSelection. On ChangeSelection:
 //  If !SelectsOnInvoked for new item. Undo the selection.
 //  If SelectsOnInvoked, raise OnItemInvoked(if not from API), then raise SelectionChanged.
-void NavigationView::OnSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
-{
-    if (!m_shouldIgnoreNextSelectionChange)
-    {
-        winrt::IInspectable prevItem{ nullptr };
-        winrt::IInspectable nextItem{ nullptr };
+//void NavigationView::OnSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
+//{
+//    if (!m_shouldIgnoreNextSelectionChange)
+//    {
+//        winrt::IInspectable prevItem{ nullptr };
+//        winrt::IInspectable nextItem{ nullptr };
+//
+//        if (args.RemovedItems().Size() > 0)
+//        {
+//            prevItem = args.RemovedItems().GetAt(0);
+//        }
+//
+//        if (args.AddedItems().Size() > 0)
+//        {
+//            nextItem = args.AddedItems().GetAt(0);
+//        }
+//
+//        if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
+//        {
+//            // Aways keep one item is selected except Settings
+//
+//            // So you're wondering - wait if the menu was previously selected, how can
+//            // the removed item not be a NavigationViewItem? Well, if you say clear a
+//            // NavigationView of MenuItems() and replace it with MenuItemsSource() full
+//            // of strings, you may end up in this state which necessitates the following
+//            // check:
+//            if (auto itemAsNVI = prevItem.try_as<winrt::NavigationViewItem>())
+//            {
+//                itemAsNVI.IsSelected(true);
+//            }
+//        }
+//        else
+//        {
+//            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nextItem);
+//        }
+//    }
+//}
 
-        if (args.RemovedItems().Size() > 0)
-        {
-            prevItem = args.RemovedItems().GetAt(0);
-        }
-
-        if (args.AddedItems().Size() > 0)
-        {
-            nextItem = args.AddedItems().GetAt(0);
-        }
-
-        if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
-        {
-            // Aways keep one item is selected except Settings
-
-            // So you're wondering - wait if the menu was previously selected, how can
-            // the removed item not be a NavigationViewItem? Well, if you say clear a
-            // NavigationView of MenuItems() and replace it with MenuItemsSource() full
-            // of strings, you may end up in this state which necessitates the following
-            // check:
-            if (auto itemAsNVI = prevItem.try_as<winrt::NavigationViewItem>())
-            {
-                itemAsNVI.IsSelected(true);
-            }
-        }
-        else
-        {
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nextItem);
-        }
-    }
-}
-
-void NavigationView::OnOverflowItemSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
-{   
-    // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
-    // also in MeasureOverride, it may raise OnOverflowItemSelectionChanged.
-    // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
-    if (!m_shouldIgnoreNextMeasureOverride && !m_shouldIgnoreOverflowItemSelectionChange)
-    {
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_shouldIgnoreNextMeasureOverride = false;
-            m_selectionChangeFromOverflowMenu = false;
-        });
-        m_shouldIgnoreNextMeasureOverride = true;
-        m_selectionChangeFromOverflowMenu = true;
-
-        if (args.AddedItems().Size() > 0)
-        {
-            auto nextItem = args.AddedItems().GetAt(0);
-            if (nextItem)
-            {
-                CloseTopNavigationViewFlyout();
-
-                if (!IsSelectionSuppressed(nextItem))
-                {
-                    SelectOverflowItem(nextItem);
-                }
-                else
-                {
-                    RaiseItemInvoked(nextItem, false /*isSettings*/);
-                }
-            }           
-        }
-    }
-}
+//void NavigationView::OnOverflowItemSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
+//{   
+//    // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
+//    // also in MeasureOverride, it may raise OnOverflowItemSelectionChanged.
+//    // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
+//    if (!m_shouldIgnoreNextMeasureOverride && !m_shouldIgnoreOverflowItemSelectionChange)
+//    {
+//        auto scopeGuard = gsl::finally([this]()
+//        {
+//            m_shouldIgnoreNextMeasureOverride = false;
+//            m_selectionChangeFromOverflowMenu = false;
+//        });
+//        m_shouldIgnoreNextMeasureOverride = true;
+//        m_selectionChangeFromOverflowMenu = true;
+//
+//        if (args.AddedItems().Size() > 0)
+//        {
+//            auto nextItem = args.AddedItems().GetAt(0);
+//            if (nextItem)
+//            {
+//                CloseTopNavigationViewFlyout();
+//
+//                if (!IsSelectionSuppressed(nextItem))
+//                {
+//                    SelectOverflowItem(nextItem);
+//                }
+//                else
+//                {
+//                    RaiseItemInvoked(nextItem, false /*isSettings*/);
+//                }
+//            }           
+//        }
+//    }
+//}
 
 void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, bool isSettingsItem, NavigationRecommendedTransitionDirection recommendedDirection)
 {
@@ -1727,106 +1771,75 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
     auto nextActualItem = nextItem;
-    if (!m_shouldIgnoreNextSelectionChange)
+
+    bool isSettingsItem = IsSettingsItem(nextActualItem);
+
+    bool isSelectionSuppressed = IsSelectionSuppressed(nextActualItem);
+    if (isSelectionSuppressed)
     {
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_shouldIgnoreNextSelectionChange = false;
-        });
-        m_shouldIgnoreNextSelectionChange = true;
+        UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
 
-        bool isSettingsItem = IsSettingsItem(nextActualItem);
-
-        bool isSelectionSuppressed = IsSelectionSuppressed(nextActualItem);
-        if (isSelectionSuppressed)
-        {
-            UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
-
-            // Undo only happened when customer clicked a selectionsuppressed item. 
-            // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
-            RaiseItemInvoked(nextActualItem, isSettingsItem);
-        }
-        else
-        {
-            // Other transition other than default only apply to topnav
-            // when clicking overflow on topnav, transition is from bottom
-            // otherwise if prevItem is on left side of nextActualItem, transition is from left
-            //           if prevItem is on right side of nextActualItem, transition is from right
-            // click on Settings item is considered Default
-            NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-            if (IsTopNavigationView())
-            {
-                if (m_selectionChangeFromOverflowMenu)
-                {
-                    recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
-                }
-                else if (!isSettingsItem && prevItem && nextActualItem)
-                {
-                    recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
-                        NavigationViewItemBaseOrSettingsContentFromData(nextActualItem));
-                }
-            }
-
-            // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
-            // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
-            // And SelectionChanged is after we selected the new item.
-            {
-                if (m_shouldRaiseInvokeItemInSelectionChange)
-                {
-                    RaiseItemInvoked(nextActualItem, isSettingsItem, nullptr/*container*/, recommendedDirection);
-
-                    // In current implementation, when customer clicked a NavigationViewItem, ListView raised ItemInvoke, and we ignored it
-                    // then ListView raised SelectionChange event. And NavigationView listen to this event and raise ItemInvoked, and then SelectionChanged.
-                    // This caused a problem that if customer changed SelectedItem in ItemInvoked, ListView.SelectionChanged event doesn't know about it.
-                    // So need to see make nextActualItem the same as SelectedItem.
-                    auto selectedItem = SelectedItem();
-                    if (nextActualItem != selectedItem)
-                    {
-                        const auto& invokedItem = nextActualItem;
-                        nextActualItem = selectedItem;
-                        isSettingsItem = IsSettingsItem(nextActualItem);
-                        recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-
-                        // Customer set SelectedItem to null in ItemInvoked event, so we unselect the old selectedItem.
-                        if (invokedItem && !nextActualItem)
-                        {
-                            UnselectPrevItem(invokedItem, nextActualItem);
-                        }
-                    }
-                }
-                UnselectPrevItem(prevItem, nextActualItem);
-
-                ChangeSelectStatusForItem(nextActualItem, true /*selected*/);
-                RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
-            }
-
-            AnimateSelectionChanged(prevItem, nextActualItem);
-
-            ClosePaneIfNeccessaryAfterItemIsClicked();
-        }
+        // Undo only happened when customer clicked a selectionsuppressed item. 
+        // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
+        RaiseItemInvoked(nextActualItem, isSettingsItem);
     }
-}
-
-void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::ItemClickEventArgs& args)
-{
-    auto clickedItem = args.ClickedItem();
-
-    auto itemContainer = GetContainerForClickedItem(clickedItem);
-
-    auto selectedItem = SelectedItem();
-    // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
-    // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
-    //
-    // args.ClickedItem itself is the content of ListViewItem, so it can't be compared directly with SelectedItem or do IsSelectionSuppressed
-    // We workaround this by compare the selectedItem.content with clickeditem by DoesSelectedItemContainContent.
-    // If selecteditem.content == item, selecteditem is used to deduce the selectionsuppressed flag
-    if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
+    else
     {
-        RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+        // Other transition other than default only apply to topnav
+        // when clicking overflow on topnav, transition is from bottom
+        // otherwise if prevItem is on left side of nextActualItem, transition is from left
+        //           if prevItem is on right side of nextActualItem, transition is from right
+        // click on Settings item is considered Default
+        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
+        if (IsTopNavigationView())
+        {
+            if (m_selectionChangeFromOverflowMenu)
+            {
+                recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+            }
+            else if (!isSettingsItem && prevItem && nextActualItem)
+            {
+                recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
+                    NavigationViewItemBaseOrSettingsContentFromData(nextActualItem));
+            }
+        }
+
+        // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
+        // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
+        // And SelectionChanged is after we selected the new item.
+        {
+            UnselectPrevItem(prevItem, nextActualItem);
+
+            ChangeSelectStatusForItem(nextActualItem, true /*selected*/);
+            RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
+        }
+
+        AnimateSelectionChanged(prevItem, nextActualItem);
 
         ClosePaneIfNeccessaryAfterItemIsClicked();
     }
 }
+
+//void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::ItemClickEventArgs& args)
+//{
+//    auto clickedItem = args.ClickedItem();
+//
+//    auto itemContainer = GetContainerForClickedItem(clickedItem);
+//
+//    auto selectedItem = SelectedItem();
+//    // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
+//    // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
+//    //
+//    // args.ClickedItem itself is the content of ListViewItem, so it can't be compared directly with SelectedItem or do IsSelectionSuppressed
+//    // We workaround this by compare the selectedItem.content with clickeditem by DoesSelectedItemContainContent.
+//    // If selecteditem.content == item, selecteditem is used to deduce the selectionsuppressed flag
+//    if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
+//    {
+//        RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+//
+//        ClosePaneIfNeccessaryAfterItemIsClicked();
+//    }
+//}
 
 void NavigationView::RaiseItemInvoked(winrt::IInspectable const& item,
     bool isSettings,
@@ -2363,16 +2376,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
 {
     // SelectedItem can be set by API or be clicking/selecting ListViewItem or by clicking on settings
     // We should not raise ItemInvoke if SelectedItem is changed by API.
-    // If isChangingSelection, this function is called in an inner loop and it should be called from API, so don't change m_shouldRaiseInvokeItemInSelectionChange
-    // Otherwise, it's not from API and expect ItemInvoke when selectionchanged.
-
-    bool isChangingSelection = m_shouldIgnoreNextSelectionChange;
-    
-    if (!isChangingSelection)
-    {
-        m_shouldRaiseInvokeItemInSelectionChange = true;
-    }
-
     if (IsTopNavigationView())
     {
         bool shouldAnimateToSelectedItemFromFlyout = true;
@@ -2400,10 +2403,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
     }
 
     SelectedItem(item);
-    if (!isChangingSelection)
-    {
-        m_shouldRaiseInvokeItemInSelectionChange = false;
-    }
 }
 
 bool NavigationView::DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer)
@@ -2857,12 +2856,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
         {
             // Exchange items between Primary and Overflow
             {
-                auto scopeGuard = gsl::finally([this]()
-                {
-                    m_shouldIgnoreNextSelectionChange = false;
-                });
-                m_shouldIgnoreNextSelectionChange = true;
-
                 m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
                 m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
             }
@@ -3743,12 +3736,12 @@ void NavigationView::UpdateListViewItemSource()
         return;
     }
 
-    auto dataSource = MenuItemsSource();
-    if (!dataSource)
-    {
-        dataSource = MenuItems();
-        UpdateSelectionForMenuItems();
-    }
+    //auto dataSource = MenuItemsSource();
+    //if (!dataSource)
+    //{
+    //    dataSource = MenuItems();
+    //    UpdateSelectionForMenuItems();
+    //}
 
     // Always unset the data source first from old ListView, then set data source for new ListView.
     //if (IsTopNavigationView())
@@ -3775,7 +3768,7 @@ void NavigationView::UpdateSelectionForMenuItems()
     //         <NavigationView.MenuItems>
     //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
     //         </NavigationView.MenuItems>
-    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
+    if (!SelectedItem())
     {
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
@@ -3832,7 +3825,7 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
 
 bool NavigationView::ShouldIgnoreMeasureOverride()
 {
-    return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange || m_shouldIgnoreNextSelectionChange;
+    return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange;
 }
 
 bool NavigationView::NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar)
