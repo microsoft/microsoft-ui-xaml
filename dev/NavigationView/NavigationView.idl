@@ -348,11 +348,4 @@ unsealed runtimeclass NavigationViewItemHeader : NavigationViewItemBase
     NavigationViewItemHeader();
 }
 
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-unsealed runtimeclass NavigationViewItemRevokers
-{
-}
-
-
 }

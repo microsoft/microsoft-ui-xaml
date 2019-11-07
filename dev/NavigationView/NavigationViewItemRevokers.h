@@ -3,10 +3,7 @@
 
 #pragma once
 
-#include "NavigationViewItemRevokers.g.h"
-
-class NavigationViewItemRevokers :
-    public ReferenceTracker<NavigationViewItemRevokers, winrt::implementation::NavigationViewItemRevokersT, winrt::composing, winrt::composable>
+class NavigationViewItemRevokers : public winrt::implements<NavigationViewItemRevokers, winrt::IInspectable>
 {
 public:
     winrt::NavigationViewItem::NavigationViewItemInvoked_revoker pointerPressedRevoker{};
