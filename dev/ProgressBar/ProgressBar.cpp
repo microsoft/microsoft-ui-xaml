@@ -107,6 +107,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
         if (auto&& progressBarIndicator = m_progressBarIndicator.get())
         {
             const double progressBarWidth = progressBar.ActualWidth();
+            const double prevIndicatorWidth = progressBarIndicator.ActualWidth();
             const double maximum = Maximum();
             const double minimum = Minimum();
             const auto padding = Padding();
@@ -120,15 +121,11 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
-                const double prevIndicatorWidth = progressBarIndicator.ActualWidth();
-
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
                 const double increment = maxIndicatorWidth / (maximum - minimum);
                 const double indicatorWidth = increment * (Value() - minimum);
-
                 const double widthDelta = (indicatorWidth - prevIndicatorWidth);
                 templateSettings->IndicatorLengthDelta(-widthDelta);
-
                 progressBarIndicator.Width(indicatorWidth);
             }
             else
@@ -148,18 +145,20 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 
     if (auto&& progressBarIndicator = m_progressBarIndicator.get())
     {
-        const auto [width, height] = [ progressBar = m_layoutRoot.get()]()
+        const auto [width, height, indicatorWidth] = [progressBarIndicator, progressBar = m_layoutRoot.get()]()
         {
             if (progressBar)
             {
                 const float width = static_cast<float>(progressBar.ActualWidth());
                 const float height = static_cast<float>(progressBar.ActualHeight());
-                return std::make_tuple(width, height);
+                const float indicatorWidth = static_cast<float>(progressBarIndicator.ActualHeight());
+                return std::make_tuple(width, height, indicatorWidth);
             }
-            return std::make_tuple(0.0f, 0.0f);
+            return std::make_tuple(0.0f, 0.0f, 0.0f);
         }();
 
-        templateSettings->ContainerAnimationEndPosition(width);
+        templateSettings->ContainerAnimationStartPosition(-indicatorWidth);
+        templateSettings->ContainerAnimationEndPosition(width + indicatorWidth);
 
         const auto rectangle = [width, height, padding = Padding()]()
         {
