@@ -40,11 +40,7 @@ void ProgressBar::OnApplyTemplate()
 void ProgressBar::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     SetProgressBarIndicatorWidth();
-
-    if (m_shouldUpdateWidthBasedTemplateSettings)
-    {
-        UpdateWidthBasedTemplateSettings();
-    }
+    UpdateWidthBasedTemplateSettings();
 }
 
 void ProgressBar::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -116,7 +112,11 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             m_isUpdating = true; // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition in ProgressBar.xaml when reverting back to previous state
             UpdateStates();
 
-            if (std::abs(maximum - minimum) > DBL_EPSILON)
+            if (IsIndeterminate())
+            {
+                progressBarIndicator.Width(progressBarWidth * 0.4);
+            }
+            else if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
                 const double maxIndicatorWidth = progressBarWidth - (padding.Left + padding.Right);
                 const double increment = maxIndicatorWidth / (maximum - minimum);
@@ -149,8 +149,6 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
             }
             return std::make_tuple(0.0f, 0.0f);
         }();
-
-        progressBarIndicator.Width(width / 3);
 
         templateSettings->ContainerAnimationEndPosition(width);
 
