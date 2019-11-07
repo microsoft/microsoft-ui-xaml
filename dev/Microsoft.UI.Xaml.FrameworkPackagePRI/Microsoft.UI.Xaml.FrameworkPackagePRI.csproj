@@ -2,7 +2,6 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\SdkVersion.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
