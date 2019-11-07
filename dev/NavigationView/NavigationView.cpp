@@ -774,9 +774,8 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-            //nviRevokers->pointerPressedRevoker = nvi.PointerPressed(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
             nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
-            nvi.SetValue(GetNavigationViewItemRevokersProperty(), (*nviRevokers).try_as<winrt::IInspectable>());
+            nvi.SetValue(GetNavigationViewItemRevokersProperty(), nviRevokers.as<winrt::IInspectable>());
         }
     }
 }
