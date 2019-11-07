@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -239,8 +239,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         public void FocusedItemGetsRecycledUponCollectionReset()
         {
             List<object> ResettingListItems = new List<object> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
-            ItemsRepeater repeater;
-            RunOnUIThread.Execute(() => {
+            ItemsRepeater repeater = null;
+            int index = 4;
+            string removedText = "item" + index; 
+            
+            RunOnUIThread.Execute(() =>
+            {
 
                 var template = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
@@ -259,23 +263,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Content = repeater
                     }
                 };
-
                 Content.UpdateLayout();
-                
-                Random r = new Random();
-                int index = r.Next(1, 10);
-                string removedText = "item" + index;
+            });
+            
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => {
+
 
                 Log.Comment("Focusing a button");
                 Button toFocus = (Button)repeater.TryGetElement(index);
-                Verify.AreEqual(removedText,toFocus.Content as string);
+                Verify.AreEqual(removedText, toFocus.Content as string);
                 toFocus.Focus(FocusState.Programmatic);
-                IdleSynchronizer.Wait();
 
                 Log.Comment("Removing element from collection");
                 ResettingListItems.Remove(removedText);
                 ResettingListItems = new List<object>(ResettingListItems);
-                repeater.ItemsSource = ResettingListItems;
+                repeater.ItemsSource = ResettingListItems
+                ;
+            });
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => { 
+
 
                 Log.Comment("Verify rendered elements");
                 bool[] foundButtons = new bool[10];
@@ -303,6 +313,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         Verify.IsTrue(foundButtons[i]);
                     }
                 }
+
             });
         }
 
