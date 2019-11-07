@@ -248,7 +248,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 var template = (DataTemplate)XamlReader.Load(
                         @"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'> 
-                            <Button AutomationProperties.Name='{Binding}' Content='{Binding}'/>
+                            <Button Content='{Binding}'/>
                         </DataTemplate>");
 
                 repeater = new ItemsRepeater() {
