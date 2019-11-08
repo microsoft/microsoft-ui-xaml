@@ -73,13 +73,6 @@ static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Beha
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
 
-// A tricky to help to stop layout cycle. As we know, we may have this:
-// 1 .. first time invalid measure, normal case because of virtualization
-// 2 .. data update before next invalid measure
-// 3 .. possible layout cycle. a buffer
-// so 4 is selected for threshold.
-constexpr int s_measureOnInitStep2CountThreshold{ 4 };
-
 constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
@@ -188,10 +181,8 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
                 // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
                 auto scopeGuard = gsl::finally([this]()
                     {
-                        m_shouldIgnoreNextMeasureOverride = false;
                         m_selectionChangeFromOverflowMenu = false;
                     });
-                m_shouldIgnoreNextMeasureOverride = true;
                 m_selectionChangeFromOverflowMenu = true;
 
                 CloseTopNavigationViewFlyout();
@@ -876,46 +867,29 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 //   -> Another MeasureOverride(register LayoutUpdated) -> LayoutUpdated(unregister LayoutUpdated) -> Done
 winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
 {
-    if (!ShouldIgnoreMeasureOverride())
+    if (IsTopNavigationView() && IsTopPrimaryListVisible())
     {
-        auto scopeGuard = gsl::finally([this]()
+        if (availableSize.Width == std::numeric_limits<float>::infinity())
         {
-            m_shouldIgnoreOverflowItemSelectionChange = false;
-        });
-        m_shouldIgnoreOverflowItemSelectionChange = true;
-
-        if (IsTopNavigationView() && IsTopPrimaryListVisible())
-        {
-            if (availableSize.Width == std::numeric_limits<float>::infinity())
-            {
-                // We have infinite space, so move all items to primary list
-                m_topDataProvider.MoveAllItemsToPrimaryList();
-            }
-            else
-            {
-                HandleTopNavigationMeasureOverride(availableSize);
-
-                if (m_topNavigationMode != TopNavigationViewLayoutState::Normal && m_topNavigationMode != TopNavigationViewLayoutState::Overflow)
-                {
-                    RequestInvalidateMeasureOnNextLayoutUpdate();
-                }
-#ifdef DEBUG
-                if (m_topDataProvider.Size() > 0)
-                {
-                    // We should always have at least one item in primary.
-                    MUX_ASSERT(m_topDataProvider.GetPrimaryItems().Size() > 0);
-                }
-#endif // DEBUG
-            }
+            // We have infinite space, so move all items to primary list
+            m_topDataProvider.MoveAllItemsToPrimaryList();
         }
+        else
+        {
+            HandleTopNavigationMeasureOverride(availableSize);
+#ifdef DEBUG
+            if (m_topDataProvider.Size() > 0)
+            {
+                // We should always have at least one item in primary.
+                MUX_ASSERT(m_topDataProvider.GetPrimaryItems().Size() > 0);
+            }
+#endif // DEBUG
+        }
+    }
 
-        m_layoutUpdatedToken.revoke();
-        m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
-    }
-    else
-    {
-        RequestInvalidateMeasureOnNextLayoutUpdate();
-    }
+    m_layoutUpdatedToken.revoke();
+    m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
+
     return __super::MeasureOverride(availableSize);
 }
 
@@ -931,28 +905,15 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     }
     else
     {
-        // For some unknown reason, ListView may not always selected a item on the first time when we update the datasource.
-        // If it's not selected, we re-selected it.
-        auto selectedItem = SelectedItem();
-        if (selectedItem)
-        {
-            auto container = NavigationViewItemOrSettingsContentFromData(selectedItem);
-            if (container && !container.IsSelected() && container.SelectsOnInvoked())
-            {
-                container.IsSelected(true);
-
-            }
-        }
-
         // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
         // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
         if (auto lastSelectedItemInTopNav = m_lastSelectedItemPendingAnimationInTopNav.get())
         {
-            AnimateSelectionChanged(lastSelectedItemInTopNav, selectedItem);
+            AnimateSelectionChanged(lastSelectedItemInTopNav, SelectedItem());
         }
         else
         {
-            AnimateSelectionChanged(nullptr, selectedItem);
+            AnimateSelectionChanged(nullptr, SelectedItem());
         }
     }
 }
@@ -2178,15 +2139,8 @@ void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEve
     // If it's InitStep1, it means that we didn't start the layout yet.
     if (m_topNavigationMode != TopNavigationViewLayoutState::InitStep1)
     {
-        {
-            auto scopeGuard = gsl::finally([this]()
-            {
-                m_shouldIgnoreOverflowItemSelectionChange = false;
-            });
-            m_shouldIgnoreOverflowItemSelectionChange = true;
-            m_topDataProvider.MoveAllItemsToPrimaryList();
-        }
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep2);
+        m_topDataProvider.MoveAllItemsToPrimaryList();
+        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         InvalidateTopNavPrimaryLayout();
     }
 
@@ -2214,14 +2168,7 @@ void NavigationView::TopNavigationViewItemContentChanged()
 {
     if (m_appliedTemplate)
     {
-        if (ShouldIgnoreMeasureOverride())
-        {
-            RequestInvalidateMeasureOnNextLayoutUpdate();
-        }
-        else
-        {
-            InvalidateMeasure();
-        }
+        InvalidateMeasure();
     }
 }
 
@@ -2355,13 +2302,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
 
     if (m_appliedTemplate && IsTopNavigationView())
     {
-        // In above ChangeSelection function, m_shouldIgnoreNextSelectionChange is set to true first and then set to false when leaving the function scope. 
-        // When customer select an item by API, SelectionChanged event is raised in ChangeSelection and customer may change the layout.
-        // MeasureOverride is executed but it did nothing since m_shouldIgnoreNextSelectionChange is true in ChangeSelection function.
-        // InvalidateMeasure to make MeasureOverride happen again
-        bool measureOverrideDidNothing = m_shouldInvalidateMeasureOnNextLayoutUpdate && !m_layoutUpdatedToken;
-            
-        if (measureOverrideDidNothing ||
+        if (!m_layoutUpdatedToken ||
             (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
@@ -2680,30 +2621,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
         }
         else
         {
-             ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep2, availableSize);
-        }
-        break;
-    case TopNavigationViewLayoutState::InitStep2: // Realized virtualization items
-        {
-            // Bug 18196691: For some reason(eg: customer hide topnav grid or it's parent from code directly), 
-            // The 2nd item may never been realized. and it will enter into a layout_cycle.
-            // For performance reason, we don't go through the visualtree to determine if ListView is actually visible or not
-            // m_measureOnInitStep2Count is used to avoid the cycle
-
-            // In our test environment, m_measureOnInitStep2Count should <= 2 since we didn't hide anything from code
-            // so the assert count is different from s_measureOnInitStep2CountThreshold 
-            MUX_ASSERT(m_measureOnInitStep2Count <= 2);
-            //MUX_FAIL_FAST_MSG("THIS CODE PATH SHOULD NOT BE ENTERED ANYMORE!");
-
-            if (m_measureOnInitStep2Count >= s_measureOnInitStep2CountThreshold || !IsTopNavigationFirstMeasure())
-            {
-                m_measureOnInitStep2Count = 0;
-                ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
-            }
-            else
-            {
-                m_measureOnInitStep2Count++;
-            }
+             ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
         }
         break;
 
@@ -2863,9 +2781,10 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 
     if (needInvalidMeasure || m_shouldInvalidateMeasureOnNextLayoutUpdate)
     {
+        MUX_FAIL_FAST_MSG("THIS CODE PATH SHOULD NOT BE HIT ANYMORE!");
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep2);
+        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
         InvalidateTopNavPrimaryLayout();  
     }
@@ -3816,11 +3735,6 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
     {
         ClosePane();
     }
-}
-
-bool NavigationView::ShouldIgnoreMeasureOverride()
-{
-    return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange;
 }
 
 bool NavigationView::NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar)
