@@ -125,4 +125,8 @@
     <value>Agregar nueva pestaña</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>Cerrar pestaña</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

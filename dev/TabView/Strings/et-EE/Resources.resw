@@ -125,4 +125,8 @@
     <value>Lisa uus vahekaart</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>Sule vahekaart</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>
