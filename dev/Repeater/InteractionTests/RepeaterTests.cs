@@ -40,45 +40,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             TestCleanupHelper.Cleanup();
         }
-
-        [TestMethod]
-        public void FocusedItemGetsRecycledUponCollectionReset()
-        {
-            Button navButton = new Button(FindElement.ByName("ItemsRepeater Tests"));
-            navButton.InvokeAndWait();
-
-            navButton = new Button(FindElement.ByName("Collection Changes Demo"));
-            navButton.InvokeAndWait();
-
-            Random r = new Random();
-            int index = r.Next(1, 10);
-            string elementToRemove = "item" + index;
-            Button someRandomElementToRemove = new Button(FindElement.ByName(elementToRemove));
-            someRandomElementToRemove.InvokeAndWait();
-
-            bool[] foundButtons = new bool[10];
-
-            // Save all buttons we found
-            for (int i = 0; i < 10; i++)
-            {
-                Button currentButton = new Button(FindElement.ByName("item" + i));
-                int buttonIndex = int.Parse(currentButton.Name.Replace("item", ""));
-                foundButtons[buttonIndex] = true;
-            }
-
-            // Check if every button is present EXCEPT the randomly selected and thus removed button
-            for(int i = 0; i < 10; i++)
-            {
-                if(i == index)
-                {
-                    Verify.IsFalse(foundButtons[i]);
-                }
-                else
-                {
-                    Verify.IsTrue(foundButtons[i]);
-                }
-            }
-        }
-
     }
 }
