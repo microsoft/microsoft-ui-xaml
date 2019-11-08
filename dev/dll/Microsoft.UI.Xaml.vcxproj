@@ -428,7 +428,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />
@@ -462,7 +462,7 @@
     <ItemGroup>
       <UndefinedPage Include="@(SharedPage)" Condition="'%(Version)' == 'Undefined' Or '%(Type)' == 'Undefined'" />
     </ItemGroup>
-    <Error File="@(UndefinedPage -> '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
+    <Error File="@(UndefinedPage -&gt; '%(Filename)%(Extension)')" Condition="'%(Filename)%(Extension)' != ''" Text="Version and/or type of %(Filename)%(Extension) was not defined in including .vcxitems file. Please annotate &lt;Page&gt; item tag with &lt;Version&gt; and &lt;Type&gt; item metadata." />
     <ItemGroup>
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '1'" />
       <OrderedSharedPage Include="@(SharedPage)" Condition="'%(Priority)' == '2'" />
