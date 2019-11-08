@@ -169,20 +169,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
                     var navigationView = SetupNavigationView(displayMode);
-                    visualTreeVerifier.VerifyVisualTree(root: navigationView, masterFilePrefix: filePrefix);
+                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, masterFilePrefix: filePrefix);
                 }
 
                 Log.Comment($"Verify visual tree for NavigationViewScrolling");
                 var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTree(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
                 
                 Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
                 var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);
-                visualTreeVerifier.VerifyVisualTree(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
 
                 Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
                 var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
-                visualTreeVerifier.VerifyVisualTree(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
+                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
             }
         }
 
