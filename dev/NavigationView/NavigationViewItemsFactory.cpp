@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "NavigationViewItemsFactory.h"
 #include "NavigationViewItemBase.h"
+#include "NavigationViewItem.h"
 
 NavigationViewItemsFactory::NavigationViewItemsFactory()
 {
@@ -35,7 +36,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
     }
 
     // Create a wrapping container for the data
-    auto nvi = winrt::make_self<NavigationViewItemBase>();
+    auto nvi = winrt::make_self<NavigationViewItem>();
     nvi->Content(newContent);
     return *nvi;
 }
