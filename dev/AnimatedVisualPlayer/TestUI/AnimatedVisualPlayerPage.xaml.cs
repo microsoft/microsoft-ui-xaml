@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AnimatedVisualPlayerTests;
+using Common;
 using Microsoft.Graphics.Canvas;
 using Windows.Foundation.Metadata;
 using Windows.Graphics;
@@ -32,9 +33,6 @@ namespace MUXControlsTestApp
         public FallbackGrid()
         {
             Latest = this;
-            //Background = new SolidColorBrush(Colors.Red);
-            //this.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //this.VerticalAlignment = VerticalAlignment.Stretch;
             Windows.UI.Xaml.Shapes.Rectangle rect = new Windows.UI.Xaml.Shapes.Rectangle();
             rect.MaxWidth = rect.MinWidth = RectangleWidth;
             rect.MaxHeight = rect.MinHeight = RectangleHeight;
@@ -49,28 +47,30 @@ namespace MUXControlsTestApp
         public AnimatedVisualPlayerPage()
         {
             this.InitializeComponent();
-            SetAutomationPeerNames(this);
+            SetAutomationPeerNames(PageGrid);
         }
 
-        // Set the AutomationPeer name to be the same as the x:Name on each FrameworkElement.
+        // Set the AutomationPeer name to be the same as the x:Name on each FrameworkElement
+        // that is a child of the given panel, and continue recursively into any panel children.
         // This is so we don't need to set both properties on the elements in XAML.
-        void SetAutomationPeerNames(FrameworkElement root)
+        void SetAutomationPeerNames(Panel root)
         {
-            var count = VisualTreeHelper.GetChildrenCount(root);
-            for (var i = 0; i < count; i++)
-            {
-                var child = VisualTreeHelper.GetChild(root, i);
+            foreach (var child in root.Children)
+            { 
                 if (child is FrameworkElement element)
                 {
-                    // Copy the x:Name into the AutomationPeer name.
+                    // Copy the x:Name into the AutomationPeer name unless it already has an AutomationPeer name.
                     var name = element.Name;
-                    if (!string.IsNullOrEmpty(name))
+                    if (!string.IsNullOrEmpty(name) && string.IsNullOrEmpty(AutomationProperties.GetName(element)))
                     {
                         AutomationProperties.SetName(element, name);
                     }
 
-                    // Recurse to get the rest of the tree.
-                    SetAutomationPeerNames(element);
+                    if (child is Panel panel)
+                    {
+                        // Recurse to get the rest of the tree.
+                        SetAutomationPeerNames(panel);
+                    }
                 }
             }
         }
@@ -140,7 +140,7 @@ namespace MUXControlsTestApp
         {
             // The player's PlayAsync returns immediately in RS4 or lower windows build.
             // For those builds set the text box with the given default value so that the tests will pass.
-            if (IsRS5OrHigher())
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 // Read the progress value from the player.
                 var progressPropertySet = (CompositionPropertySet)Player.ProgressObject;
@@ -171,7 +171,7 @@ namespace MUXControlsTestApp
             // Thus, Constants.TrueText is set to IsPlayingTextBoxBeingPlaying's content
             // in order to satisfy the interaction test that uses Accessibility.
             //
-            if (IsRS5OrHigher())
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 Player.Pause();
                 IsPlayingTextBoxBeingPlaying.Text = Player.IsPlaying.ToString();
@@ -199,7 +199,7 @@ namespace MUXControlsTestApp
         {
             // VisualCapture helper functionality is only available since RS5. Because API
             // method GraphicsCaptureItem.CreateFromVisual is an RS5 feature.
-            if (IsRS5OrHigher())
+            if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
             {
                 // nullsource is a source that always fails. We use it to trigger the fallback behavior.
                 Player.Source = new AnimatedVisuals.nullsource();
@@ -277,11 +277,6 @@ namespace MUXControlsTestApp
             }
 
             return await tcs.Task;
-        }
-
-        static bool IsRS5OrHigher()
-        {
-            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", 7);
         }
     }
 }

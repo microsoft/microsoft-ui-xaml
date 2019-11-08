@@ -14,9 +14,15 @@
         <local:MyCommand x:Key="TestExecuteCommand" />
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="PageGrid" Margin="12">
         <Grid.Resources>
             <Style TargetType="TextBox">
+                <!--
+                  The TextBoxes are used by automation tests to observe state changes on this page.
+                  We'd use TextBlocks here if we could, but they don't support automation change
+                  notifications. Setting IsEnabled=False makes the TextBox behave like a TextBlock
+                  but it supports automation change notifications.
+                -->
                 <Setter Property="IsEnabled" Value="False" />
                 <Setter Property="Text" Value="None" />
             </Style>
