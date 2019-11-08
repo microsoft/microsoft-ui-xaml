@@ -3,13 +3,18 @@
 
 using System;
 
+using Common;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+
+#if USING_TAEF
 using WEX.TestExecution;
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
-
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
-using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
-using Windows.Foundation.Metadata;
+#else
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+#endif
 
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
@@ -22,6 +27,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     [TestClass]
     public class RepeaterTests
     {
-        // Placeholder for interaction tests
+        [ClassInitialize]
+        [TestProperty("RunAs", "User")]
+        [TestProperty("Classification", "Integration")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
+        public static void ClassInitialize(TestContext testContext)
+        {
+            TestEnvironment.Initialize(testContext);
+        }
+
+        public void TestCleanup()
+        {
+            TestCleanupHelper.Cleanup();
+        }
     }
 }
