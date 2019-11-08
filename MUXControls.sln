@@ -622,6 +622,14 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_TestUI", "dev\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.FrameworkPackagePRI", "dev\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.FrameworkPackagePRI.csproj", "{9638BF0D-2AA8-4642-A9F1-790BF7FBECF2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProgressRing", "ProgressRing", "{4194505E-4848-4FC4-97D1-0BABF32A11C4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ProgressRing", "dev\ProgressRing\ProgressRing.vcxitems", "{64447EFA-19B4-4BF2-9D63-618635C483EC}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_InteractionTests", "dev\ProgressRing\InteractionTests\ProgressRing_InteractionTests.shproj", "{8C2D60AF-44BC-47DA-8E44-D62E639BFC0A}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressRing_TestUI", "dev\ProgressRing\TestUI\ProgressRing_TestUI.shproj", "{B58EC806-9951-4E5E-AF29-A700A088770E}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
