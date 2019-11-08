@@ -486,41 +486,51 @@ void NavigationView::UpdateRepeaterItemsSource()
 
     if (IsTopNavigationView())
     {
-        if (m_topDataProvider.ShouldChangeDataSource(dataSource))
-        {
-            // Unhook LeftNav repeaters
-            UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), nullptr);
-
-            // unbinding Data from ListView
-            UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-            UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
-
-            // Change data source and setup vectors
-            m_topDataProvider.SetDataSource(dataSource);
-
-            // rebinding
-            if (dataSource)
-            {
-                UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
-                UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
-            }
-            else
-            {
-                UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-                UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
-            }
-        }
+        UpdateLeftRepeaterItemSource(nullptr);
+        UpdateTopNavRepeatersItemSource(dataSource);
     }
     else
     {
-        // Unhook TopNav repeaters
-        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+        UpdateTopNavRepeatersItemSource(nullptr);
+        UpdateLeftRepeaterItemSource(dataSource);
+    }
 
-        UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), dataSource);
+    if (IsTopNavigationView())
+    {
+        InvalidateTopNavPrimaryLayout();
+        UpdateSelectedItem();
     }
 }
 
+void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& items)
+{
+    UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), items);
+}
+
+void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items)
+{
+    if (m_topDataProvider.ShouldChangeDataSource(items))
+    {
+        // Unhook TopNav repeater
+        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+
+        // Change data source and setup vectors
+        m_topDataProvider.SetDataSource(items);
+
+        // rebinding
+        if (items)
+        {
+            UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
+            UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
+        }
+        else
+        {
+            UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+            UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+        }
+    }
+}
 
 void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& ir,
     const winrt::IInspectable& itemsSource)
@@ -1733,8 +1743,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     auto nextActualItem = nextItem;
 
     bool isSettingsItem = IsSettingsItem(nextActualItem);
-
     bool isSelectionSuppressed = IsSelectionSuppressed(nextActualItem);
+
     if (isSelectionSuppressed)
     {
         UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
@@ -1745,6 +1755,11 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
     }
     else
     {
+        // Need to raise ItemInvoked for when the settings item gets invoked
+        if (isSettingsItem)
+        {
+            RaiseItemInvoked(nextActualItem, isSettingsItem);
+        }
         // Other transition other than default only apply to topnav
         // when clicking overflow on topnav, transition is from bottom
         // otherwise if prevItem is on left side of nextActualItem, transition is from left
@@ -3616,31 +3631,6 @@ void NavigationView::UpdatePaneTitleMargins()
             paneTitleFrameworkElement.Margin({ width, 0, 0, 0 }); // see "Hamburger title" on uni
         }
     }
-}
-
-void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
-{
-    //if (m_topDataProvider.ShouldChangeDataSource(items))
-    //{
-    //    // unbinding Data from ListView
-    //    UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-    //    UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
-
-    //    // Change data source and setup vectors
-    //    m_topDataProvider.SetDataSource(items);
-
-    //    // rebinding
-    //    if (items)
-    //    {
-    //        UpdateListViewItemsSource(m_topNavListView.get(), m_topDataProvider.GetPrimaryItems());
-    //        UpdateListViewItemsSource(m_topNavListOverflowView.get(), m_topDataProvider.GetOverflowItems());
-    //    }
-    //    else
-    //    {
-    //        UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-    //        UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
-    //    }
-    //}
 }
 
 void NavigationView::UpdateListViewItemSource()

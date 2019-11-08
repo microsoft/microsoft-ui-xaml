@@ -179,7 +179,8 @@ private:
     void UpdatePaneToggleSize();
     void UpdateBackAndCloseButtonsVisibility();
     void UpdatePaneTitleMargins();
-    void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
+    void UpdateLeftRepeaterItemSource(const winrt::IInspectable& items);
+    void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
