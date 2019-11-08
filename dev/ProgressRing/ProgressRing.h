@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -42,4 +42,5 @@ private:
     static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
     static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
     static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
+>>>>>>> initial commit
 };
