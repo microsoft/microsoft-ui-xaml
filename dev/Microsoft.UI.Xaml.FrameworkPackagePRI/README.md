@@ -3,6 +3,6 @@
 
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
     <ResourceDictionary.MergedDictionaries>
-        <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml"/>
+        <ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml[..version..]/DensityStyles/Compact.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>
