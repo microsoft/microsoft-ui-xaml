@@ -245,37 +245,7 @@ private:
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
     winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
 
-    template<typename T> T GetContainerForData(const winrt::IInspectable& data)
-    {
-        if (!data)
-        {
-            return nullptr;
-        }
-
-        if (auto nvi = data.try_as<T>())
-        {
-            return nvi;
-        }
-
-        if (auto ir = IsTopNavigationView() ? m_topNavRepeater.get() : nullptr)
-        {
-            MUX_FAIL_FAST_MSG("IMPLEMENT GET CONTAINER FOR DATA");
-            //if (auto itemContainer = lv.ContainerFromItem(data))
-            //{
-            //    return itemContainer.try_as<T>();
-            //}
-        }
-
-        if (auto settingsItem = m_settingsItem.get())
-        {
-            if (settingsItem == data || settingsItem.Content() == data)
-            {
-                return settingsItem.try_as<T>();
-            }
-        }
-
-        return nullptr;
-    }
+    template<typename T> T GetContainerForData(const winrt::IInspectable& data);
 
     void OpenPane();
     void ClosePane();
@@ -307,6 +277,8 @@ private:
     
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
+
+    int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

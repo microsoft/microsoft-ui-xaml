@@ -11,7 +11,7 @@ NavigationViewItemsFactory::NavigationViewItemsFactory()
 
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
-    winrt::IInspectable newContent = nullptr;
+    winrt::IInspectable newContent = args.Data();
     // Attempt to get NavigationViewItemBase from user defined IElementFactory
     if (m_userElementFactory)
     {
