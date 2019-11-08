@@ -105,7 +105,6 @@ public:
 
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
-    bool ShouldIgnoreMeasureOverride();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
     winrt::NavigationTransitionInfo CreateNavigationTransitionInfo(NavigationRecommendedTransitionDirection recommendedTransitionDirection);
@@ -408,15 +407,9 @@ private:
     // Customer select an item from SelectedItem property->ChangeSelection update ListView->LIstView raise OnSelectChange(we want stop here)->change property do do animation again.
     // Customer clicked listview->listview raised OnSelectChange->SelectedItem property changed->ChangeSelection->Undo the selection by SelectedItem(prevItem) (we want it stop here)->ChangeSelection again ->...
     bool m_shouldIgnoreNextSelectionChange{ false };
-   
-    // If SelectedItem is set by API, ItemInvoked should not be raised. 
-    //bool m_shouldRaiseInvokeItemInSelectionChange{ false };
 
     // Because virtualization for ItemsStackPanel, not all containers are realized. It request another round of MeasureOverride
     bool m_shouldInvalidateMeasureOnNextLayoutUpdate{ false };
-
-    // during measuring, we should ignore SelectChange in overflow, otherwise it enters deadloop.
-    bool m_shouldIgnoreOverflowItemSelectionChange{ false };
 
     // when exchanging items between overflow and primary, it cause selectionchange. and then item invoked, and may cause MeasureOverride like customer changed something.
     bool m_shouldIgnoreNextMeasureOverride{ false };
@@ -428,9 +421,6 @@ private:
 
     // A threshold to stop recovery from overflow to normal happens immediately on resize.
     float m_topNavigationRecoveryGracePeriodWidth{ 5.f };
-
-    // Avoid layout cycle on InitStep2
-    int m_measureOnInitStep2Count{ 0 };
 
     // There are three ways to change IsPaneOpen:
     // 1, customer call IsPaneOpen=true/false directly or nav.IsPaneOpen is binding with a variable and the value is changed.
