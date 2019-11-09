@@ -547,6 +547,11 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
     }
 }
 
+void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+
+}
+
 void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
 {
     auto nvi = sender.try_as<NavigationViewItem>();
@@ -779,6 +784,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
             nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
+            nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
             nvi.SetValue(GetNavigationViewItemRevokersProperty(), nviRevokers.as<winrt::IInspectable>());
         }
     }

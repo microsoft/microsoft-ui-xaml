@@ -229,6 +229,7 @@ private:
     void RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args);
     void RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args);
 
+    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args);
     void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
 

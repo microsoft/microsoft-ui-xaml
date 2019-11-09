@@ -7,4 +7,5 @@ class NavigationViewItemRevokers : public winrt::implements<NavigationViewItemRe
 {
 public:
     winrt::NavigationViewItem::NavigationViewItemInvoked_revoker pointerPressedRevoker{};
+    PropertyChanged_revoker isSelectedRevoker{};
 };
