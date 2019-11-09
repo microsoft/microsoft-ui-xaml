@@ -113,4 +113,28 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
+
+  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. 
+  If there are more than two projects are using microsoft-ui-xaml framework package, and the projects have reference relationship,
+  more than two compact.xbf with the same destination path would be packaged and compiler would complains error. 
+  Assume we have two projects A and B, and A->B->microsoft-ui-xaml, compact.xbf is built into B.pri, and then built into A.pri because of project reference.
+  So we need to exclude compact.xbf in A. To make sure only one compact.xbf is packaged, this target excludes the compact.xbf which matches MSBuildProjectName.
+  --> 
+  <Target Name="_FixXamlCompactXbfPackaging" AfterTargets="GetPackagingOutputs">
+    <ItemGroup>
+      <XamlCompactXbfPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' != '$(MSBuildProjectName)'" />
+      <XamlCompactXbfPackagingOutputToBeRemoved Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' == '$(MSBuildProjectName)'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(XamlCompactXbfPackagingOutput)' != '' and '@(XamlCompactXbfPackagingOutputToBeRemoved)' != ''">
+      <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutputToBeRemoved)" />
+    </ItemGroup>
+  </Target>
+  
+  <!-- Make this URI works in framework package "ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" -->
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
+      <SubType>Designer</SubType>
+      <Link>Microsoft.UI.Xaml\DensityStyles\Compact.xaml</Link>
+    </Page>
+  </ItemGroup>
 </Project>
