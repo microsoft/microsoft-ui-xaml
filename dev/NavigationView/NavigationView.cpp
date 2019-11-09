@@ -3066,12 +3066,10 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_MenuItemsSourceProperty)
     {
-        UpdateListViewItemSource();
         UpdateRepeaterItemsSource();
     }
     else if (property == s_MenuItemsProperty)
     {
-        UpdateListViewItemSource();
         UpdateRepeaterItemsSource();
     }
     else if (property == s_PaneDisplayModeProperty)
@@ -3295,7 +3293,6 @@ void NavigationView::UpdatePaneDisplayMode()
     }
 
     UpdateContentBindingsForPaneDisplayMode();
-    UpdateListViewItemSource();
     UpdateRepeaterItemsSource();
 }
 
@@ -3634,37 +3631,6 @@ void NavigationView::UpdatePaneTitleMargins()
     }
 }
 
-void NavigationView::UpdateListViewItemSource()
-{
-    if (!m_appliedTemplate)
-    {
-        return;
-    }
-
-    //auto dataSource = MenuItemsSource();
-    //if (!dataSource)
-    //{
-    //    dataSource = MenuItems();
-    //    UpdateSelectionForMenuItems();
-    //}
-
-    // Always unset the data source first from old ListView, then set data source for new ListView.
-    //if (IsTopNavigationView())
-    //{
-    //    UpdateTopNavListViewItemSource(dataSource);
-    //}
-    //else
-    //{
-    //    UpdateTopNavListViewItemSource(nullptr);
-    //}
- 
-    if (IsTopNavigationView())
-    {
-        InvalidateTopNavPrimaryLayout();
-        UpdateSelectedItem();
-    }
-}
-
 void NavigationView::UpdateSelectionForMenuItems()
 {
     // Allow customer to set selection by NavigationViewItem.IsSelected.
@@ -3693,19 +3659,6 @@ void NavigationView::UpdateSelectionForMenuItems()
                     }
                 }
             }
-        }
-    }
-}
-
-void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 
-    const winrt::IInspectable& itemsSource)
-{
-    if (listView)
-    {
-        auto oldItemsSource = listView.ItemsSource();
-        if (oldItemsSource != itemsSource)
-        {
-            listView.ItemsSource(itemsSource);
         }
     }
 }
@@ -4007,6 +3960,7 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
 
 int NavigationView::LeftNavGetIndexFromItem(const winrt::IInspectable& data)
 {
+    // TODO: write cleaner, less expensive implementation
     int indexOfData = -1;
     auto dataSource = MenuItemsSource();
     if (!dataSource)
