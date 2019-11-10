@@ -21,6 +21,7 @@ using System.Collections.ObjectModel;
 using Windows.Devices.PointOfService;
 using Windows.ApplicationModel.DataTransfer;
 using MUXControlsTestApp.Utilities;
+using System.Threading.Tasks;
 
 namespace MUXControlsTestApp
 {
@@ -54,6 +55,13 @@ namespace MUXControlsTestApp
                 itemSource.Add(item);
             }
             DataBindingTabView.TabItemsSource = itemSource;
+        }
+
+        protected async override void OnNavigatedTo(Windows.UI.Xaml.Navigation.NavigationEventArgs args) 
+        {
+            NotCloseableTab.Visibility = Visibility.Collapsed;
+            await Task.Delay(1);
+            NotCloseableTab.Visibility = Visibility.Visible;
         }
 
         public void IsClosableCheckBox_CheckChanged(object sender, RoutedEventArgs e)
