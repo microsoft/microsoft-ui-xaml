@@ -72,11 +72,8 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
-    // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
-    m_stepPrecisionFormatter.FractionDigits(0);
-    m_stepPrecisionFormatter.IntegerDigits(1);
-    m_stepPrecisionFormatter.NumberRounder(nullptr);
-    m_stepPrecisionRounder.RoundingAlgorithm(winrt::RoundingAlgorithm::RoundHalfAwayFromZero);
+    // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
+    m_displayRounder.SignificantDigits(12);
 
     SetSpinButtonVisualState();
     UpdateTextToValue();
@@ -194,40 +191,44 @@ void NumberBox::ValidateInput()
         }
         else
         {
-            if (AcceptsCalculation())
-            {
-                // ### is this necessary or can we just look for ()+-/*^?
-                std::wstring input(text);
-                std::wregex formula(L"^([0-9()\\s]*[+-/*^%]+[0-9()\\s]*)+$");
-                std::wregex negval(L"^-([0-9])+(.([0-9])+)?$");
-                if (std::regex_match(input, formula) && !std::regex_match(input, negval))
-                {
-                    auto val = NumberBoxParser::Compute(textBox.Text());
-
-                    // No calculation could be done
-                    // ### but then we go on and do more stuff.... that's not so cool.
-                    if (val != std::nullopt)
-                    {
-                        Value(val.value());
-                    }
-                }
-            }
-
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
-            const auto parsedNum = numberParser.ParseDouble(text);
 
-            if (!parsedNum)
+            if (AcceptsCalculation())
             {
-                if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                // ### maybe this needs to give a IReference<double>? Or maybe it can handle the "no calculation" case?
+                auto val = NumberBoxParser::Compute(textBox.Text(), numberParser);
+
+                if (val != std::nullopt)
                 {
-                    // Override text to current value
-                    UpdateTextToValue();
+                    Value(val.value());
+                }
+                else
+                {
+                    // ### sure seems like we should be able to combine these
+                    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                    {
+                        // Override text to current value
+                        UpdateTextToValue();
+                    }
                 }
             }
             else
             {
-                Value(parsedNum.Value());
+                const auto parsedNum = numberParser.ParseDouble(text);
+
+                if (!parsedNum)
+                {
+                    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                    {
+                        // Override text to current value
+                        UpdateTextToValue();
+                    }
+                }
+                else
+                {
+                    Value(parsedNum.Value());
+                }
             }
         }
     }
@@ -311,47 +312,22 @@ void NumberBox::StepValue(bool isPositive)
         }
     }
 
-    // Safeguard for floating point imprecision errors
-    m_stepPrecisionRounder.SignificantDigits(ComputePrecisionRounderSigDigits(newVal));
-    newVal = m_stepPrecisionRounder.RoundDouble(newVal);
-
-    // Update Text and Revalidate new value
     Value(newVal);
 }
 
-// Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
-int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
-{
-    const auto oldVal = Value();
-
-    // Run formatter on both values to discard trailing and leading 0's.
-    const auto formattedVal = wstring_view(m_stepPrecisionFormatter.Format(oldVal));
-    const auto formattedStep = wstring_view(m_stepPrecisionFormatter.Format(StepFrequency()));
-    const auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
-
-    // Get size of only decimal portion of both old numbers. 
-    const auto oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
-    const auto stepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
-
-    // Pick bigger of two decimal sigDigits
-    auto result = std::max(oldValSig, stepSig);
-
-    // append # of integer digits from new value
-    result += (int)formattedNew.substr(0, formattedNew.find_first_of('.')).size();
-    return result;
-}
-
-// Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
+// Updates TextBox.Text with the formatted Value
 void NumberBox::UpdateTextToValue()
 {
     if (auto&& textBox = m_textBox.get())
     {
-        const auto formattedValue = NumberFormatter().FormatDouble(Value());
+        // Rounding the value here before displaying it will prevent noisy trailing digits
+        const auto roundedValue = m_displayRounder.RoundDouble(Value());
+
+        const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
         textBox.Text(formattedValue);
     }
 }
 
-// Enables or Disables Spin Buttons
 void NumberBox::SetSpinButtonVisualState()
 {
     if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)

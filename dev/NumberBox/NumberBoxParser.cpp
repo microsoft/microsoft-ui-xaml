@@ -1,306 +1,297 @@
-#include "pch.h"
+﻿#include "pch.h"
+#include "common.h"
 #include "NumberBoxParser.h"
+#include "Utils.h"
 
-// Pass by reference
-MathToken::MathToken(TokenType t, std::wstring& s)
+static constexpr wstring_view c_numberBoxOperators{ L"+-*/^"sv };
+
+// Returns list of MathTokens from expression input string. If there are any parsing errors, it returns an empty vector.
+std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::INumberParser numberParser)
 {
-    this->type = t;
-    this->str = s;
-}
+    auto tokens = std::vector<MathToken>();
 
-// Pass directly
-MathToken::MathToken(TokenType t, std::wstring s)
-{
-    this->type = t;
-    this->str = s;
-}
-
-MathTokenizer::MathTokenizer(std::wstring_view input)
-{
-    m_inputString = input;
-    m_inputLength = static_cast<int>(m_inputString.size());
-    m_lastToken = MathToken(MathToken::TokenType::EOFToken, L"");
-}
-
-MathToken MathTokenizer::GetToken(ExpressionType type)
-{
-    // Skip Whitespaces
-    SkipWhiteSpace();
-
-    if (m_index >= m_inputLength)
+    size_t index = 0;
+    bool error = false;
+    bool expectNumber = true;
+    while (input[0] != '\0' && !error)
     {
-        return MathToken(MathToken::TokenType::EOFToken, L"");
-    }
- 
-    std::wstringstream ss;
-    ss << m_inputString[m_index];
-
-    // Check for a negative number. Next Token must be numeric and previous token must not be numeric.
-    if (m_inputString[m_index] == '-')
-    {
-
-        // Negative numbers are already parsed and space separated in postfix expressions, must check for them seperately.
-        if (type == ExpressionType::Postfix)
+        // Skip spaces
+        auto nextChar = input[0];
+        if (nextChar != L' ')
         {
-            if (m_inputString[m_index + 1] != ' ')
+            if (expectNumber)
             {
-                // Parse as a negative number
-                m_index++;
-                ss << m_inputString[m_index];
-            }
-        }
-        else if (PeekNextToken(ExpressionType::Infix).type == MathToken::TokenType::Numeric && m_lastToken.type == MathToken::TokenType::Operator)
-        {
-            // Read next token so that the string is parsed as a numeric token.
-            m_index++;
-            SkipWhiteSpace();
-            ss << m_inputString[m_index];
-        }
-    }
-
-    // Return token that is +,-,*,^,/
-    if (IsOperator(ss.str()))
-    {
-        m_index++;
-        m_lastToken = MathToken(MathToken::TokenType::Operator, ss.str());
-    }
-    // Return parenth token
-    else if (m_inputString[m_index] == '(')
-    {
-        m_index++;
-        m_lastToken = MathToken(MathToken::TokenType::ParenLeft, ss.str());;
-    }
-    else if (m_inputString[m_index] == ')')
-    {
-        m_index++;
-        m_lastToken = MathToken(MathToken::TokenType::ParenRight, ss.str());
-    }
-    // Numeric Tokens
-    else if (IsNumeric(std::wstring_view(ss.str())))
-    {
-        // Keep Reading until all of number is parsed
-        while (IsNumeric(std::wstring_view(ss.str())) && m_index < m_inputLength)
-        {
-            ss << m_inputString[++m_index];
-        }
-        m_lastToken = MathToken(MathToken::TokenType::Numeric, ss.str().substr(0, ss.str().size() - 1));
-    }
-    else
-    {
-        m_index++;
-        m_lastToken = MathToken(MathToken::TokenType::Invalid, ss.str());
-    }
-    return m_lastToken;
-
-}
-
-// Peek at the next token that will be returned. Used for negative checks.
-MathToken MathTokenizer::PeekNextToken(ExpressionType type)
-{
-    // Save statics that need to be restored
-    MathToken oldLastToken = m_lastToken;
-    int oldIndex = m_index++;
-    MathToken nextToken = GetToken(type);
-    // Restore statics
-    m_index = oldIndex;
-    m_lastToken = oldLastToken;
-    return nextToken;
-}
-
-void MathTokenizer::SkipWhiteSpace()
-{
-    while (m_inputString[m_index] == ' ' && m_index <= m_inputLength)
-    {
-        m_index++;
-    }
-}
-
-bool MathTokenizer::IsNumeric(std::wstring_view in)
-{
-    std::wregex r(L"^-?(\\d?)+(\\.)?(\\d?)+?$");
-    return (std::regex_match(in.data(), r));
-}
-
-bool MathTokenizer::IsOperator(std::wstring_view in)
-{
-    if (in.size() > 1)
-        return false;
-    wchar_t op = in.data()[0];
-    switch (op)
-    {
-    case '-':
-    case '+':
-    case '*':
-    case '/':
-    case '^':
-        return true;
-    default:
-        return false;
-    } 
-}
-
-// Determines the mathematical precedence of an operator
-NumberBoxParser::OperatorPrecedence NumberBoxParser::CmpPrecedence(wchar_t op1, wchar_t op2)
-{
-    const std::wstring_view ops = L"-+/*^";
-    int op1prec = (int) ops.find(op1) / 2;
-    int op2prec = (int) ops.find(op2) / 2;
-    if (op1prec == std::wstring::npos || op2prec == std::wstring::npos)
-    {
-        return OperatorPrecedence::Error;
-    }
-    if (op1prec > op2prec)
-    {
-        return OperatorPrecedence::Higher;
-    }
-    else if (op2prec > op1prec)
-    {
-        return OperatorPrecedence::Lower;
-    }
-    else
-    {
-        return OperatorPrecedence::Equal;
-    }
-}
-
-// Converts an infix mathematical expression into a postfix one, whitespace separation.
-std::wstring NumberBoxParser::ConvertInfixToPostFix(const std::wstring& infix)
-{
-    const std::wstring ops = L"-+/*^";
-
-    std::wstringstream out;
-    std::stack<wchar_t> opstack;
-    MathTokenizer input(infix);
-
-    MathToken token; 
-    while ((token = input.GetToken(MathTokenizer::ExpressionType::Infix)).type != MathToken::TokenType::EOFToken)
-    {
-        // Numeric Tokens push directly to output queue
-        if (token.type == MathToken::TokenType::Numeric)
-        {
-            out << token.str << ' ';
-        }
-        // Operator Token
-        else if (token.type == MathToken::TokenType::Operator)
-        {
-            while (!opstack.empty())
-            {
-                OperatorPrecedence prec = CmpPrecedence(opstack.top(), token.str[0]);
-                // operator at top of opstack with greater precendence or equal precedence and left associative should be popped
-                if ( (prec == OperatorPrecedence::Higher || (prec == OperatorPrecedence::Equal && opstack.top() != '^')) && opstack.top() != '(' )
+                if (nextChar == '(')
                 {
-                    out << opstack.top() << ' ';
-                    opstack.pop();
+                    // Open parens are also acceptable, but don't change the next expected token type.
+                    tokens.push_back(MathToken(MathTokenType::Parenthesis, nextChar));
                 }
-                else {
-                    break;
+                else
+                {
+                    double value = NAN;
+                    const auto charLength = GetNextNumber(input, numberParser, value);
+
+                    if (charLength > 0)
+                    {
+                        tokens.push_back(MathToken(MathTokenType::Numeric, value));
+                        input += charLength - 1; // advance the end of the token
+                        expectNumber = false; // next token should be an operator
+                    }
+                    else
+                    {
+                        // Error case -- next token is not a number
+                        error = true;
+                    }
                 }
             }
-            opstack.push(token.str[0]);
-        }
-        // Left paren goes to operator stack
-        else if (token.type == MathToken::TokenType::ParenLeft)
-        {
-            opstack.push('(');
-        }
-        // Right Paren - Pop operators 
-        else if (token.type == MathToken::TokenType::ParenRight)
-        {
-            while ( !opstack.empty() && opstack.top() != '(')
+            else
             {
-                // Pop non leftParen operators onto output
-                out << opstack.top() << ' ';
-                opstack.pop();
+                if (c_numberBoxOperators.find(nextChar) != std::wstring::npos)
+                {
+                    tokens.push_back(MathToken(MathTokenType::Operator, nextChar));
+                    expectNumber = true; // next token should be a number
+                }
+                else if (nextChar == ')')
+                {
+                    // Closed parens are also acceptable, but don't change the next expected token type.
+                    tokens.push_back(MathToken(MathTokenType::Parenthesis, nextChar));
+                }
+                else
+                {
+                    // Error case -- could not evaluate part of the expression
+                    error = true;
+                }
             }
-            // Broken Parentheses. Don't Resolve
-            if (opstack.empty())
-                return L"Malformed";
-            // Pop LeftParen and discard
-            opstack.pop();
         }
+
+        input++;
     }
 
-    // Pop everything to output queue
-    while (!opstack.empty())
-    {
-        if (opstack.top() == '(' || opstack.top() == ')')
-        {
-            return L"Malformed";
-        }
-        out << opstack.top() << ' ';
-        opstack.pop();
-    }
-
-    return out.str();
-}
-
-// Evaluates a postfix expression
-std::optional<double> NumberBoxParser::ComputeRpn(const std::wstring& expr)
-{
-    if (expr == L"Malformed")
+    if (error)
     {
         return {};
     }
-    std::stack<double> stack;
-    MathTokenizer input(expr);
-    MathToken token;
-    while ((token = input.GetToken(MathTokenizer::ExpressionType::Postfix)).type != MathToken::TokenType::EOFToken)
+    return tokens;
+}
+
+size_t NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser numberParser, double& outValue)
+{
+    size_t charLength = 0;
+
+    // Attempt to parse anything before an operator or space as a number
+    std::wregex regex(L"^-?([^-+/*\\(\\)\\^\\s]+)");
+    std::wsmatch match;
+    if (std::regex_search(input.cbegin(), input.cend(), match, regex))
     {
-        if (token.type == MathToken::TokenType::Operator)
+        // Might be a number
+        const auto matchLength = match[0].length();
+        const auto parsedNum = numberParser.ParseDouble(input.substr(0, matchLength));
+
+        if (parsedNum)
         {
-            if (stack.empty())
-                return {};
-            double op1 = stack.top();
-            stack.pop();
-
-            if (stack.empty())
-                return {};
-            double op2 = stack.top();
-            stack.pop();
-
-            double res = 0;
-
-            switch (token.str[0])
-            {
-                case '-':
-                    res = op2 - op1;
-                    break;
-                case '+':
-                    res = op1 + op2;
-                    break;
-                case '*':
-                    res = op1 * op2;
-                    break;
-                case '/':
-                    if (op1 == 0)
-                    {
-                        return NAN;
-                    }
-                    res = op2 / op1;
-                    break;
-                case '^':
-                    res = std::pow(op2, op1);
-                    break;
-                default: //uh-oh
-                    return {};
-            }
-            stack.push(res);
-        }
-        else if (token.type == MathToken::TokenType::Numeric) {
-            // Convert to double and push to stack
-            std::wstringstream wss(token.str);
-            double parsed;
-            wss >> parsed;
-            stack.push(parsed);
+            // Parsing was successful
+            outValue = parsedNum.Value();
+            charLength = matchLength;
         }
     }
-    return stack.top();
+
+    return charLength;
 }
 
-std::optional<double> NumberBoxParser::Compute(const std::wstring_view expr)
+int NumberBoxParser::GetPrecedenceValue(wchar_t c)
 {
-    std::wstring_view InputAsString = std::wstring_view(expr);
-    return ComputeRpn(ConvertInfixToPostFix(InputAsString.data()));
+    int opPrecedence = 0;
+    if (c == L'*' || c == L'/')
+    {
+        opPrecedence = 1;
+    }
+    else if (c == L'^')
+    {
+        opPrecedence = 2;
+    }
+
+    return opPrecedence;
 }
 
+// Converts a list of tokens from infix format (e.g. "3 + 5") to postfix (e.g. "3 5 +")
+std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathToken> infixTokens)
+{
+    std::vector<MathToken> postfixTokens;
+    std::stack<MathToken> operatorStack;
 
+    bool error = false;
+
+    for (auto const token : infixTokens)
+    {
+        if (token.Type == MathTokenType::Numeric)
+        {
+            postfixTokens.push_back(token);
+        }
+        else if (token.Type == MathTokenType::Operator)
+        {
+            while (!operatorStack.empty())
+            {
+                const auto top = operatorStack.top();
+                if (top.Type != MathTokenType::Parenthesis && (GetPrecedenceValue(top.Char) >= GetPrecedenceValue(token.Char)))
+                {
+                    postfixTokens.push_back(operatorStack.top());
+                    operatorStack.pop();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            operatorStack.push(token);
+        }
+        else if (token.Type == MathTokenType::Parenthesis)
+        {
+            if (token.Char == L'(')
+            {
+                operatorStack.push(token);
+            }
+            else
+            {
+                while (!operatorStack.empty() && operatorStack.top().Char != L'(')
+                {
+                    // Pop operators onto output until we reach a left paren
+                    postfixTokens.push_back(operatorStack.top());
+                    operatorStack.pop();
+                }
+
+                if (operatorStack.empty())
+                {
+                    // Broken parenthesis
+                    error = true;
+                    break;
+                }
+
+                // Pop left paren and discard
+                operatorStack.pop();
+            }
+        }
+    }
+
+    // Pop all remaining operators.
+    while (!operatorStack.empty())
+    {
+        if (operatorStack.top().Type == MathTokenType::Parenthesis)
+        {
+            // Broken parenthesis
+            error = true;
+            break;
+        }
+
+        postfixTokens.push_back(operatorStack.top());
+        operatorStack.pop();
+    }
+
+    if (error)
+    {
+        return {};
+    }
+    return postfixTokens;
+}
+
+std::optional<double> NumberBoxParser::ComputePostfixExpression(std::vector<MathToken> tokens)
+{
+    std::optional<double> value = {};
+    std::stack<double> stack;
+    bool error = false;
+
+    for (auto const token : tokens)
+    {
+        if (error)
+        {
+            break;
+        }
+
+        if (token.Type == MathTokenType::Operator)
+        {
+            // There has to be at least two values on the stack to apply
+            if (stack.size() < 2)
+            {
+                error = true;
+                break;
+            }
+
+            const auto op1 = stack.top();
+            stack.pop();
+
+            const auto op2 = stack.top();
+            stack.pop();
+
+            double result = NAN;
+
+            switch (token.Char)
+            {
+                case L'-':
+                    result = op2 - op1;
+                    break;
+
+                case L'+':
+                    result = op1 + op2;
+                    break;
+
+                case L'*':
+                    result = op1 * op2;
+                    break;
+
+                case L'/':
+                    if (op1 == 0)
+                    {
+                        error = true;
+                        value = NAN;
+                    }
+                    else
+                    {
+                        result = op2 / op1;
+                    }
+                    break;
+
+                case L'^':
+                    result = std::pow(op2, op1);
+                    break;
+
+                default:
+                    error = true;
+                    break;
+            }
+
+            stack.push(result);
+        }
+        else if (token.Type == MathTokenType::Numeric)
+        {
+            stack.push(token.Value);
+        }
+    }
+
+    // If there is more than one number on the stack, we didn't have enough operations, which is also an error.
+    if (!error && stack.size() == 1)
+    {
+        value = stack.top();
+    }
+
+    return value;
+}
+
+std::optional<double> NumberBoxParser::Compute(const std::wstring_view expr, winrt::INumberParser numberParser)
+{
+    std::optional<double> answer = {};
+    auto input = expr.data();
+
+    // Tokenize the input string
+    auto tokens = GetTokens(input, numberParser);
+    if (tokens.size() > 0)
+    {
+        // Rearrange to postfix notation
+        auto postfixTokens = ConvertInfixToPostfix(tokens);
+        if (postfixTokens.size() > 0)
+        {
+            // Compute expression
+            answer = ComputePostfixExpression(postfixTokens);
+        }
+    }
+
+    return answer;
+}
