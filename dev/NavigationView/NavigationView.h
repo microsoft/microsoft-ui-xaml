@@ -234,9 +234,9 @@ private:
     void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
 
     void SyncItemTemplates();
-    winrt::IndexPath GetIndexPathForItem(winrt::NavigationViewItemBase nvib);
-    winrt::ItemsRepeater GetParentItemsRepeaterForItem(winrt::NavigationViewItemBase nvib);
-    winrt::FrameworkElement GetParentForItem(winrt::FrameworkElement fe);
+    winrt::IndexPath GetIndexPathForContainer(winrt::NavigationViewItemBase nvib);
+    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib);
+    winrt::FrameworkElement GetParentForFrameworkElement(winrt::FrameworkElement fe);
     bool IsRootItemsRepeater(winrt::hstring name);
     bool IsRealized(winrt::IndexPath indexPath);
 

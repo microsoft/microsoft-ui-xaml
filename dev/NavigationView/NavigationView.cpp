@@ -175,7 +175,7 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
         if (selectedContainer)
         {
             // TODO: Update to work with databinding
-            auto parentIR = GetParentItemsRepeaterForItem(selectedContainer);
+            auto parentIR = GetParentItemsRepeaterForContainer(selectedContainer);
             bool isInOverflow = parentIR.Name() == c_overflowRepeater;
             if (isInOverflow)
             {
@@ -549,13 +549,31 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 
 void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        bool newItemIsSelectedItem = m_selectionModel.SelectedItem() == nvi;
+        bool newIsSelected = nvi.IsSelected();
 
+        if (newIsSelected && !newItemIsSelectedItem)
+        {
+            winrt::IndexPath ip = GetIndexPathForContainer(nvi);
+            m_selectionModel.SelectAt(ip);
+        }
+        else if (!newIsSelected && newItemIsSelectedItem)
+        {
+            auto indexPath = GetIndexPathForContainer(nvi);
+            if (indexPath == m_selectionModel.SelectedIndex())
+            {
+                m_selectionModel.DeselectAt(m_selectionModel.SelectedIndex());
+            }
+        }
+    }
 }
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
 {
     auto nvi = sender.try_as<NavigationViewItem>();
-    auto parentIR = GetParentItemsRepeaterForItem(*nvi);
+    auto parentIR = GetParentItemsRepeaterForContainer(*nvi);
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
     bool itemSelectsOnInvoked = nvi->SelectsOnInvoked();
 
@@ -599,10 +617,8 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& send
     // TODO: Check whether invoked item is already selected (therefore only raise item invoked)????
     if (m_selectionModel && itemSelectsOnInvoked)
     {
-        winrt::IndexPath ip = GetIndexPathForItem(*nvi);
+        winrt::IndexPath ip = GetIndexPathForContainer(*nvi);
         m_selectionModel.SelectAt(ip);
-        // TODO: Figure out if this is the best place to do this (hint: probably not)
-        //nvi->IsSelected(true);
     }
 
 
@@ -665,7 +681,7 @@ bool NavigationView::IsRealized(winrt::IndexPath indexPath)
     return isRealized;
 }
 
-winrt::FrameworkElement NavigationView::GetParentForItem(winrt::FrameworkElement fe)
+winrt::FrameworkElement NavigationView::GetParentForFrameworkElement(winrt::FrameworkElement fe)
 {
     auto parent = fe.Parent().try_as<winrt::FrameworkElement>();
     if (!parent)
@@ -675,10 +691,10 @@ winrt::FrameworkElement NavigationView::GetParentForItem(winrt::FrameworkElement
     return parent;
 }
 
-winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForItem(winrt::NavigationViewItemBase nvib)
+winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib)
 {
     auto child = nvib.try_as<winrt::FrameworkElement>();
-    auto parent = GetParentForItem(child);
+    auto parent = GetParentForFrameworkElement(child);
 
     if (parent != nullptr)
     {
@@ -690,12 +706,12 @@ winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForItem(winrt::Naviga
     return nullptr;
 }
 
-winrt::IndexPath NavigationView::GetIndexPathForItem(winrt::NavigationViewItemBase nvib)
+winrt::IndexPath NavigationView::GetIndexPathForContainer(winrt::NavigationViewItemBase nvib)
 {
     auto path = std::vector<int>();
 
     auto child = (nvib).try_as<winrt::FrameworkElement>();
-    auto parent = GetParentForItem(child);
+    auto parent = GetParentForFrameworkElement(child);
     if (parent == nullptr)
     {
         return IndexPath::CreateFromIndices(path);
@@ -711,7 +727,7 @@ winrt::IndexPath NavigationView::GetIndexPathForItem(winrt::NavigationViewItemBa
 
         child = parent;
         auto name = parent.Name();
-        parent = GetParentForItem(parent);
+        parent = GetParentForFrameworkElement(parent);
     }
 
     if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())

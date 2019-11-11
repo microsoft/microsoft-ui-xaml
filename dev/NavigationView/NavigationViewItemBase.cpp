@@ -105,45 +105,11 @@ void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::Depend
 
 void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
 {
-    IsSelected(false);
-    //bool oldValue = IsSelected();
-    //auto indexPath = GetIndexPath();
-
-    //if (indexPath.GetSize() == 0)
-    //{
-    //    return;
-    //}
-
-    //bool newValue = false;
-    //if (IsRealized(indexPath))
-    //{
-    //    newValue = SelectionModel().IsSelectedAt(indexPath).Value();
-    //}
-
-    //if (oldValue != newValue)
-    //{
-    //    IsSelected(newValue);
-
-    //    // Updated selected item in NavigationView 
-    //    if (newValue)
-    //    {
-    //        auto item = SelectionModel().SelectedItem();
-    //        auto nv = winrt::get_self<NavigationView>(m_navigationView.get());
-    //        nv->SelectedItem(item);
-    //    }
-
-    //    //// AutomationEvents.PropertyChanged is used as a value that means dont raise anything 
-    //    //AutomationEvents eventToRaise =
-    //    //    oldValue ?
-    //    //        (SelectionModel.SingleSelect ? AutomationEvents.PropertyChanged : AutomationEvents.SelectionItemPatternOnElementRemovedFromSelection) :
-    //    //        (SelectionModel.SingleSelect ? AutomationEvents.SelectionItemPatternOnElementSelected : AutomationEvents.SelectionItemPatternOnElementAddedToSelection);
-
-    //    //if (eventToRaise != AutomationEvents.PropertyChanged && AutomationPeer.ListenerExists(eventToRaise))
-    //    //{
-    //    //    var peer = FrameworkElementAutomationPeer.CreatePeerForElement(this);
-    //    //    peer.RaiseAutomationEvent(eventToRaise);
-    //    //}
-    //}
+    // Have all items reset their `IsSelected` property everytime selection changes
+    if (IsSelected())
+    {
+        IsSelected(false);
+    }
 }
 
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
