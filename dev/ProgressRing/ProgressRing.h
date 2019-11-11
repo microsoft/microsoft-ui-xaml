@@ -51,5 +51,4 @@ private:
     static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
     static constexpr wstring_view s_BarFigureName{ L"BarFigurePart" };
     static constexpr wstring_view s_BarArcName{ L"BarArcPart" };
-
 };
