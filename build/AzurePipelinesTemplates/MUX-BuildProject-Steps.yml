@@ -15,8 +15,6 @@ steps:
       echo parameters.buildOutputDir = '${{ parameters.buildOutputDir }}'
     displayName: 'BuildProject: Display parameters'
 
-  - template: MUX-InstallWindowsSDK-Steps.yml
-
   - template: MUX-InstallNuget-Steps.yml
   
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
