@@ -15,7 +15,6 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
-
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
@@ -120,6 +119,16 @@ void ProgressRing::UpdateRing()
     UpdateSegment();
 }
 
+void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
+{
+    RenderAll();
+}
+
+void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    // TODO
+}
+
 winrt::Windows::Foundation::Size ProgressRing::ComputeEllipseSize(const double thickness)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
@@ -130,12 +139,28 @@ winrt::Windows::Foundation::Size ProgressRing::ComputeEllipseSize(const double t
     return winrt::Windows::Foundation::Size(static_cast<float>(width), static_cast<float>(height));
 }
 
+
+void ProgressRing::RenderSegment()
+{
+    if (auto&& progressRing = m_layoutRoot.get())
+    {
+        auto&& barFigure = m_barFigure.get();
+        auto&& barArc = m_barArc.get();
+        const double maximum = Maximum();
+        const double minimum = Minimum();
+
+        barArc.Point(winrt::Windows::Foundation::Point(4, 4));
+    }
+}
+
 void ProgressRing::RenderAll()
 {
     if (auto&& progressRing = m_layoutRoot.get())
     {
         auto&& outlineFigure = m_outlineFigure.get();
         auto&& outlineArc = m_outlineArc.get();
+        auto&& barFigure = m_barFigure.get();
+        auto&& barArc = m_barArc.get();
 
         const double thickness = ProgressRing::BorderThickness().Top;
         const auto size = ComputeEllipseSize(thickness);
@@ -144,7 +169,11 @@ void ProgressRing::RenderAll()
         const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
 
         outlineFigure.StartPoint(winrt::Windows::Foundation::Point(segmentWidth + translationFactor, translationFactor));
+        barFigure.StartPoint(winrt::Windows::Foundation::Point(segmentWidth + translationFactor, translationFactor));
         outlineArc.Size(winrt::Windows::Foundation::Size(segmentWidth, size.Height));
+        barArc.Size(winrt::Windows::Foundation::Size(segmentWidth, size.Height));
         outlineArc.Point(winrt::Windows::Foundation::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
+
+        RenderSegment();
     }
 }
