@@ -60,7 +60,7 @@ We also need to monitor:
 
 * [good first issue](https://github.com/microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
 * [help wanted](https://github.com/microsoft/microsoft-ui-xaml/labels/help%20wanted)
-* [unassigned bugs in WinUI 2.x](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Controls+no%3Aassignee+-label%3A%22feature+proposal%22++-label%3Aneeds-winui-3)
+* [unassigned bugs in WinUI 2.x](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+label%3Ateam-Controls+no%3Aassignee+-label%3A%22feature+proposal%22++-label%3Aneeds-winui-3+label%3Abug+-label%3Awinui3%CE%B1)
 
 ## Bot rules
 
