@@ -30,9 +30,7 @@ For each issue with `needs-triage`:
   - Consider adding `help wanted` or `good first issue` to encourage community engagement
   - Add `nice to have` for low priority issues
 
-The temporary `needs-assignee-attention` label is for issues that need investigation to determine how to move the issue forward. 
-Apply this label and assign the issue to someone who can take a look soon. This would be for issues where it needs to be debugged
-or maybe needs them to follow up with another team to determine how to route it.
+The temporary `needs-assignee-attention` label is intended for issues which need additional investigation, like debugging or another teams input, to determine how to route them. 
 
 ### Backlog
 
