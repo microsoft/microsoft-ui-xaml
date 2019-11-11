@@ -26,6 +26,8 @@ public:
 private:
     void RenderAll();
 
+    winrt::Windows::Foundation::Size ComputeEllipseSize(const double thickness);
+
     winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
     winrt::Path::Loaded_revoker m_outlineFigureRevoker{};
     winrt::Path::Loaded_revoker m_outlineArcRevoker{};
