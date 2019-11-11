@@ -8,7 +8,7 @@
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="4"/>
+        <Setter Property="Maximum" Value="100" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
@@ -49,7 +49,7 @@
                                 </PathGeometry>
                             </Path.Data>
                         </Path>
-                        <TextBlock>I am a ProgressRing</TextBlock>
+
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

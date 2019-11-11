@@ -26,21 +26,13 @@ void ProgressRingProperties::EnsureProperties()
                 winrt::name_of<winrt::ProgressRing>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPlaceholderPropertyChanged));
+                nullptr);
     }
 }
 
 void ProgressRingProperties::ClearProperties()
 {
     s_PlaceholderProperty = nullptr;
-}
-
-void ProgressRingProperties::OnPlaceholderPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::ProgressRing>();
-    winrt::get_self<ProgressRing>(owner)->OnPropertyChanged(args);
 }
 
 void ProgressRingProperties::Placeholder(winrt::IInspectable const& value)

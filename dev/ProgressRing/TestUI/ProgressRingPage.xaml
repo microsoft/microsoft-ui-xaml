@@ -10,11 +10,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
-                Width="500"
-                Height="500"/>
+                Width="40"
+                Height="50"
+                BorderThickness="4"
+                Value="40"
+                Maximum="100"
+                Minimum="0"
+                />
         </StackPanel>
     </Grid>
 </local:TestPage>
