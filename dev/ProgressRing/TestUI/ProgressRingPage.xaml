@@ -13,7 +13,8 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
-                />
+                Width="500"
+                Height="500"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

@@ -12,7 +12,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
-                    <Grid Background="{TemplateBinding Background}">
+                    <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}">
                         <!-- Gray outline of progress bar -->
                         <Path Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="{TemplateBinding BorderThickness}" StrokeDashCap="Flat">
                             <Path.Data>
