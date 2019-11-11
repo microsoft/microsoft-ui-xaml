@@ -15,7 +15,10 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+<<<<<<< HEAD
 
+=======
+>>>>>>> render static indicator segment
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
@@ -127,12 +130,16 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+<<<<<<< HEAD
     RenderSegment();
 }
 
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     RenderAll();
+=======
+    // TODO
+>>>>>>> render static indicator segment
 }
 
 winrt::Windows::Foundation::Size ProgressRing::ComputeEllipseSize(const double thickness)
