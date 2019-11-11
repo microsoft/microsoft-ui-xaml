@@ -119,3 +119,16 @@ void ProgressRing::UpdateRing()
 
     UpdateSegment();
 }
+
+void ProgressRing::RenderAll()
+{
+    if (auto&& progressRing = m_layoutRoot.get())
+    {
+        auto&& outlineFigure = m_outlineFigure.get();
+        auto&& outlineArc = m_outlineArc.get();
+
+        outlineFigure.StartPoint(winrt::Windows::Foundation::Point(0,100));
+        outlineArc.Size(winrt::Windows::Foundation::Size(300, 50));
+        outlineArc.Point(winrt::Windows::Foundation::Point(200, 100));
+    }
+}
