@@ -56,6 +56,11 @@ We also need to monitor:
 * [needs-assignee-attention](https://github.com/microsoft/microsoft-ui-xaml/labels/needs-assignee-attention)
 * [needs-author-feedback](https://github.com/microsoft/microsoft-ui-xaml/labels/needs-author-feedback)
 
+### Other useful links for contributors
+
+* [good first issue](https://github.com/microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
+* [help wanted](https://github.com/microsoft/microsoft-ui-xaml/labels/help%20wanted)
+* [unassigned bugs in WinUI 2.x](https://github.com/microsoft/microsoft-ui-xaml/issues?utf8=%E2%9C%93&q=label%3Ateam-Controls+no%3Aassignee+-label%3A%22feature+proposal%22++-label%3Aneeds-winui-3)
 
 ## Bot rules
 
