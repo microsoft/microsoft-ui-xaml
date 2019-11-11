@@ -42,5 +42,4 @@ private:
     static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
     static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
     static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
->>>>>>> initial commit
 };
