@@ -18,8 +18,10 @@
                 Height="40"
                 Maximum="100"
                 Minimum="0"
+                BorderThickness="4"
                 />
 
+            <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Value, Mode=TwoWay}"/>
             <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
         </StackPanel>
     </Grid>

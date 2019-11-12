@@ -100,7 +100,7 @@ void ProgressRing::RenderAll()
         auto&& barFigure = m_barFigure.get();
         auto&& barArc = m_barArc.get();
 
-        const double thickness = ProgressRing::BorderThickness().Top;
+        const double thickness = ProgressRing::BorderThickness().Left;
         const auto size = ComputeEllipseSize(thickness);
 
         const float segmentWidth = size.Width;

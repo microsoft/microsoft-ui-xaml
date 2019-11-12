@@ -7,13 +7,19 @@
     <Style TargetType="local:ProgressRing">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="BorderThickness" Value="4" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
                     <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}">
                         <!-- Gray outline of progress bar -->
-                        <Path Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" StrokeThickness="{TemplateBinding BorderThickness}" StrokeDashCap="Flat">
+                        <Path
+                            Fill="{TemplateBinding Background}"
+                            Stroke="{TemplateBinding BorderBrush}"
+                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=BorderThickness.Left}"
+                            StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round">
                             <Path.Data>
                                 <PathGeometry>
                                     <PathGeometry.Figures>
@@ -21,7 +27,10 @@
                                             <PathFigure x:Name="OutlineFigurePart">
                                                 <PathFigure.Segments>
                                                     <PathSegmentCollection>
-                                                        <ArcSegment x:Name="OutlineArcPart" IsLargeArc="True" SweepDirection="Clockwise"/>
+                                                        <ArcSegment
+                                                            x:Name="OutlineArcPart"
+                                                            IsLargeArc="True"
+                                                            SweepDirection="Clockwise"/>
                                                     </PathSegmentCollection>
                                                 </PathFigure.Segments>
                                             </PathFigure>
@@ -31,7 +40,12 @@
                             </Path.Data>
                         </Path>
                         <!-- Progress Bar -->
-                        <Path Fill="Transparent" Stroke="{TemplateBinding Foreground}" StrokeThickness="{TemplateBinding BorderThickness}" StrokeDashCap="Flat">
+                        <Path
+                            Fill="Transparent"
+                            Stroke="{TemplateBinding Foreground}"
+                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=BorderThickness.Left}"
+                            StrokeStartLineCap="Round"
+                            StrokeEndLineCap="Round">
                             <Path.Data>
                                 <PathGeometry>
                                     <PathGeometry.Figures>
@@ -39,7 +53,10 @@
                                             <PathFigure x:Name="BarFigurePart">
                                                 <PathFigure.Segments>
                                                     <PathSegmentCollection>
-                                                        <ArcSegment x:Name="BarArcPart" IsLargeArc="False" SweepDirection="Clockwise" />
+                                                        <ArcSegment
+                                                            x:Name="BarArcPart"
+                                                            IsLargeArc="False"
+                                                            SweepDirection="Clockwise" />
                                                     </PathSegmentCollection>
                                                 </PathFigure.Segments>
                                             </PathFigure>
