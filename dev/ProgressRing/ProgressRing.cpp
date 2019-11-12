@@ -146,10 +146,25 @@ void ProgressRing::RenderSegment()
     {
         auto&& barFigure = m_barFigure.get();
         auto&& barArc = m_barArc.get();
+        const double thickness = ProgressRing::BorderThickness().Top;
         const double maximum = Maximum();
         const double minimum = Minimum();
 
-        barArc.Point(winrt::Windows::Foundation::Point(4, 4));
+        const double range = maximum - minimum;
+        const double delta = Value() - minimum;
+
+        double normalizedRange = (range == 0.0) ? 0.0 : (delta / range);
+        normalizedRange = std::min(std::max(0.0, normalizedRange), 0.9999);
+
+        const double angle = 2 * M_PI * normalizedRange;
+        const auto size = ComputeEllipseSize(thickness);
+        const double translationFactor = std::max(thickness / 2.0, 0.0);
+
+        const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
+        const double y = (((std::cos(angle) * size.Height) - size.Height * -1) + translationFactor);
+
+        barArc.IsLargeArc(angle >= M_PI);
+        barArc.Point(winrt::Windows::Foundation::Point(static_cast<float>(x), static_cast<float>(y)));
     }
 }
 
