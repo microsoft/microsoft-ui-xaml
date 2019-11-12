@@ -13,13 +13,14 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
+                x:Name="TestProgressRing"
                 Width="40"
                 Height="40"
-                BorderThickness="4"
-                Value="40"
                 Maximum="100"
                 Minimum="0"
                 />
+
+            <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
         </StackPanel>
     </Grid>
 </local:TestPage>

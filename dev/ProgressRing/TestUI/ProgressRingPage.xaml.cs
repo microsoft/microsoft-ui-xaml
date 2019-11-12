@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -20,6 +20,18 @@ namespace MUXControlsTestApp
         public ProgressRingPage()
         {
             this.InitializeComponent();
+        }
+
+        public void ChangeValue_Click(object sender, RoutedEventArgs e)
+        {
+            if (TestProgressRing.Value + 1 > TestProgressRing.Maximum)
+            {
+                TestProgressRing.Value = (int)(TestProgressRing.Minimum + 0.5);
+            }
+            else
+            {
+                TestProgressRing.Value += 1;
+            }
         }
     }
 }

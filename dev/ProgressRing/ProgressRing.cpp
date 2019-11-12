@@ -48,6 +48,8 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     // TODO
+
+    RenderSegment();
 }
 
 winrt::Windows::Foundation::Size ProgressRing::ComputeEllipseSize(const double thickness)
