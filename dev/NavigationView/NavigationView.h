@@ -202,9 +202,6 @@ private:
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
-    //void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
-    //void OnSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
-
     void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
         bool isSettingsItem,
