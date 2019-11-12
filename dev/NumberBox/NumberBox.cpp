@@ -194,41 +194,28 @@ void NumberBox::ValidateInput()
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
 
+            winrt::IReference<double> value;
+
             if (AcceptsCalculation())
             {
-                // ### maybe this needs to give a IReference<double>? Or maybe it can handle the "no calculation" case?
-                auto val = NumberBoxParser::Compute(textBox.Text(), numberParser);
+                value = NumberBoxParser::Compute(textBox.Text(), numberParser);
+            }
+            else
+            {
+                value = numberParser.ParseDouble(text);
+            }
 
-                if (val != std::nullopt)
+            if (!value)
+            {
+                if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
                 {
-                    Value(val.value());
-                }
-                else
-                {
-                    // ### sure seems like we should be able to combine these
-                    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-                    {
-                        // Override text to current value
-                        UpdateTextToValue();
-                    }
+                    // Override text to current value
+                    UpdateTextToValue();
                 }
             }
             else
             {
-                const auto parsedNum = numberParser.ParseDouble(text);
-
-                if (!parsedNum)
-                {
-                    if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-                    {
-                        // Override text to current value
-                        UpdateTextToValue();
-                    }
-                }
-                else
-                {
-                    Value(parsedNum.Value());
-                }
+                Value(value.Value());
             }
         }
     }

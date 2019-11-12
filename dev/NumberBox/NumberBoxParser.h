@@ -1,16 +1,13 @@
-﻿#pragma once
-#include <vector>
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-#include <iterator>
-#include <cstdlib>
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#pragma once
+
+#include "pch.h"
+#include "common.h"
 #include <regex>
 #include <stack>
 #include <optional>
-
 
 enum MathTokenType
 {
@@ -32,7 +29,7 @@ struct MathToken
 class NumberBoxParser
 {
     public:
-        static std::optional<double> Compute(const std::wstring_view expr, winrt::INumberParser numberParser);
+        static winrt::IReference<double> Compute(const std::wstring_view expr, winrt::INumberParser numberParser);
 
     private:
         static std::vector<MathToken> GetTokens(const wchar_t *input, winrt::INumberParser numberParser);
@@ -42,5 +39,5 @@ class NumberBoxParser
 
         static std::vector<MathToken> ConvertInfixToPostfix(std::vector<MathToken> tokens);
 
-        static std::optional<double> ComputePostfixExpression(std::vector<MathToken> tokens);
+        static winrt::IReference<double> ComputePostfixExpression(std::vector<MathToken> tokens);
 };

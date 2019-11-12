@@ -9,7 +9,6 @@
 #include "NumberBoxValueChangedEventArgs.g.h"
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
-#include <regex>
 
 class NumberBoxValueChangedEventArgs :
     public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>

@@ -1,4 +1,7 @@
-﻿#include "pch.h"
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License. See LICENSE in the project root for license information.
+
+#include "pch.h"
 #include "common.h"
 #include "NumberBoxParser.h"
 #include "Utils.h"
@@ -193,9 +196,9 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathTo
     return postfixTokens;
 }
 
-std::optional<double> NumberBoxParser::ComputePostfixExpression(std::vector<MathToken> tokens)
+winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<MathToken> tokens)
 {
-    std::optional<double> value = {};
+    winrt::IReference<double> value = nullptr;
     std::stack<double> stack;
     bool error = false;
 
@@ -221,7 +224,7 @@ std::optional<double> NumberBoxParser::ComputePostfixExpression(std::vector<Math
             const auto op2 = stack.top();
             stack.pop();
 
-            double result = NAN;
+            double result;
 
             switch (token.Char)
             {
@@ -275,9 +278,9 @@ std::optional<double> NumberBoxParser::ComputePostfixExpression(std::vector<Math
     return value;
 }
 
-std::optional<double> NumberBoxParser::Compute(const std::wstring_view expr, winrt::INumberParser numberParser)
+winrt::IReference<double> NumberBoxParser::Compute(const std::wstring_view expr, winrt::INumberParser numberParser)
 {
-    std::optional<double> answer = {};
+    winrt::IReference<double> answer = nullptr;
     auto input = expr.data();
 
     // Tokenize the input string
