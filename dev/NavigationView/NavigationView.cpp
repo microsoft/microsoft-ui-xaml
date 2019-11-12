@@ -157,18 +157,16 @@ NavigationView::NavigationView()
 
 void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
 {
-
-    if (m_shouldIgnoreNextSelectionChange)
+    auto selectedItem = selectionModel.SelectedItem();
+    auto selectedIndex = selectionModel.SelectedIndex();
+    if (m_shouldIgnoreNextSelectionChange || selectedItem == SelectedItem())
     {
         return;
     }
 
-    auto selectedItem = selectionModel.SelectedItem();
-    auto selectedIndex = selectionModel.SelectedIndex();
-    auto selectedContainer = NavigationViewItemOrSettingsContentFromData(selectedItem);
-
     if (IsTopNavigationView())
     {
+        auto selectedContainer = NavigationViewItemOrSettingsContentFromData(selectedItem);
         auto primaryItems = m_topDataProvider.GetPrimaryItems();
         //bool isInOverflow = primaryItems.IndexOf(selectedItem);
 
@@ -564,7 +562,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvi);
             if (indexPath == m_selectionModel.SelectedIndex())
             {
-                m_selectionModel.DeselectAt(m_selectionModel.SelectedIndex());
+                m_selectionModel.DeselectAt(indexPath);
             }
         }
     }
@@ -2334,6 +2332,7 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newItem = args.NewValue();
+
     ChangeSelection(args.OldValue(), newItem);
 
     if (m_appliedTemplate && IsTopNavigationView())
@@ -3952,7 +3951,12 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     if (IsTopNavigationView())
     {
         auto ir = m_topNavRepeater.get();
-        MUX_FAIL_FAST_MSG("HAS NOT BEEN IMPLEMENTED YET!");
+        auto itemIndex = m_topDataProvider.IndexOf(data, NavigationViewSplitVectorID::PrimaryList);
+        if (itemIndex >= 0)
+        {
+            return ir.TryGetElement(itemIndex).try_as<T>();
+        }
+        return nullptr;
     }
     else
     {
