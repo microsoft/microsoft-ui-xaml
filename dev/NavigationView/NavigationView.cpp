@@ -2275,38 +2275,6 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     return recommendedTransitionDirection;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::IInspectable const& itemData)
-{
-    MUX_FAIL_FAST_MSG("GetContainerForClickedItem has not been implement for ItemsRepeater yet.");
-    if (!IsTopNavigationView())
-    {
-        // Has not been implemented for ItemsRepeater yet
-        MUX_FAIL_FAST_MSG("GetContainerForClickedItem has not been implement for LeftNavRepeater yet.");
-    }
-
-
-    // ListViewBase::OnItemClick raises ItemClicked event, but it doesn't provide the container of a item
-    // If it's an virtualized panel like ItemsStackPanel, IsItemItsOwnContainer is called before raise the event in ListViewBase::OnItemClick.
-    // Here we assume the LastItemCalledInIsItemItsOwnContainerOverride is the container.
-    winrt::NavigationViewItemBase container{ nullptr };
-    //auto listView = m_topNavListView.get();
-    //MUX_ASSERT(listView);
-
-    //if (auto navListView = listView.try_as<winrt::NavigationViewList>())
-    //{
-    //    container = winrt::get_self<NavigationViewList>(navListView)->GetLastItemCalledInIsItemItsOwnContainerOverride();
-    //}
-
-    //// Most likely we didn't use ItemStackPanel. but we still try to see if we can find a matched container.
-    //if (!container && itemData)
-    //{
-    //    container = listView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
-    //}
-
-    //MUX_ASSERT(container && container.Content() == itemData);
-    return container;
-}
-
 NavigationViewTemplateSettings* NavigationView::GetTemplateSettings()
 {
     return winrt::get_self<NavigationViewTemplateSettings>(TemplateSettings());

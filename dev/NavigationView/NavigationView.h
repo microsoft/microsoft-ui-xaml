@@ -109,7 +109,6 @@ private:
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
     winrt::NavigationTransitionInfo CreateNavigationTransitionInfo(NavigationRecommendedTransitionDirection recommendedTransitionDirection);
     NavigationRecommendedTransitionDirection GetRecommendedTransitionDirection(winrt::DependencyObject const& prev, winrt::DependencyObject const& next);
-    winrt::NavigationViewItemBase GetContainerForClickedItem(winrt::IInspectable const& itemData);
     inline NavigationViewTemplateSettings* GetTemplateSettings();
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
