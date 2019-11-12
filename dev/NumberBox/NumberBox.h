@@ -9,7 +9,6 @@
 #include "NumberBoxValueChangedEventArgs.g.h"
 #include "NumberBox.properties.h"
 #include "Windows.Globalization.NumberFormatting.h"
-#include <regex>
 
 class NumberBoxValueChangedEventArgs :
     public winrt::implementation::NumberBoxValueChangedEventArgsT<NumberBoxValueChangedEventArgs>
@@ -66,7 +65,6 @@ private:
     void ValidateInput();
     void CoerceValue();
     void UpdateTextToValue();
-    int ComputePrecisionRounderSigDigits(double newVal);
 
     void SetSpinButtonVisualState();
     void StepValue(bool isPositive);
@@ -75,8 +73,7 @@ private:
 
     bool IsInBounds(double value);
 
-    winrt::DecimalFormatter m_stepPrecisionFormatter{};
-    winrt::SignificantDigitsNumberRounder m_stepPrecisionRounder{};
+    winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
 

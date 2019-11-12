@@ -66,6 +66,9 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("false")]
     Boolean WrapEnabled;
 
+    [MUX_DEFAULT_VALUE("false")]
+    Boolean AcceptsCalculation;
+
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateNumberFormatter")]
     Windows.Globalization.NumberFormatting.INumberFormatter2 NumberFormatter;
@@ -85,6 +88,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty WrapEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty AcceptsCalculationProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberFormatterProperty{ get; };
 }

@@ -5,6 +5,7 @@
 #include "common.h"
 #include "NumberBox.h"
 #include "NumberBoxAutomationPeer.h"
+#include "NumberBoxParser.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
@@ -71,11 +72,8 @@ void NumberBox::OnApplyTemplate()
         return textBox;
     }());
 
-    // Initializing precision formatter. This formatter works neutrally to protect against floating point imprecision resulting from stepping/calc
-    m_stepPrecisionFormatter.FractionDigits(0);
-    m_stepPrecisionFormatter.IntegerDigits(1);
-    m_stepPrecisionFormatter.NumberRounder(nullptr);
-    m_stepPrecisionRounder.RoundingAlgorithm(winrt::RoundingAlgorithm::RoundHalfAwayFromZero);
+    // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
+    m_displayRounder.SignificantDigits(12);
 
     SetSpinButtonVisualState();
     UpdateTextToValue();
@@ -195,9 +193,19 @@ void NumberBox::ValidateInput()
         {
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
-            const auto parsedNum = numberParser.ParseDouble(text);
 
-            if (!parsedNum)
+            winrt::IReference<double> value;
+
+            if (AcceptsCalculation())
+            {
+                value = NumberBoxParser::Compute(textBox.Text(), numberParser);
+            }
+            else
+            {
+                value = numberParser.ParseDouble(text);
+            }
+
+            if (!value)
             {
                 if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
                 {
@@ -207,7 +215,7 @@ void NumberBox::ValidateInput()
             }
             else
             {
-                Value(parsedNum.Value());
+                Value(value.Value());
             }
         }
     }
@@ -291,47 +299,22 @@ void NumberBox::StepValue(bool isPositive)
         }
     }
 
-    // Safeguard for floating point imprecision errors
-    m_stepPrecisionRounder.SignificantDigits(ComputePrecisionRounderSigDigits(newVal));
-    newVal = m_stepPrecisionRounder.RoundDouble(newVal);
-
-    // Update Text and Revalidate new value
     Value(newVal);
 }
 
-// Computes the number of significant digits that precision rounder should use. This helps to prevent floating point imprecision errors. 
-int NumberBox::ComputePrecisionRounderSigDigits(double newVal)
-{
-    const auto oldVal = Value();
-
-    // Run formatter on both values to discard trailing and leading 0's.
-    const auto formattedVal = wstring_view(m_stepPrecisionFormatter.Format(oldVal));
-    const auto formattedStep = wstring_view(m_stepPrecisionFormatter.Format(StepFrequency()));
-    const auto formattedNew = wstring_view(m_stepPrecisionFormatter.Format(newVal));
-
-    // Get size of only decimal portion of both old numbers. 
-    const auto oldValSig = static_cast<int>(formattedVal.substr(formattedVal.find_first_of('.') + 1).size());
-    const auto stepSig = static_cast<int>(formattedStep.substr(formattedStep.find_first_of('.') + 1).size());
-
-    // Pick bigger of two decimal sigDigits
-    auto result = std::max(oldValSig, stepSig);
-
-    // append # of integer digits from new value
-    result += (int)formattedNew.substr(0, formattedNew.find_first_of('.')).size();
-    return result;
-}
-
-// Runs formatter and updates TextBox to it's value property, run on construction if Value != 0
+// Updates TextBox.Text with the formatted Value
 void NumberBox::UpdateTextToValue()
 {
     if (auto&& textBox = m_textBox.get())
     {
-        const auto formattedValue = NumberFormatter().FormatDouble(Value());
+        // Rounding the value here will prevent displaying digits caused by floating point imprecision.
+        const auto roundedValue = m_displayRounder.RoundDouble(Value());
+
+        const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
         textBox.Text(formattedValue);
     }
 }
 
-// Enables or Disables Spin Buttons
 void NumberBox::SetSpinButtonVisualState()
 {
     if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
