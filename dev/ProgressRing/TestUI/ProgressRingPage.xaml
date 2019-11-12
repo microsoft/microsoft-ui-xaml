@@ -14,7 +14,7 @@
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
                 Width="40"
-                Height="50"
+                Height="40"
                 BorderThickness="4"
                 Value="40"
                 Maximum="100"
