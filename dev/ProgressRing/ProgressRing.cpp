@@ -163,7 +163,7 @@ void ProgressRing::RenderSegment()
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
         const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
-        const double y = (((std::cos(angle) * size.Height) - size.Height * -1) + translationFactor);
+        const double y = (((std::cos(angle) * size.Height) - size.Height) * -1) + translationFactor;
 
         barArc.IsLargeArc(angle >= M_PI);
         barArc.Point(winrt::Windows::Foundation::Point(static_cast<float>(x), static_cast<float>(y)));
