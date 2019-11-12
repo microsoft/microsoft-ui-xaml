@@ -77,6 +77,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
     return tokens;
 }
 
+// Attempts to parse a number from the beginning of the given input string. Returns the character size of the matched string.
 size_t NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser numberParser, double& outValue)
 {
     size_t charLength = 0;

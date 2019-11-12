@@ -7,7 +7,6 @@
 #include "common.h"
 #include <regex>
 #include <stack>
-#include <optional>
 
 enum MathTokenType
 {
