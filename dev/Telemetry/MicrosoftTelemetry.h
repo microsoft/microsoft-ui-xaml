@@ -4,7 +4,7 @@ Copyright (c) Microsoft Corporation.  All rights reserved.
 
 Module Name:
 
-    TraceLoggingConfig.h
+    MicrosoftTelemetry.h
 
 Abstract:
 
