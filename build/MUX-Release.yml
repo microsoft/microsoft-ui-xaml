@@ -40,6 +40,15 @@ jobs:
     publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
+
+  - task: UniversalPackages@0
+    displayName: 'Universal download'
+    inputs:
+      downloadDirectory: dev/telemetry
+      vstsFeed: '3415933f-ac0d-4766-8c0a-3f4c247c25f5'
+      vstsFeedPackage: '189606e5-d713-4ab3-b398-32054ce9398a'
+      vstsPackageVersion: 10.0.18362
+
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
