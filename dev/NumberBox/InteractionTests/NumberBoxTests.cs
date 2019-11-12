@@ -273,6 +273,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     { "5 - 3 + 2", 4 },
                     { "3 + 2 - 5", 0 },
                     { "9 - 2 * 6 / 4", 6 },
+                    { "9 - -7",  16 },
                     { "9-3*2", 3 },         // no spaces
                     { " 10  *   6  ", 60 }, // extra spaces
                     { "10 /( 2 + 3 )", 2 },
@@ -283,6 +284,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     { "((74-71)*2)^3", 216 },
                     { "2 - 2 ^ 3", -6 },
                     { "2 ^ 2 ^ 2 / 2 + 9", 17 },
+                    { "5 ^ -2", 0.04 },
                     { "5.09 + 14.333", 19.423 },
                     { "2.5 * 0.35", 0.875 },
                     { "-2 - 5", -7 },       // begins with negative number
@@ -296,6 +298,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     { "(2 + 3)(1 + 5)", resetValue }, // missing operator
                     { "9 + + 7", resetValue },        // extra operators
                     { "9 - * 7",  resetValue },
+                    { "9 - - 7",  resetValue },
                     { "+9", resetValue },
                     { "1 / 0", resetValue },          // divide by zero
 
