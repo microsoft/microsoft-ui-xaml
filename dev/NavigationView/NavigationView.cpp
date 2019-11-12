@@ -2254,8 +2254,10 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
     if (auto ir = m_topNavRepeater.get())
     {
-        auto prevIndex = prev ? ir.GetElementIndex(prev.try_as<winrt::UIElement>()) : s_itemNotFound;
-        auto nextIndex = next ? ir.GetElementIndex(next.try_as<winrt::UIElement>()) : s_itemNotFound;
+        // Currently GetElementIndex throws if container is not in its list. Work around this issue by manually checking whether
+        // passed in item is a settings item.
+        auto prevIndex = (prev && !IsSettingsItem(prev)) ? ir.GetElementIndex(prev.try_as<winrt::UIElement>()) : s_itemNotFound;
+        auto nextIndex = (next && !IsSettingsItem(next)) ? ir.GetElementIndex(next.try_as<winrt::UIElement>()) : s_itemNotFound;
         if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
         {
             // One item is settings, so have problem to get the index
