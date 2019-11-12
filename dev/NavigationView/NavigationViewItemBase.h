@@ -5,11 +5,9 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
-#include "NavigationViewItemBase.properties.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
-    public NavigationViewItemBaseProperties
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
 {
 public:
 
@@ -56,9 +54,6 @@ public:
     winrt::SplitView GetSplitView();
     winrt::NavigationViewList GetNavigationViewList();
 
-    void OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
 protected:
@@ -66,8 +61,6 @@ protected:
 
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
-
-    void OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
 
     // Event Tokens
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
