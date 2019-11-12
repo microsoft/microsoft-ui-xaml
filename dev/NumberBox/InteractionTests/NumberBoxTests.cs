@@ -290,6 +290,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     { "-2 - 5", -7 },       // begins with negative number
                     { "(10)", 10 },         // number in parens
                     { "(-9)", -9 },         // negative number in parens
+                    { "0^0", 1 },           // who knew?
 
                     // These should not parse, which means they will reset back to the previous value.
                     { "5x + 3y", resetValue },        // invalid chars

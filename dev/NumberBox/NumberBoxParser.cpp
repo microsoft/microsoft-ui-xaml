@@ -13,10 +13,8 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
 {
     auto tokens = std::vector<MathToken>();
 
-    size_t index = 0;
-    bool error = false;
     bool expectNumber = true;
-    while (input[0] != '\0' && !error)
+    while (input[0] != '\0')
     {
         // Skip spaces
         auto nextChar = input[0];
@@ -31,8 +29,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
                 }
                 else
                 {
-                    double value = NAN;
-                    const auto charLength = GetNextNumber(input, numberParser, value);
+                    const auto [value, charLength] = GetNextNumber(input, numberParser);
 
                     if (charLength > 0)
                     {
@@ -42,8 +39,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
                     }
                     else
                     {
-                        // Error case -- next token is not a number
-                        error = true;
+                        return {};
                     }
                 }
             }
@@ -61,8 +57,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
                 }
                 else
                 {
-                    // Error case -- could not evaluate part of the expression
-                    error = true;
+                    return {};
                 }
             }
         }
@@ -70,17 +65,14 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
         input++;
     }
 
-    if (error)
-    {
-        return {};
-    }
     return tokens;
 }
 
 // Attempts to parse a number from the beginning of the given input string. Returns the character size of the matched string.
-size_t NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser numberParser, double& outValue)
+std::tuple<double, size_t> NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser numberParser)
 {
     size_t charLength = 0;
+    double value = std::numeric_limits<double>::quiet_NaN();
 
     // Attempt to parse anything before an operator or space as a number
     std::wregex regex(L"^-?([^-+/*\\(\\)\\^\\s]+)");
@@ -94,12 +86,12 @@ size_t NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser n
         if (parsedNum)
         {
             // Parsing was successful
-            outValue = parsedNum.Value();
+            value = parsedNum.Value();
             charLength = matchLength;
         }
     }
 
-    return charLength;
+    return { value, charLength };
 }
 
 int NumberBoxParser::GetPrecedenceValue(wchar_t c)
@@ -122,8 +114,6 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathTo
 {
     std::vector<MathToken> postfixTokens;
     std::stack<MathToken> operatorStack;
-
-    bool error = false;
 
     for (auto const token : infixTokens)
     {
@@ -166,8 +156,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathTo
                 if (operatorStack.empty())
                 {
                     // Broken parenthesis
-                    error = true;
-                    break;
+                    return {};
                 }
 
                 // Pop left paren and discard
@@ -182,41 +171,28 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathTo
         if (operatorStack.top().Type == MathTokenType::Parenthesis)
         {
             // Broken parenthesis
-            error = true;
-            break;
+            return {};
         }
 
         postfixTokens.push_back(operatorStack.top());
         operatorStack.pop();
     }
 
-    if (error)
-    {
-        return {};
-    }
     return postfixTokens;
 }
 
 winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<MathToken> tokens)
 {
-    winrt::IReference<double> value = nullptr;
     std::stack<double> stack;
-    bool error = false;
 
     for (auto const token : tokens)
     {
-        if (error)
-        {
-            break;
-        }
-
         if (token.Type == MathTokenType::Operator)
         {
             // There has to be at least two values on the stack to apply
             if (stack.size() < 2)
             {
-                error = true;
-                break;
+                return nullptr;
             }
 
             const auto op1 = stack.top();
@@ -244,8 +220,8 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<
                 case L'/':
                     if (op1 == 0)
                     {
-                        error = true;
-                        value = NAN;
+                        // divide by zero
+                        return std::numeric_limits<double>::quiet_NaN();
                     }
                     else
                     {
@@ -258,8 +234,7 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<
                     break;
 
                 default:
-                    error = true;
-                    break;
+                    return nullptr;
             }
 
             stack.push(result);
@@ -271,12 +246,12 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<
     }
 
     // If there is more than one number on the stack, we didn't have enough operations, which is also an error.
-    if (!error && stack.size() == 1)
+    if (stack.size() != 1)
     {
-        value = stack.top();
+        return nullptr;
     }
 
-    return value;
+    return stack.top();
 }
 
 winrt::IReference<double> NumberBoxParser::Compute(const std::wstring_view expr, winrt::INumberParser numberParser)

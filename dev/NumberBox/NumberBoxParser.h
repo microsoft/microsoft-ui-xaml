@@ -33,7 +33,7 @@ class NumberBoxParser
     private:
         static std::vector<MathToken> GetTokens(const wchar_t *input, winrt::INumberParser numberParser);
 
-        static size_t GetNextNumber(std::wstring input, winrt::INumberParser numberParser, double& outValue);
+        static std::tuple<double, size_t> GetNextNumber(std::wstring input, winrt::INumberParser numberParser);
         static int GetPrecedenceValue(wchar_t c);
 
         static std::vector<MathToken> ConvertInfixToPostfix(std::vector<MathToken> tokens);
