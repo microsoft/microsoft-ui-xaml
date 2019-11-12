@@ -20,7 +20,6 @@ NavigationViewItemProperties::NavigationViewItemProperties()
 
 void NavigationViewItemProperties::EnsureProperties()
 {
-    NavigationViewItemBase::EnsureProperties();
     if (!s_CompactPaneLengthProperty)
     {
         s_CompactPaneLengthProperty =
@@ -61,7 +60,6 @@ void NavigationViewItemProperties::ClearProperties()
     s_CompactPaneLengthProperty = nullptr;
     s_IconProperty = nullptr;
     s_SelectsOnInvokedProperty = nullptr;
-    NavigationViewItemBase::ClearProperties();
 }
 
 void NavigationViewItemProperties::OnIconPropertyChanged(

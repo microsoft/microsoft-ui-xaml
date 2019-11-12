@@ -764,12 +764,8 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
-
-
         // Old info propagation (remove)
-        nvib.RepeatedIndex(args.Index());
-        nvibImpl->SetNavigationViewParent(*this);
-        nvib.SelectionModel(m_selectionModel);
+        //nvibImpl->SetNavigationViewParent(*this);
 
         // Visual state info propagation
         if (IsTopNavigationView())
@@ -830,12 +826,7 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
 
 void NavigationView::RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args)
 {
-    if (auto nvib = args.Element().try_as<NavigationViewItemBase>())
-    {
-        //TODO: IMPLEMENT!
-        //MUX_FAIL_FAST_MSG("IMPLEMENT REPEATEDINDEX PROPERTY ON NAVIGATIONVIEWITEMBASE.");
-    }
-    //(args.Element as RepNavigationViewItemBase).RepeatedIndex = args.NewIndex;
+    // TODO: Implement if needed
 }
 
 // Hook up the Settings Item Invoked event listener
@@ -1802,8 +1793,8 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
         // And SelectionChanged is after we selected the new item.
         UnselectPrevItem(prevItem, nextItem);
-
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
+
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
 
         AnimateSelectionChanged(prevItem, nextItem);
@@ -2430,17 +2421,9 @@ bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
 
 void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
 {
-    // ListView already handled unselect by itself if ListView raise SelectChanged by itself.
-    // We only need to handle unselect when:
-    // 1, select from setting to listviewitem or null
-    // 2, select from listviewitem to setting
-    // 3, select from listviewitem to null from API.
     if (prevItem && prevItem != nextItem)
     {
-        if (IsSettingsItem(prevItem) || (nextItem && IsSettingsItem(nextItem)) || !nextItem)
-        {
-            ChangeSelectStatusForItem(prevItem, false /*selected*/);
-        }
+        ChangeSelectStatusForItem(prevItem, false /*selected*/);
     }
 }
 

@@ -74,44 +74,6 @@ winrt::NavigationViewList NavigationViewItemBase::GetNavigationViewList()
     return SharedHelpers::GetAncestorOfType<winrt::NavigationViewList>(winrt::VisualTreeHelper::GetParent(*this));
 }
 
-void NavigationViewItemBase::OnRepeatedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    //auto indexPath = GetIndexPath();
-    //if (auto selectionModel = SelectionModel())
-    //{
-    //    bool isSelectedNullable = false;
-    //    if (IsRealized(indexPath))
-    //    {
-    //        isSelectedNullable = selectionModel.IsSelectedAt(indexPath).Value();
-    //    }
-    //    IsSelected(isSelectedNullable);
-    //}
-}
-
-void NavigationViewItemBase::OnSelectionModelPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    if (args.OldValue())
-    {
-        //(args.OldValue().try_as<winrt::SelectionModel>()).SelectionChanged(m_selectionChangedEventToken);
-        m_selectionChangedEventToken.revoke();
-    }
-
-    if (args.NewValue())
-    {
-        //m_selectionChangedEventToken = (args.NewValue().try_as<winrt::SelectionModel>()).SelectionChanged(&OnSelectionChanged);
-        m_selectionChangedEventToken = (args.NewValue().try_as<winrt::SelectionModel>()).SelectionChanged(winrt::auto_revoke, { this, &NavigationViewItemBase::OnSelectionChanged });
-    }
-}
-
-void NavigationViewItemBase::OnSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
-{
-    // Have all items reset their `IsSelected` property everytime selection changes
-    if (IsSelected())
-    {
-        IsSelected(false);
-    }
-}
-
 void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
     m_navigationView = winrt::make_weak(navigationView);
