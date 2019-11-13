@@ -194,16 +194,9 @@ void NumberBox::ValidateInput()
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
 
-            winrt::IReference<double> value;
-
-            if (AcceptsCalculation())
-            {
-                value = NumberBoxParser::Compute(textBox.Text(), numberParser);
-            }
-            else
-            {
-                value = numberParser.ParseDouble(text);
-            }
+            const winrt::IReference<double> value = AcceptsCalculation()
+                ? NumberBoxParser::Compute(textBox.Text(), numberParser)
+                : numberParser.ParseDouble(text);
 
             if (!value)
             {
