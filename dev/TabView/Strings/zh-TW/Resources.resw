@@ -125,4 +125,8 @@
     <value>新增新的索引標籤</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>關閉索引標籤</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

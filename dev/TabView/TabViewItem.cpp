@@ -30,6 +30,13 @@ void TabViewItem::OnApplyTemplate()
         auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
         if (closeButton)
         {
+            // Do localization for the close button automation name
+            if (winrt::AutomationProperties::GetName(closeButton).empty())
+            {
+                auto const closeButtonName = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonName);
+                winrt::AutomationProperties::SetName(closeButton, closeButtonName);
+            }
+
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;

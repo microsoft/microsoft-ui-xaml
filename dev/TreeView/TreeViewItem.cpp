@@ -321,20 +321,14 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         {
             winrt::IInspectable value = args.NewValue();
 
-            // ItemsSource change happens during measuring.
-            // Adding itemsSource to node's children triggers another layout change, so it has to be done async.
-            m_dispatcherHelper.RunAsync(
-                [this, node, value]()
+            auto treeViewNode = winrt::get_self<TreeViewNode>(node);
+            treeViewNode->ItemsSource(value);
+            if (IsInContentMode())
             {
-                auto treeViewNode = winrt::get_self<TreeViewNode>(node);
-                treeViewNode->ItemsSource(value);
-                if (IsInContentMode())
-                {
-                    // The children have changed, validate and update GlyphOpacity
-                    bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
-                    GlyphOpacity(hasChildren ? 1.0 : 0.0);
-                }
-            });
+                // The children have changed, validate and update GlyphOpacity
+                bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
+                GlyphOpacity(hasChildren ? 1.0 : 0.0);
+            }
         }
         else if (property == s_HasUnrealizedChildrenProperty)
         {
