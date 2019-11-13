@@ -570,16 +570,19 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
 {
-    auto nvi = sender.try_as<NavigationViewItem>();
-    auto parentIR = GetParentItemsRepeaterForContainer(*nvi);
+    auto nvi = sender.try_as<winrt::NavigationViewItem>();
+    auto parentIR = GetParentItemsRepeaterForContainer(nvi);
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
-    bool itemSelectsOnInvoked = nvi->SelectsOnInvoked();
+    bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
+    auto prevItem = SelectedItem();
+
+    // Get item for clicked container
+
 
     // Get required info to raise ItemInvoked
     // TODO: Clean up into separate methods
-    auto prevItem = SelectedItem();
     winrt::IInspectable nextItem = nullptr;
-    auto itemIndex = parentIR.GetElementIndex(*nvi);
+    auto itemIndex = parentIR.GetElementIndex(nvi);
     auto itemsSource = parentIR.ItemsSource();
     winrt::ItemsSourceView dataSource = nullptr;
     if (itemsSource)
@@ -603,19 +606,18 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& send
         {
             recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
         }
-        else if (prevItem && nextItem)
+        else if (prevItem && nvi)
         {
-            recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
-                NavigationViewItemBaseOrSettingsContentFromData(nextItem));
+            recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem), nvi);
         }
     }
 
-    RaiseItemInvoked(nextItem, false /*isSettings*/, *nvi, recommendedDirection);
+    RaiseItemInvoked(nextItem, false /*isSettings*/, nvi, recommendedDirection);
 
     // TODO: Check whether invoked item is already selected (therefore only raise item invoked)????
     if (m_selectionModel && itemSelectsOnInvoked)
     {
-        winrt::IndexPath ip = GetIndexPathForContainer(*nvi);
+        winrt::IndexPath ip = GetIndexPathForContainer(nvi);
         m_selectionModel.SelectAt(ip);
     }
 
@@ -1990,51 +1992,49 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
     {
         if (IsTopNavigationView())
         {
-            winrt::IInspectable item{ nullptr };
             // Search topnav first, if not found, search overflow
             if (auto ir = m_topNavRepeater.get())
             {
-                if (auto nviElement = nvi.try_as<winrt::UIElement>())
+                if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    auto itemIndex = ir.GetElementIndex(nviElement);
-                    item = ir.TryGetElement(itemIndex);
-                    if (item)
+                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
+                    auto index = ir.GetElementIndex(element);
+                    if (index != -1)
                     {
-                        return item;
+                        return m_topDataProvider.GetPrimaryItems().GetAt(index);
                     }
                 }
             }
 
             if (auto ir = m_topNavRepeaterOverflowView.get())
             {
-                if (auto nviElement = nvi.try_as<winrt::UIElement>())
+                if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    auto itemIndex = ir.GetElementIndex(nviElement);
-                    item = ir.TryGetElement(itemIndex);
+                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
+                    auto index = ir.GetElementIndex(element);
+                    if (index != -1)
+                    {
+                        return m_topDataProvider.GetOverflowItems().GetAt(index);
+                    }
                 }
-
             }
-            return item;
         }
         else
         {
             if (auto ir = m_leftNavRepeater.get())
             {
-                //auto item = lv.ItemFromContainer(nvi);
-                winrt::IInspectable item = NULL;
                 if (auto element = nvi.try_as<winrt::UIElement>())
                 {
+                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
                     int index = ir.GetElementIndex(element);
                     if (index != -1)
                     {
-                        item = ir.TryGetElement(index);
+                        return LeftNavGetItemFromIndex(index);
                     }
                 }
-                return item;
             }
         }
     }
-
     return nullptr;
 }
 
@@ -2231,33 +2231,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
     }
 
     SelectedItem(item);
-}
-
-bool NavigationView::DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer)
-{
-    // If item and selected item has same container, it would be selected item
-    bool isSelectedItem = false;
-    auto selectedItem = SelectedItem();
-    if (selectedItem && (item || itemContainer))
-    {
-        if (item && item == selectedItem)
-        {
-            isSelectedItem = true;
-        }
-        else if (auto selectItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>()) //SelectedItem itself is a container
-        {
-            isSelectedItem = selectItemContainer == itemContainer;
-        }
-        else // selectedItem itself is data
-        {
-            auto selectedItemContainer = NavigationViewItemBaseOrSettingsContentFromData(selectedItem);
-            if (selectedItemContainer && itemContainer)
-            {
-                isSelectedItem = selectedItemContainer == itemContainer;
-            }
-        }
-    }
-    return isSelectedItem;
 }
 
 void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected)
@@ -3846,4 +3819,21 @@ int NavigationView::LeftNavGetIndexFromItem(const winrt::IInspectable& data)
         indexOfData = inspectingDataSource->IndexOf(data);
     }
     return indexOfData;
+}
+
+winrt::IInspectable NavigationView::LeftNavGetItemFromIndex(int index)
+{
+    // TODO: write cleaner, less expensive implementation
+    auto dataSource = MenuItemsSource();
+    if (!dataSource)
+    {
+        dataSource = MenuItems();
+    }
+
+    winrt::ItemsSourceView dataSourceView = winrt::ItemsSourceView(dataSource);
+    if (dataSourceView)
+    {
+        return dataSourceView.GetAt(index);
+    }
+    return nullptr;
 }

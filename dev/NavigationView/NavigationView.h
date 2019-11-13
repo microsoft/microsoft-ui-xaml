@@ -114,7 +114,6 @@ private:
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
-    bool DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
     void UndoSelectionAndRevertSelectionTo(winrt::IInspectable const& prevSelectedItem, winrt::IInspectable const& nextItem);
@@ -274,6 +273,7 @@ private:
     bool ShouldPreserveNavigationViewRS3Behavior();
 
     int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
+    winrt::IInspectable LeftNavGetItemFromIndex(int index);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
