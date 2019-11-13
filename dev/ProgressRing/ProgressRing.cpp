@@ -15,6 +15,7 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
