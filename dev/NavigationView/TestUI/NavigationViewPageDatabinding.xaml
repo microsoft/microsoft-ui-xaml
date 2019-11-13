@@ -48,6 +48,7 @@
                     <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                     <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                 </ComboBox>
+                <Button Content="MenuItem for Container" Click="GetMenuItemForContainer" />
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

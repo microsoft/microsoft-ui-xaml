@@ -22,6 +22,7 @@ using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewP
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 
 namespace MUXControlsTestApp
 {
@@ -38,10 +39,14 @@ namespace MUXControlsTestApp
             codeBehindItems.Add("Apps");
             codeBehindItems.Add("Games");
             codeBehindItems.Add("Music");
-            codeBehindItems.Add("Movies");
+            codeBehindItems.Add("Games");
             codeBehindItems.Add("TV");
 
             //NavView.MenuItemsSource = codeBehindItems;
+        }
+
+        private void GetMenuItemForContainer(object sender, RoutedEventArgs e)
+        {
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
