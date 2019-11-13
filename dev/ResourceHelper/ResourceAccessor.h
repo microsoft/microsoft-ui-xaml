@@ -149,6 +149,7 @@ public:
 #define SR_TeachingTipNotificationWithoutAppName L"TeachingTipNotificationWithoutAppName"
 #define SR_TabViewAddButtonName L"TabViewAddButtonName"
 #define SR_TabViewAddButtonTooltip L"TabViewAddButtonTooltip"
+#define SR_TabViewCloseButtonName L"TabViewCloseButtonName"
 #define SR_NumberBoxUpSpinButtonName L"NumberBoxUpSpinButtonName"
 #define SR_NumberBoxDownSpinButtonName L"NumberBoxDownSpinButtonName"
 

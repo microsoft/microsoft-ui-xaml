@@ -125,4 +125,8 @@
     <value>కొత్త టాబ్‌ను జోడించండి</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>టాబ్‌ను మూసివేయి</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

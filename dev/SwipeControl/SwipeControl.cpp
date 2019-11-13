@@ -30,12 +30,15 @@ SwipeControl::~SwipeControl()
 {
     DetachEventHandlers();
 
-    if (s_lastInteractedWithSwipeControl && s_lastInteractedWithSwipeControl.get() && s_lastInteractedWithSwipeControl.get().get() == this)
+    if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        s_lastInteractedWithSwipeControl = nullptr;
-        if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
+        if (lastInteractedWithSwipeControl.get() == this)
         {
-            globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
+            s_lastInteractedWithSwipeControl = nullptr;
+            if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
+            {
+                globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
+            }
         }
     }
 }
@@ -325,11 +328,12 @@ void SwipeControl::ValuesChanged(
 {
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (m_isInteracting && (!s_lastInteractedWithSwipeControl.get() || s_lastInteractedWithSwipeControl.get().get() != this))
+    auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get();
+    if (m_isInteracting && (!lastInteractedWithSwipeControl || lastInteractedWithSwipeControl.get() != this))
     {
-        if (s_lastInteractedWithSwipeControl.get())
+        if (lastInteractedWithSwipeControl)
         {
-            s_lastInteractedWithSwipeControl.get()->CloseIfNotRemainOpenExecuteItem();
+            lastInteractedWithSwipeControl->CloseIfNotRemainOpenExecuteItem();
         }
         s_lastInteractedWithSwipeControl = get_weak();
 
@@ -372,9 +376,9 @@ void SwipeControl::ValuesChanged(
 #pragma region TestHookHelpers
 winrt::SwipeControl SwipeControl::GetLastInteractedWithSwipeControl()
 {
-    if (s_lastInteractedWithSwipeControl.get())
+    if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        return s_lastInteractedWithSwipeControl.get()->GetThis();
+        return *lastInteractedWithSwipeControl;
     }
     return nullptr;
 }

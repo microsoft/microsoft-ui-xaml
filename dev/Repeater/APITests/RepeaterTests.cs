@@ -234,6 +234,62 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             NestedRepeaterWithDataTemplateScenario(disableAnimation: false);
         }
 
+        [TestMethod]
+        public void VerifyFocusedItemIsRecycledOnCollectionReset()
+        {
+            List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+            ItemsRepeater repeater = null;
+            const int targetIndex = 4;
+            string targetItem = items[targetIndex]; 
+            
+            RunOnUIThread.Execute(() =>
+            {
+                repeater = new ItemsRepeater() {
+                    ItemsSource = items,
+                    ItemTemplate = CreateDataTemplateWithContent(@"<Button Content='{Binding}'/>")
+                };
+                Content = repeater;
+            });
+            
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("Setting Focus on item " + targetIndex);
+                Button toFocus = (Button)repeater.TryGetElement(targetIndex);
+                Verify.AreEqual(targetItem, toFocus.Content as string);
+                toFocus.Focus(FocusState.Keyboard);
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            { 
+                Log.Comment("Removing focused element from collection");
+                items.Remove(targetItem);
+
+                Log.Comment("Reset the collection with an empty list");
+                repeater.ItemsSource = new List<string>() ;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => 
+            { 
+                Log.Comment("Verify new elements");
+                for (int i = 0; i < items.Count; i++)
+                {
+                    Button currentButton = (Button)repeater.TryGetElement(i);
+                    Verify.IsNull(currentButton);
+                }
+            });
+        }
+
+        private DataTemplate CreateDataTemplateWithContent(string content)
+        {
+            return (DataTemplate)XamlReader.Load(@"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" + content + @"</DataTemplate>");
+        }
+
         private void NestedRepeaterWithDataTemplateScenario(bool disableAnimation)
         {
             if (!disableAnimation && PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
