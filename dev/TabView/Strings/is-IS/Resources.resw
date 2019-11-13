@@ -125,4 +125,8 @@
     <value>Bæta við nýjum flipa</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>Loka flipa</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

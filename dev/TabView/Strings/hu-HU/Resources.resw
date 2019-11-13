@@ -125,4 +125,8 @@
     <value>Új lap hozzáadása</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>Lap bezárása</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

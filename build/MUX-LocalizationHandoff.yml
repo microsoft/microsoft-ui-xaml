@@ -21,6 +21,8 @@ jobs:
 
   - powershell: |
       $changes = & git ls-files -m
+      Write-Host "Edited files:"
+      Write-Host "$changes"
       if ($changes -imatch "\.resw")
       {
         Write-Host "##vso[task.complete result=SucceededWithIssues;]"
