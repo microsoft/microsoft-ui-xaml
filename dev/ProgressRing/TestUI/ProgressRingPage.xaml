@@ -18,7 +18,7 @@
                 Height="40"
                 Maximum="100"
                 Minimum="0"
-                BorderThickness="4"
+                StrokeThickness="4"
                 />
 
             <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Value, Mode=TwoWay}"/>

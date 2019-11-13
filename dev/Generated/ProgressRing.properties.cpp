@@ -9,6 +9,7 @@
 CppWinRTActivatableClassWithDPFactory(ProgressRing)
 
 GlobalDependencyProperty ProgressRingProperties::s_PlaceholderProperty{ nullptr };
+GlobalDependencyProperty ProgressRingProperties::s_StrokeThicknessProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
 {
@@ -28,11 +29,31 @@ void ProgressRingProperties::EnsureProperties()
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_StrokeThicknessProperty)
+    {
+        s_StrokeThicknessProperty =
+            InitializeDependencyProperty(
+                L"StrokeThickness",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnStrokeThicknessPropertyChanged));
+    }
 }
 
 void ProgressRingProperties::ClearProperties()
 {
     s_PlaceholderProperty = nullptr;
+    s_StrokeThicknessProperty = nullptr;
+}
+
+void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressRing>();
+    winrt::get_self<ProgressRing>(owner)->OnStrokeThicknessPropertyChanged(args);
 }
 
 void ProgressRingProperties::Placeholder(winrt::IInspectable const& value)
@@ -43,4 +64,14 @@ void ProgressRingProperties::Placeholder(winrt::IInspectable const& value)
 winrt::IInspectable ProgressRingProperties::Placeholder()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_PlaceholderProperty));
+}
+
+void ProgressRingProperties::StrokeThickness(double value)
+{
+    static_cast<ProgressRing*>(this)->SetValue(s_StrokeThicknessProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressRingProperties::StrokeThickness()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_StrokeThicknessProperty));
 }

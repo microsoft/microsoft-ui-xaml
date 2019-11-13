@@ -22,6 +22,7 @@ public:
     void OnApplyTemplate();
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);

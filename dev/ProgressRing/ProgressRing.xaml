@@ -7,7 +7,7 @@
     <Style TargetType="local:ProgressRing">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
-        <Setter Property="BorderThickness" Value="4" />
+        <Setter Property="StrokeThickness" Value="4" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
@@ -17,7 +17,7 @@
                         <Path
                             Fill="{TemplateBinding Background}"
                             Stroke="{TemplateBinding BorderBrush}"
-                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=BorderThickness.Left}"
+                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=StrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
                             <Path.Data>
@@ -43,7 +43,7 @@
                         <Path
                             Fill="Transparent"
                             Stroke="{TemplateBinding Foreground}"
-                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=BorderThickness.Left}"
+                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=StrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
                             <Path.Data>
