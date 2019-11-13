@@ -28,15 +28,15 @@ struct MathToken
 class NumberBoxParser
 {
     public:
-        static winrt::IReference<double> Compute(const std::wstring_view expr, winrt::INumberParser numberParser);
+        static winrt::IReference<double> Compute(const std::wstring_view expr, const winrt::INumberParser& numberParser);
 
     private:
-        static std::vector<MathToken> GetTokens(const wchar_t *input, winrt::INumberParser numberParser);
+        static std::vector<MathToken> GetTokens(const wchar_t *input, const winrt::INumberParser& numberParser);
 
-        static std::tuple<double, size_t> GetNextNumber(std::wstring input, winrt::INumberParser numberParser);
+        static std::tuple<double, size_t> GetNextNumber(const std::wstring& input, const winrt::INumberParser& numberParser);
         static int GetPrecedenceValue(wchar_t c);
 
-        static std::vector<MathToken> ConvertInfixToPostfix(std::vector<MathToken> tokens);
+        static std::vector<MathToken> ConvertInfixToPostfix(const std::vector<MathToken>& tokens);
 
-        static winrt::IReference<double> ComputePostfixExpression(std::vector<MathToken> tokens);
+        static winrt::IReference<double> ComputePostfixExpression(const std::vector<MathToken>& tokens);
 };

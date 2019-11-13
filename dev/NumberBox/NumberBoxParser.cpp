@@ -9,7 +9,7 @@
 static constexpr wstring_view c_numberBoxOperators{ L"+-*/^"sv };
 
 // Returns list of MathTokens from expression input string. If there are any parsing errors, it returns an empty vector.
-std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::INumberParser numberParser)
+std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, const winrt::INumberParser& numberParser)
 {
     auto tokens = std::vector<MathToken>();
 
@@ -39,6 +39,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
                     }
                     else
                     {
+                        // Error case -- next token is not a number
                         return {};
                     }
                 }
@@ -57,6 +58,7 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
                 }
                 else
                 {
+                    // Error case -- could not evaluate part of the expression
                     return {};
                 }
             }
@@ -69,11 +71,8 @@ std::vector<MathToken> NumberBoxParser::GetTokens(const wchar_t* input, winrt::I
 }
 
 // Attempts to parse a number from the beginning of the given input string. Returns the character size of the matched string.
-std::tuple<double, size_t> NumberBoxParser::GetNextNumber(std::wstring input, winrt::INumberParser numberParser)
+std::tuple<double, size_t> NumberBoxParser::GetNextNumber(const std::wstring& input, const winrt::INumberParser& numberParser)
 {
-    size_t charLength = 0;
-    double value = std::numeric_limits<double>::quiet_NaN();
-
     // Attempt to parse anything before an operator or space as a number
     std::wregex regex(L"^-?([^-+/*\\(\\)\\^\\s]+)");
     std::wsmatch match;
@@ -86,12 +85,11 @@ std::tuple<double, size_t> NumberBoxParser::GetNextNumber(std::wstring input, wi
         if (parsedNum)
         {
             // Parsing was successful
-            value = parsedNum.Value();
-            charLength = matchLength;
+            return { parsedNum.Value(), matchLength };
         }
     }
 
-    return { value, charLength };
+    return { std::numeric_limits<double>::quiet_NaN(), 0 };
 }
 
 int NumberBoxParser::GetPrecedenceValue(wchar_t c)
@@ -110,7 +108,7 @@ int NumberBoxParser::GetPrecedenceValue(wchar_t c)
 }
 
 // Converts a list of tokens from infix format (e.g. "3 + 5") to postfix (e.g. "3 5 +")
-std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathToken> infixTokens)
+std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(const std::vector<MathToken>& infixTokens)
 {
     std::vector<MathToken> postfixTokens;
     std::stack<MathToken> operatorStack;
@@ -181,7 +179,7 @@ std::vector<MathToken> NumberBoxParser::ConvertInfixToPostfix(std::vector<MathTo
     return postfixTokens;
 }
 
-winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<MathToken> tokens)
+winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(const std::vector<MathToken>& tokens)
 {
     std::stack<double> stack;
 
@@ -254,13 +252,10 @@ winrt::IReference<double> NumberBoxParser::ComputePostfixExpression(std::vector<
     return stack.top();
 }
 
-winrt::IReference<double> NumberBoxParser::Compute(const std::wstring_view expr, winrt::INumberParser numberParser)
+winrt::IReference<double> NumberBoxParser::Compute(const std::wstring_view expr, const winrt::INumberParser& numberParser)
 {
-    winrt::IReference<double> answer = nullptr;
-    auto input = expr.data();
-
     // Tokenize the input string
-    auto tokens = GetTokens(input, numberParser);
+    auto tokens = GetTokens(expr.data(), numberParser);
     if (tokens.size() > 0)
     {
         // Rearrange to postfix notation
@@ -268,9 +263,9 @@ winrt::IReference<double> NumberBoxParser::Compute(const std::wstring_view expr,
         if (postfixTokens.size() > 0)
         {
             // Compute expression
-            answer = ComputePostfixExpression(postfixTokens);
+            return ComputePostfixExpression(postfixTokens);
         }
     }
 
-    return answer;
+    return nullptr;
 }
