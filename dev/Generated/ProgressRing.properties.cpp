@@ -28,6 +28,17 @@ void ProgressRingProperties::EnsureProperties()
                 ValueHelper<double>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnStrokeThicknessPropertyChanged));
     }
+    if (!s_StrokeThicknessProperty)
+    {
+        s_StrokeThicknessProperty =
+            InitializeDependencyProperty(
+                L"StrokeThickness",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnStrokeThicknessPropertyChanged));
+    }
 }
 
 void ProgressRingProperties::ClearProperties()
@@ -41,6 +52,16 @@ void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
 {
     auto owner = sender.as<winrt::ProgressRing>();
     winrt::get_self<ProgressRing>(owner)->OnStrokeThicknessPropertyChanged(args);
+}
+
+void ProgressRingProperties::StrokeThickness(double value)
+{
+    static_cast<ProgressRing*>(this)->SetValue(s_StrokeThicknessProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressRingProperties::StrokeThickness()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_StrokeThicknessProperty));
 }
 
 void ProgressRingProperties::StrokeThickness(double value)

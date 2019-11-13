@@ -15,6 +15,7 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
@@ -126,9 +127,12 @@ void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspe
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    // TODO
-
     RenderSegment();
+}
+
+void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    RenderAll();
 }
 
 winrt::Windows::Foundation::Size ProgressRing::ComputeEllipseSize(const double thickness)
@@ -148,7 +152,7 @@ void ProgressRing::RenderSegment()
     {
         auto&& barFigure = m_barFigure.get();
         auto&& barArc = m_barArc.get();
-        const double thickness = ProgressRing::BorderThickness().Top;
+        const double thickness = ProgressRing::StrokeThickness();
         const double maximum = Maximum();
         const double minimum = Minimum();
 
@@ -179,7 +183,7 @@ void ProgressRing::RenderAll()
         auto&& barFigure = m_barFigure.get();
         auto&& barArc = m_barArc.get();
 
-        const double thickness = ProgressRing::BorderThickness().Left;
+        const double thickness = ProgressRing::StrokeThickness();
         const auto size = ComputeEllipseSize(thickness);
 
         const float segmentWidth = size.Width;
