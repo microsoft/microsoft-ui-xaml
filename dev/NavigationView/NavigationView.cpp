@@ -272,8 +272,7 @@ void NavigationView::OnApplyTemplate()
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
         m_leftNavItemsRepeaterElementIndexChangedRevoker = leftNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
  
-        m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
-        //m_leftNavListViewLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+        m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
         if (!newIElementFactory)
@@ -312,7 +311,7 @@ void NavigationView::OnApplyTemplate()
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
         m_topNavItemsRepeaterElementIndexChangedRevoker = topNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
 
-        m_leftNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+        m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
         if (!newIElementFactory)
@@ -472,9 +471,8 @@ void NavigationView::OnApplyTemplate()
     SyncItemTemplates();
 }
 
-void NavigationView::UpdateRepeaterItemsSource()
+void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
 {
-    auto testName = Name();
     auto dataSource = MenuItemsSource();
     if (!dataSource)
     {
@@ -482,7 +480,12 @@ void NavigationView::UpdateRepeaterItemsSource()
         UpdateSelectionForMenuItems();
     }
 
-    m_selectionModel.Source(dataSource);
+    // Selection Model has same representation of data regardless
+    // of pane mode, so only update if the ItemsSource data itself
+    // has changed.
+    if (forceSelectionModelUpdate){
+        m_selectionModel.Source(dataSource);
+    }
 
     if (IsTopNavigationView())
     {
@@ -2904,11 +2907,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_MenuItemsSourceProperty)
     {
-        UpdateRepeaterItemsSource();
+        UpdateRepeaterItemsSource(true);
     }
     else if (property == s_MenuItemsProperty)
     {
-        UpdateRepeaterItemsSource();
+        UpdateRepeaterItemsSource(true);
     }
     else if (property == s_PaneDisplayModeProperty)
     {
@@ -2998,23 +3001,15 @@ void NavigationView::SyncItemTemplates()
     //m_leftNavRepeater.get().ItemTemplate(*m_navigationViewItemsFactory);
 }
 
-void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     if (auto item = SelectedItem())
     {
         if (!IsSelectionSuppressed(item))
         {
-            // Work around for issue where NavigationViewItem doesn't report
-            // its initial IsSelected state properly on RS2 and older builds.
-            //
-            // Without this, the visual state is proper, but the actual 
-            // IsSelected reported by the NavigationViewItem is not.
-            if (!SharedHelpers::IsRS3OrHigher())
+            if (auto navViewItem = NavigationViewItemOrSettingsContentFromData(item))
             {
-                if (auto navViewItem = item.try_as<winrt::NavigationViewItem>())
-                {
-                    navViewItem.IsSelected(true);
-                }
+                navViewItem.IsSelected(true);
             }
         }
         AnimateSelectionChanged(nullptr /* prevItem */, item);
@@ -3131,7 +3126,7 @@ void NavigationView::UpdatePaneDisplayMode()
     }
 
     UpdateContentBindingsForPaneDisplayMode();
-    UpdateRepeaterItemsSource();
+    UpdateRepeaterItemsSource(false);
 }
 
 void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)

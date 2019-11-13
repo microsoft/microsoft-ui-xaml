@@ -60,7 +60,7 @@ public:
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
@@ -183,7 +183,7 @@ private:
     void UpdateSelectionForMenuItems();
     bool m_InitialNonForcedModeUpdate{ true };
 
-    void UpdateRepeaterItemsSource();
+    void UpdateRepeaterItemsSource(bool forceSelectionModelUpdate);
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
