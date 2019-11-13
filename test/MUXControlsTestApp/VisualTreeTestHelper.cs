@@ -58,35 +58,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         public bool hasFailed = false;
 
-        public void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public void VerifyVisualTreeNoException(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
-            Verify.DisableVerifyFailureExceptions = true;
             try
             {
-                if (!VisualTreeTestHelper.VerifyVisualTree(xaml, masterFilePrefix, theme, translator, filter, logger))
-                {
-                    hasFailed = true;
-                }
+                VisualTreeTestHelper.VerifyVisualTree(xaml, masterFilePrefix, theme, translator, filter, logger);
             }
-            finally
+            catch (Exception e)
             {
-                Verify.DisableVerifyFailureExceptions = false;
+                Log.Error(e.Message);
+                hasFailed = true;
             }
         }
 
-        public void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public void VerifyVisualTreeNoException(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
-            Verify.DisableVerifyFailureExceptions = true;
             try
             {
-                if (!VisualTreeTestHelper.VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger))
-                {
-                    hasFailed = true;
-                }
+                VisualTreeTestHelper.VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
             }
-            finally
+            catch (Exception e)
             {
-                Verify.DisableVerifyFailureExceptions = false;
+                Log.Error(e.Message);
+                hasFailed = true;
             }
         }
 
@@ -146,13 +140,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return content;
         }
 
-        public static bool VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public static void VerifyVisualTree(string xaml, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             var root = SetupVisualTree(xaml);
-            return VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
+            VerifyVisualTree(root, masterFilePrefix, theme, translator, filter, logger);
         }
 
-        public static bool VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
+        public static void VerifyVisualTree(UIElement root, string masterFilePrefix, Theme theme = Theme.None, IPropertyValueTranslator translator = null, IFilter filter = null, IVisualTreeLogger logger = null)
         {
             VisualTreeLog.LogInfo("VerifyVisualTree for theme " + theme.ToString());
             TestExecution helper = new TestExecution(translator, filter, logger, AlwaysLogMasterFile);
@@ -189,9 +183,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (helper.HasError())
             {
                 Verify.Fail(helper.GetTestResult(), "Test Failed");
-                return false;
             }
-            return true;
         }
 
         private class TestExecution

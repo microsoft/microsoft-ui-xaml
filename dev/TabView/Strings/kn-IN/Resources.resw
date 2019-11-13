@@ -125,4 +125,8 @@
     <value>ಹೊಸ ಟ್ಯಾಬ್ ಸೇರಿಸಿ</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>ಟ್ಯಾಬ್ ಮುಚ್ಚಿ</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>
