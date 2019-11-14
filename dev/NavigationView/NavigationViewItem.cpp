@@ -360,6 +360,24 @@ void NavigationViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& 
     m_navigationViewItemInvokedEventSource(*this, nullptr);
 }
 
+void NavigationViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
+{
+    NavigationViewItemBase::OnKeyDown(args);
+    switch (args.Key())
+    {
+    case winrt::VirtualKey::GamepadA:
+    case winrt::VirtualKey::Enter:
+    case winrt::VirtualKey::Space:
+        m_navigationViewItemInvokedEventSource(*this, nullptr);
+        break;
+    }
+}
+
+void NavigationViewItem::OnKeyUp(winrt::KeyRoutedEventArgs const& args)
+{
+    NavigationViewItemBase::OnKeyUp(args);
+}
+
 //winrt::event_token NavigationViewItem::ItemInvoked(winrt::EventHandler<winrt::NavigationViewItem> const& value)
 //{
 //    return m_itemInvokedSource.add(value);
