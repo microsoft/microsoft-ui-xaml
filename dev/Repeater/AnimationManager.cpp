@@ -38,7 +38,7 @@ void AnimationManager::OnLayoutChanging()
     m_hasRecordedLayoutTransitions = true;
 }
 
-void AnimationManager::OnDataSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
+void AnimationManager::OnItemsSourceChanged(const winrt::IInspectable&, const winrt::NotifyCollectionChangedEventArgs& args)
 {
     switch (args.Action())
     {

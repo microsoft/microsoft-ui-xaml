@@ -1,6 +1,10 @@
-[WUXC_VERSION_RS5]
+namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass NEWCONTROL : Windows.UI.Xaml.Controls.Control
 {
     NEWCONTROL();
@@ -8,4 +12,6 @@ unsealed runtimeclass NEWCONTROL : Windows.UI.Xaml.Controls.Control
     Object Placeholder{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty PlaceholderProperty{ get; };
+}
+
 }

@@ -39,12 +39,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)XamlAmbientLight.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RevealBorderLight.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RevealHoverLight.idl" />
-    <None Include="$(MSBuildThisFileDirectory)XamlAmbientLight.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RevealBorderLight.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RevealHoverLight.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)XamlAmbientLight.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)MaterialHelperTestApi.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RevealTestApi.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MaterialHelperTestApi.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RevealTestApi.idl" />
   </ItemGroup>
 </Project>

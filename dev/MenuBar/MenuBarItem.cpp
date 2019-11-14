@@ -61,7 +61,7 @@ void MenuBarItem::PopulateContent()
 
     if (m_passThroughElement)
     {
-        if (auto flyoutBase3 = safe_try_cast<winrt::IFlyoutBase3>(flyout))
+        if (winrt::IFlyoutBase3 flyoutBase3 = flyout)
         {
             flyout.OverlayInputPassThroughElement(m_passThroughElement.get());
         }
@@ -261,7 +261,7 @@ void MenuBarItem::OpenFlyoutFrom(FlyoutLocation location)
     }
 }
 
-void MenuBarItem::AddPassThroughElement(winrt::DependencyObject element)
+void MenuBarItem::AddPassThroughElement(const winrt::DependencyObject& element)
 {
     m_passThroughElement = winrt::make_weak(element);
 }

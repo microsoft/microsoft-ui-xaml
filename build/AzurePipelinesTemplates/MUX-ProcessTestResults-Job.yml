@@ -1,0 +1,54 @@
+parameters:
+  dependsOn: ''
+  rerunPassesRequiredToAvoidFailure: 5
+  minimumExpectedTestsExecutedCount: 3000
+  checkJobAttempt: false
+  
+
+jobs:
+- job: ProcessTestResults
+  condition: succeededOrFailed()
+  dependsOn: ${{ parameters.dependsOn }}
+  pool:
+    vmImage: 'windows-2019'
+  timeoutInMinutes: 120
+  variables:
+    helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
+
+  steps:
+  - task: powershell@2
+    displayName: 'UpdateUnreliableTests.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\UpdateUnreliableTests.ps1
+      arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+      
+  - task: powershell@2
+    displayName: 'OutputTestResults.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\OutputTestResults.ps1
+      arguments: -MinimumExpectedTestsExecutedCount '${{ parameters.minimumExpectedTestsExecutedCount }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
+
+  - task: powershell@2
+    displayName: 'ProcessHelixFiles.ps1'
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: build\Helix\ProcessHelixFiles.ps1
+      arguments: -OutputFilePath '$(helixOutputFolder)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Helix files'
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(helixOutputFolder)
+      artifactName: drop

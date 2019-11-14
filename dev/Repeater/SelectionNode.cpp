@@ -6,6 +6,7 @@
 #include "ItemsRepeater.common.h"
 #include "SelectionNode.h"
 #include "SelectionModel.h"
+#include "IndexPath.h"
 
 SelectionNode::SelectionNode(SelectionModel* manager, SelectionNode* parent) :
     m_manager(manager), m_parent(parent), m_source(manager), m_dataSource(manager)
@@ -34,7 +35,7 @@ void SelectionNode::Source(const winrt::IInspectable& value)
         m_source.set(value);
 
         // Setup ItemsSourceView
-        auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(value);
+        auto newDataSource = value.try_as<winrt::ItemsSourceView>();
         if (value && !newDataSource)
         {
             newDataSource = winrt::ItemsSourceView(value);
@@ -77,6 +78,26 @@ void SelectionNode::AnchorIndex(int value)
     m_anchorIndex = value;
 }
 
+winrt::IndexPath SelectionNode::IndexPath()
+{
+    std::vector<int> path;
+    auto parent = m_parent;
+    auto child = this;
+    while (parent != nullptr)
+    {
+        auto childNodes = parent->m_childrenNodes;
+        auto it = std::find_if(childNodes.cbegin(), childNodes.cend(), [&child](const auto& item) {return item.get() == child;});
+        const auto index = static_cast<int>(distance(childNodes.cbegin(), it));
+        assert(index >= 0);
+        // we are walking up to the parent, so the path will be backwards
+        path.insert(path.begin(), index);
+        child = parent;
+        parent = parent->m_parent;
+    }
+
+    return winrt::make<::IndexPath>(path);
+}
+
 // For a genuine tree view, we dont know which node is leaf until we 
 // actually walk to it, so currently the tree builds up to the leaf. I don't 
 // create a bunch of leaf node instances - instead i use the same instance m_leafNode to avoid 
@@ -105,7 +126,7 @@ std::shared_ptr<SelectionNode> SelectionNode::GetAt(int index, bool realizeChild
             auto childData = m_dataSource.get().GetAt(index);
             if (childData != nullptr)
             {
-                auto resolvedChild = m_manager->ResolvePath(childData);
+                auto resolvedChild = m_manager->ResolvePath(childData, weak_from_this());
                 if (resolvedChild != nullptr)
                 {
                     child = std::make_shared<SelectionNode>(m_manager, this /* parent */);
@@ -301,16 +322,13 @@ void SelectionNode::HookupCollectionChangedHandler()
 {
     if (m_dataSource)
     {
-        m_dataSourceChanged = m_dataSource.get().CollectionChanged({ this, &SelectionNode::OnSourceListChanged });
+        m_itemsSourceViewChanged = m_dataSource.get().CollectionChanged(winrt::auto_revoke, { this, &SelectionNode::OnSourceListChanged });
     }
 }
 
 void SelectionNode::UnhookCollectionChangedHandler()
 {
-    if (auto dataSource = m_dataSource.safe_get())
-    {
-        dataSource.CollectionChanged(m_dataSourceChanged);
-    }
+        m_itemsSourceViewChanged.revoke();
 }
 
 bool SelectionNode::IsValidIndex(int index)
@@ -686,11 +704,11 @@ winrt::IReference<bool> SelectionNode::ConvertToNullableBool(SelectionState isSe
     winrt::IReference<bool> result = nullptr; // PartialySelected
     if (isSelected == SelectionState::Selected)
     {
-        result = winrt::PropertyValue::CreateBoolean(true).as<winrt::IReference<bool>>();;
+        result = winrt::PropertyValue::CreateBoolean(true).as<winrt::IReference<bool>>();
     }
     else if (isSelected == SelectionState::NotSelected)
     {
-        result = winrt::PropertyValue::CreateBoolean(false).as<winrt::IReference<bool>>();;
+        result = winrt::PropertyValue::CreateBoolean(false).as<winrt::IReference<bool>>();
     }
 
     return result;

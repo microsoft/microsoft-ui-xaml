@@ -38,6 +38,23 @@ namespace
             throw winrt::hresult_not_implemented();
         }
     }
+
+    winrt::NonVirtualizingLayoutContext GetNonVirtualizingLayoutContext(winrt::LayoutContext const& context)
+    {
+        if (auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>())
+        {
+            return nonVirtualizingContext;
+        }
+        else if (auto virtualizingContext = context.try_as<winrt::VirtualizingLayoutContext>())
+        {
+            auto adapter = winrt::get_self<VirtualizingLayoutContext>(virtualizingContext)->GetNonVirtualizingContextAdapter();
+            return adapter;
+        }
+        else
+        {
+            throw winrt::hresult_not_implemented();
+        }
+    }
 }
 
 
@@ -51,7 +68,7 @@ void Layout::InitializeForContext(winrt::LayoutContext const& context)
     }
     else if (auto nonVirtualizingLayout = get_strong().try_as<winrt::INonVirtualizingLayoutOverrides>())
     {
-        auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>();
+        auto nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
         return nonVirtualizingLayout.InitializeForContextCore(nonVirtualizingContext);
     }
     else
@@ -70,7 +87,7 @@ void Layout::UninitializeForContext(winrt::LayoutContext const& context)
     }
     else if (auto nonVirtualizingLayout = spThis.try_as<winrt::INonVirtualizingLayoutOverrides>())
     {
-        auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>();
+        auto nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
         return nonVirtualizingLayout.UninitializeForContextCore(nonVirtualizingContext);
     }
     else
@@ -92,7 +109,7 @@ winrt::Size Layout::Measure(
     }
     else if (auto nonVirtualizingLayout = spThis.try_as<winrt::INonVirtualizingLayoutOverrides>())
     {
-        auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>();
+        auto nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
         return nonVirtualizingLayout.MeasureOverride(nonVirtualizingContext, availableSize);
     }
     else
@@ -113,7 +130,7 @@ winrt::Size Layout::Arrange(
     }
     else if (auto nonVirtualizingLayout = spThis.try_as<winrt::INonVirtualizingLayoutOverrides>())
     {
-        auto nonVirtualizingContext = context.try_as<winrt::NonVirtualizingLayoutContext>();
+        auto nonVirtualizingContext = GetNonVirtualizingLayoutContext(context);
         return nonVirtualizingLayout.ArrangeOverride(nonVirtualizingContext, finalSize);
     }
     else

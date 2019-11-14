@@ -14,19 +14,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
@@ -45,7 +37,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         End,
         Space,
         Backspace,
-        F10
+        F10,
+        F4,
+        F6
     }
 
     [Flags]
@@ -76,6 +70,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             { Key.Space, "{SPACE}" },
             { Key.Backspace, "{BACKSPACE}" },
             { Key.F10, "{F10}" },
+            { Key.F4, "{F4}" },
+            { Key.F6, "{F6}" },
         };
 
         private static string ApplyModifierKey(string keyStrokes, ModifierKey key)
@@ -118,6 +114,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             }
 
             keystrokes = ApplyModifierKey(keystrokes, modifierKey);
+
+            Log.Comment("Send text '{0}'.", keystrokes);
+            TextInput.SendText(keystrokes);
+            Wait.ForIdle();
+        }
+
+        public static void PressKeySequence(Key[] keys)
+        {
+            string keystrokes = string.Empty;
+
+            foreach (var key in keys)
+            {
+                keystrokes += keyToKeyStringDictionary[key];
+            }
 
             Log.Comment("Send text '{0}'.", keystrokes);
             TextInput.SendText(keystrokes);
@@ -302,7 +312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
                     waiter = (comboBox.ExpandCollapseState == ExpandCollapseState.Expanded ? comboBox.GetCollapsedWaiter() : null);
                 }
             }
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
+            #if COLORPICKER_INCLUDED
             else if (obj is ColorSpectrum)
             {
                 var colorSpectrum = obj as ColorSpectrum;

@@ -16,9 +16,10 @@ using Windows.UI.Xaml.Shapes;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name="PersonPicture", Icon="PersonPicture.png")]
     public sealed partial class PersonPicturePage : TestPage
     {
-        private Uri imageUri = new Uri("ms-appx:///Assets/StoreLogo.png");
+        private Uri imageUri = new Uri("ms-appx:///Assets/ingredient2.png");
         private bool primaryEllipseLoaded = false;
 
         public PersonPicturePage()

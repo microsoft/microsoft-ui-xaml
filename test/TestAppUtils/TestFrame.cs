@@ -24,6 +24,7 @@ namespace MUXControlsTestApp
         private Button _backButton = null;
         private Button _goBackInvokerButton = null;
         private Button _goFullScreenInvokerButton = null;
+        private Button _toggleThemeButton = null;
         private Button _closeAppInvokerButton = null;
         private Button _waitForIdleInvokerButton = null;
         private CheckBox _idleStateEnteredCheckBox = null;
@@ -88,8 +89,12 @@ namespace MUXControlsTestApp
 
             Window.Current.SizeChanged += OnWindowSizeChanged;
 
+            // NOTE: The "BackButton" element automatically has a handler hooked up to it by Frame
+            // just by being named "BackButton"
             _backButton = (Button)GetTemplateChild("BackButton");
-            _backButton.Click += GoBackInvokerButton_Click;
+
+            _toggleThemeButton = (Button)GetTemplateChild("ToggleThemeButton");
+            _toggleThemeButton.Click += ToggleThemeButton_Click;
 
             _goBackInvokerButton = (Button)GetTemplateChild("GoBackInvokerButton");
             _goBackInvokerButton.Click += GoBackInvokerButton_Click;
@@ -121,6 +126,17 @@ namespace MUXControlsTestApp
             _goFullScreenInvokerButton.Click += GoFullScreenInvokeButton_Click;
 
             _unhandledExceptionReportingTextBox = (TextBox)GetTemplateChild("UnhandledExceptionReportingTextBox");
+        }
+
+        private void ToggleThemeButton_Click(object sender,RoutedEventArgs e)
+        {
+            if(_rootGrid.RequestedTheme == ElementTheme.Default)
+            {
+                // Convert theme from default to either dark or light based on application requestedtheme
+                _rootGrid.RequestedTheme = (Application.Current.RequestedTheme == ApplicationTheme.Light) ? ElementTheme.Light : ElementTheme.Dark;
+            }
+            // Invert theme
+            _rootGrid.RequestedTheme = (_rootGrid.RequestedTheme == ElementTheme.Light) ? ElementTheme.Dark : ElementTheme.Light;
         }
 
         private void GoFullScreenInvokeButton_Click(object sender, RoutedEventArgs e)
@@ -169,20 +185,22 @@ namespace MUXControlsTestApp
 
         private void SetRootGridSizeFromWindowSize()
         {
-#if USE_INSIDER_SDK
+            var size = new Size(Window.Current.Bounds.Width, Window.Current.Bounds.Height);
+
             if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.Xaml.XamlRoot"))
             {
-                var xamlRoot = _rootGrid.XamlRoot;
-                var size = xamlRoot.Size;
-                _rootGrid.Width = size.Width;
-                _rootGrid.Height = size.Height;
+                try
+                {
+                    var xamlRoot = _rootGrid.XamlRoot;
+                    size = xamlRoot.Size;
+                }
+                catch (InvalidCastException)
+                {
+                    // If running on mismatched OS build, just fall back to window bounds.
+                }
             }
-            else
-#endif
-            {
-                _rootGrid.Width = Window.Current.Bounds.Width;
-                _rootGrid.Height = Window.Current.Bounds.Height;
-            }
+            _rootGrid.Width = size.Width;
+            _rootGrid.Height = size.Height;
         }
 
         private void GoBackInvokerButton_Click(object sender, RoutedEventArgs e)

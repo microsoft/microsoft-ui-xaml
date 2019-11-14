@@ -46,10 +46,13 @@ public:
     unsigned int RemoveNodeFromParent(const winrt::TreeViewNode& node);
     winrt::TreeViewNode NodeFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromNode(winrt::TreeViewNode const& node);
+    winrt::TreeViewNode NodeFromItem(winrt::IInspectable const& item);
+    winrt::IInspectable ItemFromNode(winrt::TreeViewNode const& node);
     com_ptr<ViewModel> ListViewModel() const;
     void ListViewModel(com_ptr<ViewModel> viewModel);
     winrt::TreeViewNode DraggedTreeViewNode();
     void DraggedTreeViewNode(winrt::TreeViewNode const& node);
+    bool IsContentMode();
 
 private:
     bool IsIndexValid(int index);
@@ -58,6 +61,7 @@ private:
     unsigned int IndexInParent(const winrt::TreeViewNode& node);
     winrt::TreeViewNode NodeAtFlatIndex(int index) const;
     winrt::TreeViewNode GetRootOfSelection(const winrt::TreeViewNode& node) const;
+    void MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeViewNode const& insertAtNode);
 
     tracker_ref<winrt::TreeViewItem> m_draggedOverItem{ this };
     winrt::hstring m_dropTargetDropEffectString;

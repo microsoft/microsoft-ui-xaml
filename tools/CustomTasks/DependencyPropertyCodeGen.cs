@@ -62,15 +62,6 @@ namespace CustomTasks
             set;
         }
 
-        public Dictionary<string, bool> IncludedTypesMetadata { get; set; }
-        public Dictionary<string, bool> HasCustomActivationFactoryMetadata { get; set; }
-        public Dictionary<string, bool> NeedsDependencyPropertyFieldMetadata { get; set; }
-        public Dictionary<string, bool?> NeedsPropChangedCallbackMetadata { get; set; }
-        public Dictionary<string, string> PropChangedCallbackMethodNameMetadata { get; set; }
-        public Dictionary<string, string> PropValidationCallbackMetadata { get; set; }
-        public Dictionary<string, string> PropertyTypeOverrideMetadata { get; set; }
-        public Dictionary<string, string> DefaultValueMetadata { get; set; }
-
         private List<string> _pendingFilesWritten = new List<string>();
 
 #if MSBUILD_TASK
@@ -88,17 +79,10 @@ namespace CustomTasks
 
                 foreach (var type in types)
                 {
-                    if (IncludedTypesMetadata != null && !IncludedTypesMetadata.ContainsKey(type.Name))
-                    {
-                        // Skip types not explicitly included by the override metadata
-                        continue;
-                    }
-
                     var typeDefinition = new TypeDefinition();
                     typeDefinition.Type = type;
 
-                    typeDefinition.HasCustomActivationFactory = 
-                        HasAttribute(HasCustomActivationFactoryMetadata, type.Name, "MUXHasCustomActivationFactoryAttribute", type);
+                    typeDefinition.HasCustomActivationFactory = HasAttribute("MUXHasCustomActivationFactoryAttribute", type);
 
                     typeDefinition.NeedsActivationFactory = NeedsActivationFactory(type);
 
@@ -134,22 +118,7 @@ namespace CustomTasks
                     RewriteFileIfNecessary(implPath, impl);
                 }
 
-                if (IncludedTypesMetadata == null) // Only do this if we aren't running in OS repo
-                {
-                    collectedMetadata = collectedMetadata.OrderBy(x => x.Type.Name).ToList();
-
-                    // Workaround for Deliverable 18767852: WinMD Feature Request: Custom attributes (for codegen hints) which are stripped out of SDK metadata
-                    // In the OS repo we can't use IDL attributes as they would be part of public metadata. So instead
-                    // we write this summary file which in the dep.controls/MUX build is an output file. But in the OS
-                    // build it can be a "sidecar" file that carries the metadata that we can't store in the IDL.
-                    // So the truth is in the IDL but in the OS repo if you need to RunWUXCCodeGen without round-tripping
-                    // through the dep.controls build then you can manually edit MetadataSummary.cs in a pinch.
-                    string metadataSummary = WriteMetadataSummary(collectedMetadata);
-                    string metadataSummaryPath = Path.Combine(OutputDirectory, "MetadataSummary.cs");
-                    RewriteFileIfNecessary(metadataSummaryPath, metadataSummary);
-
-                    FilesWritten = _pendingFilesWritten.ToArray();
-                }
+                FilesWritten = _pendingFilesWritten.ToArray();
 
                 return true;
             }
@@ -184,9 +153,8 @@ namespace CustomTasks
                 {
                     // If it's not a dependency property but it has the "needs dependency property" attribute then generate the field anyway.
                     string baseName = propInfo.Name;
-                    string typeDotPropertyName = type.Name + "." + baseName;
 
-                    bool needsDependencyPropertyField = NeedsDependencyPropertyField(NeedsDependencyPropertyFieldMetadata, typeDotPropertyName, type, propInfo);
+                    bool needsDependencyPropertyField = NeedsDependencyPropertyField(type, propInfo);
                     if (needsDependencyPropertyField && !props.Any(x => x.Name == baseName))
                     {
                         PropertyDefinition propDefinition = CollectProperty(type, null, baseName, propInfo);
@@ -201,12 +169,10 @@ namespace CustomTasks
 
         private PropertyDefinition CollectProperty(Type type, PropertyInfo dependencyProperty, string baseName, PropertyInfo instanceProperty)
         {
-            string typeDotPropertyName = type.Name + "." + baseName;
-
-            var needsPropChangedCallback = NeedsPropertyChangedCallback(NeedsPropChangedCallbackMetadata, typeDotPropertyName, dependencyProperty, instanceProperty, type);
-            var defaultValue = GetDefaultValue(DefaultValueMetadata, typeDotPropertyName, dependencyProperty, instanceProperty, type);
-            string propertyChangedCallbackMethodName = GetPropertyChangedCallbackMethodName(PropChangedCallbackMethodNameMetadata, typeDotPropertyName, dependencyProperty, instanceProperty, type);
-            string propertyValidationCallback = GetPropertyValidationCallback(PropValidationCallbackMetadata, typeDotPropertyName, dependencyProperty, instanceProperty, type);
+            var needsPropChangedCallback = NeedsPropertyChangedCallback(dependencyProperty, instanceProperty, type);
+            var defaultValue = GetDefaultValue(dependencyProperty, instanceProperty, type);
+            string propertyChangedCallbackMethodName = GetPropertyChangedCallbackMethodName(dependencyProperty, instanceProperty, type);
+            string propertyValidationCallback = GetPropertyValidationCallback(dependencyProperty, instanceProperty, type);
 
             if (instanceProperty != null)
             {
@@ -238,7 +204,7 @@ namespace CustomTasks
                         InstanceProperty = null,
                         DependencyProperty = dependencyProperty,
                         AttachedPropertyTargetType = getMethod.GetParameters()[0].ParameterType,
-                        NeedsPropChangedCallback = needsPropChangedCallback ?? false,
+                        NeedsPropChangedCallback = false,
                         PropChangedCallbackMethodName = propertyChangedCallbackMethodName,
                         PropertyValidationCallback = propertyValidationCallback,
                         DefaultValue = defaultValue
@@ -246,7 +212,7 @@ namespace CustomTasks
                 }
                 else
                 {
-                    String typeOverride = GetPropertyTypeOverride(PropertyTypeOverrideMetadata, typeDotPropertyName, dependencyProperty);
+                    String typeOverride = GetPropertyTypeOverride(dependencyProperty);
                     if (typeOverride != null)
                     {
                         // Typeless property definition, just registering the property.
@@ -317,6 +283,11 @@ namespace CustomTasks
             public string PropChangedCallbackMethodName;
             public bool NeedsDependencyPropertyField;
             public string PropertyValidationCallback;
+
+            public string GetClassFuncName()
+            {
+                return $"On{Name}PropertyChanged";
+            }
         }
 
         private struct EventDefinition
@@ -421,15 +392,8 @@ namespace CustomTasks
             return false;
         }
 
-        private T GetAttributeValue<T>(Dictionary<string, T> metadata, string nameDotProperty, string name, params MemberInfo[] members)
+        private T GetAttributeValue<T>(string name, params MemberInfo[] members)
         {
-            // Workaround for 18767852 -- use the sidecar info if provided. (See MetadataSummary.cs comment for more details)
-            T overrideValue = default(T);
-            if ((metadata != null) && metadata.TryGetValue(nameDotProperty, out overrideValue))
-            {
-                return overrideValue;
-            }
-
             foreach (var member in members)
             {
                 if (member == null) continue;
@@ -446,15 +410,8 @@ namespace CustomTasks
             return default(T);
         }
 
-        private bool HasAttribute(Dictionary<string, bool> metadata, string nameDotProperty, string name, params MemberInfo[] members)
+        private bool HasAttribute(string name, params MemberInfo[] members)
         {
-            bool overrideValue;
-            // Workaround for 18767852 -- use the sidecar info if provided. (See MetadataSummary.cs comment for more details)
-            if ((metadata != null) && metadata.TryGetValue(nameDotProperty, out overrideValue) && overrideValue)
-            {
-                return true;
-            }
-
             foreach (var member in members)
             {
                 if (member == null) continue;
@@ -471,34 +428,34 @@ namespace CustomTasks
             return false;
         }
 
-        private bool? NeedsPropertyChangedCallback(Dictionary<string, bool?> metadata, string nameDotProperty, params MemberInfo[] members)
+        private bool? NeedsPropertyChangedCallback(params MemberInfo[] members)
         {
-            return GetAttributeValue<bool?>(metadata, nameDotProperty, "MUXPropertyChangedCallbackAttribute", members);
+            return GetAttributeValue<bool?>("MUXPropertyChangedCallbackAttribute", members);
         }
 
-        private bool NeedsDependencyPropertyField(Dictionary<string, bool> metadata, string nameDotProperty, params MemberInfo[] members)
+        private bool NeedsDependencyPropertyField(params MemberInfo[] members)
         {
-            return HasAttribute(metadata, nameDotProperty, "MUXPropertyNeedsDependencyPropertyFieldAttribute", members);
+            return HasAttribute("MUXPropertyNeedsDependencyPropertyFieldAttribute", members);
         }
 
-        private string GetPropertyChangedCallbackMethodName(Dictionary<string, string> metadata, string nameDotProperty, params MemberInfo[] members)
+        private string GetPropertyChangedCallbackMethodName(params MemberInfo[] members)
         {
-            return GetAttributeValue<string>(metadata, nameDotProperty, "MUXPropertyChangedCallbackMethodNameAttribute", members);
+            return GetAttributeValue<string>("MUXPropertyChangedCallbackMethodNameAttribute", members);
         }
 
-        private string GetPropertyValidationCallback(Dictionary<string, string> metadata, string nameDotProperty, params MemberInfo[] members)
+        private string GetPropertyValidationCallback(params MemberInfo[] members)
         {
-            return GetAttributeValue<string>(metadata, nameDotProperty, "MUXPropertyValidationCallbackAttribute", members);
+            return GetAttributeValue<string>("MUXPropertyValidationCallbackAttribute", members);
         }
 
-        private string GetDefaultValue(Dictionary<string, string> metadata, string nameDotProperty, params MemberInfo[] members)
+        private string GetDefaultValue(params MemberInfo[] members)
         {
-            return GetAttributeValue<string>(metadata, nameDotProperty, "MUXPropertyDefaultValueAttribute", members);
+            return GetAttributeValue<string>("MUXPropertyDefaultValueAttribute", members);
         }
 
-        private string GetPropertyTypeOverride(Dictionary<string, string> metadata, string nameDotProperty, params MemberInfo[] members)
+        private string GetPropertyTypeOverride(params MemberInfo[] members)
         {
-            return GetAttributeValue<string>(metadata, nameDotProperty, "MUXPropertyTypeAttribute", members);
+            return GetAttributeValue<string>("MUXPropertyTypeAttribute", members);
         }
 
         private string WriteHeader(TypeDefinition typeDefinition)
@@ -586,21 +543,14 @@ public:
     static void ClearProperties();
 ");
 
-            bool needsPropertyChanged = props.Any(x => x.NeedsPropChangedCallback);
-            if (needsPropertyChanged)
+            var needsPropertyChanged = props.Where(x => x.NeedsPropChangedCallback || x.PropertyValidationCallback != null);
+            foreach (var prop in needsPropertyChanged)
             {
-                foreach (var validationCallback in props
-                                    .Select(x => x.PropertyValidationCallback)
-                                    .OrderBy(x => x)
-                                    .Distinct())
-                {
-                    string funcName = validationCallback != null ? "OnPropertyChanged_" + validationCallback : "OnPropertyChanged";
-                    sb.Append(String.Format(@"
-    static void {0}(
+                sb.Append($@"
+    static void {prop.GetClassFuncName()}(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
-", funcName));
-                }
+");
             }
 
             sb.AppendLine("};");
@@ -699,23 +649,21 @@ public:
                 }
 
                 string callback = "nullptr";
-                if (prop.PropChangedCallbackMethodName != null)
+                if (prop.PropChangedCallbackMethodName != null && prop.AttachedPropertyTargetType != null)
                 {
                     if (prop.PropertyValidationCallback != null)
                     {
 #if MSBUILD_TASK
-                        Log.LogError("Custom property changed callback and validation callback are not supported, type {0} property {1]", ownerType.Name, prop.Name);
+                        Log.LogError("Custom property changed callback and validation callback are not supported, type {0} property {1}", ownerType.Name, prop.Name);
+#else
+                        throw new Exception("Custom property changed callback and validation callback are not supported, type {0} property {1}", ownerType.Name, prop.Name);
 #endif
                     }
                     callback = String.Format("&{0}::{1}", ownerType.Name, prop.PropChangedCallbackMethodName);
                 }
-                else if (prop.PropertyValidationCallback != null)
+                else if (prop.NeedsPropChangedCallback || prop.PropertyValidationCallback != null)
                 {
-                    callback = "&OnPropertyChanged_" + prop.PropertyValidationCallback;
-                }
-                else if (prop.NeedsPropChangedCallback)
-                {
-                    callback = "winrt::PropertyChangedCallback(&OnPropertyChanged)";
+                    callback = $"winrt::PropertyChangedCallback(&On{prop.Name}PropertyChanged)";
                 }
                 
                 sb.AppendLine(String.Format(
@@ -751,31 +699,22 @@ public:
             bool hasValidationCallback = props.Any(x => x.PropertyValidationCallback != null);
             if (needsPropertyChanged || hasValidationCallback)
             {
-                sb.AppendLine();
-                foreach (var validationCallback in props
-                                    .Select(x => Tuple.Create(x.PropertyValidationCallback, x.PropertyValidationCallback != null ? x.PropertyCppName : null))
-                                    .OrderBy(x => x.Item1)
-                                    .Distinct())
+                foreach (var prop in props.Where(x => x.NeedsPropChangedCallback || x.PropertyValidationCallback != null))
                 {
-                    if (!needsPropertyChanged && validationCallback.Item1 == null)
-                    {
-                        // Skip outputting OnPropertyChanged if there's no validation callback and we don't need it.
-                        continue;
-                    }
-
-                    string funcName = validationCallback.Item1 != null ? "OnPropertyChanged_" + validationCallback.Item1 : "OnPropertyChanged";
+                    sb.AppendLine();
                     // PropertyChanged callback
-                    sb.AppendLine(String.Format(
-@"void {0}Properties::{2}(
+                    sb.AppendLine(
+$@"void {ownerType.Name}Properties::{prop.GetClassFuncName()}(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {{
-    auto owner = sender.as<{1}>();", ownerType.Name, CppName(ownerType), funcName));
+    auto owner = sender.as<{CppName(ownerType)}>();");
                     
-                    if (validationCallback.Item1 != null)
+                    if (prop.PropertyValidationCallback != null)
                     {
                         string comparison = "if (value != coercedValue)";
-                        if (validationCallback.Item2 == "double" || validationCallback.Item2 == "float")
+                        string propertyCppName = prop.PropertyCppName;
+                        if (propertyCppName == "double" || propertyCppName == "float")
                         {
                             comparison = "if (std::memcmp(&value, &coercedValue, sizeof(value)) != 0) // use memcmp to avoid tripping over nan";
                         }
@@ -788,30 +727,38 @@ public:
         sender.SetValue(args.Property(), winrt::box_value<{2}>(coercedValue));
         return;
     }}
-", ownerType.Name, validationCallback.Item1, validationCallback.Item2, comparison));
+", ownerType.Name, prop.PropertyValidationCallback, propertyCppName, comparison));
                     }
 
-                    sb.AppendLine(String.Format(
-@"    winrt::get_self<{0}>(owner)->OnPropertyChanged(args);
-}}", ownerType.Name));
+                    if (prop.NeedsPropChangedCallback)
+                    {
+                        string ownerFuncName = prop.PropChangedCallbackMethodName ?? prop.GetClassFuncName();
+                        sb.AppendLine(
+$@"    winrt::get_self<{ownerType.Name}>(owner)->{ownerFuncName}(args);");
+                    }
+
+                    sb.AppendLine("}");
                 }
             }
 
             // Instance property methods
             foreach (var prop in props)
             {
+                sb.AppendLine();
                 if (prop.InstanceProperty != null)
                 {
-                    sb.AppendLine(String.Format(@"
-void {0}Properties::{1}({2} {3}value)
+                    sb.AppendLine(String.Format(
+@"void {0}Properties::{1}({2} {3}value)
 {{", ownerType.Name, prop.Name, prop.PropertyCppName, CppInputModifier(prop.PropertyType)));
+                    string localName = "value";
                     if (prop.PropertyValidationCallback != null)
                     {
-                        sb.AppendLine(String.Format(
-@"    static_cast<{0}*>(this)->{1}(value);", ownerType.Name, prop.PropertyValidationCallback));
+                        localName = "coercedValue";
+                        sb.AppendLine($@"    {prop.PropertyCppName} {localName} = value;");
+                        sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->{prop.PropertyValidationCallback}({localName});");
                     }
-                    sb.AppendLine(String.Format(@"    static_cast<{0}*>(this)->SetValue(s_{1}Property, ValueHelper<{2}>::BoxValueIfNecessary(value));
-}}", ownerType.Name, prop.Name, prop.PropertyCppName));
+                    sb.AppendLine($@"    static_cast<{ownerType.Name}*>(this)->SetValue(s_{prop.Name}Property, ValueHelper<{prop.PropertyCppName}>::BoxValueIfNecessary({localName}));
+}}");
                     sb.AppendLine(String.Format(@"
 {0} {1}Properties::{2}()
 {{
@@ -836,8 +783,10 @@ void {0}Properties::Set{1}({2} const& target, {3} {4}value)
             // Events
             foreach (var eventInfo in events)
             {
-                sb.AppendLine(String.Format(@"
-winrt::event_token {0}Properties::{1}({2} const& value)
+                sb.AppendLine();
+
+                sb.AppendLine(String.Format(
+@"winrt::event_token {0}Properties::{1}({2} const& value)
 {{
     return {3}.add(value);
 }}
@@ -850,111 +799,6 @@ void {0}Properties::{1}(winrt::event_token const& token)
 
             return sb.ToString();
         }
-
-        private string WriteMetadataSummary(List<TypeDefinition> collectedMetadata)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(
-@"// Workaround for Deliverable 18767852: WinMD Feature Request: Custom attributes (for codegen hints) which are stripped out of SDK metadata
-// In the OS repo we can't use IDL attributes as they would be part of public metadata. So instead
-// we write this summary file which in the dep.controls/MUX build is an output file. But in the OS
-// build it can be a 'sidecar' file that carries the metadata that we can't store in the IDL.
-// So the truth is in the IDL but in the OS repo if you need to RunWUXCCodeGen without round-tripping
-// through the dep.controls build then you can manually edit MetadataSummary.cs in a pinch.
-using System;
-using System.Collections.Generic;
-
-namespace CustomTasks
-{
-    public class MetadataSummary
-    {
-        public Dictionary<string, bool> IncludedTypesMetadata { get; set; }
-        public Dictionary<string, bool> HasCustomActivationFactoryMetadata { get; set; }
-        public Dictionary<string, bool> NeedsDependencyPropertyFieldMetadata { get; set; }
-        public Dictionary<string, bool?> NeedsPropChangedCallbackMetadata { get; set; }
-        public Dictionary<string, string> PropChangedCallbackMethodNameMetadata { get; set; }
-        public Dictionary<string, string> PropValidationCallbackMetadata { get; set; }
-        public Dictionary<string, string> PropertyTypeOverrideMetadata { get; set; }
-        public Dictionary<string, string> DefaultValueMetadata { get; set; }
-
-        public MetadataSummary()
-        {
-            IncludedTypesMetadata = new Dictionary<string, bool>();
-            HasCustomActivationFactoryMetadata = new Dictionary<string, bool>();
-            NeedsDependencyPropertyFieldMetadata = new Dictionary<string, bool>();
-            NeedsPropChangedCallbackMetadata = new Dictionary<string, bool?>();
-            PropChangedCallbackMethodNameMetadata = new Dictionary<string, string>();
-            PropValidationCallbackMetadata = new Dictionary<string, string>();
-            PropertyTypeOverrideMetadata = new Dictionary<string, string>();
-            DefaultValueMetadata = new Dictionary<string, string>();
-
-
-");
-
-
-
-            foreach (var typeDefinition in collectedMetadata.OrderBy(x => x.Type.Name))
-            {
-                sb.AppendFormat("            IncludedTypesMetadata[\"{0}\"] = true;", typeDefinition.Type.Name);
-                sb.AppendLine();
-                if (typeDefinition.HasCustomActivationFactory)
-                {
-                    sb.AppendFormat("            HasCustomActivationFactoryMetadata[\"{0}\"] = true;", typeDefinition.Type.Name);
-                    sb.AppendLine();
-                }
-                sb.AppendFormat("            // {0} -- NeedsPropChangedCallbackMetadata", typeDefinition.Type.Name);
-                sb.AppendLine();
-                foreach (var prop in typeDefinition.Properties)
-                {
-                    if (prop.NeedsPropChangedCallback)
-                    {
-                        sb.AppendFormat("            NeedsPropChangedCallbackMetadata[\"{0}\"] = true;", typeDefinition.Type.Name + "." + prop.Name);
-                        sb.AppendLine();
-                    }
-                    if (prop.PropChangedCallbackMethodName != null)
-                    {
-                        sb.AppendFormat("            PropChangedCallbackMethodNameMetadata[\"{0}\"] = \"{1}\";", typeDefinition.Type.Name + "." + prop.Name, prop.PropChangedCallbackMethodName);
-                        sb.AppendLine();
-                    }
-                    if (prop.PropertyValidationCallback != null)
-                    {
-                        sb.AppendFormat("            PropValidationCallbackMetadata[\"{0}\"] = \"{1}\";", typeDefinition.Type.Name + "." + prop.Name, prop.PropertyValidationCallback);
-                        sb.AppendLine();
-                    }
-                    if (prop.PropertyType == null)
-                    {
-                        sb.AppendFormat("            PropertyTypeOverrideMetadata[\"{0}\"] = \"{1}\";", typeDefinition.Type.Name + "." + prop.Name, prop.PropertyCppName);
-                        sb.AppendLine();
-                    }
-                    if (prop.NeedsDependencyPropertyField)
-                    {
-                        sb.AppendFormat("            NeedsDependencyPropertyFieldMetadata[\"{0}\"] = true;", typeDefinition.Type.Name + "." + prop.Name);
-                        sb.AppendLine();
-                    }
-                }
-                sb.AppendFormat("            // {0} -- DefaultValueMetadata", typeDefinition.Type.Name);
-                sb.AppendLine();
-                foreach (var prop in typeDefinition.Properties)
-                {
-                    if (prop.DefaultValue != null)
-                    {
-                        sb.AppendFormat("            DefaultValueMetadata[\"{0}\"] = @\"{1}\";", typeDefinition.Type.Name + "." + prop.Name, prop.DefaultValue);
-                        sb.AppendLine();
-                    }
-                }
-                sb.AppendLine();
-            }
-
-            sb.Append(@"
-        }
-    }
-}
-");
-
-            return sb.ToString();
-        }
-
 
 
         static List<Type> GetTypes(string assemblyPath, IList<string> references)
@@ -1015,24 +859,7 @@ namespace CustomTasks
 
         private void RewriteFileIfNecessary(string path, string contents)
         {
-            bool rewrite = true;
-            var fullPath = Path.GetFullPath(path);
-            try
-            {
-                string existingContents = File.ReadAllText(fullPath);
-                if (String.Equals(existingContents, contents))
-                {
-                    rewrite = false;
-                }
-            }
-            catch
-            {
-            }
-
-            if (rewrite)
-            {
-                File.WriteAllText(fullPath, contents);
-            }
+            var fullPath = Utils.RewriteFileIfNecessary(path, contents);
 
             _pendingFilesWritten.Add(fullPath);
         }

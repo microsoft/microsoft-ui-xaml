@@ -4,8 +4,9 @@ param(
     [switch]$CopyBackOnly
 )
 
-$VSDIR=(Get-ItemProperty "HKLM:\software\wow6432node\Microsoft\VisualStudio\SxS\vs7" -Name "15.0").'15.0';
-$MSBuildPath=$VSDIR + '\MSBuild\15.0\Bin\MSBuild.exe'
+$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+
+$MSBuildPath = & $vswhere -Latest -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
 
 if (-not (Test-Path $MSBuildPath))
 {
@@ -33,7 +34,7 @@ if (-not $BuildNumber) {
 if (-not $CopyBackOnly)
 {
     Write-Host "Restoring nuget packages ..." -ForegroundColor Green
-    \\edge-svcs\nuget\v4\nuget.exe restore Settings\packages.config -packagesdirectory ..\..\packages -configfile nuget.config
+    & "..\..\tools\NugetWrapper.cmd" restore Settings\packages.config -packagesdirectory ..\..\packages -configfile nuget.config
 
     if ($lastexitcode -ne 0) {
 	    Write-Host "##vso[task.logissue type=error;] Nuget package restore failed with exit code $lastexitcode"

@@ -15,6 +15,9 @@ public:
     void ItemsStretch(winrt::UniformGridLayoutItemsStretch const& value);
     winrt::UniformGridLayoutItemsStretch ItemsStretch();
 
+    void MaximumRowsOrColumns(int value);
+    int MaximumRowsOrColumns();
+
     void MinColumnSpacing(double value);
     double MinColumnSpacing();
 
@@ -32,6 +35,7 @@ public:
 
     static winrt::DependencyProperty ItemsJustificationProperty() { return s_ItemsJustificationProperty; }
     static winrt::DependencyProperty ItemsStretchProperty() { return s_ItemsStretchProperty; }
+    static winrt::DependencyProperty MaximumRowsOrColumnsProperty() { return s_MaximumRowsOrColumnsProperty; }
     static winrt::DependencyProperty MinColumnSpacingProperty() { return s_MinColumnSpacingProperty; }
     static winrt::DependencyProperty MinItemHeightProperty() { return s_MinItemHeightProperty; }
     static winrt::DependencyProperty MinItemWidthProperty() { return s_MinItemWidthProperty; }
@@ -40,6 +44,7 @@ public:
 
     static GlobalDependencyProperty s_ItemsJustificationProperty;
     static GlobalDependencyProperty s_ItemsStretchProperty;
+    static GlobalDependencyProperty s_MaximumRowsOrColumnsProperty;
     static GlobalDependencyProperty s_MinColumnSpacingProperty;
     static GlobalDependencyProperty s_MinItemHeightProperty;
     static GlobalDependencyProperty s_MinItemWidthProperty;
@@ -48,4 +53,36 @@ public:
 
     static void EnsureProperties();
     static void ClearProperties();
+
+    static void OnItemsJustificationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnItemsStretchPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMaximumRowsOrColumnsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinColumnSpacingPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinItemHeightPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinItemWidthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMinRowSpacingPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOrientationPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
 };

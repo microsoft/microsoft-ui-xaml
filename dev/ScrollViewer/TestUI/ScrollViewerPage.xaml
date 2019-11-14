@@ -10,6 +10,10 @@
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="40">
         <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -20,9 +24,14 @@
                 <ComboBoxItem>Info</ComboBoxItem>
                 <ComboBoxItem>Verbose</ComboBoxItem>
             </ComboBox>
+            <CheckBox x:Name="chkIsInteractionTrackerPointerWheelRedirectionEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="1"
+                Content="IsInteractionTrackerPointerWheelRedirectionEnabled?" Checked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked" Unchecked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked"/>
         </Grid>
         <Button x:Name="navigateToSimpleContents" AutomationProperties.Name="navigateToSimpleContents" Margin="2" HorizontalAlignment="Stretch">ScrollViewers with simple contents</Button>
         <Button x:Name="navigateToDynamic" AutomationProperties.Name="navigateToDynamic" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollViewer API</Button>
         <Button x:Name="navigateToScrollControllers" AutomationProperties.Name="navigateToScrollControllers" Margin="2" HorizontalAlignment="Stretch">ScrollViewer with IScrollControllers within template</Button>
+        <Button x:Name="navigateToRTL" AutomationProperties.Name="navigateToRTL" Margin="2" HorizontalAlignment="Stretch">ScrollViewer with RightToLeft flow direction</Button>
+        <Button x:Name="navigateToKeyboardAndGamepadNavigation" AutomationProperties.Name="navigateToKeyboardAndGamepadNavigation" Margin="2" HorizontalAlignment="Stretch">ScrollViewer navigation with Keyboard and Gamepad</Button>
+        <Button x:Name="navigateToBlank" AutomationProperties.Name="navigateToBlank" Margin="2" HorizontalAlignment="Stretch">ScrollViewer in blank page</Button>
     </StackPanel>
 </local:TestPage>

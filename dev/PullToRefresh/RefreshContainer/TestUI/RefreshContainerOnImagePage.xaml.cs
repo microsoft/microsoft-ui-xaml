@@ -18,7 +18,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp;
 
-#if !BUILD_WINDOWS
 using RefreshVisualizer = Microsoft.UI.Xaml.Controls.RefreshVisualizer;
 using RefreshVisualizerState = Microsoft.UI.Xaml.Controls.RefreshVisualizerState;
 using RefreshRequestedEventArgs = Microsoft.UI.Xaml.Controls.RefreshRequestedEventArgs;
@@ -28,7 +27,6 @@ using RefreshPullDirection = Microsoft.UI.Xaml.Controls.RefreshPullDirection;
 using IRefreshContainerPrivate = Microsoft.UI.Private.Controls.IRefreshContainerPrivate;
 using IRefreshInfoProvider = Microsoft.UI.Private.Controls.IRefreshInfoProvider;
 using IRefreshVisualizerPrivate = Microsoft.UI.Private.Controls.IRefreshVisualizerPrivate;
-#endif
 
 namespace MUXControlsTestApp
 {

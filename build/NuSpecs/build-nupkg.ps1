@@ -4,6 +4,7 @@ Param(
     [string]$OutputDir,
     [string]$VersionOverride,
     [string]$Subversion = "",
+    [string]$DateOverride,
     [string]$prereleaseversion,
     [string]$BuildFlavor = "release",
     [string]$BuildArch = "x86",
@@ -30,38 +31,33 @@ if (!$BuildOutput)
     Exit 1
 }
 
-if (!$env:NUGETCMD) {
-
-    cmd /c where /Q nuget.exe
-    if ($lastexitcode -ne 0) {
-        Write-Host "nuget not found on path. Either add it to path or set NUGETCMD environment variable." -ForegroundColor Red
-        Exit 1
-    }
-
-    $env:NUGETCMD = "nuget.exe"
-}
-
 if ($VersionOverride)
 {
     $version = $VersionOverride
 }
 else
 {
-    [xml]$customProps = (Get-Content ..\..\custom.props)
-    $versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-    $versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+    [xml]$customProps = (Get-Content ..\..\version.props)
+    $versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+    $versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
 
     if ((!$versionMajor) -or (!$versionMinor))
     {
-        Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+        Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
         Exit 1
     }
 
     $version = "$versionMajor.$versionMinor"
     
-    $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
-    $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
-    $version += "." + ($pstTime).ToString("yyMMdd") + "$subversion"
+    $versiondate = $DateOverride
+    if (-not $versiondate)
+    {
+        $pstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+        $pstTime = [System.TimeZoneInfo]::ConvertTimeFromUtc((Get-Date).ToUniversalTime(), $pstZone)
+        $versiondate += ($pstTime).ToString("yyMMdd")
+    }
+
+    $version += "." + $versiondate + "$subversion"
 
     Write-Verbose "Version = $version"
 }
@@ -74,10 +70,6 @@ if ($prereleaseversion)
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }
 
 $nupkgtitle = "Microsoft.UI.Xaml"
-if($env:BuildLeanMuxForTheStoreApp -eq "true")
-{
-    $nupkgtitle = "Microsoft.UI.Xaml-Slim"
-}
 
 function New-TemporaryDirectory {
     $parent = [System.IO.Path]::GetTempPath()
@@ -108,31 +100,36 @@ Write-Verbose "TempDir = $($TempDir.FullName)"
 $runtimesDir = "$($TempDir.FullName)\runtimes"
 $toolsDir = "$($TempDir.FullName)\tools"
 
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x86\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x86\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x86\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x86\native"
 Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-x86\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-x64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-x64\native"
 Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-x64\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm\native"
 Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-arm\native\Microsoft.UI.Xaml\Assets"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm64\native"
-Copy-IntoNewDirectory -IfExists $BuildOutput\release\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.dll "$runtimesDir\win10-arm64\native"
+Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm64\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pri "$runtimesDir\win10-arm64\native"
 Copy-IntoNewDirectory -IfExists ..\..\dev\Materials\Acrylic\Assets\NoiseAsset_256x256_PNG.png "$runtimesDir\win10-arm64\native\Microsoft.UI.Xaml\Assets"
 
 $CommonNugetArgs = "-properties `"BuildOutput=$BuildOutput``;ID=$nupkgtitle``;RUNTIMESDIR=$runtimesDir`;TOOLSDIR=$toolsDir`;BUILDFLAVOR=$($BuildFlavor)`;BUILDARCH=$($BuildArch)`""
 
 $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir"
 
-$NugetCmdLine = "$env:NUGETCMD pack MUXControls.nuspec $NugetArgs -version $version"
+$nugetExe = "$scriptDirectory\..\..\tools\NugetWrapper.cmd"
+$NugetCmdLine = "$nugetExe pack MUXControls.nuspec $NugetArgs -version $version"
 Write-Host $NugetCmdLine
 Invoke-Expression $NugetCmdLine
 if ($lastexitcode -ne 0)
 {
-    Exit $lastexitcode; 
     Write-Host "Nuget returned $lastexitcode"
+    Exit $lastexitcode; 
 }
+
+Write-Host
+Write-Host "SkipFrameworkPackage = $SkipFrameworkPackage"
+Write-Host
 
 if(-not $SkipFrameworkPackage)
 {
@@ -150,13 +147,13 @@ if(-not $SkipFrameworkPackage)
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm\Debug"
     #Copy-IntoNewDirectory -IfExists $BuildOutput\debug\arm64\FrameworkPackage\Microsoft.UI.Xaml.Debug.*.appx "$toolsDir\AppX\arm64\Debug"
 
-    $NugetCmdLine = "$env:NUGETCMD pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
+    $NugetCmdLine = "$nugetExe pack MUXControlsFrameworkPackage.nuspec $NugetArgs -version $version"
     Write-Host $NugetCmdLine
     Invoke-Expression $NugetCmdLine
     if ($lastexitcode -ne 0)
     {
-        Exit $lastexitcode; 
         Write-Host "Nuget returned $lastexitcode"
+        Exit $lastexitcode; 
     }
 }
 

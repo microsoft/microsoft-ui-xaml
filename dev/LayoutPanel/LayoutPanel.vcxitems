@@ -22,6 +22,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LayoutPanelLayoutContext.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)LayoutPanel.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)LayoutPanel.idl" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,9 @@
 @echo OFF
 setlocal
 
-set VisualStudioVersion=15.0
+if "%VisualStudioVersion%" == "" set VisualStudioVersion=15.0
+
+if defined NUGETEXETOOLPATH goto :AzurePipelines
 
 if not exist %TEMP%\nuget.4.9.2.exe (
     echo Nuget.exe not found in the temp dir, downloading.
@@ -10,4 +12,12 @@ if not exist %TEMP%\nuget.4.9.2.exe (
 
 %TEMP%\nuget.4.9.2.exe %*
 
+exit /B %ERRORLEVEL%
+
+
+
+:AzurePipelines
+echo NUGETEXETOOLPATH = %NUGETEXETOOLPATH%
+
+%NUGETEXETOOLPATH% %*
 exit /B %ERRORLEVEL%

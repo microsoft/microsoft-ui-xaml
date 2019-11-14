@@ -3,4 +3,5 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="RunPowershellScript" AssemblyFile="CustomTasks.dll" />
   <UsingTask TaskName="DependencyPropertyCodeGen" AssemblyFile="CustomTasks.dll" />
+  <UsingTask TaskName="BatchMergeXaml" AssemblyFile="CustomTasks.dll" />
 </Project>

@@ -22,23 +22,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland };
+    public enum TestType { MuxControls, Nuget, NugetCX, WPFXAMLIsland, AppThatUsesMuxIndirectly };
 
     // This is marked as a test class to make sure our AssemblyInitialize and AssemblyCleanup
     // fixtures get executed.  It won't actually host any tests.
@@ -52,20 +44,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 #else
         private const string _testAppName = "MUXControlsTestApp_8wekyb3d8bbwe!App";
 #endif
-
-        private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
-        private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
+        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
 
         public const string _nugetTestAppPackageName = "NugetPackageTestApp";
         private const string _nugetTestAppName = "NugetPackageTestApp_8wekyb3d8bbwe!App";
+        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
+
+        public const string _appThatUsesMUXIndirectlyPackageName = "AppThatUsesMUXIndirectly";
+        private const string _appThatUsesMUXIndirectlyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe!App";
+        private const string _appThatUsesMUXIndirectlyPackageFamilyName = "AppThatUsesMUXIndirectly_8wekyb3d8bbwe";
 
         public const string _nugetTestAppCXPackageName = "NugetPackageTestAppCX";
         private const string _nugetTestAppCXName = "NugetPackageTestAppCX_8wekyb3d8bbwe!App";
-
-        private const string _testAppPackageFamilyName = "MUXControlsTestApp_8wekyb3d8bbwe";
-        private const string _nugetTestAppPackageFamilyName = "NugetPackageTestApp_8wekyb3d8bbwe";
         private const string _nugetTestAppCXPackageFamilyName = "NugetPackageTestAppCX_8wekyb3d8bbwe";
+
+        private const string _wpfXamlIslandPackageName = "MUXControlsTestAppWPFPackage";
+        private const string _wfpXamlIslandAppName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe!App";
         private const string _wpfXamlIslandPackageFamilyName = "MUXControlsTestAppWPFPackage_8wekyb3d8bbwe";
+
+        
+
 
         public static TestContext TestContext { get; private set; }
 
@@ -94,28 +92,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         }
 
         [AssemblyInitialize]
-#if BUILD_WINDOWS
-        [TestProperty("CoreClrProfile", "TestNetv2.1")]
-#else
         [TestProperty("CoreClrProfile", ".NETCoreApp2.1")]
-#endif
         [TestProperty("RunFixtureAs:Assembly", "ElevatedUserOrSystem")]
         [TestProperty("Hosting:Mode", "UAP")]
-        // Default value for test metadata used to group tests 
-        [TestProperty("MUXControlsTestSuite", "SuiteA")]
         // Default value for tests is to not run on phone. Test Classes or Test Methods can override
         [TestProperty("MUXControlsTestEnabledForPhone", "False")]
         public static void AssemblyInitialize(TestContext testContext)
         {
-            // We need to make the process DPI aware so it properly handles scale factors other than 100%.
-            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
-            // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE below RS2.
-            if (SetProcessDpiAwarenessContext(
-                PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2) ?
-                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 :
-                    DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) < 0)
+            if (!PlatformConfiguration.IsDevice(DeviceType.OneCore))
             {
-                throw new Exception("Failed to set process DPI awareness context!  Error = " + Marshal.GetLastWin32Error());
+                // We need to make the process DPI aware so it properly handles scale factors other than 100%.
+                // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 only existed RS2 and up, so we'll fall back to
+                // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE below RS2.
+                if (SetProcessDpiAwarenessContext(
+                    PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2) ?
+                        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 :
+                        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) < 0)
+                {
+                    throw new Exception("Failed to set process DPI awareness context!  Error = " + Marshal.GetLastWin32Error());
+                }
             }
 
 #if USING_TAEF
@@ -132,10 +127,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             // Install the test app certificate if we're deploying the MUXControlsTestApp from the NuGet package.
             // If this is the MUXControlsTestApp from the OS repo, then it'll have been signed with a test cert
             // that doesn't need installation.
-#if !BUILD_WINDOWS
             Log.Comment("Installing the certificate for the test app");
             TestAppInstallHelper.InstallAppxCert(testContext.TestDeploymentDir, "MUXControlsTestApp");
-#endif
 #endif
         }
 
@@ -168,6 +161,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             if (type == TestType.Nuget) return new Application(_nugetTestAppPackageName, _nugetTestAppPackageFamilyName, _nugetTestAppName);
             if (type == TestType.NugetCX) return new Application(_nugetTestAppCXPackageName, _nugetTestAppCXPackageFamilyName, _nugetTestAppCXName);
             if (type == TestType.WPFXAMLIsland) return new Application(_wpfXamlIslandPackageName, _wpfXamlIslandPackageFamilyName, _wfpXamlIslandAppName, false /* isUWPApp */);
+            if (type == TestType.AppThatUsesMuxIndirectly) return new Application(_appThatUsesMUXIndirectlyPackageName, _appThatUsesMUXIndirectlyPackageFamilyName, _appThatUsesMUXIndirectlyName);
             return new Application(_testAppPackageName, _testAppPackageFamilyName, _testAppName);
         }
 
@@ -212,20 +206,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
         public static void ScheduleAppRestartIfNeeded()
         {
-#if BUILD_WINDOWS
-            // In CatGates, our test app is automatically closed on phone after a certain time elapses
-            // if we don't close it ourselves. This leads to test instability, so to ensure we
-            // never run into this, we'll restart our application after every test.
-            // This increases test runtime, but is necessary to ensure stability.
-            // We'll use TestCleanupHelper.TestSetupHelperPendingDisposals == 0 to indicate that
-            // we're back on the main page and that therefore the test is complete,
-            // unless we're explicitly told it's not.
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
-            {
-                Log.Comment("Queueing an app restart to ensure test stability on phone.");
-                TestEnvironment.ShouldRestartApplication = true;
-            }
-#endif
         }
 
         public static void LogDumpTree(UIObject root = null)

@@ -35,7 +35,7 @@ private:
     winrt::HorizontalAlignment GetEffectiveHorizontalAlignment() const;
     winrt::VerticalAlignment GetEffectiveVerticalAlignment() const;
     winrt::FxZoomMode GetEffectiveZoomMode() const;
-    
+
     void SetScrollViewer(const winrt::FxScrollViewer& scrollViewer);
     void SetScroller(const winrt::Scroller& scroller);
 

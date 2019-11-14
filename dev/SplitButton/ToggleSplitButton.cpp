@@ -17,10 +17,6 @@ ToggleSplitButton::ToggleSplitButton()
     SetDefaultStyleKey(this);
 }
 
-ToggleSplitButton::~ToggleSplitButton()
-{
-}
-
 void ToggleSplitButton::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
@@ -42,6 +38,13 @@ void ToggleSplitButton::OnIsCheckedChanged()
     {
         auto eventArgs = winrt::make_self<ToggleSplitButtonIsCheckedChangedEventArgs>();
         m_isCheckedChangedEventSource(*this, *eventArgs);
+
+        if (auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this))
+        {
+            auto newValue = IsChecked() ? winrt::ToggleState::On : winrt::ToggleState::Off;
+            auto oldValue = (newValue == winrt::ToggleState::On) ? winrt::ToggleState::Off : winrt::ToggleState::On;
+            peer.RaisePropertyChangedEvent(winrt::TogglePatternIdentifiers::ToggleStateProperty(), box_value(oldValue), box_value(newValue));
+        }
     }
 
     UpdateVisualStates();

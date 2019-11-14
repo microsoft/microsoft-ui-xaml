@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MENUBAR_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -29,7 +30,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)MenuBarItemFlyout.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)MenuBar.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -44,9 +45,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)MenuBar.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MenuBar.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)MenuBarAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)MenuBarAutomationPeer.idl" />
   </ItemGroup>
 </Project>

@@ -16,6 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml.cs">
       <DependentUpon>ScrollerBringIntoViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml.cs">
+      <DependentUpon>ScrollerMousePanningPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml.cs">
       <DependentUpon>ScrollerSnapPointsPage.xaml</DependentUpon>
     </Compile>
@@ -55,6 +58,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerWithSimpleScrollControllersPage.xaml.cs">
       <DependentUpon>ScrollerWithSimpleScrollControllersPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)BiDirectionalScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CompositionScrollController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerTestHooksHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerAccessibilityPage.xaml">
@@ -63,9 +69,14 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerBringIntoViewPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml">
       <SubType>Designer</SubType>
@@ -73,9 +84,9 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerStackPanelAnchoringPage.xaml">
-      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollerRepeaterAnchoringPage.xaml">
       <SubType>Designer</SubType>
@@ -131,6 +142,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\AdditionalStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
 </Project>

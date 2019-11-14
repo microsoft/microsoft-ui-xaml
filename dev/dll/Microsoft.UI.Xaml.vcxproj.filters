@@ -22,14 +22,15 @@
     <ClCompile Include="XamlType.cpp" />
     <ClCompile Include="SharedHelpers.cpp" />
     <ClCompile Include="MUXControlsFactory.cpp" />
-    <ClCompile Include="ThemeResources.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="XamlMetadataProvider.cpp" />
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
-    <ClCompile Include="ThemeResourcesFactory.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
+    <ClCompile Include="XamlControlsResources.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -64,7 +65,6 @@
     <ClInclude Include="..\inc\CastHelpers.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeResources.h" />
     <ClInclude Include="MUXControlsFactory.h" />
     <ClInclude Include="..\inc\DownlevelHelper.h">
       <Filter>inc</Filter>
@@ -76,7 +76,6 @@
     <ClInclude Include="..\inc\TypeHelper.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="ThemeResourcesFactory.h" />
     <ClInclude Include="..\inc\GlobalDependencyProperty.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -87,13 +86,21 @@
     <ClInclude Include="..\inc\DispatcherHelper.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="XamlControlsResources.h" />
+    <ClInclude Include="..\inc\enum_array.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\enum_vector.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inc\RegUtil.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
     <None Include="packages.config" />
-    <None Include="Microsoft.UI.Xaml.rc">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="XamlMetadataProviderGenerated.tt" />
     <None Include="XamlMetadataProviderWindowsCodeGen.tt" />
@@ -105,8 +112,29 @@
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(OutDir)Generic.xaml" />
-    <Page Include="$(OutDir)rs1_themeresources.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
+    <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Microsoft.UI.Xaml.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

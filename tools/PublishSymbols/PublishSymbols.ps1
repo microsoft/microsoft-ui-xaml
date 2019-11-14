@@ -1,29 +1,39 @@
+[CmdLetBinding()]
+Param(
+    [Parameter(Mandatory=$true, Position=0)]
+    [string]$localDirectory
+)
+
 Push-Location $PSScriptRoot
 
-[xml]$customProps = (Get-Content ..\..\custom.props)
-$versionMajor = $customProps.GetElementsByTagName("VersionMajor").'#text'
-$versionMinor = $customProps.GetElementsByTagName("VersionMinor").'#text'
+[xml]$customProps = (Get-Content ..\..\version.props)
+$versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
+$versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
 
 if ((!$versionMajor) -or (!$versionMinor))
 {
-    Write-Error "Expected VersionMajor and VersionMinor tags to be in custom.props file"
+    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
     Exit 1
 }
 
-$buildVersion = $versionMajor + "." + $versionMinor + "." + $env:TFS_VersionNumber
+$buildVersion = $versionMajor + "." + $versionMinor + "." + $env:BUILD_BUILDNUMBER
 
 Write-Host "Build = $buildVersion"
 
-$buildId=$env:TFS_BuildNumber + "_" + $env:TFS_Platform
-$directory=$env:XES_DFSDROP + "\" + $env:TFS_BuildConfiguration + "\" + $env:TFS_Platform + "\Microsoft.UI.Xaml"
+$buildId="$($env:BUILD_BUILDNUMBER)"
+$directory = "$env:XES_DFSDROP"
+
+Write-Host "Local path: '$localDirectory'"
+Write-Host "Build share: '$directory'"
+
+Copy-Item -Recurse -Verbose "$localDirectory" "$directory"
 
 Write-Host "buildId = $buildId"
-Write-Host "directory = $directory"
 
-copy pdb_index_template.ini pdb_index.ini
+Copy-Item pdb_index_template.ini pdb_index.ini
 Add-Content pdb_index.ini "Build=$buildVersion"
 
-\\symbols\Tools\createrequest.cmd -i .\pdb_index.ini -d .\requests -c -a -b $buildId -e Release -g $directory
+\\symbols\Tools\createrequest.cmd -i .\pdb_index.ini -d .\requests -c -a -b $buildId -e Release -g $directory -r
 
 if ($lastexitcode -ne 0)
 {

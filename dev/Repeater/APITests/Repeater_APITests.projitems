@@ -17,7 +17,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\ElementAnimatorDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\LayoutExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\FlowLayoutDerived.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockNonVirtualizingLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\NamedGroup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\NonVirtualStackLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\OrientationBasedMeasures.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RecyclingViewGeneratorDerived.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\Mocks\MockItemsSource.cs" />
@@ -39,7 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterFocusTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SelectionModelTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ElementFactoryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ItemTemplateTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewManagerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewportTests.cs" />
   </ItemGroup>

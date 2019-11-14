@@ -7,9 +7,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -55,7 +53,7 @@ namespace MUXControlsTestApp.Samples
                 e.NewStartingIndex,
                 e.NewItems == null ? -1 : e.NewItems.Count);
 
-            OnDataSourceChanged(args);
+            OnItemsSourceChanged(args);
         }
     }
 }

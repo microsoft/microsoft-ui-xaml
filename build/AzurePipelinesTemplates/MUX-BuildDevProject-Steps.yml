@@ -1,0 +1,12 @@
+steps:
+  - template: MUX-BuildProject-Steps.yml
+    parameters:
+      solutionPath: MUXControls.sln
+      nugetConfigPath: nuget.config
+      appxPackageDir: $(appxPackageDir)
+      buildOutputDir: $(buildOutputDir)
+      publishDir: $(publishDir)
+
+  - template: MUX-MakeFrameworkPackages-Steps.yml
+    parameters:
+      buildOutputDir: $(buildOutputDir)

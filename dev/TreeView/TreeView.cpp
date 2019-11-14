@@ -38,23 +38,43 @@ TreeViewList* TreeView::ListControl()
 
 winrt::IInspectable TreeView::ItemFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->ItemFromContainer(container);
+    return ListControl() ? ListControl()->ItemFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromItem(winrt::IInspectable const& item)
 {
-    return ListControl()->ContainerFromItem(item);
+    return ListControl() ? ListControl()->ContainerFromItem(item) : nullptr;
 }
 
 winrt::TreeViewNode TreeView::NodeFromContainer(winrt::DependencyObject const& container)
 {
-    return ListControl()->NodeFromContainer(container);
+    return ListControl() ? ListControl()->NodeFromContainer(container) : nullptr;
 }
 
 winrt::DependencyObject TreeView::ContainerFromNode(winrt::TreeViewNode const& node)
 {
-    return ListControl()->ContainerFromNode(node);
+    return ListControl() ? ListControl()->ContainerFromNode(node) : nullptr;
 }
+
+void TreeView::SelectedNode(winrt::TreeViewNode const& node)
+{
+    auto selectedNodes = SelectedNodes();
+    if (selectedNodes.Size() > 0)
+    {
+        selectedNodes.Clear();
+    }
+    if (node)
+    {
+        selectedNodes.Append(node);
+    }
+}
+
+winrt::TreeViewNode TreeView::SelectedNode()
+{
+    auto nodes = SelectedNodes();
+    return nodes.Size() > 0 ? nodes.GetAt(0) : nullptr;
+}
+
 
 winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
 {
@@ -68,6 +88,38 @@ winrt::IVector<winrt::TreeViewNode> TreeView::SelectedNodes()
     
     // we'll treat the pending selected nodes as SelectedNodes value if we don't have a list control or a view model
     return m_pendingSelectedNodes.get();
+}
+
+void TreeView::SelectedItem(winrt::IInspectable const& item)
+{
+    auto selectedItems = SelectedItems();
+    if (selectedItems.Size() > 0)
+    {
+        selectedItems.Clear();
+    }
+    if (item)
+    {
+        selectedItems.Append(item);
+    }
+}
+
+winrt::IInspectable TreeView::SelectedItem()
+{
+    auto items = SelectedItems();
+    return items.Size() > 0 ? items.GetAt(0) : nullptr;
+}
+
+winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()
+{
+    if (auto listControl = ListControl())
+    {
+        if (auto viewModel = listControl->ListViewModel())
+        {
+            return viewModel->GetSelectedItems();
+        }
+    }
+
+    return nullptr;
 }
 
 void TreeView::Expand(winrt::TreeViewNode const& value)
@@ -108,7 +160,7 @@ void TreeView::OnNodeExpanding(const winrt::TreeViewNode& sender, const winrt::I
 
     if (m_listControl)
     {
-        if (auto expandingTVI = safe_try_cast<winrt::TreeViewItem>(ContainerFromNode(sender)))
+        if (auto expandingTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
             //Update TVI properties
             if (!expandingTVI.IsExpanded())
@@ -132,7 +184,7 @@ void TreeView::OnNodeCollapsed(const winrt::TreeViewNode& sender, const winrt::I
 
     if (m_listControl)
     {
-        if (auto collapsedTVI = safe_try_cast<winrt::TreeViewItem>(ContainerFromNode(sender)))
+        if (auto collapsedTVI = ContainerFromNode(sender).try_as<winrt::TreeViewItem>())
         {
             //Update TVI properties
             if (collapsedTVI.IsExpanded())
@@ -183,90 +235,15 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
     }
     else if (property == s_ItemsSourceProperty)
     {
-        m_itemItemsSourceViewChangedRevoker.revoke();
-        m_itemsDataSource = ItemsSource() ? winrt::ItemsSourceView(ItemsSource()) : nullptr;
-        if (m_itemsDataSource)
+        winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
+
+        if (auto listControl = ListControl())
         {
-            m_itemItemsSourceViewChangedRevoker = m_itemsDataSource.CollectionChanged(winrt::auto_revoke, { this, &TreeView::OnItemsSourceChanged });
+            auto viewModel = listControl->ListViewModel();
+            viewModel->IsContentMode(true);
         }
 
-        SyncRootNodesWithItemsSource();
-    }
-}
-
-void TreeView::OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args)
-{
-    switch (args.Action())
-    {
-        case winrt::NotifyCollectionChangedAction::Add:
-        {
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Remove:
-        {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Reset:
-        {
-            SyncRootNodesWithItemsSource();
-            break;
-        }
-
-        case winrt::NotifyCollectionChangedAction::Replace:
-        {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
-            break;
-        }
-    }
-}
-
-void TreeView::OnItemsAdded(int index, int count)
-{
-    for (int i = index + count - 1; i >= index; i--)
-    {
-        auto item = m_itemsDataSource.GetAt(i);
-        auto node = winrt::make_self<TreeViewNode>();
-        node->Content(item);
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->InsertAtCore(index, *node);
-    }
-}
-
-void TreeView::OnItemsRemoved(int index, int count)
-{
-    for (int i = 0; i < count; i++)
-    {
-        winrt::get_self<TreeViewNodeVector>(RootNodes())->RemoveAtCore(index);
-    }
-}
-
-void TreeView::SyncRootNodesWithItemsSource()
-{
-    winrt::get_self<TreeViewNode>(m_rootNode.get())->IsContentMode(true);
-    if (auto listControl = ListControl())
-    {
-        auto viewModel = listControl->ListViewModel();
-        viewModel->IsContentMode(true);
-    }
-
-    auto children = winrt::get_self<TreeViewNodeVector>(RootNodes());
-    children->ClearCore();
-
-    if (m_itemsDataSource)
-    {
-        int size = m_itemsDataSource.Count();
-        for (int i = 0; i < size; i++)
-        {
-            auto item = m_itemsDataSource.GetAt(i);
-            auto node = winrt::make_self<TreeViewNode>();
-            node->IsContentMode(true);
-            node->Content(item);
-            children->AppendCore(*node);
-        }
+        winrt::get_self<TreeViewNode>(m_rootNode.get())->ItemsSource(ItemsSource());
     }
 }
 
@@ -294,7 +271,7 @@ void TreeView::UpdateItemsSelectionMode(bool isMultiSelect)
 
     for (int i = 0; i < size; i++)
     {
-        auto updateContainer = safe_cast<winrt::TreeViewItem>(listControl->ContainerFromIndex(i));
+        auto updateContainer = listControl->ContainerFromIndex(i).as<winrt::TreeViewItem>();
         if (updateContainer)
         {
             if (isMultiSelect)

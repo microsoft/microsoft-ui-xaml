@@ -16,8 +16,10 @@ namespace MUXControlsTestAppForIslands
         static TestInventory()
         {
             Tests = new List<TestDeclaration>();
-
-            Tests.Add(new TestDeclaration("NavigationView Tests", typeof(NavigationViewTestPage)));
+            Tests.Add(new TestDeclaration() {
+                Name = "NavigationViewTests",
+                PageType = typeof(NavigationViewTestPage),
+            });
         }
 
         public static List<TestDeclaration> Tests { get; private set; }

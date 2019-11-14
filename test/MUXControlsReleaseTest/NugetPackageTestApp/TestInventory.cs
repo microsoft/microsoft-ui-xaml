@@ -12,7 +12,31 @@ namespace NugetPackageTestApp
         {
             Tests = new List<TestDeclaration>
             {
-                new TestDeclaration("PullToRefresh Tests", typeof(PullToRefreshTestPage))
+                new TestDeclaration()
+                {
+                    Name = "PullToRefresh Tests",
+                    PageType = typeof(PullToRefreshTestPage),
+                },
+                new TestDeclaration()
+                {
+                    Name = "CompactDictionary Tests",
+                    PageType = typeof(CompactDictionaryTestPage),
+                },
+                new TestDeclaration()
+                {
+                    Name = "Repeater Tests",
+                    PageType = typeof(RepeaterTestPage),
+                },
+                new TestDeclaration()
+                {
+                    Name = "NavigationView Tests",
+                    PageType = typeof(NavigationViewTestPage),
+                },
+                new TestDeclaration()
+                {
+                    Name = "NavigationView with custom resources Tests",
+                    PageType = typeof(NavigationViewWithCustomResourcesTestPage),
+                },
             };
         }
 

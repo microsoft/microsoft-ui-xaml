@@ -9,8 +9,6 @@ class RadioButtonsListViewItem :
     public ReferenceTracker<RadioButtonsListViewItem, winrt::implementation::RadioButtonsListViewItemT>
 {
 public:
-    RadioButtonsListViewItem() {}
-
     // IUIElement
     winrt::AutomationPeer OnCreateAutomationPeer();
 };

@@ -1,0 +1,40 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    ProgressBarTemplateSettings();
+
+    Double ContainerAnimationEndPosition;
+    static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPositionProperty{ get; };
+
+    Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
+    static Windows.UI.Xaml.DependencyProperty ClipRectProperty{ get; };
+}
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass ProgressBar : Windows.UI.Xaml.Controls.Primitives.RangeBase
+{
+    ProgressBar();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsIndeterminate{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean ShowError{ get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean ShowPaused{ get; set; };
+
+    ProgressBarTemplateSettings TemplateSettings{ get; };
+
+    static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ShowErrorProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ShowPausedProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+}
+
+}

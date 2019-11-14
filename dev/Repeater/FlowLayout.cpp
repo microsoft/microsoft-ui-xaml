@@ -8,51 +8,12 @@
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
 #include "FlowLayout.h"
-#include "FlowLayoutFactory.h"
+#include "VirtualizingLayoutContext.h"
 
-#pragma region IFlowLayout
-
-winrt::Orientation FlowLayout::Orientation()
+FlowLayout::FlowLayout()
 {
-    return auto_unbox(GetValue(s_orientationProperty));
+    LayoutId(L"FlowLayout");
 }
-
-void FlowLayout::Orientation(winrt::Orientation const& value)
-{
-    SetValue(s_orientationProperty, box_value(value));
-}
-
-double FlowLayout::MinRowSpacing()
-{
-    return m_minRowSpacing;
-}
-
-void FlowLayout::MinRowSpacing(double value)
-{
-    SetValue(s_minRowSpacingProperty, box_value(value));
-}
-
-double FlowLayout::MinColumnSpacing()
-{
-    return m_minColumnSpacing;
-}
-
-void FlowLayout::MinColumnSpacing(double value)
-{
-    SetValue(s_minColumnSpacingProperty, box_value(value));
-}
-
-winrt::FlowLayoutLineAlignment FlowLayout::LineAlignment()
-{
-    return m_lineAlignment;
-}
-
-void FlowLayout::LineAlignment(winrt::FlowLayoutLineAlignment const& value)
-{
-    SetValue(s_lineAlignmentProperty, box_value(value));
-}
-
-#pragma endregion
 
 #pragma region IVirtualizingLayoutOverrides
 
@@ -96,6 +57,7 @@ winrt::Size FlowLayout::MeasureOverride(
         true, /* isWrapping*/
         MinItemSpacing(),
         LineSpacing(),
+        std::numeric_limits<unsigned int>::max() /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
         LayoutId());
     return desiredSize;
@@ -108,7 +70,8 @@ winrt::Size FlowLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
-        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),
+        true, /* isWrapping */
+        static_cast<FlowLayoutAlgorithm::LineAlignment>(m_lineAlignment),        
         LayoutId());
     return value;
 }
@@ -119,7 +82,7 @@ void FlowLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnDataSourceChanged(source, args, context);
+    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 }
@@ -224,7 +187,7 @@ winrt::Rect FlowLayout::GetExtent(
     UNREFERENCED_PARAMETER(lastRealized);
 
     auto extent = winrt::Rect{};
-    
+
     const int itemsCount = context.ItemCount();
 
     if (itemsCount > 0)
@@ -262,26 +225,26 @@ winrt::Rect FlowLayout::GetExtent(
             // We dont have anything realized. make an educated guess.
             int numLines = (int)std::ceil(itemsCount / averageItemsPerLine);
             extent =
-                std::isfinite(availableSizeMinor) ? 
+                std::isfinite(availableSizeMinor) ?
                 MinorMajorRect(0, 0, availableSizeMinor, std::max(0.0f, static_cast<float>(numLines * averageLineSize - lineSpacing))) :
                 MinorMajorRect(
                     0,
                     0,
                     std::max(0.0f, static_cast<float>((flowState->SpecialElementDesiredSize().*Minor() + minItemSpacing) * itemsCount - minItemSpacing)),
                     std::max(0.0f, static_cast<float>(averageLineSize - lineSpacing)));
-            REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements. \n", LayoutId().data());
+            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements. \n", winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data());
         }
 
-        REPEATER_TRACE_INFO(L"%ls: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
-            LayoutId().data(), extent.Width, extent.Height, averageLineSize, averageItemsPerLine);
+        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. Based on average line size {%.0f} and average items per line {%.0f}. \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height, averageLineSize, averageItemsPerLine);
     }
     else
     {
         MUX_ASSERT(firstRealizedItemIndex == -1);
         MUX_ASSERT(lastRealizedItemIndex == -1);
 
-        REPEATER_TRACE_INFO(L"%ls: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
-            LayoutId().data(), extent.Width, extent.Height);
+        REPEATER_TRACE_INFO(L"%*s: \tExtent is {%.0f,%.0f}. ItemCount is 0 \n",
+            winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), extent.Width, extent.Height);
     }
 
     return extent;
@@ -305,9 +268,9 @@ void FlowLayout::OnLineArranged(
     winrt::VirtualizingLayoutContext const& context)
 {
 
-    REPEATER_TRACE_INFO(L"%ls: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
-        LayoutId().data(), startIndex, countInLine, lineSize);
-    
+    REPEATER_TRACE_INFO(L"%*s: \tOnLineArranged startIndex:%d Count:%d LineHeight:%d \n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(), LayoutId().data(), startIndex, countInLine, lineSize);
+
     const auto flowState = GetAsFlowState(context.LayoutState());
     flowState->OnLineArranged(startIndex, countInLine, lineSize, context);
 }
@@ -404,7 +367,7 @@ void FlowLayout::Algorithm_OnLineArranged(
 void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto property = args.Property();
-    if (property == s_orientationProperty)
+    if (property == s_OrientationProperty)
     {
         auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
@@ -413,15 +376,15 @@ void FlowLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
         ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Vertical : ScrollOrientation::Horizontal;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
-    else if (property == s_minColumnSpacingProperty)
+    else if (property == s_MinColumnSpacingProperty)
     {
         m_minColumnSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_minRowSpacingProperty)
+    else if (property == s_MinRowSpacingProperty)
     {
         m_minRowSpacing = unbox_value<double>(args.NewValue());
     }
-    else if (property == s_lineAlignmentProperty)
+    else if (property == s_LineAlignmentProperty)
     {
         m_lineAlignment = unbox_value<winrt::FlowLayoutLineAlignment>(args.NewValue());
     }
@@ -452,7 +415,7 @@ double FlowLayout::GetAverageLineInfo(
         flowState->OnLineArranged(0, estimatedCountInLine, desiredSize.*Major(), context);
         flowState->SpecialElementDesiredSize(desiredSize);
     }
-    
+
     avgCountInLine = std::max(1.0, flowState->TotalItemsPerLine() / flowState->TotalLinesMeasured());
     avgLineSize = round(flowState->TotalLineSize() / flowState->TotalLinesMeasured());
 

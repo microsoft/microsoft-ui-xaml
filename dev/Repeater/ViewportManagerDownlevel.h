@@ -30,7 +30,7 @@ public:
     void SetLayoutExtent(winrt::Rect extent) override;
     winrt::Point GetOrigin() const override{ return winrt::Point(m_layoutExtent.X, m_layoutExtent.Y); }
 
-    void OnLayoutChanged() override;
+    void OnLayoutChanged(bool isVirtualizing) override;
     void OnElementPrepared(const winrt::UIElement& element) override {}
     void OnElementCleared(const winrt::UIElement& element) override;
     void OnOwnerMeasuring() override {};
@@ -94,9 +94,13 @@ private:
     double m_horizontalCacheBufferPerSide{};
     double m_verticalCacheBufferPerSide{};
 
+    // For non-virtualizing layouts, we do not need to keep
+    // updating viewports and invalidating measure often. So when
+    // a non virtualizing layout is used, we stop doing all that work.
+    bool m_managingViewportDisabled{ false };
+
     // Event tokens
-    winrt::event_token m_postArrangeToken;
-    winrt::event_token m_renderingToken;
+    winrt::IRepeaterScrollingSurface::PostArrange_revoker m_postArrangeToken;
 
     // Stores information about a parent scrolling surface.
     // We subscribe to...
@@ -108,12 +112,8 @@ private:
     {
         ScrollerInfo(
             const ITrackerHandleManager* owner,
-            winrt::IRepeaterScrollingSurface scroller,
-            winrt::event_token viewportChangedToken,
-            winrt::event_token configurationChangedToken) :
-            m_scroller(owner, scroller),
-            m_viewportChangedToken(viewportChangedToken),
-            m_configurationChangedToken(configurationChangedToken)
+            winrt::IRepeaterScrollingSurface scroller) :
+            m_scroller(owner, scroller)
         { }
 
         winrt::IRepeaterScrollingSurface Scroller() const
@@ -121,30 +121,11 @@ private:
             return m_scroller.get();
         }
 
-        winrt::event_token ViewportChangedToken() const
-        {
-            return m_viewportChangedToken;
-        }
-
-        void PostArrangeToken(winrt::event_token token)
-        {
-            m_postArrangeToken = token;
-        }
-
-        winrt::event_token PostArrangeToken() const
-        {
-            return m_postArrangeToken;
-        }
-
-        winrt::event_token ConfigurationChangedToken() const
-        {
-            return m_configurationChangedToken;
-        }
+        winrt::IRepeaterScrollingSurface::ViewportChanged_revoker ViewportChangedToken{};
+        winrt::IRepeaterScrollingSurface::PostArrange_revoker PostArrangeToken{};
+        winrt::IRepeaterScrollingSurface::ConfigurationChanged_revoker ConfigurationChangedToken{};
 
     private:
-        tracker_ref<winrt::IRepeaterScrollingSurface> m_scroller;
-        winrt::event_token m_viewportChangedToken{};
-        winrt::event_token m_postArrangeToken{};
-        winrt::event_token m_configurationChangedToken{};
+        tracker_ref<winrt::IRepeaterScrollingSurface> m_scroller;       
     };
 };

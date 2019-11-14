@@ -48,7 +48,7 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
         if (m_dispatcherQueue)
         {
             m_transparencyPolicyChangedRevoker = m_materialProperties.TransparencyPolicyChanged(winrt::auto_revoke, {
-                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue](const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
+                [weakThis = get_weak(), dispatcherQueue = m_dispatcherQueue] (const winrt::IMaterialProperties& sender, const winrt::IInspectable& args)
                 {
                     MaterialHelper::LightTemplates<XamlAmbientLight>::OnLightTransparencyPolicyChanged(
                         weakThis,
@@ -56,7 +56,7 @@ void XamlAmbientLight::OnConnected(winrt::UIElement const& /*newElement*/)
                         dispatcherQueue,
                         false /* onUIThread */);
                 }
-            });
+                });
         }
     }
 
@@ -126,27 +126,19 @@ void XamlAmbientLight::OnMaterialPolicyStatusChanged(const com_ptr<MaterialHelpe
 }
 #endif
 
-void XamlAmbientLight::OnPropertyChanged(
+void XamlAmbientLight::OnColorPropertyChanged(
+    const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
+    if (m_compositionAmbientLight)
+    {
+        m_compositionAmbientLight.Color(m_ambientLightColor);
+    }
+}
+
+void XamlAmbientLight::OnIsTargetPropertyChanged(
     const winrt::DependencyObject& sender,
     const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto self = winrt::get_self<XamlAmbientLight>(sender.as<winrt::XamlAmbientLight>());
-    winrt::IDependencyProperty property = args.Property();
-
-    if (property == s_ColorProperty)
-    {
-        self->m_ambientLightColor = unbox_value<winrt::Color>(args.NewValue());
-        if (self->m_compositionAmbientLight)
-        {
-            self->m_compositionAmbientLight.Color(self->m_ambientLightColor);
-        }
-    }
-    else if (property == s_IsTargetProperty)
-    {
-        OnAttachedIsTargetPropertyChanged<XamlAmbientLight>(sender, args);
-    }
-    else
-    {
-        MUX_ASSERT(false);
-    }
+    OnAttachedIsTargetPropertyChanged<XamlAmbientLight>(sender, args);
 }

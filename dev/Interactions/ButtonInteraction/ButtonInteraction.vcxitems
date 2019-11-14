@@ -15,7 +15,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ButtonInteraction.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ButtonInteraction.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ButtonInteraction.cpp" />

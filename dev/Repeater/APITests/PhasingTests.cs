@@ -20,21 +20,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
-#if !BUILD_WINDOWS
     using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
-#endif
 
     // Bug 17377723: crash in CControlTemplate::CreateXBindConnector in RS5.
     [TestClass]
@@ -64,11 +60,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater = new ItemsRepeater()
                 {
                     ItemsSource = Enumerable.Range(0, 10),
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)new CustomElementFactory(numPhases),
-#else
                     ItemTemplate = new CustomElementFactory(numPhases),
-#endif
                     Layout = new StackLayout(),
                 };
                 
@@ -84,11 +76,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     }
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 400,
-                    Content = new ScrollViewer
+                    ScrollViewer = new ScrollViewer
                     {
                         Content = repeater
                     }
@@ -140,11 +132,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater = new ItemsRepeater()
                 {
                     ItemsSource = Enumerable.Range(0, 10),
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)new CustomElementFactory(numPhases),
-#else
                     ItemTemplate = new CustomElementFactory(numPhases),
-#endif
                     Layout = new StackLayout(),
                 };
 
@@ -157,11 +145,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     }
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 400,
-                    Content = new ScrollViewer
+                    ScrollViewer = new ScrollViewer
                     {
                         Content = repeater
                     }

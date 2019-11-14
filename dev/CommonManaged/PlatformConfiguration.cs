@@ -14,7 +14,8 @@ namespace Common
     public enum DeviceType
     {
         Desktop,
-        Phone
+        Phone,
+        OneCore
     }
 
     public enum OSVersion : ushort
@@ -32,6 +33,29 @@ namespace Common
     {
         const OSVersion MaxOSVersion = OSVersion.Redstone2;
 
+        private const ushort InvalidAPIVersion = 255;
+        private static ushort _currentAPIVersion = InvalidAPIVersion;
+
+        private static bool IsApiContractPresent(ushort version)
+        {
+            return ApiInformation.IsApiContractPresent("Windows.Foundation.UniversalApiContract", version);
+        }
+
+        public static ushort GetCurrentAPIVersion()
+        {
+            if (_currentAPIVersion == InvalidAPIVersion)
+            {
+                ushort currentAPIVersion = 3;
+                while (IsApiContractPresent((ushort)(currentAPIVersion + 1)))
+                {
+                    currentAPIVersion++;
+                }
+
+                _currentAPIVersion = currentAPIVersion;
+            }
+            return _currentAPIVersion;
+        }
+
         public static bool IsDevice(DeviceType type)
         {
             var deviceFamily = AnalyticsInfo.VersionInfo.DeviceFamily;
@@ -41,6 +65,10 @@ namespace Common
                 return true;
             }
             else if (type == DeviceType.Phone && deviceFamily == "Windows.Mobile")
+            {
+                return true;
+            }
+            else if (type == DeviceType.OneCore && deviceFamily != "Windows.Desktop" && deviceFamily != "Windows.Mobile")
             {
                 return true;
             }

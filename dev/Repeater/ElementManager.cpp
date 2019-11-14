@@ -103,7 +103,7 @@ void ElementManager::Insert(int realizedIndex, int dataIndex, const winrt::UIEle
 void ElementManager::ClearRealizedRange(int realizedIndex, int count)
 {
     MUX_ASSERT(IsVirtualizingContext());
-    for (int i = 0 ; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
         // Clear from the edges so that ItemsRepeater can optimize on maintaining 
         // realized indices without walking through all the children every time.
@@ -228,7 +228,7 @@ void ElementManager::EnsureElementRealized(bool forward, int dataIndex, const ws
 }
 
 // Does the given window intersect the range of realized elements
-bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation) const
+bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOrientation& orientation, bool scrollOrientationSameAsFlow) const
 {
     MUX_ASSERT(IsVirtualizingContext());
     bool intersects = false;
@@ -237,10 +237,15 @@ bool ElementManager::IsWindowConnected(const winrt::Rect& window, const ScrollOr
         auto firstElementBounds = GetLayoutBoundsForRealizedIndex(0);
         auto lastElementBounds = GetLayoutBoundsForRealizedIndex(GetRealizedElementCount() - 1);
 
-        auto windowStart = orientation == ScrollOrientation::Vertical ? window.Y : window.X;
-        auto windowEnd = orientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
-        auto firstElementStart = orientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
-        auto lastElementEnd = orientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
+        auto effectiveOrientation = scrollOrientationSameAsFlow ?
+            (orientation == ScrollOrientation::Vertical ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical) :
+            orientation;
+
+
+        auto windowStart = effectiveOrientation == ScrollOrientation::Vertical ? window.Y : window.X;
+        auto windowEnd = effectiveOrientation == ScrollOrientation::Vertical ? window.Y + window.Height : window.X + window.Width;
+        auto firstElementStart = effectiveOrientation == ScrollOrientation::Vertical ? firstElementBounds.Y : firstElementBounds.X;
+        auto lastElementEnd = effectiveOrientation == ScrollOrientation::Vertical ? lastElementBounds.Y + lastElementBounds.Height : lastElementBounds.X + lastElementBounds.Width;
 
         intersects =
             firstElementStart <= windowEnd &&
@@ -265,8 +270,36 @@ void ElementManager::DataSourceChanged(const winrt::IInspectable& /*source*/, wi
 
         case winrt::NotifyCollectionChangedAction::Replace:
         {
-            OnItemsRemoved(args.OldStartingIndex(), args.OldItems().Size());
-            OnItemsAdded(args.NewStartingIndex(), args.NewItems().Size());
+            int oldSize = args.OldItems().Size();
+            int newSize = args.NewItems().Size();
+            int oldStartIndex = args.OldStartingIndex();
+            int newStartIndex = args.NewStartingIndex();
+
+            if (oldSize == newSize &&
+                oldStartIndex == newStartIndex &&
+                IsDataIndexRealized(oldStartIndex) &&
+                IsDataIndexRealized(oldStartIndex + oldSize -1))
+            {
+                // Straight up replace of n items within the realization window.
+                // Removing and adding might causes us to lose the anchor causing us
+                // to throw away all containers and start from scratch.
+                // Instead, we can just clear those items and set the element to
+                // null (sentinel) and let the next measure get new containers for them.
+                auto startRealizedIndex = GetRealizedRangeIndexFromDataIndex(oldStartIndex);
+                for (int realizedIndex = startRealizedIndex; realizedIndex < startRealizedIndex + oldSize; realizedIndex++)
+                {
+                    if (auto elementRef = m_realizedElements[realizedIndex])
+                    {
+                        m_context.RecycleElement(elementRef.get());
+                        m_realizedElements[realizedIndex] = tracker_ref<winrt::UIElement>{ m_owner, nullptr };
+                    }
+                }
+            }
+            else
+            {
+                OnItemsRemoved(oldStartIndex, oldSize);
+                OnItemsAdded(newStartIndex, newSize);
+            }
         }
         break;
 

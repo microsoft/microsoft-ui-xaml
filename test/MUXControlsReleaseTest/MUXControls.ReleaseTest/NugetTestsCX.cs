@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace MuxControls.ReleaseTest
+namespace MUXControls.ReleaseTest
 {
     [TestClass]
     public class NugetTestsCX
@@ -32,6 +32,12 @@ namespace MuxControls.ReleaseTest
         [TestCleanup]
         public void TestCleanup()
         {
+            PGOManager.PGOSweepIfInstrumented(TestEnvironment.TestContext.TestName);
+        }
+
+        [AssemblyCleanup]
+        public static void AssemblyCleanup()
+        {
             TestEnvironment.AssemblyCleanupWorker(TestType.NugetCX);
         }
 
@@ -41,6 +47,35 @@ namespace MuxControls.ReleaseTest
             var textBlock = new TextBlock(FindElement.ByName("TestTextBlock"));
             Verify.IsNotNull(textBlock);
             Verify.AreEqual(textBlock.DocumentText, "Loaded");
+        }
+
+        [TestMethod]
+        public void RepeaterNoCrashTest()
+        {
+            var button = new Button(FindElement.ByName("AddItemsButton"));
+            button.Click();
+            Wait.ForIdle();
+
+            var item3 = FindElement.ByName("Item3");
+            Verify.IsNotNull(item3);
+        }
+
+        [TestMethod]
+        public void CornerRadiusTest()
+        {
+            var button = new Button(FindElement.ByName("GetCheckBoxRectangleCornerRadiusValue"));
+            button.Invoke();
+            Wait.ForIdle();
+
+            var textBlock = new TextBlock(FindElement.ByName("CheckBoxRectangleCornerRadiusValueTextBlock"));
+            Verify.AreEqual("2,2", textBlock.DocumentText);
+        }
+
+        [TestMethod]
+        public void TreeViewNodeContentTest()
+        {
+            var node = FindElement.ByName("TreeViewNode1");
+            Verify.IsNotNull(node, "Verify TreeViewNode conteins right content");
         }
     }
 }

@@ -8,15 +8,17 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);REPEATER_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ItemsRepeater.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)AnimationManager.h" />
@@ -31,7 +33,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgs.h" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ElementFactoryGetArgsDownlevel.h" Condition="$(BuildingWithBuildExe) == 'true'" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.h" />
@@ -44,7 +45,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)FlowLayoutState.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IndexPath.h" />
@@ -60,9 +60,8 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectionNode.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLayout.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)StackLayoutFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)StackLayoutState.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollAnchorProvider.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHost.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)InspectingDataSource.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RecyclingElementFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)IFlowLayoutAlgorithmDelegates.h" />
@@ -70,7 +69,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)LayoutContext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RecyclePool.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ItemsRepeater.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.h" />
@@ -83,8 +81,15 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizationInfo.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayout.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\FlowLayout.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ItemsRepeater.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\StackLayout.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\UniformGridLayout.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)AnimationManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ChildrenInTabFocusOrderIterable.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)BuildTreeScheduler.cpp" />
@@ -97,9 +102,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementIndexChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterElementPreparedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsSourceViewFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollAnchorProvider.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeaterScrollHost.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ElementManager.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemTemplateWrapper.cpp" Condition="$(BuildingWithBuildExe) != 'true'" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContextAdapter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NonVirtualizingLayout.cpp" />
@@ -110,7 +114,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutAlgorithm.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniformGridLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)FlowLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)IndexPath.cpp" />
@@ -128,13 +131,11 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionNode.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectionTreeHelper.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)StackLayout.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)StackLayoutFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)StackLayoutState.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Layout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)LayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RecyclePool.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ItemsRepeater.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterLayoutContext.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)SelectTemplateEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)UniqueIdElementPool.cpp" />
@@ -145,5 +146,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizationInfo.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayout.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)VirtualizingLayoutContext.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)VirtualLayoutContextAdapter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)RepeaterTestHooksFactory.cpp" />
   </ItemGroup>
 </Project>

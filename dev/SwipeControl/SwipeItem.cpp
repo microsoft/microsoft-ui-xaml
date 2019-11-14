@@ -12,9 +12,7 @@
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
-#ifndef BUILD_WINDOWS
 #include "IconSource.h"
-#endif
 
 static const double s_swipeItemWidth = 68.0;
 static const double s_swipeItemHeight = 60.0;
@@ -22,10 +20,6 @@ static const double s_swipeItemHeight = 60.0;
 SwipeItem::SwipeItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_SwipeItem);
-}
-
-SwipeItem::~SwipeItem()
-{
 }
 
 #pragma endregion
@@ -39,8 +33,8 @@ void SwipeItem::InvokeSwipe(const winrt::SwipeControl& swipeControl)
 
     if (s_CommandProperty)
     {
-        auto command = safe_cast<winrt::ICommand>(Command());
-        auto param = safe_cast<winrt::IInspectable>(CommandParameter());
+        auto command = Command().as<winrt::ICommand>();
+        auto param = CommandParameter();
 
         if (command && command.CanExecute(param))
         {
@@ -59,20 +53,20 @@ void SwipeItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArg
 {
     if (args.Property() == winrt::SwipeItem::CommandProperty())
     {
-        OnCommandChanged(safe_cast<winrt::ICommand>(args.OldValue()), safe_cast<winrt::ICommand>(args.NewValue()));
+        OnCommandChanged(args.OldValue().as<winrt::ICommand>(), args.NewValue().as<winrt::ICommand>());
     }
 }
 
-void SwipeItem::OnCommandChanged(winrt::ICommand /*oldCommand*/, winrt::ICommand newCommand)
+void SwipeItem::OnCommandChanged(const winrt::ICommand& /*oldCommand*/, const winrt::ICommand& newCommand)
 {
-    if (auto newUICommand = safe_try_cast<winrt::XamlUICommand>(newCommand))
+    if (auto newUICommand = newCommand.try_as<winrt::XamlUICommand>())
     {
         CommandingHelpers::BindToLabelPropertyIfUnset(newUICommand, *this, winrt::SwipeItem::TextProperty());
         CommandingHelpers::BindToIconSourcePropertyIfUnset(newUICommand, *this, winrt::SwipeItem::IconSourceProperty());
     }
 }
 
-void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style swipeItemStyle)
+void SwipeItem::GenerateControl(const winrt::AppBarButton& appBarButton, const winrt::Style& swipeItemStyle)
 {
     appBarButton.Style(swipeItemStyle);
     if (Background())

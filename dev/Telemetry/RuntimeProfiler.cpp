@@ -47,7 +47,7 @@ namespace RuntimeProfiler {
             UninitializeRuntimeProfiler();
         }
         
-        void RegisterMethod(UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept
+        void RegisterMethod(UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept override
         {
             static_assert(sizeof(LONG) == sizeof(UINT32), "Since we're using InterlockedIncrement, make sure that this is the same size independent of build flavors.");
             
@@ -73,7 +73,7 @@ namespace RuntimeProfiler {
             }
         }
         
-        void FireEvent(bool bSuspend) noexcept
+        void FireEvent(bool bSuspend) noexcept override
         {
             if (!g_IsTelemetryProviderEnabled)
             {
@@ -178,12 +178,12 @@ namespace RuntimeProfiler {
 
     //  Yes, we're declaring this as a global, the ctor/dtor are implemented
     //  very carefully and this will not create issues with DllMain().
-    DEFINE_PROFILEGROUP(gGroupClasses, PG_Class, ProfId_Size);
+    DEFINE_PROFILEGROUP(gGroupClasses, PG_Class, ProfId_Size + ProfMemberId_Size);
 
     struct ProfileGroupInfo
     {
         CMethodProfileGroupBase    *pGroup;
-        char                       *pszGroupName;
+        const char                 *pszGroupName;
     } gProfileGroups[] = 
     {
         { static_cast<CMethodProfileGroupBase*>(&gGroupClasses), "Classes" },
@@ -205,22 +205,22 @@ namespace RuntimeProfiler {
         FireEvent(false);
     }
 
-    PTP_TIMER   g_pTimer = NULL;
+    PTP_TIMER   g_pTimer = nullptr;
 
     BOOL CALLBACK CancelTimer(PINIT_ONCE /* InitOnce */, PVOID /* Parameter */, PVOID* /* context */)
     {
-        if (NULL != g_pTimer)
+        if (nullptr != g_pTimer)
         {
             //  Canceling timer.
             
             //  Note:  We're called on a global destructor, so we are not
             //    calling WaitForThreadpoolTimerCallbacks() to prevent
             //    deadlocks.
-            SetThreadpoolTimer(g_pTimer, NULL, 0, 0);
+            SetThreadpoolTimer(g_pTimer, nullptr, 0, 0);
             CloseThreadpoolTimer(g_pTimer);
             
             
-            g_pTimer = NULL;
+            g_pTimer = nullptr;
         }
         
         //  Either way, no active timer.
@@ -231,14 +231,14 @@ namespace RuntimeProfiler {
     {
         static INIT_ONCE    UninitProfiler = INIT_ONCE_STATIC_INIT;
         
-        InitOnceExecuteOnce(&UninitProfiler, CancelTimer, NULL, NULL);
+        InitOnceExecuteOnce(&UninitProfiler, CancelTimer, nullptr, nullptr);
     }
 
     BOOL CALLBACK InitializeRuntimeProfiler(PINIT_ONCE /* InitOnce */, PVOID /* Parameter */, PVOID* /* context */)
     {
         g_pTimer = ::CreateThreadpoolTimer(TPTimerCallback, nullptr, nullptr);
     
-        if (NULL != g_pTimer)
+        if (nullptr != g_pTimer)
         {
             LARGE_INTEGER   lidueTime;
             FILETIME        ftdueTime;
@@ -257,15 +257,13 @@ namespace RuntimeProfiler {
         
         //  Since MUX doesn't piggyback the WUX Extension suspend handler,
         //  we sign up for suspension notifications.
-#ifndef BUILD_WINDOWS
         winrt::Application::Current().Suspending(([](auto &, auto &)
             {
                 FireEvent(true);
             }
         ));
-#endif
 
-        return ((NULL != g_pTimer)?TRUE:FALSE);
+        return ((nullptr != g_pTimer)?TRUE:FALSE);
     }
 
     void RegisterMethod(ProfileGroup group, UINT16 uTypeIndex, UINT16 uMethodIndex, volatile LONG *pCount) noexcept
@@ -273,7 +271,7 @@ namespace RuntimeProfiler {
         static INIT_ONCE            InitProfiler = INIT_ONCE_STATIC_INIT;
         CMethodProfileGroupBase    *pGroup = gProfileGroups[(int)group].pGroup;
     
-        InitOnceExecuteOnce(&InitProfiler, InitializeRuntimeProfiler, NULL, NULL);
+        InitOnceExecuteOnce(&InitProfiler, InitializeRuntimeProfiler, nullptr, nullptr);
 
         return (pGroup->RegisterMethod(uTypeIndex, uMethodIndex, pCount));
     }

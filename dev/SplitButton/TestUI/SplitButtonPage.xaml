@@ -46,6 +46,30 @@
                     </controls:SplitButton.Flyout>
                 </controls:SplitButton>
 
+                <controls:SplitButton Margin="0,12,0,0" Content="&#xE710;" FontFamily="Segoe MDL2 Assets" FontSize="12">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <TextBlock Text="This button has a glyph as content"/>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
+
+                <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="400" Height="50">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <TextBlock Text="Hello"/>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
+
+                <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (topleft)" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Width="400" Height="50">
+                    <controls:SplitButton.Flyout>
+                        <Flyout>
+                            <TextBlock Text="Hello"/>
+                        </Flyout>
+                    </controls:SplitButton.Flyout>
+                </controls:SplitButton>
+
                 <util:ControlStateViewer x:Name="ControlStateViewer" Margin="0,16,0,0"/>
 
                 <util:ControlStateViewer x:Name="ToggleControlStateViewer" Margin="0,6,0,0"/>

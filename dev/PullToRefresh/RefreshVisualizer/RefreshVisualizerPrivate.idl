@@ -1,3 +1,6 @@
+namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 [WUXC_VERSION_INTERNAL]
 [webhosthidden]
 interface IRefreshInfoProvider
@@ -20,4 +23,6 @@ interface IRefreshVisualizerPrivate
 {
     IRefreshInfoProvider InfoProvider { get; set; };
     void SetInternalPullDirection(MU_XC_NAMESPACE.RefreshPullDirection value);
+}
+
 }

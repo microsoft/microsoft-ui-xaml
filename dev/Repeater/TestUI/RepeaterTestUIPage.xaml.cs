@@ -4,18 +4,16 @@
 using MUXControlsTestApp.Samples;
 using System;
 using Windows.UI.Xaml.Controls;
-
-#if !BUILD_WINDOWS
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "ItemsRepeater", Icon = "ListView.png")]
     public sealed partial class RepeaterTestUIPage : Page
     {
         private VirtualizingLayout _stackLayout;
@@ -34,6 +32,11 @@ namespace MUXControlsTestApp
             basicDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(BasicDemo));
+            };
+
+            itemsSourceDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(ElementsInItemsSourcePage));
             };
 
             itemTemplateDemo.Click += delegate
@@ -76,6 +79,11 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(PinterestLayoutSamplePage));
             };
 
+            flowLayoutDemo.Click += delegate 
+            {
+                Frame.NavigateWithoutAnimation(typeof(FlowLayoutDemoPage));
+            };
+
             activityFeedLayoutDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(ActivityFeedSamplePage));
@@ -99,6 +107,10 @@ namespace MUXControlsTestApp
             treeSelectionDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.Selection.TreeViewSample));
+            };
+
+            animatedScrollDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(MUXControlsTestApp.Samples.ScaleAnimatedVerticalListDemo));
             };
 
             noGroupingList.Click += delegate

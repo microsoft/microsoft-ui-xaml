@@ -24,14 +24,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
-using RepeaterAutomationPeer = Microsoft.UI.Xaml.Controls.RepeaterAutomationPeer;
-#endif
+using RepeaterAutomationPeer = Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -99,11 +97,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var repeater = new ItemsRepeater
             {
                 ItemsSource = dataSource,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
-                ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory,
-#endif
+                ItemTemplate = elementFactory,
             };
             repeater.Layout = layout ?? CreateLayout(repeater);
             return repeater;

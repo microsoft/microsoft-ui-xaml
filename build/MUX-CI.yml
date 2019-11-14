@@ -1,8 +1,10 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
 jobs:
 - job: Build
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -24,56 +26,53 @@ jobs:
         buildConfiguration: 'Release'
 
   variables:
-  - name: appxPackageDir
-    value: $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
-  - name: buildOutputDir
-    value: $(Build.SourcesDirectory)\BuildOutput
-  - name: publishDir
-    value: $(Build.ArtifactStagingDirectory)
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
-  - template: AzurePipelinesTemplates\MUX-BuildProject-Steps.yml
-    parameters:
-      solutionPath: MUXControls.sln
-      nugetConfigPath: nuget.config
-      appxPackageDir: $(appxPackageDir)
-      buildOutputDir: $(buildOutputDir)
-      publishDir: $(publishDir)
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
-  - task: powershell@2
-    displayName: 'Copy files to staging dir'
-    inputs:
-      targetType: filePath
-      filePath: build\CopyFilesToStagingDir.ps1
-      arguments: -BuildOutputDir '$(buildOutputDir)' -PublishDir '$(Build.ArtifactStagingDirectory)' -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish artifact: drop'
-    inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn: Build
+    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    testSuite: 'DevTestSuite'
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
-  
+ 
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
-    useNupkgFromArtifacts: true
-    matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
+    pkgArtifactPath: '$(artifactDownloadPath)\drop'
+   
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunTestsInHelix
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)

@@ -1,7 +1,0 @@
-DIRS = \
-    dev \
-    idl \
-    winrt \
-    Mbs \
-    test{test} \
-    tools{test} \

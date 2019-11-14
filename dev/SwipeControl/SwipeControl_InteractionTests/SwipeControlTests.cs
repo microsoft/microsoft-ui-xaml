@@ -21,27 +21,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-#if BUILD_WINDOWS
-    using Window = MS.Internal.Mita.Foundation.Controls.Window;
-#else
     using Window = Microsoft.Windows.Apps.Test.Foundation.Controls.Window;
-#endif
 
     [TestClass]
     public class SwipeControlTests
@@ -49,8 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -161,6 +148,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TestSetupHelper.GoBack();
             }
         }
+
+        [TestMethod]
+        public void CanClearItemsWithoutCrashing()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
+            {
+                Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("SwipeControl Tests"))
+            {
+                if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
+                {
+                    Log.Warning("Test is disabled because RS1 doesn't have the right interaction tracker APIs.");
+                    return;
+                }
+
+
+                Log.Comment("Navigating to clear items test page");
+                UIObject navigateToClearPageObject = FindElement.ByName("navigateToClear");
+                Verify.IsNotNull(navigateToClearPageObject, "Verifying that navigateToClear Button was found");
+
+                Button navigateToClearPageButton = new Button(navigateToClearPageObject);
+                navigateToClearPageButton.Invoke();
+                Wait.ForIdle();
+
+                Log.Comment("Find FindItemsSum textblock");
+                TextBlock sumOfSwipeItemsCount = new TextBlock(FindElement.ByName("SwipeItemsChildSum"));
+                Verify.IsNotNull(sumOfSwipeItemsCount);
+                Verify.AreEqual("2", sumOfSwipeItemsCount.GetText());
+
+                Log.Comment("Find clear SwipeItems button");
+                Button clearItemsButton = new Button(FindElement.ByName("ClearItemsButton"));
+                Verify.IsNotNull(clearItemsButton);
+                clearItemsButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("0", sumOfSwipeItemsCount.GetText());
+
+
+                Log.Comment("Find add SwipeItem button");
+                Button addItemsButton = new Button(FindElement.ByName("AddItemsButton"));
+                Verify.IsNotNull(addItemsButton);
+                addItemsButton.Invoke();
+                Wait.ForIdle();
+                // Only adds horizontal items, see test app for explanation
+                Verify.AreEqual("1", sumOfSwipeItemsCount.GetText());
+
+                Log.Comment("clearing items again");
+                clearItemsButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual("0", sumOfSwipeItemsCount.GetText());
+
+
+            }
+        }
+
 
         [TestMethod]
         public void CanSwipeAndTapFirstRevealedItemHorizontal()

@@ -7,6 +7,7 @@
        in the WinUI repo or the Windows repo, we can just use the standard VS properties we've been using to date. -->
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
     <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset Condition="'$(VisualStudioVersion)' >= '16.0'">v142</PlatformToolset>
     <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
     <CppTargetsFilePath>$(VCTargetsPath)\Microsoft.Cpp.targets</CppTargetsFilePath>
@@ -29,7 +30,6 @@
     <AssemblyAttributeCLSCompliant>false</AssemblyAttributeCLSCompliant>
     <DisableXbfGeneration>false</DisableXbfGeneration>
     <UseOldXamlCompiler>false</UseOldXamlCompiler>
-    <DefineConstants>$(DefineConstants);BUILD_WINDOWS</DefineConstants>
     <PlatformToolset>v120</PlatformToolset>
     <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -43,12 +43,6 @@
     <UseInsiderSDK>true</UseInsiderSDK>
   </PropertyGroup>
   <Import Condition="$(BuildingWithBuildExe) == 'true'" Project="$(NTMAKEENV)\Microsoft.Build.settings" />
-  <!-- We build a custom version of MUX.dll for use by the Store app. This includes only the types that the Store App team actually need. -->
-  <!-- This is controlled by the MSBUILD BuildLeanMuxForTheStoreApp variable and the BUILD_LEAN_MUX_FOR_THE_STORE_APP preprocess symbol. -->
-  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
-    <!-- If BuildLeanMuxForTheStoreApp is unset, default it to false. -->
-    <BuildLeanMuxForTheStoreApp>false</BuildLeanMuxForTheStoreApp>
-  </PropertyGroup>
   <PropertyGroup Condition="$(MUXFinalRelease) != 'true'">
     <!-- If MUXPrelease is unset, default it to false. -->
     <MUXFinalRelease>false</MUXFinalRelease>
@@ -56,14 +50,12 @@
   <PropertyGroup Condition="$(UseInsiderSDK) == 'true'">
     <DefineConstants>$(DefineConstants);USE_INSIDER_SDK</DefineConstants>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_LEAN_MUX_FOR_THE_STORE_APP</PreprocessorDefinitions>
-    </ClCompile>
-    <Midl>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_LEAN_MUX_FOR_THE_STORE_APP</PreprocessorDefinitions>
-    </Midl>
-  </ItemDefinitionGroup>
+  <PropertyGroup Condition="$(UseInternalSDK) == 'true'">
+    <DefineConstants>$(DefineConstants);USE_INTERNAL_SDK</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(EmitTelemetryEvents) == 'true'">
+    <DefineConstants>$(DefineConstants);EMIT_TELEMETRY_EVENTS</DefineConstants>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(MUXFinalRelease) == 'false'">
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);MUX_PRERELEASE</PreprocessorDefinitions>
@@ -80,9 +72,13 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions);USE_INSIDER_SDK</PreprocessorDefinitions>
     </Midl>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="$(EmitTelemetryEvents) == 'true'">
+    <ClCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);EMIT_TELEMETRY_EVENTS</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="$(BuildingWithBuildExe) == 'true'">
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);BUILD_WINDOWS</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
         %(AdditionalIncludeDirectories);
         $(PUBLIC_ROOT)\internal\sdk\inc;

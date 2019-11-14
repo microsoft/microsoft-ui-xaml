@@ -83,6 +83,7 @@
                     <Button x:Name="AddRemoveContentOverlay" AutomationProperties.Name="AddRemoveContentOverlay" Content="Add/Remove Content Overlay (top nav)" Click="AddRemoveContentOverlay_Click" />
                     <Button x:Name="ChangeTopNavVisibility" AutomationProperties.Name="ChangeTopNavVisibility" Content="Change Top Nav Visibility" Click="ChangeTopNavVisibility_Click" />
                     <Button x:Name="ExpectNullSelectedItemInItemInvoke" AutomationProperties.Name="ExpectNullSelectedItemInItemInvoke" Content="Set SelectedItem=null in next ItemInvoke" Click="ExpectNullSelectedItemInItemInvoke_Click" />
+                    <Button x:Name="SetInvalidSelectedItem" AutomationProperties.Name="SetInvalidSelectedItem" Click="SetInvalidSelectedItem_Click" Content="Set Invalid SelectedItem" />
                     <CheckBox x:Name="TestFrameCheckbox" AutomationProperties.Name="TestFrameCheckbox" Content="Show Test Frame" Checked="TestFrameCheckbox_Checked" Unchecked="TestFrameCheckbox_Unchecked" IsChecked="True"  Margin="5" />
                     <CheckBox x:Name="ChangeOverflowLabelVisibility" AutomationProperties.Name="ChangeOverflowLabelVisibility" Content="Show/Hide OverflowButton Label" Checked="ChangeOverflowLabelVisibility_Checked" Unchecked="ChangeOverflowLabelVisibility_Unchecked" IsChecked="True"  Margin="5" />
                     <StackPanel Orientation="Horizontal">

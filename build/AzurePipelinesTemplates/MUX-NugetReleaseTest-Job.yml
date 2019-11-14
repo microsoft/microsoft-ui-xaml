@@ -1,20 +1,37 @@
 parameters:
+  buildJobName: 'BuildNugetPkgTests'
+  buildArtifactName: 'NugetPkgTestsDrop'
+  runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
-  useNupkgFromArtifacts: false
+  runTests: 'true'
+  pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
+  helixType: 'test/nuget'
   matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
+    Debug_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'Debug'
+    Release_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'Release'
+    Debug_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'Debug'
+    Release_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'Release'
+    Release_arm:
+      buildPlatform: 'arm'
+      buildConfiguration: 'Release'
       
 jobs:
-- job: BuildNugetTests
+- job: ${{ parameters.buildJobName }}
   dependsOn:
     - ${{if parameters.dependsOn }}:
       - ${{ parameters.dependsOn }}
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -25,14 +42,15 @@ jobs:
     nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
     packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
-    currentPackageVersion: 2.1.181217001-prerelease
+    currentPackageVersion: 2.1.190606001
+    buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
 
   steps:
   # When using the nupkg from artifacts we need to make a new nuget.config that points the MUXReleaseTest
   # projects at the just-built nupkg. The MUXRelease projects use a specific nuget version so we need
   # to update nuget.config to include the drop location as well as update the version in the csproj and
   # packages.config for the projects.
-  - ${{ if eq(parameters.useNupkgFromArtifacts, 'true') }}:
+  - ${{ if parameters.pkgArtifactPath }}:
     - task: DownloadBuildArtifacts@0 
       inputs: 
         artifactName: drop
@@ -46,9 +64,9 @@ jobs:
         <configuration>
           <packageSources>
             <clear />
-            <add key='NuGet official package source' value='https://nuget.org/api/v2/' />
+            <add key='MUX-Dependencies' value='https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json' />
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
-            <add key='local' value='$env:artifactDownloadPath\drop'/>
+            <add key='local' value='${{parameters.pkgArtifactPath}}'/>
           </packageSources>
         </configuration>
         "@ | Out-File -Encoding UTF8 $nugetConfigFullPath
@@ -88,4 +106,19 @@ jobs:
     parameters:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
+      artifactName: ${{ parameters.buildArtifactName }}
 
+  - template: MUX-PublishProjectOutput-Steps.yml
+    parameters:
+      artifactName: ${{ parameters.buildArtifactName }}
+
+- ${{if eq(parameters.runTests, 'true')}}:
+  - template: MUX-RunHelixTests-Job.yml
+    parameters:
+      name: ${{ parameters.runTestJobName }}
+      dependsOn: ${{ parameters.buildJobName }}
+      testSuite: 'NugetTestSuite'
+      helixType: ${{ parameters.helixType }}
+      artifactName: ${{ parameters.buildArtifactName }}
+      rerunPassesRequiredToAvoidFailure: 5
+  

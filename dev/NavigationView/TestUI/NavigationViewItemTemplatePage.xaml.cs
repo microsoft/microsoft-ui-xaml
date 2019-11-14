@@ -10,10 +10,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-#if !BUILD_WINDOWS
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {

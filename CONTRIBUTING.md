@@ -10,16 +10,19 @@ Note that all community interactions must abide by the [Code of Conduct](CODE_OF
 
 We use GitHub issues to track bugs and features.
 
-For bugs and general issues please [file a new issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/new/choose) 
-using the Bug Report template.
+For reporting security issues please see the [Security Policy](docs/SECURITY.md).
+
+For all other bugs and general issues please [file a new issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/new/choose) using the Bug Report template.
 
 ## New contributors
 
 We mark the most straightforward issues with labels. These issues are the place to start if you are interested in contributing but new to the codebase.
+
 * [good first issues](https://github.com/Microsoft/microsoft-ui-xaml/labels/good%20first%20issue)
 * [help wanted](https://github.com/Microsoft/microsoft-ui-xaml/labels/help%20wanted)
 
 Another great way to help is by voting and commenting on feature proposals:
+
 * [feature request](https://github.com/Microsoft/microsoft-ui-xaml/labels/feature%20request)
 
 ## Code contribution guidelines
@@ -40,10 +43,10 @@ While we strive to accept all community contributions that meet the guidelines o
 
 For details see:
 
-* [Source code structure](docs/developer_guide.md#Source%20code%20structure)
-* [Setup and build environment](docs/developer_guide.md#Building%20the%20repository)
-* [Development process](docs/contribution_workflow.md)
-* [Coding style and conventions](docs/developer_guide.md#Code%20style%20and%20conventions)
+* [Setup and build environment](docs/developer_guide.md#Prerequisites)
+* [Source code structure](docs/source_code_structure.md)
+* [Contribution workflow](docs/contribution_workflow.md)
+* [Coding style and conventions](docs/code_style_and_conventions.md)
 
 ### Contributor License Agreement
 
@@ -53,11 +56,11 @@ When you submit a pull request, a CLA-bot will automatically determine whether y
 
 ### Copying files from other projects
 
-The following rules must be followed for PRs that include files from another 
-project:
+The following rules must be followed for PRs that include files from another project:
+
 * The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
 * The license of the file is left intact.
-* The contribution is correctly attributed in the [3rd party notices](https://github.com/dotnet/coreclr/blob/master/THIRD-PARTY-NOTICES.TXT) 
+* The contribution is correctly attributed in the [3rd party notices](https://github.com/dotnet/coreclr/blob/master/THIRD-PARTY-NOTICES.TXT)
 file in the repository, as needed.
 
 ## Documentation and usage samples
@@ -70,11 +73,3 @@ You can find usage examples of the controls available in WinUI in the Xaml Contr
 
  which can also be installed from the Windows Store:  
  https://www.microsoft.com/p/xaml-controls-gallery/9msvh128x2zt
-
-
-
-
-
-
-
-

@@ -30,14 +30,12 @@ namespace MUXControlsTestApp
 
             listSource = new ObservableCollection<RevealScenarioItem>();
             listSource.Add(new RevealScenarioItem { Header = "Adjust Lights", SubHeader = "Click to adjust light props", Icon = "\uE105", Page = typeof(RevealScenarioLights) });
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             listSource.Add(new RevealScenarioItem { Header = "Adjust Colors", SubHeader = "Click to adjust color props", Icon = "\uE105", Page = typeof(RevealScenarioColors) });
-            #endif
             listSource.Add(new RevealScenarioItem { Header = "Grid Test", SubHeader = "Click to see GridView tests", Icon = "\uE105", Page = typeof(RevealScenarioGrid) });
             listSource.Add(new RevealScenarioItem { Header = "List Test", SubHeader = "Click to see ListView", Icon = "\uE105", Page = typeof(RevealScenarioList) });
-            #if (!BUILD_WINDOWS)
+#if (!BUILD_WINDOWS)
             listSource.Add(new RevealScenarioItem { Header = "Make another view", SubHeader = "Make secondary views", Icon = "\uE105", Page = typeof(RevealScenarioSecondaryView) });
-            #endif
+#endif
             listSource.Add(new RevealScenarioItem { Header = "Test Item 4", SubHeader = "Click to do nothing", Icon = "\uE105" });
 
             themeSource = new ObservableCollection<RevealThemeItem>();
@@ -66,7 +64,7 @@ namespace MUXControlsTestApp
         private void ToggleSwitch_Toggled(object sender, RoutedEventArgs e)
         {
             ToggleSwitch toggle = (ToggleSwitch)sender;
-            if(toggle.IsOn)
+            if (toggle.IsOn)
             {
                 VisualStateManager.GoToState(this, "UseAcrylic", false);
             }

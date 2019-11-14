@@ -54,6 +54,9 @@ public:
     void IsSettingsVisible(bool value);
     bool IsSettingsVisible();
 
+    void IsTitleBarAutoPaddingEnabled(bool value);
+    bool IsTitleBarAutoPaddingEnabled();
+
     void MenuItemContainerStyle(winrt::Style const& value);
     winrt::Style MenuItemContainerStyle();
 
@@ -126,6 +129,7 @@ public:
     static winrt::DependencyProperty IsPaneToggleButtonVisibleProperty() { return s_IsPaneToggleButtonVisibleProperty; }
     static winrt::DependencyProperty IsPaneVisibleProperty() { return s_IsPaneVisibleProperty; }
     static winrt::DependencyProperty IsSettingsVisibleProperty() { return s_IsSettingsVisibleProperty; }
+    static winrt::DependencyProperty IsTitleBarAutoPaddingEnabledProperty() { return s_IsTitleBarAutoPaddingEnabledProperty; }
     static winrt::DependencyProperty MenuItemContainerStyleProperty() { return s_MenuItemContainerStyleProperty; }
     static winrt::DependencyProperty MenuItemContainerStyleSelectorProperty() { return s_MenuItemContainerStyleSelectorProperty; }
     static winrt::DependencyProperty MenuItemsProperty() { return s_MenuItemsProperty; }
@@ -161,6 +165,7 @@ public:
     static GlobalDependencyProperty s_IsPaneToggleButtonVisibleProperty;
     static GlobalDependencyProperty s_IsPaneVisibleProperty;
     static GlobalDependencyProperty s_IsSettingsVisibleProperty;
+    static GlobalDependencyProperty s_IsTitleBarAutoPaddingEnabledProperty;
     static GlobalDependencyProperty s_MenuItemContainerStyleProperty;
     static GlobalDependencyProperty s_MenuItemContainerStyleSelectorProperty;
     static GlobalDependencyProperty s_MenuItemsProperty;
@@ -210,11 +215,127 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnPropertyChanged(
+    static void OnAlwaysShowHeaderPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnPropertyChanged_CoerceToGreaterThanZero(
+    static void OnAutoSuggestBoxPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCompactModeThresholdWidthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnCompactPaneLengthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnDisplayModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnExpandedModeThresholdWidthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnHeaderTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsBackButtonVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsBackEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsPaneOpenPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsPaneToggleButtonVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsPaneVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsSettingsVisiblePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsTitleBarAutoPaddingEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemContainerStylePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemContainerStyleSelectorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemsPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemsSourcePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemTemplatePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnMenuItemTemplateSelectorPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOpenPaneLengthPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnOverflowLabelModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPaneDisplayModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPaneFooterPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPaneTitlePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnPaneToggleButtonStylePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSelectedItemPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSelectionFollowsFocusPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnSettingsItemPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnShoulderNavigationEnabledPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

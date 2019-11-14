@@ -3,10 +3,12 @@
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props" Condition="Exists('$(MSBuildProjectDirectory)\..\MUXControlsReleaseTest.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props" Condition="Exists('$(MSBuildProjectDirectory)\..\ReleaseTestSdkVersion.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\..\mux.PGO.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>c86d3f1a-cd11-406d-abee-ae4c9f23b8fe</SharedGUID>
+    <DefineConstants Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">$(DefineConstants);PGO_INSTRUMENT</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <Import_RootNamespace>MUXControls.ReleaseTest</Import_RootNamespace>
@@ -17,10 +19,10 @@
     <ProjectGuid>{0133B2CB-960C-4BA5-ABFA-570F18CDB47A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MuxControls.ReleaseTest</RootNamespace>
-    <AssemblyName>MuxControls.ReleaseTest</AssemblyName>
+    <RootNamespace>MUXControls.ReleaseTest</RootNamespace>
+    <AssemblyName>MUXControls.ReleaseTest</AssemblyName>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(ReleaseTestSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -114,6 +116,8 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AppThatUsesMUXIndirectlyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PGOManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTestsCX.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\NugetTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\ReleaseTestEnvironment.cs" />

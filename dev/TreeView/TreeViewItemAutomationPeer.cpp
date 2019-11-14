@@ -6,6 +6,7 @@
 #include "TreeView.h"
 #include "TreeViewItem.h"
 #include "TreeViewItemAutomationPeer.h"
+#include "SharedHelpers.h"
 
 CppWinRTActivatableClassWithBasicFactory(TreeViewItemAutomationPeer);
 
@@ -88,11 +89,7 @@ winrt::hstring TreeViewItemAutomationPeer::GetNameCore()
         auto treeViewNode = GetTreeViewNode();
         if (treeViewNode)
         {
-            auto inspectableName = treeViewNode.Content();
-            if (auto stringableName = inspectableName ? inspectableName.try_as<winrt::IStringable>() : nullptr)
-            {
-                nameHString = stringableName.ToString();
-            }
+            nameHString = SharedHelpers::TryGetStringRepresentationFromObject(treeViewNode.Content());
         }
 
         if (nameHString.empty())
@@ -114,15 +111,17 @@ int32_t TreeViewItemAutomationPeer::GetPositionInSetCore()
 {
     winrt::ListView ancestorListView = GetParentListView();
     auto targetNode = GetTreeViewNode();
-    int positionInSet = -1;
+    int positionInSet = 0;
 
     if (ancestorListView && targetNode)
     {
-        auto targetParentNode = targetNode.Parent();
-        UINT32 position = 0;
-        if (targetParentNode.Children().IndexOf(targetNode, position))
+        if (const auto targetParentNode = targetNode.Parent())
         {
-            positionInSet = static_cast<int>(position) + 1;
+            UINT32 position = 0;
+            if (targetParentNode.Children().IndexOf(targetNode, position))
+            {
+                positionInSet = static_cast<int>(position) + 1;
+            }
         }
     }
 
@@ -133,13 +132,15 @@ int32_t TreeViewItemAutomationPeer::GetSizeOfSetCore()
 {
     winrt::ListView ancestorListView = GetParentListView();
     auto targetNode = GetTreeViewNode();
-    int setSize = -1;
+    int setSize = 0;
 
     if (ancestorListView && targetNode)
     {
-        auto targetParentNode = targetNode.Parent();
-        UINT32 size = targetParentNode.Children().Size();
-        setSize = static_cast<int>(size);
+        if (const auto targetParentNode = targetNode.Parent())
+        {
+            UINT32 size = targetParentNode.Children().Size();
+            setSize = static_cast<int>(size);
+        }
     }
 
     return setSize;
@@ -263,10 +264,9 @@ winrt::TreeViewNode TreeViewItemAutomationPeer::GetTreeViewNode()
 
 void TreeViewItemAutomationPeer::UpdateSelection(bool select)
 {
-    if (auto treeItem = safe_try_cast<winrt::TreeViewItem>(Owner()))
+    if (auto treeItem = Owner().try_as<winrt::TreeViewItem>())
     {
         auto impl = winrt::get_self<TreeViewItem>(treeItem);
-        auto state = select ? TreeNodeSelectionState::Selected : TreeNodeSelectionState::UnSelected;
-        impl->UpdateSelection(state);
+        impl->UpdateSelection(select);
     }
 }

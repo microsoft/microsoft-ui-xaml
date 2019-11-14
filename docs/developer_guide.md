@@ -1,117 +1,43 @@
-# Developer Guide
+﻿# Developer Guide
 
 This guide provides instructions on how to build the repo and implement 
 improvements.
 
-## Source code structure
+* [Prerequisites](developer_guide.md#Prerequisites)
+* [Building the repository](developer_guide.md#Building-the-repository)
+* [Testing](developer_guide.md#Testing)
+* [Telemetry](developer_guide.md#Telemetry)
 
-#### /build, /tools
+Additional reading:
 
-These folders contain scripts and other support machinery that you shouldn't 
-need to edit for most changes.
+* [Source code structure](source_code_structure.md)
+* [Coding style and conventions](code_style_and_conventions.md)
 
-In particular:
 
-* **/build/NuSpecs** enables .nupkg generation
-* **/build/FrameworkPackage** enables .appx generation
-
-Note that here and in various parts of the codebase you will see references to 
-`BUILD_WINDOWS`. WinUI operates as a standalone package for Xaml apps but is 
-also a way that new controls migrate into [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls) 
-as part of the Windows build system. The places where the WinUI source needs to 
-differ for this different environment are specified under `BUILD_WINDOWS`. It's 
-expected that it is the responsibility of the Microsoft team members to 
-maintain this part of WinUI, and other community members should be able to 
-ignore it.
-
-#### /dev
-
-Under dev is a separate folder for each of our controls.
-
-Each control is composed of a Shared Item using the Shared Item Template in 
-Visual Studio. It is then included into the respective projects. This gives us 
-flexibility in the future if we need to decompose our other projects into 
-smaller projects, move to a Git submodule model on a per control basis, or 
-create different DLLs of our solution. Currently the project is small enough 
-that the Shared Item Template gives us enough flexibility to add/remove 
-controls to/from the subsequent projects easily.
-
-Also under dev is the actual Microsoft.UI.Xaml project, which is the main DLL 
-that contains all the controls and other solutions which will be packaged and 
-deployed. At this time we believe the Microsoft.UI.Xaml.dll is 
-small enough to include all controls into one DLL. As we increase the number of 
-controls we will revisit this decision and may decompose it into different DLLs 
-in the future. Also we will adjust based on developer feedback if we start to see 
-usage patterns where teams use just a few controls vs. the whole library.
-
-This project also includes the necessary definitions to package the DLL into a 
-NuGet package.
-
-#### /docs
-
-This is where the repo documentation lives, including this document.
-
-Note that developer usage documentation can be found separately on docs.microsoft.com.
-
-#### /test
-
-Our test library and test app (the app that the test library interacts with 
-when executing the tests) are here.
-
-MUXControls.Test is a [MSTest](https://docs.microsoft.com/dotnet/api/microsoft.visualstudio.testtools.unittesting) 
-DLL using MITALite that contains all of the test code for the various controls 
-by automating the MUXControlsTestApp.
-
-MUXControlsTestApp is a UWP app that exercises all the controls. This is just a 
-manual testing playground which can be driven by the automated tests for 
-automated verification as well as [TestMethod] control API verification. Note 
-this applications references the MUXControls DLL rather than including the 
-Shared Items.
-
-## Code style and conventions
-
-* C++: [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)
-* C#: Follow the .NET Core team's [C# coding style](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md)
-
-For all languages respect the [.editorconfig](https://editorconfig.org/) file 
-specified in the source tree. Many IDEs natively support this or can with a 
-plugin.
-
-### File headers
-
-The following file header is the used for WinUI. Please use it for new files.
-
-#### C++/C#
-```
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License. See LICENSE in the project root for license information.
-```
-
-#### XAML/proj
-
-```
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
-```
-
-### C++/WinRT
-
-## Building the repository
-
-Generally you will want to set your configuration to **Debug**, **x86**, and 
-select **MUXControlsTestApp** as your startup project in Visual Studio.
-
-### Prerequisites
+## Prerequisites
 #### Visual Studio
 
-Install latest VS2017 (15.9 or later) from here: http://visualstudio.com/downloads
+Install latest VS2019 (16.1 or later) from here: http://visualstudio.com/downloads
 
 #### SDK
 
 While WinUI is designed to work against many versions of Windows, you will need 
 a fairly recent SDK in order to build WinUI. It's required that you install the 
-16299, 17134 and 17763 SDKs. You can download these via Visual Studio (check 
+17763 and 18362 SDKs. You can download these via Visual Studio (check 
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
+
+<!-- 
+You will also need to install The Windows 10 Insider SDK 18323. The easiest way 
+to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
+an Administrator Powershell window:
+
+ `.\build\Install-WindowsSdkISO.ps1 18323` -->
+
+## Building the repository
+
+Generally you will want to set your configuration to **Debug**, **x64**, and 
+select **MUXControlsTestApp** as your startup project in Visual Studio.
 
 ### Creating a NuGet package
 
@@ -167,7 +93,7 @@ public void TestCleanup()
     TestEnvironment.AssemblyCleanup(TestType.Nuget);
 }
 ```
-The test apps are using released versions of MUX NuGet package locally. In CI, 
+The test apps are using released versions of MUX NuGet package locally. In [CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20), 
 the test pipeline will generate a NuGet package for each build, and there’s a 
 separate pipeline configured to consume the generated package from latest 
 build and run MUXControl.ReleaseTest.
@@ -184,7 +110,7 @@ versions you can make use of a Visual Studio subscription [as described here](ht
 ### Automated testing
 
 You can run the test suite from within Visual Studio by using the Test top 
-level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2017) 
+level menu. For targeting indivual tests you can use [Test Explorer](https://docs.microsoft.com/en-us/visualstudio/test/run-unit-tests-with-test-explorer?view=vs-2019) 
 (found under the Test->Windows sub menu).
 
 This same suite of tests will be run as part of your Pull Request validation 
@@ -208,26 +134,62 @@ Windows, not just the most recent version. Your tests may need version or
 [IsApiPresent](https://docs.microsoft.com/en-us/uwp/api/windows.foundation.metadata.apiinformation.istypepresent) 
 checks in order to pass on all versions.
 
+#### Visual tree verification tests
+
+##### Update visual tree masters
+Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and we use them as the baseline (master) for visual tree verifications. If you make UI changes, visual tree verification tests may fail since the new dump no longer matches with masters. The master files need to be updated to include your latest changes. Visual verification test automatically captures the new visual tree and uploads the dump to test pipeline artifacts. Here are the steps to replace existing masters with the new ones.
+
+1. Find your test run.
+
+    ![test fail page1](images/test_fail_page1.png)
+
+    ![test fail page2](images/test_fail_page2.png)
+
+2. Download new masters.
+
+    ![drop folder](images/test_pipeline_drop.png)
+    
+    ![VisualTreeMasters folder](images/masters_folder.png)
+
+3. Diff & replace
+
+    Diff the [old](https://github.com/microsoft/microsoft-ui-xaml/tree/master/test/MUXControlsTestApp/master) and new masters, make sure the changes are intended, replace the files and commit your changes.
+
+##### Create new visual tree tests
+1. Write new test
+
+    Write a new test using [VisualTreeTestHelper](https://github.com/microsoft/microsoft-ui-xaml/blob/master/test/MUXControlsTestApp/VisualTreeTestHelper.cs). Quick example [here](https://github.com/microsoft/microsoft-ui-xaml/blob/master/dev/AutoSuggestBox/APITests/AutoSuggestBoxTests.cs#L69-L74).
+
+2. Run the test locally
+
+    Run the test locally and make sure everything looks right. The test will fail, which is expected since the test is new and there's no master to compare against. A new master file should be generated in your Pictures folder (The test app doesn't have write access to other arbitrary folders ☹).
+
+3. Queue a test run in pipeline
+
+    Local test run only gives you the visual tree dump for your host OS version. Some controls have different visual behaviors on different versions. To get master files for all supported OS versions, you'll need to start a test run in test pipeline.
+
+    Go to the [build page](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) and select `WinUI-Public-MUX-PR` pipeline. Click the `Queue` button on top right corner, update `Branch/tag` TextBlock to be your working branch then click on `Run`.
+
+    Outside contributors may not have permission to do this, just open a PR and one of our team members will queue a test run for you.
+
+4. Get the new master files.
+
+    The new masters will be uploaded to pipeline artifacts folder when test finishes. Continue the steps in `Update visual tree masters` section above to download and commit the new files.
+
+
+
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services.
+products and services. Note however that no data collection is performed by default
+when using your private builds. An environment variable called "EmitTelemetryEvents"
+must be defined during the build for data collection to be turned on.
 
-If desired you can disable logging when building the project by following these 
-steps:
+When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
+that variable.
+Or when building in Visual Studio, you can first define the environment variable in a
+Command Prompt window and then launch the solution from there:
 
-1. In Microsoft Visual Studio's Solution Explorer window, right-click the 
-"Microsoft.UI.Xaml (Universal Windows)" project. 
-2. Select the "Properties" menu.
-3. Select "All Configurations" in the Configuration dropdown.
-4. Select "All Platforms" in the Platform dropdown.
-5. Select "Configuration Properties", then "C/C++", then "Preprocessor" in the 
-left tree structure.
-6. In the entry called "Preprocessor Definitions":
-    * Add "DISABLE_TELEMETRY_TRACELOGGING;" to disable Microsoft telemetry 
-    logging alone. 
-    * Add "DISABLE_PERF_TRACELOGGING;" to disable performance logging alone.
-    * Add "DISABLE_DEBUG_TRACELOGGING;" to disable debug logging alone.
-    * Or simply add "DISABLE_ALL_TRACELOGGING;" to disable all three types of logging.
-7. Click the "Apply" button.
-8. Recompile the project.
+1. In a Command Prompt window, set the required environment variable: set EmitTelemetryEvents=true
+2. Then from that same Command Prompt, open the Visual Studio solution: MUXControls.sln
+3. Recompile the solution in Visual Studio. The build will use that environment variable.

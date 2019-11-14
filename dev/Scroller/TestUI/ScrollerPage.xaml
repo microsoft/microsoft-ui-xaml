@@ -29,6 +29,7 @@
             <Button x:Name="navigateToCompositionScrollControllers" AutomationProperties.Name="navigateToCompositionScrollControllers" Margin="2" HorizontalAlignment="Stretch">Scroller with composition scroll controllers</Button>
             <Button x:Name="navigateToBiDirectionalScrollController" AutomationProperties.Name="navigateToBiDirectionalScrollController" Margin="2" HorizontalAlignment="Stretch">Scroller with composition bi-directional scroll controller</Button>
             <Button x:Name="navigateToLeakDetection" AutomationProperties.Name="navigateToLeakDetection" Margin="2" HorizontalAlignment="Stretch">Detect Scroller Memory Leak</Button>
+            <Button x:Name="navigateToMousePanning" AutomationProperties.Name="navigateToMousePanning" Margin="2" HorizontalAlignment="Stretch">Mouse-based panning</Button>
         </StackPanel>
         
         <StackPanel Grid.Column="1">
@@ -38,6 +39,8 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -63,7 +66,14 @@
                 <TextBlock Text="MouseWheelInertiaDecayRate:" VerticalAlignment="Center" Margin="2" Grid.Row="2"/>
                 <TextBox x:Name="txtMouseWheelInertiaDecayRate" AutomationProperties.Name="txtMouseWheelInertiaDecayRate" Margin="2" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="2" TextChanged="TxtMouseWheelDeltaForVelocityUnit_TextChanged"/>
 
-                <CheckBox x:Name="chkIsInteractionTrackerMouseWheelZoomingEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="3" Content="IsInteractionTrackerMouseWheelZoomingEnabled?" Checked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Checked" Unchecked="ChkIsInteractionTrackerMouseWheelZoomingEnabled_Unchecked"/>
+                <TextBlock Text="MouseWheelScrollLines:" VerticalAlignment="Center" Margin="2" Grid.Row="3"/>
+                <TextBox x:Name="txtMouseWheelScrollLines" AutomationProperties.Name="txtMouseWheelScrollLines" Margin="2" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="3" TextChanged="TxtMouseWheelScrollLines_TextChanged"/>
+
+                <TextBlock Text="MouseWheelScrollChars:" VerticalAlignment="Center" Margin="2" Grid.Row="4"/>
+                <TextBox x:Name="txtMouseWheelScrollChars" AutomationProperties.Name="txtMouseWheelScrollChars" Margin="2" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="4" TextChanged="TxtMouseWheelScrollChars_TextChanged"/>
+
+                <CheckBox x:Name="chkIsInteractionTrackerPointerWheelRedirectionEnabled" Margin="2" Grid.ColumnSpan="2" Grid.Row="5" Content="IsInteractionTrackerPointerWheelRedirectionEnabled?"
+                    Checked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Checked" Unchecked="ChkIsInteractionTrackerPointerWheelRedirectionEnabled_Unchecked"/>
             </Grid>
         
             <TextBlock Text="Offsets change velocity parameters" Foreground="Red" Margin="0, 4, 0, 1"/>
@@ -97,6 +107,7 @@
             </StackPanel>
             <Button x:Name="btnSetZoomFactorChangeVelocityParameters" AutomationProperties.Name="btnSetZoomFactorChangeVelocityParameters" Margin="1"
                 HorizontalAlignment="Stretch" Content="SetZoomFactorChangeVelocityParameters" Click="BtnSetZoomFactorChangeVelocityParameters_Click"/>
+            <TextBlock x:Name="tbException" Margin="5,4,0,0"/>
         </StackPanel>
     </Grid>
 </local:TestPage>

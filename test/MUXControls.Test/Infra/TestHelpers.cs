@@ -18,30 +18,35 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
     public class TestSetupHelper : IDisposable
     {
         private bool AttemptRestartOnDispose { get; set; }
+        private int OpenedTestPages = 0;
+        private static bool IsTestSetupHelperInUse = false;
+
+        public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
+            :this(new[] { testName }, languageOverride, attemptRestartOnDispose)
+        {}
 
         // The value of 'testName' should match that which was used when
         // registering the test in TestInventory.cs in the test app project.
-        public TestSetupHelper(string testName, string languageOverride = "", bool attemptRestartOnDispose = true)
+        public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
+            // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
+            if(IsTestSetupHelperInUse)
+            {
+                throw new Exception("Don't nest TestSetupHelpers, use TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
+            }
+            IsTestSetupHelperInUse = true;
+
             // If a test crashes, it can take a little bit of time before we can 
             // restart the app again especially if watson is collecting dumps. Adding a 
             // delayed retry can help avoid the case where we might otherwise fail a slew of
@@ -53,8 +58,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     AttemptRestartOnDispose = attemptRestartOnDispose;
                     bool restartedTestApp = false;
-
-                    Log.Comment(testName + " initializing TestSetupHelper");
 
                     if (TestEnvironment.ShouldRestartApplication)
                     {
@@ -125,47 +128,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                     }
                     InputHelper.LeftClick(currentPageTextBlock);
 
-                    var uiObject = FindElement.ByNameAndClassName(testName, "Button");
-                    if (uiObject == null)
+                    foreach (string testName in testNames)
                     {
-                        string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
+                        Log.Comment(testName + " initializing TestSetupHelper");
 
-                        // We'll raise the error message first so the dump has proper context preceding it,
-                        // and will then throw it as an exception so we immediately cease execution.
-                        Log.Error(errorMessage);
-                        DumpHelper.DumpFullContext();
-                        throw new InvalidOperationException(errorMessage);
-                    }
+                        var uiObject = FindElement.ByNameAndClassName(testName, "Button");
+                        if (uiObject == null)
+                        {
+                            string errorMessage = string.Format("Cannot find test page for: {0}.", testName);
 
-                    // We're now entering a new test page, so everything has changed.  As such, we should clear our
-                    // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
-                    ElementCache.Clear();
+                            // We'll raise the error message first so the dump has proper context preceding it,
+                            // and will then throw it as an exception so we immediately cease execution.
+                            Log.Error(errorMessage);
+                            DumpHelper.DumpFullContext();
+                            throw new InvalidOperationException(errorMessage);
+                        }
 
-                    Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
-                    CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
+                        // We're now entering a new test page, so everything has changed.  As such, we should clear our
+                        // element cache in order to ensure that we don't accidentally retrieve any stale UI objects.
+                        ElementCache.Clear();
 
-                    if (cb.ToggleState != ToggleState.On)
-                    {
-                        using (var waiter = cb.GetToggledWaiter())
+                        Log.Comment("Waiting until __TestContentLoadedCheckBox to be checked by test app.");
+                        CheckBox cb = new CheckBox(FindElement.ById("__TestContentLoadedCheckBox"));
+
+                        if (cb.ToggleState != ToggleState.On)
+                        {
+                            using (var waiter = cb.GetToggledWaiter())
+                            {
+                                var testButton = new Button(uiObject);
+                                testButton.Invoke();
+                                Wait.ForIdle();
+                                waiter.Wait();
+                            }
+                        }
+                        else
                         {
                             var testButton = new Button(uiObject);
                             testButton.Invoke();
-                            Wait.ForIdle();
-                            waiter.Wait();
                         }
-                    }
-                    else
-                    {
-                        var testButton = new Button(uiObject);
-                        testButton.Invoke();
-                    }
 
-                    Wait.ForIdle();
+                        Wait.ForIdle();
 
-                    Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
+                        Log.Comment("__TestContentLoadedCheckBox checkbox checked, page has loaded");
+
+                        OpenedTestPages++;
+                    }
 
                     TestCleanupHelper.TestSetupHelperPendingDisposals++;
-
                     break;
                 }
                 catch
@@ -219,7 +228,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         {
             TestEnvironment.LogVerbose("TestSetupHelper.Dispose()");
             TestCleanupHelper.TestSetupHelperPendingDisposals--;
-            GoBack();
+            IsTestSetupHelperInUse = false;
+
+            while(OpenedTestPages > 0)
+            {
+                GoBack();
+                OpenedTestPages--;
+            }
 
             if (TestCleanupHelper.TestSetupHelperPendingDisposals == 0 && AttemptRestartOnDispose)
             {

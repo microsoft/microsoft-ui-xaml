@@ -6,12 +6,10 @@ using System.Collections.Generic;
 using Windows.Foundation;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingLayoutContext;
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 {

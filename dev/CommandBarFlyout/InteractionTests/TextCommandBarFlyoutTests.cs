@@ -16,19 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -38,8 +30,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public static void ClassInitialize(TestContext testContext)
         {
             TestEnvironment.Initialize(testContext);
@@ -54,19 +45,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         internal class TextCommandBarFlyoutTestSetupHelper : TestSetupHelper
         {
             public TextCommandBarFlyoutTestSetupHelper(string languageOverride = "", bool attemptRestartOnDispose = true)
-                : base("CommandBarFlyout Tests", languageOverride, attemptRestartOnDispose)
+                : base(new[] { "CommandBarFlyout Tests", "TextCommandBarFlyout Tests" }, languageOverride, attemptRestartOnDispose)
             {
-                innerPageSetupHelper = new TestSetupHelper("TextCommandBarFlyout Tests", languageOverride, attemptRestartOnDispose);
                 FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
             }
-
-            public override void Dispose()
-            {
-                innerPageSetupHelper.Dispose();
-                base.Dispose();
-            }
-
-            private TestSetupHelper innerPageSetupHelper;
         }
 
         [TestMethod]
@@ -156,11 +138,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanPasteTextToPasswordBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
             CanPasteTextTo("PasswordBox");
         }
 
@@ -225,27 +202,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void CanBoldTextInARichEditBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
-            CanStyleTextInARichEditBox("Bold", "b");
+            CanStyleTextInARichEditBox("Bold", "\\b ", "\\b0 ");
         }
 
         [TestMethod]
         public void CanItalicizeTextInARichEditBox()
         {
-            CanStyleTextInARichEditBox("Italic", "i");
+            CanStyleTextInARichEditBox("Italic", "\\i ", "\\i0 ");
         }
 
         [TestMethod]
         public void CanUnderlineTextInARichEditBox()
         {
-            CanStyleTextInARichEditBox("Underline", "ul");
+            CanStyleTextInARichEditBox("Underline", "\\ul ", "\\ulnone ");
         }
 
-        private void CanStyleTextInARichEditBox(string styleName, string rtfSymbol)
+        private void CanStyleTextInARichEditBox(string styleName, string styleStart, string styleEnd)
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone2))
             {
@@ -261,45 +233,97 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Content is '{0}'", textControlContents.Replace(Environment.NewLine, " "));
 
                 Log.Comment("Ensuring RichEditBox initially has no {0} content.", styleName.ToLower());
-                Verify.IsFalse(textControlContents.Contains(string.Format("\\{0}\\", rtfSymbol)));
+                Verify.IsFalse(textControlContents.Contains(styleStart));
+                Verify.IsFalse(textControlContents.Contains(styleEnd));
 
-                Log.Comment("Selecting all text in the RichEditBox.");
-                FindElement.ById<Button>(string.Format("RichEditBoxSelectAllButton")).InvokeAndWait();
+                var richedit = FindElement.ById<Edit>("RichEditBox");
 
+                FocusAndSelectText(richedit, "ergo");
                 OpenFlyoutOn("RichEditBox", asTransient: true);
 
+                var toggleFormatButton = FindElement.ByName<ToggleButton>(styleName);
+                Verify.AreEqual(ToggleState.Off, toggleFormatButton.ToggleState);
+
                 Log.Comment("Making text {0}.", styleName.ToLower());
-                FindElement.ByName<ToggleButton>(styleName).ToggleAndWait();
+                toggleFormatButton.ToggleAndWait();
+                VerifyRichEditBoxHasContent(string.Format("Lorem ipsum {0}ergo{1} sum", styleStart, styleEnd));
 
-                Log.Comment("Getting new RichEditBox RTF content.");
-                FindElement.ById<Button>(string.Format("GetRichEditBoxRtfContentButton")).InvokeAndWait();
-                textControlContents = FindElement.ById("StatusReportingTextBox").GetText();
-                Log.Comment("Content is '{0}'", textControlContents.Replace(Environment.NewLine, " "));
+                DismissFlyout();
 
-                Log.Comment("Ensuring RichEditBox now has {0} content.", styleName.ToLower());
-                Verify.IsTrue(textControlContents.Contains(string.Format("\\{0}\\", rtfSymbol)));
+                Log.Comment("Select mixed format text");
+                // Note, in this case the selection starts in unstyled text ("sum") and includes styled text ("ergo"). The next case covers
+                // starting in styled text and including unstyled text
+                FocusAndSelectText(richedit, "sum ergo");
+
+                Log.Comment("Showing flyout should not change bold status");
+                OpenFlyoutOn("RichEditBox", asTransient: true);
+                Verify.AreEqual(ToggleState.Off, toggleFormatButton.ToggleState);
+                VerifyRichEditBoxHasContent(string.Format("Lorem ipsum {0}ergo{1} sum", styleStart, styleEnd));
+
+                Log.Comment("Apply formatting to new selection");
+                toggleFormatButton.ToggleAndWait();
+                VerifyRichEditBoxHasContent(string.Format("Lorem ip{0}sum ergo{1} sum", styleStart, styleEnd));
+
+                DismissFlyout();
+
+                Log.Comment("Select mixed format text");
+                FocusAndSelectText(richedit, "ergo su");
+                OpenFlyoutOn("RichEditBox", asTransient: true);
+                Verify.AreEqual(ToggleState.Off, toggleFormatButton.ToggleState);
+                VerifyRichEditBoxHasContent(string.Format("Lorem ip{0}sum ergo{1} sum", styleStart, styleEnd));
+
+                toggleFormatButton.ToggleAndWait();
+                VerifyRichEditBoxHasContent(string.Format("Lorem ip{0}sum ergo su{1}m", styleStart, styleEnd));
+
+                DismissFlyout();
+                FocusAndSelectText(richedit, "ergo");
+                OpenFlyoutOn("RichEditBox", asTransient: true);
+                Verify.AreEqual(ToggleState.On, toggleFormatButton.ToggleState);
+                VerifyRichEditBoxHasContent(string.Format("Lorem ip{0}sum ergo su{1}m", styleStart, styleEnd));
+
+                toggleFormatButton.ToggleAndWait();
+                VerifyRichEditBoxHasContent(string.Format("Lorem ip{0}sum {1}ergo{0} su{1}m", styleStart, styleEnd));
             }
+        }
+
+        private void FocusAndSelectText(Edit editControl, string textToSelect)
+        {
+            Log.Comment("Selecting text '{0}' in editControl '{1}'", textToSelect, editControl.Name);
+
+            FocusHelper.SetFocus(editControl);
+            Wait.ForIdle();
+            editControl.DocumentRange.FindText(textToSelect, false /*backwards*/, false /*ignorecase*/).Select();
+            Wait.ForIdle();
+        }
+
+        private static void VerifyRichEditBoxHasContent(string expectedContent)
+        {
+            Log.Comment("Ensuring RichEditBox contains string '{0}'.", expectedContent);
+
+            Log.Comment("Getting RichEditBox RTF content.");
+            FindElement.ById<Button>(string.Format("GetRichEditBoxRtfContentButton")).InvokeAndWait();
+            var textControlContents = FindElement.ById("StatusReportingTextBox").GetText();
+            Log.Comment("Content is '{0}'", textControlContents.Replace(Environment.NewLine, " "));
+
+            Verify.IsTrue(textControlContents.Contains(expectedContent));
+        }
+
+        private static void DismissFlyout()
+        {
+            var statusReportingTextBox = FindElement.ById("StatusReportingTextBox");
+            InputHelper.LeftClick(statusReportingTextBox);
+            Wait.ForIdle();
         }
 
         [TestMethod]
         public void CanUndoAndRedoInTextBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
             CanUndoAndRedoIn("TextBox");
         }
 
         [TestMethod]
         public void CanUndoAndRedoInRichEditBox()
         {
-            if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
-            {
-                //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-                return;
-            }
             CanUndoAndRedoIn("RichEditBox");
         }
 
@@ -437,7 +461,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TextCommandBarFlyoutTestSetupHelper())
             {
                 Log.Comment("Give focus to the TextBox.");
-                FocusHelper.SetFocus(FindElement.ById("TextBox"));
+                var textBox = FindElement.ById("TextBox");
+                FocusHelper.SetFocus(textBox);
 
                 using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Select All")))
                 {
@@ -450,11 +475,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Use Escape to close the context menu. The TextBox should now have focus.");
                     KeyboardHelper.PressKey(Key.Escape);
+
+                    // On 19H1, there's a bug with the focus restoration code, so we'll manually restore focus to allow the rest of the test to run.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    {
+                        textBox.SetFocus();
+                    }
+
                     waiter.Wait();
                 }
                 
                 Log.Comment("Give focus to the RichEditBox.");
-                FocusHelper.SetFocus(FindElement.ById("RichEditBox"));
+                var richEditBox = FindElement.ById("RichEditBox");
+                FocusHelper.SetFocus(richEditBox);
 
                 using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Bold")))
                 {
@@ -485,13 +518,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Use Escape to close the context menu. The RichEditBox should now have focus.");
                     KeyboardHelper.PressKey(Key.Escape);
+
+                    // On 19H1, there's a bug with the focus restoration code, so we'll manually restore focus to allow the rest of the test to run.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    {
+                        richEditBox.SetFocus();
+                    }
+
                     waiter.Wait();
                 }
             }
         }
 
-        //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateProofingMenu()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -500,32 +539,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
-                {
-                    Edit textBox = FindElement.ById<Edit>("TextBox");
+                Edit textBox = FindElement.ById<Edit>("TextBox");
 
-                    Log.Comment("Type \"asdf\" plus a space to create a misspelled word.");
-                    KeyboardHelper.EnterText(textBox, "asdf ", useKeyboard: true);
+                Log.Comment("Type \"asdf\" plus a space to create a misspelled word.");
+                KeyboardHelper.EnterText(textBox, "asdf ", useKeyboard: true);
 
-                    // We know that the word appears at the start of the text box's content,
-                    // so we'll use a point 10 pixels from the text box's left edge as a point
-                    // known to be within the word's bounding box.
-                    Log.Comment("Right-click on the word's location in the text box to get the proofing menu.");
-                    InputHelper.RightClick(textBox, 10 - textBox.BoundingRectangle.Width / 2, 0);
+                // We know that the word appears at the start of the text box's content,
+                // so we'll use a point 10 pixels from the text box's left edge as a point
+                // known to be within the word's bounding box.
+                Log.Comment("Right-click on the word's location in the text box to get the proofing menu.");
+                InputHelper.RightClick(textBox, 10, textBox.BoundingRectangle.Height / 2);
 
-                    Log.Comment("Tap on \"ads\" in the proofing menu to fix the spelling error.");
-                    var proofingItem = FindElement.ByNameAndClassName("ads", "MenuFlyoutItem");
-                    InputHelper.Tap(proofingItem);
+                Log.Comment("Find \"ads\" in the proofing menu to fix the spelling error.");
+                var proofingItem = new MenuItem(FindElement.ByNameAndClassName("ads", "MenuFlyoutItem"));
+                Log.Comment($"Invoke {proofingItem}");
+                proofingItem.InvokeAndWait();
 
-                    Verify.AreEqual("ads ", textBox.Value);
-                }
+                Verify.AreEqual("ads ", textBox.Value);
             }
         }
 
-        //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateRightClickOnEmptyTextBoxDoesNotShowFlyout()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -534,26 +570,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
-                {
-                    Log.Comment("Clear the clipboard.");
-                    FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
+                Log.Comment("Clear the clipboard.");
+                FindElement.ById<Button>("ClearClipboardContentsButton").InvokeAndWait();
 
-                    Log.Comment("Right-click on the text box.");
-                    InputHelper.RightClick(FindElement.ById("TextBox"));
+                Log.Comment("Right-click on the text box.");
+                InputHelper.RightClick(FindElement.ById("TextBox"));
 
-                    Log.Comment("Count the number of open popups.");
-                    FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
-                    
-                    Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
-                }
+                Log.Comment("Count the number of open popups.");
+                FindElement.ById<Button>("CountPopupsButton").InvokeAndWait();
+
+                Verify.AreEqual("0", FindElement.ById<Edit>("PopupCountTextBox").Value);
             }
         }
 
-        //BUGBUG 19277300: MUX TextCommandBarFlyout tests fail on RS5_Release
-        //[TestMethod]
+        [TestMethod]
         public void ValidateRichTextBlockOverflowUsesSourceFlyouts()
         {
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
@@ -562,21 +594,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (var setup1 = new TestSetupHelper("CommandBarFlyout Tests"))
+            using (var setup = new TestSetupHelper(new[] { "CommandBarFlyout Tests", "Extra CommandBarFlyout Tests" }))
             {
-                using (var setup2 = new TestSetupHelper("Extra CommandBarFlyout Tests"))
+                Log.Comment("Right-click on the rich text block.");
+                InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
+
+                Log.Comment("Select all the text.");
+                FindElement.ByName<Button>("Select All").InvokeAndWait();
+
+                Log.Comment("Now right-click on the rich text block overflow.");
+                InputHelper.RightClick(FindElement.ById("RichTextBlockOverflow"), 10, 10);
+
+                Log.Comment("The copy option should be available now, because the rich text block's overflow element delegates to the rich text block.");
+                FindElement.ByName<Button>("Copy").InvokeAndWait();
+            }
+        }
+
+        [TestMethod]
+        public void ValidateUnhandledKeysOnNonTransientFlyoutDoNotCloseFlyout()
+        {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.NineteenH1))
+            {
+                Log.Warning("Test is disabled pre-19H1 because the bug fix needed to support this were not available pre-19H1.");
+                return;
+            }
+
+            using (var setup = new TextCommandBarFlyoutTestSetupHelper())
+            {
+                Log.Comment("Give focus to the RichEditBox.");
+                FocusHelper.SetFocus(FindElement.ById("RichEditBox"));
+
+                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Bold")))
                 {
-                    Log.Comment("Right-click on the rich text block.");
-                    InputHelper.RightClick(FindElement.ById("RichTextBlock"), 10, 10);
+                    Log.Comment("Double-tap to select a word and bring up the context menu. The Bold button should get focus.");
+                    KeyboardHelper.PressKey(Key.F10, ModifierKey.Shift);
+                    waiter.Wait();
+                }
 
-                    Log.Comment("Select all the text.");
-                    FindElement.ByName<Button>("Select All").InvokeAndWait();
-                    
-                    Log.Comment("Now right-click on the rich text block overflow.");
-                    InputHelper.RightClick(FindElement.ById("RichTextBlockOverflow"), 10, 10);
+                Log.Comment("Press the down arrow key. Focus should stay in the flyout.");
+                KeyboardHelper.PressKey(Key.Down);
+                Wait.ForIdle();
 
-                    Log.Comment("The copy option should be available now, because the rich text block's overflow element delegates to the rich text block.");
-                    FindElement.ByName<Button>("Copy").InvokeAndWait();
+                Log.Comment("Press the up arrow key. Focus should stay in the flyout.");
+                KeyboardHelper.PressKey(Key.Up);
+                Wait.ForIdle();
+                
+                using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromId("RichEditBox")))
+                {
+                    Log.Comment("Use Escape to close the context menu. The RichEditBox should now have focus.");
+                    KeyboardHelper.PressKey(Key.Escape);
+                    waiter.Wait();
                 }
             }
         }

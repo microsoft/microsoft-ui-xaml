@@ -1,0 +1,42 @@
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+# The following variables are set at queue time:
+#   buildPlatform
+#   buildConfiguration
+#   helixTargetQueues
+#   taefQuery
+#   useBuildOutputFromBuildId
+#   useBuildOutputFromPipeline
+jobs:
+- job: Build
+  condition:
+    eq(variables['useBuildOutputFromBuildId'],'') 
+  pool:
+    vmImage: 'windows-2019'
+  timeoutInMinutes: 120
+  variables:
+    appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
+    buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
+    publishDir : $(Build.ArtifactStagingDirectory)
+  steps:
+  - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
+  - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn:
+    - Build
+    condition: in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    testSuite: 'DevTestSuite'
+    taefQuery: $(taefQuery)
+    useBuildOutputFromPipeline: $(useBuildOutputFromPipeline)
+    # Specify a dummy matrix to override the default matrix
+    matrix: 
+      config:
+        isDummyMatrix: true
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn: RunTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: 1

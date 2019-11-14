@@ -24,14 +24,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using AnimationContext = Microsoft.UI.Xaml.Controls.AnimationContext;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -63,18 +61,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater = new ItemsRepeater()
                 {
                     ItemsSource = data,
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                     ItemTemplate = elementFactory,
-#endif
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 400,
                     Height = 800,
-                    Content = new ScrollViewer
+                    ScrollViewer = new ScrollViewer
                     {
                         Content = repeater
                     }

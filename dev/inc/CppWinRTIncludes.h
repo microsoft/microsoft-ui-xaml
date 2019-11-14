@@ -10,6 +10,7 @@
 #include <winrt\Windows.ApplicationModel.Activation.h>
 #include <winrt\Windows.ApplicationModel.Contacts.h>
 #include <winrt\Windows.ApplicationModel.Core.h>
+#include <winrt\Windows.ApplicationModel.DataTransfer.h>
 #include <winrt\Windows.ApplicationModel.Resources.h>
 #include <winrt\Windows.ApplicationModel.Resources.Core.h>
 #include <winrt\Windows.Devices.Input.h>
@@ -30,15 +31,14 @@
 #include <winrt\Windows.UI.Input.h>
 #include <winrt\Windows.UI.Text.h>
 #include <winrt\Windows.UI.ViewManagement.h>
-#ifdef USE_INSIDER_SDK
 #include <winrt\Windows.UI.WindowManagement.h>
-#endif
 #include <winrt\Windows.UI.Xaml.h>
 #include <winrt\Windows.UI.Xaml.Automation.Peers.h>
 #include <winrt\Windows.UI.Xaml.Automation.Provider.h>
 #include <winrt\Windows.UI.Xaml.Controls.h>
 #include <winrt\Windows.UI.Xaml.Controls.Primitives.h>
 #include <winrt\Windows.UI.Xaml.Data.h>
+#include <winrt\Windows.UI.Xaml.Documents.h>
 #include <winrt\Windows.UI.Xaml.Hosting.h>
 #include <winrt\Windows.UI.Xaml.Input.h>
 #include <winrt\Windows.UI.Xaml.Interop.h>
@@ -47,17 +47,28 @@
 #include <winrt\Windows.UI.Xaml.Media.Animation.h>
 #include <winrt\Windows.UI.Xaml.Media.Imaging.h>
 #include <winrt\Windows.UI.Xaml.Shapes.h>
-#ifndef BUILD_WINDOWS
 #include <winrt\Microsoft.UI.Private.Controls.h>
+#if __has_include("winrt\Microsoft.UI.Private.Media.h")
 #include <winrt\Microsoft.UI.Private.Media.h>
+#endif
+
 #include <winrt\Microsoft.UI.Xaml.Controls.h>
 #include <winrt\Microsoft.UI.Xaml.XamlTypeInfo.h>
+#if __has_include("winrt\Microsoft.UI.Xaml.Controls.Primitives.h")
 #include <winrt\Microsoft.UI.Xaml.Controls.Primitives.h>
+#endif
 
+#if __has_include("winrt\Microsoft.UI.Xaml.Media.h")
 #include <winrt\Microsoft.UI.Xaml.Media.h>
+#endif
+
+#if __has_include("winrt\Microsoft.UI.Xaml.Automation.Peers.h")
 #include <winrt\Microsoft.UI.Xaml.Automation.Peers.h>
 #endif
+
+#if __has_include("winrt\Microsoft.UI.Composition.Effects.h")
 #include <winrt\Microsoft.UI.Composition.Effects.h>
+#endif
 
 namespace winrt
 {
@@ -89,13 +100,12 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Input;
     using namespace ::winrt::Windows::UI::Text;
     using namespace ::winrt::Windows::UI::ViewManagement;
-#ifdef USE_INSIDER_SDK
     using namespace ::winrt::Windows::UI::WindowManagement;
-#endif
     using namespace ::winrt::Windows::UI::Xaml;
     using namespace ::winrt::Windows::UI::Xaml::Automation;
     using namespace ::winrt::Windows::UI::Xaml::Automation::Provider;
     using namespace ::winrt::Windows::UI::Xaml::Data;
+    using namespace ::winrt::Windows::UI::Xaml::Documents;
     using namespace ::winrt::Windows::UI::Xaml::Hosting;
     using namespace ::winrt::Windows::UI::Xaml::Input;
     using namespace ::winrt::Windows::UI::Xaml::Interop;
@@ -104,13 +114,18 @@ namespace winrt
     using namespace ::winrt::Windows::UI::Xaml::Media::Imaging;
     using namespace ::winrt::Windows::UI::Xaml::Shapes;
     using namespace ::winrt::Windows::System::Profile;
-#ifndef BUILD_WINDOWS
     using namespace ::winrt::Microsoft::UI::Xaml::XamlTypeInfo;
+    namespace Microsoft::UI::Private::Controls {}
     using namespace ::winrt::Microsoft::UI::Private::Controls;
+    namespace Microsoft::UI::Private::Media {}
     using namespace ::winrt::Microsoft::UI::Private::Media;
+    namespace Microsoft::UI::Xaml::Controls {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls;
+    namespace Microsoft::UI::Xaml::Controls::Primitives {}
     using namespace ::winrt::Microsoft::UI::Xaml::Controls::Primitives;
+    namespace Microsoft::UI::Xaml::Media {}
     using namespace ::winrt::Microsoft::UI::Xaml::Media;
+    namespace Microsoft::UI::Xaml::Automation::Peers {}
     using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers;
 
     // using namespace will affect headers included later as well, so crack these namespaces now for convenience
@@ -150,37 +165,10 @@ namespace winrt
         using namespace ::winrt::Microsoft::UI::Xaml::Media::factory_implementation;
         using namespace ::winrt::Microsoft::UI::Xaml::Automation::Peers::factory_implementation;
     }
-#else
-    using namespace ::winrt::Windows::UI::Xaml::Controls;
-    using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives;
-    using namespace ::winrt::Windows::UI::Xaml::Media;
-    using namespace ::winrt::Windows::UI::Xaml::Automation::Peers;
 
-    namespace Windows::UI::Xaml::Controls::implementation {}
-    namespace Windows::UI::Xaml::Controls::Primitives::implementation {}
-    namespace Windows::UI::Xaml::Media::implementation {}
-    namespace Windows::UI::Xaml::Automation::Peers::implementation {}
-    namespace implementation
-    {
-        using namespace ::winrt::Windows::UI::Xaml::Controls::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Media::implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Automation::Peers::implementation;
-    }
-
-    namespace Windows::UI::Xaml::Controls::factory_implementation {}
-    namespace Windows::UI::Xaml::Controls::Primitives::factory_implementation {}
-    namespace Windows::UI::Xaml::Media::factory_implementation {}
-    namespace Windows::UI::Xaml::Automation::Peers::factory_implementation {}
-    namespace factory_implementation
-    {
-        using namespace ::winrt::Windows::UI::Xaml::Controls::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Controls::Primitives::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Media::factory_implementation;
-        using namespace ::winrt::Windows::UI::Xaml::Automation::Peers::factory_implementation;
-    }
-#endif
+#ifdef EFFECTS_INCLUDED
     using namespace ::winrt::Microsoft::UI::Composition::Effects;
+#endif
 
     // using namespace ::winrt::Windows::UI::Xaml::Controls;
     using AppBar = winrt::Windows::UI::Xaml::Controls::AppBar;
@@ -206,6 +194,7 @@ namespace winrt
     using DragItemsStartingEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventArgs;
     using DragItemsStartingEventHandler = winrt::Windows::UI::Xaml::Controls::DragItemsStartingEventHandler;
     using FlyoutPresenter = winrt::Windows::UI::Xaml::Controls::FlyoutPresenter;
+    using IFlyoutPresenter2 = winrt::Windows::UI::Xaml::Controls::IFlyoutPresenter2;
     using FocusDisengagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusDisengagedEventArgs;
     using FocusEngagedEventArgs = winrt::Windows::UI::Xaml::Controls::FocusEngagedEventArgs;
     using FontIcon = winrt::Windows::UI::Xaml::Controls::FontIcon;
@@ -215,6 +204,7 @@ namespace winrt
     using IconSourceElement = winrt::Windows::UI::Xaml::Controls::IconSourceElement;
     using IContentControlFactory = winrt::Windows::UI::Xaml::Controls::IContentControlFactory;
     using IControl5 = ::winrt::Windows::UI::Xaml::Controls::IControl5;
+    using IControl7 = ::winrt::Windows::UI::Xaml::Controls::IControl7;
     using IControlFactory = winrt::Windows::UI::Xaml::Controls::IControlFactory;
     using IControlProtected = ::winrt::Windows::UI::Xaml::Controls::IControlProtected;
     using IDataTemplateSelectorFactory = winrt::Windows::UI::Xaml::Controls::IDataTemplateSelectorFactory;
@@ -228,9 +218,6 @@ namespace winrt
     using IPasswordBox5 = ::winrt::Windows::UI::Xaml::Controls::IPasswordBox5;
     using IRichEditBox6 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox6;
     using IRichEditBox8 = ::winrt::Windows::UI::Xaml::Controls::IRichEditBox8;
-#ifdef BUILD_WINDOWS
-    using IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs = ::winrt::Windows::UI::Xaml::Controls::IRichEditBoxFeature_RichEditBoxCutCopyPasteAPIs;
-#endif
     using IRichTextBlock6 = ::winrt::Windows::UI::Xaml::Controls::IRichTextBlock6;
     using ITextBlock7 = ::winrt::Windows::UI::Xaml::Controls::ITextBlock7;
     using ITextBox8 = ::winrt::Windows::UI::Xaml::Controls::ITextBox8;
@@ -282,6 +269,7 @@ namespace winrt
     using ToolTip = winrt::Windows::UI::Xaml::Controls::ToolTip;
     using ToolTipService = winrt::Windows::UI::Xaml::Controls::ToolTipService;
     using VirtualizingStackPanel = winrt::Windows::UI::Xaml::Controls::VirtualizingStackPanel;
+    using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
@@ -303,6 +291,7 @@ namespace winrt
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
+    using ThemeShadow = winrt::Windows::UI::Xaml::Media::ThemeShadow;
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
@@ -321,9 +310,7 @@ namespace winrt
     using FlyoutShowOptions = winrt::Windows::UI::Xaml::Controls::Primitives::FlyoutShowOptions;
     using IFlyoutBase3 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase3;
     using IFlyoutBase5 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase5;
-#ifdef USE_INSIDER_SDK
     using IFlyoutBase6 = winrt::Windows::UI::Xaml::Controls::Primitives::IFlyoutBase6;
-#endif
     using ILayoutInformationStatics = winrt::Windows::UI::Xaml::Controls::Primitives::ILayoutInformationStatics;
     using IListViewItemPresenterFactory = winrt::Windows::UI::Xaml::Controls::Primitives::IListViewItemPresenterFactory;
     using IScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::IScrollEventArgs;
@@ -331,7 +318,10 @@ namespace winrt
     using ListViewItemPresenter = winrt::Windows::UI::Xaml::Controls::Primitives::ListViewItemPresenter;
     using OrientedVirtualizingPanel = winrt::Windows::UI::Xaml::Controls::Primitives::OrientedVirtualizingPanel;
     using Popup = winrt::Windows::UI::Xaml::Controls::Primitives::Popup;
+    using IPopup3 = winrt::Windows::UI::Xaml::Controls::Primitives::IPopup3;
+    using RangeBase = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBase;
     using RangeBaseValueChangedEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs;
+    using RepeatButton = winrt::Windows::UI::Xaml::Controls::Primitives::RepeatButton;
     using ScrollBar = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollBar;
     using ScrollEventArgs = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventArgs;
     using ScrollEventType = winrt::Windows::UI::Xaml::Controls::Primitives::ScrollEventType;
@@ -352,6 +342,7 @@ namespace winrt
     using ButtonAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ButtonAutomationPeer;
     using FrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::FrameworkElementAutomationPeer;
     using IAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer;
+    using IAutomationPeer7 = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeer7;
     using IAutomationPeerOverrides = winrt::Windows::UI::Xaml::Automation::Peers::IAutomationPeerOverrides;
     using IFrameworkElementAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeer;
     using IFrameworkElementAutomationPeerFactory = winrt::Windows::UI::Xaml::Automation::Peers::IFrameworkElementAutomationPeerFactory;
@@ -364,6 +355,7 @@ namespace winrt
     using ItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemAutomationPeer;
     using ListViewItemAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ListViewItemAutomationPeer;
     using PatternInterface = winrt::Windows::UI::Xaml::Automation::Peers::PatternInterface;
+    using ItemsControlAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::ItemsControlAutomationPeer;
     using SelectorAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SelectorAutomationPeer;
     using SliderAutomationPeer = winrt::Windows::UI::Xaml::Automation::Peers::SliderAutomationPeer;
 
@@ -372,11 +364,7 @@ namespace winrt
     using IElementFactoryRecycleArgs = winrt::Windows::UI::Xaml::IElementFactoryRecycleArgs;
     
 
-#ifdef BUILD_WINDOWS
-    using ElementFactoryGetArgs = winrt::Windows::UI::Xaml::ElementFactoryGetArgs;
-    using ElementFactoryRecycleArgs = winrt::Windows::UI::Xaml::ElementFactoryRecycleArgs;
-    using IElementFactory = winrt::Windows::UI::Xaml::IElementFactory;
-#else
+#ifdef REPEATER_INCLUDED
     using ElementFactoryGetArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs;
     using IElementFactory = winrt::IInspectable;

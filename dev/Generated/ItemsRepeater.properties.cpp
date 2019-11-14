@@ -35,7 +35,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ElementAnimator>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnAnimatorPropertyChanged));
     }
     if (!s_BackgroundProperty)
     {
@@ -56,8 +56,8 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
+                winrt::PropertyChangedCallback(&OnHorizontalCacheLengthPropertyChanged));
     }
     if (!s_ItemsSourceProperty)
     {
@@ -68,7 +68,7 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnItemsSourcePropertyChanged));
     }
     if (!s_ItemTemplateProperty)
     {
@@ -79,18 +79,18 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnItemTemplatePropertyChanged));
     }
     if (!s_LayoutProperty)
     {
         s_LayoutProperty =
             InitializeDependencyProperty(
                 L"Layout",
-                winrt::name_of<winrt::VirtualizingLayout>(),
+                winrt::name_of<winrt::Layout>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<winrt::VirtualizingLayout>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::Layout>::BoxValueIfNecessary(winrt::StackLayout()),
+                winrt::PropertyChangedCallback(&OnLayoutPropertyChanged));
     }
     if (!s_VerticalCacheLengthProperty)
     {
@@ -100,8 +100,8 @@ void ItemsRepeaterProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ItemsRepeater>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(2.0),
+                winrt::PropertyChangedCallback(&OnVerticalCacheLengthPropertyChanged));
     }
 }
 
@@ -114,6 +114,54 @@ void ItemsRepeaterProperties::ClearProperties()
     s_ItemTemplateProperty = nullptr;
     s_LayoutProperty = nullptr;
     s_VerticalCacheLengthProperty = nullptr;
+}
+
+void ItemsRepeaterProperties::OnAnimatorPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
+}
+
+void ItemsRepeaterProperties::OnHorizontalCacheLengthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
+}
+
+void ItemsRepeaterProperties::OnItemsSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
+}
+
+void ItemsRepeaterProperties::OnItemTemplatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
+}
+
+void ItemsRepeaterProperties::OnLayoutPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
+}
+
+void ItemsRepeaterProperties::OnVerticalCacheLengthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ItemsRepeater>();
+    winrt::get_self<ItemsRepeater>(owner)->OnPropertyChanged(args);
 }
 
 void ItemsRepeaterProperties::Animator(winrt::ElementAnimator const& value)
@@ -166,14 +214,14 @@ winrt::IInspectable ItemsRepeaterProperties::ItemTemplate()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_ItemTemplateProperty));
 }
 
-void ItemsRepeaterProperties::Layout(winrt::VirtualizingLayout const& value)
+void ItemsRepeaterProperties::Layout(winrt::Layout const& value)
 {
-    static_cast<ItemsRepeater*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::VirtualizingLayout>::BoxValueIfNecessary(value));
+    static_cast<ItemsRepeater*>(this)->SetValue(s_LayoutProperty, ValueHelper<winrt::Layout>::BoxValueIfNecessary(value));
 }
 
-winrt::VirtualizingLayout ItemsRepeaterProperties::Layout()
+winrt::Layout ItemsRepeaterProperties::Layout()
 {
-    return ValueHelper<winrt::VirtualizingLayout>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_LayoutProperty));
+    return ValueHelper<winrt::Layout>::CastOrUnbox(static_cast<ItemsRepeater*>(this)->GetValue(s_LayoutProperty));
 }
 
 void ItemsRepeaterProperties::VerticalCacheLength(double value)

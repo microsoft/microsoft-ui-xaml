@@ -4,11 +4,12 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "Scroller.h"
 #include "DoubleUtil.h"
 #include "ScrollerTestHooks.h"
 
-// Used when Scroller.IsAnchoredAtHorizontalExtent or Scroller.IsAnchoredAtVerticalExtent is True to determine whether the Content is scrolled to an edge.
+// Used when Scroller.HorizontalAnchorRatio or Scroller.VerticalAnchorRatio is 0.0 or 1.0 to determine whether the Content is scrolled to an edge.
 // It is declared at an edge if it's within 1/10th of a pixel.
 const double c_edgeDetectionTolerance = 0.1;
 
@@ -62,14 +63,13 @@ void Scroller::RaiseAnchorRequested()
 }
 
 // Computes the type of anchoring to perform, if any, based on Scroller.HorizontalAnchorRatio, Scroller.VerticalAnchorRatio, 
-// Scroller.IsAnchoredAtHorizontalExtent, Scroller.IsAnchoredAtVerticalExtent, the current offsets, zoomFactor, viewport size, content size and state.
+// the current offsets, zoomFactor, viewport size, content size and state.
 // When all 4 returned booleans are False, no element anchoring is performed, no far edge anchoring is performed. There may still be anchoring at near edges.
 void Scroller::IsAnchoring(
     _Out_ bool* isAnchoringElementHorizontally,
     _Out_ bool* isAnchoringElementVertically,
     _Out_opt_ bool* isAnchoringFarEdgeHorizontally,
     _Out_opt_ bool* isAnchoringFarEdgeVertically)
-
 {
     *isAnchoringElementHorizontally = false;
     *isAnchoringElementVertically = false;
@@ -97,23 +97,23 @@ void Scroller::IsAnchoring(
     const double horizontalAnchorRatio = HorizontalAnchorRatio();
     const double verticalAnchorRatio = VerticalAnchorRatio();
 
-    // For edge anchoring, the near edge is considered when HorizontalAnchorRatio or VerticalAnchorRatio is less than 0.5. 
-    // When the property is greater than or equal to 0.5, the far edge is considered.
+    // For edge anchoring, the near edge is considered when HorizontalAnchorRatio or VerticalAnchorRatio is 0.0. 
+    // When the property is 1.0, the far edge is considered.
     if (!isnan(horizontalAnchorRatio))
     {
         MUX_ASSERT(horizontalAnchorRatio >= 0.0);
         MUX_ASSERT(horizontalAnchorRatio <= 1.0);
 
-        if (IsAnchoredAtHorizontalExtent())
+        if (horizontalAnchorRatio == 0.0 || horizontalAnchorRatio == 1.0)
         {
-            if (horizontalAnchorRatio >= 0.5 && m_zoomedHorizontalOffset + m_viewportWidth - m_unzoomedExtentWidth * m_zoomFactor > -c_edgeDetectionTolerance)
+            if (horizontalAnchorRatio == 1.0 && m_zoomedHorizontalOffset + m_viewportWidth - m_unzoomedExtentWidth * m_zoomFactor > -c_edgeDetectionTolerance)
             {
                 if (isAnchoringFarEdgeHorizontally)
                 {
                     *isAnchoringFarEdgeHorizontally = true;
                 }
             }
-            else if (!(horizontalAnchorRatio < 0.5 && m_zoomedHorizontalOffset < c_edgeDetectionTolerance))
+            else if (!(horizontalAnchorRatio == 0.0 && m_zoomedHorizontalOffset < c_edgeDetectionTolerance))
             {
                 *isAnchoringElementHorizontally = true;
             }
@@ -129,16 +129,16 @@ void Scroller::IsAnchoring(
         MUX_ASSERT(verticalAnchorRatio >= 0.0);
         MUX_ASSERT(verticalAnchorRatio <= 1.0);
 
-        if (IsAnchoredAtVerticalExtent())
+        if (verticalAnchorRatio == 0.0 || verticalAnchorRatio == 1.0)
         {
-            if (verticalAnchorRatio >= 0.5 && m_zoomedVerticalOffset + m_viewportHeight - m_unzoomedExtentHeight * m_zoomFactor > -c_edgeDetectionTolerance)
+            if (verticalAnchorRatio == 1.0 && m_zoomedVerticalOffset + m_viewportHeight - m_unzoomedExtentHeight * m_zoomFactor > -c_edgeDetectionTolerance)
             {
                 if (isAnchoringFarEdgeVertically)
                 {
                     *isAnchoringFarEdgeVertically = true;
                 }
             }
-            else if (!(verticalAnchorRatio < 0.5 && m_zoomedVerticalOffset < c_edgeDetectionTolerance))
+            else if (!(verticalAnchorRatio == 0.0 && m_zoomedVerticalOffset < c_edgeDetectionTolerance))
             {
                 *isAnchoringElementVertically = true;
             }

@@ -25,9 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -53,6 +51,9 @@ namespace MUXControlsTestApp
 
             // Instantiate this very early to exercise MaterialHelper's ability to be instantiated before XAML has a dispatcher.
             MaterialHelperTestApi.IgnoreAreEffectsFast = true;
+
+            // OneCore has no splash screen, so we'll ignore the splash-screen requirement there.
+            _isSplashScreenDismissed = PlatformConfiguration.IsDevice(DeviceType.OneCore);
         }
 
         public Frame RootFrame
@@ -122,24 +123,24 @@ namespace MUXControlsTestApp
             }
             set
             {
+#if !INNERLOOP_BUILD // The xaml files below need to be factored better into appropriate feature area projects - Tracked by Issue: 1044 
                 if (value != DisableLongAnimations)
                 {
                     if (value)
                     {
                         AppendResourceToMergedDictionaries("DisableAnimationsStyles.xaml", StyleOverridesPlaceholder);
 
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                         if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                         {
                             AppendResourceToMergedDictionaries("DisableAnimationsStylesOutsideStore_rs2.xaml", StyleOverridesPlaceholder);
                         }
-#endif
                     }
                     else
                     {
                         StyleOverridesPlaceholder.MergedDictionaries.Clear();
                     }
                 }
+#endif
             }
         }
 
@@ -193,10 +194,9 @@ namespace MUXControlsTestApp
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             _isRootCreated = false;
-#if BUILD_WINDOWS
-            AppendResourceToMergedDictionaries("DEPControls.xaml");
-#endif
+#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
 
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;
@@ -319,11 +319,7 @@ namespace MUXControlsTestApp
         {
             ResourceDictionary resourceDictionary = new ResourceDictionary();
             Application.LoadComponent(resourceDictionary, new Uri(
-#if BUILD_WINDOWS
-                "ms-appx:///"
-#else
                 "ms-appx:///Themes/"
-#endif
                 + resource), ComponentResourceLocation.Nested);
             (targetDictionary ?? Application.Current.Resources).MergedDictionaries.Add(resourceDictionary);
         }

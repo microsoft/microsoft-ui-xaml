@@ -17,7 +17,7 @@ enum SelectionState
 // a nested scenario. This would map to one ItemsSourceView/Collection. This node reacts
 // to collection changes and keeps the selected indices up to date.
 // This can either be a leaf node or a non leaf node.
-class SelectionNode final
+class SelectionNode final: public std::enable_shared_from_this<SelectionNode>
 {
 public:
     SelectionNode(SelectionModel* manager, SelectionNode* parent);
@@ -48,6 +48,7 @@ public:
     bool SelectRange(const IndexRange& range, bool select);
     SelectionState EvaluateIsSelectedBasedOnChildrenNodes();
     static winrt::IReference<bool> ConvertToNullableBool(SelectionState isSelected);
+    winrt::IndexPath IndexPath();
 
 private:
     void HookupCollectionChangedHandler();
@@ -77,7 +78,7 @@ private:
     
     tracker_ref<winrt::IInspectable> m_source;
     tracker_ref<winrt::ItemsSourceView> m_dataSource;
-    winrt::event_token m_dataSourceChanged{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceViewChanged{};
 
     int m_selectedCount{ 0 };
     std::vector<int> m_selectedIndicesCached;

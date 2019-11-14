@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TREEVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -24,6 +25,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewListAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItem.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemDataAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TreeViewList.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ViewModel.h" />
@@ -43,37 +45,27 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewListAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItem.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemDataAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewItemInvokedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)TreeViewList.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ViewModel.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)TreeView.idl" />
-    <None Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TreeView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem_rs1.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TreeViewItem.xaml">
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources.xaml">
       <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs2_themeresources.xaml">
-      <Version>RS2</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs5_themeresources.xaml">
-      <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>

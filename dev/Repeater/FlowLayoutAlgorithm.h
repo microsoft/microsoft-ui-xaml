@@ -39,14 +39,16 @@ public:
         bool isWrapping,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const ScrollOrientation& orientation,
         const wstring_view& layoutId);
     winrt::Size Arrange(
         const winrt::Size& finalSize,
         const winrt::VirtualizingLayoutContext& context,
+        bool isWrapping,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
         const wstring_view& layoutId);
-    void OnDataSourceChanged(
+    void OnItemsSourceChanged(
         const winrt::IInspectable& source,
         winrt::NotifyCollectionChangedEventArgs const& args,
         const winrt::IVirtualizingLayoutContext& context);
@@ -68,7 +70,7 @@ private:
         Backward
     };
 
-    // Methods  
+    // Methods
 #pragma region Measure related private methods
     int GetAnchorIndex(
         const winrt::Size& availableSize,
@@ -81,6 +83,7 @@ private:
         const winrt::Size& availableSize,
         double minItemSpacing,
         double lineSpacing,
+        unsigned int maxItemsPerLine,
         const wstring_view& layoutId);
     void MakeAnchor(
         const winrt::VirtualizingLayoutContext& context,
@@ -90,7 +93,7 @@ private:
     bool ShouldContinueFillingUpSpace(
         int index,
         GenerateDirection direction);
-    winrt::Rect EstimateExtent(const winrt::Size& availableSize);
+    winrt::Rect EstimateExtent(const winrt::Size& availableSize, const wstring_view& layoutId);
     void RaiseLineArranged();
 #pragma endregion
 
@@ -98,13 +101,17 @@ private:
     void ArrangeVirtualizingLayout(
         const winrt::Size& finalSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
         const wstring_view& layoutId);
     void PerformLineAlignment(
         int lineStartIndex,
         int countInLine,
         float spaceAtLineStart,
         float spaceAtLineEnd,
+        float lineSize,
         FlowLayoutAlgorithm::LineAlignment lineAlignment,
+        bool isWrapping,
+        const winrt::Size& finalSize,
         const wstring_view& layoutId);
 #pragma endregion
 
@@ -126,4 +133,12 @@ private:
     winrt::Rect m_lastExtent{};
     int m_firstRealizedDataIndexInsideRealizationWindow{ -1 };
     int m_lastRealizedDataIndexInsideRealizationWindow{ -1 };
+
+    // If the scroll orientation is the same as the folow orientation
+    // we will only have one line since we will never wrap. In that case
+    // we do not want to align the line. We could potentially switch the
+    // meaning of line alignment in this case, but I'll hold off on that
+    // feature until someone asks for it - This is not a common scenario
+    // anyway.
+    bool m_scrollOrientationSameAsFlow{ false };
 };

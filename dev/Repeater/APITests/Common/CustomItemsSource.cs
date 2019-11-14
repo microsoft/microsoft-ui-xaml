@@ -8,10 +8,8 @@ using System.Collections.Specialized;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-#if !BUILD_WINDOWS
     using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
-#endif
 
     class CustomItemsSource : CustomItemsSourceView
     {
@@ -39,11 +37,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 
             if (reset)
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
             }
             else
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Add,
                     oldStartingIndex: -1,
                     oldItemsCount: -1,
@@ -61,11 +59,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 
             if (reset)
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
             }
             else
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Remove,
                     oldStartingIndex: index,
                     oldItemsCount: count,
@@ -88,11 +86,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 
             if (reset)
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
             }
             else
             {
-                OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                     NotifyCollectionChangedAction.Replace,
                     oldStartingIndex: index,
                     oldItemsCount: oldCount,
@@ -115,14 +113,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 
             // something changed, but i don't want to tell you the 
             // exact changes 
-            OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+            OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
         }
 
         public new void Clear()
         {
             Inner.Clear();
             // something changed, but i don't want to tell you the exact changes 
-            OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+            OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
         }
 
         protected override int GetSizeCore()

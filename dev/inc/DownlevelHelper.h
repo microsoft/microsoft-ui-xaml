@@ -18,7 +18,6 @@
 #define DOWNLEVEL_API_OPERATION(Operation) \
     Operation(ToDisplayName, winrt::ColorHelper, winrt::IColorHelperStatics, winrt::IColorHelperStatics2) \
     Operation(SetIsTranslationEnabled, winrt::ElementCompositionPreview, winrt::IElementCompositionPreviewStatics, winrt::IElementCompositionPreviewStatics2) \
-    Operation(TranslationFacade, winrt::UIElement, winrt::IUIElement, winrt::IUIElement9)
 
 
 #define ADD_DOWNLEVEL_API(ApiName, Type, BaseInterface, NewInterface) \
@@ -48,5 +47,5 @@ class DownlevelHelper
     DOWNLEVEL_API_OPERATION(ADD_DOWNLEVEL_API)
 
 private:
-    DownlevelHelper() {}
+    DownlevelHelper() = default;
 };

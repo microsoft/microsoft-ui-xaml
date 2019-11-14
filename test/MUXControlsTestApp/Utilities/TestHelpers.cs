@@ -126,7 +126,10 @@ namespace MUXControlsTestApp.Utilities
             {
                 FrameworkElement rootElement = MUXControlsTestApp.App.TestContentRoot as FrameworkElement;
 
-                if (rootElement != null)
+                if (rootElement != null
+                // In MUXControlsTestApp.App.TestContentRoot setter, we set the content to MainPage if value is null.
+                // Therefore UnloadedEvent will never be triggered if rootElement type is MainPage, no need to add event here.
+                && !(rootElement is MainPage))
                 {
                     rootElement.Unloaded += (sender, args) => unloadedEvent.Set();
                 }
@@ -185,14 +188,6 @@ namespace MUXControlsTestApp.Utilities
 
         public static string ProcessTestXamlForRepo(string xamlString)
         {
-#if BUILD_WINDOWS
-            // In the OS repo, MUX (or rather WUXC) types are under the
-            // Windows.UI.Xaml.* namespace rather than Microsoft.UI.Xaml.
-            // We need to convert one to the other to ensure that the XAML
-            // works correctly in both the MUX and the OS repos.
-            xamlString = xamlString.Replace("Microsoft.UI.Xaml", "Windows.UI.Xaml");
-#endif
-
             return xamlString;
         }
     }

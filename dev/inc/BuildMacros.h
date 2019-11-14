@@ -3,17 +3,10 @@
 
 #pragma once
 
-#ifdef BUILD_WINDOWS
-#define MUXCONTROLS_NAMESPACE Windows::UI::Xaml::Controls
-
-#define MUXCONTROLSROOT_NAMESPACE_STR L"Windows.UI.Xaml"
-#define MUXCONTROLSMEDIA_NAMESPACE_STR L"Windows.UI.Xaml.Media"
-#else
 #define MUXCONTROLS_NAMESPACE Microsoft::UI::Xaml::Controls
 
 #define MUXCONTROLSROOT_NAMESPACE_STR L"Microsoft.UI.Xaml"
 #define MUXCONTROLSMEDIA_NAMESPACE_STR L"Microsoft.UI.Xaml.Media"
-#endif
 
 // We have the same framework package name between Debug and Release because our customers (generally) don't want
 // to be running debug bits from MUX when their app is debug. VCLibs and .NETNative differ in this regard because
@@ -22,7 +15,7 @@
 #ifdef _DEBUG
 // NOTE: This could be "Microsoft.UI.Xaml.Debug" if we wanted to have Debug framework packages be distinct and
 // installed side-by-side on a machine.
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.1"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.3"
 #else
-#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.1"
+#define MUXCONTROLS_PACKAGE_NAME L"Microsoft.UI.Xaml.2.3"
 #endif

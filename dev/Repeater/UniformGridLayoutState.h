@@ -22,7 +22,7 @@ public:
     double EffectiveItemHeight() { return m_effectiveItemHeight; }
 
     // If it's realized then we shouldn't be caching it
-    void EnsureFirstElementOwnership();
+    void EnsureFirstElementOwnership(winrt::VirtualizingLayoutContext const& context);
 
     void EnsureElementSize(
         const winrt::Size availableSize,
@@ -32,7 +32,8 @@ public:
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,
-        double minColumnSpacing);
+        double minColumnSpacing,
+        unsigned int maxItemsPerLine);
     void ClearElementOnDataSourceChange(winrt::VirtualizingLayoutContext const& context, winrt::NotifyCollectionChangedEventArgs const& args);
 
 private:
@@ -40,19 +41,20 @@ private:
     double m_effectiveItemWidth{ 0.0 };
     double m_effectiveItemHeight{ 0.0 };
 
-    void SetSize(winrt::UIElement UIElement,
+    void SetSize(const winrt::UIElement& UIElement,
         const double itemWidth,
         const double itemHeight,
         const winrt::Size availableSize,
         const winrt::UniformGridLayoutItemsStretch& stretch,
         const winrt::Orientation& orientation,
         double minRowSpacing,
-        double minColumnSpacing);
+        double minColumnSpacing,
+        unsigned int maxItemsPerLine);
 
-    // We need to measure the element at index 0 to know what size to measure all other items. 
-    // If FlowlayoutAlgorithm has already realized element 0 then we can use that. 
+    // We need to measure the element at index 0 to know what size to measure all other items.
+    // If FlowlayoutAlgorithm has already realized element 0 then we can use that.
     // If it does not, then we need to do context.GetElement(0) at which point we have requested an element and are on point to clear it.
-    // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid. 
+    // If we are responsible for clearing element 0 we keep m_cachedFirstElement valid.
     // If we are not (because FlowLayoutAlgorithm is holding it for us) then we just null out this field and use the one from FlowLayoutAlgorithm.
     winrt::UIElement m_cachedFirstElement = nullptr;
 };

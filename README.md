@@ -1,28 +1,45 @@
 # Windows UI Library
 
+[![Follow WinUI on Twitter](https://img.shields.io/twitter/follow/windowsui.svg?label=Follow%20WinUI%20on%20Twitter&style=social)](https://twitter.com/intent/follow?screen_name=windowsui)
+
 The Windows UI Library (WinUI) provides official native Microsoft UI controls and features for Windows [UWP apps](https://docs.microsoft.com/windows/uwp/index).
 
 WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.com/windows/uwp/design/fluent-design-system/) experiences for Windows.
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
 
+## WinUI 3.0 Alpha (November 2019)
+
+As outlined in the [roadmap](docs/roadmap.md) we're currently working on WinUI 3.0, which will greatly expand the scope of WinUI to include the full native Windows UI platform.
+
+You can now [download an early build of WinUI 3.0 Alpha](https://docs.microsoft.com/uwp/toolkits/winui3/) to try out - we'd love your feedback!
+
+For more info see the [discussion issue #1531](https://github.com/microsoft/microsoft-ui-xaml/issues/1531).
+
 ## Using WinUI
 You can download and use WinUI packages in your app using the NuGet package manager: see the [Getting Started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started) page for more information.
 
 ### Packages
 
-| NuGet Package | Build Status | Latest Versions |
-| --- | --- | --- |
-| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) |
-| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) |
+| NuGet Package | Build Status | Latest Versions | Documentation |
+| --- | --- | --- | --- |
+| [Microsoft.UI.Xaml](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> Controls and Fluent Design for UWP apps | [![Build Status](https://dev.azure.com/ms/microsoft-ui-xaml/_apis/build/status/WinUI-Public-MUX-CI?branchName=master)](https://dev.azure.com/ms/microsoft-ui-xaml/_build/latest?definitionId=20?branchName=master) | [![latest stable version](https://img.shields.io/nuget/v/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml) <br /> [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml/absoluteLatest) | [2.2 release](https://docs.microsoft.com/uwp/toolkits/winui/release-notes/winui-2.2) |
+| [Microsoft.UI.Xaml.Core.Direct](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct) <br /> Low-level APIs for middleware components | | [![latest prerelease version](https://img.shields.io/nuget/vpre/Microsoft.UI.Xaml.Core.Direct.svg)](https://www.nuget.org/packages/Microsoft.UI.Xaml.Core.Direct/absoluteLatest) | [2.0 prerelease](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) |
 
 You can also build a WinUI package yourself from source. See [Contributing to the Windows UI Library](CONTRIBUTING.md) for more information on building and contributing to WinUI.
 
 ## Documentation
 
-WinUI usage documentation can be found here:
-
+**WinUI usage documentation**:  
 https://docs.microsoft.com/uwp/toolkits/winui
+
+**Release notes**:  
+https://docs.microsoft.com/uwp/toolkits/winui/release-notes/
+
+**Sample code**:  
+To view the WinUI controls in an interactive format, check out the Xaml Controls Gallery:
+* Get the XAML Controls Gallery app from the [Microsoft Store](https://www.microsoft.com/store/productId/9MSVH128X2ZT)
+* Get the source code on [GitHub](https://github.com/Microsoft/Xaml-Controls-Gallery)
 
 ## Contributing to WinUI
 The WinUI team welcomes feedback and contributions!
@@ -46,48 +63,18 @@ You don't need version checks or conditional XAML markup to use WinUI controls o
 
 ### Version support
 
-The Microsoft.UI.Xaml NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.17134.0 and TargetPlatformMinVersion &gt;= 10.0.14393.0 when building. 
+The Microsoft.UI.Xaml 2.2 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.15063.0 when building. 
 
 Your app's users can be on any of the following supported Windows versions:
+
 * Windows Insider Previews
-* October 2018 Update (17763)
-* April 2018 Update (17134)
-* Fall Creators Update (16299)
-* Creators Update (15063)
-* Anniversary Update (14393)
+* May 2019 Update (18362 aka "19H1")
+* October 2018 Update (17763 aka "Redstone 5")
+* April 2018 Update (17134 aka "Redstone 4")
+* Fall Creators Update (16299 aka "Redstone 3")
+* Creators Update (15063 aka "Redstone 2")
 
 Some features may have a reduced or slightly different user experience on older versions, particularly on builds before 15063. This should not impact overall usability.
-
-### Contents
-
-The **Microsoft.UI.Xaml** 2.0 stable package includes:
-
-* Fluent Design control styles for all XAML controls (from both WinUI and the standard Windows 10 SDK)
-* Fluent materials and styles including [Fluent Acrylic](https://docs.microsoft.com/windows/uwp/design/style/acrylic) and [Fluent Reveal](https://docs.microsoft.com/windows/uwp/design/style/reveal)
-* Many new and popular controls like 
-[ColorPicker](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.colorpicker),
-[MenuBar](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.menubar),
-[NavigationView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.navigationview),
-[ParallaxView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.parallaxview),
-[PersonPicture](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.personpicture),
-[RatingControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.ratingcontrol),
-[RefreshContainer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.refreshcontainer),
-[SplitButton](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.splitbutton),
-[SwipeControl](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.swipecontrol),
-and
-[TreeView](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.treeview)
-
-Prerelease Microsoft.UI.Xaml packages also include previews of features and controls that we are still working on, like:
-* [LayoutPanel](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.layoutpanel),
-[Repeater](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.repeater),
-[Scroller](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scroller),
-[ScrollViewer](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollviewer),
-and
-[ScrollBar2](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.controls.scrollbar2)
-
-The **Microsoft.UI.Xaml.Core.Direct** package includes:
-
-* [XamlDirect](https://docs.microsoft.com/uwp/api/microsoft.ui.xaml.core.direct) and related APIs to improve performance for middleware components
 
 ## Roadmap
 
@@ -95,6 +82,6 @@ For info on the WinUI release schedule and high level plans please see the [Wind
 
 ## Data/Telemetry
 
-This project collects usage data and sends it to Microsoft to help improve our products and services. Read Microsoft's [privacy statement to learn more](https://privacy.microsoft.com/privacystatement).
+This project collects usage data and sends it to Microsoft to help improve our products and services. See the [privacy statement](privacy.md) for more details.
 
 For more information on telemetry implementation see the [developer guide](docs/developer_guide.md#Telemetry).

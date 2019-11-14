@@ -7,6 +7,7 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
+#include "SharedHelpers.h"
 
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewItemAutomationPeer);
@@ -27,13 +28,7 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
     {
         if (auto lvi = Owner().try_as<winrt::NavigationViewItem>())
         {
-            if (auto content = lvi.Content())
-            {
-                if (auto stringableName = content.try_as<winrt::IStringable>())
-                {
-                    returnHString = stringableName.ToString();
-                }
-            }
+            returnHString = SharedHelpers::TryGetStringRepresentationFromObject(lvi.Content());
         }
     }
 
@@ -64,7 +59,12 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
-    
+
+    if (IsSettingsItem())
+    {
+        return 1;
+    }
+
     if (IsOnTopNavigation())
     {
         if (auto navigationView = GetParentNavigationView())
@@ -85,7 +85,12 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
     int32_t sizeOfSet = 0;
-    
+
+    if (IsSettingsItem())
+    {
+        return 1;
+    }
+
     if (IsOnTopNavigation())
     {
         if (auto navview = GetParentNavigationView())
@@ -147,6 +152,20 @@ int32_t NavigationViewItemAutomationPeer::GetNavigationViewItemCountInTopNav()
         count = winrt::get_self<NavigationView>(navigationView)->GetNavigationViewItemCountInTopNav();
     }
     return count;
+}
+
+bool NavigationViewItemAutomationPeer::IsSettingsItem()
+{
+    if (auto navView = GetParentNavigationView())
+    {
+        winrt::NavigationViewItem item = Owner().try_as<winrt::NavigationViewItem>();
+        auto settingsItem = navView.SettingsItem();
+        if (item && settingsItem && (item == settingsItem || item.Content() == settingsItem))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()

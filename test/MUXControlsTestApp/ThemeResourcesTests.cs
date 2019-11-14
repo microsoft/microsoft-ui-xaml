@@ -30,10 +30,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if (!BUILD_WINDOWS && !BUILD_LEAN_MUX_FOR_THE_STORE_APP)
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using PersonPicture = Microsoft.UI.Xaml.Controls.PersonPicture;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -42,7 +40,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     {
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
         public static void Setup(TestContext context) { }
 
         [TestMethod]
@@ -51,10 +48,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("IsolationLevel", "Method")]
         public void VerifyOverrides()
         {
-            #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             RatingControl ratingControl = null;
             PersonPicture personPicture = null;
-            #endif
             Slider slider = null;
             Grid root = null;
 
@@ -81,10 +76,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 StackPanel panel = new StackPanel { Orientation = Orientation.Vertical };
                 panel.Children.Add(slider = new Slider());
             
-                #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                 panel.Children.Add(ratingControl = new RatingControl() { Value = 2 });
                 panel.Children.Add(personPicture = new PersonPicture());
-                #endif
 
                 root.Children.Add(panel);
                 // Add an element over top to prevent stray mouse input from interfering.
@@ -103,7 +96,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                #if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
                 // 1) Verify that overriding WinUI defined brushes in App.Resources works.
                 Verify.AreEqual(Colors.Orange, ((SolidColorBrush)ratingControl.Foreground).Color,
                     "Verify RatingControlCaptionForeground override in Application.Resources gets picked up by WinUI control");
@@ -111,8 +103,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // 2) Verify that overriding a system color used by a WinUI control works.
                 Verify.AreEqual(Colors.Green, ((SolidColorBrush)personPicture.Foreground).Color,
                     "Verify PersonPictureForegroundThemeBrush (which uses SystemAltHighColor) overridden in Application.Resources gets picked up by WinUI control");
-                #endif
-                
+
                 // 3) Verify that overriding a system brush used by a system control works.
                 if (PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone1))
                 {
@@ -130,14 +121,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 MUXControlsTestApp.App.TestContentRoot = null;
             });
             IdleSynchronizer.TryWait();
-        }
-
-        // These files only apply to MUX, so there's no need to run these tests for WUXC.
-#if !BUILD_WINDOWS
-        //[TestMethod] TODO: Re-enable after fixing bug 17186090.
-        public void VerifyRS1DefaultStyleDictionariesWereMergedCorrectly()
-        {
-            VerifyDictionariesWereMergedCorrectly(GetRS1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/Generic.xaml");
         }
 
         [TestMethod]
@@ -183,12 +166,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 VerifyDictionariesWereMergedCorrectly(Get19H1DefaultStyleDictionaries(), "Microsoft.UI.Xaml/Themes/19h1_generic.xaml");
             }
-        }
-
-        [TestMethod]
-        public void VerifyRS1ThemeResourceDictionariesWereMergedCorrectly()
-        {
-            VerifyDictionariesWereMergedCorrectly(GetRS1ThemeResourceDictionaries(), "Microsoft.UI.Xaml/Themes/rs1_themeresources.xaml");
         }
 
         [TestMethod]
@@ -530,6 +507,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         #endregion
-#endif
     }
 }

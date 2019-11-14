@@ -55,7 +55,7 @@ void ItemsSourceView::CollectionChanged(winrt::event_token const& token)
 
 #pragma region IDataSourceProtected
 
-void ItemsSourceView::OnDataSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
+void ItemsSourceView::OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args)
 {
     m_cachedSize = GetSizeCore();
     m_collectionChangedEventSource(*this, args);

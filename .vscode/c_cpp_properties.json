@@ -1,0 +1,49 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "compilerPath": "",
+            "includePath": [
+                "${workspaceFolder}/dev/Collections",
+                "${workspaceFolder}/dev/Common",
+                "${workspaceFolder}/dev/dll",
+                "${workspaceFolder}/dev/inc",
+                "${workspaceFolder}/dev/TreeView",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Platform",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/winrt",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Automation/Peers",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Controls",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Controls/Primitives",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Media",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Microsoft/UI/Composition/Effects",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Microsoft/UI/Private/Controls",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/Microsoft/UI/Private/Media",
+                "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/CppWinRT/Component/XamlTypeInfo",
+                "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Enterprise\\VC\\Tools\\MSVC\\14.16.27023\\include",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\shared",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\um",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt",
+                "C:\\Program Files (x86)\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt",
+                "${workspaceFolder}/dev/Telemetry",
+                "${workspaceFolder}/dev/Repeater"
+            ],
+            "defines": [],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/dev",
+                    "${workspaceFolder}/idl",
+                    "${workspaceFolder}/test",
+                    "${workspaceFolder}/BuildOutput/Intermediates/Microsoft.UI.Xaml/obj/"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceFolder}/.vscode/"
+            },
+            "windowsSdkVersion": "10.0.18362.0",
+            "configurationProvider": "microsoft.vscode-nmake-tools",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}

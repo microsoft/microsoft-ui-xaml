@@ -4,12 +4,10 @@
 using System;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {

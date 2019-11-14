@@ -1,17 +1,15 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Automation;
-using System;
 using Windows.ApplicationModel.Core;
-using System.Linq;
 
-#if !BUILD_WINDOWS
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
@@ -23,9 +21,6 @@ using NavigationViewBackRequestedEventArgs = Microsoft.UI.Xaml.Controls.Navigati
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
-#endif
-
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace MUXControlsTestApp
 {
@@ -328,6 +323,16 @@ namespace MUXControlsTestApp
             TVItem.IsEnabled = false;
         }
 
+        private void IsTitleBarAutoPaddingEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
+        {
+            NavView.IsTitleBarAutoPaddingEnabled = true;
+        }
+
+        private void IsTitleBarAutoPaddingEnabledCheckbox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            NavView.IsTitleBarAutoPaddingEnabled = false;
+        }
+
         private void TitleBarCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             CoreApplicationViewTitleBar titleBar = CoreApplication.GetCurrentView().TitleBar;
@@ -440,7 +445,7 @@ namespace MUXControlsTestApp
 
         private void ChangePaneTitle_Click(object sender, RoutedEventArgs e)
         {
-            NavView.PaneTitle = (String.IsNullOrEmpty(NavView.PaneTitle) ? "NavView Test" : "");
+            NavView.PaneTitle = string.IsNullOrEmpty(NavView.PaneTitle) ? "NavView Test" : string.Empty;
         }
 
         private void CopyVolumeToolTipButton_Click(object sender, RoutedEventArgs e)
@@ -565,9 +570,24 @@ namespace MUXControlsTestApp
 
         private void ChangePaneHeader_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock text = new TextBlock();
-            text.Text = "Modified Pane Header";
-            NavView.PaneHeader = text;
+            if (NavView.PaneHeader == null)
+            {
+                TextBlock text = new TextBlock();
+                text.Text = "Modified Pane Header";
+                NavView.PaneHeader = text;
+            }
+            else if (NavView.PaneHeader is TextBlock)
+            {
+                TextBox text = new TextBox();
+                text.Text = "Large Pane Header";
+                text.IsReadOnly = true;
+                text.FontSize = 26;
+                NavView.PaneHeader = text;
+            }
+            else
+            {
+                NavView.PaneHeader = null;
+            }
 
             FindAndGiveAutomationNameToVisualChild("PaneHeaderOnTopPane");
             FindAndGiveAutomationNameToVisualChild("PaneHeaderContentBorder");

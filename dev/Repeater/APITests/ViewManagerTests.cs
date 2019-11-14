@@ -26,7 +26,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
@@ -35,8 +34,7 @@ using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutC
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-#endif
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -87,7 +85,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue #1018
         public void CanPinFocusedElements()
         {
             // Setup a grouped repeater scenario with two groups each containing two items.
@@ -188,7 +186,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void CanReuseElementsDuringUniqueIdReset()
         {
             var data = new WinRTCollection(Enumerable.Range(0, 2).Select(i => string.Format("Item #{0}", i)));
@@ -346,8 +344,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater.UpdateLayout();
                 Verify.AreEqual(1, clearedIndices.Count);
                 Verify.AreEqual(0, clearedIndices[0]);
-                Verify.AreEqual(1, preparedIndices.Count);
-                Verify.AreEqual(2, preparedIndices[0]);
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Verify.AreEqual(0, preparedIndices.Count);
+                }
+                else
+                {
+                    Verify.AreEqual(1, preparedIndices.Count);
+                    Verify.AreEqual(2, preparedIndices[0]);
+                }
+
                 Verify.AreEqual(2, changedIndices.Count);
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(1, 0)));
                 Verify.IsTrue(changedIndices.Contains(new KeyValuePair<int, int>(2, 1)));
@@ -579,7 +586,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void ValidateFocusMoveOnElementCleared()
         {
             ItemsRepeater repeater = null;
@@ -623,7 +630,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 });
         }
 
-        [TestMethod]
+        // [TestMethod] Issue 1018
         public void ValidateFocusMoveOnElementClearedWithUniqueIds()
         {
             ItemsRepeater repeater = null;
@@ -701,11 +708,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             var repeater = new ItemsRepeater
             {
                 ItemsSource = dataSource,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory
-#else
-                ItemTemplate = (Microsoft.UI.Xaml.Controls.IElementFactoryShim)elementFactory
-#endif
+                ItemTemplate = elementFactory
             };
             repeater.Layout = CreateLayout(repeater);
             return repeater;
@@ -762,11 +765,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 repeater = new ItemsRepeater()
                 {
                     ItemsSource = dataSource,
-#if BUILD_WINDOWS
-                    ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                     ItemTemplate = elementFactory,
-#endif
                     Layout = layout,
                     HorizontalCacheLength = 0.0,
                     VerticalCacheLength = 0.0
@@ -777,11 +776,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Content = repeater
                 };
 
-                Content = new ScrollAnchorProvider()
+                Content = new ItemsRepeaterScrollHost()
                 {
                     Width = 200,
                     Height = 200,
-                    Content = sv
+                    ScrollViewer = sv
                 };
             });
 

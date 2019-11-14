@@ -41,19 +41,27 @@ void ItemTemplateWrapper::TemplateSelector(winrt::DataTemplateSelector const& va
 winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs const& args)
 {
     auto selectedTemplate = m_dataTemplate ? m_dataTemplate : m_dataTemplateSelector.SelectTemplate(args.Data());
-    auto recyclePool = winrt::RecyclePool::GetPoolInstance(selectedTemplate);
+    auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     winrt::UIElement element = nullptr;
 
     if (recyclePool)
     {
         // try to get an element from the recycle pool.
-        element = safe_cast<winrt::FrameworkElement>(recyclePool.TryGetElement(L"" /* key */, args.Parent()));
+        element = recyclePool.TryGetElement(L"" /* key */, args.Parent().as<winrt::FrameworkElement>());
     }
 
     if (!element)
     {
         // no element was found in recycle pool, create a new element
         element = selectedTemplate.LoadContent().as<winrt::FrameworkElement>();
+
+        // Template returned null, so insert empty element to render nothing
+        if (!element) {
+            auto rectangle = winrt::Rectangle();
+            rectangle.Width(0);
+            rectangle.Height(0);
+            element = rectangle;
+        }
 
         // Associate template with element
         element.SetValue(RecyclePool::GetOriginTemplateProperty(), selectedTemplate);
@@ -68,12 +76,12 @@ void ItemTemplateWrapper::RecycleElement(winrt::ElementFactoryRecycleArgs const&
     winrt::DataTemplate selectedTemplate = m_dataTemplate? 
         m_dataTemplate:
         element.GetValue(RecyclePool::GetOriginTemplateProperty()).as<winrt::DataTemplate>();
-    auto recyclePool = CachedVisualTreeHelpers::GetPoolInstance(selectedTemplate);
+    auto recyclePool = RecyclePool::GetPoolInstance(selectedTemplate);
     if (!recyclePool)
     {
         // No Recycle pool in the template, create one.
         recyclePool = winrt::make<RecyclePool>();
-        CachedVisualTreeHelpers::SetPoolInstance(selectedTemplate, recyclePool);
+        RecyclePool::SetPoolInstance(selectedTemplate, recyclePool);
     }
 
     recyclePool.PutElement(args.Element(), L"" /* key */, args.Parent());

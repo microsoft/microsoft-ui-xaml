@@ -10,6 +10,7 @@ CppWinRTActivatableClassWithDPFactory(UniformGridLayout)
 
 GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsJustificationProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsStretchProperty{ nullptr };
+GlobalDependencyProperty UniformGridLayoutProperties::s_MaximumRowsOrColumnsProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinColumnSpacingProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinItemHeightProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_MinItemWidthProperty{ nullptr };
@@ -31,8 +32,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::UniformGridLayoutItemsJustification>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<winrt::UniformGridLayoutItemsJustification>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::UniformGridLayoutItemsJustification>::BoxValueIfNecessary(winrt::UniformGridLayoutItemsJustification::Start),
+                winrt::PropertyChangedCallback(&OnItemsJustificationPropertyChanged));
     }
     if (!s_ItemsStretchProperty)
     {
@@ -42,8 +43,19 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::UniformGridLayoutItemsStretch>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<winrt::UniformGridLayoutItemsStretch>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::UniformGridLayoutItemsStretch>::BoxValueIfNecessary(winrt::UniformGridLayoutItemsStretch::None),
+                winrt::PropertyChangedCallback(&OnItemsStretchPropertyChanged));
+    }
+    if (!s_MaximumRowsOrColumnsProperty)
+    {
+        s_MaximumRowsOrColumnsProperty =
+            InitializeDependencyProperty(
+                L"MaximumRowsOrColumns",
+                winrt::name_of<int>(),
+                winrt::name_of<winrt::UniformGridLayout>(),
+                false /* isAttached */,
+                ValueHelper<int>::BoxValueIfNecessary(-1),
+                winrt::PropertyChangedCallback(&OnMaximumRowsOrColumnsPropertyChanged));
     }
     if (!s_MinColumnSpacingProperty)
     {
@@ -53,8 +65,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnMinColumnSpacingPropertyChanged));
     }
     if (!s_MinItemHeightProperty)
     {
@@ -64,8 +76,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnMinItemHeightPropertyChanged));
     }
     if (!s_MinItemWidthProperty)
     {
@@ -75,8 +87,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnMinItemWidthPropertyChanged));
     }
     if (!s_MinRowSpacingProperty)
     {
@@ -86,8 +98,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<double>::BoxValueIfNecessary(0.0),
+                winrt::PropertyChangedCallback(&OnMinRowSpacingPropertyChanged));
     }
     if (!s_OrientationProperty)
     {
@@ -97,8 +109,8 @@ void UniformGridLayoutProperties::EnsureProperties()
                 winrt::name_of<winrt::Orientation>(),
                 winrt::name_of<winrt::UniformGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<winrt::Orientation>::BoxedDefaultValue(),
-                nullptr);
+                ValueHelper<winrt::Orientation>::BoxValueIfNecessary(winrt::Orientation::Horizontal),
+                winrt::PropertyChangedCallback(&OnOrientationPropertyChanged));
     }
 }
 
@@ -106,11 +118,76 @@ void UniformGridLayoutProperties::ClearProperties()
 {
     s_ItemsJustificationProperty = nullptr;
     s_ItemsStretchProperty = nullptr;
+    s_MaximumRowsOrColumnsProperty = nullptr;
     s_MinColumnSpacingProperty = nullptr;
     s_MinItemHeightProperty = nullptr;
     s_MinItemWidthProperty = nullptr;
     s_MinRowSpacingProperty = nullptr;
     s_OrientationProperty = nullptr;
+}
+
+void UniformGridLayoutProperties::OnItemsJustificationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnItemsStretchPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnMaximumRowsOrColumnsPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnMinColumnSpacingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnMinItemHeightPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnMinItemWidthPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnMinRowSpacingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
+}
+
+void UniformGridLayoutProperties::OnOrientationPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::UniformGridLayout>();
+    winrt::get_self<UniformGridLayout>(owner)->OnPropertyChanged(args);
 }
 
 void UniformGridLayoutProperties::ItemsJustification(winrt::UniformGridLayoutItemsJustification const& value)
@@ -131,6 +208,16 @@ void UniformGridLayoutProperties::ItemsStretch(winrt::UniformGridLayoutItemsStre
 winrt::UniformGridLayoutItemsStretch UniformGridLayoutProperties::ItemsStretch()
 {
     return ValueHelper<winrt::UniformGridLayoutItemsStretch>::CastOrUnbox(static_cast<UniformGridLayout*>(this)->GetValue(s_ItemsStretchProperty));
+}
+
+void UniformGridLayoutProperties::MaximumRowsOrColumns(int value)
+{
+    static_cast<UniformGridLayout*>(this)->SetValue(s_MaximumRowsOrColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+}
+
+int UniformGridLayoutProperties::MaximumRowsOrColumns()
+{
+    return ValueHelper<int>::CastOrUnbox(static_cast<UniformGridLayout*>(this)->GetValue(s_MaximumRowsOrColumnsProperty));
 }
 
 void UniformGridLayoutProperties::MinColumnSpacing(double value)

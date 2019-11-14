@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>DBEC0BE4-BA3F-41C9-A303-AF98201BE6DC</SharedGUID>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>AnimatedVisualPlayer_TestUI</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AnimatedVisualPlayerPage.xaml.cs">
+      <DependentUpon>AnimatedVisualPlayerPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)LottieLogo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\inc\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nullsource.cs" />
+  </ItemGroup>
+</Project>

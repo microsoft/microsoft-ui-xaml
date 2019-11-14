@@ -21,15 +21,13 @@ using Windows.UI.Xaml.Hosting;
 using System.Numerics;
 using Windows.UI;
 using Windows.Foundation.Metadata;
-
-#if !BUILD_WINDOWS
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using RatingItemImageInfo = Microsoft.UI.Xaml.Controls.RatingItemImageInfo;
 using RatingItemFontInfo = Microsoft.UI.Xaml.Controls.RatingItemFontInfo;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name= "RatingControl", Icon= "RatingControl.png")]
     public sealed partial class RatingControlPage : TestPage
     {
         UIElement _secondTextBlockUI;

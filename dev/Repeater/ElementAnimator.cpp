@@ -211,13 +211,13 @@ void ElementAnimator::QueueElementForAnimation(ElementInfo elementInfo)
     m_animatingElements.push_back(std::move(elementInfo));
     if (m_animatingElements.size() == 1)
     {
-        m_rendering = winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering({ this, &ElementAnimator::OnRendering });
+        m_rendering = winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(winrt::auto_revoke, { this, &ElementAnimator::OnRendering });
     }
 }
 
 void ElementAnimator::OnRendering(winrt::IInspectable const& /*sender*/, winrt::IInspectable const& /*args*/)
 {
-    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering(m_rendering);
+    m_rendering.revoke();
 
     auto resetState = gsl::finally([this]()
     {

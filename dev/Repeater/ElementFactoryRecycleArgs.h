@@ -9,7 +9,6 @@ class ElementFactoryRecycleArgs :
     public ReferenceTracker<ElementFactoryRecycleArgs, winrt::implementation::ElementFactoryRecycleArgsT, winrt::composable, winrt::composing>
 {
 public:
-    ElementFactoryRecycleArgs() {}
 
 #pragma region IElementFactoryRecycleArgs
     winrt::UIElement Element();

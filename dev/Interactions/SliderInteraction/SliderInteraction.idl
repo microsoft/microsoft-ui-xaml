@@ -1,7 +1,10 @@
+﻿namespace MU_PRIVATE_CONTROLS_NAMESPACE
+{
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass SliderInteraction : 
-#ifdef USE_INSIDER_SDK
+#ifdef USE_INTERNAL_SDK
 Windows.UI.Xaml.InteractionBase,
 #else
 Windows.UI.Xaml.DependencyObject,
@@ -16,4 +19,6 @@ Windows.UI.Xaml.Data.INotifyPropertyChanged
     Double Position { get; };
     Double SmallChange { get; set; };
     Double LargeChange { get; set; };
+}
+
 }

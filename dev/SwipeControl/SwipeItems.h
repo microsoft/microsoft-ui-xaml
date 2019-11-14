@@ -12,7 +12,6 @@ class SwipeItems :
 {
 public:
     SwipeItems();
-    virtual ~SwipeItems();
 
 #pragma region IVector
     winrt::SwipeItem GetAt(uint32_t index);

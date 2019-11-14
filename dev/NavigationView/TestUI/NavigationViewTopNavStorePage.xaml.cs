@@ -12,7 +12,6 @@ using System.Text;
 using Common;
 using Windows.UI.Xaml.Automation;
 
-#if !BUILD_WINDOWS
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
@@ -20,7 +19,6 @@ using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewIte
 using NavigationViewItemBase = Microsoft.UI.Xaml.Controls.NavigationViewItemBase;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -54,6 +52,8 @@ namespace MUXControlsTestApp
 
             NavView.MenuItemsSource = m_menuItems;
             NavView.SelectedItem = m_menuItems[currentSelectedItem];
+
+            NavViewIsTitleBarAutoPaddingEnabled.Text = NavView.IsTitleBarAutoPaddingEnabled.ToString();
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -93,6 +93,12 @@ namespace MUXControlsTestApp
             newMenuItems.AddLast("IIterator/Enumerable/LinkedList Item 3");
 
             NavView.MenuItemsSource = newMenuItems;
+        }
+
+        private void FlipIsTitleBarAutoPaddingEnabledButton_Click(object sender, RoutedEventArgs e)
+        {
+            NavView.IsTitleBarAutoPaddingEnabled = !NavView.IsTitleBarAutoPaddingEnabled;
+            NavViewIsTitleBarAutoPaddingEnabled.Text = NavView.IsTitleBarAutoPaddingEnabled.ToString();
         }
 
         private void FlipOrientation_Click(object sender, RoutedEventArgs e)

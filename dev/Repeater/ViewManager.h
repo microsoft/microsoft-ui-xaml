@@ -24,7 +24,7 @@ public:
     void PrunePinnedElements();
     void UpdatePin(const winrt::UIElement& element, bool addPin);
 
-    void OnDataSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
+    void OnItemsSourceChanged(const winrt::IInspectable& source, const winrt::NotifyCollectionChangedEventArgs& args);
     void OnLayoutChanging();
     void OnOwnerArranged();
 
@@ -88,19 +88,14 @@ private:
     bool m_isDataSourceStableResetPending{};
 
     // Event tokens
-    winrt::event_token m_gotFocus{};
-    winrt::event_token m_lostFocus{};
+    winrt::UIElement::GotFocus_revoker m_gotFocus{};
+    winrt::UIElement::LostFocus_revoker m_lostFocus{};
 
     ::Phaser m_phaser;
 
     // Cached generate/clear contexts to avoid cost of creation every time.
-#ifdef BUILD_WINDOWS
-    tracker_ref<winrt::Windows::UI::Xaml::ElementFactoryGetArgs> m_ElementFactoryGetArgs;
-    tracker_ref<winrt::Windows::UI::Xaml::ElementFactoryRecycleArgs> m_ElementFactoryRecycleArgs;
-#else
     tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs> m_ElementFactoryGetArgs;
     tracker_ref<winrt::Microsoft::UI::Xaml::Controls::ElementFactoryRecycleArgs> m_ElementFactoryRecycleArgs;
-#endif
 
     // These are first/last indices requested by layout and not cleared yet.
     // These are also not truly first / last because they are a lower / upper bound on the known realized range.

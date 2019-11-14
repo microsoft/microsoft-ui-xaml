@@ -15,7 +15,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)SliderInteraction.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SliderInteraction.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)SliderInteraction.cpp" />

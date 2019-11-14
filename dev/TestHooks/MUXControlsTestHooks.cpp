@@ -4,14 +4,22 @@
 #include "pch.h"
 #include "common.h"
 #include "MUXControlsTestHooksFactory.h"
-#include "ScrollerTrace.h"
 
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-#include "SwipeControlTrace.h"
-#ifndef BUILD_WINDOWS
+#ifdef SCROLLER_INCLUDED
+#include "ScrollerTrace.h"
 #include "ScrollViewerTrace.h"
-#include "ScrollBar2Trace.h"
 #endif
+
+#ifdef SWIPECONTROL_INCLUDED
+#include "SwipeControlTrace.h"
+#endif
+
+#ifdef COMMANDBARFLYOUT_INCLUDED
+#include "CommandBarFlyoutTrace.h"
+#endif
+
+#ifdef REPEATER_INCLUDED
+#include "RepeaterTrace.h"
 #endif
 
 /*static*/
@@ -59,30 +67,38 @@ UCHAR MUXControlsTestHooks::GetLoggingLevelForInstance(const winrt::IInspectable
 
 void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_view& type, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)
 {
+#ifdef SCROLLER_INCLUDED
     if (type == L"Scroller" || type.empty())
     {
         ScrollerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
-    if (type == L"SwipeControl" || type.empty())
-    {
-        SwipeControlTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
-        SwipeControlTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
-    }
-    #ifndef BUILD_WINDOWS
     if (type == L"ScrollViewer" || type.empty())
     {
         ScrollViewerTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         ScrollViewerTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    if (type == L"ScrollBar2" || type.empty())
+#endif
+#ifdef SWIPECONTROL_INCLUDED
+    if (type == L"SwipeControl" || type.empty())
     {
-        ScrollBar2Trace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
-        ScrollBar2Trace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+        SwipeControlTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        SwipeControlTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
     }
-    #endif
-    #endif
+#endif
+#ifdef COMMANDBARFLYOUT_INCLUDED
+    if (type == L"CommandBarFlyout" || type.empty())
+    {
+        CommandBarFlyoutTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+        CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#endif
+#ifdef REPEATER_INCLUDED
+    if (type == L"Repeater" || type.empty())
+    {
+        RepeaterTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
+    }
+#endif
 }
 
 void MUXControlsTestHooks::SetLoggingLevelForTypeImpl(const wstring_view& type, bool isLoggingInfoLevel, bool isLoggingVerboseLevel)

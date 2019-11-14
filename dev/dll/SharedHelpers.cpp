@@ -3,11 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-
-#ifndef BUILD_WINDOWS
 #include "MUXControlsFactory.h"
-#endif
-
 #include "SharedHelpers.h"
 
 bool SharedHelpers::s_isOnXboxInitialized{ false };
@@ -97,7 +93,7 @@ bool SharedHelpers::DoesXamlMoveRSVLightToRootVisual()
 {
     // In RS3 we made a change where WUX internally sets lights on the RootScrollViewer on the RootVisual instead. If that
     // happens, then we don't need to attach lights to the other roots.
-    static bool s_movesLightFromRSVToRootVisual = IsSystemDll() || IsRS3OrHigher();
+    static bool s_movesLightFromRSVToRootVisual = IsRS3OrHigher();
     return s_movesLightFromRSVToRootVisual;
 }
 
@@ -105,7 +101,7 @@ bool SharedHelpers::DoesListViewItemPresenterVSMWork()
 {
     // The fix to make ListViewItemPresenter's VSM work was done at the same time as when the RevealListViewItemPresenter type was *removed* from windows.
     // Also check if RevealBorderBrush was present because RS3 was around for a bit before we added Reveal in.
-    static bool s_isAvailable = IsSystemDll() || IsRS3OrHigher();
+    static bool s_isAvailable = IsRS3OrHigher();
     return s_isAvailable;
 }
 
@@ -113,34 +109,21 @@ bool SharedHelpers::IsCoreWindowActivationModeAvailable()
 {
     // In RS3 we got CoreWindow.ActivationMode API which can be queried for window activation state,
     // and particularly in a Component UI host appto check if the compoenent is active (while host isn't).
-    static bool s_isAvailable = IsSystemDll() || IsRS3OrHigher();
+    static bool s_isAvailable = IsRS3OrHigher();
     return s_isAvailable;
 }
 
 bool SharedHelpers::IsFlyoutShowOptionsAvailable()
 {
     static bool s_isFlyoutShowOptionsAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Primitives.FlyoutShowOptions");
     return s_isFlyoutShowOptionsAvailable;
 }
 
-bool SharedHelpers::AreInteractionTrackerPointerWheelRedirectionModesAvailable()
-{
-    // VisualInteractionSourceRedirectionMode::PointerWheelOnly and VisualInteractionSourceRedirectionMode::CapableTouchpadAndPointerWheel
-    // were introduced late in RS4.
-    static bool s_areInteractionTrackerPointerWheelRedirectionModesAvailable =
-        IsSystemDll() ||
-        IsRS5OrHigher() ||
-        (IsRS4OrHigher() && winrt::ApiInformation::IsEnumNamedValuePresent(L"Windows.UI.Composition.Interactions.VisualInteractionSourceRedirectionMode", L"PointerWheelOnly"));
-    return s_areInteractionTrackerPointerWheelRedirectionModesAvailable;
-}
-
 bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable()
 {
     static bool s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollViewer", L"ReduceViewportForCoreInputViewOcclusions");
     return s_isScrollViewerReduceViewportForCoreInputViewOcclusionsAvailable;
@@ -149,7 +132,6 @@ bool SharedHelpers::IsScrollViewerReduceViewportForCoreInputViewOcclusionsAvaila
 bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailable()
 {
     static bool s_isScrollContentPresenterSizesContentToTemplatedParentAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.ScrollContentPresenter", L"SizesContentToTemplatedParent");
     return s_isScrollContentPresenterSizesContentToTemplatedParentAvailable;
@@ -157,7 +139,7 @@ bool SharedHelpers::IsScrollContentPresenterSizesContentToTemplatedParentAvailab
 
 bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
 {
-    static bool s_isFrameworkElementInvalidateViewportAvailable = IsSystemDll() || IsRS5OrHigher();
+    static bool s_isFrameworkElementInvalidateViewportAvailable = IsRS5OrHigher();
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
@@ -169,6 +151,14 @@ bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
     return s_isApplicationViewGetDisplayRegionsAvailable;
 }
 
+bool SharedHelpers::IsControlCornerRadiusAvailable()
+{
+    static bool s_isControlCornerRadiusAvailable =
+        Is19H1OrHigher() ||
+        (IsRS5OrHigher() && winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.Control", L"CornerRadius"));
+    return s_isControlCornerRadiusAvailable;
+}
+
 bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element)
 {
     static bool s_areFacadesAvailable = (element.try_as<winrt::Windows::UI::Xaml::IUIElement9>() != nullptr);
@@ -178,7 +168,6 @@ bool SharedHelpers::IsTranslationFacadeAvailable(const winrt::UIElement& element
 bool SharedHelpers::IsIconSourceElementAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Controls.IconSourceElement");
     return s_isAvailable;
@@ -187,7 +176,6 @@ bool SharedHelpers::IsIconSourceElementAvailable()
 bool SharedHelpers::IsStandardUICommandAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         Is19H1OrHigher() ||
         (winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.XamlUICommand") &&
             winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Input.StandardUICommand"));
@@ -197,28 +185,25 @@ bool SharedHelpers::IsStandardUICommandAvailable()
 bool SharedHelpers::IsDispatcherQueueAvailable()
 {
     static bool s_isAvailable =
-        IsSystemDll() ||
         IsRS4OrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.System.DispatcherQueue");
     return s_isAvailable;
 }
 
-bool SharedHelpers::IsXamlRootAvailable()
-{
-    static bool s_IsXamlRootAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
-        winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.XamlRoot");
-    return s_IsXamlRootAvailable;
-}
-
 bool SharedHelpers::IsThemeShadowAvailable()
 {
     static bool s_isThemeShadowAvailable =
-        IsSystemDll() ||
-        IsVanadiumOrHigher() ||
+         IsVanadiumOrHigher() ||
         winrt::ApiInformation::IsTypePresent(L"Windows.UI.Xaml.Media.ThemeShadow");
     return s_isThemeShadowAvailable;
+}
+
+bool SharedHelpers::IsIsLoadedAvailable()
+{
+    static bool s_isAvailable =
+        IsRS5OrHigher() ||
+        winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
+    return s_isAvailable;
 }
 
 template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
@@ -228,10 +213,7 @@ template <uint16_t APIVersion> bool SharedHelpers::IsAPIContractVxAvailable()
     if (!isAPIContractVxAvailableInitialized)
     {
         isAPIContractVxAvailableInitialized = true;
-        isAPIContractVxAvailable =
-            IsSystemDll() ?
-            true :
-            winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
+        isAPIContractVxAvailable = winrt::ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", APIVersion);
     }
 
     return isAPIContractVxAvailable;
@@ -276,28 +258,21 @@ bool SharedHelpers::IsAPIContractV3Available()
 
 bool SharedHelpers::IsInFrameworkPackage()
 {
-#ifndef BUILD_WINDOWS
     static bool isInFrameworkPackage = []() {
-        if (!IsSystemDll())
+        // Special type that we manually list here which is not part of the Nuget dll distribution package. 
+        // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
+        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
+        Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
+        winrt::com_ptr<IActivationFactory> activationFactory;
+        if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
         {
-            // Special type that we manually list here which is not part of the Nuget dll distribution package. 
-            // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-            // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-            Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
-            winrt::com_ptr<IActivationFactory> activationFactory;
-            if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
-            {
-                return true;
-            }
+            return true;
         }
 
         return false;
     }();
 
     return isInFrameworkPackage;
-#else
-    return false;
-#endif
 }
 
 // Platform scale helpers
@@ -305,11 +280,9 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
 {
     try
     {
-#if defined(BUILD_WINDOWS)
-        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
-#else
-        const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-#endif
+        const auto scaleFactor = Is19H1OrHigher()?
+                                    static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale()):
+                                    static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
         return winrt::Rect
         {
             dipsRect.X * scaleFactor,
@@ -323,7 +296,7 @@ winrt::Rect SharedHelpers::ConvertDipsToPhysical(winrt::UIElement const& xamlRoo
         // Calling GetForCurrentView on threads without a CoreWindow throws an error. This comes up in places like LogonUI.
         // In this circumstance, we'll just always expand down, since we can't get bounds information.
     }
-    
+
     return dipsRect;
 }
 
@@ -331,11 +304,7 @@ winrt::Rect SharedHelpers::ConvertPhysicalToDips(winrt::UIElement const& xamlRoo
 {
     try
     {
-#if defined(BUILD_WINDOWS)
-        const auto scaleFactor = static_cast<float>(xamlRootReference.XamlRoot().RasterizationScale());
-#else
         const auto scaleFactor = static_cast<float>(winrt::DisplayInformation::GetForCurrentView().RawPixelsPerViewPixel());
-#endif
         return winrt::Rect
         {
             physicalRect.X / scaleFactor,
@@ -462,10 +431,10 @@ bool SharedHelpers::DoRectsIntersect(
     return doIntersect;
 }
 
-winrt::IInspectable SharedHelpers::FindResourceOrNull(const std::wstring_view& resource, const winrt::ResourceDictionary& resources)
+winrt::IInspectable SharedHelpers::FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue)
 {
     auto boxedResource = box_value(resource);
-    return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : nullptr;
+    return resources.HasKey(boxedResource) ? resources.Lookup(boxedResource) : defaultValue;
 }
 
 // When checkVisibility is True, IsAncestor additionally checks if any UIElement from the 'child'
@@ -521,6 +490,8 @@ bool SharedHelpers::IsAncestor(
     return false;
 }
 
+#ifdef ICONSOURCE_INCLUDED
+
 winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& iconSource)
 {
     if (auto fontIconSource = iconSource.try_as<winrt::FontIconSource>())
@@ -558,7 +529,7 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
             bitmapIcon.UriSource(bitmapIconSource.UriSource());
         }
 
-        if (SharedHelpers::IsSystemDll() || winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
+        if (winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.Controls.BitmapIcon", L"ShowAsMonochrome"))
         {
             bitmapIcon.ShowAsMonochrome(bitmapIconSource.ShowAsMonochrome());
         }
@@ -580,6 +551,30 @@ winrt::IconElement SharedHelpers::MakeIconElementFrom(winrt::IconSource const& i
     return nullptr;
 }
 
+#endif
+
+void SharedHelpers::SetBinding(
+    std::wstring_view const& pathString,
+    winrt::DependencyObject const& target,
+    winrt::DependencyProperty const& targetProperty)
+{
+    winrt::Binding binding;
+    winrt::RelativeSource relativeSource;
+    relativeSource.Mode(winrt::RelativeSourceMode::TemplatedParent);
+    binding.RelativeSource(relativeSource);
+
+    binding.Path(winrt::PropertyPath(pathString));
+
+    winrt::BindingOperations::SetBinding(target, targetProperty, binding);
+}
+
+// Be cautious: this function may introduce memory leak because Source holds strong reference to target too
+// There’s an intermediary object – the BindingExpression when BindingOperations::SetBinding
+// For example, if source is NavigationView and target is content control,
+// and there is strong reference: NavigationView -> ContentControl
+// BindingExpression.Source also make a strong reference to NavigationView
+// and it introduces the cycle: ContentControl -> BindingExpression -> NavigationView -> ContentControl
+// Prefer to use RelativeSource version of SetBinding if possible.
 void SharedHelpers::SetBinding(
     winrt::IInspectable const& source,
     std::wstring_view const& pathString,
@@ -589,8 +584,8 @@ void SharedHelpers::SetBinding(
     winrt::BindingMode mode)
 {
     winrt::Binding binding;
-
     binding.Source(source);
+
     binding.Path(winrt::PropertyPath(pathString));
     binding.Mode(mode);
 
@@ -692,4 +687,26 @@ winrt::VirtualKey SharedHelpers::GetVirtualKeyFromChar(WCHAR c)
     default:
         return winrt::VirtualKey::None;
     }
+}
+
+// Sometimes we want to get a string representation from an arbitrary object. E.g. for constructing a UIA Name
+// from an automation peer. There is no guarantee that an arbitrary object is convertable to a string, so
+// this function may return an empty string.
+winrt::hstring SharedHelpers::TryGetStringRepresentationFromObject(winrt::IInspectable obj)
+{
+    winrt::hstring returnHString;
+
+    if(obj)
+    {
+        if (auto stringable = obj.try_as<winrt::IStringable>())
+        {
+            returnHString = stringable.ToString();
+        }
+        if(returnHString.empty())
+        {
+            returnHString = winrt::unbox_value_or<winrt::hstring>(obj, returnHString);
+        }
+    }
+    
+    return returnHString;
 }

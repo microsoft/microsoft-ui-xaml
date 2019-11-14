@@ -21,13 +21,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using NonVirtualizingLayout = Microsoft.UI.Xaml.Controls.NonVirtualizingLayout;
 using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingLayoutContext;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -46,7 +44,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
         public static void ClassInitialize(TestContext context) { }
 
         [TestInitialize]

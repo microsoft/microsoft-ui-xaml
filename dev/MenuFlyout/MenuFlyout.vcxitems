@@ -14,35 +14,12 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <Priority>2</Priority>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs2_themeresources.xaml">
-      <Version>RS2</Version>
-      <Type>ThemeResources</Type>
-      <Priority>2</Priority>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs4_themeresources.xaml">
-      <Version>RS4</Version>
-      <Type>ThemeResources</Type>
-      <Priority>2</Priority>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_rs5_themeresources.xaml">
-      <Version>RS5</Version>
-      <Type>ThemeResources</Type>
-      <Priority>5</Priority>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)MenuFlyout_19h1_themeresources.xaml">
-      <Version>19H1</Version>
-      <Type>ThemeResources</Type>
-      <Priority>5</Priority>
-      <SubType>Designer</SubType>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
 </Project>

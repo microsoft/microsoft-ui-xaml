@@ -3,15 +3,12 @@
 
 using MUXControlsTestApp.Utilities;
 
-using System;
-using System.Collections.Generic;
-using Windows.Foundation.Metadata;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Shapes;
-using System.Collections.ObjectModel;
 using Common;
+using System;
+using Windows.Foundation.Metadata;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -22,13 +19,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
+using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHeader;
+using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -44,6 +41,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItems.Add(new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) });
                 navView.MenuItems.Add(new NavigationViewItem() { Content = "Cut", Icon = new SymbolIcon(Symbol.Cut) });
 
+                navView.PaneTitle = "Title";
                 navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
                 navView.IsSettingsVisible = true;
                 navView.PaneDisplayMode = paneDisplayMode;
@@ -51,12 +49,141 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.ExpandedModeThresholdWidth = 600.0;
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
+                navView.Height = 600.0;
                 navView.Content = "This is a simple test";
                 MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
             IdleSynchronizer.Wait();
             return navView;
+        }
+
+
+        private NavigationView SetupNavigationViewScrolling(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #1", Icon = new SymbolIcon(Symbol.Undo) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #2", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItemHeader() { Content = "Item #3" });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #4", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #5", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItemSeparator());
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #7", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #8", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #9", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #10", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItemHeader() { Content = "Item #11" });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #12", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #13", Icon = new SymbolIcon(Symbol.Cut) });
+                navView.MenuItems.Add(new NavigationViewItemSeparator());
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Item #15", Icon = new SymbolIcon(Symbol.Cut) });
+
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.IsSettingsVisible = true;
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.OpenPaneLength = 120.0;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                navView.Content = "This test should have enough NavigationViewItems to scroll.";
+                MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            });
+
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
+        private NavigationView SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
+        {
+            NavigationView navView = null;
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Undo", Icon = new SymbolIcon(Symbol.Undo) });
+                navView.MenuItems.Add(new NavigationViewItem() { Content = "Cut", Icon = new SymbolIcon(Symbol.Cut) });
+
+                // Navigation View Pane Elements
+                Button headerButton = new Button();
+                headerButton.Content = "Header Button";
+
+                Button footerButton = new Button();
+                footerButton.Content = "Footer Button";
+
+                // NavigationView Content Elements
+                Button contentButtonOne = new Button();
+                contentButtonOne.Content = "Content Button One";
+
+                Button contentButtonTwo = new Button();
+                contentButtonTwo.Content = "Content Button Two";
+                contentButtonTwo.Margin = new Thickness(50, 0, 0, 0);
+
+                StackPanel contentStackPanel = new StackPanel();
+                contentStackPanel.Children.Add(contentButtonOne);
+                contentStackPanel.Children.Add(contentButtonTwo);
+
+                // Set NavigationView Properties
+
+                navView.PaneHeader = headerButton;
+                navView.PaneFooter = footerButton;
+                navView.Header = "NavigationView Header";
+                navView.AutoSuggestBox = new AutoSuggestBox();
+                navView.Content = contentStackPanel;
+                navView.IsBackButtonVisible = NavigationViewBackButtonVisible.Visible;
+                navView.IsSettingsVisible = true;
+                navView.PaneDisplayMode = paneDisplayMode;
+                navView.OpenPaneLength = 300.0;
+                navView.ExpandedModeThresholdWidth = 600.0;
+                navView.CompactModeThresholdWidth = 400.0;
+                navView.Width = 800.0;
+                navView.Height = 600.0;
+                MUXControlsTestApp.App.TestContentRoot = navView;
+                Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
+            });
+
+            IdleSynchronizer.Wait();
+            return navView;
+        }
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            using(VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
+            {
+                // Generate a basic NavigationView master file for all the pane display modes
+                foreach (var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
+                {
+                    var filePrefix = "NavigationView" + paneDisplayMode;
+                    NavigationViewPaneDisplayMode displayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
+
+                    // We can skip generating a master file for Left mode since Auto is achieving the same result.
+                    if (displayMode == NavigationViewPaneDisplayMode.Left)
+                    {
+                        continue;
+                    }
+
+                    Log.Comment($"Verify visual tree for NavigationViewPaneDisplayMode: {paneDisplayMode}");
+                    var navigationView = SetupNavigationView(displayMode);
+                    visualTreeVerifier.VerifyVisualTreeNoException(root: navigationView, masterFilePrefix: filePrefix);
+                }
+
+                Log.Comment($"Verify visual tree for NavigationViewScrolling");
+                var leftNavViewScrolling = SetupNavigationViewScrolling(NavigationViewPaneDisplayMode.Left);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewScrolling, masterFilePrefix: "NavigationViewScrolling");
+                
+                Log.Comment($"Verify visual tree for NavigationViewLeftPaneContent");
+                var leftNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Left);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: leftNavViewPaneContent, masterFilePrefix: "NavigationViewLeftPaneContent");
+
+                Log.Comment($"Verify visual tree for NavigationViewTopPaneContent");
+                var topNavViewPaneContent = SetupNavigationViewPaneContent(NavigationViewPaneDisplayMode.Top);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: topNavViewPaneContent, masterFilePrefix: "NavigationViewTopPaneContent");
+            }
         }
 
         [TestMethod]
@@ -77,7 +204,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
             });
             IdleSynchronizer.Wait();
-            
+
             RunOnUIThread.Execute(() =>
             {
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Expanded, "Left Expanded");
@@ -90,7 +217,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Compact, "LeftCompact Compact");
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
             });
-            IdleSynchronizer.Wait();           
+            IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
@@ -128,7 +255,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Setter styleSetter = null;
             Style hamburgerStyle = null;
 
-
             RunOnUIThread.Execute(() =>
             {
                 footer = new Rectangle();
@@ -152,6 +278,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(navView.Header);
                 Verify.IsTrue(navView.IsSettingsVisible);
                 Verify.IsTrue(navView.IsPaneToggleButtonVisible);
+                Verify.IsTrue(navView.IsTitleBarAutoPaddingEnabled);
                 Verify.IsTrue(navView.AlwaysShowHeader);
                 Verify.AreEqual(48, navView.CompactPaneLength);
                 Verify.AreEqual(320, navView.OpenPaneLength);
@@ -170,6 +297,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Header = header;
                 navView.IsSettingsVisible = false;
                 navView.IsPaneToggleButtonVisible = false;
+                navView.IsTitleBarAutoPaddingEnabled = false;
                 navView.AlwaysShowHeader = false;
                 navView.CompactPaneLength = 40;
                 navView.OpenPaneLength = 300;
@@ -191,6 +319,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(header, navView.Header);
                 Verify.IsFalse(navView.IsSettingsVisible);
                 Verify.IsFalse(navView.IsPaneToggleButtonVisible);
+                Verify.IsFalse(navView.IsTitleBarAutoPaddingEnabled);
                 Verify.IsFalse(navView.AlwaysShowHeader);
                 Verify.AreEqual(40, navView.CompactPaneLength);
                 Verify.AreEqual(300, navView.OpenPaneLength);
@@ -321,6 +450,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 navView.IsSettingsVisible = true;
                 navView.IsPaneOpen = true;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
                 MUXControlsTestApp.App.TestContentRoot = navView;
             });
 
@@ -347,25 +477,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-#if BUILD_WINDOWS
-        [TestMethod]
-        [TestProperty("BUG", "RS3:12705080")]
-        public void CanLoadSimpleNavigationView()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                XamlReader.Load(@"
-                    <NavigationView xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                        <NavigationView.MenuItems>
-                            <NavigationViewItem Icon='Save' Content='Save' />
-                        </NavigationView.MenuItems>
-                        <TextBlock>Hello World</TextBlock>
-                    </NavigationView>");
-            });
-        }
-#endif
-
-#if !BUILD_WINDOWS
         // Disabled per GitHub Issue #211
         //[TestMethod]
         public void VerifyCanNotAddWUXItems()
@@ -395,6 +506,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.Throws<Exception>(() => { navView.UpdateLayout(); });
             });
         }
-#endif
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnTopNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.Top, "VerifyVerifyHeaderContentMarginOnTopNav");
+        }
+
+        [TestMethod]
+        public void VerifyVerifyHeaderContentMarginOnMinimalNav()
+        {
+            VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode.LeftMinimal, "VerifyVerifyHeaderContentMarginOnMinimalNav");
+        }
+
+        private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
+        {
+            NavigationView navView = null;
+            UIElement headerContent = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView() { Header = "HEADER", PaneDisplayMode = paneDisplayMode, Width = 400.0 };
+                MUXControlsTestApp.App.TestContentRoot = navView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                Grid rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
+                if (rootGrid != null)
+                {
+                    headerContent = rootGrid.FindName("HeaderContent") as UIElement;
+                }
+            });
+
+            VisualTreeTestHelper.VerifyVisualTree(
+                root: headerContent,
+                masterFilePrefix: masterFilePrefix);
+        }
     }
 }

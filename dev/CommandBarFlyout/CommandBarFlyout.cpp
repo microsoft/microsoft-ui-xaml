@@ -8,16 +8,18 @@
 #include "Vector.h"
 #include "RuntimeProfiler.h"
 
+// Change to 'true' to turn on debugging outputs in Output window
+bool CommandBarFlyoutTrace::s_IsDebugOutputEnabled{ false };
+bool CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled{ false };
+
 CommandBarFlyout::CommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_CommandBarFlyout);
 
-#ifdef USE_INSIDER_SDK
     if (winrt::IFlyoutBase6 thisAsFlyoutBase6 = *this)
     {
         thisAsFlyoutBase6.ShouldConstrainToRootBounds(false);
     }
-#endif
     
     if (winrt::IFlyoutBase5 thisAsFlyoutBase5 = *this)
     {
@@ -58,8 +60,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemChanged:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = safe_try_cast<winrt::AppBarButton>(element);
-                    auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -84,8 +86,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemInserted:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = safe_try_cast<winrt::AppBarButton>(element);
-                    auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -134,21 +136,6 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = winrt::get_self<CommandBarFlyoutCommandBar>(m_commandBar.get()))
             {
-                if (SharedHelpers::IsThemeShadowAvailable())
-                {
-#if defined(BUILD_WINDOWS)
-                    if (Feature_CommandBarFlyoutShadow::IsEnabled())
-                    {
-                        // Apply a shadow (only if we have a CommandBar worth shadowing)
-                        winrt::Windows::UI::Xaml::Media::ThemeShadow shadow;
-                        commandBar->Shadow(shadow);
-                        bool havePrimaryCommands = PrimaryCommands().Size() > 0;
-                        auto translation = havePrimaryCommands ? winrt::float3{ 0.0f, 0.0f, 32.0f } : winrt::float3{ 0.0f, 0.0f, 0.0f };
-                        commandBar->Translation(translation);
-                    }
-#endif
-                }
-
                 if (commandBar->HasOpenAnimation())
                 {
                     commandBar->PlayOpenAnimation();
@@ -175,6 +162,11 @@ CommandBarFlyout::CommandBarFlyout()
                         });
                     commandBar->IsOpen(false);
                 }
+
+                //CommandBarFlyoutCommandBar.Closed will be called when
+                //clicking the more (...) button, we clear the translations
+                //here
+                commandBar->ClearShadow();
             }
         }
     });
@@ -186,18 +178,6 @@ CommandBarFlyout::CommandBarFlyout()
         {
             if (auto commandBar = m_commandBar.get())
             {
-                if (SharedHelpers::IsThemeShadowAvailable())
-                {
-#if defined(BUILD_WINDOWS)
-                    if (Feature_CommandBarFlyoutShadow::IsEnabled())
-                    {
-                        // Clear the shadow
-                        auto translation = winrt::float3{ 0.0f, 0.0f, 0.0f };
-                        commandBar.Translation(translation);
-                    }
-#endif
-                }
-
                 if (commandBar.IsOpen())
                 {
                     commandBar.IsOpen(false);
@@ -255,13 +235,19 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
+    if (winrt::IControl7 presenterControl7 = presenter)
+    {
+        presenterControl7.CornerRadius({ 0 });
+    }
 
-#ifdef USE_INSIDER_SDK
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
     // above that.
-    presenter.IsDefaultShadowEnabled(false);
-#endif
+    if (winrt::IFlyoutPresenter2 presenter2 = presenter)
+    {
+        presenter2.IsDefaultShadowEnabled(false);
+    }
 
     commandBar->SetOwningFlyout(*this);
 
@@ -280,8 +266,8 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
     for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
     {
         auto element = SecondaryCommands().GetAt(i);
-        auto button = safe_try_cast<winrt::AppBarButton>(element);
-        auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
         if (button)
         {

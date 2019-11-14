@@ -80,9 +80,16 @@
                             IsChecked="{Binding IsPaneOpen, ElementName=NavView, Mode=TwoWay}"
                             Margin="5"/>
 
-                        <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddItemButton_Click"  Margin="5"/>
-                        <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveItemButton_Click"  Margin="5"/>
-                        <Button x:Name="ClearMenuButton" AutomationProperties.Name="ClearMenuButton" Content="Clear menu" Click="ClearMenuButton_Click"  Margin="5"/>
+                        <CheckBox
+                            x:Name="IsPaneVisibleCheckBox"
+                            AutomationProperties.Name="IsPaneVisibleCheckBox"
+                            Content="IsPaneVisible"
+                            IsChecked="{Binding IsPaneVisible, ElementName=NavView, Mode=TwoWay}"
+                            Margin="5"/>
+
+                        <Button x:Name="AddItemButton" AutomationProperties.Name="AddItemButton" Content="Add Item" Click="AddItemButton_Click" Margin="0,0,2,0" />
+                        <Button x:Name="RemoveItemButton" AutomationProperties.Name="RemoveItemButton" Content="Remove Item" Click="RemoveItemButton_Click" Margin="0,0,2,0" />
+                        <Button x:Name="ClearMenuButton" AutomationProperties.Name="ClearMenuButton" Content="Clear menu" Click="ClearMenuButton_Click" Margin="0,0,2,0" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
@@ -156,8 +163,8 @@
                             <ComboBoxItem Content="TV" Tag="TV"/>
                             <ComboBoxItem Content="Settings" Tag="Settings"/>
                         </ComboBox>
-                        <Button x:Name="ChangePaneTitle" AutomationProperties.Name="ChangePaneTitleButton" Content="Change PaneTitle" Click="ChangePaneTitle_Click"/>
-                        <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Click="FlipOrientation_Click"/>
+                        <Button x:Name="ChangePaneTitle" AutomationProperties.Name="ChangePaneTitleButton" Content="Change PaneTitle" Margin="0,0,2,0" Click="ChangePaneTitle_Click"/>
+                        <Button x:Name="FlipOrientation" AutomationProperties.Name="FlipOrientationButton" Content="Flip Orientation" Margin="0,0,2,0" Click="FlipOrientation_Click"/>
                         <Button x:Name="ClearSelectedItem" AutomationProperties.Name="ClearSelectedItemButton" Content="Clear SelectedItem" Click="ClearSelectedItem_Click"/>
                         <ComboBox x:Name="PaneDisplayModeCombobox"
                                 AutomationProperties.Name="PaneDisplayModeCombobox"
@@ -187,11 +194,12 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="IsTitleBarAutoPaddingEnabledCheckbox" AutomationProperties.Name="IsTitleBarAutoPaddingEnabledCheckbox" Content="Title Bar Auto-Padding Enabled" Checked="IsTitleBarAutoPaddingEnabledCheckbox_Checked" Unchecked="IsTitleBarAutoPaddingEnabledCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <CheckBox x:Name="TitleBarCheckbox" AutomationProperties.Name="TitleBarCheckbox" Content="Show Title Bar" Checked="TitleBarCheckbox_Checked" Unchecked="TitleBarCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
                         <CheckBox x:Name="TestFrameCheckbox" AutomationProperties.Name="TestFrameCheckbox" Content="Show Test Frame" Checked="TestFrameCheckbox_Checked" Unchecked="TestFrameCheckbox_Unchecked" IsChecked="True"  Margin="5"/>
-                        <Button x:Name="ReverseButton" AutomationProperties.Name="ReverseButton" Content="Reverse Titles" Click="ScrambleButton_Click"/>
-                        <Button x:Name="CopyGamesLabelButton" AutomationProperties.Name="CopyGamesLabelButton" Content="Copy Games Label" Click="CopyGamesLabelButton_Click"/>
-                        <Button x:Name="CopyVolumeToolTipButton" AutomationProperties.Name="CopyVolumeToolTipButton" Content="Copy Volume ToolTip" Click="CopyVolumeToolTipButton_Click"/>
+                        <Button x:Name="ReverseButton" AutomationProperties.Name="ReverseButton" Content="Reverse Titles" Margin="0,0,2,0" Click="ScrambleButton_Click"/>
+                        <Button x:Name="CopyGamesLabelButton" AutomationProperties.Name="CopyGamesLabelButton" Content="Copy Games Label" Margin="0,0,2,0" Click="CopyGamesLabelButton_Click"/>
+                        <Button x:Name="CopyVolumeToolTipButton" AutomationProperties.Name="CopyVolumeToolTipButton" Content="Copy Volume ToolTip" Margin="0,0,2,0" Click="CopyVolumeToolTipButton_Click"/>
                         <TextBlock x:Name="ToolTipStatusTextBlock" AutomationProperties.Name="ToolTipStatusTextBlock" Text="Test not started"/>
                     </StackPanel>
 
@@ -211,24 +219,24 @@
                     <StackPanel Orientation="Horizontal">
                         <Button x:Name="ReadSettingsSelected" AutomationProperties.Name="ReadSettingsSelected" Content="ReadSettingsSelected" Click="ReadSettingsSelected_Click"/>
                         <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">SettingsSelectionState: </TextBlock>
-                        <TextBlock x:Name="SettingsSelectedState" AutomationProperties.Name="SettingsSelectedState" HorizontalAlignment="Center" VerticalAlignment="Center" >False</TextBlock>
+                        <TextBlock x:Name="SettingsSelectedState" AutomationProperties.Name="SettingsSelectedState" HorizontalAlignment="Center" VerticalAlignment="Center">False</TextBlock>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0 5">
                         <Button x:Name="GetHeaderContentMargin" AutomationProperties.Name="GetHeaderContentMargin" Content="GetHeaderContentMargin" Click="GetHeaderContentMargin_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">HeaderContent.Margin</TextBlock>
-                        <TextBlock x:Name="HeaderContentMarginResult" AutomationProperties.Name="HeaderContentMarginResult"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">HeaderContent.Margin: </TextBlock>
+                        <TextBlock x:Name="HeaderContentMarginResult" AutomationProperties.Name="HeaderContentMarginResult" VerticalAlignment="Center"/>
                         <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates</TextBlock>
-                        <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates: </TextBlock>
+                        <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
                     </StackPanel>
                     
                     <StackPanel Orientation="Horizontal" Margin="0 5">
-                        <Button x:Name="ChangePaneHeader" AutomationProperties.Name="ChangePaneHeader" Content="ChangePaneHeader" Click="ChangePaneHeader_Click"/>
-                        <Button x:Name="ChangeFocusVisualKind" AutomationProperties.Name="ChangeFocusVisualKind" Content="ChangeFocusVisualKind" Click="ChangeFocusVisualKind_Click"/>
+                        <Button x:Name="ChangePaneHeader" AutomationProperties.Name="ChangePaneHeader" Content="ChangePaneHeader" Margin="0,0,2,0" Click="ChangePaneHeader_Click"/>
+                        <Button x:Name="ChangeFocusVisualKind" AutomationProperties.Name="ChangeFocusVisualKind" Content="ChangeFocusVisualKind" Margin="0,0,2,0" Click="ChangeFocusVisualKind_Click"/>
                         <Button x:Name="GetHomeItemRevealVisualState" AutomationProperties.Name="GetHomeItemRevealVisualState" Click="GetHomeItemRevealVisualState_Click" Content="Get HomeItem Reveal VisualState"/>
-                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">LeftNavigationReveal?</TextBlock>
-                        <TextBlock x:Name="OnLeftNavigationRevealVisualState" AutomationProperties.Name="OnLeftNavigationRevealVisualState" Text="False"/>
+                        <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">LeftNavigationReveal?: </TextBlock>
+                        <TextBlock x:Name="OnLeftNavigationRevealVisualState" AutomationProperties.Name="OnLeftNavigationRevealVisualState" Text="False" VerticalAlignment="Center"/>
                     </StackPanel>
                     
                     <TextBlock TextWrapping="Wrap" Grid.Row="1" Margin="5">

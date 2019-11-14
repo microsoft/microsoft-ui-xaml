@@ -16,19 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
 {
@@ -76,6 +68,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         public static T ByName<T>(string name)
         {
             UIObject obj = ByName(name);
+
+            if (obj != null)
+            {
+                return (T)Activator.CreateInstance(typeof(T), obj);
+            }
+            else
+            {
+                return default(T);
+            }
+        }
+
+        public static T ByNameOrId<T>(string name)
+        {
+            UIObject obj = ByNameOrId(name);
 
             if (obj != null)
             {

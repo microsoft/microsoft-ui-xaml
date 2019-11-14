@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Navigation;
 using System.Collections.Specialized;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
@@ -21,7 +20,6 @@ using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -48,12 +46,7 @@ namespace MUXControlsTestApp
 
             cnsAnchorPoint.Width = scroller.Width;
             cnsAnchorPoint.Height = scroller.Height;
-
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -78,8 +71,6 @@ namespace MUXControlsTestApp
 
                 UpdateRaiseAnchorNotifications(true /*raiseAnchorNotifications*/);
 
-                UpdateCmbIsAnchoredAtHorizontalExtent();
-                UpdateCmbIsAnchoredAtVerticalExtent();
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
 
@@ -363,42 +354,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnGetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtHorizontalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtHorizontalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtHorizontalExtent = cmbIsAnchoredAtHorizontalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void BtnGetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            UpdateCmbIsAnchoredAtVerticalExtent();
-        }
-
-        private void BtnSetIsAnchoredAtVerticalExtent_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                scroller.IsAnchoredAtVerticalExtent = cmbIsAnchoredAtVerticalExtent.SelectedIndex == 0;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
         private void BtnGetHorizontalAnchorRatio_Click(object sender, RoutedEventArgs e)
         {
             UpdateHorizontalAnchorRatio();
@@ -509,32 +464,6 @@ namespace MUXControlsTestApp
         {
             if (tblItemIndex != null && txtItemIndex != null && cmbAnchorElement != null)
                 tblItemIndex.Visibility = txtItemIndex.Visibility = cmbAnchorElement.SelectedIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        private void UpdateCmbIsAnchoredAtHorizontalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtHorizontalExtent.SelectedIndex = scroller.IsAnchoredAtHorizontalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
-        }
-
-        private void UpdateCmbIsAnchoredAtVerticalExtent()
-        {
-            try
-            {
-                cmbIsAnchoredAtVerticalExtent.SelectedIndex = scroller.IsAnchoredAtVerticalExtent ? 0 : 1;
-            }
-            catch (Exception ex)
-            {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollerEvents.Items.Add(ex.ToString());
-            }
         }
 
         private void UpdateHorizontalAnchorRatio()
@@ -852,11 +781,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Add,
                             oldStartingIndex: -1,
                             oldItemsCount: 0,
@@ -884,11 +813,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Remove,
                             oldStartingIndex: index,
                             oldItemsCount: count,
@@ -933,11 +862,11 @@ namespace MUXControlsTestApp
 
                     if (reset)
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                     }
                     else
                     {
-                        OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                        OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                             NotifyCollectionChangedAction.Replace,
                             oldStartingIndex: index,
                             oldItemsCount: oldCount,
@@ -969,7 +898,7 @@ namespace MUXControlsTestApp
                         Inner.Insert(to, value);
                     }
 
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(NotifyCollectionChangedAction.Reset, -1, -1, -1, -1));
                 }
                 catch (Exception ex)
                 {

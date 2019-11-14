@@ -27,16 +27,12 @@ NavigationViewItem::NavigationViewItem()
     SetDefaultStyleKey(this);
 }
 
-NavigationViewItem::~NavigationViewItem()
-{
-}
-
 void NavigationViewItem::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visual may not the same as we expect
     m_appliedTemplate = false;
  
-    __super::OnApplyTemplate();
+    NavigationViewItemBase::OnApplyTemplate();
 
     // Find selection indicator
     // Retrieve pointers to stable controls 
@@ -127,7 +123,7 @@ void NavigationViewItem::UpdateNavigationViewItemToolTip()
 
 void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newContent)
 {
-    auto potentialString = safe_try_cast<winrt::IPropertyValue>(newContent);
+    auto potentialString = newContent.try_as<winrt::IPropertyValue>();
     bool stringableToolTip = (potentialString && potentialString.Type() == winrt::PropertyType::String);
     
     winrt::IInspectable newToolTipContent{ nullptr };
@@ -151,13 +147,9 @@ void NavigationViewItem::SuggestedToolTipChanged(winrt::IInspectable const& newC
     m_suggestedToolTipContent.set(newToolTipContent);
 }
 
-void NavigationViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto property = args.Property();
-    if (property == s_IconProperty)
-    {
-        UpdateVisualStateNoTransition();
-    }
+    UpdateVisualStateNoTransition();
 }
 
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
@@ -313,7 +305,7 @@ winrt::AutomationPeer NavigationViewItem::OnCreateAutomationPeer()
 // IContentControlOverrides / IContentControlOverridesHelper
 void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
 {
-    __super::OnContentChanged(oldContent, newContent);
+    NavigationViewItemBase::OnContentChanged(oldContent, newContent);
     SuggestedToolTipChanged(newContent);
     UpdateVisualStateNoTransition();
 
@@ -335,7 +327,7 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
 
 void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)
 {
-    __super::OnGotFocus(e);
+    NavigationViewItemBase::OnGotFocus(e);
     auto originalSource = e.OriginalSource().try_as<winrt::Control>();
     if (originalSource)
     {
@@ -353,7 +345,7 @@ void NavigationViewItem::OnGotFocus(winrt::RoutedEventArgs const& e)
 
 void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
 {
-    __super::OnLostFocus(e);
+    NavigationViewItemBase::OnLostFocus(e);
     if (m_hasKeyboardFocus)
     {
         m_hasKeyboardFocus = false;

@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
+#include "ScrollerTypeLogging.h"
 #include "ScrollerAutomationPeer.h"
 #include "ResourceAccessor.h"
 #include <UIAutomationCore.h>
@@ -144,20 +145,20 @@ void ScrollerAutomationPeer::SetScrollPercent(double horizontalPercent, double v
 
     if (scrollHorizontally && !scrollVertically)
     {
-        double maxOffset = std::max(0.0, scroller->GetZoomedExtentWidth() - scroller->GetViewportWidth());
+        double maxOffset = scroller->ScrollableWidth();
 
         scroller->ScrollToHorizontalOffset(maxOffset * horizontalPercent / s_maximumPercent);
     }
     else if (scrollVertically && !scrollHorizontally)
     {
-        double maxOffset = std::max(0.0, scroller->GetZoomedExtentHeight() - scroller->GetViewportHeight());
+        double maxOffset = scroller->ScrollableHeight();
 
         scroller->ScrollToVerticalOffset(maxOffset * verticalPercent / s_maximumPercent);
     }
     else
     {
-        double maxHorizontalOffset = std::max(0.0, scroller->GetZoomedExtentWidth() - scroller->GetViewportWidth());
-        double maxVerticalOffset = std::max(0.0, scroller->GetZoomedExtentHeight() - scroller->GetViewportHeight());
+        double maxHorizontalOffset = scroller->ScrollableWidth();
+        double maxVerticalOffset = scroller->ScrollableHeight();
 
         scroller->ScrollToOffsets(
             maxHorizontalOffset * horizontalPercent / s_maximumPercent, maxVerticalOffset * verticalPercent / s_maximumPercent);
@@ -287,7 +288,7 @@ double ScrollerAutomationPeer::get_HorizontalScrollPercentImpl()
 
     return GetScrollPercent(
         scroller->GetZoomedExtentWidth(),
-        scroller->GetViewportWidth(),
+        scroller->ViewportWidth(),
         GetScroller().HorizontalOffset());
 }
 
@@ -297,7 +298,7 @@ double ScrollerAutomationPeer::get_VerticalScrollPercentImpl()
 
     return GetScrollPercent(
         scroller->GetZoomedExtentHeight(),
-        scroller->GetViewportHeight(),
+        scroller->ViewportHeight(),
         GetScroller().VerticalOffset());
 }
 
@@ -308,7 +309,7 @@ double ScrollerAutomationPeer::get_HorizontalViewSizeImpl()
 
     return GetViewPercent(
         scroller->GetZoomedExtentWidth(),
-        scroller->GetViewportWidth());
+        scroller->ViewportWidth());
 }
 
 // Returns the vertical percentage of the entire extent that is currently viewed.
@@ -318,21 +319,21 @@ double ScrollerAutomationPeer::get_VerticalViewSizeImpl()
 
     return GetViewPercent(
         scroller->GetZoomedExtentHeight(),
-        scroller->GetViewportHeight());
+        scroller->ViewportHeight());
 }
 
 bool ScrollerAutomationPeer::get_HorizontallyScrollableImpl()
 {
     com_ptr<Scroller> scroller = winrt::get_self<Scroller>(GetScroller())->get_strong();
 
-    return scroller->GetZoomedExtentWidth() > scroller->GetViewportWidth();
+    return scroller->ScrollableWidth() > 0.0;
 }
 
 bool ScrollerAutomationPeer::get_VerticallyScrollableImpl()
 {
     com_ptr<Scroller> scroller = winrt::get_self<Scroller>(GetScroller())->get_strong();
 
-    return scroller->GetZoomedExtentHeight() > scroller->GetViewportHeight();
+    return scroller->ScrollableHeight() > 0.0;
 }
 
 winrt::IInspectable ScrollerAutomationPeer::GetPatternCoreImpl(winrt::PatternInterface patternInterface)

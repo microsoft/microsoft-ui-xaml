@@ -7,19 +7,16 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ChainingMode = Microsoft.UI.Xaml.Controls.ChainingMode;
 using RailingMode = Microsoft.UI.Xaml.Controls.RailingMode;
-using ScrollerChangeOffsetsOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeOffsetsOptions;
-using ScrollerChangeZoomFactorOptions = Microsoft.UI.Xaml.Controls.ScrollerChangeZoomFactorOptions;
-using ScrollerViewKind = Microsoft.UI.Xaml.Controls.ScrollerViewKind;
-using ScrollerViewChangeKind = Microsoft.UI.Xaml.Controls.ScrollerViewChangeKind;
-using ScrollerViewChangeSnapPointRespect = Microsoft.UI.Xaml.Controls.ScrollerViewChangeSnapPointRespect;
-using ScrollerViewChangeCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerViewChangeCompletedEventArgs;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollOptions = Microsoft.UI.Xaml.Controls.ScrollOptions;
+using ZoomOptions = Microsoft.UI.Xaml.Controls.ZoomOptions;
+using ZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ZoomCompletedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -40,7 +37,7 @@ namespace MUXControlsTestApp
             scroller1.StateChanged += Scroller_StateChanged;
             scroller3.StateChanged += Scroller_StateChanged;
 
-            scroller3.ViewChangeCompleted += Scroller_ViewChangeCompleted;
+            scroller3.ZoomCompleted += Scroller_ZoomCompleted;
 
             scrollViewer2.DirectManipulationStarted += ScrollViewer2_DirectManipulationStarted;
             scrollViewer2.DirectManipulationCompleted += ScrollViewer2_DirectManipulationCompleted;
@@ -82,9 +79,9 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void Scroller_ViewChangeCompleted(Scroller sender, ScrollerViewChangeCompletedEventArgs args)
+        private void Scroller_ZoomCompleted(Scroller sender, ZoomCompletedEventArgs args)
         {
-            if (args.ViewChangeId == scroller3ZoomFactorChangeId)
+            if (args.ZoomInfo.ZoomFactorChangeId == scroller3ZoomFactorChangeId)
                 this.txtResetStatus.Text = "Views reset";
         }
 
@@ -278,9 +275,15 @@ namespace MUXControlsTestApp
 
             if (scroller != null)
             {
-                scroller.ChangeOffsets(new ScrollerChangeOffsetsOptions(0.0, 0.0, ScrollerViewKind.Absolute, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                scroller.ScrollTo(
+                    0.0,
+                    0.0,
+                    new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
 
-                int viewChangeId = scroller.ChangeZoomFactor(new ScrollerChangeZoomFactorOptions(1.0f, ScrollerViewKind.Absolute, System.Numerics.Vector2.Zero, ScrollerViewChangeKind.DisableAnimation, ScrollerViewChangeSnapPointRespect.IgnoreSnapPoints));
+                int viewChangeId = scroller.ZoomTo(
+                    1.0f,
+                    System.Numerics.Vector2.Zero,
+                    new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore)).ZoomFactorChangeId;
 
                 if (this.scroller3 == scroller)
                     scroller3ZoomFactorChangeId = viewChangeId;

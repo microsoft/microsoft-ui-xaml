@@ -8,34 +8,15 @@
 #include "FlowLayoutAlgorithm.h"
 #include "StackLayoutState.h"
 #include "StackLayout.h"
-#include "StackLayoutFactory.h"
 #include "RuntimeProfiler.h"
+#include "VirtualizingLayoutContext.h"
 
 #pragma region IFlowLayout
 
 StackLayout::StackLayout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_StackLayout);
-}
-
-winrt::Orientation StackLayout::Orientation()
-{
-    return auto_unbox(GetValue(s_orientationProperty));
-}
-
-void StackLayout::Orientation(winrt::Orientation const& value)
-{
-    SetValue(s_orientationProperty, box_value(value));
-}
-
-double StackLayout::Spacing()
-{
-    return m_itemSpacing;
-}
-
-void StackLayout::Spacing(double value)
-{
-    SetValue(s_spacingProperty, box_value(value));
+    LayoutId(L"StackLayout");
 }
 
 #pragma endregion
@@ -82,6 +63,7 @@ winrt::Size StackLayout::MeasureOverride(
         false, /* isWrapping*/
         0 /* minItemSpacing */,
         m_itemSpacing,
+        MAXUINT /* maxItemsPerLine */,
         GetScrollOrientation(),
         LayoutId());
     return { desiredSize.Width, desiredSize.Height };
@@ -94,6 +76,7 @@ winrt::Size StackLayout::ArrangeOverride(
     auto value = GetFlowAlgorithm(context).Arrange(
         finalSize,
         context,
+        false, /* isWraping */
         FlowLayoutAlgorithm::LineAlignment::Start,
         LayoutId());
 
@@ -107,7 +90,7 @@ void StackLayout::OnItemsChangedCore(
     winrt::IInspectable const& source,
     winrt::NotifyCollectionChangedEventArgs const& args)
 {
-    GetFlowAlgorithm(context).OnDataSourceChanged(source, args, context);
+    GetFlowAlgorithm(context).OnItemsSourceChanged(source, args, context);
     // Always invalidate layout to keep the view accurate.
     InvalidateLayout();
 }
@@ -136,7 +119,11 @@ winrt::FlowLayoutAnchorInfo StackLayout::GetAnchorForRealizationRect(
         const double realizationWindowOffsetInExtent = realizationRect.*MajorStart() - lastExtent.*MajorStart();
         const double majorSize = lastExtent.*MajorSize() == 0 ? std::max(0.0, averageElementSize * itemsCount - m_itemSpacing) : lastExtent.*MajorSize();
         if (itemsCount > 0 &&
-            realizationRect.*MajorSize() > 0 &&
+            realizationRect.*MajorSize() >= 0 &&
+            // MajorSize = 0 will account for when a nested repeater is outside the realization rect but still being measured. Also,
+            // note that if we are measuring this repeater, then we are already realizing an element to figure out the size, so we could
+            // just keep that element alive. It also helps in XYFocus scenarios to have an element realized for XYFocus to find a candidate
+            // in the navigating direction.
             realizationWindowOffsetInExtent + realizationRect.*MajorSize() >= 0 && realizationWindowOffsetInExtent <= majorSize)
         {
             anchorIndex = (int)(realizationWindowOffsetInExtent / averageElementSize);
@@ -180,7 +167,9 @@ winrt::Rect StackLayout::GetExtent(
         }
         else
         {
-            REPEATER_TRACE_INFO(L"%ls: \tEstimating extent with no realized elements.  \n", LayoutId().data());
+            REPEATER_TRACE_INFO(L"%*s: \tEstimating extent with no realized elements.  \n",
+                winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
+                LayoutId().data());
         }
     }
     else
@@ -189,7 +178,8 @@ winrt::Rect StackLayout::GetExtent(
         MUX_ASSERT(lastRealizedItemIndex == -1);
     }
 
-    REPEATER_TRACE_INFO(L"%ls: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
+    REPEATER_TRACE_INFO(L"%*s: \tExtent is (%.0f,%.0f). Based on average %.0f. \n",
+        winrt::get_self<VirtualizingLayoutContext>(context)->Indent(),
         LayoutId().data(), extent.Width, extent.Height, averageElementSize);
     return extent;
 }
@@ -312,7 +302,7 @@ void StackLayout::Algorithm_OnElementMeasured(
 void StackLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     auto property = args.Property();
-    if (property == s_orientationProperty)
+    if (property == s_OrientationProperty)
     {
         auto orientation = unbox_value<winrt::Orientation>(args.NewValue());
 
@@ -321,7 +311,7 @@ void StackLayout::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         ScrollOrientation scrollOrientation = (orientation == winrt::Orientation::Horizontal) ? ScrollOrientation::Horizontal : ScrollOrientation::Vertical;
         OrientationBasedMeasures::SetScrollOrientation(scrollOrientation);
     }
-    else if (property == s_spacingProperty)
+    else if (property == s_SpacingProperty)
     {
         m_itemSpacing = unbox_value<double>(args.NewValue());
     }
@@ -337,7 +327,7 @@ double StackLayout::GetAverageElementSize(
     const winrt::com_ptr<StackLayoutState>& stackLayoutState)
 {
     double averageElementSize = 0;
-    
+
     if (context.ItemCount() > 0)
     {
         if (stackLayoutState->TotalElementsMeasured() == 0)

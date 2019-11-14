@@ -22,15 +22,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
-#endif
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -126,6 +124,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             foreach(var expectedElement in expectedSequence)
             {
                 var actualElement = (Button)FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+
+                // We need to ignore the toggle theme button, so lets set its tabstop to false and get next element.
+                if((string)actualElement.Content == "Toggle theme")
+                {
+                    actualElement.IsTabStop = false;
+                    actualElement = (Button)FocusManager.FindNextFocusableElement(FocusNavigationDirection.Next);
+                }
                 Log.Comment("Expected: " + expectedElement.Content);
                 Log.Comment("Actual: " + actualElement.Content);
                 Verify.AreEqual(expectedElement, actualElement);
@@ -153,7 +158,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 .ToArray();
         }
 
-        private static ScrollAnchorProvider CreateAndInitializeRepeater(
+        private static ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,
            ElementFactory elementFactory,
@@ -164,11 +169,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsSource = itemsSource,
                 Layout = layout,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 VerticalCacheLength = 0
             };
 
@@ -177,11 +178,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Content = repeater
             };
 
-            return new ScrollAnchorProvider()
+            return new ItemsRepeaterScrollHost()
             {
                 Width = 400,
                 Height = 400,
-                Content = scrollViewer
+                ScrollViewer = scrollViewer
             };
         }
     }

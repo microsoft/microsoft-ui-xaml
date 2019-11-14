@@ -108,7 +108,7 @@ int InspectingDataSource::IndexOf(winrt::IInspectable const& value)
     int index = -1;
     if (m_vector && value)
     {
-        uint32_t v = static_cast<uint32_t>(-1);
+        auto v = static_cast<uint32_t>(-1);
         if (m_vector.get().IndexOf(value, v))
         {
             index = static_cast<int>(v);
@@ -136,15 +136,14 @@ void InspectingDataSource::UnListenToCollectionChanges()
     if (auto notifyCollection = m_notifyCollectionChanged.safe_get())
     {
         notifyCollection.CollectionChanged(m_eventToken);
-    } 
-    else if (auto observableCollection = m_observableVector.safe_get())
-    {
-        observableCollection.VectorChanged(m_eventToken);
     }
     else if (auto bindableObservableCollection = m_bindableObservableVector.safe_get())
     {
-        reinterpret_cast<const winrt::IObservableVector<winrt::IInspectable>&>(bindableObservableCollection)
-            .VectorChanged(m_eventToken);
+        bindableObservableCollection.VectorChanged(m_eventToken);
+    }
+    else if (auto observableCollection = m_observableVector.safe_get())
+    {
+        observableCollection.VectorChanged(m_eventToken);
     }
 }
 
@@ -159,20 +158,19 @@ void InspectingDataSource::ListenToCollectionChanges()
     }
     else
     {
-        auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>();
-        if (observableVector)
+        auto bindableObservableVector = m_vector.try_as<winrt::IBindableObservableVector>();
+        if (bindableObservableVector)
         {
-            m_eventToken = observableVector.VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
-            m_observableVector.set(observableVector);
+            m_eventToken = bindableObservableVector.VectorChanged({ this, &InspectingDataSource::OnBindableVectorChanged });
+            m_bindableObservableVector.set(bindableObservableVector);
         }
         else
         {
-            auto bindableObservableVector = m_vector.try_as<winrt::IBindableObservableVector>();
-            if (bindableObservableVector)
+            auto observableVector = m_vector.try_as<winrt::IObservableVector<winrt::IInspectable>>();
+            if (observableVector)
             {
-                m_eventToken = reinterpret_cast<const winrt::IObservableVector<winrt::IInspectable>&>(bindableObservableVector)
-                    .VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
-                m_bindableObservableVector.set(bindableObservableVector);
+                m_eventToken = observableVector.VectorChanged({ this, &InspectingDataSource::OnVectorChanged });
+                m_observableVector.set(observableVector);
             }
         }
     }
@@ -182,7 +180,16 @@ void InspectingDataSource::OnCollectionChanged(
     const winrt::IInspectable& /*sender*/,
     const winrt::NotifyCollectionChangedEventArgs& e)
 {
-    OnDataSourceChanged(e);
+    OnItemsSourceChanged(e);
+}
+
+void InspectingDataSource::OnBindableVectorChanged(
+    const winrt::IBindableObservableVector& sender,
+    const winrt::IInspectable& e)
+{
+    OnVectorChanged(
+        reinterpret_cast<const winrt::IObservableVector<winrt::IInspectable>&>(sender),
+        reinterpret_cast<const winrt::Collections::IVectorChangedEventArgs&>(e));
 }
 
 void InspectingDataSource::OnVectorChanged(
@@ -195,7 +202,6 @@ void InspectingDataSource::OnVectorChanged(
     // Also note that we do not access the data - we just add nullptr. We just 
     // need the count.
 
-    const auto index = static_cast<int>(e.Index());
     winrt::NotifyCollectionChangedAction action{};
     int oldStartingIndex = -1;
     int newStartingIndex = -1;
@@ -207,18 +213,18 @@ void InspectingDataSource::OnVectorChanged(
     {
     case winrt::Collections::CollectionChange::ItemInserted:
         action = winrt::NotifyCollectionChangedAction::Add;
-        newStartingIndex = index;
+        newStartingIndex = static_cast<int>(e.Index());
         newItems.Append(nullptr);
         break;
     case winrt::Collections::CollectionChange::ItemRemoved:
         action = winrt::NotifyCollectionChangedAction::Remove;
-        oldStartingIndex = index;
+        oldStartingIndex = static_cast<int>(e.Index());
         oldItems.Append(nullptr);
         break;
     case winrt::Collections::CollectionChange::ItemChanged:
         action = winrt::NotifyCollectionChangedAction::Replace;
-        oldStartingIndex = index;
-        newStartingIndex = index;
+        oldStartingIndex = static_cast<int>(e.Index());
+        newStartingIndex = oldStartingIndex;
         newItems.Append(nullptr);
         oldItems.Append(nullptr);
         break;
@@ -230,7 +236,7 @@ void InspectingDataSource::OnVectorChanged(
         break;
     }
 
-    OnDataSourceChanged(
+    OnItemsSourceChanged(
         winrt::NotifyCollectionChangedEventArgs(
             action,
             newItems,

@@ -46,9 +46,9 @@ void RecyclePool::PutElementCore(
     winrt::UIElement const& owner)
 {
 
-    const auto winrtKey = key;
+    const auto& winrtKey = key;
     auto iterator = m_elements.find(winrtKey);
-    auto winrtOwner = owner;
+    const auto& winrtOwner = owner;
     auto winrtOwnerAsPanel = EnsureOwnerIsPanelOrNull(winrtOwner);
 
     ElementInfo elementInfo{ this /* refManager */, element, winrtOwnerAsPanel };
@@ -79,7 +79,7 @@ winrt::UIElement RecyclePool::TryGetElementCore(
             // Prefer an element from the same owner or with no owner so that we don't incur
             // the enter/leave cost during recycling.
             // TODO: prioritize elements with the same owner to those without an owner.
-            const auto winrtOwner = owner;
+            const auto& winrtOwner = owner;
             auto iter = std::find_if(
                 elements.begin(),
                 elements.end(),
@@ -104,7 +104,12 @@ winrt::UIElement RecyclePool::TryGetElementCore(
                 if (panel)
                 {
                     unsigned int childIndex = 0;
-                    MUX_ASSERT(panel.Children().IndexOf(elementInfo.Element(), childIndex));
+                    bool found = panel.Children().IndexOf(elementInfo.Element(), childIndex);
+                    if (!found)
+                    {
+                        throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+                    }
+
                     panel.Children().RemoveAt(childIndex);
                 }
             }

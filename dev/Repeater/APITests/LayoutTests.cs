@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
@@ -35,12 +34,11 @@ using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
 using ElementRealizationOptions = Microsoft.UI.Xaml.Controls.ElementRealizationOptions;
 using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -61,7 +59,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         var element0 = context.GetOrCreateElementAt(index: 0);
                         // lookup - repeater will give back the same element and note that this element will not
                         // be pinned - i.e it will be auto recycled after a measure pass where GetElementAt(0) is not called.
-                        var element0lookup = context.GetOrCreateElementAt(index: 0, options:ElementRealizationOptions.None);
+                        var element0lookup = context.GetOrCreateElementAt(index: 0, options: ElementRealizationOptions.None);
 
                         var element1 = context.GetOrCreateElementAt(index: 1, options: ElementRealizationOptions.ForceCreate | ElementRealizationOptions.SuppressAutoRecycle);
                         // forcing a new element for index 1 that will be pinned (not auto recycled). This will be 
@@ -100,7 +98,101 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        private ScrollAnchorProvider CreateAndInitializeRepeater(
+        [TestMethod]
+        public void ValidateNonVirtualLayoutWithItemsRepeater()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                repeater.Layout = new NonVirtualStackLayout();
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                Content = repeater;
+                Content.UpdateLayout();
+
+                double expectedYOffset = 0;
+                for (int i = 0; i < repeater.ItemsSourceView.Count; i++)
+                {
+                    var child = repeater.TryGetElement(i) as Button;
+                    Verify.IsNotNull(child);
+                    var layoutBounds = LayoutInformation.GetLayoutSlot(child);
+                    Verify.AreEqual(expectedYOffset, layoutBounds.Y);
+                    Verify.AreEqual(i, child.Content);
+                    expectedYOffset += 100;
+                }
+            });
+        }
+
+        [TestMethod]
+        public void ValidateNonVirtualLayoutDoesNotGetMeasuredForViewportChanges()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                int measureCount = 0;
+                int arrangeCount = 0;
+                var repeater = new ItemsRepeater();
+
+                // with a non virtualizing layout, repeater will just
+                // run layout once. 
+                repeater.Layout = new MockNonVirtualizingLayout() 
+                {
+                    MeasureLayoutFunc = (size, context) =>
+                    {
+                        measureCount++;
+                        return new Size(100, 800);
+                    },
+                    ArrangeLayoutFunc = (size, context) =>
+                    {
+                        arrangeCount++;
+                        return new Size(100, 800);
+                    }
+                };
+
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                Content = new ScrollViewer() 
+                {
+                    Content = repeater
+                };
+                Content.UpdateLayout();
+
+                Verify.AreEqual(1, measureCount);
+                Verify.AreEqual(1, arrangeCount);
+
+                measureCount = 0;
+                arrangeCount = 0;
+
+                // Once we switch to a virtualizing layout we should 
+                // get at least two passes to update the viewport.
+                repeater.Layout = new MockVirtualizingLayout() {
+                    MeasureLayoutFunc = (size, context) =>
+                    {
+                        measureCount++;
+                        return new Size(100, 800);
+                    },
+                    ArrangeLayoutFunc = (size, context) =>
+                    {
+                        arrangeCount++;
+                        return new Size(100, 800);
+                    }
+                };
+
+                Content.UpdateLayout();
+
+                Verify.IsGreaterThan(measureCount, 1);
+                Verify.IsGreaterThan(arrangeCount, 1);
+            });
+        }
+
+        private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,
            object elementFactory,
@@ -111,25 +203,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             {
                 ItemsSource = itemsSource,
                 Layout = layout,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 HorizontalCacheLength = 0,
                 VerticalCacheLength = 0,
             };
 
-            scrollViewer = new ScrollViewer()
+            scrollViewer = new ScrollViewer() 
             {
                 Content = repeater
             };
 
-            return new ScrollAnchorProvider()
+            return new ItemsRepeaterScrollHost()
             {
                 Width = 400,
                 Height = 400,
-                Content = scrollViewer
+                ScrollViewer = scrollViewer
             };
         }
 

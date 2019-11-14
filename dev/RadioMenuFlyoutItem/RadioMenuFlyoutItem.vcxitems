@@ -20,7 +20,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\RadioMenuFlyoutItem.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
@@ -43,6 +43,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioMenuFlyoutItem.idl" />
   </ItemGroup>
 </Project>

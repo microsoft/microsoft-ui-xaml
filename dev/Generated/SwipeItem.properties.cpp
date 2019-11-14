@@ -33,7 +33,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBackgroundPropertyChanged));
     }
     if (!s_BehaviorOnInvokedProperty)
     {
@@ -44,7 +44,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::SwipeBehaviorOnInvoked>::BoxValueIfNecessary(winrt::SwipeBehaviorOnInvoked::Auto),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnBehaviorOnInvokedPropertyChanged));
     }
     if (!s_CommandProperty)
     {
@@ -55,7 +55,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::ICommand>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCommandPropertyChanged));
     }
     if (!s_CommandParameterProperty)
     {
@@ -66,7 +66,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnCommandParameterPropertyChanged));
     }
     if (!s_ForegroundProperty)
     {
@@ -77,7 +77,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnForegroundPropertyChanged));
     }
     if (!s_IconSourceProperty)
     {
@@ -88,7 +88,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IconSource>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnIconSourcePropertyChanged));
     }
     if (!s_TextProperty)
     {
@@ -99,7 +99,7 @@ void SwipeItemProperties::EnsureProperties()
                 winrt::name_of<winrt::SwipeItem>(),
                 false /* isAttached */,
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnPropertyChanged));
+                winrt::PropertyChangedCallback(&OnTextPropertyChanged));
     }
 }
 
@@ -114,7 +114,55 @@ void SwipeItemProperties::ClearProperties()
     s_TextProperty = nullptr;
 }
 
-void SwipeItemProperties::OnPropertyChanged(
+void SwipeItemProperties::OnBackgroundPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnBehaviorOnInvokedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnCommandPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnCommandParameterPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnForegroundPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnIconSourcePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::SwipeItem>();
+    winrt::get_self<SwipeItem>(owner)->OnPropertyChanged(args);
+}
+
+void SwipeItemProperties::OnTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {

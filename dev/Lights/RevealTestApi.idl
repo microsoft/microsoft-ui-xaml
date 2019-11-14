@@ -1,4 +1,7 @@
-﻿[WUXC_VERSION_INTERNAL]
+﻿namespace MU_PRIVATE_MEDIA_NAMESPACE
+{
+
+[WUXC_VERSION_INTERNAL]
 [webhosthidden]
 runtimeclass RevealTestApi : Windows.UI.Xaml.DependencyObject
 {
@@ -22,4 +25,6 @@ runtimeclass RevealTestApi : Windows.UI.Xaml.DependencyObject
     Boolean HoverLight_ShouldBeOn(RevealHoverLight value);
     Boolean HoverLight_IsPressed(RevealHoverLight value);
     Boolean HoverLight_IsPointerOver(RevealHoverLight value);
+}
+
 }

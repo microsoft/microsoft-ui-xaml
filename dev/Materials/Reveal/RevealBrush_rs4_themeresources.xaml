@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:media="using:Microsoft.UI.Xaml.Media"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="Button" x:Key="ButtonRevealStyle">
         <Setter Property="Background" Value="{ThemeResource ButtonRevealBackground}" />
@@ -19,6 +20,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"  />
         <Setter Property="FocusVisualMargin" Value="-3" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
@@ -65,6 +67,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                                 Content="{TemplateBinding Content}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -91,6 +94,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"  />
         <Setter Property="FocusVisualMargin" Value="-3" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RepeatButton">
@@ -128,6 +132,7 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                                 Content="{TemplateBinding Content}"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -154,6 +159,7 @@
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"  />
         <Setter Property="FocusVisualMargin" Value="-3" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ToggleButton">
@@ -278,6 +284,7 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Content="{TemplateBinding Content}"
                             ContentTransitions="{TemplateBinding ContentTransitions}"
                             ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -533,6 +540,7 @@
         <Setter Property="VerticalContentAlignment" Value="Top" />
         <Setter Property="ClosedDisplayMode" Value="Compact" />
         <Setter Property="ExitDisplayModeOnAccessKeyInvoked" Value="False" />
+        <Setter Property="CommandBarOverflowPresenterStyle" Value="{ThemeResource DefaultCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="CommandBar">

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CommandBarFlyout.g.h"
+#include "CommandBarFlyoutTrace.h"
 
 class CommandBarFlyout :
     public ReferenceTracker<CommandBarFlyout, winrt::implementation::CommandBarFlyoutT>

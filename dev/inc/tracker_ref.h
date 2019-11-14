@@ -5,7 +5,7 @@
 
 struct __declspec(novtable) ITrackerHandleManager
 {
-    virtual ~ITrackerHandleManager() {};
+    virtual ~ITrackerHandleManager() = default;
 
     const ITrackerHandleManager* GetTrackerHandleManager() const
     {
@@ -34,7 +34,7 @@ struct __declspec(novtable) ITrackerHandleManager
     }
     catch (...) {}
 
-    void SetTrackerValue(::TrackerHandle handle, _In_opt_ IUnknown* value) const try
+    void SetTrackerValue(::TrackerHandle handle, IUnknown* value) const try
     {
 #ifdef _DEBUG
         MUX_ASSERT_NOASSUME(m_wasEnsureCalled);
@@ -255,7 +255,7 @@ public:
         }
     }
 
-    auto get() const
+    const T& get() const
     {
 #if _DEBUG
         // Do some debug validation to make sure that m_valueNoRef and the GetTrackerValue result don't
@@ -272,7 +272,7 @@ public:
 
             // Check if the pointers are identical or, if not, that their IUnknowns QI to the same thing
             MUX_ASSERT(
-                safe_cast<winrt::IUnknown>(unknown) == safe_cast<winrt::IUnknown>(reinterpret_cast<const T&>(m_valueNoRef)));
+                unknown.as<winrt::IUnknown>() == (reinterpret_cast<const T&>(m_valueNoRef)).as<winrt::IUnknown>());
         }
 #endif
         return reinterpret_cast<const T &>(m_valueNoRef);
@@ -292,7 +292,7 @@ public:
                 com_ptr<IUnknown> unknown;
                 if (m_owner->GetTrackerValue(m_handle, unknown.put()))
                 {
-                    auto value = safe_cast<V>(unknown);
+                    auto value = unknown.as<V>();
                     return value;
                 }
 

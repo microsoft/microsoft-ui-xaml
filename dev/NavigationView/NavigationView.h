@@ -54,14 +54,15 @@ public:
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&  args);
-    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnUnloaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
 
     void OnSettingsInvoked();
 
     winrt::UIElement FindSelectionIndicator(const winrt::IInspectable& item);
 
-    static void CreateAndAttachHeaderAnimation(winrt::Visual visual);
+    static void CreateAndAttachHeaderAnimation(const winrt::Visual& visual);
 
     void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
 
@@ -79,6 +80,7 @@ public:
     void CoerceToGreaterThanZero(double& value);
 
 private:
+    void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool ShouldIgnoreMeasureOverride();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
@@ -104,6 +106,7 @@ private:
     void PropagateNavigationViewAsParent();
     void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
     void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
+    void UpdatePaneShadow();
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -132,6 +135,8 @@ private:
     void UpdateTopNavigationWidthCache();
 
     int GetSelectedItemIndex();
+    double GetPaneToggleButtonWidth();
+    double GetPaneToggleButtonHeight();
 
     bool BumperNavigation(int offset);
 
@@ -150,12 +155,14 @@ private:
     void UpdateSelectedItem();
     void UpdatePaneTabFocusNavigation();
     void UpdatePaneToggleSize();
-    void UpdateBackButtonVisibility();
+    void UpdateBackAndCloseButtonsVisibility();
     void UpdatePaneTitleMargins();
     void UpdateLeftNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateTopNavListViewItemSource(const winrt::IInspectable& items);
     void UpdateListViewItemsSource(const winrt::ListView& listView, const winrt::IInspectable& itemsSource);
     void UpdateListViewItemSource();
+    void UpdateSelectionForMenuItems();
+    bool m_InitialNonForcedModeUpdate{ true };
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
     void OnLayoutUpdated(const winrt::IInspectable& sender, const winrt::IInspectable& e);
@@ -171,6 +178,7 @@ private:
     void OnSettingsKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnSettingsKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
     void OnItemClick(const winrt::IInspectable& sender, const winrt::ItemClickEventArgs& args);
     void RaiseItemInvoked(winrt::IInspectable const& item, 
@@ -236,10 +244,11 @@ private:
     void OpenPane();
     void ClosePane();
     bool AttemptClosePaneLightly();
-    void ClosePaneLightly();
     void SetPaneToggleButtonAutomationName();
     void SwapPaneHeaderContent(tracker_ref<winrt::ContentControl> newParent, tracker_ref<winrt::ContentControl> oldParent, winrt::hstring const& propertyPathName);
     void UpdateSettingsItemToolTip();
+    void UpdatePaneTitleFrameworkElementParents();
+    std::function<void ()> SetPaneTitleFrameworkElementParent(const winrt::ContentControl& parent, const winrt::FrameworkElement& paneTitle, bool shouldNotContainPaneTitle);
 
     void OnSplitViewClosedCompactChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSplitViewPaneClosed(const winrt::DependencyObject& sender, const winrt::IInspectable& obj);
@@ -253,6 +262,8 @@ private:
     bool IsOverlay();
     bool IsLightDismissible();
     bool ShouldShowBackButton();
+    bool ShouldShowCloseButton();
+    bool ShouldShowBackOrCloseButton();
 
     void UnhookEventsAndClearFields(bool isFromDestructor = false);
 
@@ -266,10 +277,11 @@ private:
     tracker_ref<winrt::SplitView> m_rootSplitView{ this };
     tracker_ref<winrt::NavigationViewItem> m_settingsItem{ this };
     tracker_ref<winrt::UIElement> m_paneContentGrid{ this };
+    tracker_ref<winrt::FrameworkElement> m_paneTitleHolderFrameworkElement{ this };
+    tracker_ref<winrt::FrameworkElement> m_paneTitleFrameworkElement{ this };
     tracker_ref<winrt::Button> m_paneSearchButton{ this };
     tracker_ref<winrt::Button> m_backButton{ this };
-    tracker_ref<winrt::TextBlock> m_paneTitleTextBlock{ this };
-    tracker_ref<winrt::Grid> m_buttonHolderGrid{ this };
+    tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ListView> m_leftNavListView{ this };
     tracker_ref<winrt::ListView> m_topNavListView{ this };
     tracker_ref<winrt::Button> m_topNavOverflowButton{ this };
@@ -282,8 +294,7 @@ private:
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
     tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_topPadding{ this };
-    tracker_ref<winrt::FrameworkElement> m_headerContent{ this };
+    tracker_ref<winrt::FrameworkElement> m_contentLeftPadding{ this };
 
     tracker_ref<winrt::CoreApplicationViewTitleBar> m_coreTitleBar{ this };
 
@@ -295,9 +306,15 @@ private:
     tracker_ref<winrt::ContentControl> m_leftNavFooterContentBorder{ this };
 
     tracker_ref<winrt::ContentControl> m_paneHeaderOnTopPane{ this };
+    tracker_ref<winrt::ContentControl> m_paneTitleOnTopPane{ this };
     tracker_ref<winrt::ContentControl> m_paneCustomContentOnTopPane{ this };
     tracker_ref<winrt::ContentControl> m_paneFooterOnTopPane{ this };
-    
+    tracker_ref<winrt::ContentControl> m_paneTitlePresenter{ this };
+
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
+    tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
+    tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
+
     int m_indexOfLastSelectedItemInTopNav{ 0 };
     tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
     std::vector<int> m_itemsRemovedFromMenuFlyout{};
@@ -311,6 +328,7 @@ private:
     winrt::CoreApplicationViewTitleBar::LayoutMetricsChanged_revoker m_titleBarMetricsChangedRevoker{};
     winrt::CoreApplicationViewTitleBar::IsVisibleChanged_revoker m_titleBarIsVisibleChangedRevoker{};
     winrt::Button::Click_revoker m_backButtonClickedRevoker{};
+    winrt::Button::Click_revoker m_closeButtonClickedRevoker{};
     winrt::ListView::ItemClick_revoker m_leftNavListViewItemClickRevoker{};
     winrt::ListView::Loaded_revoker m_leftNavListViewLoadedRevoker{};
     winrt::ListView::SelectionChanged_revoker m_leftNavListViewSelectionChangedRevoker{};
@@ -326,6 +344,7 @@ private:
     winrt::SplitView::PaneOpening_revoker m_splitViewPaneOpeningRevoker{};
     winrt::FrameworkElement::LayoutUpdated_revoker m_layoutUpdatedToken{};
     winrt::UIElement::AccessKeyInvoked_revoker m_accessKeyInvokedRevoker{};
+    winrt::FrameworkElement::SizeChanged_revoker m_paneTitleHolderFrameworkElementSizeChangedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };

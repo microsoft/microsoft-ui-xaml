@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);MATERIALS_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -25,10 +26,10 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)AcrylicTestApi.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)AcrylicBrush.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AcrylicBrush.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)AcrylicTestApi.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)AcrylicTestApi.idl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="$(MSBuildThisFileDirectory)Assets\NoiseAsset_256X256_PNG.png" />

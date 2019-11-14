@@ -13,12 +13,11 @@ using Windows.Foundation.Metadata;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Automation;
 
-#if !BUILD_WINDOWS
 using RadioMenuFlyoutItem = Microsoft.UI.Xaml.Controls.RadioMenuFlyoutItem;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "RadioMenuFlyoutItem")]
     public sealed partial class RadioMenuFlyoutItemPage : TestPage
     {
         Dictionary<string, TextBlock> itemStates;

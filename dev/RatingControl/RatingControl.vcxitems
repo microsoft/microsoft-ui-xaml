@@ -31,7 +31,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RatingControl.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RatingControl.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -44,8 +44,8 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RatingControl.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RatingControl.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RatingControlAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw">

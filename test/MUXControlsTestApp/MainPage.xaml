@@ -10,7 +10,7 @@
     AutomationProperties.AutomationId="MainPage">
 
     <Page.Resources>
-        <local:NavigateToTestCommand x:Key="NavigateToTestCommand"/>
+        <local:NavigateToTestCommand x:Key="NavigateToTestCommand" Frame="{x:Bind Frame}"/>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -20,8 +20,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="0">
-            <TextBlock Text="Languages:"/>
-            <ComboBox x:Name="LanguageChooser" AutomationProperties.AutomationId="LanguageChooser" VerticalAlignment="Center" Margin="0,0,0,5" SelectionChanged="LanguageChooser_SelectionChanged"/>
         </StackPanel>
         <ScrollViewer Grid.Row="1" HorizontalAlignment="Center" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <ItemsControl ItemsSource="{x:Bind Tests}">
@@ -33,13 +31,29 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button
-                        Content="{Binding Name}"
-                        CommandParameter="{Binding}"
-                        Command="{StaticResource NavigateToTestCommand}"
-                        AutomationProperties.Name="{Binding Name}"
-                        MinWidth="250"
-                        Margin="2"
-                        />
+                            CommandParameter="{Binding}"
+                            Command="{StaticResource NavigateToTestCommand}"
+                            AutomationProperties.Name="{Binding AutomationName}"
+                            FontSize="20"
+                            Margin="0,0,12,12"
+                            VerticalAlignment="Stretch">
+                            
+                            <Grid Width="250">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="36"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Image
+                                    Grid.Column="0"
+                                    Source="{Binding Icon}"/>
+
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Text="{Binding Name}"/>
+                            </Grid>
+
+                        </Button>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -47,6 +61,19 @@
         <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
             <Button Content="Magic Scale Change" Click="Button_Click"/>
             <CheckBox x:Name="LongAnimationsDisabled" AutomationProperties.AutomationId="LongAnimationsDisabled" Content="Long Animations Disabled" Checked="LongAnimationsDisabled_Checked" Unchecked="LongAnimationsDisabled_Unchecked" Margin="10,0,0,0"/>
+
+            <ComboBox
+                x:Name="LanguageChooser"
+                Header="Languages"
+                AutomationProperties.AutomationId="LanguageChooser"
+                VerticalAlignment="Center"
+                SelectionChanged="LanguageChooser_SelectionChanged"/>
+            <ComboBox
+                x:Name="FlowDirectionChooser"
+                Header="FlowDirection"
+                AutomationProperties.AutomationId="FlowDirectionChooser"
+                VerticalAlignment="Center"
+                SelectionChanged="FlowDirectionChooser_SelectionChanged"/>
 
         </StackPanel>
     </Grid>

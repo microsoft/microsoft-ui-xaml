@@ -1,3 +1,6 @@
+﻿namespace MU_XC_NAMESPACE
+{
+
 runtimeclass SwipeItems;
 runtimeclass SwipeControl;
 runtimeclass SwipeItemInvokedEventArgs;
@@ -25,6 +28,7 @@ enum SwipeMode
 [WUXC_INTERFACE_NAME("ISwipeItems", b01726ff-969a-40d0-9f04-76084ce6d7b7)]
 [WUXC_STATIC_NAME("ISwipeItemsStatics", 376250df-48db-43e3-b0e9-089e5da9a114)]
 [WUXC_CONSTRUCTOR_NAME("ISwipeItemsFactory", 47c460ee-d5aa-445f-b31e-50c076c011b9)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeItems : Windows.UI.Xaml.DependencyObject, Windows.Foundation.Collections.IVector<SwipeItem>
 {
     SwipeItems();
@@ -42,6 +46,7 @@ unsealed runtimeclass SwipeItems : Windows.UI.Xaml.DependencyObject, Windows.Fou
 [WUXC_STATIC_NAME("ISwipeControlStatics", e57ae83c-2216-4717-9ef6-4662334c6501)]
 [WUXC_CONSTRUCTOR_NAME("ISwipeControlFactory", c0aaa3ae-d141-4e12-a728-5f95b507e7ab)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeControl : Windows.UI.Xaml.Controls.ContentControl
 {
     SwipeControl();
@@ -72,6 +77,7 @@ runtimeclass SwipeItemInvokedEventArgs
 [WUXC_STATIC_NAME("ISwipeItemStatics", d0b44e96-2766-4d93-b5db-f5e1be832c2d)]
 [WUXC_CONSTRUCTOR_NAME("ISwipeItemFactory", 844bd61a-1716-4097-bba2-7526da22de39)]
 [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass SwipeItem : Windows.UI.Xaml.DependencyObject
 {
     SwipeItem();
@@ -93,4 +99,6 @@ unsealed runtimeclass SwipeItem : Windows.UI.Xaml.DependencyObject
     static Windows.UI.Xaml.DependencyProperty CommandProperty { get; };
     static Windows.UI.Xaml.DependencyProperty CommandParameterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty BehaviorOnInvokedProperty { get; };
+}
+
 }

@@ -64,10 +64,8 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     __super::OnKeyDown(e);
 }
 
-void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
-
     if (args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
     {
         winrt::TreeViewItem droppedOnItem = *this;
@@ -87,7 +85,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
                         if (treeViewList->IsFlatIndexValid(nodeIndex))
                         {
                             treeViewList->RemoveNodeFromParent(node);
-                            winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->AppendCore(node);
+                            winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->Append(node);
                         }
                     }
 
@@ -104,10 +102,10 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
 
                     if (droppedNode != droppedOnNode)
                     {
-                        winrt::get_self<TreeViewNodeVector>(droppedNode.Parent().Children())->RemoveAtCore(removeIndex);
+                        winrt::get_self<TreeViewNodeVector>(droppedNode.Parent().Children())->RemoveAt(removeIndex);
 
                         // Append the dragged dropped item as a child of the node it was dropped onto
-                        winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->AppendCore(droppedNode);
+                        winrt::get_self<TreeViewNodeVector>(droppedOnNode.Children())->Append(droppedNode);
 
                         // If not set to true then the Reorder code of listview will override what is being done here.
                         args.Handled(true);
@@ -123,14 +121,12 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDrop(e);
+    __super::OnDrop(args);
 }
 
-void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     auto treeView = AncestorTreeView();
-    
     if (treeView)
     {
         auto treeViewList = treeView->ListControl();
@@ -172,12 +168,11 @@ void TreeViewItem::OnDragOver(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDragOver(e);
+    __super::OnDragOver(args);
 }
 
-void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     winrt::TreeViewItem draggedOverItem = *this;
 
     args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
@@ -230,12 +225,11 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& e)
         }
     }
 
-    __super::OnDragEnter(e);
+    __super::OnDragEnter(args);
 }
 
-void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& e)
+void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& args)
 {
-    winrt::DragEventArgs args = e;
     if (auto treeView = AncestorTreeView())
     {
         auto treeViewList = treeView->ListControl();
@@ -247,7 +241,7 @@ void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& e)
         m_expandContentTimer.get().Stop();
     }
 
-    __super::OnDragLeave(e);
+    __super::OnDragLeave(args);
 }
 
 // IUIElementOverrides
@@ -287,33 +281,6 @@ void TreeViewItem::OnApplyTemplate()
     __super::OnApplyTemplate();
 }
 
-void TreeViewItem::UpdateSelection(TreeNodeSelectionState const& state)
-{
-    if (auto treeView = AncestorTreeView())
-    {
-        if (auto listControl = treeView->ListControl())
-        {
-            if (listControl->IsMultiselect())
-            {
-                if (auto node = TreeNode())
-                {
-                    listControl->ListViewModel()->UpdateSelection(node, state);
-                    UpdateMultipleSelection(state);
-                }
-            }
-            else
-            {
-                // Single selection, just set it in ListView.
-                auto index = listControl->IndexFromContainer(*this);
-                if (index >= 0)
-                {
-                    listControl->SelectedIndex(index);
-                }
-            }
-        }
-    }
-}
-
 template<typename T>
 T TreeViewItem::GetAncestorView()
 {
@@ -322,7 +289,7 @@ T TreeViewItem::GetAncestorView()
     while (treeViewItemAncestor && !ancestorView)
     {
         treeViewItemAncestor = winrt::VisualTreeHelper::GetParent(treeViewItemAncestor);
-        ancestorView = safe_try_cast<T>(treeViewItemAncestor);
+        ancestorView = treeViewItemAncestor.try_as<T>();
     }
     return ancestorView;
 }
@@ -339,7 +306,6 @@ com_ptr<TreeView> TreeViewItem::AncestorTreeView()
 void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     winrt::IDependencyProperty property = args.Property();
-
     if (auto node = TreeNode()) 
     {
         if (property == s_IsExpandedProperty)
@@ -355,13 +321,14 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         {
             winrt::IInspectable value = args.NewValue();
 
-            // ItemsSource change happens during measuring.
-            // Adding itemsSource to node's children triggers another layout change, so it has to be done async.
-            m_dispatcherHelper.RunAsync(
-                [node, value]()
+            auto treeViewNode = winrt::get_self<TreeViewNode>(node);
+            treeViewNode->ItemsSource(value);
+            if (IsInContentMode())
             {
-                winrt::get_self<TreeViewNode>(node)->ItemsSource(value);
-            });
+                // The children have changed, validate and update GlyphOpacity
+                bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
+                GlyphOpacity(hasChildren ? 1.0 : 0.0);
+            }
         }
         else if (property == s_HasUnrealizedChildrenProperty)
         {
@@ -377,7 +344,6 @@ void TreeViewItem::OnExpandContentTimerTick(const winrt::IInspectable& /*sender*
     {
         m_expandContentTimer.get().Stop();
     }
-
     
     if (auto draggedOverNode = TreeNode())
     {
@@ -462,27 +428,63 @@ void TreeViewItem::RaiseSelectionChangeEvents(bool isSelected)
     }
 }
 
-void TreeViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+void TreeViewItem::UpdateSelection(bool isSelected)
 {
-    bool isSelected = unbox_value<bool>(GetValue(args));
     if (auto treeView = AncestorTreeView())
     {
-        auto listControl = treeView->ListControl();
-        bool isMultiselect = listControl->IsMultiselect();
-
-        if (isMultiselect)
+        if (auto node = TreeNode())
         {
-            if (isSelected != m_selectionBox.get().IsChecked().Value())
+            auto listControl = treeView->ListControl();
+            auto viewModel = listControl->ListViewModel();
+            if (isSelected != viewModel->IsNodeSelected(node))
             {
-                m_selectionBox.get().IsChecked(isSelected);
-                if (auto node = TreeNode())
+                auto selectedNodes = viewModel->GetSelectedNodes();
+                if (isSelected)
                 {
-                    auto state = isSelected ? TreeNodeSelectionState::Selected : TreeNodeSelectionState::UnSelected;
-                    listControl->ListViewModel()->UpdateSelection(node, state);
+                    selectedNodes.Append(node);
+                }
+                else
+                {
+                    unsigned int index;
+                    if (selectedNodes.IndexOf(node, index))
+                    {
+                        selectedNodes.RemoveAt(index);
+                    }
                 }
             }
         }
     }
+}
+
+void TreeViewItem::UpdateSelectionVisual(TreeNodeSelectionState const& state)
+{
+    if (auto treeView = AncestorTreeView())
+    {
+        if (auto listControl = treeView->ListControl())
+        {
+            if (listControl->IsMultiselect())
+            {
+                UpdateMultipleSelection(state);
+            }
+            else
+            {
+                if (auto node = TreeNode())
+                {
+                    auto viewModel = listControl->ListViewModel();
+                    auto isNodeSelected = viewModel->IsNodeSelected(node);
+                    if (isNodeSelected != IsSelected())
+                    {
+                        IsSelected(isNodeSelected);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void TreeViewItem::OnIsSelectedChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
+{
+    UpdateSelection(unbox_value<bool>(GetValue(args)));
 }
 
 void TreeViewItem::UpdateMultipleSelection(TreeNodeSelectionState const& state)
@@ -558,8 +560,8 @@ void TreeViewItem::ReorderItems(const winrt::ListView& listControl, const winrt:
 
     auto parentNode = targetNode.Parent();
     auto children = winrt::get_self<TreeViewNodeVector>(parentNode.Children());
-    children->RemoveAtCore(childIndex);
-    children->InsertAtCore(childIndex + positionModifier, targetNode);
+    children->RemoveAt(childIndex);
+    children->InsertAt(childIndex + positionModifier, targetNode);
     listControl.UpdateLayout();
 
     auto treeView = AncestorTreeView();

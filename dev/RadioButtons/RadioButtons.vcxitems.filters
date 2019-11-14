@@ -14,12 +14,14 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsListView.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsPrimitives.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RadioButtonsAutomationPeer.idl" />
   </ItemGroup>
 </Project>

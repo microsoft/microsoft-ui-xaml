@@ -7,11 +7,14 @@ using System;
 using System.Numerics;
 using System.Collections;
 using System.Linq;
+using System.Threading;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Shapes;
+using Windows.UI.Xaml.Media;
 using Common;
 
 #if USING_TAEF
@@ -23,20 +26,29 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ColorSpectrumShape = Microsoft.UI.Xaml.Controls.ColorSpectrumShape;
 using ColorSpectrumComponents = Microsoft.UI.Xaml.Controls.ColorSpectrumComponents;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
 using ColorSpectrum = Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum;
-using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider; 
-#endif
+using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
     public class ColorPickerTests
     {
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                Log.Comment("TestCleanup: Restore TestContentRoot to null");
+                // Put things back the way we found them.
+                MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
         [TestMethod]
         public void ColorPickerTest()
         {
@@ -232,9 +244,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
         }
 
+        [TestMethod]
+        public void ValidateFractionalWidthDoesNotCrash()
+        {
+            ColorSpectrum colorSpectrum = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                colorSpectrum = new ColorSpectrum();
+
+                // 332.75 is the fractional value that caused a crash in Settings when DPI was set to 200%
+                // and text scaling was set to >160%.  It ensures that we exercise all of the round() fixes
+                // that we made in ColorSpectrum to ensure we always round fractional values instead of
+                // truncating them.
+                colorSpectrum.Width = 332.75;
+                colorSpectrum.Height = 332.75;
+            });
+
+            SetAsRootAndWaitForColorSpectrumFill(colorSpectrum);
+        }
+
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
         // so we can't execute this test as authored there.
-#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyColorPropertyMetadata()
         {
@@ -247,6 +278,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(memberType.BaseType.FullName, "ValueType");
             });
         }
-#endif
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            ColorPicker colorPicker = null;
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsAlphaEnabled = true, Width=300, Height=600 };
+            });
+            TestUtilities.SetAsVisualTreeRoot(colorPicker);
+
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+        }
+
+        // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
+        private void SetAsRootAndWaitForColorSpectrumFill(FrameworkElement element)
+        {
+            ManualResetEvent spectrumLoadedEvent = new ManualResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                element.Loaded += (sender, args) =>
+                {
+                    var spectrumRectangle = VisualTreeUtils.FindVisualChildByName(element, "SpectrumRectangle") as Rectangle;
+                    Verify.IsNotNull(spectrumRectangle);
+
+                    spectrumRectangle.RegisterPropertyChangedCallback(Shape.FillProperty, (o, dp) =>
+                    {
+                        spectrumLoadedEvent.Set();
+                    });
+                };
+
+                StackPanel root = new StackPanel();
+                root.Children.Add(element);
+                MUXControlsTestApp.App.TestContentRoot = root;
+            });
+
+            spectrumLoadedEvent.WaitOne();
+        }
     }
 }

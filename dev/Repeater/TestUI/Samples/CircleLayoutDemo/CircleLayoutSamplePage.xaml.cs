@@ -10,16 +10,11 @@ using Windows.UI.Xaml.Controls;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
-#if BUILD_WINDOWS
-using ElementFactoryGetArgs = Windows.UI.Xaml.ElementFactoryGetArgs;
-using ElementFactoryRecycleArgs = Windows.UI.Xaml.ElementFactoryRecycleArgs;
-#else
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
 using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -35,11 +30,7 @@ namespace MUXControlsTestApp.Samples
 
             _data = new ObservableCollection<Person>();
             repeater.ItemsSource = new PersonDataSource(_data);
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)new PersonElementFactory((DataTemplate)Resources["PersonTemplate"]);;
-#else
             repeater.ItemTemplate = new PersonElementFactory((DataTemplate)Resources["PersonTemplate"]); ;
-#endif
             newItem.Content = NewPerson();
             newItem.Tapped += OnNewItemTapped;
 
@@ -152,7 +143,7 @@ namespace MUXControlsTestApp.Samples
 
         private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
     }
 

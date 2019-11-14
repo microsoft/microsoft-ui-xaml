@@ -126,7 +126,7 @@ private:
     {
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context) :
             m_element(owner, element),
@@ -138,7 +138,7 @@ private:
 
         ElementInfo(
             const ITrackerHandleManager* owner,
-            winrt::UIElement element,
+            const winrt::UIElement& element,
             AnimationTrigger trigger,
             winrt::AnimationContext context,
             winrt::Rect oldBounds,
@@ -179,5 +179,5 @@ private:
     event_source<winrt::ElementAnimationCompleted> m_boundsChangeAnimationCompleted{ this };
 
     // Event tokens.
-    winrt::event_token m_rendering{};
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_rendering{};
 };

@@ -6,10 +6,6 @@
 #include "SpectrumBrush.h"
 #include "Vector.h"
 
-SpectrumBrush::SpectrumBrush()
-{
-}
-
 void SpectrumBrush::OnConnected()
 {
     m_isConnected = true;

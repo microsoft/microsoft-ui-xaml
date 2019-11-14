@@ -1,4 +1,7 @@
-﻿runtimeclass ItemsSourceView;
+﻿namespace MU_XC_NAMESPACE
+{
+
+runtimeclass ItemsSourceView;
 runtimeclass ItemsRepeater;
 runtimeclass ElementFactory;
 runtimeclass LayoutContext;
@@ -6,7 +9,7 @@ runtimeclass VirtualizingLayoutContext;
 runtimeclass Layout;
 runtimeclass VirtualizingLayout;
 runtimeclass ElementAnimator;
-runtimeclass ScrollAnchorProvider;
+runtimeclass ItemsRepeaterScrollHost;
 runtimeclass ItemsRepeaterElementPreparedEventArgs;
 runtimeclass ItemsRepeaterElementClearingEventArgs;
 runtimeclass ItemsRepeaterElementIndexChangedEventArgs;
@@ -108,27 +111,33 @@ unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollection
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [contentproperty("ItemTemplate")]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
 {
     ItemsRepeater();
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemsSource { get; set; };
     ItemsSourceView ItemsSourceView { get; };
 
-#ifdef BUILD_WINDOWS
-    Windows.UI.Xaml.IElementFactory ItemTemplate { get; set; };
- #else
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Object ItemTemplate { get; set; };
- #endif
 
-    VirtualizingLayout Layout { get; set; };
-    
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::StackLayout()")]
+    Layout Layout { get; set; };
+
     [WUXC_VERSION_PREVIEW]
     {
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         ElementAnimator Animator{ get; set; };
     }
-    
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double HorizontalCacheLength { get; set; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("2.0")]
     Double VerticalCacheLength { get; set; };
 
     Windows.UI.Xaml.Media.Brush Background{ get; set; };
@@ -149,7 +158,6 @@ unsealed runtimeclass ItemsRepeater : Windows.UI.Xaml.FrameworkElement
     static Windows.UI.Xaml.DependencyProperty BackgroundProperty{ get; };
 }
 
-#ifndef BUILD_WINDOWS
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ElementFactoryGetArgs
@@ -176,26 +184,14 @@ interface IElementFactoryShim
     void RecycleElement(ElementFactoryRecycleArgs args);
 }
 
-#endif
-
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject
-#ifndef BUILD_WINDOWS
-, IElementFactoryShim
-#else
-, Windows.UI.Xaml.IElementFactory
-#endif
+unsealed runtimeclass ElementFactory : Windows.UI.Xaml.DependencyObject, IElementFactoryShim
 {
     ElementFactory();
 
-#ifdef BUILD_WINDOWS
-    overridable Windows.UI.Xaml.UIElement GetElementCore(Windows.UI.Xaml.ElementFactoryGetArgs args);
-    overridable void RecycleElementCore(Windows.UI.Xaml.ElementFactoryRecycleArgs args);
-#else
     overridable Windows.UI.Xaml.UIElement GetElementCore(ElementFactoryGetArgs args);
     overridable void RecycleElementCore(ElementFactoryRecycleArgs args);
-#endif
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -242,7 +238,7 @@ unsealed runtimeclass VirtualizingLayoutContext : LayoutContext
 
     overridable Windows.Foundation.Rect RealizationRectCore();
 
-    overridable Windows.UI.Xaml.UIElement GetElementAtCore(Int32 index, ElementRealizationOptions options);
+    overridable Windows.UI.Xaml.UIElement GetOrCreateElementAtCore(Int32 index, ElementRealizationOptions options);
     overridable void RecycleElementCore(Windows.UI.Xaml.UIElement element);
 
     overridable Int32 RecommendedAnchorIndexCore{ get; };
@@ -324,11 +320,16 @@ unsealed runtimeclass ElementAnimator
     protected void OnBoundsChangeAnimationCompleted(Windows.UI.Xaml.UIElement element);
 }
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass ScrollAnchorProvider : Windows.UI.Xaml.Controls.ContentControl
+[contentproperty("ScrollViewer")]
+runtimeclass ItemsRepeaterScrollHost : Windows.UI.Xaml.FrameworkElement
 {
-    ScrollAnchorProvider();
+    ItemsRepeaterScrollHost();
+
+    Windows.UI.Xaml.Controls.ScrollViewer ScrollViewer { get; set; };
+
+    Windows.UI.Xaml.UIElement CurrentAnchor{ get; };
 
     Double HorizontalAnchorRatio { get; set; };
     Double VerticalAnchorRatio { get; set; };
@@ -375,17 +376,28 @@ unsealed runtimeclass UniformGridLayoutState
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass UniformGridLayout : VirtualizingLayout
 {
     UniformGridLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinItemWidth { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinItemHeight { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinRowSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinColumnSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::UniformGridLayoutItemsJustification::Start")]
     UniformGridLayoutItemsJustification ItemsJustification{ get; set; };
+    [MUX_DEFAULT_VALUE("winrt::UniformGridLayoutItemsStretch::None")]
     UniformGridLayoutItemsStretch ItemsStretch{ get; set; };
+    [MUX_DEFAULT_VALUE("-1")]
+    Int32 MaximumRowsOrColumns{ get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MinItemWidthProperty { get; };
@@ -394,6 +406,7 @@ unsealed runtimeclass UniformGridLayout : VirtualizingLayout
     static Windows.UI.Xaml.DependencyProperty MinColumnSpacingProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsJustificationProperty { get; };
     static Windows.UI.Xaml.DependencyProperty ItemsStretchProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty MaximumRowsOrColumnsProperty{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
@@ -405,11 +418,15 @@ unsealed runtimeclass StackLayoutState
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass StackLayout : VirtualizingLayout
 {
     StackLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Vertical")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double Spacing { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
@@ -430,13 +447,19 @@ unsealed runtimeclass FlowLayoutState
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
 unsealed runtimeclass FlowLayout : VirtualizingLayout
 {
     FlowLayout();
 
+    [MUX_DEFAULT_VALUE("winrt::Orientation::Horizontal")]
     Windows.UI.Xaml.Controls.Orientation Orientation { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinRowSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("0.0")]
     Double MinColumnSpacing { get; set; };
+    [MUX_DEFAULT_VALUE("winrt::FlowLayoutLineAlignment::Start")]
     FlowLayoutLineAlignment LineAlignment { get; set; };
 
     static Windows.UI.Xaml.DependencyProperty OrientationProperty { get; };
@@ -527,6 +550,7 @@ runtimeclass SelectionModelSelectionChangedEventArgs
 runtimeclass SelectionModelChildrenRequestedEventArgs
 {
     Object Source { get; };
+    IndexPath SourceIndex { get; };
     Object Children { get; set; };
 }
 
@@ -580,4 +604,6 @@ unsealed runtimeclass SelectionModel : Windows.UI.Xaml.Data.INotifyPropertyChang
     void ClearSelection();
 
     protected void OnPropertyChanged(String propertyName);
+}
+
 }

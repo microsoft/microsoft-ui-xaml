@@ -14,15 +14,13 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-using ScrollAnchorProvider = Microsoft.UI.Xaml.Controls.ScrollAnchorProvider;
+using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
-#endif
 
 namespace MUXControlsAdhocApp.RepeaterPages
 {
@@ -76,10 +74,10 @@ namespace MUXControlsAdhocApp.RepeaterPages
 
             repeater.VerticalCacheLength = 4.0;
             repeater.XYFocusKeyboardNavigation = Windows.UI.Xaml.Input.XYFocusKeyboardNavigationMode.Enabled;
-            var tracker = new ScrollAnchorProvider();
+            var tracker = new ItemsRepeaterScrollHost();
             var scrollViewer = new Windows.UI.Xaml.Controls.ScrollViewer();
             
-            tracker.Content = scrollViewer;
+            tracker.ScrollViewer = scrollViewer;
             scrollViewer.Content = repeater;
             scrollViewer.IsTabStop = false;
             host.Child = tracker;

@@ -1,3 +1,6 @@
+namespace MU_XAP_NAMESPACE
+{
+
 [WUXC_VERSION_RS3]
 [webhosthidden]
 [WUXC_INTERFACE_NAME("IPersonPictureAutomationPeer", 27156d4c-a66f-4aaf-8286-4f796d30628c)]
@@ -5,4 +8,6 @@
 unsealed runtimeclass PersonPictureAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     [method_name("CreateInstanceWithOwner")] PersonPictureAutomationPeer(MU_XC_NAMESPACE.PersonPicture owner);
+}
+
 }

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "ViewChangeBase.h"
 #include "ScrollerTrace.h"
 
 enum class InteractionTrackerAsyncOperationType
@@ -19,8 +20,7 @@ enum class InteractionTrackerAsyncOperationType
 
 enum class InteractionTrackerAsyncOperationTrigger
 {
-    // Operation is triggered by a direct call to Scroller::ChangeOffsets, Scroller::ChangeZoomFactor,
-    // Scroller::ChangeOffsetsWithAdditionalVelocity or Scroller::ChangeZoomFactorWithAdditionalVelocity
+    // Operation is triggered by a direct call to Scroller's ScrollTo/ScrollBy/ScrollFrom or ZoomTo/ZoomBy/ZoomFrom
     DirectViewChange = 0x01,
     // Operation is triggered by the horizontal IScrollController.
     HorizontalScrollControllerRequest = 0x02,
@@ -45,7 +45,7 @@ public:
         InteractionTrackerAsyncOperationType operationType,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         bool isDelayed,
-        const winrt::IInspectable& options);
+        std::shared_ptr<ViewChangeBase> viewChangeBase);
     ~InteractionTrackerAsyncOperation();
 
     int32_t GetViewChangeId() const
@@ -104,6 +104,18 @@ public:
         return m_preProcessingTicksCountdown > 0 && m_preProcessingTicksCountdown < m_queuedOperationTicks;
     }
 
+    bool IsCompleted() const
+    {
+        return m_isCompleted;
+    }
+
+    void SetIsCompleted(bool isCompleted)
+    {
+        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, isCompleted);
+
+        m_isCompleted = isCompleted;
+    }
+
     int GetTicksCountdown() const
     {
         return m_preProcessingTicksCountdown;
@@ -146,25 +158,27 @@ public:
                                  static_cast<int>(InteractionTrackerAsyncOperationTrigger::VerticalScrollControllerRequest));
     }
 
-    void TickNonAnimatedOperation(bool* needsCompletion)
+    // Returns True when the post-processing ticks count has reached 0
+    bool TickNonAnimatedOperation()
     {
         MUX_ASSERT(!IsAnimated());
         MUX_ASSERT(m_postProcessingTicksCountdown > 0);
 
         m_postProcessingTicksCountdown--;
-        *needsCompletion = m_postProcessingTicksCountdown == 0;
-
+        
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_postProcessingTicksCountdown);
+        return m_postProcessingTicksCountdown == 0;
     }
 
-    void TickQueuedOperation(bool* needsProcessing)
+    // Returns True when the pre-processing ticks count has reached 0
+    bool TickQueuedOperation()
     {
         MUX_ASSERT(m_preProcessingTicksCountdown > 0);
 
-        m_preProcessingTicksCountdown--;
-        *needsProcessing = m_preProcessingTicksCountdown == 0;
+        m_preProcessingTicksCountdown--;        
 
         SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, m_preProcessingTicksCountdown);
+        return m_preProcessingTicksCountdown == 0;
     }
 
     InteractionTrackerAsyncOperationType GetOperationType() const
@@ -184,9 +198,21 @@ public:
         m_requestId = requestId;
     }
 
-    winrt::IInspectable GetOptions() const
+    std::shared_ptr<ViewChangeBase> GetViewChangeBase() const
     {
-        return m_options;
+        return m_viewChangeBase;
+    }
+
+    std::shared_ptr<InteractionTrackerAsyncOperation> GetRequiredOperation() const
+    {
+        return m_requiredOperation;
+    }
+
+    void SetRequiredOperation(std::shared_ptr<InteractionTrackerAsyncOperation> requiredOperation)
+    {
+        SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, requiredOperation);
+
+        m_requiredOperation = requiredOperation;
     }
 
 private:
@@ -201,7 +227,7 @@ private:
     int m_postProcessingTicksCountdown{ 0 };
 
     // Number of UI thread ticks remaining before this queued operation gets processed.
-    // Positive between the time the operation is queued in Scroller::ChangeOffsets, Scroller::ChangeZoomFactor or
+    // Positive between the time the operation is queued in Scroller::ScrollTo/By/From, Scroller::ZoomTo/By/From or
     // Scroller::OnCompositionTargetRendering and the time it is processed in Scroller::ProcessOffsetsChange or Scroller::ProcessZoomFactorChange.
     int m_preProcessingTicksCountdown{ c_queuedOperationTicks };
 
@@ -217,11 +243,16 @@ private:
     // Set to True when the operation is delayed until the scroller is loaded.
     bool m_isDelayed{ false };
 
-    // ScrollerChangeOffsetsOptions, ScrollerChangeOffsetsWithAdditionalVelocityOptions, ScrollerChangeZoomFactorOptions or 
-    // ScrollerChangeZoomFactorWithAdditionalVelocityOptions instance associated with this operation.
-    winrt::IInspectable m_options{ nullptr };
+    // Set to True when the operation completed and was assigned a final ScrollerViewChangeResult result.
+    bool m_isCompleted{ false };
+
+    // OffsetsChange or ZoomFactorChange instance associated with this operation.
+    std::shared_ptr<ViewChangeBase> m_viewChangeBase;
 
     // ViewChangeId associated with this operation.
     int32_t m_viewChangeId{ -1 };
+
+    // Null by default and optionally set to a prior operation that needs to complete before this one can start.
+    std::shared_ptr<InteractionTrackerAsyncOperation> m_requiredOperation{ nullptr };
 };
 

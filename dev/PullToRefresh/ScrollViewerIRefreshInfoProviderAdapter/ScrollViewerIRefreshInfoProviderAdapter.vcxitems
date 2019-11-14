@@ -8,13 +8,14 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PULLTOREFRESH_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ScrollViewerIRefreshInfoProviderAdapter.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollViewerIRefreshInfoProviderAdapter.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewerIRefreshInfoProviderDefaultAnimationHandler.cpp" />

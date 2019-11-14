@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{0F61C8BD-D066-4812-A02B-E95CE18A985D}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PROGRESSBAR_INCLUDED</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBar.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBar.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressBarTemplateSettings.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBar.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressBarTemplateSettings.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBar.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ProgressBar.idl" />
+  </ItemGroup>
+</Project>

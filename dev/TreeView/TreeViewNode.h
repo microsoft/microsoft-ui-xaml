@@ -66,8 +66,9 @@ private:
     winrt::ItemsSourceView m_itemsDataSource{ nullptr };
     void OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void SyncChildrenNodesWithItemsSource();
-    void OnItemsAdded(int index, int count);
-    void OnItemsRemoved(int index, int count);
+    bool AreChildrenNodesEqualToItemsSource();
+    void AddToChildrenNodes(int index, int count);
+    void RemoveFromChildrenNodes(int index, int count);
     bool m_isContentMode{ false };
     TreeNodeSelectionState m_multiSelectionState{ TreeNodeSelectionState::UnSelected };
     hstring GetContentAsString();
@@ -96,32 +97,20 @@ class TreeViewNodeVector :
 private:
     winrt::weak_ref<winrt::TreeViewNode> m_parent{ nullptr };
 
-    // Check if parent node is in "content mode".
-    // We don't want users to use ItemsSource and modify TreeViewNode at the same time since that might cause some unexpected behaviors.
-    // This method is used to check what "mode" is treeview currently in.
-    bool IsParentInContentMode();
-
 public:
     
     TreeViewNodeVector();
     TreeViewNodeVector(unsigned int capacity);
 
+    TreeViewNode* Parent();
     void SetParent(winrt::TreeViewNode value);
-    void AppendCore(winrt::TreeViewNode const& item);
-    void InsertAtCore(unsigned int index, winrt::TreeViewNode const& item);
-    void SetAtCore(unsigned int index, winrt::TreeViewNode const& item);   
-    void RemoveAtCore(unsigned int index);
-    void RemoveAtEndCore();
-    void ReplaceAllCore(winrt::array_view<winrt::TreeViewNode const> values);
-    void ClearCore(); 
+    winrt::IBindableVector GetWritableParentItemsSource();
 
-    void Append(winrt::TreeViewNode const& item);   
-    void InsertAt(unsigned int index, winrt::TreeViewNode const& item);
-    void SetAt(unsigned int index, winrt::TreeViewNode const& item);   
-    void RemoveAt(unsigned int index);    
-    void RemoveAtEnd();
-    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values);    
-    void Clear();
+    void Append(winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void InsertAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);
+    void SetAt(unsigned int index, winrt::TreeViewNode const& item, bool updateItemsSource = true);   
+    void RemoveAt(unsigned int index, bool updateItemsSource = true);
+    void RemoveAtEnd(bool updateItemsSource = true);
+    void ReplaceAll(winrt::array_view<winrt::TreeViewNode const> values, bool updateItemsSource = true);    
+    void Clear(bool updateItemsSource = true);
 };
-
-void throwIllegalMethodCallException();

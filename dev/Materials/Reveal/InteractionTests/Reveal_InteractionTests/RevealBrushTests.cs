@@ -42,8 +42,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [ClassInitialize]
         [TestProperty("RunAs", "User")]
         [TestProperty("Classification", "Integration")]
-        [TestProperty("Platform", "Any")]
-        [TestProperty("MUXControlsTestSuite", "SuiteB")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         [TestProperty("MUXControlsTestEnabledForPhone", "True")]
         public static void ClassInitialize(TestContext testContext)
         {
@@ -70,8 +69,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToColorReveal"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToColorReveal" }))
             {
                 var result = new Edit(FindElement.ByName("CheckBrushesResult"));
 
@@ -94,8 +92,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealFallback"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealFallback" }))
             {
                 ChooseFromComboBox("TestNameComboBox", "RevealAlwaysUseFallback");
 
@@ -127,8 +124,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 Log.Comment("Testing light states for Button... ");
 
@@ -147,8 +143,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 Log.Comment("Testing RevealHoverLight states for ListViewItem... ");
 
@@ -167,8 +162,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var button = new Button(FindElement.ByName("SetStatePressed"));
                 button.Invoke();
@@ -242,8 +236,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 Log.Comment("Testing RevealBorderLight for ListViewItem... ");
 
@@ -282,7 +275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     waiter.Wait();
                 }
                 LogResult(result, "BorderLight_TapAndHold");
-                
+
             }
         }
 
@@ -295,8 +288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
 
@@ -358,8 +350,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 var target = FindElement.ById("LargeButton2");
@@ -408,8 +399,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 var target = FindElement.ById("LargeButton2");
@@ -445,8 +435,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 var target = FindElement.ById("LargeButton2");
@@ -483,8 +472,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealStates"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealStates" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 var target = FindElement.ById("LargeButton2");
@@ -560,8 +548,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealRegressionTests"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealRegressionTests" }))
             {
                 ToggleButton simulateDisabledByPolicyToggleButton = new ToggleButton(FindElement.ById("SimluateDisabledByPolicyToggleButton"));
                 var addRevealButton = FindElement.ById("AddRevealButton");
@@ -616,8 +603,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToCoreWindowEventsTests"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToCoreWindowEventsTests" }))
             {
                 var addReveal = FindElement.ById("AddReveal");
                 var result = new Edit(FindElement.ById("TestResult"));
@@ -651,8 +637,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 return;
             }
 
-            using (IDisposable page1 = new TestSetupHelper("Reveal Tests"),
-                               page2 = new TestSetupHelper("navigateToRevealMarkup"))
+            using (var setup = new TestSetupHelper(new[] { "Reveal Tests", "navigateToRevealMarkup" }))
             {
                 var result = new Edit(FindElement.ById("TestResult"));
                 using (var waiter = new ValueChangedEventWaiter(result))

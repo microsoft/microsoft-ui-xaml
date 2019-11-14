@@ -37,10 +37,11 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SpectrumBrush.h" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ColorPicker_themeresources.xaml">
       <Version>RS1</Version>
@@ -49,16 +50,17 @@
     <Page Include="$(MSBuildThisFileDirectory)ColorSpectrum.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Common.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ColorPicker.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ColorPickerSlider.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ColorPickerSliderAutomationPeer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ColorSpectrum.idl" />
-    <None Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.idl" />
-    <None Include="$(MSBuildThisFileDirectory)SpectrumBrush.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)Common.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ColorPicker.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ColorPickerSlider.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ColorPickerSliderAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ColorSpectrum.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ColorSpectrumAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)SpectrumBrush.idl" />
   </ItemGroup>
   <ItemGroup>
     <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />

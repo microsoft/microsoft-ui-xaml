@@ -17,7 +17,7 @@ public:
     virtual void SetLayoutExtent(winrt::Rect extent) = 0;
     virtual winrt::Point GetOrigin() const = 0;
 
-    virtual void OnLayoutChanged() = 0;
+    virtual void OnLayoutChanged(bool isVirtualizing) = 0;
     virtual void OnElementPrepared(const winrt::UIElement& element) = 0;
     virtual void OnElementCleared(const winrt::UIElement& element) = 0;
     virtual void OnOwnerMeasuring() = 0;

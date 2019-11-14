@@ -11,12 +11,11 @@ using Windows.UI;
 using System.Windows.Input;
 using System.Collections.ObjectModel;
 
-#if !BUILD_WINDOWS
 using RadioButtons = Microsoft.UI.Xaml.Controls.RadioButtons;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "RadioButtons", Icon = "RadioButton.png")]
     public sealed partial class RadioButtonsPage : TestPage
     {
         ObservableCollection<string> m_itemCollection;

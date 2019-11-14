@@ -21,7 +21,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)DropDownButton.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" >
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)DropDownButton_rs1.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -32,7 +32,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />
-    <None Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)DropDownButton.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)DropDownButtonAutomationPeer.idl" />
   </ItemGroup>
 </Project>

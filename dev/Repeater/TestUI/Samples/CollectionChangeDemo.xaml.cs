@@ -9,17 +9,16 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using SelectTemplateEventArgs = Microsoft.UI.Xaml.Controls.SelectTemplateEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
     public sealed partial class CollectionChangeDemo : Page
     {
         MyDataSource _dataSource = new MyDataSource(Enumerable.Range(0, 10).Select(i => i.ToString()).ToList());
+        public List<object> ResettingListItems { get; set; } = new List<object> { "item0","item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
         public CollectionChangeDemo()
         {
             this.InitializeComponent();
@@ -29,11 +28,7 @@ namespace MUXControlsTestApp.Samples
             replaceButton.Click += delegate { _dataSource.Replace(int.Parse(oldStartIndex.Text), int.Parse(oldCount.Text), int.Parse(newCount.Text), resetMode.IsChecked ?? false); };
             resetButton.Click += delegate { _dataSource.Reset(); };
 
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
             repeater.ItemsSource = _dataSource;
         }
 
@@ -42,6 +37,12 @@ namespace MUXControlsTestApp.Samples
             args.TemplateKey = (int.Parse(args.DataContext.ToString()) % 2 == 0) ? "even" : "odd";
         }
 
+        private void ResettingCollectionRemoveItemButton_ItemClick(object sender, RoutedEventArgs e)
+        {
+            ResettingListItems.Remove((sender as Button).Content);
+            ResettingListItems = new List<object>(ResettingListItems);
+            ResettingCollectionRepeater.ItemsSource = ResettingListItems;
+        }
         private void OnItemClicked(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             int index = repeater.GetElementIndex(sender as UIElement);
@@ -95,11 +96,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Add,
                         oldStartingIndex: -1,
                         oldItemsCount: 0,
@@ -117,11 +118,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Remove,
                         oldStartingIndex: index,
                         oldItemsCount: count,
@@ -144,11 +145,11 @@ namespace MUXControlsTestApp.Samples
 
                 if (reset)
                 {
-                    OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                    OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 }
                 else
                 {
-                    OnDataSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
+                    OnItemsSourceChanged(CollectionChangeEventArgsConverters.CreateNotifyArgs(
                         NotifyCollectionChangedAction.Replace,
                         oldStartingIndex: index,
                         oldItemsCount: oldCount,
@@ -171,7 +172,7 @@ namespace MUXControlsTestApp.Samples
 
                 // something changed, but i dont want to tell you the 
                 // exact changes 
-                OnDataSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                OnItemsSourceChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
         }
     }

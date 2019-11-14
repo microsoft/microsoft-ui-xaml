@@ -5,6 +5,13 @@
     <DefineConstants>$(DefineConstants);USING_TAEF</DefineConstants>
     <ProjectGuid>{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}</ProjectGuid>
     <IsTaefTestProject Condition="'$(IsTDPConfiguration)' == 'true'">true</IsTaefTestProject>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+    <AppxBundle>Never</AppxBundle>
+    <AppInstallerUpdateFrequency>1</AppInstallerUpdateFrequency>
+    <AppInstallerCheckForUpdateFrequency>OnApplicationRun</AppInstallerCheckForUpdateFrequency>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="Package.VS.appxmanifest" Condition="$(BuildingWithBuildExe) != 'true'">
@@ -14,6 +21,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
+  <ItemGroup />
   <!-- If we include the razzle includes in the csproj, VS raises warnings about referenced components not being found even if
        it's gated with the condition that we're building with build.exe.  To avoid that, we'll add the razzle includes
        in a props file that is only included when we're building with build.exe, which makes VS never see them. -->

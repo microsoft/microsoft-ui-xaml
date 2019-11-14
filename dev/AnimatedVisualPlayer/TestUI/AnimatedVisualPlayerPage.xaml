@@ -1,0 +1,86 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.AnimatedVisualPlayerPage"
+    x:Name="AnimatedVisualPlayerTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:lotties="using:AnimatedVisuals"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <local:MyCommand x:Key="TestExecuteCommand" />
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" x:Name="PageGrid" Margin="12">
+        <Grid.Resources>
+            <Style TargetType="TextBox">
+                <!--
+                  The TextBoxes are used by automation tests to observe state changes on this page.
+                  We'd use TextBlocks here if we could, but they don't support automation change
+                  notifications. Setting IsEnabled=False makes the TextBox behave like a TextBlock
+                  but it supports automation change notifications.
+                -->
+                <Setter Property="IsEnabled" Value="False" />
+                <Setter Property="Text" Value="None" />
+            </Style>
+            <Style TargetType="StackPanel">
+                <Setter Property="Margin" Value="12"/>
+            </Style>
+        </Grid.Resources>
+
+        <StackPanel>
+            <StackPanel>
+                <Button x:Name="PlayButton" Click="PlayButton_Click">Play forwards from 0 to 1</Button>
+                <TextBox x:Name="ProgressTextBox"/>
+                <TextBox x:Name="IsPlayingTextBoxBeforePlaying"/>
+                <TextBox x:Name="IsPlayingTextBoxBeingPlaying"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Button x:Name="ToZeroKeyframeAnimationPlayButton" Click="ToZeroKeyframeAnimationPlayButton_Click">Play forwards from 0.35 to 0</Button>
+                <TextBox x:Name="ToZeroKeyframeAnimationProgressTextBox"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Button x:Name="FromOneKeyframeAnimationPlayButton" Click="FromOneKeyframeAnimationPlayButton_Click">Play forwards from 1 to 0.35</Button>
+                <TextBox x:Name="FromOneKeyframeAnimationProgressTextBox" />
+            </StackPanel>
+
+            <StackPanel>
+                <Button x:Name="ReverseNegativePlaybackRateAnimationPlayButton" Click="ReverseNegativePlaybackRateAnimationPlayButton_Click">Play backwards from 1 to 0.5 then forwards from 0.5 to 1</Button>
+                <TextBox x:Name="ReverseNegativePlaybackRateAnimationTextBox"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Button x:Name="ReversePositivePlaybackRateAnimationPlayButton" Click="ReversePositivePlaybackRateAnimationPlayButton_Click">Play forwards from 0 to 0.5 then backwards from 0.5 to 0</Button>
+                <TextBox x:Name="ReversePositivePlaybackRateAnimationTextBox"/>
+                <TextBox x:Name="HittestingTextBox"/>
+            </StackPanel>
+
+            <StackPanel>
+                <Button x:Name="FallenBackButton" Click="FallenBackButton_ClickAsync">Fall back</Button>
+                <TextBox x:Name="FallenBackTextBox"/>
+            </StackPanel>
+
+        </StackPanel>
+
+        <controls:AnimatedVisualPlayer
+                HorizontalAlignment="Center"
+                x:Name="Player"
+                AutomationProperties.Name="Player"
+                AutomationProperties.LabeledBy="{Binding ElementName=ProgressTextBox}"
+                RelativePanel.AlignHorizontalCenterWithPanel="True"
+                AutoPlay="False"
+                PointerMoved="Player_PointerMoved">
+            <lotties:LottieLogo/>
+            <controls:AnimatedVisualPlayer.FallbackContent>
+                <DataTemplate>
+                    <local:FallbackGrid/>
+                </DataTemplate>
+            </controls:AnimatedVisualPlayer.FallbackContent>
+        </controls:AnimatedVisualPlayer>
+    </Grid>
+</local:TestPage>

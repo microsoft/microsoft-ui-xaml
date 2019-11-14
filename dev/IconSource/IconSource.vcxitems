@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);ICONSOURCE_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -33,6 +34,6 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)SymbolIconSource.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)IconSource.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)IconSource.idl" />
   </ItemGroup>
 </Project>

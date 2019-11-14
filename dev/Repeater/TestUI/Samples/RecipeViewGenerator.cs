@@ -8,17 +8,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 
-#if BUILD_WINDOWS
-using ElementFactoryGetArgs = Windows.UI.Xaml.ElementFactoryGetArgs;
-using ElementFactoryRecycleArgs = Windows.UI.Xaml.ElementFactoryRecycleArgs;
-#else
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
 using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
 using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -156,11 +151,7 @@ namespace MUXControlsTestApp.Samples
 #if DEBUG
                         RepeaterTestHooks.SetLayoutId(repeater.Layout, group.Name);
 #endif
-#if BUILD_WINDOWS
-                        repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)this;
-#else
                         repeater.ItemTemplate = this;
-#endif
                         break;
                     }
 
@@ -178,11 +169,7 @@ namespace MUXControlsTestApp.Samples
 #if DEBUG
                         RepeaterTestHooks.SetLayoutId(repeater.Layout, string.Format("Year {0}", year.Value));
 #endif
-#if BUILD_WINDOWS
-                        repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)this;
-#else
                         repeater.ItemTemplate = this;
-#endif
 
                         break;
                     }

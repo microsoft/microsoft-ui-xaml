@@ -9,6 +9,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);NAVIGATIONVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -55,25 +56,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)TopNavigationViewDataProvider.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)NavigationView.idl" />
-    <None Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs1_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs2_themeresources.xaml">
       <Version>RS2</Version>
       <SubType>Designer</SubType>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationView_rs5_themeresources.xaml">
-      <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton.xaml">
@@ -82,14 +82,6 @@
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs1_themeresources.xaml">
       <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs4_themeresources.xaml">
-      <Version>RS4</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationBackButton_rs5_themeresources.xaml">
-      <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>

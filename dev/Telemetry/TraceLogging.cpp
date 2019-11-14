@@ -4,29 +4,13 @@
 #include <pch.h>
 #include "TraceLogging.h"
 
-// GUID_NULL is not defined for us in Windows, so we'll define it here in that case.
-#ifdef BUILD_WINDOWS
-#ifndef GUID_NULL
-struct __declspec(uuid("00000000-0000-0000-0000-000000000000")) GUID_NULL;
-#define GUID_NULL __uuidof(struct GUID_NULL)
-#endif
-#endif
-
 // GUID for Microsoft.UI.Xaml.Controls : {21e0ae07-56a7-55b5-12f9-011e6bc08cca}
 // GUID for Windows.UI.Xaml.Controls :{21e0ae07-56a7-55b5-12f9-011e6bc08ccb}
-#ifndef BUILD_WINDOWS
 TRACELOGGING_DEFINE_PROVIDER(
     g_hTelemetryProvider,
     TELEMETRY_PROVIDER_NAME,
     (0x21e0ae07, 0x56a7, 0x55b5, 0x12, 0xf9, 0x01, 0x1e, 0x6b, 0xc0, 0x8c, 0xca),
     TraceLoggingOptionMicrosoftTelemetry());
-#else
-TRACELOGGING_DEFINE_PROVIDER(
-    g_hTelemetryProvider,
-    TELEMETRY_PROVIDER_NAME,
-    (0x21e0ae07, 0x56a7, 0x55b5, 0x12, 0xf9, 0x01, 0x1e, 0x6b, 0xc0, 0x8c, 0xcb),
-    TraceLoggingOptionMicrosoftTelemetry());
-#endif
 
 bool g_IsTelemetryProviderEnabled{};
 UCHAR g_TelemetryProviderLevel{};
@@ -49,17 +33,10 @@ void WINAPI TelemetryProviderEnabledCallback(
 
 // GUID for Microsoft.UI.Xaml.Controls.Perf : {f55f7011-988d-4674-a724-e01b39dc7af6}
 // GUID for Windows.UI.Xaml.Controls.Perf : {f55f7011-988d-4674-a724-e01b39dc7af7}
-#ifndef BUILD_WINDOWS
 TRACELOGGING_DEFINE_PROVIDER(
     g_hPerfProvider,
     PERF_PROVIDER_NAME,
     (0xf55f7011, 0x988d, 0x4674, 0xa7, 0x24, 0xe0, 0x1b, 0x39, 0xdc, 0x7a, 0xf6));
-#else
-TRACELOGGING_DEFINE_PROVIDER(
-    g_hPerfProvider,
-    PERF_PROVIDER_NAME,
-    (0xf55f7011, 0x988d, 0x4674, 0xa7, 0x24, 0xe0, 0x1b, 0x39, 0xdc, 0x7a, 0xf7));
-#endif
 
 bool g_IsPerfProviderEnabled{};
 UCHAR g_PerfProviderLevel{};
@@ -82,17 +59,10 @@ void WINAPI PerfProviderEnabledCallback(
 
 // GUID for Microsoft.UI.Xaml.Controls.Debug : {afe0ae07-66a7-55bb-12ff-01116bc08c1a}
 // GUID for Windows.UI.Xaml.Controls.Debug :{afe0ae07-66a7-55bb-12ff-01116bc08c1b}
-#ifndef BUILD_WINDOWS
 TRACELOGGING_DEFINE_PROVIDER(
     g_hLoggingProvider,
     DEBUG_PROVIDER_NAME,
     (0xafe0ae07, 0x66a7, 0x55bb, 0x12, 0xff, 0x01, 0x11, 0x6b, 0xc0, 0x8c, 0x1a));
-#else
-TRACELOGGING_DEFINE_PROVIDER(
-    g_hLoggingProvider,
-    DEBUG_PROVIDER_NAME,
-    (0xafe0ae07, 0x66a7, 0x55bb, 0x12, 0xff, 0x01, 0x11, 0x6b, 0xc0, 0x8c, 0x1b));
-#endif
 
 bool g_IsLoggingProviderEnabled{};
 UCHAR g_LoggingProviderLevel{};
@@ -115,12 +85,12 @@ void WINAPI LoggingProviderEnabledCallback(
 
 void RegisterTraceLogging()
 {
-#ifndef DISABLE_ALL_TRACELOGGING
+    HRESULT hr = S_OK;
 
-#ifndef DISABLE_TELEMETRY_TRACELOGGING
+#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingRegisterEx(g_hTelemetryProvider, TelemetryProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
-    HRESULT hr = CoCreateGuid(&g_TelemetryProviderActivityId);
+    hr = CoCreateGuid(&g_TelemetryProviderActivityId);
     if (FAILED(hr))
     {
         TraceLoggingWriteActivity(
@@ -133,9 +103,8 @@ void RegisterTraceLogging()
 
         g_TelemetryProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_TELEMETRY_TRACELOGGING
+#endif // EMIT_TELEMETRY_EVENTS
 
-#ifndef DISABLE_PERF_TRACELOGGING
     TraceLoggingRegisterEx(g_hPerfProvider, PerfProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
     hr = CoCreateGuid(&g_PerfProviderActivityId);
@@ -150,9 +119,7 @@ void RegisterTraceLogging()
 
         g_PerfProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_PERF_TRACELOGGING
 
-#ifndef DISABLE_DEBUG_TRACELOGGING
     TraceLoggingRegisterEx(g_hLoggingProvider, LoggingProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
     hr = CoCreateGuid(&g_LoggingProviderActivityId);
@@ -167,26 +134,14 @@ void RegisterTraceLogging()
 
         g_LoggingProviderActivityId = GUID_NULL;
     };
-#endif // !DISABLE_DEBUG_TRACELOGGING
-
-#endif // !DISABLE_ALL_TRACELOGGING
 }
 
 void UnRegisterTraceLogging()
 {
-#ifndef DISABLE_ALL_TRACELOGGING
-
-#ifndef DISABLE_TELEMETRY_TRACELOGGING
+#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingUnregister(g_hTelemetryProvider);
-#endif // !DISABLE_TELEMETRY_TRACELOGGING
+#endif // EMIT_TELEMETRY_EVENTS
 
-#ifndef DISABLE_PERF_TRACELOGGING
     TraceLoggingUnregister(g_hPerfProvider);
-#endif // !DISABLE_PERF_TRACELOGGING
-
-#ifndef DISABLE_DEBUG_TRACELOGGING
     TraceLoggingUnregister(g_hLoggingProvider);
-#endif // !DISABLE_DEBUG_TRACELOGGING
-
-#endif // !DISABLE_ALL_TRACELOGGING
 }

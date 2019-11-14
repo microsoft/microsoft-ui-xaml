@@ -23,27 +23,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-#if BUILD_WINDOWS
-    using Window = MS.Internal.Mita.Foundation.Controls.Window;
-#else
     using Window = Microsoft.Windows.Apps.Test.Foundation.Controls.Window;
-#endif
 
     public class Application
     {
@@ -116,16 +104,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 else
                 {
                     Verify.IsTrue(topWindowObj.Matches(_appFrameWindowCondition));
-
                     ApplicationFrameWindow = topWindowObj;
-                    CoreWindow = topWindowObj.Children.Find(_windowCondition);
-                }
 
+                    Log.Comment("Looking for CoreWindow...");
+                    for (int retries = 0; retries < 5; ++retries)
+                    {
+                        if (topWindowObj.Children.TryFind(_windowCondition, out var coreWindowObject))
+                        {
+                            CoreWindow = coreWindowObject;
+                            Log.Comment("Found CoreWindow.");
+                            break;
+                        }
+
+                        Log.Comment("CoreWindow not found. Sleep for 500 ms and retry");
+                        Thread.Sleep(500);
+                    }
+                }
             }
 
             if (CoreWindow == null)
             {
                 // We expect to have a window by this point.
+                LogDumpTree();
                 throw new UIObjectNotFoundException("Could not find application window.");
             }
 
@@ -162,18 +162,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             UIObject coreWindow = null;
 
             // When running from MUXControls repo we want to install the app.
-            // When running in TestMD we also want to install the app.
-            // In CatGates, we install the test app as part of the deploy script, so we don't need to do anything here.
-#if BUILD_WINDOWS
-            if (TestEnvironment.TestContext.Properties.Contains("RunFromTestMD"))
-            {
-                TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
-            }
-#elif USING_TAEF
+            // When running in TestMD we also want to install the app.            
+#if USING_TAEF
             TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
 #else
             BuildAndInstallTestAppIfNeeded();
 #endif
+
 
             Log.Comment("Launching app {0}", _appName);
 
@@ -221,7 +216,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 catch (UIObjectNotFoundException)
                 {
                     Log.Error("Could not find the view scaling CheckBox.");
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
                     throw;
                 }
             }
@@ -250,7 +245,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 {
                     Log.Comment("Failed to launch app. Exception: " + ex.ToString());
                     Log.Comment("Dumping UIA tree...");
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
 
                     if (retries < MaxLaunchRetries)
                     {
@@ -323,7 +318,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 else
                 {
                     Log.Comment("Application.Close: Failed to find close app invoker: {0}", closeAppInvoker);
-                    TestEnvironment.LogDumpTree(UIObject.Root);
+                    LogDumpTree();
                 }
 
                 // We'll wait until the window closes.  For some reason, ProcessClosedWaiter
@@ -418,7 +413,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-#if !BUILD_WINDOWS
         private void BuildAndInstallTestAppIfNeeded()
         {
             string[] architectures = { "x86", "x64", "ARM" };
@@ -467,6 +461,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 
             if (!File.Exists(appxPath))
             {
+                Log.Comment($".appx not found at '{appxPath}'");
                 // If the AppX doesn't even exist, then we definitely need to package it.
                 appXPackagingNecessary = true;
             }
@@ -474,10 +469,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             {
                 // Otherwise, we need to package it if any of its contents have been built since the last packaging.
                 DateTime appxWriteTime = File.GetLastWriteTime(appxPath);
+                DateTime exeWriteTime = File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe"));
+                DateTime dllWriteTime = File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll"));
 
                 appXPackagingNecessary =
-                    File.GetLastWriteTime(Path.Combine(testAppDirectory, _packageName + ".exe")) > appxWriteTime ||
-                    File.GetLastWriteTime(Path.Combine(architectureDirectory, "Microsoft.UI.Xaml", "Microsoft.UI.Xaml.dll")) > appxWriteTime;
+                    exeWriteTime > appxWriteTime ||
+                    dllWriteTime > appxWriteTime;
+
+                Log.Comment($"AppX packaging necessary: {appXPackagingNecessary} (appxWriteTime = {appxWriteTime}, exeWriteTime = {exeWriteTime}, dllWriteTime = {dllWriteTime})");
             }
 
             // Only package the AppX or install the app if we need to - otherwise, we'll get unnecessary console windows showing up
@@ -534,8 +533,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
         }
-#endif
 
         #endregion
+
+        private void LogDumpTree()
+        {
+            try
+            {
+                TestEnvironment.LogDumpTree(UIObject.Root);
+            }
+            catch(Exception e)
+            {
+                Log.Comment(e.Message);
+            }
+        }
     }
 }

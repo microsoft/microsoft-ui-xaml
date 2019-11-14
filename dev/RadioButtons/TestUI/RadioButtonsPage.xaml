@@ -55,6 +55,15 @@
                     </DataTemplate>
                 </controls:RadioButtons.ItemTemplate>
             </controls:RadioButtons>
+
+            <StackPanel Margin="12">
+                <TextBlock Text="Disabled:" />
+                <controls:RadioButtons IsEnabled="False" SelectedIndex="0">
+                    <x:String>CheckedDisabled</x:String>
+                    <x:String>UnCheckedDisabled</x:String>
+                </controls:RadioButtons>
+            </StackPanel>
+
         </StackPanel>
 
     </Grid>

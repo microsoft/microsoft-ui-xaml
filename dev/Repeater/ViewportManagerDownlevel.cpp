@@ -48,7 +48,7 @@ winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
             // from anchorElement to figure out what child of ours (if any) to use as the suggested element.
 
             auto child = anchorElement;
-            auto parent = safe_cast<winrt::UIElement>(CachedVisualTreeHelpers::GetParent(child));
+            auto parent = CachedVisualTreeHelpers::GetParent(child).as<winrt::UIElement>();
             while (parent)
             {
                 if (parent == owner)
@@ -58,7 +58,7 @@ winrt::UIElement ViewportManagerDownLevel::SuggestedAnchor() const
                 }
 
                 child = parent;
-                parent = safe_cast<winrt::UIElement>(CachedVisualTreeHelpers::GetParent(parent));
+                parent = CachedVisualTreeHelpers::GetParent(parent).as<winrt::UIElement>();
             }
         }
     }
@@ -144,8 +144,9 @@ void ViewportManagerDownLevel::SetLayoutExtent(winrt::Rect extent)
     if (m_verticalScroller && m_verticalScroller != outerScroller) { m_verticalScroller.as<winrt::UIElement>().InvalidateArrange(); }
 }
 
-void ViewportManagerDownLevel::OnLayoutChanged()
+void ViewportManagerDownLevel::OnLayoutChanged(bool isVirtualizing)
 {
+    m_managingViewportDisabled = !isVirtualizing;
     m_layoutExtent = {};
     m_expectedViewportShift = {};
     ResetCacheBuffer();
@@ -166,6 +167,11 @@ void ViewportManagerDownLevel::OnElementCleared(const winrt::UIElement& element)
 
 void ViewportManagerDownLevel::OnOwnerArranged()
 {
+    if (m_managingViewportDisabled)
+    {
+        return;
+    }
+
     m_expectedViewportShift = {};
 
     EnsureScrollers();
@@ -202,24 +208,20 @@ void ViewportManagerDownLevel::OnMakeAnchor(const winrt::UIElement& anchor, cons
 
 void ViewportManagerDownLevel::OnBringIntoViewRequested(const winrt::BringIntoViewRequestedEventArgs args)
 {
-    // We do not animate bring-into-view operations where the anchor is disconnected because
-    // it doesn't look good (the blank space is obvious because the layout can't keep track
-    // of two realized ranges while the animation is going on).
-    if (m_isAnchorOutsideRealizedRange)
+    if (!m_managingViewportDisabled)
     {
-        args.AnimationDesired(false);
+        // We do not animate bring-into-view operations where the anchor is disconnected because
+        // it doesn't look good (the blank space is obvious because the layout can't keep track
+        // of two realized ranges while the animation is going on).
+        if (m_isAnchorOutsideRealizedRange)
+        {
+            args.AnimationDesired(false);
+        }
     }
 }
 
 void ViewportManagerDownLevel::ResetScrollers()
 {
-    for (const auto& scrollerInfo : m_parentScrollers)
-    {
-        const auto scroller = scrollerInfo.Scroller();
-        scroller.ConfigurationChanged(scrollerInfo.ConfigurationChangedToken());
-        if (scrollerInfo.ViewportChangedToken().value != 0) { scroller.ViewportChanged(scrollerInfo.ViewportChangedToken()); };
-        if (scrollerInfo.PostArrangeToken().value != 0) { scroller.PostArrange(scrollerInfo.PostArrangeToken()); };
-    }
     m_parentScrollers.clear();
     m_horizontalScroller.set(nullptr);
     m_verticalScroller.set(nullptr);
@@ -236,45 +238,51 @@ void ViewportManagerDownLevel::OnCacheBuildActionCompleted()
 
 void ViewportManagerDownLevel::OnViewportChanged(const winrt::IRepeaterScrollingSurface&, const bool isFinal)
 {
-    if (isFinal)
+    if (!m_managingViewportDisabled)
     {
-        // Note that isFinal will never be true for input based manipulations.
-        m_makeAnchorElement.set(nullptr);
-        m_isAnchorOutsideRealizedRange = false;
-    }
+        if (isFinal)
+        {
+            // Note that isFinal will never be true for input based manipulations.
+            m_makeAnchorElement.set(nullptr);
+            m_isAnchorOutsideRealizedRange = false;
+        }
 
-    TryInvalidateMeasure();
+        TryInvalidateMeasure();
+    }
 }
 
 void ViewportManagerDownLevel::OnPostArrange(const winrt::IRepeaterScrollingSurface&)
 {
-    UpdateViewport();
+    if (!m_managingViewportDisabled)
+    {
+        UpdateViewport();
 
-    if (m_visibleWindow == winrt::Rect())
-    {
-        // We got cleared.
-        m_layoutExtent = {};
-    }
-    else
-    {
-        // Register our non-recycled children as candidates for element tracking.
-        if (m_horizontalScroller || m_verticalScroller)
+        if (m_visibleWindow == winrt::Rect())
         {
-            auto children = m_owner->Children();
-            for (unsigned i = 0u; i < children.Size(); ++i)
+            // We got cleared.
+            m_layoutExtent = {};
+        }
+        else
+        {
+            // Register our non-recycled children as candidates for element tracking.
+            if (m_horizontalScroller || m_verticalScroller)
             {
-                const auto element = children.GetAt(i);
-                const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
-                if (virtInfo->IsHeldByLayout())
+                auto children = m_owner->Children();
+                for (unsigned i = 0u; i < children.Size(); ++i)
                 {
-                    if (m_horizontalScroller)
+                    const auto element = children.GetAt(i);
+                    const auto virtInfo = ItemsRepeater::GetVirtualizationInfo(element);
+                    if (virtInfo->IsHeldByLayout())
                     {
-                        m_horizontalScroller.get().RegisterAnchorCandidate(element);
-                    }
+                        if (m_horizontalScroller)
+                        {
+                            m_horizontalScroller.get().RegisterAnchorCandidate(element);
+                        }
 
-                    if (m_verticalScroller && m_verticalScroller != m_horizontalScroller)
-                    {
-                        m_verticalScroller.get().RegisterAnchorCandidate(element);
+                        if (m_verticalScroller && m_verticalScroller != m_horizontalScroller)
+                        {
+                            m_verticalScroller.get().RegisterAnchorCandidate(element);
+                        }
                     }
                 }
             }
@@ -315,7 +323,7 @@ void ViewportManagerDownLevel::EnsureScrollers()
         else
         {
             auto& outerScrollerInfo = m_parentScrollers.back();
-            outerScrollerInfo.PostArrangeToken(outerScrollerInfo.Scroller().PostArrange({ this, &ViewportManagerDownLevel::OnPostArrange }));
+            outerScrollerInfo.PostArrangeToken = outerScrollerInfo.Scroller().PostArrange(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnPostArrange });
         }
 
         m_ensuredScrollers = true;
@@ -337,17 +345,24 @@ bool ViewportManagerDownLevel::AddScroller(const winrt::IRepeaterScrollingSurfac
     if (setVerticalScroller) { m_verticalScroller.set(scroller); }
     if (setInnerScrollableScroller) { m_innerScrollableScroller.set(scroller); }
 
-    m_parentScrollers.push_back(ScrollerInfo(
+    auto scrollerInfo = ScrollerInfo(
         m_owner,
-        scroller,
-        setHorizontalScroller || setVerticalScroller ? scroller.ViewportChanged({ this, &ViewportManagerDownLevel::OnViewportChanged }) : winrt::event_token{},
-        scroller.ConfigurationChanged({ this, &ViewportManagerDownLevel::OnConfigurationChanged })));
+        scroller);
 
+    scrollerInfo.ConfigurationChangedToken = scroller.ConfigurationChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnConfigurationChanged });
+    if (setHorizontalScroller || setVerticalScroller)
+    {
+        scrollerInfo.ViewportChangedToken = scroller.ViewportChanged(winrt::auto_revoke, { this, &ViewportManagerDownLevel::OnViewportChanged });
+    }
+
+    m_parentScrollers.push_back(std::move(scrollerInfo));
     return allScrollersSet;
 }
 
 void ViewportManagerDownLevel::UpdateViewport()
 {
+    assert(!m_managingViewportDisabled);
+
     const auto previousVisibleWindow = m_visibleWindow;
     const auto horizontalVisibleWindow =
         m_horizontalScroller ?
@@ -402,8 +417,11 @@ void ViewportManagerDownLevel::ResetCacheBuffer()
     m_horizontalCacheBufferPerSide = 0.0;
     m_verticalCacheBufferPerSide = 0.0;
 
-    // We need to start building the realization buffer again.
-    RegisterCacheBuildWork();
+    if (!m_managingViewportDisabled)
+    {
+        // We need to start building the realization buffer again.
+        RegisterCacheBuildWork();
+    }
 }
 
 void ViewportManagerDownLevel::ValidateCacheLength(double cacheLength)

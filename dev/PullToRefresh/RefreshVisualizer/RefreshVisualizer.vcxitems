@@ -9,6 +9,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);PULLTOREFRESH_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -30,9 +31,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RefreshVisualizerEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshVisualizer.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RefreshVisualizer.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
@@ -43,7 +44,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestAPI.idl" />
-    <None Include="$(MSBuildThisFileDirectory)RefreshVisualizerPrivate.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)PullToRefreshHelperTestAPI.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)RefreshVisualizerPrivate.idl" />
   </ItemGroup>
 </Project>

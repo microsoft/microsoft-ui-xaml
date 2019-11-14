@@ -2,7 +2,9 @@
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
+    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
     
     <!-- This is the same as the style in CommandBarFlyout.xaml, except its animations have been removed.
          Any changes to the style in the above file should also be made here. -->
@@ -21,12 +23,13 @@
         <Setter Property="DefaultLabelPosition" Value="Collapsed" />
         <Setter Property="MaxWidth" Value="440" />
         <Setter Property="Height" Value="40" />
-        <Setter Property="IsDynamicOverflowEnabled" Value="False" />
+        <Setter Property="IsDynamicOverflowEnabled" Value="True" />
         <Setter Property="CommandBarOverflowPresenterStyle" Value="{StaticResource CommandBarFlyoutCommandBarOverflowPresenterStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:CommandBarFlyoutCommandBar">
-                    <Grid x:Name="LayoutRoot">
+                    <Grid x:Name="LayoutRoot"
+                        contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                         <Grid.Resources>
                             <Style TargetType="AppBarButton" BasedOn="{StaticResource CommandBarFlyoutAppBarButtonStyle}" />
                             <Style TargetType="AppBarToggleButton" BasedOn="{StaticResource CommandBarFlyoutAppBarToggleButtonStyle}" />
@@ -85,26 +88,59 @@
                                 <VisualState x:Name="ExpandedUpWithPrimaryCommands">
                                     <VisualState.Setters>
                                         <Setter Target="SecondaryItemsControl.BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderUpThemeThickness}" />
+                                        <contract7Present:Setter Target="LayoutRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDownWithPrimaryCommands">
                                     <VisualState.Setters>
                                         <Setter Target="SecondaryItemsControl.BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderDownThemeThickness}" />
+                                        <contract7Present:Setter Target="LayoutRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedUpWithoutPrimaryCommands">
                                     <VisualState.Setters>
                                         <Setter Target="SecondaryItemsControl.BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderThemeThickness}" />
+                                        <contract7Present:Setter Target="LayoutRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="ExpandedDownWithoutPrimaryCommands">
                                     <VisualState.Setters>
                                         <Setter Target="SecondaryItemsControl.BorderThickness" Value="{ThemeResource CommandBarFlyoutBorderThemeThickness}" />
+                                        <contract7Present:Setter Target="LayoutRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="LayoutRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="PrimaryItemsRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <contract7NotPresent:Setter Target="OuterOverflowContentRoot.CornerRadius" Value="{Binding Source={ThemeResource OverlayCornerRadius}}" />
+                                        <contract7Present:Setter Target="SecondaryItemsControl.CornerRadius" Value="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid x:Name="OuterContentRoot">
+                        <Grid x:Name="OuterContentRoot"
+                            VerticalAlignment="Top"
+                            Margin="{TemplateBinding Padding}"
+                            Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
+                            Height="{TemplateBinding Height}"
+                            Background="{TemplateBinding Background}">
                             <Grid.Clip>
                                 <RectangleGeometry x:Name="OuterContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                     <RectangleGeometry.Transform>
@@ -112,12 +148,7 @@
                                     </RectangleGeometry.Transform>
                                 </RectangleGeometry>
                             </Grid.Clip>
-                            <Grid x:Name="ContentRoot"
-                                VerticalAlignment="Top"
-                                Margin="{TemplateBinding Padding}"
-                                Width="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.CurrentWidth}"
-                                Height="{TemplateBinding Height}"
-                                Background="{TemplateBinding Background}">
+                            <Grid x:Name="ContentRoot">
                                 <Grid.Clip>
                                     <RectangleGeometry x:Name="ContentRootClip" Rect="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=FlyoutTemplateSettings.ContentClipRect}">
                                         <RectangleGeometry.Transform>
@@ -134,16 +165,17 @@
                                 </Grid.Clip>
                                 <Grid x:Name="PrimaryItemsRoot"
                                     BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    contract7Present:CornerRadius="{TemplateBinding CornerRadius}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <ItemsControl x:Name="PrimaryItemsControl"
                                         Height="40"
                                         Grid.Column="0"
-                                        IsTabStop="False">
+                                        IsTabStop="False"
+                                        HorizontalAlignment="Left">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <StackPanel Orientation="Horizontal" />
@@ -153,7 +185,7 @@
                                     <Button x:Name="MoreButton"
                                         Foreground="{TemplateBinding Foreground}"
                                         Style="{StaticResource CommandBarFlyoutEllipsisButtonStyle}"
-                                        Grid.Column="2"
+                                        Grid.Column="1"
                                         IsAccessKeyScope="True"
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CommandBarTemplateSettings.EffectiveOverflowButtonVisibility}">
                                         <Button.RenderTransform>

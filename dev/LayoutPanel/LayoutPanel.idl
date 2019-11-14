@@ -1,3 +1,6 @@
+namespace MU_XC_NAMESPACE
+{
+
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 unsealed runtimeclass LayoutPanel : Windows.UI.Xaml.Controls.Panel
@@ -18,4 +21,6 @@ unsealed runtimeclass LayoutPanel : Windows.UI.Xaml.Controls.Panel
 
     Windows.UI.Xaml.CornerRadius CornerRadius{ get; set; };
     static Windows.UI.Xaml.DependencyProperty CornerRadiusProperty{ get; };
+}
+
 }

@@ -26,12 +26,13 @@ have one).
     from upstream. They also enable you to create multiple PRs from the same 
     fork.
 4. Make and commit your changes. 
-    * Please follow our [Commit Messages](contribution_workflow.md#Commit%20Messages) 
+    * Please follow our [Commit Messages](contribution_workflow.md#Commit-Messages) 
     guidance.
 5. Add [new tests](developer_guide.md#Testing) corresponding to your change, if applicable.
 6. Build the repository with your changes. 
     * Make sure that the builds are clean.
-    * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new tests.
+    * Make sure that the [tests](developer_guide.md#Testing) are all passing, including your new 
+    tests.
 7. Create a pull request (PR) against the upstream repository's master branch. 
     * Push your changes to your fork on GitHub (if you haven't already).
     - Note: It is okay for your PR to include a large number of commits. Once 
@@ -45,7 +46,7 @@ have one).
 ## DOs and DON'Ts
 
 Please do:
-* **DO** follow our [coding style](developer_guide.md#Code%20style%20and%20conventions).
+* **DO** follow our [coding style](code_style_and_conventions.md).
 * **DO** give priority to the current style of the project or file you're 
 changing even if it diverges from the general guidelines.
 * **DO** include tests when adding new features. When fixing bugs, start with 
@@ -70,32 +71,36 @@ discussing it first: see the [New Feature or API Process](feature_proposal_proce
 
 ## Checks
 
-Each pull request must pass the following checks.
+Each pull request to `master` must pass the following checks.
 
-#### WinUI_build_OS
+Pull requests from a fork will not automatically trigger all of these checks. A member of the WinUI 
+team can trigger the Azure Pipeline checks by commenting `/azp run` on the PR. The Azure Pipelines
+bot will then trigger the build.
 
-This check essentially makes sure that your change actually builds.
+In order to have your change automatically merge once all checks have passed (including optional 
+checks), apply the [auto merge](https://github.com/Microsoft/microsoft-ui-xaml/labels/auto%20merge) 
+label. It will take effect after an 8 hour delay, [more info here](https://microsoft.sharepoint.com/teams/FabricBot/SitePages/AutoMerge,-Bot-Templates-and.aspx).
 
-One snag you might hit is a failure in `PeformDEPControlsPort.cmd`. This 
-process validates the compatibility of your change with the port to the Windows
-build system and [Windows.UI.Xaml.Controls](https://docs.microsoft.com/uwp/api/Windows.UI.Xaml.Controls).
-Unfortunately this process cannot be run locally without authentication to the 
-Windows build, so if you run into a problem with this validation step you may 
-need the help of a Microsoft employee. You may be able to look at similar code 
-and its use of `BUILD_WINDOWS` to figure out what you need to do, but feel free 
-to @ mention Microsoft team members to ask for help.
+#### [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21)
 
-#### WinUI-Public-MUX-PR
-
-> Note: Until [this issue](https://github.com/Microsoft/microsoft-ui-xaml/issues/49)
-is resolved the only check made is build validation, not automated tests.
-
-This check runs automated tests on your change. These tests should match what 
-you're able to run with local automated testing using Test Explorer.
+This pipeline builds your change and runs automated tests. These tests should match what you're 
+able to run with local automated testing using Test Explorer. It also creates a NuGet package to
+match your change.
 
 #### license/cla
 
 This check confirms that you have completed the [CLA](https://cla.microsoft.com).
+
+### Other Pipelines
+
+Unlike the above checks these are not required for all PRs, but you may see them on some PRs so we 
+define them here:
+
+#### [WinUI-Public-MUX-CI](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=20)
+
+This pipeline extends [WinUI-Public-MUX-PR](https://dev.azure.com/ms/microsoft-ui-xaml/_build?definitionId=21) 
+to validate more platforms, adding Debug and ARM. It is run after your changes are merged to 
+master.
 
 ## Commit Messages
 

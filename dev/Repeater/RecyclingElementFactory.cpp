@@ -104,7 +104,7 @@ winrt::UIElement RecyclingElementFactory::GetElementCore(winrt::ElementFactoryGe
     }
 
     // Get an element from the Recycle Pool or create one
-    auto element = safe_cast<winrt::FrameworkElement>(m_recyclePool.get().TryGetElement(templateKey, winrtOwner));
+    auto element = m_recyclePool.get().TryGetElement(templateKey, winrtOwner).as<winrt::FrameworkElement>();
 
     if (!element)
     {

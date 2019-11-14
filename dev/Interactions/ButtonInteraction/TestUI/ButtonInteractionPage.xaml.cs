@@ -12,6 +12,7 @@ using Windows.UI;
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "ButtonInteraction", Icon = "Button.png")]
     public sealed partial class ButtonInteractionPage : TestPage
     {
         private uint _invokeCount = 0;
