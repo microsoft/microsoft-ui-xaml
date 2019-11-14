@@ -1,0 +1,195 @@
+﻿<Page
+    x:Class="DEPControlsTestApp.FileExplorerScenario"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:l="using:DEPControlsTestApp.ItemsViewPrototype"
+    xmlns:dep="using:DEPControlsTestApp"
+    xmlns:muxcp="using:Microsoft.UI.Xaml.Controls.Primitives"
+    mc:Ignorable="d">
+
+    <Page.Resources>
+        <l:RecyclePool x:Name="recyclePool" />
+        <c:StackLayout x:Name="stackLayout" Spacing="5" />
+        <c:UniformGridLayout x:Name="gridLayout" MinItemWidth="200" MinItemHeight="30" Orientation="Horizontal"/>
+        <c:FlowLayout x:Name="iconItemLayout"  MinRowSpacing="5" MinColumnSpacing="5" Orientation="Vertical" LineAlignment="SpaceBetween"/>
+        <c:FlowLayout x:Name="iconFlowLayout"  MinRowSpacing="5" MinColumnSpacing="5" LineAlignment="Start"/>
+        <c:FlowLayout x:Name="flowLayout"  MinRowSpacing="5" MinColumnSpacing="5" LineAlignment="SpaceBetween"/>
+
+        <DataTemplate x:Name="rankTemplate" x:DataType="dep:Item">
+            <TextBlock Text="{x:Bind Rank}" />
+        </DataTemplate>
+
+        <DataTemplate x:Name="mountainTemplate" x:DataType="dep:Item">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Width="20" Height="20">
+                    <Image.Source>
+                        <BitmapImage UriSource="{x:Bind ImageUri}" />
+                    </Image.Source>
+                </Image>
+                <TextBlock Grid.Column="1" Text="{x:Bind Mountain}" />
+            </Grid>
+        </DataTemplate>
+
+        <l:ViewDefinition Layout="{StaticResource stackLayout}" x:Name="flatStackDefinition">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}" >
+                    <DataTemplate x:Key="StackItemTemplate" x:DataType="dep:Item">
+                        <l:ItemContainer Layout="{StaticResource stackLayout}" Background="LightGray">
+                            <TextBlock Text="{x:Bind Rank}" />
+                            <TextBlock Text="{x:Bind Mountain}" />
+                            <TextBlock Text="{x:Bind Height_m}" />
+                            <TextBlock Text="{x:Bind Range}" />
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ViewDefinition Layout="{StaticResource flowLayout}" x:Name="flatFlowDefinition">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                    <DataTemplate x:Key="GridItemTemplate" x:DataType="dep:Item">
+                        <l:ItemContainer Layout="{StaticResource gridLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                            <TextBlock Text="{x:Bind Rank}" />
+                            <TextBlock Text="{x:Bind Mountain}" />
+                            <TextBlock Text="{x:Bind Height_m}" />
+                            <TextBlock Text="{x:Bind Range}" />
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ViewDefinition Layout="{StaticResource iconFlowLayout}" x:Name="iconFlowDefinition">
+            <l:ViewDefinition.ItemTemplate>
+                <c:RecyclingElementFactory RecyclePool="{StaticResource recyclePool}">
+                    <DataTemplate x:Key="IconItemTemplate" x:DataType="dep:Item">
+                        <l:ItemContainer Layout="{StaticResource iconItemLayout}" Background="LightGray" BorderBrush="Gray" BorderThickness="1">
+                            <Image Grid.Column="0" Width="60" Height="60">
+                                <Image.Source>
+                                    <BitmapImage UriSource="{x:Bind ImageUri}" />
+                                </Image.Source>
+                            </Image>
+                            <TextBlock Text="{x:Bind Mountain}" Width="60" TextWrapping="Wrap"/>
+                        </l:ItemContainer>
+                    </DataTemplate>
+                </c:RecyclingElementFactory>
+            </l:ViewDefinition.ItemTemplate>
+        </l:ViewDefinition>
+
+        <l:ItemsViewColumnDefinition x:Key="Rank" ColumnName="Rank" Heading="Rank" CellTemplate="{StaticResource rankTemplate}"/>
+        <l:ItemsViewColumnDefinition x:Key="Mountain" ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)" x:Key="Height_m"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range" x:Key="Range"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates" x:Key="Coordinates"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Prominence" x:Key="Prominence"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Parent_mountain" Heading="Parent Mountain" x:Key="Parent_mountain"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="First_ascent" Heading="First Ascent" x:Key="First_ascent"/>
+        <l:ItemsViewTextColumnDefinition DisplayMemberPath="Ascents" x:Key="Ascents"/>
+
+        <l:TableDefinition x:Name="flatTableDefinition">
+            <l:ItemsViewColumnDefinition ColumnName="Rank" Heading="Rank" CellTemplate="{StaticResource rankTemplate}"/>
+            <l:ItemsViewColumnDefinition ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Prominence"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Parent_mountain" Heading="Parent Mountain"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="First_ascent" Heading="First Ascent"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Ascents"/>
+        </l:TableDefinition>
+
+        <l:TableDefinition x:Name="groupedTableDefinition" IsGroup="IsGroup">
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Rank"/>
+            <l:ItemsViewColumnDefinition ColumnName="Mountain" Heading="Mountain" CellTemplate="{StaticResource mountainTemplate}"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Height_m" Heading="Height (m)"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Range"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Coordinates"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Prominence"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Parent_mountain" Heading="Parent Mountain"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="First_ascent" Heading="First Ascent"/>
+            <l:ItemsViewTextColumnDefinition DisplayMemberPath="Ascents"/>
+            <l:TableDefinition.GroupHeaderTemplate>
+                <DataTemplate>
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding Key}" Style="{ThemeResource SubtitleTextBlockStyle}"/>
+                        <Rectangle Height="1" VerticalAlignment="Center" Fill="LightGray"/>
+                    </StackPanel>
+                </DataTemplate>
+            </l:TableDefinition.GroupHeaderTemplate>
+        </l:TableDefinition>
+
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Stack" x:Name="flatStackButton"/>
+                <Button Content="Flow" x:Name="flatFlowButton" />
+                <Button Content="IconFlow" x:Name="iconFlowButton" />
+                <Button Content="Table" x:Name="flatTableButton" />
+                <Button Content="GroupedTable" x:Name="groupedTableButton" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton Content="Rank" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Mountain" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Height_m" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Range" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Coordinates" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Prominence" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Parent_mountain" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="First_ascent" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+                <ToggleButton Content="Ascents" IsChecked="True" Checked="OnColumnsChanged" Unchecked="OnColumnsChanged"/>
+            </StackPanel>
+            <ComboBox x:Name="cbSelectionMode" Header="SelectionMode" SelectedIndex="4">
+                <ComboBoxItem>None</ComboBoxItem>
+                <ComboBoxItem>Single</ComboBoxItem>
+                <ComboBoxItem>SingleToggle</ComboBoxItem>
+                <ComboBoxItem>Multiple</ComboBoxItem>
+                <ComboBoxItem>Extended</ComboBoxItem>
+            </ComboBox>
+            <Button Click="TraceSelectionState">TraceSelectionState</Button>
+        </StackPanel>
+
+        <l:ItemsView x:Name="itemsView" 
+                     Grid.Row="1"
+                     SelectionMode="{x:Bind ConvertToSelectionMode((x:String)((ComboBoxItem)cbSelectionMode.SelectedItem).Content), Mode=OneWay}"
+                     ItemsSource="{x:Bind Items}" 
+                     ViewDefinition="{StaticResource flatTableDefinition}"/>
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Margin="10">
+            <StackPanel>
+                <TextBlock Text="Drop selected items into one of the boxes below" />
+                <Grid HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
+                    <l:DragAndDropBehavior.Target>
+                        <l:DragDropTargetInfo Data="{Binding ElementName=itemsView}" Operation="Copy" />
+                    </l:DragAndDropBehavior.Target>
+                    <TextBlock Text="Copy" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <Grid Margin="0,5,0,10" HorizontalAlignment="Left" Background="LightGray" AllowDrop="True" l:DragAndDropBehavior.DropCommand="{x:Bind DropCommand}" Width="100" Height="100" BorderBrush="Black" BorderThickness="1">
+                    <l:DragAndDropBehavior.Target>
+                        <l:DragDropTargetInfo Data="{Binding ElementName=itemsView}" Operation="Move" />
+                    </l:DragAndDropBehavior.Target>
+                    <TextBlock Text="Move" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Grid>
+                <TextBlock Text="Dropped item(s) info:" />
+                <StackPanel x:Name="dropStack" MinWidth="100" MinHeight="150" BorderBrush="Black" BorderThickness="1" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
