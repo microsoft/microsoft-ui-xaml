@@ -261,7 +261,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 300);
 
                     // Don't compare doubles, just check if difference is very small
-                    Verify.IsTrue(Math.Abs(tipPosition - GetTipVerticalOffset() - 300) < 0.001);
+                    Verify.IsTrue(Math.Abs(tipPosition - GetTipVerticalOffset() - 300) < Double.Epsilon);
                 }
             }
         }
