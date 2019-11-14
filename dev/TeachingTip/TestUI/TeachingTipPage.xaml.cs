@@ -657,6 +657,13 @@ namespace MUXControlsTestApp
             NotifyPropertyChanged("CurrentCancelClosesCheckBox");
         }
 
+        public void OnShowButtonClickedRightEdge(object sender, RoutedEventArgs args)
+        {
+            TeachingTipInResourcesOnEdge.IsOpen = true;
+            TeachingTipInResourcesOnEdge.SizeChanged += TeachingTip_SizeChanged;
+            TeachingTip_SizeChanged(TeachingTipInResourcesOnEdge, null);
+        }
+
         public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)
         {
             showTimer = new DispatcherTimer();
