@@ -168,12 +168,11 @@ void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::Dependency
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (auto&& textBox = m_textBox.get())
+    if (!m_textUpdating)
     {
-        const auto text = Text();
-        if (std::wcscmp(textBox.Text().data(), text.data()) != 0)
+        if (auto && textBox = m_textBox.get())
         {
-            textBox.Text(text);
+            textBox.Text(Text());
             ValidateInput();
         }
     }
@@ -363,6 +362,12 @@ void NumberBox::UpdateTextToValue()
 
         const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
         textBox.Text(formattedValue);
+
+        auto scopeGuard = gsl::finally([this]()
+        {
+            m_textUpdating = false;
+        });
+        m_textUpdating = true;
         Text(formattedValue);
 
         // This places the caret at the end of the text.

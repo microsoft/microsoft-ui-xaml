@@ -76,6 +76,7 @@ private:
     bool IsInBounds(double value);
 
     bool m_valueUpdating{ false };
+    bool m_textUpdating{ false };
 
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
