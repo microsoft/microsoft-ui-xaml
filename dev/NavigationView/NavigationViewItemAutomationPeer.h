@@ -11,7 +11,7 @@ class NavigationViewItemAutomationPeer :
     public ReferenceTracker<
         NavigationViewItemAutomationPeer,
         winrt::implementation::NavigationViewItemAutomationPeerT,
-        winrt::IInvokeProvider>
+        winrt::IInvokeProvider, winrt::ISelectionItemProvider>
 {
 public:
     NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner);
@@ -26,6 +26,13 @@ public:
 
     // IInvokeProvider
     void Invoke();
+
+    // ISelectionItemProvider
+    bool IsSelected();
+    winrt::IRawElementProviderSimple SelectionContainer();
+    void AddToSelection();
+    void RemoveFromSelection();
+    void Select();
 
 private:
 
