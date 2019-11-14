@@ -9,11 +9,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(VirtualizingLayout)
 
-VirtualizingLayout::VirtualizingLayout()
-{
-    __RP_Marker_ClassById(RuntimeProfiler::ProfId_VirtualizingLayout);
-}
-
 #pragma region IVirtualizingLayoutOverrides
 
 VirtualizingLayout::VirtualizingLayout()

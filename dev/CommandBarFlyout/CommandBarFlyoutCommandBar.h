@@ -16,7 +16,7 @@ public:
 
     // IFrameworkElementOverrides
     void OnApplyTemplate();
-    
+
     void SetOwningFlyout(winrt::CommandBarFlyout const& owningFlyout);
 
     bool HasOpenAnimation();
@@ -71,13 +71,6 @@ private:
     winrt::UIElement::PreviewKeyDown_revoker m_secondaryItemsRootPreviewKeyDownRevoker{};
     winrt::FrameworkElement::SizeChanged_revoker m_secondaryItemsRootSizeChangedRevoker{};
     winrt::FrameworkElement::Loaded_revoker m_firstItemLoadedRevoker{};
-
-    // We need to manually connect the end element of the primary items to the start element of the secondary items
-    // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered
-    // (e.g., if the app adds a new start element to the secondary commands, we want to unregister the previous start element),
-    // we'll save references to those elements.
-    tracker_ref<winrt::FrameworkElement> m_currentPrimaryItemsEndElement{ this };
-    tracker_ref<winrt::FrameworkElement> m_currentSecondaryItemsStartElement{ this };
 
     // We need to manually connect the end element of the primary items to the start element of the secondary items
     // for the purposes of UIA items navigation. To ensure that we only have the current start and end elements registered
