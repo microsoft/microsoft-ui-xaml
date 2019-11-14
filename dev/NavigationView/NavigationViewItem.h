@@ -33,7 +33,6 @@ public:
 
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer() override;
-    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) override;
 
     // IContentControlOverrides / IContentControlOverridesHelper
     void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent) override;
@@ -41,7 +40,9 @@ public:
     // IControlOverrides overrides
     void OnGotFocus(winrt::RoutedEventArgs const& e) override;
     void OnLostFocus(winrt::RoutedEventArgs const& e) override;
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& args);
+    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) override;
+    void OnKeyDown(winrt::KeyRoutedEventArgs const& args) override;
+    void OnKeyUp(winrt::KeyRoutedEventArgs const& args) override;
 
     // VisualState is maintained by NavigationViewItem. but actual state should be apply to 
     // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem. 

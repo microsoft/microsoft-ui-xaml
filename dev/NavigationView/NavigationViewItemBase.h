@@ -24,10 +24,6 @@ public:
         return __super::OnCreateAutomationPeer();
     }
 
-    virtual void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) {
-        __super::OnPointerReleased(args);
-    };
-
     // IContentControlOverrides
     virtual void OnContentChanged(winrt::IInspectable const& oldContent, winrt::IInspectable const& newContent)
     {
@@ -44,6 +40,18 @@ public:
     {
         __super::OnLostFocus(e);
     }
+
+    virtual void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) {
+        __super::OnPointerReleased(args);
+    };
+
+    virtual void OnKeyDown(winrt::KeyRoutedEventArgs const& args) {
+        __super::OnKeyDown(args);
+    };
+
+    virtual void OnKeyUp(winrt::KeyRoutedEventArgs const& args) {
+        __super::OnKeyUp(args);
+    };
 
     virtual void OnNavigationViewListPositionChanged() {}
 
