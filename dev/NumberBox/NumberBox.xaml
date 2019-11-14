@@ -113,6 +113,7 @@
     <Style x:Name="NumberBoxPopupSpinButtonStyle" TargetType="Button">
         <Style.Setters>
             <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
