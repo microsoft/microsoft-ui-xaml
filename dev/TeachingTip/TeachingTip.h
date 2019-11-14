@@ -126,9 +126,7 @@ private:
     void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
     void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
-    void TargetEffectiveViewportChanged(winrt::FrameworkElement const&, winrt::EffectiveViewportChangedEventArgs const& e);
     winrt::FrameworkElement::Unloaded_revoker m_TargetUnloadedRevoker;
-    winrt::FrameworkElement::EffectiveViewportChanged_revoker m_TargetEffectiveViewportChangedRevoker;
 
     void CreateExpandAnimation();
     void CreateContractAnimation();

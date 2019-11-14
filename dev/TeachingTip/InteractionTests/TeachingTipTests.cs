@@ -240,33 +240,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void TipFollowsTargetWhileOpen()
-        {
-            using (var setup = new TestSetupHelper("TeachingTip Tests"))
-            {
-                elements = new TeachingTipTestPageElements();
-
-                foreach(TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
-                {
-                    SetTeachingTipLocation(location);
-                    ScrollTargetIntoView();
-
-                    Wait.ForIdle();
-                    OpenTeachingTip();
-
-                    double tipPosition = GetTipVerticalOffset();
-                    double initialScrollViewerVerticalOffset = GetScrollViewerVerticalOffset();
-
-                    ScrollBy(300);
-                    WaitForOffsetUpdated(initialScrollViewerVerticalOffset + 300);
-
-                    // Don't compare doubles, just check if difference is very small
-                    Verify.IsTrue(Math.Abs(tipPosition - GetTipVerticalOffset() - 300) < Double.Epsilon);
-                }
-            }
-        }
-
-        [TestMethod]
         public void TipFollowsTargetOnWindowResize()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))

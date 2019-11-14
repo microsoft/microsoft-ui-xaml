@@ -123,14 +123,12 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
         // Unregister from old target if it exists
         if (args.OldValue()) {
             m_TargetUnloadedRevoker.revoke();
-            m_TargetEffectiveViewportChangedRevoker.revoke();
         }
 
         // Register to new target if it exists
         if (const auto& value = args.NewValue()) {
             winrt::FrameworkElement newTarget = unbox_value<winrt::FrameworkElement >(value);
             m_TargetUnloadedRevoker = newTarget.Unloaded(winrt::auto_revoke, { this,&TeachingTip::ClosePopupOnUnloadEvent });
-            m_TargetEffectiveViewportChangedRevoker = newTarget.EffectiveViewportChanged(winrt::auto_revoke, { this,&TeachingTip::TargetEffectiveViewportChanged });
         }
         OnTargetChanged();
     }
@@ -595,12 +593,6 @@ bool TeachingTip::PositionUntargetedPopup()
     }
 
     return tipDoesNotFit;
-}
-
-void TeachingTip::TargetEffectiveViewportChanged(winrt::FrameworkElement const&,winrt::EffectiveViewportChangedEventArgs const&) {
-    // Reposition checks wether the teachingtip is open,
-    // so just rely on RepositionPopup and don't waste time checking here
-    RepositionPopup();
 }
 
 void TeachingTip::UpdateSizeBasedTemplateSettings()
