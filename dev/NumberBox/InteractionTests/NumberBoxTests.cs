@@ -103,6 +103,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ValueTextTest()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+
+                Log.Comment("Verify that focusing the NumberBox selects the text");
+                numBox.SetFocus();
+                Wait.ForIdle();
+                Wait.ForSeconds(3);
+                Edit edit = FindTextBox(numBox);
+                Verify.AreEqual("0", edit.GetTextSelection());
+
+                Log.Comment("Verify that setting the value through UIA changes the textbox text");
+                numBox.SetValue(10);
+                Wait.ForIdle();
+                Verify.AreEqual("10", edit.GetText());
+
+                Log.Comment("Verify that setting the text programmatically changes the value and textbox text");
+                Button button = FindElement.ByName<Button>("SetTextButton");
+                button.InvokeAndWait();
+                Verify.AreEqual(15, numBox.Value);
+                Verify.AreEqual("15", edit.GetText());
+
+                Log.Comment("Verify that even if the value doesn't change, the textbox text is updated");
+                EnterText(numBox, " 15 ");
+                Verify.AreEqual("15", edit.GetText());
+            }
+        }
+
+        [TestMethod]
         public void MinMaxTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
@@ -111,6 +142,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Check("MaxCheckBox");
 
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                Verify.AreEqual(0, numBox.Minimum);
+                Verify.AreEqual(100, numBox.Maximum);
+
                 numBox.SetValue(10);
                 Wait.ForIdle();
 
@@ -124,8 +158,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(100, numBox.Value);
 
                 Log.Comment("Changing Max to 90; verify value also changes to 90");
-                EnterText(FindElement.ByName<RangeValueSpinner>("MaxNumberBox"), "90");
+                RangeValueSpinner maxBox = FindElement.ByName<RangeValueSpinner>("MaxNumberBox");
+                EnterText(maxBox, "90");
                 Verify.AreEqual(90, numBox.Value);
+
+                Log.Comment("Verify that setting the minimum above the maximum changes the maximum");
+                RangeValueSpinner minBox = FindElement.ByName<RangeValueSpinner>("MinNumberBox");
+                EnterText(minBox, "200");
+                Verify.AreEqual(200, numBox.Minimum);
+                Verify.AreEqual(200, numBox.Maximum);
+                Verify.AreEqual(200, numBox.Value);
+
+                Log.Comment("Verify that setting the maximum below the minimum changes the maximum");
+                EnterText(maxBox, "150");
+                Verify.AreEqual(200, numBox.Minimum);
+                Verify.AreEqual(200, numBox.Maximum);
+                Verify.AreEqual(200, numBox.Value);
             }
         }
 
@@ -142,21 +190,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.AreEqual(8, numBox.Value);
 
+                Log.Comment("Verify that whitespace around a number still evaluates to the number");
+                EnterText(numBox, "  75 ", true);
+                Wait.ForIdle();
+                Verify.AreEqual(75, numBox.Value);
+
                 Log.Comment("Verify that pressing escape cancels entered text");
                 EnterText(numBox, "3", false);
                 KeyboardHelper.PressKey(Key.Escape);
                 Wait.ForIdle();
-                Verify.AreEqual(8, numBox.Value);
+                Verify.AreEqual(75, numBox.Value);
 
                 Log.Comment("Verify that pressing up arrow increases the value");
                 KeyboardHelper.PressKey(Key.Up);
                 Wait.ForIdle();
-                Verify.AreEqual(9, numBox.Value);
+                Verify.AreEqual(76, numBox.Value);
 
                 Log.Comment("Verify that pressing down arrow decreases the value");
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
-                Verify.AreEqual(8, numBox.Value);
+                Verify.AreEqual(75, numBox.Value);
             }
         }
 
@@ -217,12 +270,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button button = FindElement.ByName<Button>("CustomFormatterButton");
                 button.InvokeAndWait();
 
-                Verify.AreEqual("8.00", edit.GetText());
+                Verify.AreEqual("8,00", edit.GetText());
+
+                Log.Comment("Verify that using a formatter with a different decimal symbol works as expected.");
+                EnterText(numBox, "7,45");
+                Verify.AreEqual(7.45, numBox.Value);
             }
         }
 
         [TestMethod]
-        public void CoersionTest()
+        public void ValidationDisabledTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
@@ -242,6 +299,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 numBox.SetValue(150);
                 Wait.ForIdle();
                 Verify.AreEqual(150, numBox.Value);
+            }
+        }
+
+        [TestMethod]
+        public void ValueChangedTest()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+
+                TextBlock newValueTextBlock = FindElement.ByName<TextBlock>("NewValueTextBox");
+                TextBlock oldValueTextBlock = FindElement.ByName<TextBlock>("OldValueTextBox");
+                TextBlock textTextBlock = FindElement.ByName<TextBlock>("TextTextBox");
+
+                Check("MinCheckBox");
+                Check("MaxCheckBox");
+
+                Log.Comment("Verify that entering a new number fires ValueChanged event.");
+                EnterText(numBox, "12");
+                Verify.AreEqual("12", textTextBlock.GetText());
+                Verify.AreEqual("12", newValueTextBlock.GetText());
+                Verify.AreEqual("0",  oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value through UIA fires ValueChanged event.");
+                Button button = FindElement.ByName<Button>("SetValueButton");
+                button.InvokeAndWait();
+                Verify.AreEqual("42", textTextBlock.GetText());
+                Verify.AreEqual("42", newValueTextBlock.GetText());
+                Verify.AreEqual("12", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value below min gives proper values.");
+                EnterText(numBox, "-5");
+                Verify.AreEqual("0", textTextBlock.GetText());
+                Verify.AreEqual("0", newValueTextBlock.GetText());
+                Verify.AreEqual("42", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value above max gives proper values.");
+                EnterText(numBox, "150");
+                Verify.AreEqual("100", textTextBlock.GetText());
+                Verify.AreEqual("100", newValueTextBlock.GetText());
+                Verify.AreEqual("0", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value to NaN is invalid and does not fire an event.");
+                Button nanbutton = FindElement.ByName<Button>("SetValueNaNButton");
+                nanbutton.InvokeAndWait();
+                Verify.AreEqual("100", textTextBlock.GetText());
+                Verify.AreEqual("100", newValueTextBlock.GetText());
+                Verify.AreEqual("0", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value to NaN is valid when validation is disabled.");
+                ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
+                validationComboBox.SelectItemByName("Disabled");
+                Wait.ForIdle();
+                nanbutton.InvokeAndWait();
+                Verify.AreEqual("NaN", textTextBlock.GetText());
+                Verify.AreEqual("NaN", newValueTextBlock.GetText());
+                Verify.AreEqual("100", oldValueTextBlock.GetText());
             }
         }
 

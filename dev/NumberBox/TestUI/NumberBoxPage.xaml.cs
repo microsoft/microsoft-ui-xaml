@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Globalization.NumberFormatting;
+using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
@@ -15,6 +16,8 @@ namespace MUXControlsTestApp
         public NumberBoxPage()
         {
             this.InitializeComponent();
+
+            TestNumberBox.RegisterPropertyChangedCallback(NumberBox.TextProperty, new DependencyPropertyChangedCallback(TextPropertyChanged));
         }
 
         private void SpinMode_Changed(object sender, RoutedEventArgs e)
@@ -80,16 +83,38 @@ namespace MUXControlsTestApp
         {
             if (TestNumberBox != null)
             {
-                CurrentValueTextBox.Text = e.NewValue.ToString();
+                NewValueTextBox.Text = e.NewValue.ToString();
                 OldValueTextBox.Text = e.OldValue.ToString();
             }
         }
+
         private void CustomFormatterButton_Click(object sender, RoutedEventArgs e)
         {
-            DecimalFormatter formatter = new DecimalFormatter();
+            List<string> languages = new List<string>() { "fr-FR" };
+            DecimalFormatter formatter = new DecimalFormatter(languages, "FR");
             formatter.IntegerDigits = 1;
             formatter.FractionDigits = 2;
             TestNumberBox.NumberFormatter = formatter;
+        }
+
+        private void SetTextButton_Click(object sender, RoutedEventArgs e)
+        {
+            TestNumberBox.Text = "15";
+        }
+
+        private void SetValueButton_Click(object sender, RoutedEventArgs e)
+        {
+            TestNumberBox.Value = 42;
+        }
+
+        private void SetNaNButton_Click(object sender, RoutedEventArgs e)
+        {
+            TestNumberBox.Value = Double.NaN;
+        }
+
+        private void TextPropertyChanged(DependencyObject o, DependencyProperty p)
+        {
+            TextTextBox.Text = TestNumberBox.Text;
         }
     }
 }

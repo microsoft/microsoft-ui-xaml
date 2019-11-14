@@ -14,6 +14,15 @@ static constexpr wstring_view c_tabViewDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_tabViewUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_tabViewTextBoxName{ L"InputBox"sv };
 
+// Shockingly, there is no standard function for trimming strings.
+const std::wstring c_whitespace = L" \n\r\t\f\v";
+std::wstring trim(const std::wstring& s)
+{
+    size_t start = s.find_first_not_of(c_whitespace);
+    size_t end = s.find_last_not_of(c_whitespace);
+    return (start == std::wstring::npos || end == std::wstring::npos) ? L"" : s.substr(start, end - start + 1);
+}
+
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
@@ -25,6 +34,8 @@ NumberBox::NumberBox()
     NumberFormatter(formatter);
 
     PointerWheelChanged({ this, &NumberBox::OnScroll });
+
+    GotFocus({ this, &NumberBox::OnNumberBoxGotFocus });
 
     SetDefaultStyleKey(this);
 }
@@ -81,42 +92,57 @@ void NumberBox::OnApplyTemplate()
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    const auto oldValue = unbox_value<double>(args.OldValue());
-
-    CoerceValue();
-
-    auto newValue = Value();
-
-    if (std::isnan(newValue) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    // This handler may change Value; don't send extra events in that case.
+    if (!m_valueUpdating)
     {
-        // In the validation case, we don't consider NaN to be valid.
-        newValue = oldValue;
-        Value(newValue);
-    }
+        const auto oldValue = unbox_value<double>(args.OldValue());
 
-    if (newValue != oldValue)
-    {
-        // Fire ValueChanged event
-        const auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
-        m_valueChangedEventSource(*this, *valueChangedArgs);
-
-        // Fire value property change for UIA
-        if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+        auto scopeGuard = gsl::finally([this]()
         {
-            winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
-        }
-    }
+            m_valueUpdating = false;
+        });
+        m_valueUpdating = true;
 
-    UpdateTextToValue();
+        CoerceValue();
+
+        auto newValue = Value();
+
+        if (std::isnan(newValue) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+        {
+            // In the validation case, we don't consider NaN to be valid.
+            newValue = oldValue;
+            Value(newValue);
+        }
+
+        if (newValue != oldValue)
+        {
+            // Fire ValueChanged event
+            const auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
+            m_valueChangedEventSource(*this, *valueChangedArgs);
+
+            // Fire value property change for UIA
+            if (const auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this).as<winrt::NumberBoxAutomationPeer>())
+            {
+                winrt::get_self<NumberBoxAutomationPeer>(peer)->RaiseValueChangedEvent(oldValue, newValue);
+            }
+        }
+
+        UpdateTextToValue();
+    }
 }
 
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    // We only coerce the maximum to be above the minimum, not the other way around.
+    // This way, as long as the user always sets the minimum first and then the maximum,
+    // they will always get what they expect (if the values are valid).
+    CoerceMaximum();
     CoerceValue();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    CoerceMaximum();
     CoerceValue();
 }
 
@@ -144,7 +170,12 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
 {
     if (auto&& textBox = m_textBox.get())
     {
-        textBox.Text(Text());
+        const auto text = Text();
+        if (std::wcscmp(textBox.Text().data(), text.data()) != 0)
+        {
+            textBox.Text(text);
+            ValidateInput();
+        }
     }
 }
 
@@ -153,9 +184,28 @@ void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyProp
     ValidateInput();
 }
 
+void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+{
+    // When the control receives focus, select the text
+    if (auto && textBox = m_textBox.get())
+    {
+        textBox.SelectAll();
+    }
+}
+
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
+}
+
+void NumberBox::CoerceMaximum()
+{
+    const auto max = Maximum();
+    const auto min = Minimum();
+    if (max < min)
+    {
+        Maximum(min);
+    }
 }
 
 void NumberBox::CoerceValue()
@@ -182,8 +232,8 @@ void NumberBox::ValidateInput()
     // Validate the content of the inner textbox
     if (auto&& textBox = m_textBox.get())
     {
-        const auto text = textBox.Text();
-        
+        const auto text = trim(textBox.Text().data());
+
         // Handles empty TextBox case, set text to current value
         if (text.empty())
         {
@@ -195,7 +245,7 @@ void NumberBox::ValidateInput()
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
 
             const winrt::IReference<double> value = AcceptsCalculation()
-                ? NumberBoxParser::Compute(textBox.Text(), numberParser)
+                ? NumberBoxParser::Compute(text, numberParser)
                 : numberParser.ParseDouble(text);
 
             if (!value)
@@ -208,7 +258,15 @@ void NumberBox::ValidateInput()
             }
             else
             {
-                Value(value.Value());
+                if (value.Value() == Value())
+                {
+                    // Even if the value hasn't changed, we still want to update the text (e.g. Value is 3, user types 1 + 2, we want to replace the text with 3)
+                    UpdateTextToValue();
+                }
+                else
+                {
+                    Value(value.Value());
+                }
             }
         }
     }
@@ -305,6 +363,10 @@ void NumberBox::UpdateTextToValue()
 
         const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
         textBox.Text(formattedValue);
+        Text(formattedValue);
+
+        // This places the caret at the end of the text.
+        textBox.Select(formattedValue.size(), 0);
     }
 }
 

@@ -11,6 +11,7 @@ CppWinRTActivatableClassWithDPFactory(NumberBox)
 GlobalDependencyProperty NumberBoxProperties::s_AcceptsCalculationProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaximumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinimumProperty{ nullptr };
@@ -57,10 +58,21 @@ void NumberBoxProperties::EnsureProperties()
         s_HeaderProperty =
             InitializeDependencyProperty(
                 L"Header",
-                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_HeaderTemplateProperty)
+    {
+        s_HeaderTemplateProperty =
+            InitializeDependencyProperty(
+                L"HeaderTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
                 nullptr);
     }
     if (!s_HyperScrollEnabledProperty)
@@ -180,6 +192,7 @@ void NumberBoxProperties::ClearProperties()
     s_AcceptsCalculationProperty = nullptr;
     s_BasicValidationModeProperty = nullptr;
     s_HeaderProperty = nullptr;
+    s_HeaderTemplateProperty = nullptr;
     s_HyperScrollEnabledProperty = nullptr;
     s_MaximumProperty = nullptr;
     s_MinimumProperty = nullptr;
@@ -278,14 +291,24 @@ winrt::NumberBoxBasicValidationMode NumberBoxProperties::BasicValidationMode()
     return ValueHelper<winrt::NumberBoxBasicValidationMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_BasicValidationModeProperty));
 }
 
-void NumberBoxProperties::Header(winrt::hstring const& value)
+void NumberBoxProperties::Header(winrt::IInspectable const& value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-winrt::hstring NumberBoxProperties::Header()
+winrt::IInspectable NumberBoxProperties::Header()
 {
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
+}
+
+void NumberBoxProperties::HeaderTemplate(winrt::DataTemplate const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderTemplateProperty));
 }
 
 void NumberBoxProperties::HyperScrollEnabled(bool value)
