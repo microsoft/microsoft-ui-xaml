@@ -571,15 +571,12 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
     }
 }
 
-void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
+void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi)
 {
     auto parentIR = GetParentItemsRepeaterForContainer(nvi);
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
     bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
     auto prevItem = SelectedItem();
-
-    // Get item for clicked container
-
 
     // Get required info to raise ItemInvoked
     // TODO: Clean up into separate methods
@@ -615,7 +612,13 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     RaiseItemInvoked(nextItem, false /*isSettings*/, nvi, recommendedDirection);
+}
 
+void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
+{
+    RaiseItemInvokedForNavigationViewItem(nvi);
+
+    bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
     // TODO: Check whether invoked item is already selected (therefore only raise item invoked)????
     if (m_selectionModel && itemSelectsOnInvoked)
     {
@@ -1843,6 +1846,7 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
         {
             OnNavigationViewItemInvoked(nvi);
         }
+        nvi.Focus(winrt::FocusState::Pointer);
     }
 }
 
