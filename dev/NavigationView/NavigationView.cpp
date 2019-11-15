@@ -512,26 +512,23 @@ void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& ite
 
 void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items)
 {
-    if (m_topDataProvider.ShouldChangeDataSource(items))
+    // Unhook TopNav repeater
+    UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+    UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+
+    // Change data source and setup vectors
+    m_topDataProvider.SetDataSource(items);
+
+    // rebinding
+    if (items)
     {
-        // Unhook TopNav repeater
+        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
+        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
+    }
+    else
+    {
         UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
         UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
-
-        // Change data source and setup vectors
-        m_topDataProvider.SetDataSource(items);
-
-        // rebinding
-        if (items)
-        {
-            UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
-            UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
-        }
-        else
-        {
-            UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-            UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
-        }
     }
 }
 
