@@ -6,6 +6,10 @@
 class NavigationViewItemRevokers : public winrt::implements<NavigationViewItemRevokers, winrt::IInspectable>
 {
 public:
+    winrt::UIElement::Tapped_revoker tappedRevoker{};
+    winrt::UIElement::KeyDown_revoker keyDownRevoker{};
+    winrt::UIElement::KeyUp_revoker keyUpRevoker{};
+    winrt::UIElement::GotFocus_revoker gotFocusRevoker{};
     winrt::NavigationViewItem::NavigationViewItemInvoked_revoker pointerPressedRevoker{};
     PropertyChanged_revoker isSelectedRevoker{};
 };
