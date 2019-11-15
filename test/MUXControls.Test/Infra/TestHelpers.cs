@@ -40,11 +40,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
         // registering the test in TestInventory.cs in the test app project.
         public TestSetupHelper(ICollection<string> testNames, string languageOverride = "", bool attemptRestartOnDispose = true)
         {
-            // Only allow one TestSetupHelper instance to run in the process, since nested TestSetupHelpers causes problems during retry.
-            if(IsTestSetupHelperInUse)
-            {
-                throw new Exception("Don't nest TestSetupHelpers, use TestSetupHelper(new[] { \"PageA\", \"PageB\" }) for multi page tests");
-            }
             IsTestSetupHelperInUse = true;
 
             // If a test crashes, it can take a little bit of time before we can 
