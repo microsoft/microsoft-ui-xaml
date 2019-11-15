@@ -40,9 +40,6 @@ public:
     // IControlOverrides overrides
     void OnGotFocus(winrt::RoutedEventArgs const& e) override;
     void OnLostFocus(winrt::RoutedEventArgs const& e) override;
-    void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) override;
-    void OnKeyDown(winrt::KeyRoutedEventArgs const& args) override;
-    void OnKeyUp(winrt::KeyRoutedEventArgs const& args) override;
 
     // VisualState is maintained by NavigationViewItem. but actual state should be apply to 
     // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem. 
@@ -51,11 +48,6 @@ public:
     
     bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
     void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
-
-    //winrt::event_token ItemInvoked(winrt::EventHandler<winrt::NavigationViewItem> const& value);
-    //void ItemInvoked(winrt::event_token const& token);
-    //void SetItemInvokedToken(winrt::event_token const& token) { m_itemInvokedEventToken = token; };
-    //void SetItemInvokedEventRevoker(winrt::NavigationViewItem::NavigationViewItemInvoked_revoker const& revoker) {  }
 
 private:
     void UpdateNavigationViewItemToolTip();

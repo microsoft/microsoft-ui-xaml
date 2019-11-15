@@ -571,9 +571,8 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
     }
 }
 
-void NavigationView::OnNavigationViewItemInvoked(const winrt::IInspectable& sender, const winrt::NavigationViewItemInvokedEventArgs& args)
+void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
 {
-    auto nvi = sender.try_as<winrt::NavigationViewItem>();
     auto parentIR = GetParentItemsRepeaterForContainer(nvi);
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
     bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
@@ -798,7 +797,11 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-            nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
+            //nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
+            nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+            nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+            nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
+            nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
             nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
             nvi.SetValue(GetNavigationViewItemRevokersProperty(), nviRevokers.as<winrt::IInspectable>());
         }
@@ -855,9 +858,9 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
-        m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnSettingsTapped });
-        m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyDown });
-        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyUp });
+        m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+        m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
         auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
         nvibImpl->SetNavigationViewParent(*this);
@@ -1364,51 +1367,6 @@ std::function<void ()> NavigationView::SetPaneTitleFrameworkElementParent(const 
     return nullptr;
 }
 
-void NavigationView::OnSettingsTapped(const winrt::IInspectable& /*sender*/, const winrt::TappedRoutedEventArgs& /*args*/)
-{
-    OnSettingsInvoked();
-}
-
-void NavigationView::OnSettingsKeyDown(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    auto key = args.Key();
-
-    // Because ListViewItem eats the events, we only get these keys on KeyDown.
-    if (key == winrt::VirtualKey::Space ||
-        key == winrt::VirtualKey::Enter)
-    {
-        args.Handled(true);
-        OnSettingsInvoked();
-    }
-}
-
-void NavigationView::OnSettingsKeyUp(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    if (!args.Handled())
-    {
-        // Because ListViewItem eats the events, we only get these keys on KeyUp.
-        if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-        {
-            args.Handled(true);
-            OnSettingsInvoked();
-        }
-    }
-}
-
-void NavigationView::OnSettingsInvoked()
-{
-    auto prevItem = SelectedItem();
-    auto settingsItem = m_settingsItem.get();
-    if (IsSettingsItem(prevItem))
-    {
-        RaiseItemInvoked(settingsItem, true /*isSettings*/);
-    }
-    else if (settingsItem)
-    {
-        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(settingsItem);
-    }
-}
-
 winrt::float2 c_frame1point1 = winrt::float2(0.9f, 0.1f);
 winrt::float2 c_frame1point2 = winrt::float2(1.0f, 0.2f);
 winrt::float2 c_frame2point1 = winrt::float2(0.1f, 0.9f);
@@ -1874,6 +1832,96 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
         splitView.DisplayMode(splitViewDisplayMode);
     }
 }
+
+void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args)
+{
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsSettingsItem(nvi))
+        {
+            OnSettingsInvoked();
+        }
+        else
+        {
+            OnNavigationViewItemInvoked(nvi);
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    auto key = args.Key();
+
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsSettingsItem(nvi))
+        {
+            // Because ListViewItem eats the events, we only get these keys on KeyDown.
+            if (key == winrt::VirtualKey::Space ||
+                key == winrt::VirtualKey::Enter)
+            {
+                args.Handled(true);
+                OnSettingsInvoked();
+            }
+        }
+        else
+        {
+            switch (args.Key())
+            {
+            case winrt::VirtualKey::GamepadA:
+            case winrt::VirtualKey::Enter:
+            case winrt::VirtualKey::Space:
+                OnNavigationViewItemInvoked(nvi);
+                break;
+            }
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled())
+    {
+        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+        {
+            if (IsSettingsItem(nvi))
+            {
+                // Because ListViewItem eats the events, we only get these keys on KeyUp.
+                if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
+                {
+                    args.Handled(true);
+                    OnSettingsInvoked();
+                }
+            }
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
+{
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsNavigationViewListSingleSelectionFollowsFocus() && nvi.SelectsOnInvoked())
+        {
+            OnNavigationViewItemInvoked(nvi);
+        }
+    }
+}
+
+void NavigationView::OnSettingsInvoked()
+{
+    auto prevItem = SelectedItem();
+    auto settingsItem = m_settingsItem.get();
+    if (IsSettingsItem(prevItem))
+    {
+        RaiseItemInvoked(settingsItem, true /*isSettings*/);
+    }
+    else if (settingsItem)
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(settingsItem);
+    }
+}
+
 
 void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
