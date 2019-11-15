@@ -3882,3 +3882,8 @@ winrt::IInspectable NavigationView::LeftNavGetItemFromIndex(int index)
     }
     return nullptr;
 }
+
+winrt::ItemsRepeater NavigationView::LeftNavRepeater()
+{
+    return m_leftNavRepeater.get();
+}
