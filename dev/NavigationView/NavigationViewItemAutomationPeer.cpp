@@ -45,19 +45,13 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
-    if (pattern == winrt::PatternInterface::SelectionItem)
+    if (pattern == winrt::PatternInterface::SelectionItem ||
+        pattern == winrt::PatternInterface::Invoke)
     {
         return *this;
     }
 
     winrt::IInspectable result = __super::GetPatternCore(pattern);
-
-    if (!result && pattern == winrt::PatternInterface::Invoke)
-    {
-        // The settings item is outside the ListView, so we need to handle its invoke method ourselves.
-        result = *this;
-    }
-
     return result;
 }
 
@@ -118,11 +112,10 @@ void NavigationViewItemAutomationPeer::Invoke()
 {
     if (auto navView = GetParentNavigationView())
     {
-        // This method should only be called for the settings item, but let's make sure.
         winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
-        if (navigationViewItem == navView.SettingsItem())
+        if (navigationViewItem)
         {
-            winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            winrt::get_self<NavigationView>(navView)->OnNavigationViewItemInvoked(navigationViewItem);
         }
     }
 }
@@ -204,7 +197,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
     
     if (auto navview = GetParentNavigationView())
     {
-        /*if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
+        if (auto repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
         {
             if (auto parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
             {
@@ -215,7 +208,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 
                     for (auto const& child : children)
                     {
-                        if (auto dependencyObject = listview.ContainerFromIndex(index))
+                        if (auto dependencyObject = repeater.TryGetElement(index))
                         {
                             if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
                             {
@@ -252,7 +245,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                     }
                 }
             }
-        }*/
+        }
     }
 
     return returnValue;
