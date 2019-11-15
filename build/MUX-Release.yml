@@ -51,9 +51,8 @@ jobs:
       version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
       downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
 
-  # replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package
-  - script: 'move /Y build\native\inc\MicrosoftTelemetry.h dev\telemetry\'
-    displayName: 'Command Line Script'
+  - script: 'move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\'
+    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
 
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
