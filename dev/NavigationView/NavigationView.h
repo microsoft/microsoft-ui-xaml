@@ -88,6 +88,7 @@ public:
         bool isSettings,
         winrt::NavigationViewItemBase const& container = nullptr,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
+    void RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi);
     bool IsSettingsItem(winrt::IInspectable const& item);
 
     static winrt::DependencyProperty GetNavigationViewItemRevokersProperty()
