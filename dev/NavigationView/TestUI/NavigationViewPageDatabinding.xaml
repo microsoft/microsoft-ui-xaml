@@ -21,8 +21,16 @@
                 PaneTitle="NavView Test"
                 SelectionChanged="NavView_SelectionChanged"
                 ItemInvoked="NavView_ItemInvoked"
+                                    PaneDisplayMode="Left"
                 Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-                MenuItemsSource="{x:Bind codeBehindItems}">
+                                    MenuItemsSource="{x:Bind codeBehindItems}">
+            <!--<muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Icon="Home"/>
+                <muxcontrols:NavigationViewItem Icon="Shop"/>
+                <muxcontrols:NavigationViewItem Icon="Emoji"/>
+                <muxcontrols:NavigationViewItem Icon="Audio"/>
+                <muxcontrols:NavigationViewItem Icon="Video"/>
+            </muxcontrols:NavigationView.MenuItems>-->
             <StackPanel>
                 <ComboBox x:Name="SelectedItemCombobox"
                                 AutomationProperties.Name="SelectedItemCombobox"
