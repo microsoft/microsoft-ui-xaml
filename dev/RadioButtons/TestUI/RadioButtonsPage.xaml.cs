@@ -12,59 +12,260 @@ using System.Windows.Input;
 using System.Collections.ObjectModel;
 
 using RadioButtons = Microsoft.UI.Xaml.Controls.RadioButtons;
+using RadioButtonsTestHooks = Microsoft.UI.Private.Controls.RadioButtonsTestHooks;
+using Windows.UI.Xaml.Input;
+using System.Linq;
+using System.Collections;
+using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Xaml.Automation;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "RadioButtons", Icon = "RadioButton.png")]
     public sealed partial class RadioButtonsPage : TestPage
     {
-        ObservableCollection<string> m_itemCollection;
+        ObservableCollection<string> m_stringItemCollection;
+        ObservableCollection<RadioButton> m_radioButtonItemCollection;
+        bool m_loaded = false;
 
         public RadioButtonsPage()
         {
             this.InitializeComponent();
-
-            m_itemCollection = new ObservableCollection<string>();
-
-            m_itemCollection.Add("Left");
-            m_itemCollection.Add("Middle");
-            m_itemCollection.Add("Right");
-
-            ItemSourceRadioButtons.ItemsSource = m_itemCollection;
-            ItemSourceRadioButtons.SelectedIndex = 0;
-
-            RadioButtons.SelectedItem = "Orange";
+            m_stringItemCollection = new ObservableCollection<string>();
+            m_radioButtonItemCollection = new ObservableCollection<RadioButton>();
+            this.Loaded += RadioButtonsPage_Loaded;
         }
 
-        private void RadioButtonsLoaded(object sender, RoutedEventArgs e)
+        private void RadioButtonsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            ((ListViewItem)RadioButtons.ContainerFromIndex(2)).IsEnabled = false;
+            m_loaded = true;
+            RadioButtonsTestHooks.SetTestHooksEnabled(TestRadioButtons, true);
+            RadioButtonsTestHooks.LayoutChanged += RadioButtonsTestHooks_LayoutChanged;
+
+            SetMaximumColumnsButton_Click(null, null);
+            SetNumberOfItemsButton_Click(null, null);
+            UpdateRadioButtonsSource();
+            UpdateDisplayRadioButton();
         }
 
-        private void SelectItemBlue_Click(object sender, RoutedEventArgs e)
+        private void RadioButtonsTestHooks_LayoutChanged(RadioButtons sender, object args)
         {
-            var item = RadioButtons.Items[4];
-            RadioButtons.SelectedItem = "Blue";
+            LayoutNumberOfRowsTextBlock.Text = RadioButtonsTestHooks.GetRows(sender).ToString();
+            LayoutNumberOfColumnsTextBlock.Text = RadioButtonsTestHooks.GetColumns(sender).ToString();
+            LayoutNumberOfLargerColumnsTextBlock.Text = RadioButtonsTestHooks.GetLargerColumns(sender).ToString();
         }
 
-        private void SelectIndex5_Click(object sender, RoutedEventArgs e)
+        private void TestRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RadioButtons.SelectedIndex = 5;
-        }
-
-        private void OneColumn_Click(object sender, RoutedEventArgs e)
-        {
-            RadioButtons.MaximumColumns = 1;
-        }
-
-        private void RadioButtonSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            SelectedChangedTextBlock.Text = e.AddedItems[0].ToString();
-            SelectedIndexTextBlock.Text = RadioButtons.SelectedIndex.ToString();
-            if (RadioButtons.SelectedItem != null)
+            SelectedIndexTextBlock.Text = TestRadioButtons.SelectedIndex.ToString();
+            if (TestRadioButtons.SelectedItem != null)
             {
-                SelectedItemTextBlock.Text = RadioButtons.SelectedItem.ToString();
+                SelectedItemTextBlock.Text = TestRadioButtons.SelectedItem.ToString();
             }
+            else
+            {
+                SelectedItemTextBlock.Text = "null";
+            }
+        }
+
+        private void TestRadioButtons_GotFocus(object sender, RoutedEventArgs e)
+        {
+            FocusedItemTextBlock.Text = e.OriginalSource.ToString();
+            var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
+            var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
+            FocusedIndexTextBlock.Text = repeater.GetElementIndex((UIElement)e.OriginalSource).ToString();
+        }
+
+        private void SetMaximumColumnsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UInt32.TryParse(MaximumColumnsTextBlock.Text, out uint value))
+            {
+                TestRadioButtons.MaximumColumns = (int)value;
+                MaximumColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                MaximumColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void SetNumberOfItemsButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (UInt32.TryParse(NumberOfItemsTextBlock.Text, out uint value))
+            {
+                m_stringItemCollection.Clear();
+                m_radioButtonItemCollection.Clear();
+                for (int i = 0; i<value; i++)
+                {
+                    m_stringItemCollection.Add(i.ToString());
+                    var radioButton = new RadioButton();
+                    radioButton.Content = i.ToString() + "Radio Button";
+                    radioButton.SetValue(AutomationProperties.NameProperty, "Radio Button " + i);
+                    radioButton.Name = "Radio Button " + i;
+                    m_radioButtonItemCollection.Add(radioButton);
+                }
+
+                if(SourceComboBox.SelectedItem == ItemsComboBoxItem)
+                {
+                    UpdateRadioButtonsSource();
+                }
+                NumberOfItemsTextBlock.BorderBrush = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                NumberOfItemsTextBlock.BorderBrush = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void SourceComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateRadioButtonsSource();
+        }
+
+        private void ItemTypeComboBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateRadioButtonsSource();
+        }
+
+        private void SelectByIndexButton_Click(object sender, RoutedEventArgs e)
+        {
+            var index = getIndexToSelect();
+            if (index != -2)
+            {
+                TestRadioButtons.SelectedIndex = index;
+            }
+        }
+
+        private void SelectByItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            var index = getIndexToSelect();
+            if(index != -2)
+            {
+                if(index == -1)
+                {
+                    TestRadioButtons.SelectedItem = null;
+                }
+                TestRadioButtons.SelectedItem = m_radioButtonItemCollection.ElementAt(index);
+            }
+        }
+
+        private int getIndexToSelect()
+        {
+            if (Int32.TryParse(IndexToSelectTextBlock.Text, out int value))
+            {
+                if (value >= m_radioButtonItemCollection.Count)
+                {
+                    IndexToSelectTextBlock.Foreground = new SolidColorBrush(Colors.DarkRed);
+                    return -2;
+                }
+                if (value < -1)
+                {
+                    IndexToSelectTextBlock.Foreground = new SolidColorBrush(Colors.DarkRed);
+                    return -2;
+                }
+                IndexToSelectTextBlock.Foreground = new SolidColorBrush(Colors.Black);
+                return value;
+            }
+            IndexToSelectTextBlock.Foreground = new SolidColorBrush(Colors.DarkRed);
+            return -2;
+        }
+
+        private void UpdateDisplayRadioButtonButton_Click(object sender, RoutedEventArgs e)
+        {
+            UpdateDisplayRadioButton();
+        }
+        private void InsertDisplayRadioButtonButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(UpdateDisplayRadioButton())
+            {
+                var radioButton = new RadioButton();
+                radioButton.Content = DisplayRadioButton.Content;
+                radioButton.IsEnabled = !(bool)CustomDisabledCheckBox.IsChecked;
+                m_radioButtonItemCollection.Insert(Int32.Parse(CustomIndexTextBox.Text), radioButton);
+
+                if (SourceComboBox.SelectedItem == ItemsComboBoxItem)
+                {
+                    UpdateRadioButtonsSource();
+                }
+            }
+        }
+
+        private void FocusSelectedItemButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            ((Control)TestRadioButtons.SelectedItem).Focus(FocusState.Keyboard);
+        }
+
+        private void Select5ThenChangeSourceButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            TestRadioButtons.SelectedIndex = 5;
+            ItemTypeComboBox.SelectedIndex = (ItemTypeComboBox.SelectedIndex + 1) % 2;
+        }
+
+        private void ClearRadioButtonsEventsButton_Click(object sender, RoutedEventArgs e)
+        {
+        }
+
+        private void UpdateRadioButtonsSource()
+        {
+            if (m_loaded)
+            {
+                var source = SourceComboBox.SelectedItem;
+                if (source == ItemsComboBoxItem)
+                {
+                    TestRadioButtons.Items.Clear();
+                    TestRadioButtons.ItemsSource = null;
+                    foreach (var item in GetItemsCollection())
+                    {
+                        TestRadioButtons.Items.Add(item);
+                    }
+                }
+                else if (source == ItemsSourceComboBoxItem)
+                {
+                    TestRadioButtons.ItemsSource = GetItemsCollection();
+                    TestRadioButtons.Items.Clear();
+                }
+            }
+        }
+
+        private IEnumerable GetItemsCollection()
+        {
+            if (ItemTypeComboBox.SelectedItem == StringsComboBoxItem)
+            {
+                SelectByItemButton.IsEnabled = false;
+                InsertDisplayRadioButtonButton.IsEnabled = false;
+                return m_stringItemCollection;
+            }
+            else
+            {
+                SelectByItemButton.IsEnabled = true;
+                InsertDisplayRadioButtonButton.IsEnabled = true;
+                return m_radioButtonItemCollection;
+            }
+        }
+
+        private bool UpdateDisplayRadioButton()
+        {
+            if (UInt32.TryParse(CustomIndexTextBox.Text, out uint value))
+            {
+                if (value > m_radioButtonItemCollection.Count)
+                {
+                    DisplayRadioButtonErrorMessage.Text = "Index out of Range";
+                    DisplayRadioButtonErrorMessage.Foreground = new SolidColorBrush(Colors.DarkRed);
+                    return false;
+                }
+            }
+            else
+            {
+                DisplayRadioButtonErrorMessage.Text = "Malformed Index";
+                DisplayRadioButtonErrorMessage.Foreground = new SolidColorBrush(Colors.DarkRed);
+                return false;
+            }
+
+            DisplayRadioButton.Content = CustomContentTextBox.Text;
+
+            DisplayRadioButtonErrorMessage.Text = "Okay";
+            DisplayRadioButtonErrorMessage.Foreground = new SolidColorBrush(Colors.Green);
+            return true;
         }
     }
 }

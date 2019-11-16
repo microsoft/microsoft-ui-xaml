@@ -38,7 +38,7 @@
     <FeaturePersonPictureEnabled>false</FeaturePersonPictureEnabled>
     <FeaturePivotEnabled>false</FeaturePivotEnabled>
     <FeaturePullToRefreshEnabled>false</FeaturePullToRefreshEnabled>
-    <FeatureRadioButtonsEnabled>false</FeatureRadioButtonsEnabled>
+    <FeatureRadioButtonsEnabled>true</FeatureRadioButtonsEnabled>
     <FeatureRadioMenuFlyoutItemEnabled>false</FeatureRadioMenuFlyoutItemEnabled>
     <FeatureRatingControlEnabled>false</FeatureRatingControlEnabled>
     <FeatureRepeaterEnabled>false</FeatureRepeaterEnabled>
