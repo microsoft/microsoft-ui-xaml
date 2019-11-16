@@ -131,6 +131,17 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
     return indexes;
 }
 
+int TopNavigationViewDataProvider::ConvertOriginalIndexToIndex(int originalIndex)
+{
+    auto vector = GetVector(PrimaryList);
+    if (!IsItemInPrimaryList(originalIndex))
+    {
+        vector = GetVector(OverflowList);
+    }
+
+    return vector->IndexFromIndexInOriginalVector(originalIndex);
+}
+
 void TopNavigationViewDataProvider::MoveItemsOutOfPrimaryList(std::vector<int> const& indexes)
 {
     MoveItemsToList(indexes, OverflowList);

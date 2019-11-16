@@ -40,6 +40,7 @@ public:
 
     void MoveAllItemsToPrimaryList();
     std::vector<int> ConvertPrimaryIndexToIndex(std::vector<int> const& indexesInPrimary);
+    int ConvertOriginalIndexToIndex(int originalIndex);
     void MoveItemsOutOfPrimaryList(std::vector<int> const& indexes);
     void MoveItemsToPrimaryList(std::vector<int> const& indexes);
     void MoveItemsToList(std::vector<int> const& indexes, NavigationViewSplitVectorID vectorID);

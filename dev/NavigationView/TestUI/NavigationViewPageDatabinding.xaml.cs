@@ -39,14 +39,21 @@ namespace MUXControlsTestApp
             codeBehindItems.Add("Apps");
             codeBehindItems.Add("Games");
             codeBehindItems.Add("Music");
-            codeBehindItems.Add("Games");
             codeBehindItems.Add("TV");
+            codeBehindItems.Add("Item 1");
+            codeBehindItems.Add("Item 2");
+            codeBehindItems.Add("Item 3");
+            //codeBehindItems.Add("Games");
+            codeBehindItems.Add("Item 4");
 
             //NavView.MenuItemsSource = codeBehindItems;
+            //NavView.SelectedItem = codeBehindItems[0];
         }
 
         private void GetMenuItemForContainer(object sender, RoutedEventArgs e)
         {
+            var container = NavView.ContainerFromMenuItem("Home") as NavigationViewItem;
+            var isSelected = container.IsSelected;
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -87,7 +94,8 @@ namespace MUXControlsTestApp
             }
             else if (tag == "Games")
             {
-                NavView.SelectedItem = "Games";
+                var container = NavView.ContainerFromMenuItem("Games") as NavigationViewItem;
+                container.IsSelected = true;
             }
             else if (tag == "Music")
             {

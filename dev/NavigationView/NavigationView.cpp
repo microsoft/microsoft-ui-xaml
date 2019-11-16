@@ -166,35 +166,26 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
 
     if (IsTopNavigationView())
     {
-        auto selectedContainer = NavigationViewItemOrSettingsContentFromData(selectedItem);
-        auto primaryItems = m_topDataProvider.GetPrimaryItems();
-        //bool isInOverflow = primaryItems.IndexOf(selectedItem);
-
-        if (selectedContainer)
+        auto isInOverflow = !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0));
+        if (isInOverflow)
         {
-            // TODO: Update to work with databinding
-            auto parentIR = GetParentItemsRepeaterForContainer(selectedContainer);
-            bool isInOverflow = parentIR.Name() == c_overflowRepeater;
-            if (isInOverflow)
-            {
-                // SelectOverflowItem is moving data in/out of overflow.
-                auto scopeGuard = gsl::finally([this]()
-                    {
-                        m_selectionChangeFromOverflowMenu = false;
-                    });
-                m_selectionChangeFromOverflowMenu = true;
-
-                CloseTopNavigationViewFlyout();
-
-                if (!IsSelectionSuppressed(selectedItem))
+            // SelectOverflowItem is moving data in/out of overflow.
+            auto scopeGuard = gsl::finally([this]()
                 {
-                    SelectOverflowItem(selectedItem);
-                }
-            }
-            else
+                    m_selectionChangeFromOverflowMenu = false;
+                });
+            m_selectionChangeFromOverflowMenu = true;
+
+            CloseTopNavigationViewFlyout();
+
+            if (!IsSelectionSuppressed(selectedItem))
             {
-                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+                SelectOverflowItem(selectedItem);
             }
+        }
+        else
+        {
+            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
         }
     }
     else
@@ -547,19 +538,21 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 
 void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
-    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    auto nvib = sender.try_as<winrt::NavigationViewItemBase>();
+    if (nvib)
     {
-        bool newItemIsSelectedItem = m_selectionModel.SelectedItem() == nvi;
-        bool newIsSelected = nvi.IsSelected();
+        // Check whether the container that triggered this call back is the selected container
+        bool newItemIsSelectedItem = IsSelectedContainer(nvib);
+        bool newIsSelected = nvib.IsSelected();
 
         if (newIsSelected && !newItemIsSelectedItem)
         {
-            winrt::IndexPath ip = GetIndexPathForContainer(nvi);
+            winrt::IndexPath ip = GetIndexPathForContainer(nvib);
             m_selectionModel.SelectAt(ip);
         }
         else if (!newIsSelected && newItemIsSelectedItem)
         {
-            auto indexPath = GetIndexPathForContainer(nvi);
+            auto indexPath = GetIndexPathForContainer(nvib);
             if (indexPath == m_selectionModel.SelectedIndex())
             {
                 m_selectionModel.DeselectAt(indexPath);
@@ -3819,7 +3812,6 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
         {
             return ir.TryGetElement(itemIndex).try_as<T>();
         }
-        return nullptr;
     }
     else
     {
@@ -3878,6 +3870,49 @@ winrt::IInspectable NavigationView::LeftNavGetItemFromIndex(int index)
         return dataSourceView.GetAt(index);
     }
     return nullptr;
+}
+
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& indexPath)
+{
+    auto index = indexPath.GetAt(0);
+    if (IsTopNavigationView())
+    {
+        // Get the repeater that is presenting this item
+        auto ir = m_topNavRepeater.get();
+        if (!m_topDataProvider.IsItemInPrimaryList(index))
+        {
+            ir = m_topNavRepeaterOverflowView.get();
+        }
+
+        // Get the index of the item in the repeater
+        auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
+
+        // Get the container of the item
+        if (auto container = ir.TryGetElement(irIndex))
+        {
+            return container.try_as<winrt::NavigationViewItemBase>();
+        }
+    }
+    else
+    {
+        if (auto container = m_leftNavRepeater.get().TryGetElement(index))
+        {
+            return container.try_as<winrt::NavigationViewItemBase>();
+        }
+    }
+    return nullptr;
+}
+
+bool NavigationView::IsSelectedContainer(winrt::NavigationViewItemBase item)
+{
+    auto selectedItem = m_selectionModel.SelectedItem();
+    auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
+    if (!selectedItemContainer)
+    {
+        selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
+    }
+
+    return selectedItemContainer == item;
 }
 
 winrt::ItemsRepeater NavigationView::LeftNavRepeater()
