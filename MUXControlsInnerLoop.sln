@@ -414,6 +414,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_InteractionTests", "dev\ProgressBar\InteractionTests\ProgressBar_InteractionTests.shproj", "{3D044EC1-C9D3-4745-B79E-E7BED66E93F8}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_TestUI", "dev\ProgressBar\TestUI\ProgressBar_TestUI.shproj", "{1A5321F3-B837-4EB6-9547-37CC70088EA9}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NumberBox", "NumberBox", "{E95C2CA1-FF23-47CC-A896-CC5175B37890}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NumberBox", "dev\NumberBox\NumberBox.vcxitems", "{9D23C997-1F46-444A-8C07-4A4BFF7E4E63}"
@@ -497,8 +498,8 @@ Global
 		dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
-		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
+		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\Scroller\InteractionTests\Scroller_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\ScrollViewer\InteractionTests\ScrollViewer_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
@@ -560,8 +561,6 @@ Global
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\ProgressBar\ProgressBar.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\NumberBox\NumberBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\SplitButton\SplitButton.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\TabView\TabView.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
@@ -599,8 +598,6 @@ Global
 		dev\TreeView\APITests\TreeView_APITests.projitems*{de885c66-929c-464e-bac4-3e076ec46483}*SharedItemsImports = 13
 		dev\Pivot\TestUI\Pivot_TestUI.projitems*{deb3fa60-e4a7-4735-89f2-363c7c56b428}*SharedItemsImports = 13
 		dev\CommonManaged\CommonManaged.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TabView\TestUI\TabView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{e1c861e2-c4d9-41e1-aed7-5e203451bd4d}*SharedItemsImports = 13
@@ -617,8 +614,6 @@ Global
 		dev\Materials\Acrylic\InteractionTests\AcrylicBrush_InteractionTests.projitems*{f601284a-00c1-49f9-99b3-70d45585f784}*SharedItemsImports = 13
 		dev\SplitButton\SplitButton.vcxitems*{faf114dd-af1f-4d9f-a511-354c19912aad}*SharedItemsImports = 9
 		dev\CommonManaged\CommonManaged.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
-		dev\NumberBox\TestUI\NumberBox_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TabView\TestUI\TabView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\Slider\Slider.vcxitems*{fc2178ca-7f72-40f0-916c-a2b3750bbb6c}*SharedItemsImports = 9

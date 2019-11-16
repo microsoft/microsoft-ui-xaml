@@ -34,7 +34,6 @@ public:
 #pragma endregion
 
 private:
-    //Todo: is this broken?
     event_source<winrt::NotifyCollectionChangedEventHandler> m_collectionChangedEventSource{ this };
     int m_cachedSize{ -1 };
 };
