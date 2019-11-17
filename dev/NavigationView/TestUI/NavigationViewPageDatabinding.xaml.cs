@@ -43,7 +43,7 @@ namespace MUXControlsTestApp
             codeBehindItems.Add("Item 1");
             codeBehindItems.Add("Item 2");
             codeBehindItems.Add("Item 3");
-            //codeBehindItems.Add("Games");
+            codeBehindItems.Add("Music");
             codeBehindItems.Add("Item 4");
 
             //NavView.MenuItemsSource = codeBehindItems;
