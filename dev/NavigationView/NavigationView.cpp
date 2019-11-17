@@ -159,6 +159,11 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
 {
     auto selectedItem = selectionModel.SelectedItem();
     auto selectedIndex = selectionModel.SelectedIndex();
+
+    // Ignore this callback if the SelectedItem property of NavigationView is already set to the item
+    // being passed in this callback. This is because the item has already been selected
+    // via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
+    // TODO: Update SelectedItem comparison to work for the exact same item datasource scenario
     if (m_shouldIgnoreNextSelectionChange || selectedItem == SelectedItem())
     {
         return;
@@ -3907,14 +3912,17 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 
 bool NavigationView::IsSelectedContainer(winrt::NavigationViewItemBase item)
 {
-    auto selectedItem = m_selectionModel.SelectedItem();
-    auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
-    if (!selectedItemContainer)
+    if (auto selectedItem = m_selectionModel.SelectedIndex())
     {
-        selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
-    }
+        auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
+        if (!selectedItemContainer)
+        {
+            selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
+        }
 
-    return selectedItemContainer == item;
+        return selectedItemContainer == item;
+    }
+    return false;
 }
 
 winrt::ItemsRepeater NavigationView::LeftNavRepeater()
