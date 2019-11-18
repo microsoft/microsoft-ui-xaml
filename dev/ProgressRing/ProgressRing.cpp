@@ -23,10 +23,18 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
+<<<<<<< HEAD
     m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
     m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
+=======
+    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
+    m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
+    m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
+    m_barFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
+    m_barArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
+>>>>>>> changes from comments
 
     UpdateRing();
 }
@@ -46,7 +54,11 @@ void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPrope
     UpdateRing();
 }
 
+<<<<<<< HEAD
 winrt::Size ProgressRing::ComputeEllipseSize(double thickness, double actualWidth, double actualHeight)
+=======
+winrt::Size ProgressRing::ComputeEllipseSize(const double thickness, const double actualWidth, const double actualHeight)
+>>>>>>> changes from comments
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
     const double width = std::max((actualWidth - safeThickness) / 2.0, 0.0);
@@ -86,6 +98,7 @@ void ProgressRing::UpdateSegment()
         ringArc.IsLargeArc(angle >= M_PI);
         ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
     }
+
 }
 
 void ProgressRing::UpdateRing()
