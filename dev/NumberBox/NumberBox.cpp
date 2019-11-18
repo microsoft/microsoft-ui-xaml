@@ -133,16 +133,13 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    // We only coerce the maximum to be above the minimum, not the other way around.
-    // This way, as long as the user always sets the minimum first and then the maximum,
-    // they will always get what they expect (if the values are valid).
     CoerceMaximum();
     CoerceValue();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    CoerceMaximum();
+    CoerceMinimum();
     CoerceValue();
 }
 
@@ -196,12 +193,19 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 {
     ValidateInput();
 }
+void NumberBox::CoerceMinimum()
+{
+    const auto max = Maximum();
+    if (Minimum() > max)
+    {
+        Minimum(max);
+    }
+}
 
 void NumberBox::CoerceMaximum()
 {
-    const auto max = Maximum();
     const auto min = Minimum();
-    if (max < min)
+    if (Maximum() < min)
     {
         Maximum(min);
     }

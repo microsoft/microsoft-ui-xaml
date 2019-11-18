@@ -64,6 +64,7 @@ private:
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
+    void CoerceMinimum();
     void CoerceMaximum();
     void CoerceValue();
     void UpdateTextToValue();

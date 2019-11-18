@@ -169,11 +169,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual(200, numBox.Maximum);
                 Verify.AreEqual(200, numBox.Value);
 
-                Log.Comment("Verify that setting the maximum below the minimum changes the maximum");
+                Log.Comment("Verify that setting the maximum below the minimum changes the minimum");
                 EnterText(maxBox, "150");
-                Verify.AreEqual(200, numBox.Minimum);
-                Verify.AreEqual(200, numBox.Maximum);
-                Verify.AreEqual(200, numBox.Value);
+                Verify.AreEqual(150, numBox.Minimum);
+                Verify.AreEqual(150, numBox.Maximum);
+                Verify.AreEqual(150, numBox.Value);
             }
         }
 
