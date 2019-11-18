@@ -164,14 +164,16 @@ void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel sele
     // being passed in this callback. This is because the item has already been selected
     // via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
     // TODO: Update SelectedItem comparison to work for the exact same item datasource scenario
-    if (m_shouldIgnoreNextSelectionChange || selectedItem == SelectedItem())
+    if (m_shouldIgnoreNextSelectionChange ||
+        selectedItem == SelectedItem())
     {
         return;
     }
 
     if (IsTopNavigationView())
     {
-        auto isInOverflow = !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0));
+        // If selectedIndex does not exist, means item is being deselected through API
+        auto isInOverflow = selectedIndex ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
         {
             // SelectOverflowItem is moving data in/out of overflow.
@@ -559,9 +561,10 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
         {
             auto indexPath = GetIndexPathForContainer(nvib);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
+
             // TODO: Update to support more than one level indexpath
-            if ((indexPath && indexPath.GetAt(0)) &&
-                (indexPathFromModel && indexPathFromModel.GetAt(0)))
+            // TODO: Verify if this indexPath comparison is needed
+            if (indexPath && indexPathFromModel && indexPath.GetAt(0) == indexPathFromModel.GetAt(0))
             {
                 m_selectionModel.DeselectAt(indexPath);
             }
