@@ -336,7 +336,8 @@
                                                 </local:NavigationViewList>-->
                                                 <local:ItemsRepeaterScrollHost>
                                                             <ScrollViewer>
-                                                        <local:ItemsRepeater 
+                                                        <local:ItemsRepeater
+                                                                    AutomationProperties.AccessibilityView = "Content"
                                                                     x:Name="TopNavMenuItemsOverflowHost">
                                                             <local:ItemsRepeater.Layout>
                                                                 <local:StackLayout Orientation="Vertical"/>
@@ -491,7 +492,8 @@
                                             <ScrollViewer>
                                                 <local:ItemsRepeater 
                                                         x:Name="MenuItemsHost"
-                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}">
+                                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                        AutomationProperties.AccessibilityView = "Content">
                                                     <local:ItemsRepeater.Layout>
                                                         <local:StackLayout Orientation="Vertical"/>
                                                     </local:ItemsRepeater.Layout>
