@@ -2542,10 +2542,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
         {
             m_topDataProvider.MoveAllItemsToPrimaryList();
         }
-        else
-        {
-             ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
-        }
+        ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
         break;
 
     case TopNavigationViewLayoutState::InitStep3: // Waiting for moving data to overflow
