@@ -45,13 +45,14 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
-    if (pattern == winrt::PatternInterface::SelectionItem ||
-        pattern == winrt::PatternInterface::Invoke)
+    winrt::IInspectable result = __super::GetPatternCore(pattern);
+
+    if (!result && (pattern == winrt::PatternInterface::SelectionItem ||
+        pattern == winrt::PatternInterface::Invoke))
     {
         return *this;
     }
 
-    winrt::IInspectable result = __super::GetPatternCore(pattern);
     return result;
 }
 
@@ -322,15 +323,23 @@ winrt::IRawElementProviderSimple NavigationViewItemAutomationPeer::SelectionCont
 
 void NavigationViewItemAutomationPeer::AddToSelection()
 {
-    // TODO: Implement
+    ChangeSelection(true);
 }
 
 void NavigationViewItemAutomationPeer::Select()
 {
-    // TODO: Implement
+    ChangeSelection(true);
 }
 
 void NavigationViewItemAutomationPeer::RemoveFromSelection()
 {
-    // TODO: implement
+    ChangeSelection(false);
+}
+
+void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
+{
+    if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        nvi.IsSelected(isSelected);
+    }
 }

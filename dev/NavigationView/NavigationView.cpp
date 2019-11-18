@@ -558,7 +558,10 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
         else if (!newIsSelected && newItemIsSelectedItem)
         {
             auto indexPath = GetIndexPathForContainer(nvib);
-            if (indexPath == m_selectionModel.SelectedIndex())
+            auto indexPathFromModel = m_selectionModel.SelectedIndex();
+            // TODO: Update to support more than one level indexpath
+            if ((indexPath && indexPath.GetAt(0)) &&
+                (indexPathFromModel && indexPathFromModel.GetAt(0)))
             {
                 m_selectionModel.DeselectAt(indexPath);
             }
@@ -611,7 +614,15 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
 void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
 {
+    auto selectedItem = SelectedItem();
     RaiseItemInvokedForNavigationViewItem(nvi);
+    auto selectedItemAfterInvokeCallback = SelectedItem();
+
+    // User changed selectionstate in the ItemInvoked callback
+    if (selectedItem != selectedItemAfterInvokeCallback)
+    {
+        return;
+    }
 
     bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
     // TODO: Check whether invoked item is already selected (therefore only raise item invoked)????

@@ -4193,11 +4193,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public bool IsUsingRS4Style { get; private set; }
         public static List<RegressionTestScenario> BuildLeftNavRegressionTestScenarios()
         {
-            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.LeftNavRS4);
+            return BuildTestScenarios(RegressionTestType.LeftNav);
         }
         public static List<RegressionTestScenario> BuildAllRegressionTestScenarios()
         {
-            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.LeftNavRS4 | RegressionTestType.TopNav);
+            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.TopNav);
         }
         public static List<RegressionTestScenario> BuildTopNavRegressionTestScenarios()
         {
@@ -4209,7 +4209,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 new Dictionary<RegressionTestType, RegressionTestScenario>
             {
                     { RegressionTestType.LeftNav, new RegressionTestScenario("NavigationView Test", isLeftnavTest: true, isUsingRS4Style: false)},
-                    { RegressionTestType.LeftNavRS4, new RegressionTestScenario("NavigationView Regression Test", isLeftnavTest: true, isUsingRS4Style: true)},
                     { RegressionTestType.TopNav, new RegressionTestScenario("NavigationView TopNav Test", isLeftnavTest: false, isUsingRS4Style: false)},
             };
 
