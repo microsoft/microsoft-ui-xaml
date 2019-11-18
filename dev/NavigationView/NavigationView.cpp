@@ -631,7 +631,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
         winrt::IndexPath ip = GetIndexPathForContainer(nvi);
         m_selectionModel.SelectAt(ip);
     }
-
+    ClosePaneIfNeccessaryAfterItemIsClicked();
 
     //            // In current implementation, when customer clicked a NavigationViewItem, ListView raised ItemInvoke, and we ignored it
     //        // then ListView raised SelectionChange event. And NavigationView listen to this event and raise ItemInvoked, and then SelectionChanged.
