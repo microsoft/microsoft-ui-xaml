@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
@@ -28,7 +27,6 @@ using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChang
 using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -776,7 +774,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scroller.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollOptions(AnimationMode.Enabled, SnapPointsMode.Ignore)).OffsetsChangeId;
+                    new ScrollOptions(AnimationMode.Auto, SnapPointsMode.Ignore)).OffsetsChangeId;
                 AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)

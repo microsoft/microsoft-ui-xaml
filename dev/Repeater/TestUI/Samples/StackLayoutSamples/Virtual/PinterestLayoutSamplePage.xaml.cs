@@ -10,11 +10,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using MUXControlsTestApp.Samples.Model;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
@@ -25,11 +23,7 @@ namespace MUXControlsTestApp.Samples
         public PinterestLayoutSamplePage()
         {
             this.InitializeComponent();
-#if BUILD_WINDOWS
-            repeater.ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory;
-#else
             repeater.ItemTemplate = elementFactory;
-#endif
 
             var rnd = new Random();
             var data = new ObservableCollection<Recipe>(Enumerable.Range(0, 300).Select(k =>

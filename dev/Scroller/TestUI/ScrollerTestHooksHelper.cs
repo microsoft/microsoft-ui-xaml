@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using Windows.UI.Composition.Interactions;
 using Windows.UI.Xaml;
-using Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -17,24 +16,38 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-#else
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksAnchorEvaluatedEventArgs;
 using ScrollerTestHooksInteractionSourcesChangedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksInteractionSourcesChangedEventArgs;
-#endif
+using ScrollerTestHooksExpressionAnimationStatusChangedEventArgs = Microsoft.UI.Private.Controls.ScrollerTestHooksExpressionAnimationStatusChangedEventArgs;
 
 namespace MUXControlsTestApp.Utilities
 {
+    public class ExpressionAnimationStatusChange
+    {
+        public ExpressionAnimationStatusChange(bool isExpressionAnimationStarted, string propertyName)
+        {
+            IsExpressionAnimationStarted = isExpressionAnimationStarted;
+            PropertyName = propertyName;
+        }
+
+        public bool IsExpressionAnimationStarted { get; set; }
+
+        public string PropertyName { get; set; }
+    }
+
     // Utility class used to turn on Scroller test hooks and automatically turn them off when the instance gets disposed.
     public class ScrollerTestHooksHelper : IDisposable
     {
         Dictionary<Scroller, CompositionInteractionSourceCollection> m_interactionSources = null;
+        Dictionary<Scroller, List<ExpressionAnimationStatusChange>> m_expressionAnimationStatusChanges = null;
 
-        public ScrollerTestHooksHelper(bool enableAnchorNotifications = true, bool enableInteractionSourcesNotifications = true)
+        public ScrollerTestHooksHelper(
+            bool enableAnchorNotifications = true,
+            bool enableInteractionSourcesNotifications = true,
+            bool enableExpressionAnimationStatusNotifications = true,
+            bool? isAnimationsEnabledOverride = null)
         {
             RunOnUIThread.Execute(() =>
             {
@@ -48,59 +61,96 @@ namespace MUXControlsTestApp.Utilities
                     TurnOnInteractionSourcesNotifications();
                 }
 
+                if (enableExpressionAnimationStatusNotifications)
+                {
+                    TurnOnExpressionAnimationStatusNotifications();
+                }
+
+                if (isAnimationsEnabledOverride.HasValue)
+                {
+                    SetIsAnimationsEnabledOverride(isAnimationsEnabledOverride.Value);
+                }
+
                 m_interactionSources = new Dictionary<Scroller, CompositionInteractionSourceCollection>();
+                m_expressionAnimationStatusChanges = new Dictionary<Scroller, List<ExpressionAnimationStatusChange>>();
             });
-        }
-
-        private bool AreAnchorNotificationsRaised
-        {
-            get;
-            set;
-        }
-
-        private bool AreInteractionSourcesNotificationsRaised
-        {
-            get;
-            set;
         }
 
         public void TurnOnAnchorNotifications()
         {
-            if (!AreAnchorNotificationsRaised)
+            if (!ScrollerTestHooks.AreAnchorNotificationsRaised)
             {
                 Log.Comment("ScrollerTestHooksHelper: Turning on anchor notifications.");
-                ScrollerTestHooks.AreAnchorNotificationsRaised = AreAnchorNotificationsRaised = true;
+                ScrollerTestHooks.AreAnchorNotificationsRaised = true;
                 ScrollerTestHooks.AnchorEvaluated += ScrollerTestHooks_AnchorEvaluated;
             }
         }
 
         public void TurnOffAnchorNotifications()
         {
-            if (AreAnchorNotificationsRaised)
+            if (ScrollerTestHooks.AreAnchorNotificationsRaised)
             {
                 Log.Comment("ScrollerTestHooksHelper: Turning off anchor notifications.");
-                ScrollerTestHooks.AreAnchorNotificationsRaised = AreAnchorNotificationsRaised = false;
+                ScrollerTestHooks.AreAnchorNotificationsRaised = false;
                 ScrollerTestHooks.AnchorEvaluated -= ScrollerTestHooks_AnchorEvaluated;
             }
         }
 
         public void TurnOnInteractionSourcesNotifications()
         {
-            if (!AreInteractionSourcesNotificationsRaised)
+            if (!ScrollerTestHooks.AreInteractionSourcesNotificationsRaised)
             {
                 Log.Comment("ScrollerTestHooksHelper: Turning on InteractionSources notifications.");
-                ScrollerTestHooks.AreInteractionSourcesNotificationsRaised = AreInteractionSourcesNotificationsRaised = true;
+                ScrollerTestHooks.AreInteractionSourcesNotificationsRaised = true;
                 ScrollerTestHooks.InteractionSourcesChanged += ScrollerTestHooks_InteractionSourcesChanged;
             }
         }
 
         public void TurnOffInteractionSourcesNotifications()
         {
-            if (AreInteractionSourcesNotificationsRaised)
+            if (ScrollerTestHooks.AreInteractionSourcesNotificationsRaised)
             {
                 Log.Comment("ScrollerTestHooksHelper: Turning off InteractionSources notifications.");
-                ScrollerTestHooks.AreInteractionSourcesNotificationsRaised = AreInteractionSourcesNotificationsRaised = false;
+                ScrollerTestHooks.AreInteractionSourcesNotificationsRaised = false;
                 ScrollerTestHooks.InteractionSourcesChanged -= ScrollerTestHooks_InteractionSourcesChanged;
+            }
+        }
+
+        public void TurnOnExpressionAnimationStatusNotifications()
+        {
+            if (!ScrollerTestHooks.AreExpressionAnimationStatusNotificationsRaised)
+            {
+                Log.Comment("ScrollerTestHooksHelper: Turning on ExpressionAnimation status notifications.");
+                ScrollerTestHooks.AreExpressionAnimationStatusNotificationsRaised = true;
+                ScrollerTestHooks.ExpressionAnimationStatusChanged += ScrollerTestHooks_ExpressionAnimationStatusChanged;
+            }
+        }
+
+        public void TurnOffExpressionAnimationStatusNotifications()
+        {
+            if (ScrollerTestHooks.AreExpressionAnimationStatusNotificationsRaised)
+            {
+                Log.Comment("ScrollerTestHooksHelper: Turning off ExpressionAnimation status notifications.");
+                ScrollerTestHooks.AreExpressionAnimationStatusNotificationsRaised = false;
+                ScrollerTestHooks.ExpressionAnimationStatusChanged -= ScrollerTestHooks_ExpressionAnimationStatusChanged;
+            }
+        }
+
+        public void SetIsAnimationsEnabledOverride(bool isAnimationsEnabledOverride)
+        {
+            if (!ScrollerTestHooks.IsAnimationsEnabledOverride.HasValue || ScrollerTestHooks.IsAnimationsEnabledOverride.Value != isAnimationsEnabledOverride)
+            {
+                Log.Comment($"ScrollerTestHooksHelper: Setting IsAnimationsEnabledOverride to {isAnimationsEnabledOverride}.");
+                ScrollerTestHooks.IsAnimationsEnabledOverride = isAnimationsEnabledOverride;
+            }
+        }
+
+        public void ResetIsAnimationsEnabledOverride()
+        {
+            if (ScrollerTestHooks.IsAnimationsEnabledOverride.HasValue)
+            {
+                Log.Comment($"ScrollerTestHooksHelper: Resetting IsAnimationsEnabledOverride from {ScrollerTestHooks.IsAnimationsEnabledOverride.Value}.");
+                ScrollerTestHooks.IsAnimationsEnabledOverride = null;
             }
         }
 
@@ -109,8 +159,12 @@ namespace MUXControlsTestApp.Utilities
             RunOnUIThread.Execute(() =>
             {
                 TurnOffAnchorNotifications();
+                TurnOffInteractionSourcesNotifications();
+                TurnOffExpressionAnimationStatusNotifications();
+                ResetIsAnimationsEnabledOverride();
 
                 m_interactionSources.Clear();
+                m_expressionAnimationStatusChanges.Clear();
             });
         }
 
@@ -123,6 +177,26 @@ namespace MUXControlsTestApp.Utilities
             else
             {
                 return null;
+            }
+        }
+
+        public List<ExpressionAnimationStatusChange> GetExpressionAnimationStatusChanges(Scroller scroller)
+        {
+            if (m_expressionAnimationStatusChanges.ContainsKey(scroller))
+            {
+                return m_expressionAnimationStatusChanges[scroller];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public void ResetExpressionAnimationStatusChanges(Scroller scroller)
+        {
+            if (m_expressionAnimationStatusChanges.ContainsKey(scroller))
+            {
+                m_expressionAnimationStatusChanges.Remove(scroller);
             }
         }
 
@@ -160,6 +234,21 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
+        public static void LogExpressionAnimationStatusChanges(List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges)
+        {
+            if (expressionAnimationStatusChanges == null)
+            {
+                Log.Comment("expressionAnimationStatusChanges is null");
+                return;
+            }
+
+            Log.Comment("expressionAnimationStatusChanges:");
+            foreach (ExpressionAnimationStatusChange expressionAnimationStatusChange in expressionAnimationStatusChanges)
+            {
+                Log.Comment($"  IsExpressionAnimationStarted: {expressionAnimationStatusChange.IsExpressionAnimationStarted}, PropertyName: {expressionAnimationStatusChange.PropertyName}");
+            }
+        }
+
         private void ScrollerTestHooks_AnchorEvaluated(Scroller sender, ScrollerTestHooksAnchorEvaluatedEventArgs args)
         {
             string anchorName = (args.AnchorElement is FrameworkElement) ? (args.AnchorElement as FrameworkElement).Name : string.Empty;
@@ -179,6 +268,24 @@ namespace MUXControlsTestApp.Utilities
                 m_interactionSources[sender] = args.InteractionSources;
             }
             LogInteractionSources(args.InteractionSources);
+        }
+
+        private void ScrollerTestHooks_ExpressionAnimationStatusChanged(Scroller sender, ScrollerTestHooksExpressionAnimationStatusChangedEventArgs args)
+        {
+            Log.Comment($"  ExpressionAnimationStatusChanged: s: {sender.Name}, IsExpressionAnimationStarted: {args.IsExpressionAnimationStarted}, PropertyName: {args.PropertyName}");
+            List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = null;
+
+            if (!m_expressionAnimationStatusChanges.ContainsKey(sender))
+            {
+                expressionAnimationStatusChanges = new List<ExpressionAnimationStatusChange>();
+                m_expressionAnimationStatusChanges.Add(sender, expressionAnimationStatusChanges);
+            }
+            else
+            {
+                expressionAnimationStatusChanges = m_expressionAnimationStatusChanges[sender];
+            }
+
+            expressionAnimationStatusChanges.Add(new ExpressionAnimationStatusChange(args.IsExpressionAnimationStarted, args.PropertyName));
         }
     }
 }

@@ -8,9 +8,8 @@
 
 // IconSource is implemented in WUX in the OS repo, so we don't need to
 // include IconSource.h on that side.
-#ifndef BUILD_WINDOWS
+#ifdef ICONSOURCE_INCLUDED
 #include "IconSource.h"
-#endif
 
 winrt::IInspectable CommandingHelpers::IconSourceToIconSourceElementConverter::Convert(
     winrt::IInspectable const& value,
@@ -53,7 +52,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
     winrt::IInspectable const& parameter,
     winrt::hstring const& language)
 {
-    if (auto bitmapIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>(value))
+    if (auto bitmapIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::BitmapIconSource>())
     {
         winrt::BitmapIconSource returnValue;
 
@@ -63,7 +62,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto fontIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::FontIconSource>(value))
+    else if (auto fontIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::FontIconSource>())
     {
         winrt::FontIconSource returnValue;
 
@@ -78,7 +77,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto pathIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::PathIconSource>(value))
+    else if (auto pathIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::PathIconSource>())
     {
         winrt::PathIconSource returnValue;
 
@@ -87,7 +86,7 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
 
         return returnValue;
     }
-    else if (auto symbolIconSource = safe_try_cast<winrt::Windows::UI::Xaml::Controls::SymbolIconSource>(value))
+    else if (auto symbolIconSource = value.try_as<winrt::Windows::UI::Xaml::Controls::SymbolIconSource>())
     {
         winrt::SymbolIconSource returnValue;
 
@@ -110,16 +109,16 @@ winrt::IInspectable CommandingHelpers::WUXIconSourceToMUXIconSourceConverter::Co
     winrt::throw_hresult(E_NOTIMPL);
 }
 
-void CommandingHelpers::BindToLabelPropertyIfUnset(
+void CommandingHelpers::BindToIconSourcePropertyIfUnset(
     winrt::XamlUICommand const& uiCommand,
     winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& labelProperty)
+    winrt::DependencyProperty const& iconSourceProperty)
 {
-    auto labelReference = safe_try_cast<winrt::IReference<winrt::hstring>>(target.ReadLocalValue(labelProperty));
+    winrt::IconSource localIconSource = target.ReadLocalValue(iconSourceProperty).try_as<winrt::IconSource>();
 
-    if (!labelReference || labelReference.Value().empty())
+    if (!localIconSource)
     {
-        SharedHelpers::SetBinding(uiCommand, L"Label", target, labelProperty);
+        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, WUXIconSourceToMUXIconSourceConverter());
     }
 }
 
@@ -128,24 +127,28 @@ void CommandingHelpers::BindToIconPropertyIfUnset(
     winrt::DependencyObject const& target,
     winrt::DependencyProperty const& iconProperty)
 {
-    if (!safe_try_cast<winrt::IconElement>(target.ReadLocalValue(iconProperty)))
+    if (!target.ReadLocalValue(iconProperty).try_as<winrt::IconElement>())
     {
         SharedHelpers::SetBinding(uiCommand, L"Icon", target, iconProperty, IconSourceToIconSourceElementConverter());
     }
 }
 
-void CommandingHelpers::BindToIconSourcePropertyIfUnset(
+#endif
+
+void CommandingHelpers::BindToLabelPropertyIfUnset(
     winrt::XamlUICommand const& uiCommand,
     winrt::DependencyObject const& target,
-    winrt::DependencyProperty const& iconSourceProperty)
+    winrt::DependencyProperty const& labelProperty)
 {
-    winrt::IconSource localIconSource = safe_try_cast<winrt::IconSource>(target.ReadLocalValue(iconSourceProperty));
+    auto labelReference = target.ReadLocalValue(labelProperty).try_as<winrt::IReference<winrt::hstring>>();
 
-    if (!localIconSource)
+    if (!labelReference || labelReference.Value().empty())
     {
-        SharedHelpers::SetBinding(uiCommand, L"IconSource", target, iconSourceProperty, WUXIconSourceToMUXIconSourceConverter());
+        SharedHelpers::SetBinding(uiCommand, L"Label", target, labelProperty);
     }
 }
+
+
 
 void CommandingHelpers::BindToKeyboardAcceleratorsIfUnset(
     winrt::XamlUICommand const& uiCommand,
@@ -190,9 +193,9 @@ void CommandingHelpers::BindToDescriptionPropertiesIfUnset(
     }
 
     winrt::IInspectable localToolTipAsI = winrt::ToolTipService::GetToolTip(target);
-    auto localToolTipAsString = safe_try_cast<winrt::IReference<winrt::hstring>>(localToolTipAsI);
+    auto localToolTipAsString = localToolTipAsI.try_as<winrt::IReference<winrt::hstring>>();
 
-    if ((!localToolTipAsString || localToolTipAsString.Value().empty()) && !safe_try_cast<winrt::ToolTip>(localToolTipAsI))
+    if ((!localToolTipAsString || localToolTipAsString.Value().empty()) && !localToolTipAsI.try_as<winrt::ToolTip>())
     {
         SharedHelpers::SetBinding(uiCommand, L"Description", target, winrt::ToolTipService::ToolTipProperty());
     }

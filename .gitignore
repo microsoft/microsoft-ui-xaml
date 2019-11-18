@@ -254,6 +254,7 @@ CodeCoverageOutput/
 
 # Private (not-checked-in) build properties
 local.props
+InnerLoopAreas.props
 
 # Files from OS repo to ignore
 .cachedFileHashes
@@ -265,3 +266,4 @@ artifacts/
 HelixPayload/
 /test/MUXControlsTestApp/MSTest/MUXControlsTestApp_Test
 /test/MUXControlsTestApp/TAEF/MUXControlsTestApp_Test
+UnreliableTestReport.csv

@@ -20,13 +20,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
 using FontIconSource = Microsoft.UI.Xaml.Controls.FontIconSource;
 using BitmapIconSource = Microsoft.UI.Xaml.Controls.BitmapIconSource;
 using PathIconSource = Microsoft.UI.Xaml.Controls.PathIconSource;
 using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -194,7 +192,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
         // so we can't execute this test as authored there.
-#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyFontWeightPropertyMetadata()
         {
@@ -208,6 +205,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(memberType.BaseType.FullName, "ValueType");
             });
         }
-#endif
     }
 }

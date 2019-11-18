@@ -16,7 +16,7 @@ steps:
           if (Test-Path "$rootPath\Microsoft.UI.Xaml")
           {
             $env:BUILDOUTPUT_OVERRIDE = $rootPath
-            & $env:Build_SourcesDirectory\tools\MakeAppxHelper.cmd $platform $config -builddate_yymm $env:BUILDDATE_YYMM -builddate_dd $env:BUILDDATE_DD -subversion $env:BUILDREVISION
+            & $env:Build_SourcesDirectory\tools\MakeAppxHelper.cmd $platform $config -builddate_yymm $env:BUILDDATE_YYMM -builddate_dd $env:BUILDDATE_DD -subversion $env:BUILDREVISION -verbose
             if ($lastexitcode -ne 0) {
                 Write-Host ##vso[task.logissue type=error;] Make AppxHelper $platform $config failed with exit code $lastexitcode
                 Exit 1

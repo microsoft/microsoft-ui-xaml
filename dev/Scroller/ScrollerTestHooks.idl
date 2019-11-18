@@ -27,14 +27,26 @@ runtimeclass ScrollerTestHooksInteractionSourcesChangedEventArgs
 }
 
 [WUXC_VERSION_INTERNAL]
+[webhosthidden]
+runtimeclass ScrollerTestHooksExpressionAnimationStatusChangedEventArgs
+{
+    Boolean IsExpressionAnimationStarted { get; };
+    String PropertyName{ get; };
+}
+
+[WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
 runtimeclass ScrollerTestHooks
 {
     static Boolean AreAnchorNotificationsRaised { get; set; };
     static Boolean AreInteractionSourcesNotificationsRaised { get; set; };
-    static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled{ get; set; };
+    static Boolean AreExpressionAnimationStatusNotificationsRaised { get; set; };
+    static Boolean IsInteractionTrackerPointerWheelRedirectionEnabled { get; set; };
+    static Windows.Foundation.IReference<Boolean> IsAnimationsEnabledOverride { get; set; };
     static Int32 MouseWheelDeltaForVelocityUnit { get; set; };
+    static Int32 MouseWheelScrollLines{ get; set; };
+    static Int32 MouseWheelScrollChars{ get; set; };
     static Single MouseWheelInertiaDecayRate { get; set; };
     static void GetOffsetsChangeVelocityParameters(out Int32 millisecondsPerUnit, out Int32 minMilliseconds, out Int32 maxMilliseconds);
     static void SetOffsetsChangeVelocityParameters(Int32 millisecondsPerUnit, Int32 minMilliseconds, Int32 maxMilliseconds);
@@ -44,6 +56,9 @@ runtimeclass ScrollerTestHooks
     static void SetContentLayoutOffsetX(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetX);
     static void GetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, out Single contentLayoutOffsetY);
     static void SetContentLayoutOffsetY(MU_XCP_NAMESPACE.Scroller scroller, Single contentLayoutOffsetY);
+    static Windows.Foundation.Numerics.Vector2 GetArrangeRenderSizesDelta(MU_XCP_NAMESPACE.Scroller scroller);
+    static Windows.Foundation.Numerics.Vector2 GetMinPosition(MU_XCP_NAMESPACE.Scroller scroller);
+    static Windows.Foundation.Numerics.Vector2 GetMaxPosition(MU_XCP_NAMESPACE.Scroller scroller);
     static ScrollerViewChangeResult GetScrollCompletedResult(MU_XC_NAMESPACE.ScrollCompletedEventArgs scrollCompletedEventArgs);
     static ScrollerViewChangeResult GetZoomCompletedResult(MU_XC_NAMESPACE.ZoomCompletedEventArgs zoomCompletedEventArgs);
     static Windows.Foundation.Collections.IVector<MU_XCP_NAMESPACE.ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints(MU_XCP_NAMESPACE.Scroller scroller);
@@ -59,6 +74,7 @@ runtimeclass ScrollerTestHooks
     static void SetSnapPointVisualizationColor(MU_XCP_NAMESPACE.SnapPointBase snapPoint, Windows.UI.Color color);
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksAnchorEvaluatedEventArgs> AnchorEvaluated;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksInteractionSourcesChangedEventArgs> InteractionSourcesChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> ExpressionAnimationStatusChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetXChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XCP_NAMESPACE.Scroller, Object> ContentLayoutOffsetYChanged;
 }

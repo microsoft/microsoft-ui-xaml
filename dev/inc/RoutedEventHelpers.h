@@ -28,10 +28,10 @@ struct RoutedEventHandler_revoker
         return *this;
     }
 
-    RoutedEventHandler_revoker(winrt::UIElement const& object, winrt::RoutedEvent const& event, winrt::IInspectable const& handler) :
+    RoutedEventHandler_revoker(winrt::UIElement const& object, winrt::RoutedEvent event, winrt::IInspectable handler) :
         m_object(object),
-        m_event(event),
-        m_handler(handler)
+        m_event(std::move(event)),
+        m_handler(std::move(handler))
     {}
 
     ~RoutedEventHandler_revoker() noexcept
@@ -81,6 +81,7 @@ enum class RoutedEventType
     GettingFocus,
     LosingFocus,
     KeyDown,
+    PointerPressed
 };
 
 template<RoutedEventType eventType>
@@ -107,6 +108,13 @@ struct RoutedEventTraits<RoutedEventType::KeyDown>
 {
     static winrt::RoutedEvent Event() { return winrt::UIElement::KeyDownEvent(); }
     using HandlerT = winrt::KeyEventHandler;
+};
+
+template <>
+struct RoutedEventTraits<RoutedEventType::PointerPressed>
+{
+    static winrt::RoutedEvent Event() { return winrt::UIElement::PointerPressedEvent(); }
+    using HandlerT = winrt::PointerEventHandler;
 };
 
 template<RoutedEventType eventType, typename traits = RoutedEventTraits<eventType>>

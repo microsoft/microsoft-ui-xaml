@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
@@ -26,6 +26,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationViewMenuItemStretchPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -39,6 +43,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)NavigationViewCustomThemeResourcesPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -88,8 +96,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewIsPaneOpenPage.xaml.cs">
       <DependentUpon>NavigationViewIsPaneOpenPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMenuItemStretchPage.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml.cs">
-     <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
+      <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewStretchPage.xaml.cs">
       <DependentUpon>NavigationViewStretchPage.xaml</DependentUpon>
@@ -99,6 +108,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPage.xaml.cs">
       <DependentUpon>NavigationViewPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewCustomThemeResourcesPage.xaml.cs">
+      <DependentUpon>NavigationViewCustomThemeResourcesPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewInitPage.xaml.cs">
       <DependentUpon>NavigationViewInitPage.xaml</DependentUpon>
@@ -123,6 +135,11 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavStorePage.xaml.cs">
       <DependentUpon>NavigationViewTopNavStorePage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="D:\Projects\microsoft-ui-xaml\dev\NavigationView\TestUI\NavigationViewMenuItemStretchPage.xaml.cs">
+      <DependentUpon>NavigationViewMenuItemStretchPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 </Project>

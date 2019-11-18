@@ -10,14 +10,23 @@
         <ResourceDictionary x:Key="Default">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
+            <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+            <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
+            <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+            <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
             <x:Boolean x:Key="UseSystemFocusVisuals">True</x:Boolean>
+            <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
+            <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
+            <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
    

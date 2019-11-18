@@ -10,15 +10,6 @@ com_ptr<ScrollerTestHooks> ScrollerTestHooks::s_testHooks{};
 
 ScrollerTestHooks::ScrollerTestHooks()
 {
-    m_offsetsChangeMsPerUnit = Scroller::s_offsetsChangeMsPerUnit;
-    m_offsetsChangeMinMs = Scroller::s_offsetsChangeMinMs;
-    m_offsetsChangeMaxMs = Scroller::s_offsetsChangeMaxMs;
-
-    m_zoomFactorChangeMsPerUnit = Scroller::s_zoomFactorChangeMsPerUnit;
-    m_zoomFactorChangeMinMs = Scroller::s_zoomFactorChangeMinMs;
-    m_zoomFactorChangeMaxMs = Scroller::s_zoomFactorChangeMaxMs;
-
-    m_mouseWheelDeltaForVelocityUnit = Scroller::s_mouseWheelDeltaForVelocityUnit;
     m_mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? Scroller::s_mouseWheelInertiaDecayRate : Scroller::s_mouseWheelInertiaDecayRateRS1;
 }
 
@@ -55,6 +46,18 @@ void ScrollerTestHooks::AreInteractionSourcesNotificationsRaised(bool areInterac
     hooks->m_areInteractionSourcesNotificationsRaised = areInteractionSourcesNotificationsRaised;
 }
 
+bool ScrollerTestHooks::AreExpressionAnimationStatusNotificationsRaised()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_areExpressionAnimationStatusNotificationsRaised;
+}
+
+void ScrollerTestHooks::AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_areExpressionAnimationStatusNotificationsRaised = areExpressionAnimationStatusNotificationsRaised;
+}
+
 bool ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
     auto hooks = EnsureGlobalTestHooks();
@@ -65,6 +68,18 @@ void ScrollerTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled(bool 
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled = isInteractionTrackerPointerWheelRedirectionEnabled;
+}
+
+winrt::IReference<bool> ScrollerTestHooks::IsAnimationsEnabledOverride()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_isAnimationsEnabledOverride;
+}
+
+void ScrollerTestHooks::IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_isAnimationsEnabledOverride = isAnimationsEnabledOverride;
 }
 
 int ScrollerTestHooks::MouseWheelDeltaForVelocityUnit()
@@ -79,6 +94,30 @@ void ScrollerTestHooks::MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVel
     hooks->m_mouseWheelDeltaForVelocityUnit = mouseWheelDeltaForVelocityUnit;
 }
 
+int ScrollerTestHooks::MouseWheelScrollLines()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollLines;
+}
+
+void ScrollerTestHooks::MouseWheelScrollLines(int mouseWheelScrollLines)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollLines = mouseWheelScrollLines;
+}
+
+int ScrollerTestHooks::MouseWheelScrollChars()
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_mouseWheelScrollChars;
+}
+
+void ScrollerTestHooks::MouseWheelScrollChars(int mouseWheelScrollChars)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_mouseWheelScrollChars = mouseWheelScrollChars;
+}
+
 float ScrollerTestHooks::MouseWheelInertiaDecayRate()
 {
     auto hooks = EnsureGlobalTestHooks();
@@ -91,7 +130,7 @@ void ScrollerTestHooks::MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayR
     hooks->m_mouseWheelInertiaDecayRate = mouseWheelInertiaDecayRate;
 }
 
-void ScrollerTestHooks::GetOffsetsChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds)
+void ScrollerTestHooks::GetOffsetsChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_offsetsChangeMsPerUnit;
@@ -107,7 +146,7 @@ void ScrollerTestHooks::SetOffsetsChangeVelocityParameters(int millisecondsPerUn
     hooks->m_offsetsChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollerTestHooks::GetZoomFactorChangeVelocityParameters(_Out_ int& millisecondsPerUnit, _Out_ int& minMilliseconds, _Out_ int& maxMilliseconds)
+void ScrollerTestHooks::GetZoomFactorChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_zoomFactorChangeMsPerUnit;
@@ -123,7 +162,7 @@ void ScrollerTestHooks::SetZoomFactorChangeVelocityParameters(int millisecondsPe
     hooks->m_zoomFactorChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollerTestHooks::GetContentLayoutOffsetX(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetX)
+void ScrollerTestHooks::GetContentLayoutOffsetX(const winrt::Scroller& scroller, float& contentLayoutOffsetX)
 {
     if (scroller)
     {
@@ -143,7 +182,7 @@ void ScrollerTestHooks::SetContentLayoutOffsetX(const winrt::Scroller& scroller,
     }
 }
 
-void ScrollerTestHooks::GetContentLayoutOffsetY(const winrt::Scroller& scroller, _Out_ float& contentLayoutOffsetY)
+void ScrollerTestHooks::GetContentLayoutOffsetY(const winrt::Scroller& scroller, float& contentLayoutOffsetY)
 {
     if (scroller)
     {
@@ -161,6 +200,33 @@ void ScrollerTestHooks::SetContentLayoutOffsetY(const winrt::Scroller& scroller,
     {
         winrt::get_self<Scroller>(scroller)->SetContentLayoutOffsetY(contentLayoutOffsetY);
     }
+}
+
+winrt::float2 ScrollerTestHooks::GetArrangeRenderSizesDelta(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetArrangeRenderSizesDelta();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMinPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMinPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::float2 ScrollerTestHooks::GetMaxPosition(const winrt::Scroller& scroller)
+{
+    if (scroller)
+    {
+        return winrt::get_self<Scroller>(scroller)->GetMaxPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
 }
 
 winrt::ScrollerViewChangeResult ScrollerTestHooks::GetScrollCompletedResult(const winrt::ScrollCompletedEventArgs& scrollCompletedEventArgs)
@@ -235,6 +301,33 @@ void ScrollerTestHooks::InteractionSourcesChanged(winrt::event_token const& toke
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_interactionSourcesChangedEventSource.remove(token);
+}
+
+void ScrollerTestHooks::NotifyExpressionAnimationStatusChanged(
+    const winrt::Scroller& sender,
+    bool isExpressionAnimationStarted,
+    wstring_view const& propertyName)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    if (hooks->m_expressionAnimationStatusChangedEventSource)
+    {
+        auto expressionAnimationStatusChangedEventArgs = winrt::make<ScrollerTestHooksExpressionAnimationStatusChangedEventArgs>(
+            isExpressionAnimationStarted, propertyName);
+
+        hooks->m_expressionAnimationStatusChangedEventSource(sender, expressionAnimationStatusChangedEventArgs);
+    }
+}
+
+winrt::event_token ScrollerTestHooks::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::Scroller, winrt::ScrollerTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    return hooks->m_expressionAnimationStatusChangedEventSource.add(value);
+}
+
+void ScrollerTestHooks::ExpressionAnimationStatusChanged(winrt::event_token const& token)
+{
+    auto hooks = EnsureGlobalTestHooks();
+    hooks->m_expressionAnimationStatusChangedEventSource.remove(token);
 }
 
 void ScrollerTestHooks::NotifyContentLayoutOffsetXChanged(const winrt::Scroller& sender)

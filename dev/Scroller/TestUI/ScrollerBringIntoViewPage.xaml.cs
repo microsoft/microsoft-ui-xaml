@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
@@ -28,7 +27,6 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -48,35 +46,19 @@ namespace MUXControlsTestApp
                 this,
                 Enumerable.Range(0, 16).Select(i => string.Format("Item{0}", i)).ToList());
 
-#if BUILD_WINDOWS
-            repeater1.ItemTemplate = (Windows.UI.Xaml.IElementFactory)repeater1ElementFactory;
-#else
             repeater1.ItemTemplate = repeater1ElementFactory;
-#endif
             repeater1.ItemsSource = dataSource;
             repeater1.ElementPrepared += Repeater_ElementPrepared;
 
-#if BUILD_WINDOWS
-            repeater2.ItemTemplate = (Windows.UI.Xaml.IElementFactory)repeater2ElementFactory;
-#else
             repeater2.ItemTemplate = repeater2ElementFactory;
-#endif
             repeater2.ItemsSource = dataSource;
             repeater2.ElementPrepared += Repeater_ElementPrepared;
 
-#if BUILD_WINDOWS
-            repeater3.ItemTemplate = (Windows.UI.Xaml.IElementFactory)repeater3ElementFactory;
-#else
             repeater3.ItemTemplate = repeater3ElementFactory;
-#endif
             repeater3.ItemsSource = dataSource;
             repeater3.ElementPrepared += Repeater_ElementPrepared;
 
-#if BUILD_WINDOWS
-            repeater4.ItemTemplate = (Windows.UI.Xaml.IElementFactory)repeater4ElementFactory;
-#else
             repeater4.ItemTemplate = repeater4ElementFactory;
-#endif
             repeater4.ItemsSource = dataSource;
             repeater4.ElementPrepared += Repeater_ElementPrepared;
         }

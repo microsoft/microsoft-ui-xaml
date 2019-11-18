@@ -1,0 +1,1 @@
+Use this directory to test nupkg packages locally before pushing to a remote feed.

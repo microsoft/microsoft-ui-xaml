@@ -18,8 +18,6 @@ using Windows.UI.Xaml.Automation;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-
-#if !BUILD_WINDOWS
 using TeachingTip = Microsoft.UI.Xaml.Controls.TeachingTip;
 using TeachingTipClosedEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosedEventArgs;
 using TeachingTipClosingEventArgs = Microsoft.UI.Xaml.Controls.TeachingTipClosingEventArgs;
@@ -28,7 +26,6 @@ using TeachingTipTailVisibility = Microsoft.UI.Xaml.Controls.TeachingTipTailVisi
 using TeachingTipHeroContentPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipHeroContentPlacementMode;
 using TeachingTipPlacementMode = Microsoft.UI.Xaml.Controls.TeachingTipPlacementMode;
 using SymbolIconSource = Microsoft.UI.Xaml.Controls.SymbolIconSource;
-#endif
 
 namespace MUXControlsTestApp
 {
@@ -37,6 +34,8 @@ namespace MUXControlsTestApp
         VisualTree = 0,
         Resources = 1
     }
+
+    [TopLevelTestPage(Name = "TeachingTip", Icon = "TeachingTip.png")]
     public sealed partial class TeachingTipPage : TestPage, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
@@ -66,7 +65,6 @@ namespace MUXControlsTestApp
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
-            this.TeachingTipInResources.IsOpen = true;
         }
 
         private void TeachingTipInResources_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
@@ -87,23 +85,14 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (this.TeachingTipInResources != null && this.TeachingTipInResources.IsOpen)
-            {
-                this.TeachingTipInResources.IsOpen = false;
+            if (testWindowBounds != null && testWindowBounds.IsOpen)	
+            {	
+                testWindowBounds.IsOpen = false;	
+            }	
+            if(testScreenBounds != null && testScreenBounds.IsOpen)	
+            {	
+                testScreenBounds.IsOpen = false;	
             }
-            if (this.TeachingTipInVisualTree != null && this.TeachingTipInVisualTree.IsOpen)
-            {
-                this.TeachingTipInVisualTree.IsOpen = false;
-            }
-            if (testWindowBounds != null && testWindowBounds.IsOpen)
-            {
-                testWindowBounds.IsOpen = false;
-            }
-            if(testScreenBounds != null && testScreenBounds.IsOpen)
-            {
-                testScreenBounds.IsOpen = false;
-            }
-
             base.OnNavigatedFrom(e);
         }
 
@@ -741,15 +730,15 @@ namespace MUXControlsTestApp
         {
             if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentLeft)
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Left;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Left;
             }
             else if (TargetHorizontalAlignmentComboBox.SelectedItem == TargetHorizontalAlignmentCenter)
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Center;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Center;
             }
             else
             {
-                getTeachingTip().HorizontalAlignment = HorizontalAlignment.Right;
+                this.targetButton.HorizontalAlignment = HorizontalAlignment.Right;
             }
             OnGetTargetBoundsButtonClicked(null, null);
         }
@@ -909,7 +898,7 @@ namespace MUXControlsTestApp
             var selectedItem = ((ComboBoxItem)PageThemeComboBox.SelectedItem);
             if (String.Equals(selectedItem?.Content, "Light"))
             {
-                RequestedTheme = ElementTheme.Default;
+                RequestedTheme = ElementTheme.Light;
             }
             else if (String.Equals(selectedItem?.Content, "Dark"))
             {
@@ -943,5 +932,22 @@ namespace MUXControlsTestApp
 
             return "Unknown";
         }
+
+        private void RemoveTeachingTipButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentStackPanel.Children.Remove(TeachingTipInVisualTree);
+            ContentStackPanel.Children.Remove(TeachingTipInResources);
+        }
+        
+        private void RemoveTeachingTipTextBlockContent_Unloaded(object sender, RoutedEventArgs e)
+        {
+            VisualTreeTeachingTipContentTextBlockUnloaded.IsChecked = true;
+        }
+    
+        private void RemoveOpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            ContentStackPanel.Children.Remove(targetButton);
+        }
+        
     }
 }

@@ -13,17 +13,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -364,6 +357,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref effectiveForegroundOfTeachingTipContentTextBlock, "EffectiveForegroundOfTeachingTipContent");
         }
         private TextBlock effectiveForegroundOfTeachingTipContentTextBlock;
+
+        public Button GetRemoveTeachingTipButton()
+        {
+            return GetElement(ref effectiveRemoveTeachingTipButton, "RemoveTeachingTipButton");
+        }
+        private Button effectiveRemoveTeachingTipButton;
+
+        public TextBlock GetTeachingTipContent()
+        {
+            return GetElement(ref effectiveTeachingTipContent, "TeachingTipContentTextBlock");
+        }
+        private TextBlock effectiveTeachingTipContent;
+
+        public CheckBox GetTeachingTipContentUnloadedCheck()
+        {
+            return GetElement(ref effectiveTeachingTipContentUnloadedCheckbox, "VisualTreeTeachingTipContentTextBlockUnloaded");
+        }
+        private CheckBox effectiveTeachingTipContentUnloadedCheckbox;
+
+        public Button GetRemoveOpenButtonFromVisualTreeButton()
+        {
+            return GetElement(ref effectiveRemoveOpenButton, "RemoveButtonFromVisualTreeButton");
+        }
+        private Button effectiveRemoveOpenButton;
 
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {

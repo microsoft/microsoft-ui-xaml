@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "Vector.h"
+
 // The same copy of .Net Collections like C# ObservableCollection<string> data is splitted into multiple Vectors.
 // For example, the raw data is:  Homes Apps Music | Microsoft Development
 // raw Data SplitDataSource is splitted into 3 ObservableVector which is owned by SplitVector:
@@ -25,8 +27,8 @@ public:
     {
         m_indexFunctionFromDataSource = indexOfFunction;
 
-        m_vector.set(winrt::make<Vector<typename T, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>>(
-            [this](const typename T& value)
+        m_vector.set(winrt::make<Vector<T, MakeVectorParam<VectorFlag::Observable, VectorFlag::DependencyObjectBase>()>>(
+            [this](const T& value)
                {
                     return IndexOf(value);
                }));

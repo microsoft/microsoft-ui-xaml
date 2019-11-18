@@ -30,7 +30,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
@@ -51,10 +50,7 @@ using IRepeaterScrollingSurface = Microsoft.UI.Private.Controls.IRepeaterScrolli
 using ConfigurationChangedEventHandler = Microsoft.UI.Private.Controls.ConfigurationChangedEventHandler;
 using PostArrangeEventHandler = Microsoft.UI.Private.Controls.PostArrangeEventHandler;
 using ViewportChangedEventHandler = Microsoft.UI.Private.Controls.ViewportChangedEventHandler;
-#endif
 
-
-#if !BUILD_WINDOWS
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -243,6 +239,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scroller.ScrollTo(0.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
 
             RunOnUIThread.Execute(() =>
             {
@@ -255,6 +252,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 scroller.ScrollTo(400.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(scrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
 
             RunOnUIThread.Execute(() =>
             {
@@ -267,6 +265,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     new ZoomOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(zoomCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
 
             RunOnUIThread.Execute(() =>
             {
@@ -340,6 +339,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 verticalScroller.ScrollTo(0.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(verticalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
 
             RunOnUIThread.Execute(() =>
             {
@@ -351,6 +351,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 horizontalScroller.ScrollTo(400.0, 100.0, new ScrollOptions(AnimationMode.Disabled, SnapPointsMode.Ignore));
             });
             Verify.IsTrue(horizontalScrollCompletedEvent.WaitOne(DefaultWaitTimeInMS));
+            CompositionPropertySpy.SynchronouslyTickUIThread(1);
 
             RunOnUIThread.Execute(() =>
             {
@@ -1495,5 +1496,3 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
     }
 }
-
-#endif

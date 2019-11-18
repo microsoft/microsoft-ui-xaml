@@ -7,10 +7,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
-#endif
 
 namespace MUXControlsTestApp
 {

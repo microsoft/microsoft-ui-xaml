@@ -111,7 +111,8 @@ private:
     double m_minColumnSpacing{};
     winrt::UniformGridLayoutItemsJustification m_itemsJustification{ winrt::UniformGridLayoutItemsJustification::Start };
     winrt::UniformGridLayoutItemsStretch m_itemsStretch{ winrt::UniformGridLayoutItemsStretch::None };
+    unsigned int m_maximumRowsOrColumns{MAXUINT};
     // !!! WARNING !!!
-    // Any storage here needs to be related to layout configuration. 
+    // Any storage here needs to be related to layout configuration.
     // layout specific state needs to be stored in UniformGridLayoutState.
  };

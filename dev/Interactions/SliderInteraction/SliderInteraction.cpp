@@ -142,8 +142,8 @@ winrt::IVectorView<winrt::RoutedEvent> SliderInteraction::GetSupportedEventsCore
 
 void SliderInteraction::OnKeyDown(winrt::UIElement const& sender, winrt::KeyRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto keyArgs = args;
+    const auto& target = sender;
+    const auto& keyArgs = args;
 
     ConfigureTargetElement(target);
 
@@ -181,8 +181,8 @@ void SliderInteraction::OnPointerMoved(winrt::UIElement const& sender, winrt::Po
 {
     if (m_hasPointerCapture)
     {
-        auto target = sender;
-        auto pointerArgs = args;
+        const auto& target = sender;
+        const auto& pointerArgs = args;
         auto position = pointerArgs.GetCurrentPoint(target).Position();
 
         winrt::Point delta(m_capturePosition.X - position.X, m_capturePosition.Y - position.Y);
@@ -193,8 +193,8 @@ void SliderInteraction::OnPointerMoved(winrt::UIElement const& sender, winrt::Po
 
 void SliderInteraction::OnPointerPressed(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto pointerArgs = args;
+    const auto& target = sender;
+    const auto& pointerArgs = args;
 
     ConfigureTargetElement(target);
 
@@ -204,8 +204,8 @@ void SliderInteraction::OnPointerPressed(winrt::UIElement const& sender, winrt::
 
 void SliderInteraction::OnPointerReleased(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto pointerArgs = args;
+    const auto& target = sender;
+    const auto& pointerArgs = args;
 
     if (m_hasPointerCapture)
     {
@@ -215,8 +215,8 @@ void SliderInteraction::OnPointerReleased(winrt::UIElement const& sender, winrt:
 
 void SliderInteraction::OnPointerCanceled(winrt::UIElement const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    auto target = sender;
-    auto pointerArgs = args;
+    const auto& target = sender;
+    const auto& pointerArgs = args;
 
     if (m_hasPointerCapture)
     {
@@ -230,7 +230,7 @@ void SliderInteraction::OnPointerCaptureLost(winrt::UIElement const& sender, win
     m_capturePosition = winrt::Point();
 }
 
-void SliderInteraction::ConfigureTargetElement(winrt::UIElement target)
+void SliderInteraction::ConfigureTargetElement(const winrt::UIElement& target)
 {
     if (!m_translateTransform)
     {

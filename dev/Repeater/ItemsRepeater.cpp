@@ -12,10 +12,7 @@
 #include "ViewportManagerWithPlatformFeatures.h"
 #include "ViewportManagerDownlevel.h"
 #include "RuntimeProfiler.h"
-
-#ifndef BUILD_WINDOWS
 #include "ItemTemplateWrapper.h"
-#endif
 
 // Change to 'true' to turn on debugging outputs in Output window
 bool RepeaterTrace::s_IsDebugOutputEnabled{ false };
@@ -121,8 +118,15 @@ winrt::Size ItemsRepeater::MeasureOverride(winrt::Size const& availableSize)
         virtualContext->Indent(Indent());
 #endif
 
-        desiredSize = layout.Measure(layoutContext, availableSize);
-        extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        // Checking if we have an data template and it is empty
+        if (m_isItemTemplateEmpty) {
+            // Has no content, so we will draw nothing and request zero space
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, 0, 0 };
+        }
+        else {
+            desiredSize = layout.Measure(layoutContext, availableSize);
+            extent = winrt::Rect{ m_layoutOrigin.X, m_layoutOrigin.Y, desiredSize.Width, desiredSize.Height };
+        }
 
         // Clear auto recycle candidate elements that have not been kept alive by layout - i.e layout did not
         // call GetElementAt(index).
@@ -363,7 +367,7 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     if (property == s_ItemsSourceProperty)
     {
         auto newValue = args.NewValue();
-        auto newDataSource = safe_try_cast<winrt::ItemsSourceView>(newValue);
+        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
         if (newValue && !newDataSource)
         {
             newDataSource = winrt::ItemsSourceView(newValue);
@@ -373,15 +377,15 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
     else if (property == s_ItemTemplateProperty)
     {
-        OnItemTemplateChanged(safe_cast<winrt::IElementFactory>(args.OldValue()), safe_cast<winrt::IElementFactory>(args.NewValue()));
+        OnItemTemplateChanged(args.OldValue().as<winrt::IElementFactory>(), args.NewValue().as<winrt::IElementFactory>());
     }
     else if (property == s_LayoutProperty)
     {
-        OnLayoutChanged(safe_cast<winrt::Layout>(args.OldValue()), safe_cast<winrt::Layout>(args.NewValue()));
+        OnLayoutChanged(args.OldValue().as<winrt::Layout>(), args.NewValue().as<winrt::Layout>());
     }
     else if (property == s_AnimatorProperty)
     {
-        OnAnimatorChanged(safe_cast<winrt::ElementAnimator>(args.OldValue()), safe_cast<winrt::ElementAnimator>(args.NewValue()));
+        OnAnimatorChanged(args.OldValue().as<winrt::ElementAnimator>(), args.NewValue().as<winrt::ElementAnimator>());
     }
     else if (property == s_HorizontalCacheLengthProperty)
     {
@@ -521,6 +525,12 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
                 -1 /* newIndex */,
                 -1 /* oldIndex */);
             args.Action();
+            m_processingItemsSourceChange.set(args);
+            auto processingChange = gsl::finally([this]()
+                {
+                    m_processingItemsSourceChange.set(nullptr);
+                });
+
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), newValue, args);
         }
         else if (auto nonVirtualLayout = layout.try_as<winrt::NonVirtualizingLayout>())
@@ -592,8 +602,8 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         // UIAffinityQueue cleanup. To avoid that bug, take a strong ref
         m_itemTemplate = newValue;
     }
-
-#ifndef BUILD_WINDOWS
+    // Clear flag for bug #776
+    m_isItemTemplateEmpty = false;
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
     {
@@ -602,6 +612,10 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
         if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
         {
             m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+            if (!dataTemplate.LoadContent().as<winrt::FrameworkElement>()) {
+                // We have a DataTemplate which is empty, so we need to set it to true
+                m_isItemTemplateEmpty = true;
+            }
         }
         else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
         {
@@ -612,7 +626,6 @@ void ItemsRepeater::OnItemTemplateChanged(const winrt::IElementFactory& oldValue
             throw winrt::hresult_invalid_argument(L"ItemTemplate");
         }
     }
-#endif
 
     InvalidateMeasure();
 }

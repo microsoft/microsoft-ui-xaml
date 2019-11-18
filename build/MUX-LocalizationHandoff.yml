@@ -2,7 +2,7 @@ name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 jobs:
 - job: LocalizationHandoff
   pool:
-    name: Package ES Lab E
+    name: Package ES Standard Build
 
   steps:
   - task: PkgESSetupBuild@10
@@ -19,4 +19,17 @@ jobs:
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\VSTSRunLocWorkflow.cmd'
 
-
+  - powershell: |
+      $changes = & git ls-files -m
+      Write-Host "Edited files:"
+      Write-Host "$changes"
+      if ($changes -imatch "\.resw")
+      {
+        Write-Host "##vso[task.complete result=SucceededWithIssues;]"
+        Write-Host "##vso[task.logissue type=warning;]Localization updates needed"
+        foreach ($change in $changes)
+        {
+          Write-Host "##vso[task.logissue type=warning;]$change"
+        }
+      }
+    displayName: checkEditedFiles

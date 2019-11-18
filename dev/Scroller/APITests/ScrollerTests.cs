@@ -29,7 +29,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using InteractionState = Microsoft.UI.Xaml.Controls.InteractionState;
 using ScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
@@ -40,7 +39,6 @@ using InputKind = Microsoft.UI.Xaml.Controls.InputKind;
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -104,30 +102,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsNull(scroller.VerticalScrollController);
                 Verify.IsNull(scroller.Content);
                 Verify.IsNotNull(scroller.ExpressionAnimationSources);
-                Verify.AreEqual(scroller.State, c_defaultState);
-                Verify.AreEqual(scroller.HorizontalScrollChainingMode, c_defaultHorizontalScrollChainingMode);
-                Verify.AreEqual(scroller.VerticalScrollChainingMode, c_defaultVerticalScrollChainingMode);
-                Verify.AreEqual(scroller.HorizontalScrollRailingMode, c_defaultHorizontalScrollRailingMode);
-                Verify.AreEqual(scroller.VerticalScrollRailingMode, c_defaultVerticalScrollRailingMode);
-                Verify.AreEqual(scroller.HorizontalScrollMode, c_defaultHorizontalScrollMode);
-                Verify.AreEqual(scroller.VerticalScrollMode, c_defaultVerticalScrollMode);
-                Verify.AreEqual(scroller.ZoomChainingMode, c_defaultZoomChainingMode);
-                Verify.AreEqual(scroller.ContentOrientation, c_defaultContentOrientation);
-                Verify.AreEqual(scroller.ZoomMode, c_defaultZoomMode);
-                Verify.AreEqual(scroller.IgnoredInputKind, c_defaultIgnoredInputKind);
-                Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
-                Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
-                Verify.AreEqual(scroller.ZoomFactor, c_defaultZoomFactor);
-                Verify.AreEqual(scroller.HorizontalOffset, c_defaultHorizontalOffset);
-                Verify.AreEqual(scroller.VerticalOffset, c_defaultVerticalOffset);
-                Verify.AreEqual(scroller.HorizontalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scroller.VerticalAnchorRatio, c_defaultAnchorRatio);
-                Verify.AreEqual(scroller.ExtentWidth, 0.0);
-                Verify.AreEqual(scroller.ExtentHeight, 0.0);
-                Verify.AreEqual(scroller.ViewportWidth, 0.0);
-                Verify.AreEqual(scroller.ViewportHeight, 0.0);
-                Verify.AreEqual(scroller.ScrollableWidth, 0.0);
-                Verify.AreEqual(scroller.ScrollableHeight, 0.0);
+                Verify.AreEqual(c_defaultState, scroller.State);
+                Verify.AreEqual(c_defaultHorizontalScrollChainingMode, scroller.HorizontalScrollChainingMode);
+                Verify.AreEqual(c_defaultVerticalScrollChainingMode, scroller.VerticalScrollChainingMode);
+                Verify.AreEqual(c_defaultHorizontalScrollRailingMode, scroller.HorizontalScrollRailingMode);
+                Verify.AreEqual(c_defaultVerticalScrollRailingMode, scroller.VerticalScrollRailingMode);
+                Verify.AreEqual(c_defaultHorizontalScrollMode, scroller.HorizontalScrollMode);
+                Verify.AreEqual(c_defaultVerticalScrollMode, scroller.VerticalScrollMode);
+                Verify.AreEqual(c_defaultZoomChainingMode, scroller.ZoomChainingMode);
+                Verify.AreEqual(c_defaultContentOrientation, scroller.ContentOrientation);
+                Verify.AreEqual(c_defaultZoomMode, scroller.ZoomMode);
+                Verify.AreEqual(c_defaultIgnoredInputKind, scroller.IgnoredInputKind);
+                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
+                Verify.AreEqual(c_defaultZoomFactor, scroller.ZoomFactor);
+                Verify.AreEqual(c_defaultHorizontalOffset, scroller.HorizontalOffset);
+                Verify.AreEqual(c_defaultVerticalOffset, scroller.VerticalOffset);
+                Verify.AreEqual(c_defaultAnchorRatio, scroller.HorizontalAnchorRatio);
+                Verify.AreEqual(c_defaultAnchorRatio, scroller.VerticalAnchorRatio);
+                Verify.AreEqual(0.0, scroller.ExtentWidth);
+                Verify.AreEqual(0.0, scroller.ExtentHeight);
+                Verify.AreEqual(0.0, scroller.ViewportWidth);
+                Verify.AreEqual(0.0, scroller.ViewportHeight);
+                Verify.AreEqual(0.0, scroller.ScrollableWidth);
+                Verify.AreEqual(0.0, scroller.ScrollableHeight);
             });
         }
 
@@ -169,22 +167,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Verifying Scroller non-default property values");
-                Verify.AreEqual(scroller.Content, rectangle);
-                Verify.AreEqual(scroller.State, c_defaultState);
-                Verify.AreEqual(scroller.HorizontalScrollChainingMode, ChainingMode.Always);
-                Verify.AreEqual(scroller.VerticalScrollChainingMode, ChainingMode.Never);
-                Verify.AreEqual(scroller.HorizontalScrollRailingMode, RailingMode.Disabled);
-                Verify.AreEqual(scroller.VerticalScrollRailingMode, RailingMode.Disabled);
-                Verify.AreEqual(scroller.HorizontalScrollMode, ScrollMode.Disabled);
-                Verify.AreEqual(scroller.VerticalScrollMode, ScrollMode.Disabled);
-                Verify.AreEqual(scroller.ZoomChainingMode, ChainingMode.Never);
-                Verify.AreEqual(scroller.ZoomMode, ZoomMode.Enabled);
-                Verify.AreEqual(scroller.IgnoredInputKind, InputKind.MouseWheel);
-                Verify.AreEqual(scroller.ContentOrientation, ContentOrientation.Horizontal);
-                Verify.AreEqual(scroller.MinZoomFactor, 0.5f);
-                Verify.AreEqual(scroller.MaxZoomFactor, 2.0f);
-                Verify.AreEqual(scroller.HorizontalAnchorRatio, 0.25f);
-                Verify.AreEqual(scroller.VerticalAnchorRatio, 0.75f);
+                Verify.AreEqual(rectangle, scroller.Content);
+                Verify.AreEqual(c_defaultState, scroller.State);
+                Verify.AreEqual(ChainingMode.Always, scroller.HorizontalScrollChainingMode);
+                Verify.AreEqual(ChainingMode.Never, scroller.VerticalScrollChainingMode);
+                Verify.AreEqual(RailingMode.Disabled, scroller.HorizontalScrollRailingMode);
+                Verify.AreEqual(RailingMode.Disabled, scroller.VerticalScrollRailingMode);
+                Verify.AreEqual(ScrollMode.Disabled, scroller.HorizontalScrollMode);
+                Verify.AreEqual(ScrollMode.Disabled, scroller.VerticalScrollMode);
+                Verify.AreEqual(ChainingMode.Never, scroller.ZoomChainingMode);
+                Verify.AreEqual(ZoomMode.Enabled, scroller.ZoomMode);
+                Verify.AreEqual(InputKind.MouseWheel, scroller.IgnoredInputKind);
+                Verify.AreEqual(ContentOrientation.Horizontal, scroller.ContentOrientation);
+                Verify.AreEqual(0.5f, scroller.MinZoomFactor);
+                Verify.AreEqual(2.0f, scroller.MaxZoomFactor);
+                Verify.AreEqual(0.25f, scroller.HorizontalAnchorRatio);
+                Verify.AreEqual(0.75f, scroller.VerticalAnchorRatio);
             });
         }
 
@@ -208,12 +206,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.ExtentWidth, c_defaultUIScrollerContentWidth);
-                Verify.AreEqual(scroller.ExtentHeight, c_defaultUIScrollerContentHeight);
-                Verify.AreEqual(scroller.ViewportWidth, c_defaultUIScrollerWidth);
-                Verify.AreEqual(scroller.ViewportHeight, c_defaultUIScrollerHeight);
-                Verify.AreEqual(scroller.ScrollableWidth, c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth);
-                Verify.AreEqual(scroller.ScrollableHeight, c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight);
+                Verify.AreEqual(c_defaultUIScrollerContentWidth, scroller.ExtentWidth);
+                Verify.AreEqual(c_defaultUIScrollerContentHeight, scroller.ExtentHeight);
+                Verify.AreEqual(c_defaultUIScrollerWidth, scroller.ViewportWidth);
+                Verify.AreEqual(c_defaultUIScrollerHeight, scroller.ViewportHeight);
+                Verify.AreEqual(c_defaultUIScrollerContentWidth - c_defaultUIScrollerWidth, scroller.ScrollableWidth);
+                Verify.AreEqual(c_defaultUIScrollerContentHeight - c_defaultUIScrollerHeight, scroller.ScrollableHeight);
             });
         }
 
@@ -234,7 +232,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
 
                 Log.Comment("Attempting to set Scroller.MinZoomFactor to double.NegativeInfinity");
                 try
@@ -245,7 +243,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
 
                 Log.Comment("Attempting to set Scroller.MinZoomFactor to double.PositiveInfinity");
                 try
@@ -256,7 +254,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
             });
         }
 
@@ -277,7 +275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
 
                 Log.Comment("Attempting to set Scroller.MaxZoomFactor to double.NegativeInfinity");
                 try
@@ -288,7 +286,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
 
                 Log.Comment("Attempting to set Scroller.MaxZoomFactor to double.PositiveInfinity");
                 try
@@ -299,7 +297,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     Log.Comment("Exception thrown: {0}", e.ToString());
                 }
-                Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
             });
         }
 
@@ -307,7 +305,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies the InteractionTracker's VisualInteractionSource properties get set according to Scroller properties.")]
         public void VerifyInteractionSourceSettings()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(enableAnchorNotifications: false, enableInteractionSourcesNotifications: true))
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: false,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications : false))
             {
                 Scroller scroller = null;
                 Rectangle rectangleScrollerContent = null;
@@ -328,27 +329,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     CompositionInteractionSourceCollection interactionSources = scrollerTestHooksHelper.GetInteractionSources(scroller);
                     Verify.IsNotNull(interactionSources);
                     ScrollerTestHooksHelper.LogInteractionSources(interactionSources);
-                    Verify.AreEqual(interactionSources.Count, 1);
+                    Verify.AreEqual(1, interactionSources.Count);
                     IEnumerator<ICompositionInteractionSource> sourcesEnumerator = (interactionSources as IEnumerable<ICompositionInteractionSource>).GetEnumerator();
                     sourcesEnumerator.MoveNext();
                     VisualInteractionSource visualInteractionSource = sourcesEnumerator.Current as VisualInteractionSource;
                     Verify.IsNotNull(visualInteractionSource);
 
-                    Verify.AreEqual(visualInteractionSource.ManipulationRedirectionMode,
-                        PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) ? VisualInteractionSourceRedirectionMode.CapableTouchpadAndPointerWheel : VisualInteractionSourceRedirectionMode.CapableTouchpadOnly);
+                    Verify.AreEqual(PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5) ? VisualInteractionSourceRedirectionMode.CapableTouchpadAndPointerWheel : VisualInteractionSourceRedirectionMode.CapableTouchpadOnly,
+                        visualInteractionSource.ManipulationRedirectionMode);
                     Verify.IsTrue(visualInteractionSource.IsPositionXRailsEnabled);
                     Verify.IsTrue(visualInteractionSource.IsPositionYRailsEnabled);
-                    Verify.AreEqual(visualInteractionSource.PositionXChainingMode, InteractionChainingMode.Auto);
-                    Verify.AreEqual(visualInteractionSource.PositionYChainingMode, InteractionChainingMode.Auto);
-                    Verify.AreEqual(visualInteractionSource.ScaleChainingMode, InteractionChainingMode.Auto);
-                    Verify.AreEqual(visualInteractionSource.PositionXSourceMode, InteractionSourceMode.EnabledWithInertia);
-                    Verify.AreEqual(visualInteractionSource.PositionYSourceMode, InteractionSourceMode.EnabledWithInertia);
-                    Verify.AreEqual(visualInteractionSource.ScaleSourceMode, InteractionSourceMode.Disabled);
+                    Verify.AreEqual(InteractionChainingMode.Auto, visualInteractionSource.PositionXChainingMode);
+                    Verify.AreEqual(InteractionChainingMode.Auto, visualInteractionSource.PositionYChainingMode);
+                    Verify.AreEqual(InteractionChainingMode.Auto, visualInteractionSource.ScaleChainingMode);
+                    Verify.AreEqual(InteractionSourceMode.EnabledWithInertia, visualInteractionSource.PositionXSourceMode);
+                    Verify.AreEqual(InteractionSourceMode.EnabledWithInertia, visualInteractionSource.PositionYSourceMode);
+                    Verify.AreEqual(InteractionSourceMode.Disabled, visualInteractionSource.ScaleSourceMode);
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                     {
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.PositionXSourceMode, InteractionSourceRedirectionMode.Enabled);
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.PositionYSourceMode, InteractionSourceRedirectionMode.Enabled);
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.ScaleSourceMode, InteractionSourceRedirectionMode.Enabled);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.PositionXSourceMode);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.PositionYSourceMode);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.ScaleSourceMode);
                     }
 
                     Log.Comment("Changing Scroller properties that affect the primary VisualInteractionSource");
@@ -370,26 +371,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     CompositionInteractionSourceCollection interactionSources = scrollerTestHooksHelper.GetInteractionSources(scroller);
                     Verify.IsNotNull(interactionSources);
                     ScrollerTestHooksHelper.LogInteractionSources(interactionSources);
-                    Verify.AreEqual(interactionSources.Count, 1);
+                    Verify.AreEqual(1, interactionSources.Count);
                     IEnumerator<ICompositionInteractionSource> sourcesEnumerator = (interactionSources as IEnumerable<ICompositionInteractionSource>).GetEnumerator();
                     sourcesEnumerator.MoveNext();
                     VisualInteractionSource visualInteractionSource = sourcesEnumerator.Current as VisualInteractionSource;
                     Verify.IsNotNull(visualInteractionSource);
 
-                    Verify.AreEqual(visualInteractionSource.ManipulationRedirectionMode, VisualInteractionSourceRedirectionMode.CapableTouchpadOnly);
+                    Verify.AreEqual(VisualInteractionSourceRedirectionMode.CapableTouchpadOnly, visualInteractionSource.ManipulationRedirectionMode);
                     Verify.IsFalse(visualInteractionSource.IsPositionXRailsEnabled);
                     Verify.IsFalse(visualInteractionSource.IsPositionYRailsEnabled);
-                    Verify.AreEqual(visualInteractionSource.PositionXChainingMode, InteractionChainingMode.Always);
-                    Verify.AreEqual(visualInteractionSource.PositionYChainingMode, InteractionChainingMode.Never);
-                    Verify.AreEqual(visualInteractionSource.ScaleChainingMode, InteractionChainingMode.Never);
-                    Verify.AreEqual(visualInteractionSource.PositionXSourceMode, InteractionSourceMode.EnabledWithInertia);
-                    Verify.AreEqual(visualInteractionSource.PositionYSourceMode, InteractionSourceMode.Disabled);
-                    Verify.AreEqual(visualInteractionSource.ScaleSourceMode, InteractionSourceMode.EnabledWithInertia);
+                    Verify.AreEqual(InteractionChainingMode.Always, visualInteractionSource.PositionXChainingMode);
+                    Verify.AreEqual(InteractionChainingMode.Never, visualInteractionSource.PositionYChainingMode);
+                    Verify.AreEqual(InteractionChainingMode.Never, visualInteractionSource.ScaleChainingMode);
+                    Verify.AreEqual(InteractionSourceMode.EnabledWithInertia, visualInteractionSource.PositionXSourceMode);
+                    Verify.AreEqual(InteractionSourceMode.Disabled, visualInteractionSource.PositionYSourceMode);
+                    Verify.AreEqual(InteractionSourceMode.EnabledWithInertia, visualInteractionSource.ScaleSourceMode);
                     if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                     {
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.PositionXSourceMode, InteractionSourceRedirectionMode.Enabled);
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.PositionYSourceMode, InteractionSourceRedirectionMode.Enabled);
-                        Verify.AreEqual(visualInteractionSource.PointerWheelConfig.ScaleSourceMode, InteractionSourceRedirectionMode.Enabled);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.PositionXSourceMode);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.PositionYSourceMode);
+                        Verify.AreEqual(InteractionSourceRedirectionMode.Enabled, visualInteractionSource.PointerWheelConfig.ScaleSourceMode);
                     }
                 });
             }
@@ -491,9 +492,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.MinZoomFactor, c_defaultMinZoomFactor);
-                Verify.AreEqual(scroller.ZoomFactor, newMaxZoomFactor);
-                Verify.AreEqual(scroller.MaxZoomFactor, newMaxZoomFactor);
+                Verify.AreEqual(c_defaultMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(newMaxZoomFactor, scroller.ZoomFactor);
+                Verify.AreEqual(newMaxZoomFactor, scroller.MaxZoomFactor);
             });
 
             Log.Comment("Validating final transform of Scroller.Content's Visual after MaxZoomFactor change");
@@ -509,13 +510,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
-                    Verify.AreEqual(translation.X, c_defaultHorizontalOffset);
-                    Verify.AreEqual(translation.Y, c_defaultVerticalOffset);
+                    Verify.AreEqual(c_defaultHorizontalOffset, translation.X);
+                    Verify.AreEqual(c_defaultVerticalOffset, translation.Y);
 
                     Vector3 scale;
                     status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
-                    Verify.AreEqual(scale.X, newMaxZoomFactor);
+                    Verify.AreEqual(newMaxZoomFactor, scale.X);
                 });
             }
             else
@@ -524,15 +525,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
-                    Verify.AreEqual(offset, c_defaultHorizontalOffset);
+                    Verify.AreEqual(c_defaultHorizontalOffset, offset);
 
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
-                    Verify.AreEqual(offset, c_defaultVerticalOffset);
+                    Verify.AreEqual(c_defaultVerticalOffset, offset);
 
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
-                    Verify.AreEqual(zoomFactor, newMaxZoomFactor);
+                    Verify.AreEqual(newMaxZoomFactor, zoomFactor);
                 });
             }
         }
@@ -632,9 +633,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scroller.MinZoomFactor, newMinZoomFactor);
-                Verify.AreEqual(scroller.ZoomFactor, newMinZoomFactor);
-                Verify.AreEqual(scroller.MaxZoomFactor, c_defaultMaxZoomFactor);
+                Verify.AreEqual(newMinZoomFactor, scroller.MinZoomFactor);
+                Verify.AreEqual(newMinZoomFactor, scroller.ZoomFactor);
+                Verify.AreEqual(c_defaultMaxZoomFactor, scroller.MaxZoomFactor);
             });
             
             Log.Comment("Validating final transform of Scroller.Content's Visual after MinZoomFactor change");
@@ -650,13 +651,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     status = CompositionPropertySpy.TryGetTranslationFacade(rectangleScrollerContent, out translation);
                     Log.Comment("status={0}, horizontal offset={1}", status, translation.X);
                     Log.Comment("status={0}, vertical offset={1}", status, translation.Y);
-                    Verify.AreEqual(translation.X, c_defaultHorizontalOffset);
-                    Verify.AreEqual(translation.Y, c_defaultVerticalOffset);
+                    Verify.AreEqual(c_defaultHorizontalOffset, translation.X);
+                    Verify.AreEqual(c_defaultVerticalOffset, translation.Y);
 
                     Vector3 scale;
                     status = CompositionPropertySpy.TryGetScaleFacade(rectangleScrollerContent, out scale);
                     Log.Comment("status={0}, vertical offset={1}", status, scale.X);
-                    Verify.AreEqual(scale.X, newMinZoomFactor);
+                    Verify.AreEqual(newMinZoomFactor, scale.X);
                 });
             }
             else
@@ -665,15 +666,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualHorizontalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, horizontal offset={1}", status, offset);
-                    Verify.AreEqual(offset, c_defaultHorizontalOffset);
+                    Verify.AreEqual(c_defaultHorizontalOffset, offset);
 
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualVerticalOffsetTargetedPropertyName, out offset);
                     Log.Comment("status={0}, vertical offset={1}", status, offset);
-                    Verify.AreEqual(offset, c_defaultVerticalOffset);
+                    Verify.AreEqual(c_defaultVerticalOffset, offset);
 
                     status = CompositionPropertySpy.TryGetScalar(visualScrollerContent, c_visualScaleTargetedPropertyName, out zoomFactor);
                     Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
-                    Verify.AreEqual(zoomFactor, newMinZoomFactor);
+                    Verify.AreEqual(newMinZoomFactor, zoomFactor);
                 });
             }
         }
@@ -741,43 +742,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Validating final zoomFactor");
                 status = CompositionPropertySpy.TryGetScalar(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesZoomFactorPropertyName, out zoomFactor);
                 Log.Comment("status={0}, zoomFactor={1}", status, zoomFactor);
-                Verify.AreEqual(zoomFactor, 2.0f);
+                Verify.AreEqual(2.0f, zoomFactor);
 
                 Log.Comment("Validating final offset");
                 status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesOffsetPropertyName, out offset);
                 Log.Comment("status={0}, offset={1}", status, offset);
-                Verify.AreEqual(offset.X, 0.0f);
-                Verify.AreEqual(offset.Y, 0.0f);
+                Verify.AreEqual(0.0f, offset.X);
+                Verify.AreEqual(0.0f, offset.Y);
 
                 Log.Comment("Validating final position");
                 status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesPositionPropertyName, out position);
                 Log.Comment("status={0}, position={1}", status, position);
-                Verify.AreEqual(position.X, 100.0f);
-                Verify.AreEqual(position.Y, 200.0f);
+                Verify.AreEqual(100.0f, position.X);
+                Verify.AreEqual(200.0f, position.Y);
 
                 Log.Comment("Validating final minPosition");
                 status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMinPositionPropertyName, out minPosition);
                 Log.Comment("status={0}, minPosition={1}", status, minPosition);
-                Verify.AreEqual(minPosition.X, 0.0f);
-                Verify.AreEqual(minPosition.Y, 0.0f);
+                Verify.AreEqual(0.0f, minPosition.X);
+                Verify.AreEqual(0.0f, minPosition.Y);
 
                 Log.Comment("Validating final maxPosition");
                 status = CompositionPropertySpy.TryGetVector2(scroller.ExpressionAnimationSources, c_expressionAnimationSourcesMaxPositionPropertyName, out maxPosition);
                 Log.Comment("status={0}, maxPosition={1}", status, maxPosition);
-                Verify.AreEqual(maxPosition.X, 2100.0f);
-                Verify.AreEqual(maxPosition.Y, 1000.0f);
+                Verify.AreEqual(2100.0f, maxPosition.X);
+                Verify.AreEqual(1000.0f, maxPosition.Y);
 
                 Log.Comment("Validating final extent");
                 status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesExtentPropertyName, out extent);
                 Log.Comment("status={0}, extent={1}", status, extent);
-                Verify.AreEqual(extent.X, c_defaultUIScrollerContentWidth);
-                Verify.AreEqual(extent.Y, c_defaultUIScrollerContentHeight);
+                Verify.AreEqual(c_defaultUIScrollerContentWidth, extent.X);
+                Verify.AreEqual(c_defaultUIScrollerContentHeight, extent.Y);
 
                 Log.Comment("Validating final viewport");
                 status = scroller.ExpressionAnimationSources.TryGetVector2(c_expressionAnimationSourcesViewportPropertyName, out viewport);
                 Log.Comment("status={0}, viewport={1}", status, viewport);
-                Verify.AreEqual(viewport.X, c_defaultUIScrollerWidth);
-                Verify.AreEqual(viewport.Y, c_defaultUIScrollerHeight);
+                Verify.AreEqual(c_defaultUIScrollerWidth, viewport.X);
+                Verify.AreEqual(c_defaultUIScrollerHeight, viewport.Y);
             });
         }
 

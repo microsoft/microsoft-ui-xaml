@@ -19,7 +19,6 @@ public:
     ForwardRefToBaseReferenceTracker(SplitButton)
 
     ToggleSplitButton();
-    ~ToggleSplitButton();
 
     // Lift up EnsureProperties and ClearProperties to resolve ambiguity between ToggleSplitButtonProperties and SplitButtonProperties
     using ToggleSplitButtonProperties::EnsureProperties;

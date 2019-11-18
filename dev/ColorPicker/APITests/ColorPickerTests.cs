@@ -26,14 +26,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using ColorSpectrumShape = Microsoft.UI.Xaml.Controls.ColorSpectrumShape;
 using ColorSpectrumComponents = Microsoft.UI.Xaml.Controls.ColorSpectrumComponents;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
 using ColorSpectrum = Microsoft.UI.Xaml.Controls.Primitives.ColorSpectrum;
 using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlControlsXamlMetaDataProvider;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -268,7 +266,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         // XamlControlsXamlMetaDataProvider does not exist in the OS repo,
         // so we can't execute this test as authored there.
-#if !BUILD_WINDOWS
         [TestMethod]
         public void VerifyColorPropertyMetadata()
         {
@@ -281,7 +278,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(memberType.BaseType.FullName, "ValueType");
             });
         }
-#endif
+
+        [TestMethod]
+        public void VerifyVisualTree()
+        {
+            ColorPicker colorPicker = null;
+            RunOnUIThread.Execute(() =>
+            {
+                colorPicker = new ColorPicker { IsAlphaEnabled = true, Width=300, Height=600 };
+            });
+            TestUtilities.SetAsVisualTreeRoot(colorPicker);
+
+            VisualTreeTestHelper.VerifyVisualTree(root: colorPicker, masterFilePrefix: "ColorPicker");
+        }
 
         // This takes a FrameworkElement parameter so you can pass in either a ColorPicker or a ColorSpectrum.
         private void SetAsRootAndWaitForColorSpectrumFill(FrameworkElement element)

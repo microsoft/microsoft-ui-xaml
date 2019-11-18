@@ -16,20 +16,21 @@
         </Grid.Resources>
 
         <StackPanel>
-            <Button x:Name="defaultDemo" >Default Demo</Button>
-            <Button x:Name="basicDemo" >Basic Demo</Button>
-            <Button x:Name="itemTemplateDemo" >ItemTemplate Demo</Button>
-            <Button x:Name="collectionChangeDemo" >Collection Changes Demo</Button>
-            <Button x:Name="animationsDemo" >Animations Demo</Button>
-            <Button x:Name="circleLayoutDemo">Circle Layout Demo</Button>
-            <Button x:Name="activityFeedLayoutDemo">Xbox Activity Feed Layout Demo</Button>
-            <Button x:Name="nonVirtualStackLayoutDemo">Non Virtual Stack Layout Demo</Button>
-            <Button x:Name="virtualFixedStackLayoutDemo">Virtual Fixed Stack Layout Demo</Button>
-            <Button x:Name="virtualStackLayoutDemo">Virtual Variable Stack Layout Demo (Estimated)</Button>
-            <Button x:Name="pinterestLayoutDemo">Pinterest Layout Demo</Button>
-            <Button x:Name="flowLayoutDemo">Flow Layout Demo</Button>
-            <Button x:Name="storeDemo">Store demo</Button>
-            <Button x:Name="animatedScrollDemo">Animated scroll demo</Button>
+            <Button x:Name="defaultDemo" AutomationProperties.Name="Default Demo" >Default Demo</Button>
+            <Button x:Name="basicDemo" AutomationProperties.Name="Basic Demo">Basic Demo</Button>
+            <Button x:Name="itemsSourceDemo" AutomationProperties.Name="ItemsSource Demo">ItemsSource Demo</Button>
+            <Button x:Name="itemTemplateDemo" AutomationProperties.Name="ItemTemplate Demo">ItemTemplate Demo</Button>
+            <Button x:Name="collectionChangeDemo" AutomationProperties.Name="Collection Changes Demo" >Collection Changes Demo</Button>
+            <Button x:Name="animationsDemo" AutomationProperties.Name="Animations Demo">Animations Demo</Button>
+            <Button x:Name="circleLayoutDemo" AutomationProperties.Name="Circle Layout Demo">Circle Layout Demo</Button>
+            <Button x:Name="activityFeedLayoutDemo" AutomationProperties.Name="Xbox Activity Feed Layout Demo">Xbox Activity Feed Layout Demo</Button>
+            <Button x:Name="nonVirtualStackLayoutDemo" AutomationProperties.Name="Non virtual Stack Layout Demo">Non Virtual Stack Layout Demo</Button>
+            <Button x:Name="virtualFixedStackLayoutDemo" AutomationProperties.Name="Virtual Fixed Stack Layout Demo">Virtual Fixed Stack Layout Demo</Button>
+            <Button x:Name="virtualStackLayoutDemo" AutomationProperties.Name="Virtual Variable Stack Layout Demo (Estimated)">Virtual Variable Stack Layout Demo (Estimated)</Button>
+            <Button x:Name="pinterestLayoutDemo" AutomationProperties.Name="Pinterest Layout Demo">Pinterest Layout Demo</Button>
+            <Button x:Name="flowLayoutDemo" AutomationProperties.Name="Flow Layout Demo">Flow Layout Demo</Button>
+            <Button x:Name="storeDemo" AutomationProperties.Name="Store demo">Store demo</Button>
+            <Button x:Name="animatedScrollDemo" AutomationProperties.Name="Animated scroll demo">Animated scroll demo</Button>
             <TextBlock>Selection Demo</TextBlock>
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="flatSelectionDemo">Flat</Button>

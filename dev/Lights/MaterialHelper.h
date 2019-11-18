@@ -249,7 +249,7 @@ private:
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
     winrt::ViewManagement::UIViewSettings m_uiViewSettings{ nullptr };
-    
+
     bool m_wasWindowHidden{};                           // True if we've received CoreWindow.VisiblityChanged w/ Visibility == false
     bool m_waitingForRenderingAfterBecomingVisible{};   // True if we got a VisibilityChanged(True) and are waiting for a CT.Rendering to complete the RS2 workaround for Bug 11159685
     bool m_energySaverStatusChangedRevokerValid{};
@@ -276,6 +276,6 @@ private:
     // For Bug 18005612 workaround, we may ave to defer light attachment by a few ticks.
     // If we retry many more times but are not successful, something else is wrong - give up and log an assert in that case.
     static const unsigned int sc_maxFailedToAttachLightsCount = 100;
-    unsigned int m_failedToAttachLightsCount{0};
+    unsigned int m_failedToAttachLightsCount{ 0 };
 };
 #endif

@@ -7,6 +7,7 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
+#include "SharedHelpers.h"
 
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewItemAutomationPeer);
@@ -27,13 +28,7 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
     {
         if (auto lvi = Owner().try_as<winrt::NavigationViewItem>())
         {
-            if (auto content = lvi.Content())
-            {
-                if (auto stringableName = content.try_as<winrt::IStringable>())
-                {
-                    returnHString = stringableName.ToString();
-                }
-            }
+            returnHString = SharedHelpers::TryGetStringRepresentationFromObject(lvi.Content());
         }
     }
 

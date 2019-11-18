@@ -27,6 +27,7 @@
     <ClCompile Include="$(OutDir)XamlMetadataProviderGenerated.cpp" />
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="CommandingHelpers.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\XamlControlsResources.properties.cpp" />
     <ClCompile Include="XamlControlsResources.cpp" />
@@ -92,13 +93,14 @@
     <ClInclude Include="..\inc\enum_vector.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="..\inc\RegUtil.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
     <None Include="packages.config" />
-    <None Include="Microsoft.UI.Xaml.rc">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="$(OutDir)XamlMetadataProviderWindowsCodeGen.cs" />
     <None Include="XamlMetadataProviderGenerated.tt" />
     <None Include="XamlMetadataProviderWindowsCodeGen.tt" />
@@ -110,11 +112,29 @@
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(OutDir)Generic.xaml" />
-    <Page Include="$(OutDir)rs1_themeresources.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml" />
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\CompactDatePickerTimePickerFlyout.xaml" />
     <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+    <Page Include="@(PageRequiringCustomCompilation)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Microsoft.UI.Xaml.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

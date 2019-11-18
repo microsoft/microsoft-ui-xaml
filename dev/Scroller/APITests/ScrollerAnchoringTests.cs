@@ -25,7 +25,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 using ContentOrientation = Microsoft.UI.Xaml.Controls.ContentOrientation;
 using ScrollerAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollerAnchorRequestedEventArgs;
@@ -36,7 +35,6 @@ using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
 using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -63,7 +61,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -90,11 +91,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("No Scroller offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, 0);
+                        Verify.AreEqual(0, scroller.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, 0);
+                        Verify.AreEqual(0, scroller.HorizontalOffset);
                     }
                 });
             }
@@ -150,7 +151,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -260,7 +264,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -354,7 +361,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostNearEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -395,11 +405,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment("Scroller offset change expected");
                     if (orientation == Orientation.Vertical)
                     {
-                        Verify.AreEqual(scroller.VerticalOffset, 127.0);
+                        Verify.AreEqual(127.0, scroller.VerticalOffset);
                     }
                     else
                     {
-                        Verify.AreEqual(scroller.HorizontalOffset, 127.0);
+                        Verify.AreEqual(127.0, scroller.HorizontalOffset);
                     }
                 });
             }
@@ -421,7 +431,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringAtAlmostFarEdge(Orientation orientation)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -495,7 +508,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringElementWithResizedViewport(Orientation orientation, double viewportSizeChange)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
@@ -628,7 +644,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Scroller.AnchorRequested event handler");
 
                 Verify.IsNull(args.AnchorElement);
-                Verify.AreEqual(args.AnchorCandidates.Count, 0);
+                Verify.AreEqual(0, args.AnchorCandidates.Count);
 
                 StackPanel sp = (sender.Content as Border).Child as StackPanel;
                 foreach (Border b in sp.Children)
@@ -688,7 +704,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void AnchoringWithOffsetCoercion(bool reduceAnchorOffset)
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 Scroller scroller = null;
                 Border anchorElement = null;
@@ -786,7 +805,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Verifies VerticalOffset adjusts when inserting and removing items at the beginning (VerticalAnchorRatio=0.5).")]
         public void AnchoringAtRepeaterMiddle()
         {
-            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper())
+            using (ScrollerTestHooksHelper scrollerTestHooksHelper = new ScrollerTestHooksHelper(
+                enableAnchorNotifications: true,
+                enableInteractionSourcesNotifications: true,
+                enableExpressionAnimationStatusNotifications: false))
             {
                 using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("Scroller"))
                 {
@@ -830,7 +852,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     RunOnUIThread.Execute(() =>
                     {
                         Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(scroller.VerticalOffset, 520.0);
+                        Verify.AreEqual(520.0, scroller.VerticalOffset);
                     });
 
                     RunOnUIThread.Execute(() =>
@@ -846,7 +868,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     RunOnUIThread.Execute(() =>
                     {
                         Log.Comment("Scroller offset change expected");
-                        Verify.AreEqual(scroller.VerticalOffset, 250.0);
+                        Verify.AreEqual(250.0, scroller.VerticalOffset);
                     });
                 }
             }
@@ -874,11 +896,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Name = "repeater",
                 ItemsSource = dataSource,
-#if BUILD_WINDOWS
-                ItemTemplate = (Windows.UI.Xaml.IElementFactory)elementFactory,
-#else
                 ItemTemplate = elementFactory,
-#endif
                 Layout = new UniformGridLayout()
                 {
                     MinItemWidth = 125,

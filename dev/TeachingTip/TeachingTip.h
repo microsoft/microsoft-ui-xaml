@@ -15,7 +15,6 @@ class TeachingTip :
 
 public:
     TeachingTip();
-    ~TeachingTip();
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -36,6 +35,7 @@ public:
     void SetContentElevation(float elevation);
     void SetTailElevation(float elevation);
     bool GetIsIdle();
+    void SetIsIdle(bool isIdle);
     winrt::TeachingTipPlacementMode GetEffectivePlacement();
     winrt::TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement();
     double GetHorizontalOffset();
@@ -68,8 +68,12 @@ private:
     winrt::Popup::Opened_revoker m_popupOpenedRevoker{};
     winrt::Popup::Closed_revoker m_popupClosedRevoker{};
     winrt::Popup::Closed_revoker m_lightDismissIndicatorPopupClosedRevoker{};
-    winrt::Window::SizeChanged_revoker m_windowSizeChangedRevoker{};
+    winrt::CoreWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
     winrt::Grid::Loaded_revoker m_tailOcclusionGridLoadedRevoker{};
+    winrt::XamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
+    // Hold a strong ref to the xamlRoot while we're open so that the changed revoker works.
+    // This can be removed when internal bug #21302432 is fixed.
+    tracker_ref<winrt::XamlRoot> m_xamlRoot{ this };
     winrt::FrameworkElement::ActualThemeChanged_revoker m_actualThemeChangedRevoker{};
     
     void SetPopupAutomationProperties();
@@ -116,9 +120,13 @@ private:
 
     void SetViewportChangedEvent(const gsl::strict_not_null<winrt::FrameworkElement>& target);
     void RevokeViewportChangedEvent();
+    void WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&);
+    void XamlRootChanged(const winrt::XamlRoot&, const winrt::XamlRootChangedEventArgs&);
     void OnTargetLayoutUpdated(const winrt::IInspectable&, const winrt::IInspectable&);
     void OnTargetLoaded(const winrt::IInspectable&, const winrt::IInspectable&);
     void RepositionPopup();
+    void ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const& e);
+    winrt::FrameworkElement::Unloaded_revoker m_TargetUnloadedRevoker;
 
     void CreateExpandAnimation();
     void CreateContractAnimation();
@@ -181,6 +189,8 @@ private:
     winrt::Rect m_currentBoundsInCoreWindowSpace{ 0,0,0,0 };
     winrt::Rect m_currentTargetBoundsInCoreWindowSpace{ 0,0,0,0 };
 
+    winrt::Size m_currentXamlRootSize{ 0,0 };
+
     bool m_isTemplateApplied{ false };
     bool m_createNewPopupOnOpen{ false };
 
@@ -230,18 +240,18 @@ private:
     }
 
     // These values are shifted by one because this is the 1px highlight that sits adjacent to the tip border.
-    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 1, 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 1, 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopRightHighlightMargin(double width, double height) { return { (width / 2) + (TailShortSideLength() - 1.0f), 0, 3, 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopRightHighlightMargin(double width, double height) { return { MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0, 3, 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopRightHighlightMargin(double width, double height) { return { width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0, 3, 0 }; }
     static inline winrt::Thickness OtherPlacementTopRightHighlightMargin(double width, double height) { return { 0, 0, 0, 0 }; }
 
-    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
-    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
-    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 1, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
-    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 1, 0 }; }
+    inline winrt::Thickness BottomPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, (width / 2) + (TailShortSideLength() - 1.0f), 0 }; }
+    inline winrt::Thickness BottomRightPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, width - (MinimumTipEdgeToTailEdgeMargin() + 1.0f), 0 }; }
+    inline winrt::Thickness BottomLeftPlacementTopLeftHighlightMargin(double width, double height) { return { 3, 0, MinimumTipEdgeToTailEdgeMargin() + TailLongSideLength() - 1.0f, 0 }; }
+    static inline winrt::Thickness TopEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 3, 0 }; }
     // Shifted by one since the tail edge's border is not accounted for automatically.
-    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 1, 1, 0, 0 }; }
-    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 0, 1, 1, 0 }; }
+    static inline winrt::Thickness LeftEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 3, 1, 2, 0 }; }
+    static inline winrt::Thickness RightEdgePlacementTopLeftHighlightMargin(double width, double height) { return { 2, 1, 3, 0 }; }
 
     static inline double UntargetedTipFarPlacementOffset(float farWindowCoordinateInCoreWindowSpace, double tipSize, double offset) { return farWindowCoordinateInCoreWindowSpace - (tipSize + s_untargetedTipWindowEdgeMargin + offset); }
     static inline double UntargetedTipCenterPlacementOffset(float nearWindowCoordinateInCoreWindowSpace, float farWindowCoordinateInCoreWindowSpace, double tipSize, double nearOffset, double farOffset) { return ((nearWindowCoordinateInCoreWindowSpace + farWindowCoordinateInCoreWindowSpace) / 2)  - (tipSize / 2) + nearOffset - farOffset; }

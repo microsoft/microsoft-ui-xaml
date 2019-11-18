@@ -142,10 +142,30 @@ namespace MUXControls.TestAppUtils
         public class DefaultFilter : IFilter
         {
             private static readonly string[] _propertyNamePostfixWhiteList = new string[] {"Brush", "Thickness"};
-            private static readonly string[] _propertyNameWhiteList = new string[] {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name"};
+            private List<string> _propertyNameWhiteList = new List<string> {"Background", "Foreground", "Padding", "Margin", "RenderSize", "Visibility", "Name", "CornerRadius",
+                "Width", "Height", "MinWidth", "MinHeight", "MaxWidth", "MaxHeight" };
+            private static readonly Dictionary<string, string> _ignorePropertyValues = new Dictionary<string, string> {
+                {"MinWidth","0" },
+                {"MinHeight","0" },
+                {"MaxWidth","∞" },
+                {"MaxHeight","∞" },
+            };
+
+            public List<string> PropertyNameWhiteList 
+            {
+                get { return _propertyNameWhiteList; }
+                set { _propertyNameWhiteList = value; }
+            }
+
             public virtual bool ShouldVisitPropertyValuePair(string propertyName, string value)
             {
-                return true;
+                if (_ignorePropertyValues.ContainsKey(propertyName) 
+                    && _ignorePropertyValues[propertyName].Equals(value))
+                {
+                    return false;
+                }
+
+                return !string.IsNullOrEmpty(value) && !value.Equals("NaN") && !value.StartsWith("Exception");
             }
 
             public virtual bool ShouldVisitElement(string elementName)

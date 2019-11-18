@@ -8,6 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);TREEVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -53,29 +54,18 @@
     <Midl Include="$(MSBuildThisFileDirectory)TreeView.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)TreeViewAutomationPeers.idl" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)TreeView.xaml">
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeViewItem_rs1.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)TreeViewItem.xaml">
       <Version>RS2</Version>
       <Type>DefaultStyle</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)TreeView_themeresources.xaml">
       <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs2_themeresources.xaml">
-      <Version>RS2</Version>
-      <Type>ThemeResources</Type>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TreeView_rs5_themeresources.xaml">
-      <Version>RS5</Version>
       <Type>ThemeResources</Type>
     </Page>
   </ItemGroup>

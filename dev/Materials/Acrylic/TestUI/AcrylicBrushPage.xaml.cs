@@ -19,10 +19,8 @@ using Windows.UI.Xaml.Navigation;
 using MUXControlsTestApp.Utilities;
 
 #if !BUILD_WINDOWS
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using ColorChangedEventArgs = Microsoft.UI.Xaml.Controls.ColorChangedEventArgs;
-#endif
 using AcrylicBackgroundSource = Microsoft.UI.Xaml.Media.AcrylicBackgroundSource;
 using AcrylicBrush = Microsoft.UI.Xaml.Media.AcrylicBrush;
 using AcrylicTestApi = Microsoft.UI.Private.Media.AcrylicTestApi;
@@ -49,8 +47,7 @@ namespace MUXControlsTestApp
                 AutomationProperties.SetName(this, "AcrylicBrushPage");
                 AutomationProperties.SetAutomationId(this, "AcrylicBrushPage");
 
-                _acrylicBrush = new AcrylicBrush
-                {
+                _acrylicBrush = new AcrylicBrush {
                     BackgroundSource = AcrylicBackgroundSource.HostBackdrop,
                     FallbackColor = Color.FromArgb(0xFF, 0x0, 0x0, 0xFF),
                     TintOpacity = TintOpacity.Value
@@ -97,12 +94,10 @@ namespace MUXControlsTestApp
 
         private void TintColorButton_Checked(object sender, RoutedEventArgs e)
         {
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
             var colorPicker = new ColorPicker();
             colorPicker.ColorChanged += ColorPicker_ColorChanged;
             colorPicker.Color = _acrylicBrush.TintColor;
             Viewbox.Child = colorPicker;
-#endif
         }
 
         private void TintColorButton_Unchecked(object sender, RoutedEventArgs e)
@@ -152,7 +147,7 @@ namespace MUXControlsTestApp
 
             if (_acrylicBrush != null)
             {
-                _acrylicBrush.TintLuminosityOpacity = TintLuminosityOpacity.IsEnabled ? TintLuminosityOpacity.Value : (double?) null;
+                _acrylicBrush.TintLuminosityOpacity = TintLuminosityOpacity.IsEnabled ? TintLuminosityOpacity.Value : (double?)null;
             }
         }
 
@@ -175,13 +170,10 @@ namespace MUXControlsTestApp
             visual.Offset = new System.Numerics.Vector3(0, 0, 0);
         }
 
-#if !BUILD_LEAN_MUX_FOR_THE_STORE_APP
         private void ColorPicker_ColorChanged(ColorPicker sender, ColorChangedEventArgs args)
         {
             _acrylicBrush.TintColor = args.NewColor;
         }
-#endif
-
 
         private void RunTestButton_Clicked(object sender, RoutedEventArgs e)
         {
@@ -243,16 +235,14 @@ namespace MUXControlsTestApp
         // >> Also covers AcrylicBrush sharing and rendering in SW-rasterized element (Ellipse)
         void RunAcrylicPropertyChanges()
         {
-            AcrylicBrush acrylicBrush1 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush1 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Green,
                 TintOpacity = 0.1
             };
 
-            AcrylicBrush acrylicBrush2 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush2 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.HostBackdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Bisque,
@@ -447,8 +437,7 @@ namespace MUXControlsTestApp
         {
             bool[] results = { false, false };
 
-            AcrylicBrush acrylicBrush1 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush1 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Green,
@@ -482,7 +471,7 @@ namespace MUXControlsTestApp
             {
                 var expectIintColor = acrylicBrush1.TintColor;
                 expectIintColor.A = (byte)Math.Ceiling(255 * acrylicBrush1.TintOpacity); // alpha channel
-                results[0] = fallbackColor == acrylicBrush1.FallbackColor && 
+                results[0] = fallbackColor == acrylicBrush1.FallbackColor &&
                              expectIintColor == tintColor;
             }
 
@@ -493,7 +482,7 @@ namespace MUXControlsTestApp
             tintColor = Colors.Black;
 
             // Get FallbackColor and TintColor. Non CrossFading effect brush doesn't provide FallbackColor.Color.
-            fallbackColorValueStatus =  _acrylicTestApi.CompositionBrush.Properties.TryGetColor("FallbackColor.Color", out fallbackColor);
+            fallbackColorValueStatus = _acrylicTestApi.CompositionBrush.Properties.TryGetColor("FallbackColor.Color", out fallbackColor);
             tintColorValueStatus = _acrylicTestApi.CompositionBrush.Properties.TryGetColor("TintColor.Color", out tintColor);
 
 
@@ -522,8 +511,7 @@ namespace MUXControlsTestApp
             using (var setup = new MaterialSetupHelper(true /* ignoreAreEffectsFast*/, true /* simulateDisabledByPolicy */ ))
             {
                 // Test app acrylic
-                _acrylicBrush = new AcrylicBrush
-                {
+                _acrylicBrush = new AcrylicBrush {
                     BackgroundSource = AcrylicBackgroundSource.Backdrop,
                     FallbackColor = Color.FromArgb(0xFF, 0x0, 0x0, 0xFF),
                     TintOpacity = TintOpacity.Value
@@ -535,8 +523,7 @@ namespace MUXControlsTestApp
                 bool result1 = VerifyFallbackColor();
 
                 // Test window acrylic
-                _acrylicBrush = new AcrylicBrush
-                {
+                _acrylicBrush = new AcrylicBrush {
                     BackgroundSource = AcrylicBackgroundSource.HostBackdrop,
                     FallbackColor = Color.FromArgb(0xFF, 0x0, 0xFF, 0xFF),
                     TintOpacity = TintOpacity.Value
@@ -553,8 +540,7 @@ namespace MUXControlsTestApp
         // Test adding an AcrylicBrush, animating the affected element, and then removing the brush
         void RunVerifyDisconnectedState()
         {
-            _acrylicBrush = new AcrylicBrush
-            {
+            _acrylicBrush = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Color.FromArgb(0xFF, 0x0, 0x0, 0xFF),
                 TintOpacity = TintOpacity.Value
@@ -592,8 +578,7 @@ namespace MUXControlsTestApp
         void RunVerifyOpaqueTintOptimization()
         {
             // Start out with transparent tint
-            _acrylicBrush = new AcrylicBrush
-            {
+            _acrylicBrush = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Green,
@@ -645,8 +630,7 @@ namespace MUXControlsTestApp
 
             _iteration_TintTransitionDuration++;
 
-            _acrylicBrush = new AcrylicBrush
-            {
+            _acrylicBrush = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Green,
@@ -664,16 +648,14 @@ namespace MUXControlsTestApp
         // 2. Validate destroying these AB's and creating a new one still use the same noise.
         void RunAcrylicNoiseCache()
         {
-            AcrylicBrush acrylicBrush1 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush1 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Green,
                 TintOpacity = 0.1
             };
 
-            AcrylicBrush acrylicBrush2 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush2 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.Bisque,
@@ -705,8 +687,7 @@ namespace MUXControlsTestApp
             _acrylicTestApi.AcrylicBrush = null;
             GC.Collect();
 
-            AcrylicBrush acrylicBrush3 = new AcrylicBrush
-            {
+            AcrylicBrush acrylicBrush3 = new AcrylicBrush {
                 BackgroundSource = AcrylicBackgroundSource.Backdrop,
                 FallbackColor = Colors.Blue,
                 TintColor = Colors.DarkOliveGreen,
@@ -732,7 +713,7 @@ namespace MUXControlsTestApp
             var compositionBrush = UpdateCompositionBrush();
             var noiseBrush = UpdateNoiseBrush();
             return !isUsingAcrylicBrush &&
-                    compositionBrush == null && 
+                    compositionBrush == null &&
                     noiseBrush == null;     // Noise is cached in MaterialHelper but not in individual brushes
         }
 

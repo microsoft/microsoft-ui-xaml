@@ -65,12 +65,7 @@ public:
 
 #pragma endregion
 
-#ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim ItemTemplateShim() { return m_itemTemplateWrapper; };
-#else
-    winrt::IElementFactory ItemTemplateShim() { return ItemTemplate(); };
-#endif
-
     ViewManager& ViewManager() { return m_viewManager; }
     AnimationManager& AnimationManager() { return m_animationManager; }
 
@@ -146,9 +141,7 @@ private:
 
     tracker_ref<winrt::ItemsSourceView> m_itemsSourceView{ this };
 
-#ifndef BUILD_WINDOWS
     winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
-#endif
 
     tracker_ref<winrt::VirtualizingLayoutContext> m_layoutContext{ this };
     tracker_ref<winrt::IInspectable> m_layoutState{ this };
@@ -182,4 +175,9 @@ private:
     winrt::IElementFactory m_itemTemplate{ nullptr };
     winrt::Layout m_layout{ nullptr };
     winrt::ElementAnimator m_animator{ nullptr };
+
+    // Bug where DataTemplate with no content causes a crash.
+    // See: https://github.com/microsoft/microsoft-ui-xaml/issues/776
+    // Solution: Have flag that is only true when DataTemplate exists but it is empty.
+    bool m_isItemTemplateEmpty{ false };
 };

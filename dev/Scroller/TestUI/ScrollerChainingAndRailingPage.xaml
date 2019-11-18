@@ -29,29 +29,29 @@
             <ComboBox x:Name="cmbFullLog" AutomationProperties.Name="cmbFullLog" Margin="6,2,2,2" VerticalAlignment="Center" Width="175"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" HorizontalAlignment="Left" Background="LightCyan">
-            <TextBlock Text="Scroller0:" Margin="0,4,0,0"/>
+        <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" HorizontalAlignment="Left" Background="Black">
+            <TextBlock Text="Scroller0:" Margin="0,4,0,0" FontWeight="Bold" Foreground="LightBlue"/>
             <TextBox x:Name="txtScroller0State" AutomationProperties.AutomationId="txtScroller0State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="txtScroller0HSP" AutomationProperties.AutomationId="txtScroller0HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
                 <TextBox x:Name="txtScroller0VSP" AutomationProperties.AutomationId="txtScroller0VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
             </StackPanel>
 
-            <TextBlock Text="Scroller1:" Margin="0,4,0,0"/>
+            <TextBlock Text="Scroller1:" Margin="0,4,0,0" FontWeight="Bold" Foreground="LimeGreen"/>
             <TextBox x:Name="txtScroller1State" AutomationProperties.AutomationId="txtScroller1State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="txtScroller1HSP" AutomationProperties.AutomationId="txtScroller1HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
                 <TextBox x:Name="txtScroller1VSP" AutomationProperties.AutomationId="txtScroller1VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
             </StackPanel>
 
-            <TextBlock Text="Scroller3:" Margin="0,4,0,0"/>
+            <TextBlock Text="Scroller3:" Margin="0,4,0,0" FontWeight="Bold" Foreground="Lavender"/>
             <TextBox x:Name="txtScroller3State" AutomationProperties.AutomationId="txtScroller3State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="txtScroller3HSP" AutomationProperties.AutomationId="txtScroller3HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
                 <TextBox x:Name="txtScroller3VSP" AutomationProperties.AutomationId="txtScroller3VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
             </StackPanel>
 
-            <TextBlock Text="ScrollViewer2:" Margin="0,4,0,0"/>
+            <TextBlock Text="ScrollViewer2:" Margin="0,4,0,0" FontWeight="Bold" Foreground="Yellow"/>
             <TextBox x:Name="txtScrollViewer2State" AutomationProperties.AutomationId="txtScrollViewer2State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
             <StackPanel Orientation="Horizontal">
                 <TextBox x:Name="txtScrollViewer2HSP" AutomationProperties.AutomationId="txtScrollViewer2HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>

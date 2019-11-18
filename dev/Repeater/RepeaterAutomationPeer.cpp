@@ -21,7 +21,7 @@ RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner
 
 winrt::IVector<winrt::AutomationPeer> RepeaterAutomationPeer::GetChildrenCore()
 {
-    auto repeater = safe_cast<winrt::ItemsRepeater>(Owner());
+    auto repeater = Owner().as<winrt::ItemsRepeater>();
     auto childrenPeers = GetInner().as<winrt::IAutomationPeerOverrides>().GetChildrenCore();
     unsigned peerCount = childrenPeers.Size();
 
@@ -74,7 +74,7 @@ winrt::UIElement RepeaterAutomationPeer::GetElement(const winrt::AutomationPeer&
     auto parent = CachedVisualTreeHelpers::GetParent(childElement);
     // Child peer could have given a descendant of the repeater's child. We
     // want to get to the immediate child.
-    while (parent && safe_try_cast<winrt::ItemsRepeater>(parent) != repeater)
+    while (parent && parent.try_as<winrt::ItemsRepeater>() != repeater)
     {
         childElement = parent;
         parent = CachedVisualTreeHelpers::GetParent(childElement);

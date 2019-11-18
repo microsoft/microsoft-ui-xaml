@@ -47,13 +47,21 @@ winrt::UIElement ItemTemplateWrapper::GetElement(winrt::ElementFactoryGetArgs co
     if (recyclePool)
     {
         // try to get an element from the recycle pool.
-        element = safe_cast<winrt::FrameworkElement>(recyclePool.TryGetElement(L"" /* key */, args.Parent()));
+        element = recyclePool.TryGetElement(L"" /* key */, args.Parent().as<winrt::FrameworkElement>());
     }
 
     if (!element)
     {
         // no element was found in recycle pool, create a new element
         element = selectedTemplate.LoadContent().as<winrt::FrameworkElement>();
+
+        // Template returned null, so insert empty element to render nothing
+        if (!element) {
+            auto rectangle = winrt::Rectangle();
+            rectangle.Width(0);
+            rectangle.Height(0);
+            element = rectangle;
+        }
 
         // Associate template with element
         element.SetValue(RecyclePool::GetOriginTemplateProperty(), selectedTemplate);

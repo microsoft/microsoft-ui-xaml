@@ -7,9 +7,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {

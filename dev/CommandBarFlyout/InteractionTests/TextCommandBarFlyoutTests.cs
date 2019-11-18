@@ -16,19 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -469,7 +461,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TextCommandBarFlyoutTestSetupHelper())
             {
                 Log.Comment("Give focus to the TextBox.");
-                FocusHelper.SetFocus(FindElement.ById("TextBox"));
+                var textBox = FindElement.ById("TextBox");
+                FocusHelper.SetFocus(textBox);
 
                 using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Select All")))
                 {
@@ -482,11 +475,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Use Escape to close the context menu. The TextBox should now have focus.");
                     KeyboardHelper.PressKey(Key.Escape);
+
+                    // On 19H1, there's a bug with the focus restoration code, so we'll manually restore focus to allow the rest of the test to run.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    {
+                        textBox.SetFocus();
+                    }
+
                     waiter.Wait();
                 }
                 
                 Log.Comment("Give focus to the RichEditBox.");
-                FocusHelper.SetFocus(FindElement.ById("RichEditBox"));
+                var richEditBox = FindElement.ById("RichEditBox");
+                FocusHelper.SetFocus(richEditBox);
 
                 using (var waiter = new FocusAcquiredWaiter(UICondition.CreateFromName("Bold")))
                 {
@@ -517,6 +518,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     Log.Comment("Use Escape to close the context menu. The RichEditBox should now have focus.");
                     KeyboardHelper.PressKey(Key.Escape);
+
+                    // On 19H1, there's a bug with the focus restoration code, so we'll manually restore focus to allow the rest of the test to run.
+                    if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.NineteenH1))
+                    {
+                        richEditBox.SetFocus();
+                    }
+
                     waiter.Wait();
                 }
             }

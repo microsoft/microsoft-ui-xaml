@@ -7,6 +7,7 @@
 #include "ScrollViewerTrace.h"
 #include "ScrollViewer.g.h"
 #include "ScrollViewer.properties.h"
+#include "ScrollViewerBringIntoViewOperation.h"
 
 class ScrollViewer :
     public ReferenceTracker<ScrollViewer, winrt::implementation::ScrollViewerT>,
@@ -80,7 +81,8 @@ public:
 #pragma endregion
 
     // Invoked by ScrollViewerTestHooks
-    winrt::Scroller GetScrollerPart();
+    void ScrollControllersAutoHidingChanged();
+    winrt::Scroller GetScrollerPart() const;
 
     static void ValidateAnchorRatio(double value);
     static void ValidateZoomFactoryBoundary(double value);
@@ -104,7 +106,7 @@ public:
 
 private:
     void OnScrollViewerGettingFocus(
-        const winrt::IInspectable& /*sender*/,
+        const winrt::IInspectable& sender,
         const winrt::GettingFocusEventArgs& args);
     void OnScrollViewerIsEnabledChanged(
         const winrt::IInspectable& sender,
@@ -155,6 +157,9 @@ private:
     void OnHideIndicatorsTimerTick(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
+    void OnAutoHideScrollBarsChanged(
+        winrt::UISettings const& uiSettings,
+        winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
 
     // Internal event handlers
     void OnScrollerExtentChanged(
@@ -189,9 +194,15 @@ private:
     void OnScrollerAnchorRequested(
         const winrt::IInspectable& sender,
         const winrt::ScrollerAnchorRequestedEventArgs& args);
+    void OnCompositionTargetRendering(
+        const winrt::IInspectable& sender,
+        const winrt::IInspectable& args);
 
-    void StopHideIndicatorsTimer(bool isForDestructor);
+    void ResetHideIndicatorsTimer(bool isForDestructor = false, bool restart = false);
 
+    void HookUISettingsEvent();
+    void HookCompositionTargetRendering();
+    void UnhookCompositionTargetRendering();
     void HookScrollViewerEvents();
     void UnhookScrollViewerEvents();
     void HookScrollerEvents();
@@ -213,15 +224,26 @@ private:
     void UpdateScrollerVerticalScrollController(const winrt::IScrollController& verticalScrollController);
     void UpdateScrollControllersVisibility(bool horizontalChange, bool verticalChange);
 
-    bool IsLoaded();
     bool IsInputKindIgnored(winrt::InputKind const& inputKind);
 
-    bool AreAllScrollControllersCollapsed();
-    bool AreBothScrollControllersVisible();
-    void ShowIndicators();
-    void HideIndicators(bool useTransitions);
+    bool AreAllScrollControllersCollapsed() const;
+    bool AreBothScrollControllersVisible() const;
+    bool AreScrollControllersAutoHiding();
+    bool IsScrollControllersSeparatorVisible() const;
+    void HideIndicators(bool useTransitions = true);
     void HideIndicatorsAfterDelay();
-    
+    void UpdateScrollControllersAutoHiding(bool forceUpdate = false);
+    void UpdateVisualStates(
+        bool useTransitions = true,
+        bool showIndicators = false,
+        bool hideIndicators = false,
+        bool scrollControllersAutoHidingChanged = false,
+        bool updateScrollControllersAutoHiding = false,
+        bool onlyForAutoHidingScrollControllers = false);
+    void UpdateScrollControllersVisualState(bool useTransitions = true, bool showIndicators = false, bool hideIndicators = false);
+    void UpdateScrollControllersSeparatorVisualState(bool useTransitions = true, bool scrollControllersAutoHidingChanged = false);
+    void GoToState(std::wstring_view const& stateName, bool useTransitions = true);
+
     void HandleKeyDownForStandardScroll(winrt::KeyRoutedEventArgs);
     void HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs);
 
@@ -279,6 +301,8 @@ private:
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
 
+    winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
+
     winrt::IInspectable m_onPointerEnteredEventHandler{ nullptr };
     winrt::IInspectable m_onPointerMovedEventHandler{ nullptr };
     winrt::IInspectable m_onPointerExitedEventHandler{ nullptr };
@@ -292,7 +316,14 @@ private:
     winrt::IInspectable m_onVerticalScrollControllerPointerExitedHandler{ nullptr };
 
     winrt::FocusInputDeviceKind m_focusInputDeviceKind{ winrt::FocusInputDeviceKind::None };
-    
+
+    // Used to detect changes for UISettings.AutoHiScrollBars.
+    winrt::IUISettings5 m_uiSettings5{ nullptr };
+    winrt::IUISettings5::AutoHideScrollBarsChanged_revoker m_autoHideScrollBarsChangedRevoker{};
+
+    bool m_autoHideScrollControllersValid{ false };
+    bool m_autoHideScrollControllers{ false };
+
     bool m_isLeftMouseButtonPressedForFocus{ false };
     
     // Set to True when the mouse scrolling indicators are currently showing.
@@ -304,6 +335,9 @@ private:
     // Set to True to favor mouse indicators over panning indicators for the scroll controllers.
     bool m_preferMouseIndicators{ false };
 
+    // Indicates whether the NoIndicator visual state has a Storyboard for which a completion event was hooked up.
+    bool m_hasNoIndicatorStateStoryboardCompletedHandler{ false };
+
     // Set to the values of IScrollController::IsInteracting.
     bool m_isHorizontalScrollControllerInteracting{ false };
     bool m_isVerticalScrollControllerInteracting{ false };
@@ -312,6 +346,16 @@ private:
     bool m_isPointerOverHorizontalScrollController{ false };
     bool m_isPointerOverVerticalScrollController{ false };
 
+    int m_verticalScrollFromDirection{ 0 };
+    int m_verticalScrollFromOffsetChangeId{ -1 };
+
+    int m_horizontalScrollFromDirection{ 0 };
+    int m_horizontalScrollFromOffsetChangeId{ -1 };
+
+    // List of temporary ScrollViewerBringIntoViewOperation instances used to track expected
+    // Scroller::BringingIntoView occurrences due to navigation.
+    std::list<std::shared_ptr<ScrollViewerBringIntoViewOperation>> m_bringIntoViewOperations;
+
     // Private constants    
     // 2 seconds delay used to hide the indicators for example when OS animations are turned off.
     static constexpr int64_t s_noIndicatorCountdown = 2000 * 10000; 
@@ -319,11 +363,11 @@ private:
     static constexpr std::wstring_view s_noIndicatorStateName{ L"NoIndicator"sv };
     static constexpr std::wstring_view s_touchIndicatorStateName{ L"TouchIndicator"sv };
     static constexpr std::wstring_view s_mouseIndicatorStateName{ L"MouseIndicator"sv };
-    static constexpr std::wstring_view s_mouseIndicatorFullStateName{ L"MouseIndicatorFull"sv };
 
-    int m_verticalScrollWithKeyboardDirection = 0;
-    int m_verticalScrollWithKeyboardOffsetChangeId = -1;
-
-    int m_horizontalScrollWithKeyboardDirection = 0;
-    int m_horizontalScrollWithKeyboardOffsetChangeId = -1;
+    static constexpr std::wstring_view s_scrollBarsSeparatorExpanded{ L"ScrollBarsSeparatorExpanded"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsed{ L"ScrollBarsSeparatorCollapsed"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsedDisabled{ L"ScrollBarsSeparatorCollapsedDisabled"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorCollapsedWithoutAnimation{ L"ScrollBarsSeparatorCollapsedWithoutAnimation"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorDisplayedWithoutAnimation{ L"ScrollBarsSeparatorDisplayedWithoutAnimation"sv };
+    static constexpr std::wstring_view s_scrollBarsSeparatorExpandedWithoutAnimation{ L"ScrollBarsSeparatorExpandedWithoutAnimation"sv };
 };

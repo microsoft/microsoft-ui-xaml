@@ -1,12 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
+  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
   <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mux.controls.props')" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\mux.PGO.props" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\Build\PGO\mux.PGO.Instrument.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -17,7 +22,7 @@
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)'==''">$(MuxSdkVersion)</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformMinVersion>10.0.14393.0</WindowsTargetPlatformMinVersion>
+    <WindowsTargetPlatformMinVersion>10.0.15063.0</WindowsTargetPlatformMinVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
     <!-- Use 64-bit compilers because 32-bit compilers run out of heap space -->
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -29,6 +34,13 @@
     <!-- XBF is no longer embedded to improve F5 times but we need it embedded for the Nuget package PRI file, turn it on for release builds -->
     <DisableEmbeddedXbf Condition="'$(Configuration)'=='Release'">false</DisableEmbeddedXbf>
     <AppxBundlePlatforms>x86|x64|arm|arm64</AppxBundlePlatforms>
+    <CppWinRTUsePrefixes>false</CppWinRTUsePrefixes>
+    <CppWinRTAddXamlMetaDataProviderIdl>false</CppWinRTAddXamlMetaDataProviderIdl>
+    <!-- In release builds our "experimental" features are under feature velocity as AlwaysDisabled. C++/WinRT assumes that 
+         AlwaysDisabled features should be excluded by default, but we need them included for our component implementation.
+         Use -ignore_velocity to have the feature attributes be ignored by the tool.
+         -->
+    <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
@@ -44,6 +56,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -66,48 +79,61 @@
     <Midl Include="..\..\idl\Microsoft.UI.Xaml.idl" />
   </ItemGroup>
   <ImportGroup Label="Shared">
-    <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" />
-    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" />
-    <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Effects\Microsoft.UI.Composition.Effects.vcxitems" Label="Shared" />
-    <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" />
-    <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Common\Common.vcxitems" Label="Shared" />
-    <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" />
-    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" />
-    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" />
-    <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
-    <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" />
-    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" />
-    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" />
-    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" />
-    <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
     <Import Project="..\TestHooks\TestHooks.vcxitems" Label="Shared" />
-    <Import Project="..\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" />
-    <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <!-- IconSource is implemented in Windows.UI.Xaml.dll in the OS repo, so we don't want to include it on that side. -->
-    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" />
-    <!-- These two depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
-         We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
-         to non-public types.  So for now we'll just exclude these from the OS repo. -->
-    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
-    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(UseInternalSDK) == 'true'" />
-    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" />
-    <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(BuildLeanMuxForTheStoreApp) != 'true' and $(UseInsiderSDK) == 'true'" />
+    <Import Project="..\Common\Common.vcxitems" Label="Shared" />
+    <Import Project="..\CommonStyles\CommonStyles.vcxitems" Label="Shared" Condition="$(FeatureCommonStylesEnabled) == 'true' Or $(FeatureCommonStylesEnabled) == 'productOnly'" />
+    <Import Project="..\RatingControl\RatingControl.vcxitems" Label="Shared" Condition="$(FeatureRatingControlEnabled) == 'true' Or $(FeatureRatingControlEnabled) == 'productOnly'" />
+    <Import Project="..\NavigationView\NavigationView.vcxitems" Label="Shared" Condition="$(FeatureNavigationViewEnabled) == 'true' Or $(FeatureNavigationViewEnabled) == 'productOnly'" />
+    <Import Project="..\ColorPicker\ColorPicker.vcxitems" Label="Shared" Condition="$(FeatureColorPickerEnabled) == 'true' Or $(FeatureColorPickerEnabled) == 'productOnly'" />
+    <Import Project="..\Collections\Collections.vcxitems" Label="Shared" Condition="$(FeatureCollectionsEnabled) == 'true' Or $(FeatureCollectionsEnabled) == 'productOnly'" />
+    <Import Project="..\CommandBarFlyout\CommandBarFlyout.vcxitems" Label="Shared" Condition="$(FeatureCommandBarFlyoutEnabled) == 'true' Or $(FeatureCommandBarFlyoutEnabled) == 'productOnly'" />
+    <Import Project="..\Effects\Microsoft.UI.Composition.Effects.vcxitems" Label="Shared" Condition="$(FeatureEffectsEnabled) == 'true' Or $(FeatureEffectsEnabled) == 'productOnly'" />
+    <Import Project="..\PersonPicture\PersonPicture.vcxitems" Label="Shared" Condition="$(FeaturePersonPictureEnabled) == 'true' Or $(FeaturePersonPictureEnabled) == 'productOnly'" />
+    <Import Project="..\ResourceHelper\ResourceHelper.vcxitems" Label="Shared" Condition="$(FeatureResourceHelperEnabled) == 'true' Or $(FeatureResourceHelperEnabled) == 'productOnly'" />
+    <Import Project="..\PullToRefresh\RefreshContainer\RefreshContainer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="..\PullToRefresh\RefreshVisualizer\RefreshVisualizer.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="..\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\ScrollViewerIRefreshInfoProviderAdapter.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="..\MenuBar\MenuBar.vcxitems" Label="Shared" Condition="$(FeatureMenuBarEnabled) == 'true' Or $(FeatureMenuBarEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Acrylic\AcrylicBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\Materials\Reveal\RevealBrush.vcxitems" Label="Shared" Condition="$(FeatureMaterialsEnabled) == 'true' Or $(FeatureMaterialsEnabled) == 'productOnly'" />
+    <Import Project="..\TreeView\TreeView.vcxitems" Label="Shared" Condition="$(FeatureTreeViewEnabled) == 'true' Or $(FeatureTreeViewEnabled) == 'productOnly'" />
+    <Import Project="..\Telemetry\Telemetry.vcxitems" Label="Shared" />
+    <Import Project="..\ParallaxView\ParallaxView.vcxitems" Label="Shared" Condition="$(FeatureParallaxViewEnabled) == 'true' Or $(FeatureParallaxViewEnabled) == 'productOnly'" />
+    <Import Project="..\Scroller\Scroller.vcxitems" Label="Shared" Condition="$(FeatureScrollerEnabled) == 'true' Or $(FeatureScrollerEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollViewer\ScrollViewer.vcxitems" Label="Shared" Condition="$(FeatureScrollViewerEnabled) == 'true' Or $(FeatureScrollViewerEnabled) == 'productOnly'" />
+    <Import Project="..\Lights\Lights.vcxitems" Label="Shared" Condition="$(FeatureLightsEnabled) == 'true' Or $(FeatureLightsEnabled) == 'productOnly'" />
+    <Import Project="..\Repeater\Repeater.vcxitems" Label="Shared" Condition="$(FeatureRepeaterEnabled) == 'true' Or $(FeatureRepeaterEnabled) == 'productOnly'" />
+    <Import Project="..\SwipeControl\SwipeControl.vcxitems" Label="Shared" Condition="$(FeatureSwipeControlEnabled) == 'true' Or $(FeatureSwipeControlEnabled) == 'productOnly'" />
+    <Import Project="..\TwoPaneView\TwoPaneView.vcxitems" Label="Shared" Condition="$(FeatureTwoPaneViewEnabled) == 'true' Or $(FeatureTwoPaneViewEnabled) == 'productOnly'" />
+    <Import Project="..\PullToRefresh\PTRTracing\PTRTracing.vcxitems" Label="Shared" Condition="$(FeaturePullToRefreshEnabled) == 'true' Or $(FeaturePullToRefreshEnabled) == 'productOnly'" />
+    <Import Project="..\SplitButton\SplitButton.vcxitems" Label="Shared" Condition="$(FeatureSplitButtonEnabled) == 'true' Or $(FeatureSplitButtonEnabled) == 'productOnly'" />
+    <Import Project="..\LayoutPanel\LayoutPanel.vcxitems" Label="Shared" Condition="$(FeatureLayoutPanelEnabled) == 'true' Or $(FeatureLayoutPanelEnabled) == 'productOnly'" />
+    <Import Project="..\DropDownButton\DropDownButton.vcxitems" Label="Shared" Condition="$(FeatureDropDownButtonEnabled) == 'true' Or $(FeatureDropDownButtonEnabled) == 'productOnly'" />
+    <Import Project="..\RadioButtons\RadioButtons.vcxitems" Label="Shared" Condition="$(FeatureRadioButtonsEnabled) == 'true' Or $(FeatureRadioButtonsEnabled) == 'productOnly'" />
+    <Import Project="..\IconSource\IconSource.vcxitems" Label="Shared" Condition="$(FeatureIconSourceEnabled) == 'true' Or $(FeatureIconSourceEnabled) == 'productOnly'" />
+    <Import Project="..\Interactions\ButtonInteraction\ButtonInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
+    <Import Project="..\Interactions\SliderInteraction\SliderInteraction.vcxitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' Or $(FeatureInteractionsEnabled) == 'productOnly'" />
+    <Import Project="..\MenuFlyout\MenuFlyout.vcxitems" Label="Shared" Condition="$(FeatureMenuFlyoutEnabled) == 'true' Or $(FeatureMenuFlyoutEnabled) == 'productOnly'" />
+    <Import Project="..\TeachingTip\TeachingTip.vcxitems" Label="Shared" Condition="$(FeatureTeachingTipEnabled) == 'true' Or $(FeatureTeachingTipEnabled) == 'productOnly'" />
+    <Import Project="..\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems" Label="Shared" Condition="$(FeatureRadioMenuFlyoutItemEnabled) == 'true' Or $(FeatureRadioMenuFlyoutItemEnabled) == 'productOnly'" />
+    <Import Project="..\AnimatedVisualPlayer\AnimatedVisualPlayer.vcxitems" Label="Shared" Condition="$(FeatureAnimatedVisualPlayerEnabled) == 'true' Or $(FeatureAnimatedVisualPlayerEnabled) == 'productOnly'" />
+    <Import Project="..\TabView\TabView.vcxitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true' Or $(FeatureTabViewEnabled) == 'productOnly'" />
+    <Import Project="..\AutoSuggestBox\AutoSuggestBox.vcxitems" Label="Shared" Condition="$(FeatureAutoSuggestBoxEnabled) == 'true' Or $(FeatureAutoSuggestBoxEnabled) == 'productOnly'" />
+    <Import Project="..\CheckBox\CheckBox.vcxitems" Label="Shared" Condition="$(FeatureCheckBoxEnabled) == 'true' Or $(FeatureCheckBoxEnabled) == 'productOnly'" />
+    <Import Project="..\CalendarDatePicker\CalendarDatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
+    <Import Project="..\DatePicker\DatePicker.vcxitems" Label="Shared" Condition="$(FeatureCalendarDatePickerEnabled) == 'true' Or $(FeatureCalendarDatePickerEnabled) == 'productOnly'" />
+    <Import Project="..\Slider\Slider.vcxitems" Label="Shared" Condition="$(FeatureSliderEnabled) == 'true' Or $(FeatureSliderEnabled) == 'productOnly'" />
+    <Import Project="..\TimePicker\TimePicker.vcxitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true' Or $(FeatureTimePickerEnabled) == 'productOnly'" />
+    <Import Project="..\ToolTip\ToolTip.vcxitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true' Or $(FeatureToolTipEnabled) == 'productOnly'" />
+    <Import Project="..\FlipView\FlipView.vcxitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true' Or $(FeatureFlipViewEnabled) == 'productOnly'" />
+    <Import Project="..\ComboBox\ComboBox.vcxitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true' Or $(FeatureComboBoxEnabled) == 'productOnly'" />
+    <Import Project="..\Pivot\Pivot.vcxitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true' Or $(FeaturePivotEnabled) == 'productOnly'" />
+    <Import Project="..\ScrollBar\ScrollBar.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
+    <Import Project="..\CalendarView\CalendarView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
+    <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
+    <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
+    <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
+	  <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -161,30 +187,20 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <Midl>
-      <MetadataFileName>$(OutDir)Unmerged\%(Filename)_Unmerged.winmd</MetadataFileName>
-      <AdditionalOptions>/no_stamp /no_settings_comment /nomidl %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd"</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\2.0.0.0\Windows.Networking.Connectivity.WwanContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="$(UseInsiderSDK) == 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
-      <AdditionalOptions Condition="$(UseInsiderSDK) != 'true'">%(AdditionalOptions) /reference "$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0\Windows.Foundation.UniversalApiContract.winmd"</AdditionalOptions>
       <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\..;$(MSBuildProjectDirectory)\..\..\idl;$(MiniWindowsSDKIncludePath)</AdditionalIncludeDirectories>
-      <AdditionalMetadataDirectories Condition="'$(MiniWindowsSDKWinMDPath)'!=''">$(MiniWindowsSDKWinMDPath)</AdditionalMetadataDirectories>
-      <OutputDirectory>$(OutDir)</OutputDirectory>
-      <HeaderFileName>%(Filename).h</HeaderFileName>
-      <GenerateTypeLibrary>false</GenerateTypeLibrary>
-      <GenerateClientFiles>None</GenerateClientFiles>
-      <GenerateServerFiles>None</GenerateServerFiles>
       <Enumclass>false</Enumclass>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">%(PreprocessorDefinitions);DEBUG;DBG</PreprocessorDefinitions>
     </Midl>
     <Link>
       <ModuleDefinitionFile>Microsoft.UI.Xaml.def</ModuleDefinitionFile>
       <GenerateDebugInformation Condition="'$(Configuration)'=='Debug'">$(GenerateDebugInformation)</GenerateDebugInformation>
-      <AdditionalDependencies>dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <!-- Microsoft.UI.winmd will contain the definition of both public, preview and private types. -->
-      <WindowsMetadataFile>$(OutDir)\Microsoft.UI.winmd</WindowsMetadataFile>
+      <GenerateDebugInformation Condition="'$(Configuration)'=='Release'">DebugFull</GenerateDebugInformation>
+      <AdditionalDependencies>mincore.lib;dxguid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
+      <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
       <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
       <DisableSpecificWarnings>4100;4189;4467;4702;6326;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -195,36 +211,34 @@
         $(OutDir);
       </AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>
-        $(IntermediateOutputPath)\CppWinRT\Platform;
-        $(IntermediateOutputPath)\CppWinRT\Component;
-        $(IntermediateOutputPath)\CppWinRT\Component\Automation\Peers;
-        $(IntermediateOutputPath)\CppWinRT\Component\Controls;
-        $(IntermediateOutputPath)\CppWinRT\Component\Controls\Primitives;
-        $(IntermediateOutputPath)\CppWinRT\Component\Media;
-        $(IntermediateOutputPath)\CppWinRT\Component\XamlTypeInfo;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Composition\Effects;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Private\Controls;
-        $(IntermediateOutputPath)\CppWinRT\Component\Microsoft\UI\Private\Media;
+        $(GeneratedFilesDir)\winrt;
+        $(GeneratedFilesDir)\Automation\Peers;
+        $(GeneratedFilesDir)\Controls;
+        $(GeneratedFilesDir)\Controls\Primitives;
+        $(GeneratedFilesDir)\Media;
+        $(GeneratedFilesDir)\XamlTypeInfo;
+        $(GeneratedFilesDir)\Microsoft\UI\Composition\Effects;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Controls;
+        $(GeneratedFilesDir)\Microsoft\UI\Private\Media;
         %(AdditionalIncludeDirectories);
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <EnablePREfast Condition="'$(Configuration)'=='Release'">true</EnablePREfast>
       <ShowIncludes>false</ShowIncludes>
       <!-- Disable RTTI to keep binary size down (adds about 50% to release dll size) -->
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PreprocessorDefinitions Condition="'$(Configuration)'=='Release'">%(PreprocessorDefinitions);_HAS_STATIC_RTTI=0</PreprocessorDefinitions>
       <ControlFlowGuard Condition="'$(Configuration)'=='Release'">Guard</ControlFlowGuard>
       <StringPooling Condition="'$(Configuration)'=='Release'">true</StringPooling>
       <PreprocessorDefinitions Condition="'$(Configuration)'=='Debug'">DEBUG;DBG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|arm64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -241,6 +255,7 @@
     <ClInclude Include="..\inc\GlobalDependencyProperty.h" />
     <ClInclude Include="..\inc\DownlevelHelper.h" />
     <ClInclude Include="..\inc\ErrorHandling.h" />
+    <ClInclude Include="..\inc\RegUtil.h" />
     <ClInclude Include="..\inc\RuntimeClassHelpers.h" />
     <ClInclude Include="..\inc\SharedHelpers.h" />
     <ClInclude Include="..\inc\tracker_ref.h" />
@@ -249,6 +264,7 @@
     <ClInclude Include="MUXControlsFactory.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="XamlControlsResources.h" />
     <ClInclude Include="XamlMember.h" />
     <ClInclude Include="XamlMetadataProvider.h" />
@@ -262,6 +278,7 @@
     <ClCompile Include="DoubleUtil.cpp" />
     <ClCompile Include="DownlevelHelper.cpp" />
     <ClCompile Include="FloatUtil.cpp" />
+    <ClCompile Include="RegUtil.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -277,15 +294,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Microsoft.UI.Xaml.def" />
-    <None Include="Microsoft.UI.Xaml.rc" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(OutDir)Generic.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-    </Page>
+    <ResourceCompile Include="Microsoft.UI.Xaml.rc" />
+  </ItemGroup>
+  <ItemGroup>
     <Page Include="$(MSBuildProjectDirectory)\DensityStyles\Compact.xaml">
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
@@ -295,16 +309,6 @@
       <SubType>Designer</SubType>
       <ThemeResource>true</ThemeResource>
       <Link>DensityStyles\%(Filename)%(Extension)</Link>
-    </Page>
-    <Page Include="$(OutDir)rs1_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
-    </Page>
-    <Page Include="$(OutDir)rs1_compact_themeresources.xaml">
-      <SubType>Designer</SubType>
-      <ThemeResource>true</ThemeResource>
-      <Link>Themes\%(Filename)%(Extension)</Link>
     </Page>
     <!-- Pages which needs CustomCompile to run a different version of GenXBF, we attach MinSDKVersionRequired to Page to help CompileXaml to identify the min SDK Version -->
     <PageRequiringCustomCompilation Include="$(OutDir)rs2_generic.xaml">
@@ -390,6 +394,9 @@
     <Natvis Include="$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.natvis">
     </Natvis>
     -->
+    <Page Update="D:\repos\microsoft-ui-xaml\dev\ProgressBar\ProgressBar_themeresources.xaml">
+      <FileType>Document</FileType>
+    </Page>
   </ItemGroup>
   <Import Project="$(CppTargetsFilePath)" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TextTemplating\Microsoft.TextTemplating.targets" />
@@ -421,14 +428,17 @@
        IXamlMetadataProvider implementation. -->
   <Target Name="ComputeXamlGeneratedCompileInputs" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets')" />
+    <Import Project="..\..\packages\MUXCustomBuildTasks.1.0.47\build\native\MUXCustomBuildTasks.targets" Condition="Exists('..\..\packages\MUXCustomBuildTasks.1.0.47\build\native\MUXCustomBuildTasks.targets')" />
     <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
+    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets" Condition="Exists('..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets')" />
   </ImportGroup>
   <PropertyGroup>
     <MergedWinmdDirectory>$(OutDir)Merged</MergedWinmdDirectory>
     <UnmergedWinmdDirectory>$(OutDir)Unmerged</UnmergedWinmdDirectory>
+    <CppWinRTProjectWinMD>$(OutDir)Microsoft.winmd</CppWinRTProjectWinMD>
   </PropertyGroup>
   <!-- It's costly to include all of our default templates as merged dictionaries.
        Instead of that, we'll compile their contents into a statically merged XAML file.-->
@@ -471,8 +481,8 @@
   </PropertyGroup>
   <Target Name="GenerateGenericResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1StylePage);@(RS2StylePage);@(RS3StylePage);@(RS4StylePage);@(RS5StylePage);@(NineteenH1StylePage)" Outputs="$(OutDir)Generic.xaml;$(OutDir)rs1_generic.xaml;$(OutDir)rs2_generic.xaml;$(OutDir)rs3_generic.xaml;$(OutDir)rs4_generic.xaml;$(OutDir)rs5_generic.xaml;$(OutDir)19h1_generic.xaml;">
     <Message Text="Generating generic resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" />
-    <Copy SourceFiles="$(OutDir)rs1_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
+    <BatchMergeXaml RS1Pages="@(RS1StylePage)" RS2Pages="@(RS2StylePage)" RS3Pages="@(RS3StylePage)" RS4Pages="@(RS4StylePage)" RS5Pages="@(RS5StylePage)" N19H1Pages="@(NineteenH1StylePage)" PostfixForGeneratedFile="generic" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateGenericResourceFile.write.1u.tlog" />
+    <Copy SourceFiles="$(OutDir)rs2_generic.xaml" DestinationFiles="$(OutDir)Generic.xaml" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
@@ -483,7 +493,7 @@
   </Target>
   <Target Name="GenerateThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage)" Outputs="$(OutDir)rs1_themeresources.xaml;$(OutDir)rs2_themeresources.xaml;$(OutDir)rs3_themeresources.xaml;$(OutDir)rs4_themeresources.xaml;$(OutDir)rs5_themeresources.xaml;$(OutDir)19h1_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage)" RS2Pages="@(RS2ThemeResourcePage)" RS3Pages="@(RS3ThemeResourcePage)" RS4Pages="@(RS4ThemeResourcePage)" RS5Pages="@(RS5ThemeResourcePage)" N19H1Pages="@(NineteenH1ThemeResourcePage)" PostfixForGeneratedFile="themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateThemeResourceFile.write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
@@ -494,7 +504,7 @@
   </Target>
   <Target Name="GenerateCompactThemeResourceFile" DependsOnTargets="CategorizeSharedPages" BeforeTargets="$(GenerateXamlFileBeforeTargets)" Inputs="@(RS1ThemeResourcePage);@(RS2ThemeResourcePage);@(RS3ThemeResourcePage);@(RS4ThemeResourcePage);@(RS5ThemeResourcePage);@(NineteenH1ThemeResourcePage);@(CompactPage)" Outputs="$(OutDir)rs1_compact_themeresources.xaml;$(OutDir)rs2_compact_themeresources.xaml;$(OutDir)rs3_compact_themeresources.xaml;$(OutDir)rs4_compact_themeresources.xaml;$(OutDir)rs5_compact_themeresources.xaml;$(OutDir)19h1_compact_themeresources.xaml;">
     <Message Text="Generating theme resources XAML file " />
-    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" />
+    <BatchMergeXaml RS1Pages="@(RS1ThemeResourcePage);@(CompactPage)" RS2Pages="@(RS2ThemeResourcePage);@(CompactPage)" RS3Pages="@(RS3ThemeResourcePage);@(CompactPage)" RS4Pages="@(RS4ThemeResourcePage);@(CompactPage)" RS5Pages="@(RS5ThemeResourcePage);@(CompactPage)" N19H1Pages="@(NineteenH1ThemeResourcePage);@(CompactPage)" PostfixForGeneratedFile="compact_themeresources" OutputDirectory="$(OutDir)" TlogReadFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.read.1u.tlog" TlogWriteFilesOutputPath="$(TLogLocation)GenerateCompactThemeResourceFile.write.1u.tlog" />
     <!-- NB: We have to use CreateProperty here instead of PropertyGroup.	
       PropertyGroup values are always evaluated even when their enclosing target is skipped,	
       whereas CreateProperty has the TaskParameter ValueSetByTask that can be used	
@@ -591,9 +601,10 @@
     <ProjectMergedIdl>$(IntermediateOutputPath)\Microsoft.UI.Xaml.idl</ProjectMergedIdl>
   </PropertyGroup>
   <!-- Merge all idl files into one -->
-  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="Midl">
+  <Target Name="MergeIDLFiles" Inputs="@(Midl)" Outputs="$(ProjectMergedIdl)" BeforeTargets="CppWinRTSetMidlReferences;Midl">
     <PropertyGroup>
-      <MidlLines>@(Midl->'&#x23;include &lt;%(FullPath)&gt;', '&#x0D;&#x0A;')</MidlLines>
+      <MidlLines>@(Midl->'#include &lt;%(FullPath)&gt;', '
+')</MidlLines>
     </PropertyGroup>
     <WriteLinesToFile File="$(ProjectMergedIdl)" Lines="$(MidlLines)" WriteOnlyWhenDifferent="true" Overwrite="true" />
     <ItemGroup>
@@ -602,78 +613,23 @@
       <Midl Include="$(ProjectMergedIdl)" />
     </ItemGroup>
   </Target>
-  <Target Name="mdmerge" AfterTargets="Midl" Inputs="@(Midl -> '%(MetadataFileName)')" Outputs="$(OutDir)Microsoft.UI.winmd;$(OutDir)\sdk\Microsoft.UI.Xaml.winmd;$(IntermediateOutputPath)CppWinRT\Platform\winrt\base.h;$(IntermediateOutputPath)CppWinRT\Component\winrt\Microsoft.UI.Xaml.Controls.h">
-    <PropertyGroup>
-      <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <!-- using an older version of cpp winrt to avoid compiler issues -->
-      <CppWinRTExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\CppWinRT.exe"</CppWinRTExe>
-    </PropertyGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'==''">
-      <MetaDataDir Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0" />
-      <MetaDataDir Condition="$(UseInsiderSDK) != 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\7.0.0.0" />
-      <MetaDataDir Condition="$(UseInsiderSDK) == 'true'" Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\8.0.0.0" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'!=''">
-      <MetaDataDir Include="$(MiniWindowsSDKWinMDPath)" />
-    </ItemGroup>
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(UnmergedWinmdDirectory)\..\sdk&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:3 -createPublicMetadata -transformExperimental:transform" />
-    <Exec Command="$(MdMergeExe) -v @(MetaDataDir -> '-metadata_dir &quot;%(Identity)&quot;', ' ') -o &quot;$(MergedWinmdDirectory)&quot; -i &quot;$(UnmergedWinmdDirectory)&quot; -partial -n:2" />
-    <!-- UWP projects that reference this project expect the winmd to be in the same directory as the dll. -->
-    <Copy SourceFiles="$(MergedWinmdDirectory)\Microsoft.UI.winmd" DestinationFolder="$(OutDir)" />
-    <!-- <Exec Command="&quot;$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\winmdidl.exe&quot; @(MetaDataDir -> '/metadata_dir:&quot;%(Identity)&quot;', ' ') &quot;$(UnmergedWinmdDirectory)\..\Microsoft.UI.winmd&quot; /outdir:&quot;$(MergedWinmdDirectory)&quot;"/>
-    <Error Text="Stop"/> -->
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'==''">
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.ApplicationModel.Calls.CallsVoipContract\*\Windows.ApplicationModel.Calls.CallsVoipContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Devices.DevicesLowLevelContract\3.0.0.0\Windows.Devices.DevicesLowLevelContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Devices.Printers.PrintersContract\1.0.0.0\Windows.Devices.Printers.PrintersContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.FoundationContract\3.0.0.0\Windows.Foundation.FoundationContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Foundation.UniversalApiContract\*\Windows.Foundation.UniversalApiContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Graphics.Printing3D.Printing3DContract\4.0.0.0\Windows.Graphics.Printing3D.Printing3DContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Networking.Connectivity.WwanContract\*\Windows.Networking.Connectivity.WwanContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.Services.Store.StoreContract\*\Windows.Services.Store.StoreContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.System.Profile.ProfileHardwareTokenContract\1.0.0.0\Windows.System.Profile.ProfileHardwareTokenContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.System.Profile.ProfileSharedModeContract\2.0.0.0\Windows.System.Profile.ProfileSharedModeContract.winmd" />
-      <ProjectionWinMD Include="$(WindowsSDK_MetadataPathVersioned)\Windows.UI.ViewManagement.ViewManagementViewScalingContract\1.0.0.0\Windows.UI.ViewManagement.ViewManagementViewScalingContract.winmd" />
-    </ItemGroup>
-    <ItemGroup Condition="'$(MiniWindowsSDKWinMDPath)'!=''">
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.ApplicationModel.Calls.CallsVoipContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Devices.DevicesLowLevelContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Devices.Printers.PrintersContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Foundation.FoundationContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Foundation.UniversalApiContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Graphics.Printing3D.Printing3DContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Networking.Connectivity.WwanContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.Services.Store.StoreContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.System.Profile.ProfileHardwareTokenContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.System.Profile.ProfileSharedModeContract.winmd" />
-      <ProjectionWinMD Include="$(MiniWindowsSDKWinMDPath)\Windows.UI.ViewManagement.ViewManagementViewScalingContract.winmd" />
-    </ItemGroup>
-    <ItemGroup>
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Private.winmd" />
-      <ComponentWinMD Include="$(OutDir)Microsoft.UI.Composition.winmd" />
-    </ItemGroup>
-    <Message Text="Generating Platform C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -overwrite @(ProjectionWinMD -> '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Platform" />
-    <Message Text="Generating Projection C++/WinRT headers ..." />
-    <Exec Command="$(CppWinRTExe) -component $(IntermediateOutputPath)\CppWinRT\Reference -overwrite @(ProjectionWinMD -> '-ref &quot;%(Identity)&quot;', ' ') @(ComponentWinMD -> '-in &quot;%(Identity)&quot;', ' ') -out $(IntermediateOutputPath)\CppWinRT\Component" />
-    <Message Text="Generating C++/WinRT headers complete" />
-    <ItemGroup>
-      <FileWrites Include="$(OutDir)Microsoft.UI.Xaml.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.Private.winmd" />
-      <FileWrites Include="$(OutDir)Microsoft.UI.Composition.winmd" />
-    </ItemGroup>
-  </Target>
-  <Target Name="CreateReferenceWinmds" AfterTargets="mdmerge" BeforeTargets="XamlMetadataCodeGenMUX">
+  <Target Name="CreateReferenceWinmds" BeforeTargets="XamlMetadataCodeGenMUX">
     <ItemGroup>
       <T4ParameterValues Include="ReferenceWinmds">
-        <Value>@(ProjectionWinMD);@(ComponentWinMD)</Value>
+        <Value>@(CppWinRTPlatformWinMDReferences)</Value>
       </T4ParameterValues>
     </ItemGroup>
   </Target>
-  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(MetadataWinmdPaths);XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
+  <!-- Need to invoke MDMerge again to produce the "public" metadata using MDMerge's -createPublicMetadata and -transformExperimental flags -->
+  <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
+    <PropertyGroup>
+      <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
+      <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" -i "$(CppWinRTUnmergedDir)" -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+    </PropertyGroup>
+    <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
+  </Target>
+  <Target Name="XamlMetadataCodeGenMUX" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)sdk\Microsoft.UI.Xaml.winmd;XamlMetadataProviderGenerated.tt;CommonHelpers.tt;WinRtType.tt" Outputs="$(OutDir)XamlMetadataProviderGenerated.cpp">
     <!-- Run XamlMetadataProviderGenerated.tt t4 template to generate XamlMetadataProviderGenerated.cpp from the winmd file -->
     <CallTarget Targets="TransformAll" />
     <ItemGroup>
@@ -685,27 +641,28 @@
       <Output TaskParameter="Include" ItemName="DependencyPropertyCodeGenOutputs" />
     </CreateItem>
   </Target>
-  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CreateReferenceWinmds" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.UI.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
-    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.UI.winmd" References="@(ProjectionWinMD)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
+  <Target Name="RunDependencyPropertyCodeGen" AfterTargets="CppWinRTMakeComponentProjection" BeforeTargets="ClCompile" Inputs="$(OutDir)Microsoft.winmd" Outputs="@(DependencyPropertyCodeGenOutputs);$(MSBuildProjectDirectory)\..\Generated\AcrylicBrush.properties.cpp">
+    <DependencyPropertyCodeGen WinMDInput="$(OutDir)Microsoft.winmd" References="@(CppWinRTPlatformWinMDReferences)" OutputDirectory="$(MSBuildProjectDirectory)\..\Generated" />
+    <Touch Files="@(DependencyPropertyCodeGenOutputs)" />
   </Target>
-  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll;$(OutDir)$(TargetName).winmd;$(OutDir)Microsoft.UI.winmd" Condition="Exists('$(OutDir)$(TargetName).dll')">
+  <Target Name="WorkAroundFastUpToDateCheckBug" AfterTargets="_GenerateProjectPriFileCore" Inputs="$(OutDir)$(TargetName).pri" Outputs="$(OutDir)$(TargetName).dll" Condition="Exists('$(OutDir)$(TargetName).dll')">
     <Message Text="Touching '$(OutDir)$(TargetName).dll' because pri file changed to work around DevDiv bug https://devdiv.visualstudio.com/DevDiv/_workitems?id=297204" />
     <Touch Files="$(OutDir)$(TargetName).dll" />
-    <Touch Files="$(OutDir)$(TargetName).winmd" />
-    <Touch Files="$(OutDir)Microsoft.UI.winmd" />
   </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeAnalysis.BinSkim.1.3.9\tools\x86\BinSkim.exe'))" />
-    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.44\build\native\MUXCustomBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MUXCustomBuildTasks.1.0.47\build\native\MUXCustomBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MUXCustomBuildTasks.1.0.47\build\native\MUXCustomBuildTasks.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

@@ -8,14 +8,6 @@
 #include "DisplayRegionHelper.h"
 #include "LifetimeHandler.h"
 
-DisplayRegionHelper::DisplayRegionHelper() 
-{
-};
-
-DisplayRegionHelper::~DisplayRegionHelper()
-{
-}
-
 /* static */
 DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
 {
@@ -99,7 +91,7 @@ winrt::UIElement DisplayRegionHelper::WindowElement()
         // Instead of returning the actual window, find the SimulatedWindow element
         winrt::UIElement window = nullptr;
 
-        if (auto fe = safe_cast<winrt::FrameworkElement>(winrt::Window::Current().Content()))
+        if (auto fe = winrt::Window::Current().Content().as<winrt::FrameworkElement>())
         {
             window = SharedHelpers::FindInVisualTreeByName(fe, L"SimulatedWindow");
         }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #pragma once
 
 #include "TeachingTipClosingEventArgs.g.h"
@@ -7,8 +7,6 @@ class TeachingTipClosingEventArgs :
     public ReferenceTracker<TeachingTipClosingEventArgs, winrt::implementation::TeachingTipClosingEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    TeachingTipClosingEventArgs();
-
     winrt::TeachingTipCloseReason Reason();
     void Reason(const winrt::TeachingTipCloseReason& reason);
     bool Cancel();

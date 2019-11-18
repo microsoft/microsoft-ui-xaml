@@ -15,19 +15,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -122,10 +114,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void ExpandCollapseTest_NodeMode()
         {
            ExpandCollapseTest();
@@ -412,19 +403,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
-        //[TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyDownLeftToRightTest_NodeMode()
         {
             TreeViewKeyDownLeftToRightTest();
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
+        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
         public void TreeViewKeyDownLeftToRightTest_ContentMode()
         {
             TreeViewKeyDownLeftToRightTest(isContentMode: true);
@@ -508,59 +497,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //Multiple unreliable TreeView tests #131
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_NodeMode()
         {
             TreeViewKeyDownRightToLeftTest();
         }
 
-        //Test failures with keyboard/gamepad/mousewheel input #269
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewKeyDownRightToLeftTest_ContentMode()
         {
             TreeViewKeyDownRightToLeftTest(isContentMode:true);
-        }
-
-        private void TreeViewSelectedItemTest(bool isContentMode = false)
-        {
-            if (IsPhoneDevice() ||
-                (isContentMode && IsLowerThanRS5()))
-            {
-                return;
-            }
-
-            using (var setup = new TestSetupHelper("TreeView Tests"))
-            {
-                SetContentMode(isContentMode);
-
-                ClickButton("GetItemCount");
-                Verify.AreEqual("1", ReadResult());
-
-                UIObject ItemRoot = LabelFirstItem();
-                InputHelper.Tap(ItemRoot);
-
-                ClickButton("GetSelected");
-                Verify.AreEqual("ItemSelected:Root", ReadResult());
-            }
-        }
-
-        [TestMethod]
-        [TestProperty("TestSuite", "A")]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void TreeViewSelectedItemTest_NodeMode()
-        {
-            TreeViewSelectedItemTest();
-        }
-
-        [TestMethod]
-        [TestProperty("TestSuite", "A")]
-        [TestProperty("TestPass:IncludeOnlyOn", "Desktop")]
-        public void TreeViewSelectedItemTest_ContentMode()
-        {
-            TreeViewSelectedItemTest(isContentMode:true);
         }
 
         private void TreeViewSwappingNodesTest(bool isContentMode = false)
@@ -800,17 +748,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("TestSuite", "A")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropOnNode_NodeMode()
         {
             TreeViewDragAndDropOnNode();
         }
 
-        // [TestMethod]
-        // [TestProperty("TestSuite", "A")]
-        // BUG: Multiple unreliable TreeView tests #131
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void TreeViewDragAndDropOnNode_ContentMode()
         {
             TreeViewDragAndDropOnNode(isContentMode:true);
@@ -926,7 +872,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 InputHelper.Tap(ItemRoot);
                 KeyboardHelper.PressKey(Key.Down);
@@ -936,20 +882,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 ClickButton("AddSecondLevelOfNodes");
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 6", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1, Root.1.0, Root.1.1, Root.1.2", ReadResult());
 
                 ClickButton("ModifySecondLevelOfNode");
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 6", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1, Root.1.0, Root.1.1, Root.1.2, THIS IS NEW", ReadResult());
 
                 ClickButton("RemoveSecondLevelOfNode");
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 5", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1, Root.1.0, Root.1.1, Root.1.2", ReadResult());
             }
         }
 
@@ -1009,7 +955,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying that we found a UIElement called Root.0");
@@ -1080,7 +1026,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.1");
 
@@ -1098,7 +1044,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
             }
         }
 
@@ -1145,7 +1091,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 UIObject dragUIObject = FindElement.ById("Root.1");
 
@@ -1163,7 +1109,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1226,7 +1172,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 3", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1.0", ReadResult());
 
                 ClickButton("LabelItems");
                 UIObject dragUIObject = FindElement.ById("Root.1.0");
@@ -1246,7 +1192,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("8", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 3", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.0.0, Root.1.0", ReadResult());
             }
         }
 
@@ -1565,7 +1511,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
 
@@ -1577,7 +1523,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
 
@@ -1590,7 +1536,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("4", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.1", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
                 KeyboardHelper.PressKey(Key.Left);
@@ -1599,13 +1545,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 1", ReadResult());
+                Verify.AreEqual("Selected: Root.1", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .75, ItemRoot.BoundingRectangle.Height * .5);
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1653,7 +1599,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
 
                 Log.Comment("Retrieve first item as generic UIElement");
                 UIObject Item0 = FindElement.ById("Root.0");
@@ -1661,16 +1607,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 InputHelper.Tap(Item0, Item0.BoundingRectangle.Width * .1, Item0.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.1, Root.2", ReadResult());
 
                 // tap on partial selected node will set it to unselected state
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 0", ReadResult());
+                Verify.AreEqual("Nothing selected", ReadResult());
 
                 InputHelper.Tap(ItemRoot, ItemRoot.BoundingRectangle.Width * .05, ItemRoot.BoundingRectangle.Height * .5);
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 4", ReadResult());
+                Verify.AreEqual("Selected: Root, Root.0, Root.1, Root.2", ReadResult());
             }
         }
 
@@ -1710,31 +1656,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("1", ReadResult());
 
                 // First A expands the tree
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
 
                 // Second A selects root and all children
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 4");
+                VerifyGamepadAPress(treeRoot, "4", "Selected: Root, Root.0, Root.1, Root.2");
 
                 // Third A unselects
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
 
                 // Fourth A collapses
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "1", "Nothing selected");
 
                 // Fifth A selects 
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 4");
+                VerifyGamepadAPress(treeRoot, "1", "Selected: Root, Root.0, Root.1, Root.2");
 
                 // Sixth A unselects 
-                VerifyGamepadAPress(treeRoot, "1", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "1", "Nothing selected");
 
                 // Seventh A expands again
-                VerifyGamepadAPress(treeRoot, "4", "Num. Selected: 0");
+                VerifyGamepadAPress(treeRoot, "4", "Nothing selected");
             }
         }
 
-        // Multiple unreliable TreeView tests #131
-        //[TestMethod]
-        //[TestProperty("TestSuite", "B")]
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
         public void TreeViewMultiSelectGamepadTest_NodeMode()
         {
             TreeViewMultiSelectGamepadTest();
@@ -2002,7 +1947,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Space);
 
                 ClickButton("GetSelected");
-                Verify.AreEqual("Num. Selected: 2", ReadResult());
+                Verify.AreEqual("Selected: Root.0, Root.1", ReadResult());
 
                 UIObject dragUIObject = FindElement.ByName("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying Root.0 is found");
@@ -2388,8 +2333,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuite", "B")]
-        public void TreeViewSelectedNodeVectorTest()
+        [TestProperty("TreeViewTestSuite", "A")]
+        public void TreeViewSelectedNodeTest()
         {
             using (var setup = new TestSetupHelper("TreeView Tests"))
             {
@@ -2397,6 +2342,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 root.Expand();
                 Wait.ForIdle();
 
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+
+                InputHelper.Tap(root0);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0", ReadResult());
+
+                ClickButton("ToggleRoot0Selection");
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Nothing selected", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "A")]
+        public void TreeViewSelectedNodesTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                //SelectedNodes vector changes should be reflected on UI
                 ClickButton("GetMultiSelectCheckBoxStates");
                 Verify.AreEqual("u|u|u|u|", ReadResult());
 
@@ -2407,6 +2379,98 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("ToggleSelectedNodes");
                 ClickButton("GetMultiSelectCheckBoxStates");
                 Verify.AreEqual("u|u|u|u|", ReadResult());
+
+                // UI changes should update SelectedNodes vector
+                ClickButton("GetSelected");
+                Verify.AreEqual("Nothing selected", ReadResult());
+
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+                InputHelper.Tap(root0);
+                KeyboardHelper.PressKey(Key.Space);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectedItemTest()
+        {
+            // databinding is only available on RS5+
+            if(IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+
+                InputHelper.Tap(root0);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0", ReadResult());
+
+                ClickButton("ToggleRoot0Selection");
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Nothing selected", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectedItemsTest()
+        {
+            // databinding is only available on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                //SelectedItems vector changes should be reflected on UI
+                ClickButton("GetMultiSelectCheckBoxStates");
+                Verify.AreEqual("u|u|u|u|", ReadResult());
+
+                ClickButton("ToggleSelectedNodes");
+                ClickButton("GetMultiSelectCheckBoxStates");
+                Verify.AreEqual("p|s|u|s|", ReadResult());
+
+                ClickButton("ToggleSelectedNodes");
+                ClickButton("GetMultiSelectCheckBoxStates");
+                Verify.AreEqual("u|u|u|u|", ReadResult());
+
+                // UI changes should update SelectedItems vector
+                ClickButton("GetSelected");
+                Verify.AreEqual("Nothing selected", ReadResult());
+
+                ClickButton("LabelItems");
+                UIObject root0 = FindElement.ById("Root.0");
+                Verify.IsNotNull(root0, "Verifying Root.0 is found");
+                InputHelper.Tap(root0);
+                KeyboardHelper.PressKey(Key.Space);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Root.0", ReadResult());
             }
         }
 
@@ -2575,6 +2639,99 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 UIObject root = FindElement.ByName("Root");
                 Verify.IsNotNull(root, "Verify root node content");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void TreeViewRootNodeBindingTest()
+        {
+            // TreeView databinding only works on RS5+
+            if(IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("ClearNodes");
+                ClickButton("AddRootNode");
+                ClickButton("AddRootNode");
+                ClickButton("GetItemCount");
+                Verify.AreEqual("2", ReadResult());
+
+                ClickButton("LabelItems");
+                var root0 = FindElement.ById("Root0");
+                var root1 = FindElement.ById("Root1");
+
+                Log.Comment("Drag Root1 onto Root0...");
+                InputHelper.DragToTarget(root1, root0);
+
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
+
+                var rootTreeItem = new TreeItem(root0);
+                rootTreeItem.Expand();
+                Wait.ForIdle();
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root0 | Root1", ReadResult());
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1182
+        public void TreeViewWithMultiLevelChildrenExpandCollapseTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("AddSecondLevelOfNodes");
+                ClickButton("LabelItems");
+
+                var root1 = new TreeItem(FindElement.ByName("Root.1"));
+                root1.Expand();
+                Wait.ForIdle();
+
+                Log.Comment("Drag Root.1.2 into Root.1.1");
+                var root11 = new TreeItem(FindElement.ByName("Root.1.1"));
+                var root12 = new TreeItem(FindElement.ByName("Root.1.2"));
+                InputHelper.DragToTarget(root12, root11);
+
+                var root0 = new TreeItem(FindElement.ByName("Root.0"));
+                Log.Comment("Drag Root.1 into Root.0");
+                InputHelper.DragToTarget(root1, root0);
+
+                root0.Expand();
+                Wait.ForIdle();
+                root1.Expand();
+                Wait.ForIdle();
+                root11.Expand();
+                Wait.ForIdle();
+
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 | Root.2", ReadResult());
+
+                root0.Collapse();
+                Wait.ForIdle();
+                root0.Expand();
+                Wait.ForIdle();
+
+                ClickButton("GetChildrenOrder");
+                Verify.AreEqual("Root | Root.0 | Root.0.0 | Root.1 | Root.1.0 | Root.1.1 | Root.1.2 | Root.2", ReadResult());
             }
         }
 

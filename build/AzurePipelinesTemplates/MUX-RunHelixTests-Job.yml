@@ -3,24 +3,32 @@ parameters:
   dependsOn: ''
   condition: ''
   testSuite: ''
+  # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
+  # the different test runs:
+  helixType: 'test/devtest' 
+  artifactName: 'drop'
   maxParallel: 4
+  rerunPassesRequiredToAvoidFailure: 5
+  taefQuery: ''
+  # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
+  useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
       # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS3.DevEx.Open%3bWindows.10.Amd64.ServerRS5.Open'
+      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'Windows.10.Amd64.ClientRS2.Open%3bWindows.10.Amd64.ClientRS4.Open'
+      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs4.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
   dependsOn: ${{ parameters.dependsOn }}
   condition: ${{ parameters.condition }}
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   variables:
     artifactsDir: $(Build.SourcesDirectory)\Artifacts
@@ -36,9 +44,9 @@ jobs:
       filename: 'set'
       
   - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet 4.9.3'
+    displayName: 'Use NuGet 5.2.0'
     inputs:
-      versionSpec: 4.9.3
+      versionSpec: 5.2.0
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore build/Helix/packages.config'
@@ -50,21 +58,21 @@ jobs:
 
   - task: DownloadBuildArtifacts@0 
     condition:
-      eq(variables['useBuildOutputFromBuildId'],'') 
+      and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
     inputs: 
-      artifactName: drop 
+      artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
   - task: DownloadBuildArtifacts@0 
     condition:
-      ne(variables['useBuildOutputFromBuildId'],'') 
+      and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
     inputs: 
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
-      pipeline: $(System.DefinitionId)
+      pipeline: ${{ parameters.useBuildOutputFromPipeline }}
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop 
+      artifactName: ${{ parameters.artifactName }} 
       downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
@@ -72,41 +80,51 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
-      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)'
+      arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ArtifactName '${{ parameters.artifactName }}'
+      
+  - task: CmdLine@1
+    displayName: 'Display Helix payload contents'
+    inputs:
+      filename: 'dir'
+      arguments: '/s $(Build.SourcesDirectory)\HelixPayload'
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.Test.dll'
       outputProjFileName: 'RunTestsInHelix-InteractionTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\MUXControlsTestApp_Test\MUXControlsTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-ApiTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: ne('${{ parameters.testSuite }}','NugetTestSuite')
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
+      condition: and(succeeded(),ne('${{ parameters.testSuite }}','NugetTestSuite'))
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\AppxPackages\IXMPTestApp_Test\IXMPTestApp.appx'
       outputProjFileName: 'RunTestsInHelix-IXMPTestAppTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - template: MUX-CreateHelixProjFile-Steps.yml
     parameters:
-      condition: eq('${{ parameters.testSuite }}','NugetTestSuite')
-      testFilePath: '$(artifactsDir)\drop\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
+      condition: and(succeeded(),eq('${{ parameters.testSuite }}','NugetTestSuite'))
+      testFilePath: '$(artifactsDir)\${{ parameters.artifactName }}\$(buildConfiguration)\$(buildPlatform)\Test\MUXControls.ReleaseTest.dll'
       outputProjFileName: 'RunTestsInHelix-NugetTests.proj'
       testSuite: '${{ parameters.testSuite }}'
+      taefQuery: ${{ parameters.taefQuery }}
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish generated .proj files'
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
-      artifactName: 'drop'
+      artifactName: ${{ parameters.artifactName }}
       
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
@@ -116,11 +134,4 @@ jobs:
       command: custom
       projects: build\Helix\RunTestsInHelix.proj
       custom: msbuild
-      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'
-      
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish ${{parameters.name}} binlog'
-    condition: and(succeededOrFailed(), eq(variables['useBuildOutputFromBuildId'],''))
-    inputs:
-      PathtoPublish: $(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog
-      artifactName: 'drop' 
+      arguments: '/binaryLogger:$(Build.SourcesDirectory)/${{parameters.name}}.$(buildPlatform).$(buildConfiguration).binlog /p:Creator=WinUI /p:IsExternal=true /p:HelixBuild=$(Build.BuildId).$(buildPlatform).$(buildConfiguration) /p:Platform=$(buildPlatform) /p:Configuration=$(buildConfiguration) /p:HelixTargetQueues=$(helixTargetQueues) /p:HelixType=${{parameters.helixType}} /p:TestSuite=${{parameters.testSuite}} /p:ProjFilesPath=$(Build.ArtifactStagingDirectory)'

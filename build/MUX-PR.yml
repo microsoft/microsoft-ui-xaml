@@ -1,8 +1,26 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 3000  # Sanity check for minimum expected tests to be reported
 jobs:
+- job: Setup
+  steps:
+    - task: powershell@2
+      name: checkPayload
+      displayName: 'Check if build is required for this PR'
+      inputs:
+        targetType: filePath
+        filePath: build\ShouldSkipPRBuild.ps1
+ 
 - job: Build
+  dependsOn: Setup
+  condition: |
+    and
+    (
+      eq(variables['useBuildOutputFromBuildId'],''), 
+      ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
+    )
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -10,6 +28,9 @@ jobs:
       Debug_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Debug'
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
@@ -21,8 +42,21 @@ jobs:
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+
+- template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
+  parameters:
+    name: 'RunTestsInHelix'
+    dependsOn: 
+    - Setup 
+    - Build
+    condition: |
+      and
+      (
+        ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True'),
+        in(dependencies.Build.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+      )
+    testSuite: 'DevTestSuite'
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -43,3 +77,10 @@ jobs:
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn: RunTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+    checkJobAttempt: true

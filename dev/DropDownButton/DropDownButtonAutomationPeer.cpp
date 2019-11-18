@@ -33,7 +33,7 @@ com_ptr<DropDownButton> DropDownButtonAutomationPeer::GetImpl()
 {
     com_ptr<DropDownButton> impl;
 
-    if (auto dropDownButton = safe_try_cast<winrt::DropDownButton>(Owner()))
+    if (auto dropDownButton = Owner().try_as<winrt::DropDownButton>())
     {
         impl = winrt::get_self<DropDownButton>(dropDownButton)->get_strong();
     }

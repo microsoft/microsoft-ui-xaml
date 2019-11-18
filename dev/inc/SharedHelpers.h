@@ -9,7 +9,7 @@ class SharedHelpers
 {
 public:
     static bool IsAnimationsEnabled();
-    static winrt::IInspectable FindResourceOrNull(const std::wstring_view& resource, const winrt::ResourceDictionary& resources);
+    static winrt::IInspectable FindResource(const std::wstring_view& resource, const winrt::ResourceDictionary& resources, const winrt::IInspectable& defaultValue = nullptr);
     static bool IsInDesignMode();
     static bool IsInDesignModeV1();
     static bool IsInDesignModeV2();
@@ -55,6 +55,8 @@ public:
 
     static bool IsThemeShadowAvailable();
 
+    static bool IsIsLoadedAvailable();
+
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2
     static bool IsAPIContractV8Available(); // 19H1
@@ -65,16 +67,6 @@ public:
     static bool IsAPIContractV3Available(); // RS1
 
     static bool IsInFrameworkPackage();
-
-    // Returns true if this is a system dll (i.e. windows.ui.xaml.controls.dll)
-    static constexpr bool IsSystemDll()
-    {
-#ifdef BUILD_WINDOWS
-        return true;
-#else
-        return false;
-#endif
-    }
 
     // Platform scale helpers
     static winrt::Rect ConvertDipsToPhysical(winrt::UIElement const& xamlRootReference, const winrt::Rect& dipsRect);
@@ -89,7 +81,7 @@ public:
     // DependencyObject helpers
     static bool IsAncestor(const winrt::DependencyObject& child, const winrt::DependencyObject& parent, bool checkVisibility = false);
 
-    static void SyncWait(winrt::IAsyncAction asyncAction)
+    static void SyncWait(const winrt::IAsyncAction& asyncAction)
     {
         MUXControls::Common::Handle synchronizationHandle(::CreateEvent(nullptr, FALSE, FALSE, nullptr));
 
@@ -189,6 +181,18 @@ public:
         return nullptr;
     }
 
+    static bool IsFrameworkElementLoaded(winrt::FrameworkElement const& frameworkElement)
+    {
+        if (IsRS5OrHigher())
+        {
+            return frameworkElement.IsLoaded();
+        }
+        else
+        {
+            return winrt::VisualTreeHelper::GetParent(frameworkElement) != nullptr;
+        }
+    }
+
     template<typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {
@@ -210,7 +214,16 @@ public:
         }
     }
 
+    static winrt::hstring TryGetStringRepresentationFromObject(winrt::IInspectable obj);
+
+#ifdef ICONSOURCE_INCLUDED
     static winrt::IconElement MakeIconElementFrom(winrt::IconSource const& iconSource);
+#endif
+
+    static void SetBinding(
+        std::wstring_view const& pathString,
+        winrt::DependencyObject const& target,
+        winrt::DependencyProperty const& targetProperty);
 
     static void SetBinding(
         winrt::IInspectable const& source,
@@ -281,13 +294,13 @@ public:
         {
             peer.RaisePropertyChangedEvent(
                 winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
-                box_value(oldValue),
-                box_value(newValue));
+                winrt::box_value(oldValue),
+                winrt::box_value(newValue));
         }
     }
 
 private:
-    SharedHelpers() {}
+    SharedHelpers() = default;
 
     template <uint16_t APIVersion> static bool IsAPIContractVxAvailable();
 

@@ -1,10 +1,12 @@
 parameters:
   buildJobName: 'BuildNugetPkgTests'
+  buildArtifactName: 'NugetPkgTestsDrop'
   runTestJobName: 'RunNugetPkgTestsInHelix'
   dependsOn: ''
   runTests: 'true'
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
+  helixType: 'test/nuget'
   matrix: 
     Debug_x86:
       buildPlatform: 'x86'
@@ -29,7 +31,7 @@ jobs:
       - ${{ parameters.dependsOn }}
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   strategy:
     maxParallel: 10
     matrix: ${{ parameters.matrix }}
@@ -40,7 +42,7 @@ jobs:
     nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
     packageSaveDirectory: $(Build.SourcesDirectory)\packages\muxreleasetest
     artifactDownloadPath: $(Build.SourcesDirectory)\Artifacts
-    currentPackageVersion: 2.1.190218001-prerelease
+    currentPackageVersion: 2.1.190606001
     buildOutputDir: $(Build.SourcesDirectory)\BuildOutput
 
   steps:
@@ -62,7 +64,7 @@ jobs:
         <configuration>
           <packageSources>
             <clear />
-            <add key='NuGet official package source' value='https://api.nuget.org/v3/index.json' />
+            <add key='MUX-Dependencies' value='https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json' />
             <add key='dotnetfeed' value='https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json' />
             <add key='local' value='${{parameters.pkgArtifactPath}}'/>
           </packageSources>
@@ -104,8 +106,11 @@ jobs:
     parameters:
       solutionPath: $(solutionPath)
       nugetConfigPath: $(nugetConfigPath)
+      artifactName: ${{ parameters.buildArtifactName }}
 
   - template: MUX-PublishProjectOutput-Steps.yml
+    parameters:
+      artifactName: ${{ parameters.buildArtifactName }}
 
 - ${{if eq(parameters.runTests, 'true')}}:
   - template: MUX-RunHelixTests-Job.yml
@@ -113,4 +118,7 @@ jobs:
       name: ${{ parameters.runTestJobName }}
       dependsOn: ${{ parameters.buildJobName }}
       testSuite: 'NugetTestSuite'
+      helixType: ${{ parameters.helixType }}
+      artifactName: ${{ parameters.buildArtifactName }}
+      rerunPassesRequiredToAvoidFailure: 5
   

@@ -10,7 +10,7 @@
     <Import_RootNamespace>Reveal_Test</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)RevealMarkupPage.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)RevealMarkupPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <DependentUpon>RevealMarkupPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)CoreWindowEventsPage.xaml.cs">
@@ -37,7 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RevealPage.xaml.cs">
       <DependentUpon>RevealPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml.cs">
       <DependentUpon>RevealScenarioColors.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)RevealScenarioGrid.xaml.cs">
@@ -60,7 +60,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)RevealMarkupPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RevealMarkupPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -92,7 +92,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)RevealScenarioColors.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

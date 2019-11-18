@@ -85,10 +85,8 @@ private:
     void DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::UI::Core::CoreDispatcher & sender, const winrt::AcceleratorKeyEventArgs & args);
 
     // Used on platforms where we have XamlRoot.
-    void DismissSwipeOnXamlRootKeyDown(const winrt::IInspectable & sender, const winrt::KeyRoutedEventArgs & args);
     void CurrentXamlRootChanged(const winrt::XamlRoot & sender, const winrt::XamlRootChangedEventArgs & args);
-    void DismissSwipeOnAnExternalXamlRootTap(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
-
+    
 
     // Used on platforms where we don't have XamlRoot.
     void DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow & sender, const winrt::KeyEventArgs & args);
@@ -179,9 +177,9 @@ private:
     tracker_ref<winrt::IInspectable> m_onPointerPressedEventHandler{ this };
 
     // Used on platforms where we have XamlRoot.
-    tracker_ref<winrt::IInspectable> m_onXamlRootPointerPressedEventHandler{ this };
-    tracker_ref<winrt::IInspectable> m_onXamlRootKeyDownEventHandler{ this };
-    winrt::IXamlRoot::Changed_revoker m_xamlRootChangedRevoker;
+    RoutedEventHandler_revoker m_xamlRootPointerPressedEventRevoker{};
+    RoutedEventHandler_revoker m_xamlRootKeyDownEventRevoker{};
+    winrt::IXamlRoot::Changed_revoker m_xamlRootChangedRevoker{};
 
 
     // Used on platforms where we don't have XamlRoot.

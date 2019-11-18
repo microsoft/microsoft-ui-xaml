@@ -133,11 +133,11 @@
 
         <StackPanel Orientation="Horizontal">
             <Button x:Name="goBackButton">Back</Button>
-            <Slider x:Name="maintainViewportSlider" Header="Maintain Viewport" Maximum="1" StepFrequency="0.5" TickFrequency="0.5" Width="150" ValueChanged="OnMaintainViewportSliderValueChanged" Padding="20 0 0 0" />
+            <Slider x:Name="maintainViewportSlider" Header="Maintain Viewport" Maximum="1" StepFrequency="0.5" TickFrequency="0.5" Width="148" ValueChanged="OnMaintainViewportSliderValueChanged" Padding="20 0 0 0" />
             <StackPanel Orientation="Horizontal" x:Name="rootLayoutOptions">
-                <Slider x:Name="itemSpacingSlider" Header="ItemSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="150" ValueChanged="OnItemSpacingSliderValueChanged" Padding="20 0 0 0" />
-                <Slider x:Name="lineSpacingSlider" Header="MinColumnSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="150" ValueChanged="OnLineSpacingSliderValueChanged" Padding="20 0 0 0" />
-                <ComboBox x:Name="lineAlignmentComboBox" SelectedIndex="0">
+                <Slider x:Name="rowSpacingSlider" Header="MinRowSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="148" ValueChanged="OnRowSpacingSliderValueChanged" Padding="20 0 0 0" />
+                <Slider x:Name="colSpacingSlider" Header="MinColumnSpacing" Minimum="0" Maximum="400" StepFrequency="20" TickFrequency="20" Width="148" ValueChanged="OnColumnSpacingSliderValueChanged" Padding="20 0 0 0" />
+                <ComboBox x:Name="lineAlignmentComboBox" SelectedIndex="0" Margin="8 0 0 0" VerticalAlignment="Center">
                     <ComboBoxItem>Start</ComboBoxItem>
                     <ComboBoxItem>Center</ComboBoxItem>
                     <ComboBoxItem>End</ComboBoxItem>
@@ -145,12 +145,13 @@
                     <ComboBoxItem>SpaceAround</ComboBoxItem>
                     <ComboBoxItem>SpaceBetween</ComboBoxItem>
                 </ComboBox>
-                <ComboBox x:Name="itemsStretchComboBox" SelectedIndex="0">
+                <ComboBox x:Name="itemsStretchComboBox" SelectedIndex="0" Margin="8 0 0 0" VerticalAlignment="Center">
                     <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Fill</ComboBoxItem>
                     <ComboBoxItem>Uniform</ComboBoxItem>
                 </ComboBox>
             </StackPanel>
+            <Slider x:Name="maxRowsOrColumnsSlider" Header="Max Rows / Columns" Margin="8 0 0 0" Minimum="0" Maximum="8" StepFrequency="1" TickFrequency="2" Width="148" ValueChanged="OnMaxRowsOrColumnsSliderValueChanged"/>
             <TextBox x:Name="scrollIndex" PlaceholderText="Index" Margin="20 0 0 0" VerticalAlignment="Center" />
             <Slider x:Name="scrollOffset" Header="Offset" Minimum="-25" Maximum="25" StepFrequency="1" TickFrequency="1" Width="75" Margin="20 0 0 0" />
             <CheckBox x:Name="scrollAnimate">Animate</CheckBox>

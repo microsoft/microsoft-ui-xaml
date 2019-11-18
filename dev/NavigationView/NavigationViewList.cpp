@@ -10,10 +10,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
 
-NavigationViewList::NavigationViewList()
-{
-}
-
 // IItemsControlOverrides
 
 winrt::DependencyObject NavigationViewList::GetContainerForItemOverride()
@@ -27,13 +23,11 @@ bool NavigationViewList::IsItemItsOwnContainerOverride(winrt::IInspectable const
     if (args)
     {
         // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
-#if !BUILD_WINDOWS
         // Certain items are disallowed in a NavigationView's items list. Check for them.
         if (args.try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
         {
             throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
         }
-#endif
 
         auto nvib = args.try_as<winrt::NavigationViewItemBase>();
         if (nvib && nvib != m_lastItemCalledInIsItemItsOwnContainerOverride.get())
@@ -125,7 +119,7 @@ winrt::NavigationViewItemBase NavigationViewList::GetLastItemCalledInIsItemItsOw
 }
 
 template<typename T> 
-void NavigationViewList::PropagateChangeToAllContainers(std::function<void(typename T& container)> function)
+void NavigationViewList::PropagateChangeToAllContainers(std::function<void(T& container)> function)
 {
     if (auto items = Items())
     {
@@ -135,7 +129,7 @@ void NavigationViewList::PropagateChangeToAllContainers(std::function<void(typen
             auto container = ContainerFromIndex(i);
             if (container)
             {
-                auto itemContainer = container.try_as<typename T>();
+                auto itemContainer = container.try_as<T>();
                 if (itemContainer)
                 {
                     function(itemContainer);

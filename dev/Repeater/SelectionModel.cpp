@@ -517,7 +517,7 @@ void SelectionModel::OnSelectionInvalidatedDueToCollectionChange()
     OnSelectionChanged();
 }
 
-winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data)
+winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode)
 {
     winrt::IInspectable resolved = nullptr;
     // Raise ChildrenRequested event if there is a handler
@@ -525,15 +525,18 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data)
     {
         if (!m_childrenRequestedEventArgs)
         {
-            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data));
+            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data, sourceNode));
         }
         else
         {
-            winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(data);
+            winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(data, sourceNode);
         }
 
         m_getChildrenEventSource(*this, m_childrenRequestedEventArgs.get());
         resolved = m_childrenRequestedEventArgs.get().Children();
+
+        // Clear out the values in the args so that it cannot be used after the event handler call.
+        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, std::weak_ptr<SelectionNode>() /* empty weakptr */);
     }
     else
     {
@@ -542,10 +545,10 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data)
         // auto-resolve that as the child. If not, then we consider the value as a leaf. This is to 
         // avoid having to provide the event handler for the most common scenarios. If the app dev does
         // not want this default behavior, they can provide the handler to override.
-        if (safe_try_cast<winrt::ItemsSourceView>(data) || 
-            safe_try_cast<winrt::IBindableVector>(data) ||
-            safe_try_cast<winrt::IIterable<winrt::IInspectable>>(data) || 
-            safe_try_cast<winrt::IBindableIterable>(data))
+        if (data.try_as<winrt::ItemsSourceView>() || 
+            data.try_as<winrt::IBindableVector>() ||
+            data.try_as<winrt::IIterable<winrt::IInspectable>>() ||
+            data.try_as<winrt::IBindableIterable>())
         {
             resolved = data;
         }

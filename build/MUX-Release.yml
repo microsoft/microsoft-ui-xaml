@@ -1,8 +1,10 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+variables:
+  minimumExpectedTestsExecutedCount: 35  # Sanity check for minimum expected tests to be reported
 jobs:
 - job: ComponentDetection
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
   - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
@@ -14,7 +16,7 @@ jobs:
   condition:
     eq(variables['useBuildOutputFromBuildId'],'') 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
@@ -38,6 +40,25 @@ jobs:
     publishDir : $(Build.ArtifactStagingDirectory)
 
   steps:
+
+  # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
+  - task: DownloadPackage@1
+    displayName: 'Download Microsoft.Telemetry.Inbox.Native'
+    inputs:
+      feed: '/3415933f-ac0d-4766-8c0a-3f4c247c25f5'                         # 0
+      view: 'ef61a1c1-003b-4a27-bde5-beec8301021b'                          # Release
+      definition: '2fe60c09-c66f-4275-ae2d-f015c7170c72'                    # Microsoft.Telemetry.Inbox.Native
+      version: '10.0.18362.1-190318-1202.19h1-release.amd64fre'             # latest version
+      downloadPath: '$(System.DefaultWorkingDirectory)'                     # download and extract to repo root
+
+  # Replace the stubbed MicrosoftTelemetry.h with the real one
+  # Delete the existing stubbed MicrosoftTelemetry.h first, to ensure that if it is no longer at the expected path that the task, and build, fails
+  - script: |
+     del $(System.DefaultWorkingDirectory)\dev\telemetry\MicrosoftTelemetry.h
+     move /Y $(System.DefaultWorkingDirectory)\build\native\inc\MicrosoftTelemetry.h $(System.DefaultWorkingDirectory)\dev\telemetry\
+    failOnStderr: true
+    displayName: 'Replace existing stubbed MicrosoftTelemetry.h header with the real version from the nuget package'
+
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
 
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
@@ -120,18 +141,41 @@ jobs:
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
+    buildJobName: 'BuildNugetPkgTests'
+    buildArtifactName: 'NugetPkgTestsDrop'
+    runTestJobName: 'RunNugetPkgTestsInHelix'
+    helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-    matrix: 
-      Debug_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Debug'
-      Debug_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-      Release_arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
+   
+# Framework package tests
+- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
+  parameters:
+    buildJobName: 'BuildFrameworkPkgTests'
+    buildArtifactName: 'FrameworkPkgTestsDrop'
+    runTestJobName: 'RunFrameworkPkgTestsInHelix'
+    helixType: 'test/frpkg'
+    dependsOn: CreateNugetPackage
+    pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+
+- template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
+  parameters:
+    dependsOn:
+    - RunNugetPkgTestsInHelix
+    - RunFrameworkPkgTestsInHelix
+    rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
+
+# NuGet package WACK tests 
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'NugetPkgWACKTests'
+    dependsOn: BuildNugetPkgTests
+    artifactName: 'NugetPkgTestsDrop'
+
+# Framework package WACK tests
+- template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
+  parameters:
+    name: 'FrameworkPkgWACKTests'
+    dependsOn: BuildFrameworkPkgTests
+    artifactName: 'FrameworkPkgTestsDrop'

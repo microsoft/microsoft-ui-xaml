@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Common;
 using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -15,20 +15,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "Scroller", Icon = "ScrollViewer.png")]
     public sealed partial class ScrollerPage : TestPage
     {
         public ScrollerPage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
 
             this.InitializeComponent();
 
@@ -46,6 +43,7 @@ namespace MUXControlsTestApp
             navigateToCompositionScrollControllers.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerWithCompositionScrollControllersPage), 0); };
             navigateToBiDirectionalScrollController.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerWithBiDirectionalScrollControllerPage), 0); };
             navigateToLeakDetection.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerLeakDetectionPage), 0); };
+            navigateToMousePanning.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollerMousePanningPage), 0); };
 
             try
             {
@@ -91,6 +89,8 @@ namespace MUXControlsTestApp
                 }
 
                 txtMouseWheelInertiaDecayRate.Text = ScrollerTestHooks.MouseWheelInertiaDecayRate.ToString();
+                txtMouseWheelScrollLines.Text = ScrollerTestHooks.MouseWheelScrollLines.ToString();
+                txtMouseWheelScrollChars.Text = ScrollerTestHooks.MouseWheelScrollChars.ToString();
 
                 chkIsInteractionTrackerPointerWheelRedirectionEnabled.IsChecked = ScrollerTestHooks.IsInteractionTrackerPointerWheelRedirectionEnabled;
             }
@@ -118,6 +118,30 @@ namespace MUXControlsTestApp
             try
             {
                 ScrollerTestHooks.MouseWheelInertiaDecayRate = Convert.ToSingle(txtMouseWheelInertiaDecayRate.Text);
+            }
+            catch (Exception ex)
+            {
+                tbException.Text = ex.ToString();
+            }
+        }
+
+        private void TxtMouseWheelScrollLines_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                ScrollerTestHooks.MouseWheelScrollLines = Convert.ToInt32(txtMouseWheelScrollLines.Text);
+            }
+            catch (Exception ex)
+            {
+                tbException.Text = ex.ToString();
+            }
+        }
+
+        private void TxtMouseWheelScrollChars_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                ScrollerTestHooks.MouseWheelScrollChars = Convert.ToInt32(txtMouseWheelScrollChars.Text);
             }
             catch (Exception ex)
             {

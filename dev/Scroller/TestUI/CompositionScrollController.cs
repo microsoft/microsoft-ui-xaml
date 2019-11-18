@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 
-#if !BUILD_WINDOWS
 using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollController;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
@@ -24,7 +23,6 @@ using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
 using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
-#endif
 
 namespace MUXControlsTestApp.Utilities
 {
@@ -1251,7 +1249,7 @@ namespace MUXControlsTestApp.Utilities
             offsetTarget = newOffsetTarget;
 
             int offsetChangeId = RaiseScrollToRequested(
-                offsetTarget, AnimationMode.Enabled, true /*hookupCompletion*/);
+                offsetTarget, AnimationMode.Auto, true /*hookupCompletion*/);
             if (offsetChangeId != -1 && !operations.ContainsKey(offsetChangeId))
             {
                 operations.Add(offsetChangeId, new OperationInfo(offsetChangeId, relativeOffsetChange, offsetTarget));

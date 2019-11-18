@@ -16,7 +16,7 @@ Write-Host ".idl statics class";
 Write-Host "    [propget] HRESULT $($propertyName)Property([out, retval] Windows.UI.Xaml.DependencyProperty** value);"
 Write-Host "";
 Write-Host "Factory.h methods";
-Write-Host "    IFACEMETHOD(get_$($propertyName)Property)(_Outptr_ abi::IDependencyProperty** value) override;"
+Write-Host "    IFACEMETHOD(get_$($propertyName)Property)(abi::IDependencyProperty** value) override;"
 Write-Host "";
 Write-Host "Factory.h statics";
 Write-Host "    static GlobalDependencyProperty s_$($propertyName)Property;";
@@ -38,7 +38,7 @@ Write-Host "    if (RatingControlFactory::s_$($propertyName)Property == nullptr)
     }";
 Write-Host ""
 Write-Host "Factory.cpp methods";
-Write-Host "IFACEMETHODIMP RatingControlFactory::get_$($propertyName)Property(_Outptr_ abi::IDependencyProperty** value) try
+Write-Host "IFACEMETHODIMP RatingControlFactory::get_$($propertyName)Property(abi::IDependencyProperty** value) try
 {
     winrt::copy_to(getAsABI(s_$($propertyName)Property), value);
     CATCH_RETURN;

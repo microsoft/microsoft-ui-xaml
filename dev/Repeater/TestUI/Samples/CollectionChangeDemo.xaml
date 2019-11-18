@@ -23,6 +23,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+
         </Grid.RowDefinitions>
         <StackPanel Orientation="Vertical">
             <StackPanel Orientation="Horizontal">
@@ -59,5 +61,16 @@
                 </controls:ItemsRepeater>
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
+        
+        <controls:ItemsRepeater ItemsSource="{x:Bind ResettingListItems, Mode=OneWay}" Grid.Row="2" x:Name="ResettingCollectionRepeater">
+            <controls:ItemsRepeater.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="300" HorizontalAlignment="Left">
+                        <Button Width="140" Height="40" HorizontalAlignment="Right" AutomationProperties.Name="{Binding}"
+                                Click="ResettingCollectionRemoveItemButton_ItemClick" Content="{Binding}"/>
+                    </Grid>
+                </DataTemplate>
+            </controls:ItemsRepeater.ItemTemplate>
+        </controls:ItemsRepeater>
     </Grid>
 </Page>

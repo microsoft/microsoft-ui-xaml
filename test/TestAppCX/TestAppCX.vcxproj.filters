@@ -57,5 +57,7 @@
     <Page Include="MainPage.xaml" />
     <Page Include="LeakCycleTestCX.xaml" />
     <Page Include="MenuBarTestPage.xaml" />
+    <Page Include="CornerRadiusTestPage.xaml" />
+    <Page Include="TreeViewTestPage.xaml" />
   </ItemGroup>
 </Project>

@@ -1,10 +1,12 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildThisFileDirectory)\..\..\mux.controls.props" Condition="Exists('$(MSBuildThisFileDirectory)\..\..\mux.controls.props') And $(BuildingWithBuildExe) != 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
+  <Import Project="$(MSBuildProjectDirectory)\..\..\..\mux.PGO.props" /> 
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
@@ -24,7 +26,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">$(MuxSdkVersion)</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.14393.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -132,9 +134,6 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);0105;8305</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition="$(BuildLeanMuxForTheStoreApp) == 'true'">
-    <DefineConstants>$(DefineConstants);BUILD_LEAN_MUX_FOR_THE_STORE_APP</DefineConstants>
-  </PropertyGroup>
   <ItemDefinitionGroup>
     <Page>
       <IncludeInWindowsAppx>true</IncludeInWindowsAppx>
@@ -156,8 +155,10 @@
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\ExtendedObservableCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\TopLevelTestPageAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <DependentUpon>LeakTestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)\MainPage.xaml.cs">
@@ -180,13 +181,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\TilePanel\TilePanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\ViewHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)\ThemeResourcesTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\VisualTreeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\WaitForDebugger.cs" />
   </ItemGroup>
   <ItemGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
-    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LeakTests.cs" Condition="$(SolutionName) != 'MUXControlsInnerLoop'" />
+    <Compile Include="$(MSBuildThisFileDirectory)\LocalizationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertiesControl.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlDiscardedEventArgs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)\Utilities\EntityPropertiesControl\EntityPropertyControlGeneratedEventArgs.cs" />
@@ -196,17 +197,26 @@
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Assets\AcrylicBrush.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Animations.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\AutoSuggestBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Button.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarDatePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CalendarView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\CheckBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ColorPicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ComboBox.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CommandBarFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\CompactSizing.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DatePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\DefaultIcon.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\DropdownButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\FlipView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ListView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuBar.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\MenuFlyout.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\NavigationView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ParallaxView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PersonPicture.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\Pivot.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\PullToRefresh.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RadioButton.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\RatingControl.png" />
@@ -214,6 +224,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\ScrollViewer.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Slider.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\SplitButton.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\SplitView.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Swipe.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TeachingTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\LargeTile.scale-100.png" />
@@ -252,10 +263,10 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-125.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-150.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\Tile\WideTile.scale-200.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\TimePicker.png" />
+    <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\file.png" />
-    <Content Include="$(MSBuildThisFileDirectory)\Assets\folder.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\ingredient1.png" />
@@ -276,6 +287,11 @@
     <Content Include="$(MSBuildThisFileDirectory)\master\*.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\..\..\dev\dll\DensityStyles\Compact.xaml" />
   </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
+    <Content Include="$(PGOFilesDir)\pgort140.dll" Condition="Exists('$(PGOFilesDir)\pgort140.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <ItemGroup>
     <AppContent Include="@(Content)" />
   </ItemGroup>
@@ -284,7 +300,7 @@
     <Content Include="@(PageToTest)" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)\LeakTestPage.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -292,11 +308,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStyles.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+    <Page Include="$(MSBuildThisFileDirectory)\Themes\DisableAnimationsStylesOutsideStore_rs2.xaml" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

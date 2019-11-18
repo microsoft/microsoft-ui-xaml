@@ -6,11 +6,6 @@
 #include "NavigationViewDisplayModeChangedEventArgs.h"
 #include "NavigationView.h"
 
-NavigationViewDisplayModeChangedEventArgs::NavigationViewDisplayModeChangedEventArgs()
-{
-
-}
-
 #pragma region INavigationViewDisplayModeChangedEventArgs
 winrt::NavigationViewDisplayMode NavigationViewDisplayModeChangedEventArgs::DisplayMode()
 {

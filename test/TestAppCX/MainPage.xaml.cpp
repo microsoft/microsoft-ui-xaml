@@ -8,11 +8,10 @@
 
 #include "pch.h"
 #include "MainPage.xaml.h"
-
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
 #include "LeakCycleTestCX.xaml.h"
 #include "MenuBarTestPage.xaml.h"
-#endif
+#include "CornerRadiusTestPage.xaml.h"
+#include "TreeViewTestPage.xaml.h"
 
 using namespace TestAppCX;
 
@@ -28,29 +27,32 @@ using namespace Windows::UI::Xaml::Interop;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 MainPage::MainPage()
 {
     InitializeComponent();
 }
 
-
 void TestAppCX::MainPage::GoToLeakTestControlPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    #ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
     auto app = dynamic_cast<App^>(Application::Current);
-
     app->RootFrame->Navigate(TypeName(LeakCycleTestCX::typeid), nullptr);
-    #endif
-}
 
+}
 
 void TestAppCX::MainPage::GoToMenuBarTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-#ifndef BUILD_LEAN_MUX_FOR_THE_STORE_APP
     auto app = dynamic_cast<App^>(Application::Current);
-
     app->RootFrame->Navigate(TypeName(MenuBarTestPage::typeid), nullptr);
-#endif
+}
+
+void TestAppCX::MainPage::GoToCornerRadiusTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+    app->RootFrame->Navigate(TypeName(CornerRadiusTestPage::typeid), nullptr);
+}
+
+void TestAppCX::MainPage::GoToTreeViewTestPage(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    auto app = dynamic_cast<App^>(Application::Current);
+    app->RootFrame->Navigate(TypeName(TreeViewTestPage::typeid), nullptr);
 }

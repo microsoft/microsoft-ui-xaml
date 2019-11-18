@@ -17,6 +17,8 @@ using PlatformConfiguration = Common.PlatformConfiguration;
 using OSVersion = Common.OSVersion;
 using System.Collections.Generic;
 using XamlControlsResources = Microsoft.UI.Xaml.Controls.XamlControlsResources;
+using Windows.UI.Xaml.Markup;
+using System;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -32,6 +34,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     [TestClass]
     public class CommonStylesApiTests
     {
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            TestUtilities.ClearVisualTreeRoot();
+        }
+
         [TestMethod]
         public void VerifyUseCompactResourcesAPI()
         {
@@ -52,6 +60,149 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+        }
+
+        [TestMethod]
+        public void CornerRadiusFilterConverterTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Corner radius is only available on RS5+");
+                return;
+            }
+
+            RunOnUIThread.Execute(() => {
+                var root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                             xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
+                             xmlns:primitives='using:Microsoft.UI.Xaml.Controls.Primitives'> 
+                            <StackPanel.Resources>
+                                <primitives:CornerRadiusFilterConverter x:Key='TopCornerRadiusFilterConverter' Filter='Top' Scale='2'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='RightCornerRadiusFilterConverter' Filter='Right'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='BottomCornerRadiusFilterConverter' Filter='Bottom'/>
+                                <primitives:CornerRadiusFilterConverter x:Key='LeftCornerRadiusFilterConverter' Filter='Left'/>
+                                <CornerRadius x:Key='testCornerRadius'>6,6,6,6</CornerRadius>
+                            </StackPanel.Resources>
+                            <Grid x:Name='TopRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}'>
+                            </Grid>
+                            <Grid x:Name='RightRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}'>
+                            </Grid>
+                            <Grid x:Name='BottomRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}'>
+                            </Grid>
+                            <Grid x:Name='LeftRadiusGrid'
+                                CornerRadius='{Binding Source={StaticResource testCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}'>
+                            </Grid>
+                       </StackPanel>");
+
+                var topRadiusGrid = (Grid)root.FindName("TopRadiusGrid");
+                var rightRadiusGrid = (Grid)root.FindName("RightRadiusGrid");
+                var bottomRadiusGrid = (Grid)root.FindName("BottomRadiusGrid");
+                var leftRadiusGrid = (Grid)root.FindName("LeftRadiusGrid");
+
+                Verify.AreEqual(new CornerRadius(12, 12, 0, 0), topRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 6, 6, 0), rightRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(0, 0, 6, 6), bottomRadiusGrid.CornerRadius);
+                Verify.AreEqual(new CornerRadius(6, 0, 0, 6), leftRadiusGrid.CornerRadius);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyVisualTreeForControlsInCommonStyles()
+        {
+            var controlsToVerify = new List<string> {
+                "AppBarButton", "AppBarToggleButton", "Button", "CheckBox",
+                "CommandBar", "ContentDialog", "DatePicker", "FlipView", "ListViewItem",
+                "PasswordBox", "Pivot", "PivotItem", "RichEditBox", "Slider", "SplitView",
+                "TextBox", "TimePicker", "ToolTip", "ToggleButton", "ToggleSwitch"};
+
+            bool failed = false;
+
+            foreach (var control in controlsToVerify)
+            {
+                try
+                {
+                    Log.Comment($"Verify visual tree for {control}");
+                    VisualTreeTestHelper.VerifyVisualTree(xaml: XamlStringForControl(control), masterFilePrefix: control);
+                }
+                catch (Exception e)
+                {
+                    failed = true;
+                    Log.Error(e.Message);
+                }
+            }
+
+            if(failed)
+            {
+                Verify.Fail("One or more visual tree verification failed, see details above");
+            }
+        }
+
+        [TestMethod]
+        public void VerifyVisualTreeForCommandBarOverflowMenu()
+        {
+            StackPanel root = null;
+            CommandBar commandBar = null;
+            UIElement overflowContent = null;
+
+            RunOnUIThread.Execute(() => {
+                root = (StackPanel)XamlReader.Load(
+                    @"<StackPanel xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' 
+                        xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                            <CommandBar x:Name='TestCommandBar'>
+                                <AppBarButton Icon='AddFriend'/>
+                                <AppBarButton Icon='World' Label='World'/>
+                                <AppBarToggleButton Icon='Volume' Label='Volume'/>
+                                <CommandBar.SecondaryCommands>
+                                    <AppBarButton Label='Like'/>
+                                    <AppBarButton Label='Dislike'/>
+                                    <AppBarToggleButton Label='Toggle'/>
+                                </CommandBar.SecondaryCommands>
+                                <CommandBar.Content>
+                                    <TextBlock Text='Hello World' Margin='12'/>
+                                </CommandBar.Content>
+                            </CommandBar>
+                      </StackPanel>");
+
+                commandBar = (CommandBar)root.FindName("TestCommandBar");
+                Verify.IsNotNull(commandBar);
+            });
+
+            TestUtilities.SetAsVisualTreeRoot(root);
+
+            RunOnUIThread.Execute(() => {
+                commandBar.IsOpen = true;
+            });
+
+            MUXControlsTestApp.Utilities.IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() => {
+                var popup = VisualTreeHelper.GetOpenPopups(Window.Current).Last();
+                Verify.IsNotNull(popup);
+                overflowContent = popup.Child;
+            });
+
+            var visualTreeDumperFilter = new VisualTreeDumper.DefaultFilter();
+            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxWidth");
+            visualTreeDumperFilter.PropertyNameWhiteList.Remove("MaxHeight");
+            VisualTreeTestHelper.VerifyVisualTree(root: overflowContent, masterFilePrefix: "CommandBarOverflowMenu", filter: visualTreeDumperFilter);
+        }
+
+        private string XamlStringForControl(string controlName)
+        {
+            return $@"<Grid Width='400' Height='400' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'> 
+                          <{controlName} />
+                   </Grid>";
+        }
+    }
+
+    class ControlVisualTreeTestFilter : VisualTreeDumper.DefaultFilter
+    {
+        public override bool ShouldVisitProperty(string propertyName)
+        {
+            return base.ShouldVisitProperty(propertyName) && !propertyName.Contains("RenderSize");
         }
     }
 

@@ -55,6 +55,9 @@ namespace Common
     public static class Verify
     {
         // TODO: implement
+        // NOTE: At the time of this comment, MUXControlsTestApp is hitting a code path where
+        //       running tests locally will set this flag to true. Hence an implementation of this flag 
+        //       will only log errors and not fail the tests.
         public static bool DisableVerifyFailureExceptions
         {
             get;

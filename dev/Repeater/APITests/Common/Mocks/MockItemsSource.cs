@@ -19,10 +19,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 {
-#if !BUILD_WINDOWS
     using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
-#endif
 
     public class MockItemsSource : CustomItemsSourceView
     {

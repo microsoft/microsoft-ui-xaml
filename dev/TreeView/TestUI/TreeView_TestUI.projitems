@@ -10,8 +10,6 @@
     <Import_RootNamespace>TreeView_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ExplorerItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ExplorerItemTemplateSelector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TreeViewItemTemplateSelectorTestPage.xaml.cs">
       <DependentUpon>TreeViewItemTemplateSelectorTestPage.xaml</DependentUpon>
     </Compile>

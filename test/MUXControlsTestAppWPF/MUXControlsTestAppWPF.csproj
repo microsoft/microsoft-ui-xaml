@@ -133,10 +133,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Microsoft.UI.Xaml\Themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Content>
-    <Content Include="$(MSBuildProjectDirectory)\..\TestAppUtils\Themes\generic.xaml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>MUXControlsTestAppWPF\themes\%(RecursiveDir)%(Filename)%(Extension)</Link>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

@@ -89,7 +89,7 @@ winrt::Size ItemsRepeaterScrollHost::ArrangeOverride(winrt::Size const& finalSiz
                 GetAnchorElement(&anchorElementRelativeBounds);
 
             scrollViewer.Arrange({ 0, 0, finalSize.Width, finalSize.Height });
-            
+
             m_pendingViewportShift = 0.0;
 
 
@@ -310,7 +310,7 @@ void ItemsRepeaterScrollHost::ApplyPendingChangeView(const winrt::FxScrollViewer
             scrollViewer.ExtentHeight() - scrollViewer.ViewportHeight()))) };
     bringIntoView.ChangeViewOffset(changeViewOffset);
 
-    REPEATER_TRACE_INFO(L"ItemsRepeaterScrollHost scroll to absolute offset (%.0f, %.0f) \n", changeViewOffset.X, changeViewOffset.Y);
+    REPEATER_TRACE_INFO(L"ItemsRepeaterScrollHost scroll to absolute offset (%.0f, %.0f), animate=%d \n", changeViewOffset.X, changeViewOffset.Y, bringIntoView.Animate());
     scrollViewer.ChangeView(
         box_value(static_cast<double>(changeViewOffset.X)).as<winrt::IReference<double>>(),
         box_value(static_cast<double>(changeViewOffset.Y)).as<winrt::IReference<double>>(),

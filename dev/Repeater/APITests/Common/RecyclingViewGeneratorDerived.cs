@@ -9,13 +9,10 @@ using Windows.UI.Xaml.Controls;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
 {
-
-#if !BUILD_WINDOWS
     using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
     using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
     using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
-#endif
 
     public class RecyclingElementFactoryDerived : RecyclingElementFactory
     {

@@ -23,27 +23,15 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
 {
-#if BUILD_WINDOWS
-    using Window = MS.Internal.Mita.Foundation.Controls.Window;
-#else
     using Window = Microsoft.Windows.Apps.Test.Foundation.Controls.Window;
-#endif
 
     public class Application
     {
@@ -174,18 +162,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             UIObject coreWindow = null;
 
             // When running from MUXControls repo we want to install the app.
-            // When running in TestMD we also want to install the app.
-            // In CatGates, we install the test app as part of the deploy script, so we don't need to do anything here.
-#if BUILD_WINDOWS
-            if (TestEnvironment.TestContext.Properties.Contains("RunFromTestMD"))
-            {
-                TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
-            }
-#elif USING_TAEF
+            // When running in TestMD we also want to install the app.            
+#if USING_TAEF
             TestAppInstallHelper.InstallTestAppIfNeeded(deploymentDir, _packageName, _packageFamilyName);
 #else
             BuildAndInstallTestAppIfNeeded();
 #endif
+
 
             Log.Comment("Launching app {0}", _appName);
 
@@ -430,7 +413,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
             }
         }
 
-#if !BUILD_WINDOWS
         private void BuildAndInstallTestAppIfNeeded()
         {
             string[] architectures = { "x86", "x64", "ARM" };
@@ -551,7 +533,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra
                 }
             }
         }
-#endif
 
         #endregion
 

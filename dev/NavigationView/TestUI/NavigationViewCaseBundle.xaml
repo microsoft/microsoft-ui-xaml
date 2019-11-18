@@ -25,6 +25,9 @@
             <Button x:Name="NavigateToAnimationPage" AutomationProperties.Name="Navigation Animation Test" Margin="2" HorizontalAlignment="Stretch">Navigation Animation Test</Button>
             <Button x:Name="NavigateToIsPaneOpenPage" AutomationProperties.Name="Navigation IsPaneOpen Test" Margin="2" HorizontalAlignment="Stretch">Navigation IsPaneOpen Test</Button>
             <Button x:Name="NavigateToMinimalPage" AutomationProperties.Name="Navigation Minimal Test" Margin="2" HorizontalAlignment="Stretch">Navigation Minimal Test</Button>
+            <Button x:Name="NavigateToCustomThemeResourcesPage" AutomationProperties.Name="NavigationView custom ThemeResources Test" Margin="2" HorizontalAlignment="Stretch">NavigationView with custom ThemeResources Test</Button>
+            <Button x:Name="NavigationViewBlankPage1" AutomationProperties.Name="NavigationView Blank Test1" Margin="2" HorizontalAlignment="Stretch">NavigationView Blank Test1</Button>
+            <Button x:Name="NavigationViewMenuItemStretchPageButton" AutomationProperties.Name="NavigationView Menuitem Stretch Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Menuitem Stretch Test</Button>
         </StackPanel>
     </Grid>
 </local:TestPage>

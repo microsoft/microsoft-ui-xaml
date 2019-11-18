@@ -4,11 +4,6 @@
 
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::s_testHooks{};
 
-TeachingTipTestHooks::TeachingTipTestHooks()
-{
-
-}
-
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::EnsureGlobalTestHooks()
 {
     static bool s_initialized = []() {

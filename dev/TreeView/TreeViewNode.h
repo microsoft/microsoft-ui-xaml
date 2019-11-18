@@ -66,8 +66,9 @@ private:
     winrt::ItemsSourceView m_itemsDataSource{ nullptr };
     void OnItemsSourceChanged(const winrt::IInspectable& sender, const winrt::NotifyCollectionChangedEventArgs& args);
     void SyncChildrenNodesWithItemsSource();
-    void OnItemsAdded(int index, int count);
-    void OnItemsRemoved(int index, int count);
+    bool AreChildrenNodesEqualToItemsSource();
+    void AddToChildrenNodes(int index, int count);
+    void RemoveFromChildrenNodes(int index, int count);
     bool m_isContentMode{ false };
     TreeNodeSelectionState m_multiSelectionState{ TreeNodeSelectionState::UnSelected };
     hstring GetContentAsString();
@@ -95,11 +96,6 @@ class TreeViewNodeVector :
 
 private:
     winrt::weak_ref<winrt::TreeViewNode> m_parent{ nullptr };
-
-    // Check if parent node is in "content mode".
-    // We don't want users to use ItemsSource and modify TreeViewNode at the same time since that might cause some unexpected behaviors.
-    // This method is used to check what "mode" is treeview currently in.
-    bool IsParentInContentMode();
 
 public:
     

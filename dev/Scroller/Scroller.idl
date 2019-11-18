@@ -22,6 +22,7 @@ enum ContentOrientation
     Vertical = 0,
     Horizontal = 1,
     None = 2,
+    Both = 3,
 };
 
 [WUXC_VERSION_PREVIEW]
@@ -33,8 +34,6 @@ enum InteractionState
     Inertia = 2,
     Animation = 3,
 };
-
-#ifndef BUILD_WINDOWS
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -54,8 +53,6 @@ enum ZoomMode
     Enabled = 0,
     Disabled = 1,
 };
-
-#endif
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
@@ -94,6 +91,7 @@ enum AnimationMode
 { 
    Disabled = 0,
    Enabled = 1,
+   Auto = 2,
 };
 
 [WUXC_VERSION_PREVIEW]

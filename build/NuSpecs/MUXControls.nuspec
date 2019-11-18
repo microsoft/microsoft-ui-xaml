@@ -11,7 +11,7 @@
     <tags>Windows WinUI UWP XAML Fluent Controls Downlevel Compatibility TreeView ColorPicker NavigationView MenuBar</tags>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <license type="file">license.txt</license>
-    <projectUrl>https://aka.ms/winui</projectUrl>
+    <projectUrl>https://github.com/microsoft/microsoft-ui-xaml</projectUrl>
     <iconUrl>https://aka.ms/winui_icon</iconUrl>
   </metadata>
   <files>
@@ -30,6 +30,7 @@
 
     <!-- Common build logic -->
     <file target="build\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
+    <file target="buildTransitive\$ID$.targets" src="MUXControls-Nuget-Common.targets"/>
 
     <!-- This is here for C++ based projects, see http://nugetdocsbeta.azurewebsites.net/ndocs/guides/create-uwp-packages -->
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-Native.targets"/>

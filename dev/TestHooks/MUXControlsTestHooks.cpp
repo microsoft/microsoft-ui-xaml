@@ -18,6 +18,10 @@
 #include "CommandBarFlyoutTrace.h"
 #endif
 
+#ifdef REPEATER_INCLUDED
+#include "RepeaterTrace.h"
+#endif
+
 /*static*/
 UCHAR MUXControlsTestHooks::GetLoggingLevelForType(const wstring_view& type)
 {
@@ -87,6 +91,12 @@ void MUXControlsTestHooks::SetOutputDebugStringLevelForTypeImpl(const wstring_vi
     {
         CommandBarFlyoutTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
         CommandBarFlyoutTrace::s_IsVerboseDebugOutputEnabled = isLoggingVerboseLevel;
+    }
+#endif
+#ifdef REPEATER_INCLUDED
+    if (type == L"Repeater" || type.empty())
+    {
+        RepeaterTrace::s_IsDebugOutputEnabled = isLoggingInfoLevel || isLoggingVerboseLevel;
     }
 #endif
 }

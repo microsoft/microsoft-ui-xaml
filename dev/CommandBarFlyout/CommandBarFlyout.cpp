@@ -60,8 +60,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemChanged:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = safe_try_cast<winrt::AppBarButton>(element);
-                    auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -86,8 +86,8 @@ CommandBarFlyout::CommandBarFlyout()
                 case winrt::CollectionChange::ItemInserted:
                 {
                     auto element = sender.GetAt(index);
-                    auto button = safe_try_cast<winrt::AppBarButton>(element);
-                    auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+                    auto button = element.try_as<winrt::AppBarButton>();
+                    auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
                     if (button && !button.Flyout())
                     {
@@ -235,6 +235,11 @@ winrt::Control CommandBarFlyout::CreatePresenter()
     presenter.BorderThickness(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Padding(winrt::ThicknessHelper::FromUniformLength(0));
     presenter.Content(*commandBar);
+    // Clear the default CornerRaius(4) on FlyoutPresenter, CommandBarFlyout will do its own handling.
+    if (winrt::IControl7 presenterControl7 = presenter)
+    {
+        presenterControl7.CornerRadius({ 0 });
+    }
 
     // We will provide our own shadow, not the one that FlyoutPresenter has by default.
     // We need to specifically target the CommandBar for the shadow, not the default node far
@@ -261,8 +266,8 @@ void CommandBarFlyout::SetSecondaryCommandsToCloseWhenExecuted()
     for (uint32_t i = 0; i < SecondaryCommands().Size(); i++)
     {
         auto element = SecondaryCommands().GetAt(i);
-        auto button = safe_try_cast<winrt::AppBarButton>(element);
-        auto toggleButton = safe_try_cast<winrt::AppBarToggleButton>(element);
+        auto button = element.try_as<winrt::AppBarButton>();
+        auto toggleButton = element.try_as<winrt::AppBarToggleButton>();
 
         if (button)
         {

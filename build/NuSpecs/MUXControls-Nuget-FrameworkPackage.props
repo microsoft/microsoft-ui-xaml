@@ -3,26 +3,26 @@
   <Import Project="$(MSBuildThisFileDirectory)\MicrosoftUIXamlVersion.props"/>
   <Import Project="$(MSBuildThisFileDirectory)\Common.targets"/>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Release</Configuration>
       <Architecture>x86</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Debug</Configuration>
       <Architecture>x86</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
     <!-- Some C++/CX projects use Platform=Win32 instead of Platform=x86 -->
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Release</Configuration>
       <Architecture>Win32</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x86\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Debug</Configuration>
       <Architecture>Win32</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -30,13 +30,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Release</Configuration>
       <Architecture>x64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Debug</Configuration>
       <Architecture>x64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -44,13 +44,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Release</Configuration>
       <Architecture>arm</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Debug</Configuration>
       <Architecture>arm</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -58,13 +58,13 @@
     </AppxPackageRegistration>
   </ItemGroup>
   <ItemGroup>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Release</Configuration>
       <Architecture>arm64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
       <Publisher>'CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US'</Publisher>
     </AppxPackageRegistration>
-    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.2.appx">
+    <AppxPackageRegistration Include="$(MSBuildThisFileDirectory)..\tools\AppX\arm64\Release\Microsoft.UI.Xaml.2.3.appx">
       <Configuration>Debug</Configuration>
       <Architecture>arm64</Architecture>
       <Version>$(MicrosoftUIXamlAppxVersion)</Version>
@@ -113,36 +113,4 @@
       <PackagingOutputs Include="@(XamlWinmd)" />
     </ItemGroup>
   </Target>
-
-  <!-- Workaround for https://github.com/Microsoft/microsoft-ui-xaml/issues/599. 
-  If there are more than two projects are using microsoft-ui-xaml framework package, and the projects have reference relationship,
-  more than two compact.xbf with the same destination path would be packaged and compiler would complains error. 
-  Assume we have two projects A and B, and A->B->microsoft-ui-xaml, compact.xbf is built into B.pri, and then built into A.pri because of project reference.
-  So we need to exclude compact.xbf in A. To make sure only one compact.xbf is packaged, this target excludes the compact.xbf which matches MSBuildProjectName.
-  --> 
-  <Target Name="_FixXamlCompactXbfPackaging" AfterTargets="GetPackagingOutputs">
-    <ItemGroup>
-      <XamlCompactXbfPackagingOutput Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' != '$(MSBuildProjectName)'" />
-      <XamlCompactXbfPackagingOutputToBeRemoved Include="@(PackagingOutputs)" Condition="'%(PackagingOutputs.TargetPath)' == '$(XamlCompactXbfName)' and '%(PackagingOutputs.ProjectName)' == '$(MSBuildProjectName)'" />
-    </ItemGroup>
-    <ItemGroup Condition="'@(XamlCompactXbfPackagingOutput)' != '' and '@(XamlCompactXbfPackagingOutputToBeRemoved)' != ''">
-      <PackagingOutputs Remove="@(XamlCompactXbfPackagingOutputToBeRemoved)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- Workaround for apps that need RS1 support, include this only if min version is RS1 -->
-  <ItemGroup Condition="($([System.Version]::Parse('$(TargetPlatformMinVersion)').Build) &lt; 15063) And '$(DisableMicrosoftUIXamlRS1ThemesWorkaround)'==''">
-    <Page Include="$(MSBuildThisFileDirectory)rs1_themes\generic.xaml">
-      <SubType>Designer</SubType>
-      <Link>Microsoft.UI.Xaml\Themes\generic.xaml</Link>
-    </Page>
-  </ItemGroup>
-  
-  <!-- Make this URI works in framework package "ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" -->
-  <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)DensityStyles\Compact.xaml">
-      <SubType>Designer</SubType>
-      <Link>Microsoft.UI.Xaml\DensityStyles\Compact.xaml</Link>
-    </Page>
-  </ItemGroup>
 </Project>

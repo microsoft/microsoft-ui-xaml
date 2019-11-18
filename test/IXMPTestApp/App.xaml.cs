@@ -84,7 +84,6 @@ namespace IXMPTestApp
                 // Ensure the current window is active
                 Window.Current.Activate();
 
-#if !BUILD_WINDOWS
                 // If there are multiple arguments we assume we're being launched as a TAEF AppX test, so start up the TAEF dispatcher.
                 if (e.Arguments.Length > 0)
                 {
@@ -94,7 +93,6 @@ namespace IXMPTestApp
                     Verify.DisableVerifyFailureExceptions = true;
                     Microsoft.VisualStudio.TestPlatform.TestExecutor.UnitTestClient.Run(e.Arguments);
                 }
-#endif
             }
         }
 

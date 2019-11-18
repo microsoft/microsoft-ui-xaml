@@ -16,7 +16,6 @@ class SplitButton :
 
 public:
     SplitButton();
-    ~SplitButton();
 
     // IFrameworkElement
     void OnApplyTemplate();

@@ -18,12 +18,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks
 {
-#if !BUILD_WINDOWS
     using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
     using ElementFactoryGetArgs = Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs;
     using ElementFactoryRecycleArgs = Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs;
     using RepeaterTestHooks = Microsoft.UI.Private.Controls.RepeaterTestHooks;
-#endif
 
     public class MockElementFactory : ElementFactory
     {

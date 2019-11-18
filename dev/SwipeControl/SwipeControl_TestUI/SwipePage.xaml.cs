@@ -15,24 +15,22 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if !BUILD_WINDOWS
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
-#endif
 
 namespace MUXControlsTestApp
 {
+    [TopLevelTestPage(Name = "SwipeControl", Icon = "Swipe.png")]
     public sealed partial class SwipePage : TestPage
     {
         public SwipePage()
         {
-#if !BUILD_WINDOWS
             LogController.InitializeLogging();
-#endif
 
             this.InitializeComponent();
 
             navigateToSimpleContents.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlPage), 0); };
             navigateToDynamic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlPage2), 0); };
+            navigateToClear.Click += delegate { Frame.NavigateWithoutAnimation(typeof(SwipeControlClearPage), 0); };
         }
 
         private void CmbSwipeControlOutputDebugStringLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)

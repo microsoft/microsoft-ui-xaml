@@ -3,6 +3,7 @@ using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace CustomTasks
 {
@@ -33,6 +34,13 @@ namespace CustomTasks
 
         [Required]
         public string OutputDirectory { get; set; }
+
+        [Required]
+        public string TlogReadFilesOutputPath { get; set; }
+
+        [Required]
+        public string TlogWriteFilesOutputPath { get; set; }
+
 
         [Output]
         public string[] FilesWritten
@@ -131,6 +139,19 @@ namespace CustomTasks
                 ExecuteForTaskItems(RS5Pages, "RS5");
                 ExecuteForTaskItems(N19H1Pages, "19H1");
             }
+
+            var filesRead = new List<string>();
+            filesRead.AddRange(RS1Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(RS2Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(RS3Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(RS4Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(RS5Pages.Select(item => item.ItemSpec));
+            filesRead.AddRange(N19H1Pages.Select(item => item.ItemSpec));
+
+            File.WriteAllLines(TlogReadFilesOutputPath, filesRead);
+
+            File.WriteAllLines(TlogWriteFilesOutputPath, FilesWritten);
+
             return !Log.HasLoggedErrors;
         }
     }

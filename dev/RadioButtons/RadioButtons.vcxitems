@@ -26,12 +26,20 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtonsListViewItemAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RadioButtons.cpp" />
   </ItemGroup>
-  <ItemGroup Condition="$(BuildLeanMuxForTheStoreApp) != 'true'">
+  <ItemGroup >
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml">
+      <Version>RS1</Version>
+      <Type>DefaultStyle</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

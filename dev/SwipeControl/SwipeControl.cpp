@@ -30,12 +30,15 @@ SwipeControl::~SwipeControl()
 {
     DetachEventHandlers();
 
-    if (s_lastInteractedWithSwipeControl && s_lastInteractedWithSwipeControl.get() && s_lastInteractedWithSwipeControl.get().get() == this)
+    if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        s_lastInteractedWithSwipeControl = nullptr;
-        if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
+        if (lastInteractedWithSwipeControl.get() == this)
         {
-            globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
+            s_lastInteractedWithSwipeControl = nullptr;
+            if (auto globalTestHooks = SwipeTestHooks::GetGlobalTestHooks())
+            {
+                globalTestHooks->NotifyLastInteractedWithSwipeControlChanged();
+            }
         }
     }
 }
@@ -325,11 +328,12 @@ void SwipeControl::ValuesChanged(
 {
     SWIPECONTROL_TRACE_VERBOSE(*this, TRACE_MSG_METH, METH_NAME, this);
 
-    if (m_isInteracting && (!s_lastInteractedWithSwipeControl.get() || s_lastInteractedWithSwipeControl.get().get() != this))
+    auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get();
+    if (m_isInteracting && (!lastInteractedWithSwipeControl || lastInteractedWithSwipeControl.get() != this))
     {
-        if (s_lastInteractedWithSwipeControl.get())
+        if (lastInteractedWithSwipeControl)
         {
-            s_lastInteractedWithSwipeControl.get()->CloseIfNotRemainOpenExecuteItem();
+            lastInteractedWithSwipeControl->CloseIfNotRemainOpenExecuteItem();
         }
         s_lastInteractedWithSwipeControl = get_weak();
 
@@ -372,9 +376,9 @@ void SwipeControl::ValuesChanged(
 #pragma region TestHookHelpers
 winrt::SwipeControl SwipeControl::GetLastInteractedWithSwipeControl()
 {
-    if (s_lastInteractedWithSwipeControl.get())
+    if (auto lastInteractedWithSwipeControl = s_lastInteractedWithSwipeControl.get())
     {
-        return s_lastInteractedWithSwipeControl.get()->GetThis();
+        return *lastInteractedWithSwipeControl;
     }
     return nullptr;
 }
@@ -677,13 +681,24 @@ void SwipeControl::AttachDismissingHandlers()
     {
         if (auto xamlRoot = uiElement10.XamlRoot())
         {
-            auto xamlRootContent = xamlRoot.Content();
+            if (auto&& xamlRootContent = xamlRoot.Content())
+            {
+                m_xamlRootPointerPressedEventRevoker = AddRoutedEventHandler<RoutedEventType::PointerPressed>(
+                    xamlRootContent,
+                    [this](auto const&, auto const& args)
+                    {
+                        DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
+                    },
+                    true /*handledEventsToo*/);
 
-            m_onXamlRootPointerPressedEventHandler.set(winrt::box_value<winrt::PointerEventHandler>({ this, &SwipeControl::DismissSwipeOnAnExternalXamlRootTap }));
-            xamlRootContent.AddHandler(winrt::UIElement::PointerPressedEvent(), m_onXamlRootPointerPressedEventHandler.get(), true);
-
-            m_onXamlRootKeyDownEventHandler.set(winrt::box_value<winrt::KeyEventHandler>({ this, &SwipeControl::DismissSwipeOnXamlRootKeyDown }));
-            xamlRootContent.AddHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get(), true);
+                m_xamlRootKeyDownEventRevoker = AddRoutedEventHandler<RoutedEventType::KeyDown>(
+                    xamlRootContent,
+                    [this](auto const&, auto const& args)
+                    {
+                        CloseIfNotRemainOpenExecuteItem();
+                    },
+                    true /*handledEventsToo*/);
+            }
 
             m_xamlRootChangedRevoker = xamlRoot.Changed(winrt::auto_revoke, { this, &SwipeControl::CurrentXamlRootChanged });
         }
@@ -715,25 +730,8 @@ void SwipeControl::DetachDismissingHandlers()
 {
     SWIPECONTROL_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
-    if (winrt::IUIElement10 uiElement10 = *this)
-    {
-        if (auto xamlRoot = uiElement10.XamlRoot())
-        {
-            auto xamlRootContent = xamlRoot.Content();
-
-            if (m_onXamlRootPointerPressedEventHandler)
-            {
-                xamlRootContent.RemoveHandler(winrt::UIElement::PointerPressedEvent(), m_onXamlRootPointerPressedEventHandler.get());
-                m_onXamlRootPointerPressedEventHandler.set(nullptr);
-            }
-
-            if (m_onXamlRootKeyDownEventHandler)
-            {
-                xamlRootContent.RemoveHandler(winrt::UIElement::KeyDownEvent(), m_onXamlRootKeyDownEventHandler.get());
-                m_onXamlRootKeyDownEventHandler.set(nullptr);
-            }
-        }
-    }
+    m_xamlRootPointerPressedEventRevoker.revoke();
+    m_xamlRootKeyDownEventRevoker.revoke();
     m_xamlRootChangedRevoker.revoke();
 
     m_acceleratorKeyActivatedRevoker.revoke();
@@ -748,19 +746,9 @@ void SwipeControl::DismissSwipeOnAcceleratorKeyActivator(const winrt::Windows::U
     CloseIfNotRemainOpenExecuteItem();
 }
 
-void SwipeControl::DismissSwipeOnXamlRootKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
-{
-    CloseIfNotRemainOpenExecuteItem();
-}
-
 void SwipeControl::CurrentXamlRootChanged(const winrt::XamlRoot & /*sender*/, const winrt::XamlRootChangedEventArgs &/*args*/)
 {
     CloseIfNotRemainOpenExecuteItem();
-}
-
-void SwipeControl::DismissSwipeOnAnExternalXamlRootTap(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)
-{
-    DismissSwipeOnAnExternalTap(args.GetCurrentPoint(nullptr).Position());
 }
 
 void SwipeControl::DismissSwipeOnCoreWindowKeyDown(const winrt::CoreWindow& sender, const winrt::KeyEventArgs& args)
@@ -829,7 +817,7 @@ void SwipeControl::GetTemplateParts()
     }
     m_swipeContentStackPanel.get().Orientation(m_isHorizontal ? winrt::Orientation::Horizontal : winrt::Orientation::Vertical);
 
-    if (auto lookedUpStyle = SharedHelpers::FindResourceOrNull(s_swipeItemStyleName, winrt::Application::Current().Resources()))
+    if (auto lookedUpStyle = SharedHelpers::FindResource(s_swipeItemStyleName, winrt::Application::Current().Resources()))
     {
         m_swipeItemStyle.set(lookedUpStyle.try_as<winrt::UI::Xaml::Style>());
     }
@@ -1279,7 +1267,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Background())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemBackgroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdBackgroundResourceName : s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
         {
             itemAsButton.Background(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1287,7 +1275,7 @@ winrt::AppBarButton SwipeControl::GetSwipeItemButton(const winrt::SwipeItem& swi
 
     if (!swipeItem.Foreground())
     {
-        if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+        if (auto lookedUpBrush = SharedHelpers::FindResource(m_currentItems.get().Mode() == winrt::SwipeMode::Reveal ? s_swipeItemForegroundResourceName : m_thresholdReached ? s_executeSwipeItemPostThresholdForegroundResourceName : s_executeSwipeItemPreThresholdForegroundResourceName, resources))
         {
             itemAsButton.Foreground(lookedUpBrush.try_as<winrt::Brush>());
         }
@@ -1339,14 +1327,14 @@ void SwipeControl::UpdateExecuteBackgroundColor(const winrt::SwipeItem& swipeIte
 
     if (!m_thresholdReached)
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdBackgroundResourceName, resources))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
     }
     else
     {
-        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPostThresholdBackgroundResourceName, resources))
+        if (auto lookedUpBackgroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdBackgroundResourceName, resources))
         {
             background = lookedUpBackgroundBrush.try_as<winrt::Brush>();
         }
@@ -1367,21 +1355,21 @@ void SwipeControl::UpdateExecuteForegroundColor(const winrt::SwipeItem& swipeIte
 
     if (m_swipeContentStackPanel.get().Children().Size() > 0)
     {
-        if (auto appBarButton = safe_cast<winrt::AppBarButton>(m_swipeContentStackPanel.get().Children().GetAt(0)))
+        if (auto appBarButton = m_swipeContentStackPanel.get().Children().GetAt(0).as<winrt::AppBarButton>())
         {
             winrt::Brush foreground = nullptr;
             auto resources = winrt::Application::Current().Resources();
 
             if (!m_thresholdReached)
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPreThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPreThresholdForegroundResourceName, resources))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
             }
             else
             {
-                if (auto lookedUpForegroundBrush = SharedHelpers::FindResourceOrNull(s_executeSwipeItemPostThresholdForegroundResourceName, resources))
+                if (auto lookedUpForegroundBrush = SharedHelpers::FindResource(s_executeSwipeItemPostThresholdForegroundResourceName, resources))
                 {
                     foreground = lookedUpForegroundBrush.try_as<winrt::Brush>();
                 }
@@ -1409,7 +1397,7 @@ void SwipeControl::UpdateColorsIfRevealItems()
 
     winrt::Brush rootGridBackground = nullptr;
 
-    if (auto lookedUpBrush = SharedHelpers::FindResourceOrNull(s_swipeItemBackgroundResourceName, winrt::Application::Current().Resources()))
+    if (auto lookedUpBrush = SharedHelpers::FindResource(s_swipeItemBackgroundResourceName, winrt::Application::Current().Resources()))
     {
         rootGridBackground = lookedUpBrush.try_as<winrt::Brush>();
     }
@@ -1456,7 +1444,10 @@ void SwipeControl::OnLeftItemsChanged(const winrt::IObservableVector<winrt::Swip
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasLeftContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasLeftContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Left)
     {
@@ -1469,7 +1460,11 @@ void SwipeControl::OnRightItemsChanged(const winrt::IObservableVector<winrt::Swi
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, sender.Size() > 0);
+
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasRightContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Right)
     {
@@ -1482,7 +1477,10 @@ void SwipeControl::OnTopItemsChanged(const winrt::IObservableVector<winrt::Swipe
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasTopContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Top)
     {
@@ -1495,7 +1493,10 @@ void SwipeControl::OnBottomItemsChanged(const winrt::IObservableVector<winrt::Sw
     SWIPECONTROL_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     ThrowIfHasVerticalAndHorizontalContent();
-    m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, sender.Size() > 0);
+    if (m_interactionTracker)
+    {
+        m_interactionTracker.get().Properties().InsertBoolean(s_hasBottomContentPropertyName, sender.Size() > 0);
+    }
 
     if (m_createdContent == CreatedContent::Bottom)
     {

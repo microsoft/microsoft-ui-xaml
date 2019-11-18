@@ -67,8 +67,8 @@ public:
     void SelectRange(winrt::IndexPath const& start, winrt::IndexPath const& end);
     void DeselectRange(winrt::IndexPath const& start, winrt::IndexPath const& end);
 
-    void SelectAll(void);
-    void ClearSelection(void);
+    void SelectAll();
+    void ClearSelection();
 
 #pragma endregion
 
@@ -88,7 +88,7 @@ public:
     void OnPropertyChanged(winrt::hstring const& propertyName);
 #pragma endregion
 
-    winrt::IInspectable ResolvePath(const winrt::IInspectable& data);
+    winrt::IInspectable ResolvePath(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode);
     void OnSelectionInvalidatedDueToCollectionChange();
     std::shared_ptr<SelectionNode> SharedLeafNode() { return m_leafNode; }
 

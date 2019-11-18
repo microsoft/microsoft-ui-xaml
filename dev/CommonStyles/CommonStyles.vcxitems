@@ -19,7 +19,7 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-     <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)AppBarToggleButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
@@ -33,31 +33,6 @@
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ComboBox_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DatePicker_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)DateTimePickerFlyout_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)Slider_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)TimePicker_themeresources.xaml">
-      <Version>RS1</Version>
-      <Type>ThemeResources</Type>
-      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>     
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ToggleSwitch_themeresources.xaml">
       <Version>RS1</Version>
@@ -84,7 +59,36 @@
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)AutoSuggestBox_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)FlyoutPresenter_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Button_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ToggleButton_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)CornerRadius_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressBar_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)MediaTransportControls_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+      <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RepeatButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <UseNonstandardCondtionalXAML>true</UseNonstandardCondtionalXAML>

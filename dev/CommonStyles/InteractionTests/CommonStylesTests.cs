@@ -14,19 +14,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-#if BUILD_WINDOWS
-using System.Windows.Automation;
-using MS.Internal.Mita.Foundation;
-using MS.Internal.Mita.Foundation.Controls;
-using MS.Internal.Mita.Foundation.Patterns;
-using MS.Internal.Mita.Foundation.Waiters;
-#else
 using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
 using Microsoft.Windows.Apps.Test.Foundation.Patterns;
 using Microsoft.Windows.Apps.Test.Foundation.Waiters;
-#endif
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
@@ -145,6 +137,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 var testResult = new TextBlock(FindElement.ById("CompactTestResult")).GetText();
                 Verify.AreEqual(testResult, "Pass", "We expect compact test result is Pass"); // "Pass" string matches value used by MUXControlsTestApp.SimpleVerify
+            }
+        }
+
+        [TestMethod]
+        public void CornerRadiusTest()
+        {
+            using (var setup = new TestSetupHelper("CornerRadius Tests"))
+            {
+                var textBlock = FindElement.ByName("CornerRadius");
+                Verify.IsNotNull(textBlock, "Verify corner radius page doesn't crash");
             }
         }
     }

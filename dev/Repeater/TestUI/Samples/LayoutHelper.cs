@@ -4,7 +4,6 @@
 using System;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using Layout = Microsoft.UI.Xaml.Controls.Layout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
 using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
@@ -12,13 +11,20 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
 using UniformGridLayoutItemsStretch = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsStretch;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
-#endif
 
 namespace MUXControlsTestApp.Samples
 {
     public static class LayoutHelper
     {
-        public static void SetMinItemSpacing(Layout layout, double value)
+        public static void SetMaxRowsOrColumns(Layout layout, int value)
+        {
+            if (layout is UniformGridLayout)
+            {
+                ((UniformGridLayout)layout).MaximumRowsOrColumns = value;
+            }
+        }
+
+        public static void SetMinRowSpacing(Layout layout, double value)
         {
             if (layout is UniformGridLayout)
             {
@@ -34,7 +40,7 @@ namespace MUXControlsTestApp.Samples
             }
         }
 
-        public static void SetLineSpacing(Layout layout, double value)
+        public static void SetMinColumnSpacing(Layout layout, double value)
         {
             if (layout is UniformGridLayout)
             {
