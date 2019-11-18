@@ -119,9 +119,17 @@ void NavigationViewItemAutomationPeer::Invoke()
     if (auto navView = GetParentNavigationView())
     {
         winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
+
         if (navigationViewItem)
         {
-            winrt::get_self<NavigationView>(navView)->OnNavigationViewItemInvoked(navigationViewItem);
+            if (navigationViewItem == navView.SettingsItem())
+            {
+                winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            }
+            else
+            {
+                winrt::get_self<NavigationView>(navView)->OnNavigationViewItemInvoked(navigationViewItem);
+            }
         }
     }
 }
