@@ -296,6 +296,7 @@
                                             <local:ItemsRepeater 
                                                 AutomationProperties.LandmarkType="Navigation"
                                                 AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                                AutomationProperties.AccessibilityView = "Content"
                                                 x:Name="TopNavMenuItemsHost">
                                                 <local:ItemsRepeater.Layout>
                                                     <local:StackLayout Orientation="Horizontal" DisableVirtualization="True"/>
