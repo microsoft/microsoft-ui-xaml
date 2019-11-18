@@ -70,11 +70,7 @@ void ProgressBar::UpdateStates()
 {
     m_shouldUpdateWidthBasedTemplateSettings = false;
 
-    if (m_isUpdating)
-    {
-        winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true);
-    }
-    else if (ShowError())
+    if (ShowError())
     {
         winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
     }
@@ -112,8 +108,7 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             const double minimum = Minimum();
             const auto padding = Padding();
 
-            m_isUpdating = true; // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition in ProgressBar.xaml when reverting back to previous state
-            UpdateStates();
+            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true); // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition in ProgressBar.xaml when reverting back to previous state
 
             if (IsIndeterminate())
             {
@@ -132,9 +127,8 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             {
                 progressBarIndicator.Width(0); // Error
             }
-
-            m_isUpdating = false; // Reverts back to previous state
-            UpdateStates();
+           
+            UpdateStates(); // Reverts back to previous state
         }
     }
 }
