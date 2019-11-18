@@ -87,7 +87,6 @@ void RegisterTraceLogging()
 {
     HRESULT hr = S_OK;
 
-#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingRegisterEx(g_hTelemetryProvider, TelemetryProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
     hr = CoCreateGuid(&g_TelemetryProviderActivityId);
@@ -103,7 +102,6 @@ void RegisterTraceLogging()
 
         g_TelemetryProviderActivityId = GUID_NULL;
     };
-#endif // EMIT_TELEMETRY_EVENTS
 
     TraceLoggingRegisterEx(g_hPerfProvider, PerfProviderEnabledCallback, nullptr);
     //Generate the ActivityId used to track the session
@@ -138,9 +136,7 @@ void RegisterTraceLogging()
 
 void UnRegisterTraceLogging()
 {
-#ifdef EMIT_TELEMETRY_EVENTS
     TraceLoggingUnregister(g_hTelemetryProvider);
-#endif // EMIT_TELEMETRY_EVENTS
 
     TraceLoggingUnregister(g_hPerfProvider);
     TraceLoggingUnregister(g_hLoggingProvider);
