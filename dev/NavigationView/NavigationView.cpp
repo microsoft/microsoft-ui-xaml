@@ -549,7 +549,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
     if (nvib)
     {
         // Check whether the container that triggered this call back is the selected container
-        bool newItemIsSelectedItem = IsSelectedContainer(nvib);
+        bool newItemIsSelectedItem = IsContainerTheSelectedItemInTheSelectionModel(nvib);
         bool newIsSelected = nvib.IsSelected();
 
         if (newIsSelected && !newItemIsSelectedItem)
@@ -2325,6 +2325,11 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
 {
     if (prevItem && prevItem != nextItem)
     {
+        auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
+        m_shouldIgnoreNextSelectionChange = true;
         ChangeSelectStatusForItem(prevItem, false /*selected*/);
     }
 }
@@ -3924,7 +3929,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
     return nullptr;
 }
 
-bool NavigationView::IsSelectedContainer(winrt::NavigationViewItemBase item)
+bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase item)
 {
     if (auto selectedItem = m_selectionModel.SelectedIndex())
     {

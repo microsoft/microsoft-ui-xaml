@@ -279,7 +279,7 @@ private:
     int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
     winrt::IInspectable LeftNavGetItemFromIndex(int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);
-    bool IsSelectedContainer(winrt::NavigationViewItemBase item);
+    bool IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase item);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
