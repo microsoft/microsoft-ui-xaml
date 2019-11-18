@@ -18,6 +18,9 @@ static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinBut
 static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
 static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoot"sv };
 
+static constexpr double c_popupShadowDepth = 16.0;
+static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupShadowDepth"sv };
+
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
@@ -89,7 +92,10 @@ void NumberBox::OnApplyTemplate()
             {
                 popupRoot.Shadow(winrt::ThemeShadow{});
                 auto&& translation = popupRoot.Translation();
-                popupRoot.Translation({ translation.x, translation.y, 16 }); // ### magic
+
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_numberBoxPopupShadowDepthName, winrt::Application::Current().Resources(), box_value(c_popupShadowDepth)));
+
+                popupRoot.Translation({ translation.x, translation.y, (float)shadowDepth });
             }
         }
     }
@@ -202,9 +208,12 @@ void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyProp
 
 void NumberBox::OnTextBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    if (auto && popup = m_popup.get())
+    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Popup)
     {
-        popup.IsOpen(true);
+        if (auto && popup = m_popup.get())
+        {
+            popup.IsOpen(true);
+        }
     }
 }
 
@@ -395,11 +404,17 @@ void NumberBox::UpdateTextToValue()
 // Enables or Disables Spin Buttons
 void NumberBox::SetSpinButtonVisualState()
 {
-    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
+    const auto spinButtonMode = SpinButtonPlacementMode();
+
+    if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
-    else if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden)
+    else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Popup)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+    }
+    else
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
     }

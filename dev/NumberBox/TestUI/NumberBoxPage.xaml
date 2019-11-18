@@ -28,6 +28,7 @@
             <ComboBox x:Name="SpinModeComboBox" AutomationProperties.Name="SpinModeComboBox" SelectedIndex="0" SelectionChanged="SpinMode_Changed" Header="SpinButtonMode">
                 <ComboBoxItem Content="Hidden"/>
                 <ComboBoxItem Content="Inline"/>
+                <ComboBoxItem Content="Popup"/>
             </ComboBox>
 
             <CheckBox x:Name="HyperScrollCheckBox" AutomationProperties.Name="HyperScrollCheckBox" IsChecked="False" Content="HyperScroll Enabled"/>

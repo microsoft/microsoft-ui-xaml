@@ -29,6 +29,10 @@ namespace MUXControlsTestApp
                 {
                     TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
                 }
+                else if (SpinModeComboBox.SelectedIndex == 2)
+                {
+                    TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Popup;
+                }
             }
         }
 

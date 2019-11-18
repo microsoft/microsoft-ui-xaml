@@ -6,7 +6,8 @@
 enum NumberBoxSpinButtonPlacementMode
 {
     Hidden,
-    Inline
+    Inline,
+    Popup
 };
 
 [WUXC_VERSION_PREVIEW]

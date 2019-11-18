@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <Style TargetType="local:NumberBox">
@@ -19,6 +20,12 @@
                                         <Setter Target="DownSpinButton.Visibility" Value="Visible" />
                                         <Setter Target="UpSpinButton.Visibility" Value="Visible" />
                                         <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource LeftCornerRadiusFilterConverter}}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+
+                                <VisualState x:Name="SpinButtonsPopup">
+                                    <VisualState.Setters>
+                                        <Setter Target="InputBox.Style" Value="{StaticResource NumberBoxTextBoxStyle}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -48,14 +55,16 @@
 
                             <TextBox x:Name="InputBox"
                                 Header="{TemplateBinding Header}"
-                                PlaceholderText="{TemplateBinding PlaceholderText}"
-                                Style="{StaticResource NumberBoxTextBoxStyle}"/>
+                                PlaceholderText="{TemplateBinding PlaceholderText}" />
 
-                            <!-- ### obviously none of this is cool -->
-                            <Popup x:Name="UpDownPopup" VerticalOffset="12" HorizontalOffset="-20" HorizontalAlignment="Left">
+                            <Popup x:Name="UpDownPopup"
+                                VerticalOffset="{ThemeResource NumberBoxPopupVerticalOffset}"
+                                HorizontalOffset="{ThemeResource NumberBoxPopupHorizonalOffset}"
+                                HorizontalAlignment="Left">
 
-                                <Grid x:Name="PopupContentRoot" Background="White"
-                                    contract7Present:CornerRadius="{ThemeResource ControlCornerRadius}">
+                                <Grid x:Name="PopupContentRoot"
+                                    Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+                                    contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
                                     
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*"/>
@@ -65,14 +74,12 @@
                                     <Button x:Name="PopupUpSpinButton"
                                         Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
                                         Grid.Row="0"
-                                        Content="&#xE70E;"
-                                        contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopCornerRadiusFilterConverter}}" />
+                                        Content="&#xE70E;"/>
 
                                     <Button x:Name="PopupDownSpinButton"
                                         Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
                                         Grid.Row="1"
-                                        Content="&#xE70D;"
-                                        contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomCornerRadiusFilterConverter}}" />
+                                        Content="&#xE70D;"/>
                                 </Grid>
                             </Popup>
 
@@ -109,13 +116,87 @@
         </Style.Setters>
     </Style>
 
-    <!-- ### Would prefer that these didn't tilt. -->
     <Style x:Name="NumberBoxPopupSpinButtonStyle" TargetType="Button">
         <Style.Setters>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="32"/>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
+
+            <!-- Retemplate to avoid tilting effect -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter x:Name="ContentPresenter"
+                            Background="{TemplateBinding Background}"
+                            contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            CornerRadius="{TemplateBinding CornerRadius}"
+                            Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            AutomationProperties.AccessibilityView="Raw">
+
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundPointerOver}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrushPointerOver}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPointerOver}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundPressed}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrushPressed}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundPressed}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+
+                                    <VisualState x:Name="Disabled">
+                                        <Storyboard>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Background">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBackgroundDisabled}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="BorderBrush">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonBorderBrushDisabled}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource ButtonForegroundDisabled}" />
+                                            </ObjectAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualState>
+
+                                </VisualStateGroup>
+
+                            </VisualStateManager.VisualStateGroups>
+                        </ContentPresenter>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style.Setters>
     </Style>
     
@@ -135,8 +216,7 @@
         <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
         <Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
-        <!-- ### deal with this. Also temporarily removed anything mentioning PlaceholderForeground. -->
-        <!-- <Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" /> -->
+        <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -229,6 +309,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                        </contract5Present:ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
@@ -241,6 +324,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                        </contract5Present:ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -249,6 +335,9 @@
                                 <VisualState x:Name="Focused">
 
                                     <Storyboard>
+                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                        </contract5Present:ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -370,11 +459,10 @@
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="2"
-                            Margin="0,0,8,0"
-                            Foreground="{ThemeResource TextControlButtonForeground}"
+                            Margin="{StaticResource NumberBoxPopupIndicatorMargin}"
+                            Foreground="{ThemeResource NumberBoxPopupIndicatorForeground}"
                             VerticalAlignment="Center"
                             HorizontalAlignment="Center"
-                            FontStyle="Normal"
                             FontSize="12"
                             Text="&#xEC8F;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
