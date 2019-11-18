@@ -61,7 +61,7 @@
     <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
-    <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
+    <FeatureProgressRingEnabled>false</FeatureProgressRingEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />

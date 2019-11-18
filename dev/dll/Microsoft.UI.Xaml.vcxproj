@@ -422,7 +422,7 @@
       <PRIResource Remove="@(PRIResource)" />
     </ItemGroup>
     <!-- Use CreateItem to expand all the ** to individual full paths -->
-    <CreateItem Include="@(PRIResourceExpanded -&gt; '%(Replaced)')">
+    <CreateItem Include="@(PRIResourceExpanded -> '%(Replaced)')">
       <Output TaskParameter="Include" ItemName="PRIResource" />
     </CreateItem>
     <Message Text="Expanded PRIResource = @(PRIResource)" />

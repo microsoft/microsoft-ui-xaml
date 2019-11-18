@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -43,9 +43,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicTest()
+        public void ChangeValueTest()
         {
-            Log.Comment("ProgressRing Basic Test");
+            using (var setup = new TestSetupHelper("ProgressRing Tests"))
+            {
+                Log.Comment("Changing Value of ProgressRing");
+
+                UIObject testProgressBar = FindElement.ByName("TestProgressRing");
+                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
+
+                double oldValue = Convert.ToDouble(valueText.DocumentText);
+
+                Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
+                changeValueButton.InvokeAndWait();
+
+                double newValue = Convert.ToDouble(valueText.DocumentText);
+                double diff = Math.Abs(oldValue - newValue);
+
+                Log.Comment("ProgressRing value changed");
+                Verify.IsGreaterThan(diff, Convert.ToDouble(0));
+            }
         }
     }
 }

@@ -8,7 +8,6 @@
 
 CppWinRTActivatableClassWithDPFactory(ProgressRing)
 
-GlobalDependencyProperty ProgressRingProperties::s_PlaceholderProperty{ nullptr };
 GlobalDependencyProperty ProgressRingProperties::s_StrokeThicknessProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
@@ -18,17 +17,6 @@ ProgressRingProperties::ProgressRingProperties()
 
 void ProgressRingProperties::EnsureProperties()
 {
-    if (!s_PlaceholderProperty)
-    {
-        s_PlaceholderProperty =
-            InitializeDependencyProperty(
-                L"Placeholder",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::ProgressRing>(),
-                false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
-    }
     if (!s_StrokeThicknessProperty)
     {
         s_StrokeThicknessProperty =
@@ -44,7 +32,6 @@ void ProgressRingProperties::EnsureProperties()
 
 void ProgressRingProperties::ClearProperties()
 {
-    s_PlaceholderProperty = nullptr;
     s_StrokeThicknessProperty = nullptr;
 }
 
@@ -54,16 +41,6 @@ void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
 {
     auto owner = sender.as<winrt::ProgressRing>();
     winrt::get_self<ProgressRing>(owner)->OnStrokeThicknessPropertyChanged(args);
-}
-
-void ProgressRingProperties::Placeholder(winrt::IInspectable const& value)
-{
-    static_cast<ProgressRing*>(this)->SetValue(s_PlaceholderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
-winrt::IInspectable ProgressRingProperties::Placeholder()
-{
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_PlaceholderProperty));
 }
 
 void ProgressRingProperties::StrokeThickness(double value)

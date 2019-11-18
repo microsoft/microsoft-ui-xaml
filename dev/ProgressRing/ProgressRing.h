@@ -16,7 +16,6 @@ class ProgressRing :
 
 public:
     ProgressRing();
-    ~ProgressRing() {}
 
     // IFrameworkElement
     void OnApplyTemplate();
@@ -27,25 +26,19 @@ public:
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
-    void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void RenderSegment();
     void RenderAll();
 
-    winrt::Windows::Foundation::Size ComputeEllipseSize(const double thickness);
-
-    winrt::Grid::Loaded_revoker m_layoutRootLoadedRevoker{};
-    winrt::Path::Loaded_revoker m_outlineFigureRevoker{};
-    winrt::Path::Loaded_revoker m_outlineArcRevoker{};
-    winrt::Path::Loaded_revoker m_barFigureRevoker{};
-    winrt::Path::Loaded_revoker m_barArcRevoker{};
+    static winrt::Size ComputeEllipseSize(const double thickness, const double width, const double height);
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
-    tracker_ref<winrt::Windows::UI::Xaml::Media::PathFigure> m_outlineFigure{ this };
-    tracker_ref<winrt::Windows::UI::Xaml::Media::ArcSegment> m_outlineArc{ this };
-    tracker_ref<winrt::Windows::UI::Xaml::Media::PathFigure> m_barFigure{ this };
-    tracker_ref<winrt::Windows::UI::Xaml::Media::ArcSegment> m_barArc{ this };
+    tracker_ref<winrt::PathFigure> m_outlineFigure{ this };
+    tracker_ref<winrt::ArcSegment> m_outlineArc{ this };
+    tracker_ref<winrt::PathFigure> m_barFigure{ this };
+    tracker_ref<winrt::ArcSegment> m_barArc{ this };
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
     static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };

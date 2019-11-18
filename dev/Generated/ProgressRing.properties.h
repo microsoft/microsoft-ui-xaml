@@ -9,16 +9,11 @@ class ProgressRingProperties
 public:
     ProgressRingProperties();
 
-    void Placeholder(winrt::IInspectable const& value);
-    winrt::IInspectable Placeholder();
-
     void StrokeThickness(double value);
     double StrokeThickness();
 
-    static winrt::DependencyProperty PlaceholderProperty() { return s_PlaceholderProperty; }
     static winrt::DependencyProperty StrokeThicknessProperty() { return s_StrokeThicknessProperty; }
 
-    static GlobalDependencyProperty s_PlaceholderProperty;
     static GlobalDependencyProperty s_StrokeThicknessProperty;
 
     static void EnsureProperties();
