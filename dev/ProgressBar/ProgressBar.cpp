@@ -108,7 +108,9 @@ void ProgressBar::SetProgressBarIndicatorWidth()
             const double minimum = Minimum();
             const auto padding = Padding();
 
-            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true); // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition in ProgressBar.xaml when reverting back to previous state
+            // Adds "Updating" state in between to trigger RepositionThemeAnimation Visual Transition
+            // in ProgressBar.xaml when reverting back to previous state
+            winrt::VisualStateManager::GoToState(*this, s_UpdatingStateName, true); 
 
             if (IsIndeterminate())
             {
@@ -150,7 +152,9 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
             return std::make_tuple(0.0f, 0.0f);
         }();
 
-        templateSettings->ContainerAnimationStartPosition(width * -0.4);
+        const double indicatorWidthMultiplier = -0.4;
+
+        templateSettings->ContainerAnimationStartPosition(width * indicatorWidthMultiplier);
         templateSettings->ContainerAnimationEndPosition(width);
 
         const auto rectangle = [width, height, padding = Padding()]()
