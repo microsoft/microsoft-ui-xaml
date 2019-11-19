@@ -46,13 +46,6 @@ public:
     int GetLargerColumns();
 
 private:
-    enum class MissStrategy
-    {
-        next,
-        previous,
-        aroundLeft,
-        aroundRight,
-    };
 
     void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
@@ -62,7 +55,6 @@ private:
     void OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
     void OnRepeaterCollectionChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void OnSelectionChanged(const winrt::IInspectable&, const winrt::SelectionModelSelectionChangedEventArgs& args);
     void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
@@ -75,19 +67,20 @@ private:
     void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
-    void UpdateSelectionDPs(const int newIndex);
+    void Select(int index);
+    winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
 
     winrt::FindNextElementOptions GetFindNextElementOptions();
     bool MoveFocusNext();
     bool MoveFocusPrevious();
-    bool MoveFocus(int initialIndexIncrement, MissStrategy missStrategy);
+    bool MoveFocus(int initialIndexIncrement);
 
     bool m_isControlDown{ false };
+    int m_selectedIndex{ -1 };
+    bool m_currentlySelecting{ false };
 
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 
-    winrt::SelectionModel m_selectionModel{};
-    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
     winrt::Control::Loaded_revoker m_repeaterLoadedRevoker{};
     winrt::ItemsSourceView::CollectionChanged_revoker m_itemsSourceChanged{};
     winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};

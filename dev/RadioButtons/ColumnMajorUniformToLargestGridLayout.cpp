@@ -133,10 +133,16 @@ void ColumnMajorUniformToLargestGridLayout::OnRowSpacingPropertyChanged(const wi
     InvalidateMeasure();
 }
 
-void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    auto const maxColumns = MaximumColumns();
+    if (maxColumns <= 0)
+    {
+        throw winrt::hresult_invalid_argument();
+    }
     InvalidateMeasure();
 }
+
 
 //Testhooks helpers, only function while m_testHooksEnabled == true
 
