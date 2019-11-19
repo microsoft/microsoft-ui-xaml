@@ -18,7 +18,7 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItem::OnNavigationViewListPositionChanged()
+void NavigationViewItem::OnNavigationViewPositionChanged()
 {
     UpdateVisualStateNoTransition();
 }
@@ -159,7 +159,7 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     winrt::VisualStateManager::GoToState(*this, stateName, false /*useTransitions*/);
 }
 
-void NavigationViewItem::UpdateVisualStateForNavigationViewListPositionChange()
+void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
 {
     auto position = Position();
     auto stateName = c_OnLeftNavigation;
@@ -240,7 +240,7 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
     if (!m_appliedTemplate)
         return;
 
-    UpdateVisualStateForNavigationViewListPositionChange();
+    UpdateVisualStateForNavigationViewPositionChange();
 
     bool shouldShowIcon = ShouldShowIcon();
     bool shouldShowContent = ShouldShowContent();

@@ -26,11 +26,6 @@ public:
     static GlobalDependencyProperty s_IconProperty;
     static GlobalDependencyProperty s_SelectsOnInvokedProperty;
 
-    winrt::event_token NavigationViewItemInvoked(winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::NavigationViewItemInvokedEventArgs> const& value);
-    void NavigationViewItemInvoked(winrt::event_token const& token);
-
-    event_source<winrt::TypedEventHandler<winrt::NavigationViewItem, winrt::NavigationViewItemInvokedEventArgs>> m_navigationViewItemInvokedEventSource;
-
     static void EnsureProperties();
     static void ClearProperties();
 
