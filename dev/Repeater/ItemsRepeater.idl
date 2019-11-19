@@ -543,6 +543,7 @@ runtimeclass IndexPath : Windows.Foundation.IStringable
 [default_interface]
 runtimeclass SelectionModelSelectionChangedEventArgs
 {
+    Windows.Foundation.Collections.IVectorView<IndexPath> PreviousSelectedIndices{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
