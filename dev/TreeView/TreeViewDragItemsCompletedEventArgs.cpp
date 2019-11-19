@@ -8,7 +8,7 @@
 
 void TreeViewDragItemsCompletedEventArgs::DragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args)
 {
-    m_dragItemsCompletedEventArgs = args;
+    m_dragItemsCompletedEventArgs = std::forward<const winrt::DragItemsCompletedEventArgs>(args);
 }
 
 DataPackageOperation TreeViewDragItemsCompletedEventArgs::DropResult() const

@@ -66,7 +66,7 @@ void TreeViewItem::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 
 void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 {
-    if (args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
+    if (!args.Handled() && args.AcceptedOperation() == winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move)
     {
         winrt::TreeViewItem droppedOnItem = *this;
         auto treeView = AncestorTreeView();
@@ -127,7 +127,7 @@ void TreeViewItem::OnDrop(winrt::DragEventArgs const& args)
 void TreeViewItem::OnDragOver(winrt::DragEventArgs const& args)
 {
     auto treeView = AncestorTreeView();
-    if (treeView)
+    if (treeView && !args.Handled())
     {
         auto treeViewList = treeView->ListControl();
         winrt::TreeViewItem draggedOverItem = *this;
@@ -179,7 +179,7 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
     args.DragUIOverride().IsGlyphVisible(true);
 
     auto treeView = AncestorTreeView();
-    if (treeView && treeView->CanReorderItems())
+    if (treeView && treeView->CanReorderItems() && !args.Handled())
     {
         auto treeViewList = treeView->ListControl();
         winrt::TreeViewNode draggedNode = treeViewList->DraggedTreeViewNode();
@@ -230,15 +230,18 @@ void TreeViewItem::OnDragEnter(winrt::DragEventArgs const& args)
 
 void TreeViewItem::OnDragLeave(winrt::DragEventArgs const& args)
 {
-    if (auto treeView = AncestorTreeView())
+    if (!args.Handled())
     {
-        auto treeViewList = treeView->ListControl();
-        treeViewList->SetDraggedOverItem(nullptr);
-    }
+        if (auto treeView = AncestorTreeView())
+        {
+            auto treeViewList = treeView->ListControl();
+            treeViewList->SetDraggedOverItem(nullptr);
+        }
 
-    if (m_expandContentTimer)
-    {
-        m_expandContentTimer.get().Stop();
+        if (m_expandContentTimer)
+        {
+            m_expandContentTimer.get().Stop();
+        }
     }
 
     __super::OnDragLeave(args);
