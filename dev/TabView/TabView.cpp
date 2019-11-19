@@ -531,7 +531,26 @@ void TabView::UpdateTabWidths()
                     if (auto listview = m_listView.get())
                     {
                         listview.MaxWidth(availableWidth);
-                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
+
+                        // Calculate if the scroll buttons should be visible.
+                        auto requiredWidth = 0.0;
+                        for (auto item : TabItems())
+                        {
+                            auto tvi = item.try_as<winrt::TabViewItem>();
+                            if (!tvi)
+                            {
+                                tvi = ContainerFromItem(item).as<winrt::TabViewItem>();
+                            }
+
+                            if (tvi)
+                            {
+                                requiredWidth += tvi.ActualWidth();
+                            }
+                        }
+
+                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, requiredWidth > availableWidth
+                            ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
+                            : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
                     }
                 }
                 else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
