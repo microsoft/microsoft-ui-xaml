@@ -7,8 +7,14 @@ unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyOb
 {
     ProgressBarTemplateSettings();
 
+    Double ContainerAnimationStartPosition;
+    static Windows.UI.Xaml.DependencyProperty ContainerAnimationStartPositionProperty{ get; };
+
     Double ContainerAnimationEndPosition;
     static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPositionProperty{ get; };
+
+    Double IndicatorLengthDelta;
+    static Windows.UI.Xaml.DependencyProperty IndicatorLengthDeltaProperty{ get; };
 
     Windows.UI.Xaml.Media.RectangleGeometry ClipRect;
     static Windows.UI.Xaml.DependencyProperty ClipRectProperty{ get; };
