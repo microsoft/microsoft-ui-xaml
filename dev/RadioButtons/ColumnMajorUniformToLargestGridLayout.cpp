@@ -9,12 +9,6 @@
 
 CppWinRTActivatableClassWithBasicFactory(ColumnMajorUniformToLargestGridLayout);
 
-// IItemsControlOverrides
-
-ColumnMajorUniformToLargestGridLayout::ColumnMajorUniformToLargestGridLayout()
-{
-}
-
 winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
     winrt::NonVirtualizingLayoutContext const& context,
     winrt::Size const& availableSize)
@@ -25,19 +19,33 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
         MUX_ASSERT(maxColumns > 0);
         auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(maxColumns)));
 
-        for (auto const child : children)
+        m_largestChildSize = [children, availableSize]()
         {
-            child.Measure(availableSize);
-        }
-        auto const largestChildSize = LargestChildSize(context);
+            auto largestChildWidth = 0.0f;
+            auto largestChildHeight = 0.0f;
+            for (auto const child : children)
+            {
+                child.Measure(availableSize);
+                auto const desiredSize = child.DesiredSize();
+                if (desiredSize.Width > largestChildWidth)
+                {
+                    largestChildWidth = desiredSize.Width;
+                }
+                if (desiredSize.Height > largestChildHeight)
+                {
+                    largestChildHeight = desiredSize.Height;
+                }
+            }
+            return winrt::Size(largestChildWidth, largestChildHeight);
+        }();
 
         auto const actualColumnCount = static_cast<float>(std::min(
             static_cast<double>(maxColumns),
             static_cast<double>(children.Size())));
         return winrt::Size(
-            (largestChildSize.Width * actualColumnCount) + 
+            (m_largestChildSize.Width * actualColumnCount) + 
             (ColumnSpacing() * (actualColumnCount - 1)),
-            (largestChildSize.Height * maxItemsPerColumn) +
+            (m_largestChildSize.Height * maxItemsPerColumn) +
             (RowSpacing() * (maxItemsPerColumn - 1))
         );
     }
@@ -56,7 +64,6 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
         auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<double>(itemCount) / static_cast<double>(maxColumns)));
         auto const numberOfColumnsWithExtraElements = static_cast<int>(itemCount % maxColumns);
 
-        auto const largestChildSize = LargestChildSize(context);
         auto const columnSpacing = ColumnSpacing();
         auto const rowSpacing = RowSpacing();
 
@@ -72,13 +79,13 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
             {
                 if (index % (minitemsPerColumn + 1) == minitemsPerColumn)
                 {
-                    horizontalOffset += largestChildSize.Width + columnSpacing;
+                    horizontalOffset += m_largestChildSize.Width + columnSpacing;
                     verticalOffset = 0.0;
                     column++;
                 }
                 else
                 {
-                    verticalOffset += largestChildSize.Height + rowSpacing;
+                    verticalOffset += m_largestChildSize.Height + rowSpacing;
                 }
             }
             else
@@ -86,13 +93,13 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
                 auto const indexAfterExtraLargeColumns = index - (numberOfColumnsWithExtraElements * (minitemsPerColumn + 1));
                 if (indexAfterExtraLargeColumns % minitemsPerColumn == minitemsPerColumn - 1)
                 {
-                    horizontalOffset += largestChildSize.Width + columnSpacing;
+                    horizontalOffset += m_largestChildSize.Width + columnSpacing;
                     verticalOffset = 0.0;
                     column++;
                 }
                 else
                 {
-                    verticalOffset += largestChildSize.Height + rowSpacing;
+                    verticalOffset += m_largestChildSize.Height + rowSpacing;
                 }
             }
             index++;
@@ -114,25 +121,6 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
         }
     }
     return finalSize;
-}
-
-winrt::Size ColumnMajorUniformToLargestGridLayout::LargestChildSize(winrt::NonVirtualizingLayoutContext const& context)
-{
-    auto largestChildWidth = 0.0f;
-    auto largestChildHeight = 0.0f;
-    for (auto const child : context.Children())
-    {
-        auto const desiredSize = child.DesiredSize();
-        if (desiredSize.Width > largestChildWidth)
-        {
-            largestChildWidth = desiredSize.Width;
-        }
-        if (desiredSize.Height > largestChildHeight)
-        {
-            largestChildHeight = desiredSize.Height;
-        }
-    }
-    return winrt::Size(largestChildWidth, largestChildHeight);
 }
 
 void ColumnMajorUniformToLargestGridLayout::OnColumnSpacingPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)

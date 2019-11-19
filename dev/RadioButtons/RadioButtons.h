@@ -9,6 +9,11 @@
 #include "RadioButtons.properties.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"
 
+// This is an object that RadioButtons intends to attach to its child RadioButton elements.
+// It contains the revokers for the events on RadioButton that RadioButttons listens to
+// in order to manage selection.  Attaching the revokers to the object allows the parent
+// RadioButtons the ability to "Set it and forget it" since the lifetime of the RadioButton
+// and these event registrations are now intrically linked.
 class ChildHandlers : public winrt::implements<ChildHandlers, winrt::IInspectable>
 {
 public:
@@ -60,7 +65,7 @@ private:
     void OnSelectionChanged(const winrt::IInspectable&, const winrt::SelectionModelSelectionChangedEventArgs& args);
     void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnChildKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
+    void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnChildGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
 
     void UpdateItemsSource();
@@ -72,25 +77,10 @@ private:
 
     void UpdateSelectionDPs(const int newIndex);
 
+    winrt::FindNextElementOptions GetFindNextElementOptions();
     bool MoveFocusNext();
     bool MoveFocusPrevious();
-    bool MoveFocusRight(const winrt::UIElement& focusedElement);
-    bool MoveFocusLeft(const winrt::UIElement& focusedElement);
     bool MoveFocus(int initialIndexIncrement, MissStrategy missStrategy);
-    static std::tuple<bool, int, int> GetNextIndex(
-        MissStrategy missStrategy,
-        int focusedIndex,
-        const std::vector<int>& visited,
-        int originalFocusedIndex,
-        int fromIndex,
-        int distance,
-        int itemCount,
-        int maxColumns);
-
-    static int ColumnFromIndex(int index, int itemCount, int maxColumns);
-    static int IncrementForRightMove(int index, int itemCount, int maxColumns);
-    static int IncrementForLeftMove(int index, int itemCount, int maxColumns);
-    static int IncrementForHorizontalMove(int index, int itemCount, int maxColumns, int numberOfSmallerColumnsToAccept);
 
     bool m_isControlDown{ false };
 

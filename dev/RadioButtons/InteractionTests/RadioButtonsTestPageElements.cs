@@ -1,4 +1,8 @@
-﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+﻿using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
+using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
+using System;
+using System.Numerics;
+using Common;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -9,7 +13,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
+using Microsoft.Windows.Apps.Test.Automation;
 using Microsoft.Windows.Apps.Test.Foundation.Controls;
+using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 using Microsoft.Windows.Apps.Test.Foundation;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
@@ -99,6 +105,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref SelectedItemTextBlock, "SelectedItemTextBlock");
         }
         private TextBlock SelectedItemTextBlock;
+        
+        public CheckBox GetRadioButtonsHasFocusCheckBox()
+        {
+            return GetElement(ref RadioButtonsHasFocusCheckBox, "RadioButtonsHasFocusCheckBox");
+        }
+        private CheckBox RadioButtonsHasFocusCheckBox;
 
         public TextBlock GetFocusedIndexTextBlock()
         {
@@ -164,9 +176,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             if (element == null)
             {
-                //Log.Comment("Find the " + elementName);
+                Log.Comment("Find the " + elementName);
                 element = FindElement.ByNameOrId<T>(elementName);
-                //Verify.IsNotNull(element);
+                Verify.IsNotNull(element);
             }
             return element;
         }

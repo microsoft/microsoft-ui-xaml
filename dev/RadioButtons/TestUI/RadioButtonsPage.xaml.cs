@@ -68,12 +68,23 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TestRadioButtons_GotFocus(object sender, RoutedEventArgs e)
+        private void RootGotFocus(object sender, RoutedEventArgs e)
         {
             FocusedItemTextBlock.Text = e.OriginalSource.ToString();
+        }
+
+        private void TestRadioButtons_GotFocus(object sender, RoutedEventArgs e)
+        {
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
             FocusedIndexTextBlock.Text = repeater.GetElementIndex((UIElement)e.OriginalSource).ToString();
+            RadioButtonsHasFocusCheckBox.IsChecked = true;
+        }
+
+        private void TestRadioButtons_LostFocus(object sender, RoutedEventArgs e)
+        {
+            FocusedIndexTextBlock.Text = "-1";
+            RadioButtonsHasFocusCheckBox.IsChecked = false;
         }
 
         private void SetMaximumColumnsButton_Click(object sender, RoutedEventArgs e)

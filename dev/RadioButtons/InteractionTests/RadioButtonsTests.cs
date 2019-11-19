@@ -201,23 +201,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TapOnItem(1);
                 VerifySelectedFocusedIndex(1);
                 KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(5);
+                VerifySelectedFocusedIndex(10);
                 TapOnItem(2);
                 VerifySelectedFocusedIndex(2);
                 KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(11);
+                TapOnItem(5);
                 KeyboardHelper.PressKey(Key.Up);
+                VerifySelectedFocusedIndex(4);
+                KeyboardHelper.PressKey(Key.Down);
                 VerifySelectedFocusedIndex(5);
                 KeyboardHelper.PressKey(Key.Down);
                 VerifySelectedFocusedIndex(8);
                 TapOnItem(8);
                 VerifySelectedFocusedIndex(10);
                 KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(5);
+                VerifySelectedFocusedIndex(1);
                 TapOnItem(9);
                 VerifySelectedFocusedIndex(11);
                 KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(2);
             }
         }
 
@@ -238,15 +241,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TapOnItem(0);
                 VerifySelectedFocusedIndex(0);
                 KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(9);
                 TapOnItem(1);
                 VerifySelectedFocusedIndex(1);
                 KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(10);
                 TapOnItem(2);
                 VerifySelectedFocusedIndex(2);
                 KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(11);
                 TapOnItem(3);
                 VerifySelectedFocusedIndex(3);
                 KeyboardHelper.PressKey(Key.Right);
@@ -258,15 +261,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 TapOnItem(6);
                 VerifySelectedFocusedIndex(9);
                 KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(4);
+                VerifySelectedFocusedIndex(0);
                 TapOnItem(7);
                 VerifySelectedFocusedIndex(10);
                 KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(8);
+                VerifySelectedFocusedIndex(1);
                 TapOnItem(8);
                 VerifySelectedFocusedIndex(11);
                 KeyboardHelper.PressKey(Key.Left);
+                VerifySelectedFocusedIndex(2);
+                TapOnItem(9);
+                VerifySelectedFocusedIndex(12);
+                KeyboardHelper.PressKey(Key.Left);
                 VerifySelectedFocusedIndex(8);
+            }
+        }
+
+        [TestMethod]
+        public void GamepadCanEscape()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        bool useBackup = type == RadioButtonsSourceType.String;
+                        SetNumberOfColumns(3);
+
+                        TapOnItem(9, useBackup);
+                        VerifySelectedFocusedIndex(9);
+                        GamepadHelper.PressButton(null, GamepadButton.DPadDown);
+                        VerifyRadioButtonsHasFocus(false);
+
+                        TapOnItem(0, useBackup);
+                        VerifySelectedFocusedIndex(0);
+                        GamepadHelper.PressButton(null, GamepadButton.DPadUp);
+                        VerifyRadioButtonsHasFocus(false);
+
+                        TapOnItem(7, useBackup);
+                        VerifySelectedFocusedIndex(7);
+                        GamepadHelper.PressButton(null, GamepadButton.DPadRight);
+                        VerifyRadioButtonsHasFocus(false);
+                    }
+                }
             }
         }
 
@@ -478,6 +519,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             VerifySelectedIndex(index);
             VerifyFocusedIndex(index);
+        }
+
+        void VerifyRadioButtonsHasFocus(bool hasFocus)
+        {
+            Verify.AreEqual(hasFocus, elements.GetRadioButtonsHasFocusCheckBox().ToggleState == ToggleState.On);
         }
 
         void VerifySelectedIndex(int index)

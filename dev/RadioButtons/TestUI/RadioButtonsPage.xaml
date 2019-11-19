@@ -12,7 +12,7 @@
     xmlns:contract5Available="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract, 5)"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12" GotFocus="RootGotFocus">
         <Grid BorderThickness="1" Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -21,7 +21,7 @@
 
             <Grid Grid.Column="0" Margin="5" MinWidth="500" MaxWidth="800">
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
-                    <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus"/>
+                    <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
                 </ScrollViewer>
             </Grid>
             <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
@@ -114,6 +114,8 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <!--10-->
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -125,18 +127,20 @@
                             <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
                             <TextBlock Grid.Column="0" Grid.Row="2">Selected Item:</TextBlock>
                             <TextBlock x:Name="SelectedItemTextBlock" AutomationProperties.Name="SelectedItemTextBlock" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left">null</TextBlock>
-                            <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3">RadioButtons Outputs</TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="4">Focused Index:</TextBlock>
-                            <TextBlock x:Name="FocusedIndexTextBlock" AutomationProperties.Name="FocusedIndexTextBlock" Grid.Row="4" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="5">Focused Item:</TextBlock>
-                            <TextBlock x:Name="FocusedItemTextBlock" AutomationProperties.Name="FocusedItemTextBlock" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left">null</TextBlock>
-                            <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="6">Layout Outputs</TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="7"># of Rows:</TextBlock>
-                            <TextBlock x:Name="LayoutNumberOfRowsTextBlock" AutomationProperties.Name="LayoutNumberOfRowsTextBlock" Grid.Row="7" Grid.Column="1" HorizontalAlignment="Left">10</TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="8"># of Columns:</TextBlock>
-                            <TextBlock x:Name="LayoutNumberOfColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfColumnsTextBlock" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Left">1</TextBlock>
-                            <TextBlock Grid.Column="0" Grid.Row="9"># of larger Columns:</TextBlock>
-                            <TextBlock x:Name="LayoutNumberOfLargerColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfLargerColumnsTextBlock" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Left">0</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="3">Has Focus:</TextBlock>
+                            <CheckBox x:Name="RadioButtonsHasFocusCheckBox" AutomationProperties.Name="SelectedItemTextBlock" IsEnabled="false" Grid.Column="1" Grid.Row="3"/>
+                            <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="4">Focus Outputs</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="5">Focused Index:</TextBlock>
+                            <TextBlock x:Name="FocusedIndexTextBlock" AutomationProperties.Name="FocusedIndexTextBlock" Grid.Row="5" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="6">Focused Item:</TextBlock>
+                            <TextBlock x:Name="FocusedItemTextBlock" AutomationProperties.Name="FocusedItemTextBlock" Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left">null</TextBlock>
+                            <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="7">Layout Outputs</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="8"># of Rows:</TextBlock>
+                            <TextBlock x:Name="LayoutNumberOfRowsTextBlock" AutomationProperties.Name="LayoutNumberOfRowsTextBlock" Grid.Row="8" Grid.Column="1" HorizontalAlignment="Left">10</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="9"># of Columns:</TextBlock>
+                            <TextBlock x:Name="LayoutNumberOfColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfColumnsTextBlock" Grid.Row="9" Grid.Column="1" HorizontalAlignment="Left">1</TextBlock>
+                            <TextBlock Grid.Column="0" Grid.Row="10"># of larger Columns:</TextBlock>
+                            <TextBlock x:Name="LayoutNumberOfLargerColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfLargerColumnsTextBlock" Grid.Row="10" Grid.Column="1" HorizontalAlignment="Left">0</TextBlock>
                         </Grid>
                         
                     </ScrollViewer>

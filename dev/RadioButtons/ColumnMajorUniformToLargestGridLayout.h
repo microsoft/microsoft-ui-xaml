@@ -14,7 +14,7 @@ class ColumnMajorUniformToLargestGridLayout :
     public ColumnMajorUniformToLargestGridLayoutProperties
 {
 public:
-    ColumnMajorUniformToLargestGridLayout();
+    ColumnMajorUniformToLargestGridLayout() = default;
     winrt::Size MeasureOverride(
         winrt::NonVirtualizingLayoutContext const& context,
         winrt::Size const& availableSize);
@@ -35,7 +35,7 @@ public:
     void LayoutChanged(winrt::event_token const& token);
 
 private:
-    winrt::Size LargestChildSize(const winrt::NonVirtualizingLayoutContext& context);
+    winrt::Size m_largestChildSize{ 0,0 };
 
     //Testhooks helpers, only function while m_testHooksEnabled == true
     bool m_testHooksEnabled{ false };
