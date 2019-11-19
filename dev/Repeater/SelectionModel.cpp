@@ -580,15 +580,18 @@ void SelectionModel::ClearSelection(bool resetAnchor, bool raiseSelectionChanged
 
 void SelectionModel::OnSelectionChanged()
 {
-    auto const previousSelectedIndicies = winrt::IVectorView<winrt::IndexPath>(m_selectedIndicesCached);
-
     m_selectedIndicesCached = nullptr;
     m_selectedItemsCached = nullptr;
 
     // Raise SelectionChanged event
     if (m_selectionChangedEventSource)
     {
-        m_selectionChangedEventSource(*this, SelectionModelSelectionChangedEventArgs(previousSelectedIndicies));
+        if (!m_selectionChangedEventArgs)
+        {
+            m_selectionChangedEventArgs = tracker_ref<winrt::SelectionModelSelectionChangedEventArgs>(this, winrt::make<SelectionModelSelectionChangedEventArgs>());
+        }
+
+        m_selectionChangedEventSource(*this, m_selectionChangedEventArgs.get());
     }
 
     RaisePropertyChanged(L"SelectedIndex");

@@ -9,12 +9,4 @@ class SelectionModelSelectionChangedEventArgs :
     public winrt::implementation::SelectionModelSelectionChangedEventArgsT<SelectionModelSelectionChangedEventArgs>
 {
 public:
-    SelectionModelSelectionChangedEventArgs() = default;
-    SelectionModelSelectionChangedEventArgs(
-        winrt::IVectorView<winrt::IndexPath> previousSelectedIndices);
-
-    winrt::IVectorView<winrt::IndexPath> PreviousSelectedIndices();
-
-private:
-    winrt::IVectorView<winrt::IndexPath> m_previousSelectedIndices;
 };

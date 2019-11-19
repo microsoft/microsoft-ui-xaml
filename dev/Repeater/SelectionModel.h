@@ -116,6 +116,7 @@ private:
 
     // Cached Event args to avoid creation cost every time
     tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs> m_childrenRequestedEventArgs{ this };
+    tracker_ref<winrt::SelectionModelSelectionChangedEventArgs> m_selectionChangedEventArgs{ this };
 
     // use just one instance of a leaf node to avoid creating a bunch of these.
     std::shared_ptr<SelectionNode> m_leafNode;

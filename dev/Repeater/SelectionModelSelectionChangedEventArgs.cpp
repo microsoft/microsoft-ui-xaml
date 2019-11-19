@@ -6,15 +6,6 @@
 #include "ItemsRepeater.common.h"
 #include "SelectionModelSelectionChangedEventArgs.h"
 
-SelectionModelSelectionChangedEventArgs::SelectionModelSelectionChangedEventArgs(winrt::IVectorView<winrt::IndexPath> previousSelectedIndices) :
-    m_previousSelectedIndices(previousSelectedIndices)
-{
-}
-
 #pragma region ISelectionModelSelectionChangedEventArgs
-winrt::IVectorView<winrt::IndexPath> SelectionModelSelectionChangedEventArgs::PreviousSelectedIndices()
-{
-    return m_previousSelectedIndices;
-}
 
 #pragma endregion
