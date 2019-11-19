@@ -544,6 +544,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
                     ClearElementImpl(element);
                 }
             }
+
+            Children().Clear();
         }
 
         InvalidateMeasure();
