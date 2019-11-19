@@ -2323,9 +2323,13 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
 {
     if (prevItem && prevItem != nextItem)
     {
-        auto scopeGuard = gsl::finally([this]()
+        bool setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange;
+        auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse]()
             {
-                m_shouldIgnoreNextSelectionChange = false;
+                if (setIgnoreNextSelectionChangeToFalse)
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                }
             });
         m_shouldIgnoreNextSelectionChange = true;
         ChangeSelectStatusForItem(prevItem, false /*selected*/);
@@ -3539,19 +3543,27 @@ void NavigationView::UpdateSelectionForMenuItems()
     {
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
+            bool foundFirstSelected = false;
             for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
             {
                 if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
                 {
                     if (item.IsSelected())
                     {
-                        auto scopeGuard = gsl::finally([this]()
-                            {
-                                m_shouldIgnoreNextSelectionChange = false;
-                            });
-                        m_shouldIgnoreNextSelectionChange = true;
-                        SelectedItem(item);
-                        break;
+                        if (!foundFirstSelected)
+                        {
+                            auto scopeGuard = gsl::finally([this]()
+                                {
+                                    m_shouldIgnoreNextSelectionChange = false;
+                                });
+                            m_shouldIgnoreNextSelectionChange = true;
+                            SelectedItem(item);
+                            foundFirstSelected = true;
+                        }
+                        else
+                        {
+                            item.IsSelected(false);
+                        }
                     }
                 }
             }
