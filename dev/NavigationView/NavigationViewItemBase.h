@@ -53,24 +53,15 @@ public:
         __super::OnKeyUp(args);
     };
 
-    virtual void OnNavigationViewListPositionChanged() {}
+    virtual void OnNavigationViewPositionChanged() {}
 
     NavigationViewListPosition Position();
     void Position(NavigationViewListPosition value);
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
-    winrt::NavigationViewList GetNavigationViewList();
-
-    void SetNavigationViewParent(winrt::NavigationView const& navigationView);
-
-protected:
-    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
+    winrt::ItemsRepeater GetNavigationViewRepeater();
 
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
-
-    // Event Tokens
-    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
-
 };

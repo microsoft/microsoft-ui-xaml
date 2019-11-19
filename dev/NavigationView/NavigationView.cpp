@@ -780,8 +780,6 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
-        // Old info propagation (remove)
-        //nvibImpl->SetNavigationViewParent(*this);
 
         // Visual state info propagation
         if (IsTopNavigationView())
@@ -809,7 +807,6 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
-            //nviRevokers->pointerPressedRevoker = nvi.NavigationViewItemInvoked(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemInvoked });
             nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
             nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
             nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
@@ -873,9 +870,6 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
         m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
         m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
-
-        auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
-        nvibImpl->SetNavigationViewParent(*this);
 
         // Do localization for settings item label and Automation Name
         auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);

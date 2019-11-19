@@ -34,7 +34,7 @@ void NavigationViewItemSeparator::OnApplyTemplate()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItemSeparator::OnNavigationViewListPositionChanged()
+void NavigationViewItemSeparator::OnNavigationViewPositionChanged()
 {
     UpdateVisualState(false /*useTransition*/);
 }

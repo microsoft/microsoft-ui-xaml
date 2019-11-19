@@ -19,10 +19,6 @@ public:
 
     NavigationViewItem();
 
-    // These functions are ambiguous with NavigationViewItemBase, disambiguate 
-    //using NavigationViewItemProperties::EnsureProperties;
-    //using NavigationViewItemProperties::ClearProperties;
-
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
@@ -52,7 +48,7 @@ public:
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
-    void OnNavigationViewListPositionChanged() override;
+    void OnNavigationViewPositionChanged() override;
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -62,7 +58,7 @@ private:
     void UpdateIsClosedCompact();
 
     void UpdateVisualStateForIconAndContent(bool showIcon, bool showContent);
-    void UpdateVisualStateForNavigationViewListPositionChange();
+    void UpdateVisualStateForNavigationViewPositionChange();
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
 
@@ -78,11 +74,6 @@ private:
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
-
-    //winrt::NavigationViewItem::NavigationViewItemInvoked_revoker m_itemInvokedEventRevoker{};
-
-    //winrt::event_token m_itemInvokedEventToken{};
-    //event_source<winrt::EventHandler<winrt::NavigationViewItem>> m_itemInvokedSource{ this };
 
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     NavigationViewItemHelper<NavigationViewItem> m_helper{ this };
