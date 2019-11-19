@@ -60,9 +60,12 @@ private:
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
+    void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
+    void CoerceMinimum();
+    void CoerceMaximum();
     void CoerceValue();
     void UpdateTextToValue();
 
@@ -72,6 +75,9 @@ private:
     void StepValueDown() { StepValue(false); }
 
     bool IsInBounds(double value);
+
+    bool m_valueUpdating{ false };
+    bool m_textUpdating{ false };
 
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 

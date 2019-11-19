@@ -15,8 +15,11 @@ public:
     void BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value);
     winrt::NumberBoxBasicValidationMode BasicValidationMode();
 
-    void Header(winrt::hstring const& value);
-    winrt::hstring Header();
+    void Header(winrt::IInspectable const& value);
+    winrt::IInspectable Header();
+
+    void HeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplate();
 
     void HyperScrollEnabled(bool value);
     bool HyperScrollEnabled();
@@ -51,6 +54,7 @@ public:
     static winrt::DependencyProperty AcceptsCalculationProperty() { return s_AcceptsCalculationProperty; }
     static winrt::DependencyProperty BasicValidationModeProperty() { return s_BasicValidationModeProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
+    static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty HyperScrollEnabledProperty() { return s_HyperScrollEnabledProperty; }
     static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
     static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
@@ -65,6 +69,7 @@ public:
     static GlobalDependencyProperty s_AcceptsCalculationProperty;
     static GlobalDependencyProperty s_BasicValidationModeProperty;
     static GlobalDependencyProperty s_HeaderProperty;
+    static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_HyperScrollEnabledProperty;
     static GlobalDependencyProperty s_MaximumProperty;
     static GlobalDependencyProperty s_MinimumProperty;

@@ -46,7 +46,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("1")]
     Double StepFrequency;
 
-    String Header;
+    Object Header;
+    Windows.UI.Xaml.DataTemplate HeaderTemplate;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
@@ -81,6 +82,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
 

@@ -24,46 +24,54 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <StackPanel Orientation="Horizontal">
-                            <StackPanel.Resources>
-                                <ResourceDictionary>
-                                    <ResourceDictionary.ThemeDictionaries>
-                                        <ResourceDictionary x:Key="Light">
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
-                                        </ResourceDictionary>
+                        <Grid.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.ThemeDictionaries>
+                                    <ResourceDictionary x:Key="Light">
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                    </ResourceDictionary>
 
-                                        <ResourceDictionary x:Key="Dark">
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
-                                        </ResourceDictionary>
+                                    <ResourceDictionary x:Key="Dark">
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="TextControlBorderBrush"/>
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="TextControlBorderBrush"/>
+                                    </ResourceDictionary>
 
-                                        <ResourceDictionary x:Key="HighContrast">
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
-                                            <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
-                                        </ResourceDictionary>
-                                    </ResourceDictionary.ThemeDictionaries>
-                                </ResourceDictionary>
-                            </StackPanel.Resources>
+                                    <ResourceDictionary x:Key="HighContrast">
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumLowBrush" />
+                                        <StaticResource x:Key="RepeatButtonBorderBrushPressed" ResourceKey="SystemControlHighlightTransparentBrush" />
+                                    </ResourceDictionary>
+                                </ResourceDictionary.ThemeDictionaries>
+                            </ResourceDictionary>
+                        </Grid.Resources>
 
-                            <TextBox x:Name="InputBox"
-                                Header="{TemplateBinding Header}"
-                                PlaceholderText="{TemplateBinding PlaceholderText}"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                            <RepeatButton x:Name="UpSpinButton"
-                                Visibility="Collapsed"
-                                FontSize="{TemplateBinding FontSize}"
-                                Content="&#xE70E;"
-                                Style="{StaticResource NumberBoxSpinButtonStyle}"
-                                contract7Present:CornerRadius="0"/>
+                        <TextBox x:Name="InputBox"
+                            Grid.Column="0"
+                            Header="{TemplateBinding Header}"
+                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                            PlaceholderText="{TemplateBinding PlaceholderText}"/>
 
-                            <RepeatButton x:Name="DownSpinButton"
-                                Visibility="Collapsed"
-                                FontSize="{TemplateBinding FontSize}"
-                                Content="&#xE70D;"
-                                Style="{StaticResource NumberBoxSpinButtonStyle}"
-                                contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
-                        </StackPanel>
+                        <RepeatButton x:Name="UpSpinButton"
+                            Grid.Column="1"
+                            Visibility="Collapsed"
+                            FontSize="{TemplateBinding FontSize}"
+                            Content="&#xE70E;"
+                            Style="{StaticResource NumberBoxSpinButtonStyle}"
+                            contract7Present:CornerRadius="0"/>
+
+                        <RepeatButton x:Name="DownSpinButton"
+                            Grid.Column="2"
+                            Visibility="Collapsed"
+                            FontSize="{TemplateBinding FontSize}"
+                            Content="&#xE70D;"
+                            Style="{StaticResource NumberBoxSpinButtonStyle}"
+                            contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
