@@ -15,8 +15,6 @@ public:
     
     winrt::UIElement GetElementCore(const winrt::ElementFactoryGetArgs& args) override;
     void RecycleElementCore(const winrt::ElementFactoryRecycleArgs& args) override;
-
-    winrt::UIElement ContainerFromItem(const winrt::IInspectable& item);
 private:
 };
 

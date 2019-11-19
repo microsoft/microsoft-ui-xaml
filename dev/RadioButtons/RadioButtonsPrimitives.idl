@@ -6,8 +6,6 @@
 unsealed runtimeclass RadioButtonsElementFactory : MU_XC_NAMESPACE.ElementFactory
 {
     RadioButtonsElementFactory();
-
-    Windows.UI.Xaml.UIElement ContainerFromItem(Object item);
 }
 
 [WUXC_VERSION_PREVIEW]

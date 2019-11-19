@@ -33,8 +33,3 @@ void RadioButtonsElementFactory::RecycleElementCore(const winrt::ElementFactoryR
 {
 
 }
-
-winrt::UIElement RadioButtonsElementFactory::ContainerFromItem(const winrt::IInspectable& item)
-{
-    return nullptr;
-}
