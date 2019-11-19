@@ -3872,35 +3872,27 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
 
 int NavigationView::LeftNavGetIndexFromItem(const winrt::IInspectable& data)
 {
-    // TODO: write cleaner, less expensive implementation
-    int indexOfData = -1;
-    auto dataSource = MenuItemsSource();
-    if (!dataSource)
+    if (m_leftNavRepeater)
     {
-        dataSource = MenuItems();
+        winrt::ItemsSourceView dataSourceView = m_leftNavRepeater.get().ItemsSourceView();
+        if (dataSourceView)
+        {
+            auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSourceView));
+            return inspectingDataSource->IndexOf(data);
+        }
     }
-    winrt::ItemsSourceView dataSourceView = winrt::ItemsSourceView(dataSource);
-    if (dataSourceView)
-    {
-        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSourceView));
-        indexOfData = inspectingDataSource->IndexOf(data);
-    }
-    return indexOfData;
+    return -1;
 }
 
 winrt::IInspectable NavigationView::LeftNavGetItemFromIndex(int index)
 {
-    // TODO: write cleaner, less expensive implementation
-    auto dataSource = MenuItemsSource();
-    if (!dataSource)
+    if (m_leftNavRepeater)
     {
-        dataSource = MenuItems();
-    }
-
-    winrt::ItemsSourceView dataSourceView = winrt::ItemsSourceView(dataSource);
-    if (dataSourceView)
-    {
-        return dataSourceView.GetAt(index);
+        winrt::ItemsSourceView dataSourceView = m_leftNavRepeater.get().ItemsSourceView();
+        if (dataSourceView)
+        {
+            return dataSourceView.GetAt(index);
+        }
     }
     return nullptr;
 }
