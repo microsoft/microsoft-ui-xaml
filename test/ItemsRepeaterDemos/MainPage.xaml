@@ -1,0 +1,25 @@
+﻿<Page
+    x:Class="ItemsRepeaterDemos.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterDemos"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <local:NavigateButton Target="local:ItemsSourceDemo" />
+            <local:NavigateButton Target="local:ItemTemplateDemo" />
+            <local:NavigateButton Target="local:LayoutDemo" />
+            <local:NavigateButton Target="local:GroupingDemo" />
+            <local:NavigateButton Target="local:SelectionModelDemo" />
+
+            <local:NavigateButton Target="local:AnimationDemo" />
+            <!--local:NavigateButton Target="local:MaintainViewportDemo" /-->
+            <!--local:NavigateButton Target="local:KeyIndexMappingDemo" /-->
+        </StackPanel>
+    </Grid>
+</Page>

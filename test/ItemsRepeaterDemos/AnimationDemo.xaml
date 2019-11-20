@@ -1,0 +1,27 @@
+﻿<Page
+    x:Class="ItemsRepeaterDemos.AnimationDemo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ItemsRepeaterDemos"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <StackPanel>
+            <ScrollViewer Width="600" Height="800">
+                <mux:ItemsRepeater x:Name="repeater">
+                    <DataTemplate>
+                        <StackPanel BorderBrush="Gray" BorderThickness="1" Spacing="10" Orientation="Horizontal">
+                            <TextBlock Text="{Binding}" />
+                            <Button Content="InsertBefore" Click="InsertBeforeClick" Tag="{Binding}"/>
+                            <Button Content="Remove" Click="RemoveClick" Tag="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                    <mux:ItemsRepeater.Animator>
+                        <local:DefaultElementAnimator />
+                    </mux:ItemsRepeater.Animator>
+                </mux:ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
+    </Grid>
+</Page>
