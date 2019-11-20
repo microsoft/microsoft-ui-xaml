@@ -87,7 +87,7 @@ void NumberBox::OnApplyTemplate()
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
-            m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
+            m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
         }
         return textBox;
     }());
@@ -110,26 +110,14 @@ void NumberBox::OnApplyTemplate()
         }
     }
 
-    if (const auto popupSpinDown = GetTemplateChildT<winrt::Button>(c_numberBoxPopupDownButtonName, controlProtected))
+    if (const auto popupSpinDown = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxPopupDownButtonName, controlProtected))
     {
         m_popupDownButtonClickRevoker = popupSpinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
-
-        // Do localization for the down button
-        if (winrt::AutomationProperties::GetName(popupSpinDown).empty())
-        {
-            winrt::AutomationProperties::SetName(popupSpinDown, spinDownName);
-        }
     }
 
-    if (const auto popupSpinUp = GetTemplateChildT<winrt::Button>(c_numberBoxPopupUpButtonName, controlProtected))
+    if (const auto popupSpinUp = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxPopupUpButtonName, controlProtected))
     {
         m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
-
-        // Do localization for the up button
-        if (winrt::AutomationProperties::GetName(popupSpinUp).empty())
-        {
-            winrt::AutomationProperties::SetName(popupSpinUp, spinUpName);
-        }
     }
 
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
@@ -372,7 +360,7 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
     StepValueUp();
 }
 
-void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     switch (args.OriginalKey())
     {

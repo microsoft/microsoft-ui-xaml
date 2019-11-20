@@ -57,7 +57,7 @@ private:
 
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-    void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
+    void OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
@@ -87,7 +87,7 @@ private:
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
-    winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
-    winrt::Button::Click_revoker m_popupUpButtonClickRevoker{};
-    winrt::Button::Click_revoker m_popupDownButtonClickRevoker{};
+    winrt::TextBox::KeyDown_revoker m_textBoxKeyDownRevoker{};
+    winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
+    winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
 };
