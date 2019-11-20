@@ -4,7 +4,6 @@
 #pragma once
 
 class NavigationViewItem;
-class NavigationViewList;
 struct bringintoview_event_revoker;
 
 #include "NavigationViewTemplateSettings.h"
@@ -128,8 +127,8 @@ private:
     void SetNavigationViewListPosition(winrt::ListView& listView, NavigationViewListPosition position);
     void UpdateNavigationViewUseSystemVisual();
     void PropagateNavigationViewAsParent();
-    void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
-    void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
+    //void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
+    //void PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function);
     void UpdatePaneShadow();
 
     void InvalidateTopNavPrimaryLayout();

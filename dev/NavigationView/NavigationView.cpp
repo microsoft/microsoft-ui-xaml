@@ -16,7 +16,6 @@
 #include "NavigationViewSelectionChangedEventArgs.h"
 #include "NavigationViewItemInvokedEventArgs.h"
 #include "RuntimeProfiler.h"
-#include "NavigationViewList.h"
 #include "Utils.h"
 #include "TraceLogging.h"
 #include "NavigationViewItemRevokers.h"
@@ -2431,54 +2430,57 @@ void NavigationView::SetNavigationViewListPosition(winrt::ListView& listView, Na
 {
     if (listView)
     {
-        if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-        {
-            winrt::get_self<NavigationViewList>(navigationViewList)->SetNavigationViewListPosition(position);
-        }
+        // TODO: Implement for repeater
+        //if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
+        //{
+        //    winrt::get_self<NavigationViewList>(navigationViewList)->SetNavigationViewListPosition(position);
+        //}
     }
 }
 
 void NavigationView::PropagateNavigationViewAsParent()
-{    
-    PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::All,
-        [this](NavigationViewList* list)
-            {
-                list->SetNavigationViewParent(*this);
-            }
-        );
+{
+    // TODO: Implement for repeater
+    //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::All,
+    //    [this](NavigationViewList* list)
+    //        {
+    //            list->SetNavigationViewParent(*this);
+    //        }
+    //    );
 }
 
-void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function)
-{
-    //TODO: IMPLEMENT FOR ITEMSREPEATER
-    if (NavigationViewPropagateTarget::LeftListView == target || 
-        NavigationViewPropagateTarget::All == target)
-    {
-        //PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
-    }
-    if (NavigationViewPropagateTarget::TopListView == target ||
-        NavigationViewPropagateTarget::All == target)
-    {
-        //PropagateChangeToNavigationViewList(m_topNavListView.get(), function);
-    }
-    if (NavigationViewPropagateTarget::OverflowListView == target ||
-        NavigationViewPropagateTarget::All == target)
-    {
-        //PropagateChangeToNavigationViewList(m_topNavListOverflowView.get(), function);
-    }
-}
+//void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function)
+//{
+//    //TODO: IMPLEMENT FOR ITEMSREPEATER
+//    if (NavigationViewPropagateTarget::LeftListView == target || 
+//        NavigationViewPropagateTarget::All == target)
+//    {
+//        //PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
+//    }
+//    if (NavigationViewPropagateTarget::TopListView == target ||
+//        NavigationViewPropagateTarget::All == target)
+//    {
+//        //PropagateChangeToNavigationViewList(m_topNavListView.get(), function);
+//    }
+//    if (NavigationViewPropagateTarget::OverflowListView == target ||
+//        NavigationViewPropagateTarget::All == target)
+//    {
+//        //PropagateChangeToNavigationViewList(m_topNavListOverflowView.get(), function);
+//    }
+//}
 
-void NavigationView::PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function)
-{
-    if (listView)
-    {
-        if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-        {
-            auto container = winrt::get_self<NavigationViewList>(navigationViewList);
-            function(container);
-        }
-    }
-}
+//void NavigationView::PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function)
+//{
+//    // TODO: Implement for repeater
+//    //if (listView)
+//    //{
+//    //    if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
+//    //    {
+//    //        auto container = winrt::get_self<NavigationViewList>(navigationViewList);
+//    //        function(container);
+//    //    }
+//    //}
+//}
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
