@@ -341,19 +341,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("100", newValueTextBlock.GetText());
                 Verify.AreEqual("0", oldValueTextBlock.GetText());
 
-                Log.Comment("Verify that setting value to NaN is invalid and does not fire an event.");
+                Log.Comment("Verify that setting text to an empty string sets value to NaN.");
+                EnterText(numBox, "");
+                Verify.AreEqual("", textTextBlock.GetText());
+                Verify.AreEqual("NaN", newValueTextBlock.GetText());
+                Verify.AreEqual("100", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value to NaN doesn't have any effect");
                 Button nanbutton = FindElement.ByName<Button>("SetValueNaNButton");
                 nanbutton.InvokeAndWait();
-                Verify.AreEqual("100", textTextBlock.GetText());
-                Verify.AreEqual("100", newValueTextBlock.GetText());
-                Verify.AreEqual("0", oldValueTextBlock.GetText());
-
-                Log.Comment("Verify that setting value to NaN is valid when validation is disabled.");
-                ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
-                validationComboBox.SelectItemByName("Disabled");
-                Wait.ForIdle();
-                nanbutton.InvokeAndWait();
-                Verify.AreEqual("NaN", textTextBlock.GetText());
+                Verify.AreEqual("", textTextBlock.GetText());
                 Verify.AreEqual("NaN", newValueTextBlock.GetText());
                 Verify.AreEqual("100", oldValueTextBlock.GetText());
             }

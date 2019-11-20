@@ -35,7 +35,6 @@ namespace MUXControlsTestApp
             }
         }
 
-
         private void Validation_Changed(object sender, RoutedEventArgs e)
         {
             if (TestNumberBox != null)
@@ -81,7 +80,7 @@ namespace MUXControlsTestApp
 
         private void NumberBoxValueChanged(object sender, NumberBoxValueChangedEventArgs e)
         {
-            if (TestNumberBox != null)
+            if (TestNumberBox != null && NewValueTextBox != null && OldValueTextBox != null)
             {
                 NewValueTextBox.Text = e.NewValue.ToString();
                 OldValueTextBox.Text = e.OldValue.ToString();

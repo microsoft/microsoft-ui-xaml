@@ -106,15 +106,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
         CoerceValue();
 
         auto newValue = Value();
-
-        if (std::isnan(newValue) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-        {
-            // In the validation case, we don't consider NaN to be valid.
-            newValue = oldValue;
-            Value(newValue);
-        }
-
-        if (newValue != oldValue)
+        if (newValue != oldValue && !(std::isnan(newValue) && std::isnan(oldValue)))
         {
             // Fire ValueChanged event
             const auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
@@ -193,6 +185,7 @@ void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::Rou
 {
     ValidateInput();
 }
+
 void NumberBox::CoerceMinimum()
 {
     const auto max = Maximum();
@@ -240,7 +233,7 @@ void NumberBox::ValidateInput()
         // Handles empty TextBox case, set text to current value
         if (text.empty())
         {
-            UpdateTextToValue();
+            Value(std::numeric_limits<double>::quiet_NaN());
         }
         else
         {
@@ -361,26 +354,36 @@ void NumberBox::UpdateTextToValue()
 {
     if (auto&& textBox = m_textBox.get())
     {
-        // Rounding the value here will prevent displaying digits caused by floating point imprecision.
-        const auto roundedValue = m_displayRounder.RoundDouble(Value());
-
-        const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
-        textBox.Text(formattedValue);
-
-        auto scopeGuard = gsl::finally([this]()
+        const auto value = Value();
+        if (std::isnan(value))
         {
-            m_textUpdating = false;
-        });
-        m_textUpdating = true;
-        Text(formattedValue);
+            // Display NaN as empty string
+            textBox.Text(L"");
+            Text(L"");
+        }
+        else
+        {
+            // Rounding the value here will prevent displaying digits caused by floating point imprecision.
+            const auto roundedValue = m_displayRounder.RoundDouble(value);
 
-        // This places the caret at the end of the text.
-        textBox.Select(formattedValue.size(), 0);
+            const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
+            textBox.Text(formattedValue);
+
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_textUpdating = false;
+            });
+            m_textUpdating = true;
+            Text(formattedValue);
+
+            // This places the caret at the end of the text.
+            textBox.Select(formattedValue.size(), 0);
+        }
     }
 }
 
 void NumberBox::SetSpinButtonVisualState()
-{
+{ 
     if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);

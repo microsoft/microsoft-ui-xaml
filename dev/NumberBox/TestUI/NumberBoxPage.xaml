@@ -30,6 +30,8 @@
                 <ComboBoxItem Content="Inline"/>
             </ComboBox>
 
+            <CheckBox x:Name="EnabledCheckBox" AutomationProperties.Name="EnabledCheckBox" IsChecked="True" Content="Enabled"/>
+            
             <CheckBox x:Name="CalculationCheckBox" AutomationProperties.Name="CalculationCheckBox" IsChecked="False" Content="Accepts Calculations"/>
 
             <CheckBox x:Name="HyperScrollCheckBox" AutomationProperties.Name="HyperScrollCheckBox" IsChecked="False" Content="HyperScroll Enabled"/>
@@ -64,11 +66,13 @@
                     x:Name="TestNumberBox"
                     AutomationProperties.Name="TestNumberBox"
                     Header="NumberBox"
+                    PlaceholderText="Text"
                     ValueChanged="NumberBoxValueChanged"
                     StepFrequency="{x:Bind StepNumberBox.Value, Mode=OneWay}"
                     AcceptsCalculation="{x:Bind CalculationCheckBox.IsChecked.Value, Mode=OneWay}"
                     HyperScrollEnabled="{x:Bind HyperScrollCheckBox.IsChecked.Value, Mode=OneWay}"
-                    WrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"/>
+                    WrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
+                    IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Value:" Margin="0,0,5,0" />
