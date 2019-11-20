@@ -100,7 +100,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnIsWrapEnabledPropertyChanged));
     }
     if (!s_MaximumProperty)
     {
@@ -199,7 +199,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnStepFrequencyPropertyChanged));
     }
     if (!s_TextProperty)
     {
@@ -270,6 +270,14 @@ void NumberBoxProperties::ClearProperties()
     s_ValueProperty = nullptr;
 }
 
+void NumberBoxProperties::OnIsWrapEnabledPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnIsWrapEnabledPropertyChanged(args);
+}
+
 void NumberBoxProperties::OnMaximumPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
@@ -310,6 +318,14 @@ void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnSpinButtonPlacementModePropertyChanged(args);
+}
+
+void NumberBoxProperties::OnStepFrequencyPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnStepFrequencyPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnTextPropertyChanged(

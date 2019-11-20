@@ -45,6 +45,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Double Value;
 
     [MUX_DEFAULT_VALUE("1")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double StepFrequency;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
@@ -71,6 +72,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     Boolean IsHyperScrollEnabled;
 
     [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsWrapEnabled;
 
     [MUX_DEFAULT_VALUE("false")]

@@ -114,6 +114,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnIsWrapEnabledPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnMaximumPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
@@ -127,6 +131,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnSpinButtonPlacementModePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnStepFrequencyPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

@@ -29,6 +29,26 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="UpSpinButtonEnabledStates">
+                                <VisualState x:Name="UpSpinButtonEnabled" />
+                                <VisualState x:Name="UpSpinButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="UpSpinButton.IsEnabled" Value="False" />
+                                        <Setter Target="PopupUpSpinButton.IsEnabled" Value="False" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="DownSpinButtonEnabledStates">
+                                <VisualState x:Name="DownSpinButtonEnabled" />
+                                <VisualState x:Name="DownSpinButtonDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="DownSpinButton.IsEnabled" Value="False" />
+                                        <Setter Target="PopupDownSpinButton.IsEnabled" Value="False" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid.Resources>
@@ -63,11 +83,11 @@
                             Header="{TemplateBinding Header}"
                             HeaderTemplate="{TemplateBinding HeaderTemplate}"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
-                            SelectionFlyout="{TemplateBinding SelectionFlyout}"
+                            contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
                             PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
-                            Description="{TemplateBinding Description}"/>
+                            contract7Present:Description="{TemplateBinding Description}"/>
 
                         <Popup x:Name="UpDownPopup"
                             Grid.Column="1"

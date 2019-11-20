@@ -135,7 +135,8 @@ void NumberBox::OnApplyTemplate()
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
-    SetSpinButtonVisualState();
+    UpdateSpinButtonPlacement();
+    UpdateSpinButtonEnabled();
 
     if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
         && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
@@ -179,6 +180,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
         }
 
         UpdateTextToValue();
+        UpdateSpinButtonEnabled();
     }
 }
 
@@ -186,12 +188,26 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
 {
     CoerceMaximum();
     CoerceValue();
+
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     CoerceMinimum();
     CoerceValue();
+
+    UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -211,7 +227,7 @@ void NumberBox::ValidateNumberFormatter(winrt::INumberFormatter2 value)
 
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    SetSpinButtonVisualState();
+    UpdateSpinButtonPlacement();
 }
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -234,6 +250,7 @@ void NumberBox::UpdateValueToText()
 void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     ValidateInput();
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -404,32 +421,34 @@ void NumberBox::StepValue(bool isPositive)
     ValidateInput();
 
     auto newVal = Value();
-
-    if (isPositive)
+    if (!std::isnan(newVal))
     {
-        newVal += StepFrequency();
-    }
-    else
-    {
-        newVal -= StepFrequency();
-    }
-
-    if (IsWrapEnabled())
-    {
-        const auto max = Maximum();
-        const auto min = Minimum();
-
-        if (newVal > max)
+        if (isPositive)
         {
-            newVal = min;
+            newVal += StepFrequency();
         }
-        else if (newVal < min)
+        else
         {
-            newVal = max;
+            newVal -= StepFrequency();
         }
-    }
 
-    Value(newVal);
+        if (IsWrapEnabled())
+        {
+            const auto max = Maximum();
+            const auto min = Minimum();
+
+            if (newVal > max)
+            {
+                newVal = min;
+            }
+            else if (newVal < min)
+            {
+                newVal = max;
+            }
+        }
+
+        Value(newVal);
+    }
 }
 
 // Updates TextBox.Text with the formatted Value
@@ -465,7 +484,7 @@ void NumberBox::UpdateTextToValue()
     }
 }
 
-void NumberBox::SetSpinButtonVisualState()
+void NumberBox::UpdateSpinButtonPlacement()
 {
     const auto spinButtonMode = SpinButtonPlacementMode();
 
@@ -481,6 +500,39 @@ void NumberBox::SetSpinButtonVisualState()
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
     }
+}
+
+void NumberBox::UpdateSpinButtonEnabled()
+{
+    auto value = Value();
+    bool isUpButtonEnabled = false;
+    bool isDownButtonEnabled = false;
+
+    if (!std::isnan(value))
+    {
+        if (IsWrapEnabled() || ValidationMode() != winrt::NumberBoxValidationMode::InvalidInputOverwritten)
+        {
+            // If wrapping is enabled, or invalid values are allowed, then the buttons should be enabled
+            isUpButtonEnabled = true;
+            isDownButtonEnabled = true;
+        }
+        else
+        {
+            // Otherwise, only enabled the buttons if the result would be in bounds.
+            const auto stepFrequency = StepFrequency();
+            if (value + stepFrequency <= Maximum())
+            {
+                isUpButtonEnabled = true;
+            }
+            if (value - stepFrequency >= Minimum())
+            {
+                isDownButtonEnabled = true;
+            }
+        }
+    }
+
+    winrt::VisualStateManager::GoToState(*this, isUpButtonEnabled ? L"UpSpinButtonEnabled" : L"UpSpinButtonDisabled", false);
+    winrt::VisualStateManager::GoToState(*this, isDownButtonEnabled ? L"DownSpinButtonEnabled" : L"DownSpinButtonDisabled", false);
 }
 
 bool NumberBox::IsInBounds(double value)

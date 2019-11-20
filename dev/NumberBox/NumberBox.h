@@ -47,6 +47,8 @@ public:
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void ValidateNumberFormatter(winrt::INumberFormatter2 value);
@@ -67,7 +69,8 @@ private:
     void UpdateTextToValue();
     void UpdateValueToText();
 
-    void SetSpinButtonVisualState();
+    void UpdateSpinButtonPlacement();
+    void UpdateSpinButtonEnabled();
     void StepValue(bool isPositive);
     void StepValueUp() { StepValue(true); }
     void StepValueDown() { StepValue(false); }
