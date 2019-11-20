@@ -26,7 +26,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ProgressRingLoading.cs">
+    <None Include="$(MSBuildThisFileDirectory)ProgressRingLoading.json">
       <Filter>AnimatedVisuals</Filter>
     </None>
   </ItemGroup>

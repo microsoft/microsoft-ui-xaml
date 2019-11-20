@@ -37,6 +37,6 @@
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)ProgressRingLoading.cs" />
+    <None Include="$(MSBuildThisFileDirectory)ProgressRingLoading.json" />
   </ItemGroup>
 </Project>

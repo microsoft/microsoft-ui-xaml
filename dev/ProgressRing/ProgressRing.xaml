@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
+    xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
     xmlns:animatedvisuals="using:AnimatedVisuals">
 
     <Style TargetType="local:ProgressRing">
@@ -17,9 +18,10 @@
                         <!-- Lottie -->
                         <Border Style="{StaticResource LottiePlayer}">
                             <!--AnimatedVisualPlayer with AutoPlay-->
-                            <local:AnimatedVisualPlayer x:Name="LottiePlayer">
+                            <local:AnimatedVisualPlayer x:Name="Json_Player">
                                 <!--Codegen class AnimatedVisuals/LottieLogo1.cs-->
-                                <animatedvisuals:ProgressRingLoading/>
+                                <!--<lottie:LottieVisualSource x:Name="Json_Source"
+                                               UriSource="ms-appx:///Assets/LottieLogo1.json" />-->
                             </local:AnimatedVisualPlayer>
                         </Border>
 

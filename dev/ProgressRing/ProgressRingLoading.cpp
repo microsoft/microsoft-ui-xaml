@@ -7,138 +7,131 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include "RadialLoading.h"
+#include "common.h"
+#include "ProgressRingLoading.h"
 #include "WindowsNumerics.h"
 
-using namespace winrt;
-using namespace Microsoft::WRL;
-using namespace Windows::Foundation;
-using namespace Windows::Foundation::Numerics;
-using namespace Windows::Graphics;
-using namespace Windows::UI;
-using namespace Windows::UI::Composition;
-
-namespace
-{
 static bool IsRuntimeCompatible()
 {
-    if (!Windows::Foundation::Metadata::ApiInformation::IsTypePresent("Windows.UI.Composition.CompositionGeometricClip"))
+    if (!winrt::Windows::Foundation::Metadata::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionGeometricClip"))
     {
         return false;
     }
     return true;
 }
 
-public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::IAnimatedVisual
+class ProgressRingAnimatedVisual :
+    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual>
 {
-    const int64_t c_durationTicks = 20000000L;
-    Compositor^ const _c;
-    ExpressionAnimation^ const _reusableExpressionAnimation;
-    CubicBezierEasingFunction^ _cubicBezierEasingFunction;
-    StepEasingFunction^ _holdThenStepEasingFunction;
-    ContainerVisual^ _root;
-    ExpressionAnimation^ _scalarExpressionAnimation;
+    static constexpr auto c_durationTicks = 20000000ms;
+    winrt::Compositor const _c;
+    winrt::ExpressionAnimation const _reusableExpressionAnimation;
+    winrt::CubicBezierEasingFunction _cubicBezierEasingFunction;
+    winrt::StepEasingFunction _holdThenStepEasingFunction;
+    winrt::ContainerVisual _root;
+    winrt::ExpressionAnimation _scalarExpressionAnimation;
 
     // Layer (Shape): Radial
     // Transforms: Radial
     // Ellipse Path
-    CompositionColorBrush^ AnimatedColorBrush_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7()
+    winrt::CompositionColorBrush AnimatedColorBrush_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7()
     {
-        auto result = _c->CreateColorBrush(ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7));
-        result->StartAnimation("Color", ColorAnimation_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7());
-        auto controller = result->TryGetAnimationController("Color");
-        controller->Pause();
-        controller->StartAnimation("Progress", _scalarExpressionAnimation);
+        auto result = _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7));
+        result.StartAnimation(L"Color", ColorAnimation_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7());
+        auto controller = result.TryGetAnimationController(L"Color");
+        controller.Pause();
+        controller.StartAnimation(L"Progress", _scalarExpressionAnimation);
         return result;
     }
 
     // Layer (Shape): Radial
     // Transforms: Radial
     // Ellipse Path
-    CompositionColorBrush^ AnimatedColorBrush_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7()
+    winrt::CompositionColorBrush AnimatedColorBrush_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7()
     {
-        auto result = _c->CreateColorBrush(ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7));
-        result->StartAnimation("Color", ColorAnimation_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7());
-        auto controller = result->TryGetAnimationController("Color");
-        controller->Pause();
-        controller->StartAnimation("Progress", _scalarExpressionAnimation);
+        auto result = _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7));
+        result.StartAnimation(L"Color", ColorAnimation_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7());
+        auto controller = result.TryGetAnimationController(L"Color");
+        controller.Pause();
+        controller.StartAnimation(L"Progress", _scalarExpressionAnimation);
         return result;
     }
 
     // Color
-    ColorKeyFrameAnimation^ ColorAnimation_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7()
+    winrt::ColorKeyFrameAnimation ColorAnimation_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7()
     {
-        auto result = _c->CreateColorKeyFrameAnimation();
-        result->Duration = { c_durationTicks };
-        result->InteroplationColorSpace = CompositionColorSpace::Rgb;
+        auto result = _c.CreateColorKeyFrameAnimation();
+        result.Duration({ c_durationTicks });
+        auto test = winrt::CompositionColorSpace::Rgb;
+        result.InterpolationColorSpace(test);
         // AlmostDodgerBlue_FF0078D7
-        result->InsertKeyFrame(0, ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0, winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
         // TransparentAlmostDodgerBlue_000078D7
-        result->InsertKeyFrame(0.5F, ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
         return result;
     }
 
     // Color
-    ColorKeyFrameAnimation^ ColorAnimation_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7()
+    winrt::ColorKeyFrameAnimation ColorAnimation_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7()
     {
-        auto result = _c->CreateColorKeyFrameAnimation();
-        result->Duration = { c_durationTicks };
-        result->InteroplationColorSpace = CompositionColorSpace::Rgb;
+        auto result = _c.CreateColorKeyFrameAnimation();
+        result.Duration({ c_durationTicks });
+        result.InterpolationColorSpace(winrt::CompositionColorSpace::Rgb);
         // TransparentAlmostDodgerBlue_000078D7
-        result->InsertKeyFrame(0, ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0, winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
         // AlmostDodgerBlue_FF0078D7
-        result->InsertKeyFrame(0.5F, ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
         return result;
     }
 
     // Ellipse Path
-    CompositionColorBrush^ ColorBrush_LightGray()
+    winrt::CompositionColorBrush ColorBrush_LightGray()
     {
-        return _c->CreateColorBrush(ColorHelper::FromArgb(0xFF, 0xD3, 0xD3, 0xD3));
+        return _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0xD3, 0xD3, 0xD3));
     }
 
     // SolidLayerRectangle
-    CompositionColorBrush^ ColorBrush_White()
+    winrt::CompositionColorBrush ColorBrush_White()
     {
-        return _c->CreateColorBrush(ColorHelper::FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
+        return _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
     }
 
     // Layer (Shape): Radial
-    CompositionContainerShape^ ContainerShape_0()
+    winrt::CompositionContainerShape ContainerShape_0()
     {
-        auto result = _c->CreateContainerShape();
-        result->TransformMatrix = {5, 0, 0, 5, 50, 50};
-        auto shapes = result->Shapes;
-        shapes->Append(ContainerShape_1());
+        auto result = _c.CreateContainerShape();
+        result.TransformMatrix({5, 0, 0, 5, 50, 50});
+        auto shapes = result.Shapes;
+        shapes.Append(ContainerShape_1());
         return result;
     }
 
     // Layer (Shape): Radial
     // Transforms for Radial
-    CompositionContainerShape^ ContainerShape_1()
+    winrt::CompositionContainerShape ContainerShape_1()
     {
-        auto result = _c->CreateContainerShape();
-        auto shapes = result->Shapes;
-        shapes->Append(SpriteShape_2());
-        shapes->Append(SpriteShape_3());
-        result->StartAnimation("RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_900());
-        auto controller = result->TryGetAnimationController("RotationAngleInDegrees");
-        controller->Pause();
-        controller->StartAnimation("Progress", _scalarExpressionAnimation);
+        auto result = _c.CreateContainerShape();
+        auto shapes = result.Shapes;
+        shapes.Append(SpriteShape_2());
+        shapes.Append(SpriteShape_3());
+        result.StartAnimation(L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_900());
+        auto controller = result.TryGetAnimationController(L"RotationAngleInDegrees");
+        controller.Pause();
+        controller.StartAnimation(L"Progress", _scalarExpressionAnimation);
         return result;
     }
 
-    CubicBezierEasingFunction^ CubicBezierEasingFunction()
+    winrt::CubicBezierEasingFunction CubicBezierEasingFunction()
     {
-        return _cubicBezierEasingFunction = _c->CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
+        return _cubicBezierEasingFunction = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
     }
 
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
-    CompositionEllipseGeometry^ Ellipse_7_0()
+    winrt::CompositionEllipseGeometry Ellipse_7_0()
     {
-        auto result = _c->CreateEllipseGeometry();
-        result->Radius = { 7, 7 };
+        auto result = _c.CreateEllipseGeometry();
+        result.Radius({ 7, 7 });
         return result;
     }
 
@@ -146,15 +139,15 @@ public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::I
     // Transforms: Radial
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
-    CompositionEllipseGeometry^ Ellipse_7_1()
+    winrt::CompositionEllipseGeometry Ellipse_7_1()
     {
-        auto result = _c->CreateEllipseGeometry();
-        result->TrimEnd = 0.5F;
-        result->Radius = { 7, 7 };
-        result->StartAnimation("TrimStart", TrimStartScalarAnimation_0_to_0p5());
-        auto controller = result->TryGetAnimationController("TrimStart");
-        controller->Pause();
-        controller->StartAnimation("Progress", ScalarExpressionAnimation());
+        auto result = _c.CreateEllipseGeometry();
+        result.TrimEnd(0.5F);
+        result.Radius({ 7, 7 });
+        result.StartAnimation(L"TrimStart", TrimStartScalarAnimation_0_to_0p5());
+        auto controller = result.TryGetAnimationController(L"TrimStart");
+        controller.Pause();
+        controller.StartAnimation(L"Progress", ScalarExpressionAnimation());
         return result;
     }
 
@@ -162,133 +155,133 @@ public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::I
     // Transforms: Radial
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
-    CompositionEllipseGeometry^ Ellipse_7_2()
+    winrt::CompositionEllipseGeometry Ellipse_7_2()
     {
-        auto result = _c->CreateEllipseGeometry();
-        result->Radius = { 7, 7 };
-        result->StartAnimation("TrimEnd", TrimEndScalarAnimation_0_to_0p5());
-        auto controller = result->TryGetAnimationController("TrimEnd");
-        controller->Pause();
-        controller->StartAnimation("Progress", _scalarExpressionAnimation);
+        auto result = _c.CreateEllipseGeometry();
+        result.Radius({ 7, 7 });
+        result.StartAnimation(L"TrimEnd", TrimEndScalarAnimation_0_to_0p5());
+        auto controller = result.TryGetAnimationController(L"TrimEnd");
+        controller.Pause();
+        controller.StartAnimation(L"Progress", _scalarExpressionAnimation);
         return result;
     }
 
-    StepEasingFunction^ HoldThenStepEasingFunction()
+    winrt::StepEasingFunction HoldThenStepEasingFunction()
     {
-        auto result = _holdThenStepEasingFunction = _c->CreateStepEasingFunction();
-        result->IsFinalStepSingleFrame  = true;
+        auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
+        result.IsFinalStepSingleFrame(true);
         return result;
     }
 
     // SolidLayerRectangle
     // SolidLayerRectangle.RectangleGeometry
-    CompositionRectangleGeometry^ Rectangle_960x720()
+    winrt::CompositionRectangleGeometry Rectangle_960x720()
     {
-        auto result = _c->CreateRectangleGeometry();
-        result->Size = { 960, 720 };
+        auto result = _c.CreateRectangleGeometry();
+        result.Size({ 960, 720 });
         return result;
     }
 
     // The root of the composition.
-    ContainerVisual^ Root()
+    winrt::ContainerVisual Root()
     {
-        auto result = _root = _c->CreateContainerVisual();
-        auto propertySet = result->Properties;
-        propertySet->InsertScalar("Progress", 0);
-        auto children = result->Children;
-        children->InsertAtTop(ShapeVisual());
+        auto result = _root = _c.CreateContainerVisual();
+        auto propertySet = result.Properties;
+        propertySet.InsertScalar(L"Progress", 0);
+        auto children = result.Children;
+        children.InsertAtTop(ShapeVisual());
         return result;
     }
 
     // Layer (Shape): Radial
     // Transforms: Radial
     // Rotation
-    ScalarKeyFrameAnimation^ RotationAngleInDegreesScalarAnimation_0_to_900()
+    winrt::ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_900()
     {
-        auto result = _c->CreateScalarKeyFrameAnimation();
-        result->Duration = { c_durationTicks };
-        result->InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
-        result->InsertKeyFrame(0.5F, 450, _cubicBezierEasingFunction);
-        result->InsertKeyFrame(1, 900, _cubicBezierEasingFunction);
+        auto result = _c.CreateScalarKeyFrameAnimation();
+        result.Duration({ c_durationTicks });
+        result.InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, 450, _cubicBezierEasingFunction);
+        result.InsertKeyFrame(1, 900, _cubicBezierEasingFunction);
         return result;
     }
 
-    ExpressionAnimation^ ScalarExpressionAnimation()
+    winrt::ExpressionAnimation ScalarExpressionAnimation()
     {
-        auto result = _scalarExpressionAnimation = _c->CreateExpressionAnimation();
-        result->SetReferenceParameter("_", _root);
-        result->Expression = "_.Progress";
+        auto result = _scalarExpressionAnimation = _c.CreateExpressionAnimation();
+        result.SetReferenceParameter(L"_", _root);
+        result.Expression(L"_.Progress");
         return result;
     }
 
-    ShapeVisual^ ShapeVisual()
+    winrt::ShapeVisual ShapeVisual()
     {
-        auto result = _c->CreateShapeVisual();
-        result->Size = { 100, 100 };
-        auto shapes = result->Shapes;
+        auto result = _c.CreateShapeVisual();
+        result.Size({ 100, 100 });
+        auto shapes = result.Shapes;
         // SolidLayerRectangle
-        shapes->Append(SpriteShape_0());
+        shapes.Append(SpriteShape_0());
         // Ellipse Path
-        shapes->Append(SpriteShape_1());
+        shapes.Append(SpriteShape_1());
         // Layer (Shape): Radial
-        shapes->Append(ContainerShape_0());
+        shapes.Append(ContainerShape_0());
         return result;
     }
 
     // SolidLayerRectangle
-    CompositionSpriteShape^ SpriteShape_0()
+    winrt::CompositionSpriteShape SpriteShape_0()
     {
-        auto result = _c->CreateSpriteShape();
-        result->TransformMatrix = {1, 0, 0, 1, -430, -310};
-        result->FillBrush = ColorBrush_White();
-        result->Geometry = Rectangle_960x720();
+        auto result = _c.CreateSpriteShape();
+        result.TransformMatrix({1, 0, 0, 1, -430, -310});
+        result.FillBrush(ColorBrush_White());
+        result.Geometry(Rectangle_960x720());
         return result;
     }
 
     // Ellipse Path
-    CompositionSpriteShape^ SpriteShape_1()
+    winrt::CompositionSpriteShape SpriteShape_1()
     {
-        auto result = _c->CreateSpriteShape();
-        result->TransformMatrix = {5, 0, 0, 5, 50, 50};
-        result->Geometry = Ellipse_7_0();
-        result->StrokeBrush = ColorBrush_LightGray();
-        result->StrokeDashCap = CompositionStrokeCap::Round;
-        result->StrokeEndCap = CompositionStrokeCap::Round;
-        result->StrokeStartCap = CompositionStrokeCap::Round;
-        result->StrokeMiterLimit = 4;
-        result->StrokeThickness = 2;
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path
-    CompositionSpriteShape^ SpriteShape_2()
-    {
-        auto result = _c->CreateSpriteShape();
-        result->Geometry = Ellipse_7_1();
-        result->StrokeBrush = AnimatedColorBrush_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7();
-        result->StrokeDashCap = CompositionStrokeCap::Round;
-        result->StrokeEndCap = CompositionStrokeCap::Round;
-        result->StrokeStartCap = CompositionStrokeCap::Round;
-        result->StrokeMiterLimit = 4;
-        result->StrokeThickness = 2;
+        auto result = _c.CreateSpriteShape();
+        result.TransformMatrix({5, 0, 0, 5, 50, 50});
+        result.Geometry(Ellipse_7_0());
+        result.StrokeBrush(ColorBrush_LightGray());
+        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeMiterLimit(4);
+        result.StrokeThickness(2);
         return result;
     }
 
     // Layer (Shape): Radial
     // Transforms: Radial
     // Ellipse Path
-    CompositionSpriteShape^ SpriteShape_3()
+    winrt::CompositionSpriteShape SpriteShape_2()
     {
-        auto result = _c->CreateSpriteShape();
-        result->Geometry = Ellipse_7_2();
-        result->StrokeBrush = AnimatedColorBrush_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7();
-        result->StrokeDashCap = CompositionStrokeCap::Round;
-        result->StrokeEndCap = CompositionStrokeCap::Round;
-        result->StrokeStartCap = CompositionStrokeCap::Round;
-        result->StrokeMiterLimit = 4;
-        result->StrokeThickness = 2;
+        auto result = _c.CreateSpriteShape();
+        result.Geometry(Ellipse_7_1());
+        result.StrokeBrush(AnimatedColorBrush_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7());
+        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeMiterLimit(4);
+        result.StrokeThickness(2);
+        return result;
+    }
+
+    // Layer (Shape): Radial
+    // Transforms: Radial
+    // Ellipse Path
+    winrt::CompositionSpriteShape SpriteShape_3()
+    {
+        auto result = _c.CreateSpriteShape();
+        result.Geometry(Ellipse_7_2());
+        result.StrokeBrush(AnimatedColorBrush_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7());
+        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
+        result.StrokeMiterLimit(4);
+        result.StrokeThickness(2);
         return result;
     }
 
@@ -297,10 +290,10 @@ public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::I
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
     // TrimStart
-    StepEasingFunction^ StepThenHoldEasingFunction()
+    winrt::StepEasingFunction StepThenHoldEasingFunction()
     {
-        auto result = _c->CreateStepEasingFunction();
-        result->IsInitialStepSingleFrame  = true;
+        auto result = _c.CreateStepEasingFunction();
+        result.IsInitialStepSingleFrame(true);
         return result;
     }
 
@@ -309,12 +302,12 @@ public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::I
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
     // TrimEnd
-    ScalarKeyFrameAnimation^ TrimEndScalarAnimation_0_to_0p5()
+    winrt::ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_0p5()
     {
-        auto result = _c->CreateScalarKeyFrameAnimation();
-        result->Duration = { c_durationTicks };
-        result->InsertKeyFrame(0, 9.99999975E-05F, _holdThenStepEasingFunction);
-        result->InsertKeyFrame(0.5F, 0.5F, _cubicBezierEasingFunction);
+        auto result = _c.CreateScalarKeyFrameAnimation();
+        result.Duration({ c_durationTicks });
+        result.InsertKeyFrame(0, 9.99999975E-05F, _holdThenStepEasingFunction);
+        result.InsertKeyFrame(0.5F, 0.5F, _cubicBezierEasingFunction);
         return result;
     }
 
@@ -323,51 +316,48 @@ public ref class AnimatedVisual sealed : public Microsoft::UI::Xaml::Controls::I
     // Ellipse Path
     // Ellipse Path.EllipseGeometry
     // TrimStart
-    ScalarKeyFrameAnimation^ TrimStartScalarAnimation_0_to_0p5()
+    winrt::ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_0p5()
     {
-        auto result = _c->CreateScalarKeyFrameAnimation();
-        result->Duration = { c_durationTicks };
-        result->InsertKeyFrame(0, 0, StepThenHoldEasingFunction());
-        result->InsertKeyFrame(0.5F, 0, HoldThenStepEasingFunction());
-        result->InsertKeyFrame(1, 0.5F, CubicBezierEasingFunction());
+        auto result = _c.CreateScalarKeyFrameAnimation();
+        result.Duration({ c_durationTicks });
+        result.InsertKeyFrame(0, 0, StepThenHoldEasingFunction());
+        result.InsertKeyFrame(0.5F, 0, HoldThenStepEasingFunction());
+        result.InsertKeyFrame(1, 0.5F, CubicBezierEasingFunction());
         return result;
     }
 
 public:
-    AnimatedVisual(Compositor^ compositor)
+    ProgressRingAnimatedVisual(winrt::Compositor compositor)
         : _c(compositor)
-        , _reusableExpressionAnimation(compositor->CreateExpressionAnimation())
+    , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
         Root();
     }
-    virtual ~AnimatedVisual() { }
 
-    property TimeSpan Duration
+    [[nodiscard]] auto RootVisual() const
     {
-        virtual TimeSpan get() { return { c_durationTicks }; }
+        return _root;
     }
 
-    property Visual^ RootVisual
+    [[nodiscard]] winrt::float2 Size() const
     {
-        virtual Visual^ get() { return _root; }
+        return { 100, 100 };
     }
 
-    property float2 Size
+    [[nodiscard]] std::chrono::milliseconds Duration() const
     {
-        virtual float2 get() { return { 100, 100 }; }
+        return { c_durationTicks };
     }
-
 };
-} // end namespace
 
-Microsoft::UI::Xaml::Controls::IAnimatedVisual^ AnimatedVisuals::RadialLoading::TryCreateAnimatedVisual(
-    Compositor^ compositor,
-    Object^* diagnostics)
+winrt::IAnimatedVisual RadialLoading::TryCreateAnimatedVisual(
+    const winrt::Compositor& compositor,
+    winrt::IInspectable& diagnostics)
 {
     diagnostics = nullptr;
     if (!IsRuntimeCompatible())
     {
         return nullptr;
     }
-    return ref new AnimatedVisual(compositor);
+    return { ProgressRingAnimatedVisual(compositor) };
 }

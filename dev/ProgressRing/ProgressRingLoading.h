@@ -7,18 +7,13 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-#include "pch.h"
-#include "common.h"
 
-namespace AnimatedVisuals 
+class RadialLoading :
+    public winrt::implements<RadialLoading, winrt::IAnimatedVisualSource>
 {
-class ProgressRingLoading :
-    public winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource
-{
-
 public:
-    winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
-        winrt::Windows::UI::Composition::Compositor compositor,
-        winrt::Platform::Object diagnostics);
+    winrt::IAnimatedVisual TryCreateAnimatedVisual(
+        const winrt::Compositor& compositor,
+        winrt::IInspectable& diagnostics);
 };
-}
+
