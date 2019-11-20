@@ -39,13 +39,10 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -82,9 +79,12 @@ private:
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
     winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
+    winrt::Button::Click_revoker m_popupUpButtonClickRevoker{};
+    winrt::Button::Click_revoker m_popupDownButtonClickRevoker{};
 };

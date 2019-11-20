@@ -30,6 +30,10 @@ namespace MUXControlsTestApp
                 }
                 else if (SpinModeComboBox.SelectedIndex == 1)
                 {
+                    TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact;
+                }
+                else if (SpinModeComboBox.SelectedIndex == 2)
+                {
                     TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
                 }
             }

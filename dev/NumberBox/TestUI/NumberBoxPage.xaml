@@ -27,6 +27,7 @@
 
             <ComboBox x:Name="SpinModeComboBox" AutomationProperties.Name="SpinModeComboBox" SelectedIndex="0" SelectionChanged="SpinMode_Changed" Header="SpinButtonMode">
                 <ComboBoxItem Content="Hidden"/>
+                <ComboBoxItem Content="Compact"/>
                 <ComboBoxItem Content="Inline"/>
             </ComboBox>
 

@@ -10,9 +10,17 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
-static constexpr wstring_view c_tabViewDownButtonName{ L"DownSpinButton"sv };
-static constexpr wstring_view c_tabViewUpButtonName{ L"UpSpinButton"sv };
-static constexpr wstring_view c_tabViewTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
+static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
+static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
+static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
+static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoot"sv };
+
+static constexpr double c_popupShadowDepth = 16.0;
+static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupShadowDepth"sv };
 
 // Shockingly, there is no standard function for trimming strings.
 const std::wstring c_whitespace = L" \n\r\t\f\v";
@@ -49,32 +57,33 @@ void NumberBox::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected = *this;
 
-    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
+    const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
+    const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
+
+    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxDownButtonName, controlProtected))
     {
-        m_upButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+        m_downButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
 
         // Do localization for the down button
         if (winrt::AutomationProperties::GetName(spinDown).empty())
         {
-            const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
             winrt::AutomationProperties::SetName(spinDown, spinDownName);
         }
     }
 
-    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
+    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxUpButtonName, controlProtected))
     {
-        m_downButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+        m_upButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
 
         // Do localization for the up button
         if (winrt::AutomationProperties::GetName(spinUp).empty())
         {
-            const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
     }
 
     m_textBox.set([this, controlProtected]() {
-        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
+        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
             m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
@@ -82,6 +91,46 @@ void NumberBox::OnApplyTemplate()
         }
         return textBox;
     }());
+
+    m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
+
+    if (const auto popupRoot = GetTemplateChildT<winrt::UIElement>(c_numberBoxPopupContentRootName, controlProtected))
+    {
+        if (SharedHelpers::IsThemeShadowAvailable())
+        {
+            if (!popupRoot.Shadow())
+            {
+                popupRoot.Shadow(winrt::ThemeShadow{});
+                auto&& translation = popupRoot.Translation();
+
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_numberBoxPopupShadowDepthName, winrt::Application::Current().Resources(), box_value(c_popupShadowDepth)));
+
+                popupRoot.Translation({ translation.x, translation.y, (float)shadowDepth });
+            }
+        }
+    }
+
+    if (const auto popupSpinDown = GetTemplateChildT<winrt::Button>(c_numberBoxPopupDownButtonName, controlProtected))
+    {
+        m_popupDownButtonClickRevoker = popupSpinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+
+        // Do localization for the down button
+        if (winrt::AutomationProperties::GetName(popupSpinDown).empty())
+        {
+            winrt::AutomationProperties::SetName(popupSpinDown, spinDownName);
+        }
+    }
+
+    if (const auto popupSpinUp = GetTemplateChildT<winrt::Button>(c_numberBoxPopupUpButtonName, controlProtected))
+    {
+        m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+
+        // Do localization for the up button
+        if (winrt::AutomationProperties::GetName(popupSpinUp).empty())
+        {
+            winrt::AutomationProperties::SetName(popupSpinUp, spinUpName);
+        }
+    }
 
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
@@ -179,11 +228,24 @@ void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::Ro
     {
         textBox.SelectAll();
     }
+
+    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Compact)
+    {
+        if (auto && popup = m_popup.get())
+        {
+            popup.IsOpen(true);
+        }
+    }
 }
 
 void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
+
+    if (auto && popup = m_popup.get())
+    {
+        popup.IsOpen(false);
+    }
 }
 
 void NumberBox::CoerceMinimum()
@@ -383,12 +445,18 @@ void NumberBox::UpdateTextToValue()
 }
 
 void NumberBox::SetSpinButtonVisualState()
-{ 
-    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
+{
+    const auto spinButtonMode = SpinButtonPlacementMode();
+
+    if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
-    else if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden)
+    else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+    }
+    else
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
     }
