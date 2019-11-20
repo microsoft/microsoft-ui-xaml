@@ -281,8 +281,6 @@ void NavigationView::OnApplyTemplate()
 
         //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
 
-        //SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
-
         //// Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
         //if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
         //{
@@ -299,8 +297,6 @@ void NavigationView::OnApplyTemplate()
 
         //m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
         //m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
-
-        //SetNavigationViewListPosition(topNavListView, NavigationViewListPosition::TopPrimary);
 
         m_topNavRepeater.set(topNavRepeater);
 
@@ -324,8 +320,6 @@ void NavigationView::OnApplyTemplate()
     {
         //m_topNavListOverflowView.set(topNavListOverflowView);
         //m_topNavListOverflowViewSelectionChangedRevoker = topNavListOverflowView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemSelectionChanged });
-
-        //SetNavigationViewListPosition(topNavListOverflowView, NavigationViewListPosition::TopOverflow);
 
         m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
 
@@ -776,6 +770,15 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(winrt::NavigationViewI
 
 void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
+    // TODO: Verify that this ListView introduced check still works with ItemsRepeater implementation.
+    // TODO: WILL PROBABLY BE LESS EXPENSIVE TO MOVE ELSEWHERE (MAYBE IN THE CUSTOM IELEMENTFACTORY IMPLEMENTATION)
+    // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
+    // Certain items are disallowed in a NavigationView's items list. Check for them.
+    if (args.Element().try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
+    {
+        throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
+    }
+
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
@@ -803,6 +806,10 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
             auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+            nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+            // TODO: Temporary workaround
+            auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
+            nviImpl->UseSystemFocusVisuals(showFocusVisual);
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -820,6 +827,8 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
 {
     if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
     {
+        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
         // Revoke all the events that we were listing to on the item
         nvi.SetValue(GetNavigationViewItemRevokersProperty(), nullptr);
     }
@@ -2406,7 +2415,8 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 {
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
-        //TODO: Implement for repeater 
+        //TODO: Implement for repeater  (Propagate to all items)
+        //TODO: Remove temporary implementation in ElementPrepared
         //MUX_FAIL_FAST_MSG("This codepath should not be hit, not updated.");
         //auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
 
@@ -2423,18 +2433,6 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
         //    list->SetShowFocusVisual(showFocusVisual);
         //}
         //);
-    }
-}
-
-void NavigationView::SetNavigationViewListPosition(winrt::ListView& listView, NavigationViewListPosition position)
-{
-    if (listView)
-    {
-        // TODO: Implement for repeater
-        //if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-        //{
-        //    winrt::get_self<NavigationViewList>(navigationViewList)->SetNavigationViewListPosition(position);
-        //}
     }
 }
 

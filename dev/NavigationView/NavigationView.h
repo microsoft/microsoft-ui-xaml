@@ -124,7 +124,6 @@ private:
     void UpdateVisualState(bool useTransitions = false);
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
-    void SetNavigationViewListPosition(winrt::ListView& listView, NavigationViewListPosition position);
     void UpdateNavigationViewUseSystemVisual();
     void PropagateNavigationViewAsParent();
     //void PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function);
