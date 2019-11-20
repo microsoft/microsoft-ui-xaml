@@ -173,54 +173,60 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
-                SetSource(RadioButtonsSourceLocation.Items);
-
                 SetNumberOfColumns(3);
-                InsertDisabledRadioButton(10);
-                TapOnItem(7);
-                VerifySelectedFocusedIndex(7);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(9);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(5);
-                KeyboardHelper.PressKey(Key.Down);
-                VerifySelectedFocusedIndex(6);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(9);
-                //There is a known bug here where pressing down will put focus
-                //On the first item because RadioButton handles the event.
-                //RadioButtons doesn't catch this because it only catches when the
-                //Last item is focused, but that item is disabled here...
-                //Bug #....
-                //KeyboardHelper.PressKey(Key.Down);
-                //VerifySelectedFocusedIndex(9);
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
 
-                InsertDisabledRadioButton(6);
-                InsertDisabledRadioButton(6);
+                    SetNumberOfItems(10);
+                    InsertDisabledRadioButton(10);
+                    TapOnItem(7);
+                    VerifySelectedFocusedIndex(7);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(9);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(5);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifySelectedFocusedIndex(6);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(9);
+                    //There is a known bug here where pressing down will put focus
+                    //On the first item because RadioButton handles the event.
+                    //RadioButtons doesn't catch this because it only catches when the
+                    //Last item is focused, but that item is disabled here...
+                    //Bug #....
+                    //KeyboardHelper.PressKey(Key.Down);
+                    //VerifySelectedFocusedIndex(9);
 
-                TapOnItem(1);
-                VerifySelectedFocusedIndex(1);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(10);
-                TapOnItem(2);
-                VerifySelectedFocusedIndex(2);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(11);
-                TapOnItem(5);
-                KeyboardHelper.PressKey(Key.Up);
-                VerifySelectedFocusedIndex(4);
-                KeyboardHelper.PressKey(Key.Down);
-                VerifySelectedFocusedIndex(5);
-                KeyboardHelper.PressKey(Key.Down);
-                VerifySelectedFocusedIndex(8);
-                TapOnItem(8);
-                VerifySelectedFocusedIndex(10);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(1);
-                TapOnItem(9);
-                VerifySelectedFocusedIndex(11);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(2);
+                    InsertDisabledRadioButton(6);
+                    InsertDisabledRadioButton(6);
+
+                    TapOnItem(1);
+                    VerifySelectedFocusedIndex(1);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(10);
+                    TapOnItem(2);
+                    VerifySelectedFocusedIndex(2);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(11);
+                    TapOnItem(5);
+                    KeyboardHelper.PressKey(Key.Up);
+                    VerifySelectedFocusedIndex(4);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifySelectedFocusedIndex(5);
+                    KeyboardHelper.PressKey(Key.Down);
+                    VerifySelectedFocusedIndex(8);
+                    TapOnItem(8);
+                    VerifySelectedFocusedIndex(10);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(1);
+                    TapOnItem(9);
+                    VerifySelectedFocusedIndex(11);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(2);
+
+                    ElementCache.Clear();
+                }
             }
         }
 
@@ -231,49 +237,55 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements = new RadioButtonsTestPageElements();
                 SetItemType(RadioButtonsSourceType.RadioButton);
-                SetSource(RadioButtonsSourceLocation.ItemSource);
+                SetNumberOfColumns(3);
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
 
-                SetNumberOfColumns(3); 
-                InsertDisabledRadioButton(5);
-                InsertDisabledRadioButton(5);
-                InsertDisabledRadioButton(5);
+                    SetNumberOfItems(10);
+                    InsertDisabledRadioButton(5);
+                    InsertDisabledRadioButton(5);
+                    InsertDisabledRadioButton(5);
 
-                TapOnItem(0);
-                VerifySelectedFocusedIndex(0);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(9);
-                TapOnItem(1);
-                VerifySelectedFocusedIndex(1);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(10);
-                TapOnItem(2);
-                VerifySelectedFocusedIndex(2);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(11);
-                TapOnItem(3);
-                VerifySelectedFocusedIndex(3);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
-                TapOnItem(4);
-                VerifySelectedFocusedIndex(4);
-                KeyboardHelper.PressKey(Key.Right);
-                VerifySelectedFocusedIndex(8);
-                TapOnItem(6);
-                VerifySelectedFocusedIndex(9);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(0);
-                TapOnItem(7);
-                VerifySelectedFocusedIndex(10);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(1);
-                TapOnItem(8);
-                VerifySelectedFocusedIndex(11);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(2);
-                TapOnItem(9);
-                VerifySelectedFocusedIndex(12);
-                KeyboardHelper.PressKey(Key.Left);
-                VerifySelectedFocusedIndex(8);
+                    TapOnItem(0);
+                    VerifySelectedFocusedIndex(0);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(9);
+                    TapOnItem(1);
+                    VerifySelectedFocusedIndex(1);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(10);
+                    TapOnItem(2);
+                    VerifySelectedFocusedIndex(2);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(11);
+                    TapOnItem(3);
+                    VerifySelectedFocusedIndex(3);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(8);
+                    TapOnItem(4);
+                    VerifySelectedFocusedIndex(4);
+                    KeyboardHelper.PressKey(Key.Right);
+                    VerifySelectedFocusedIndex(8);
+                    TapOnItem(6);
+                    VerifySelectedFocusedIndex(9);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(0);
+                    TapOnItem(7);
+                    VerifySelectedFocusedIndex(10);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(1);
+                    TapOnItem(8);
+                    VerifySelectedFocusedIndex(11);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(2);
+                    TapOnItem(9);
+                    VerifySelectedFocusedIndex(12);
+                    KeyboardHelper.PressKey(Key.Left);
+                    VerifySelectedFocusedIndex(8);
+
+                    ElementCache.Clear();
+                }
             }
         }
 

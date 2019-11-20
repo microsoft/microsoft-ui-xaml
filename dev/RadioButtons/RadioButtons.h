@@ -93,7 +93,7 @@ private:
     winrt::event_token m_layoutChangedToken{};
     void AttachToLayoutChanged();
     void DetatchFromLayoutChanged();
-    ColumnMajorUniformToLargestGridLayout* GetLayout();
+    com_ptr<ColumnMajorUniformToLargestGridLayout> GetLayout();
 
     static constexpr wstring_view s_repeaterName{ L"InnerRepeater"sv };
     static constexpr wstring_view s_childHandlersPropertyName{ L"ChildHandlers"sv };

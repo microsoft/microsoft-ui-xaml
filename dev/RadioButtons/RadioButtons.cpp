@@ -67,7 +67,7 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
     auto const inputDevice = args.InputDevice();
     if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
     {
-        if(m_selectedIndex > 0)
+        if(m_selectedIndex >= 0)
         {
             if (auto const repeater = m_repeater.get())
             {
@@ -601,7 +601,7 @@ void RadioButtons::DetatchFromLayoutChanged()
     }
 }
 
-ColumnMajorUniformToLargestGridLayout* RadioButtons::GetLayout()
+com_ptr<ColumnMajorUniformToLargestGridLayout> RadioButtons::GetLayout()
 {
     if (auto const repeater = m_repeater.get())
     {
@@ -609,7 +609,7 @@ ColumnMajorUniformToLargestGridLayout* RadioButtons::GetLayout()
         {
             if (auto const customLayout = layout.try_as<winrt::ColumnMajorUniformToLargestGridLayout>())
             {
-                return winrt::get_self<ColumnMajorUniformToLargestGridLayout>(customLayout);
+                return winrt::get_self<ColumnMajorUniformToLargestGridLayout>(customLayout)->get_strong();
             }
         }
     }

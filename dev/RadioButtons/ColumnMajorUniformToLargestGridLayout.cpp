@@ -39,9 +39,9 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
             return winrt::Size(largestChildWidth, largestChildHeight);
         }();
 
-        auto const actualColumnCount = static_cast<float>(std::min(
-            static_cast<double>(maxColumns),
-            static_cast<double>(children.Size())));
+        auto const actualColumnCount = std::min(
+            static_cast<float>(maxColumns),
+            static_cast<float>(children.Size()));
         return winrt::Size(
             (m_largestChildSize.Width * actualColumnCount) + 
             (ColumnSpacing() * (actualColumnCount - 1)),

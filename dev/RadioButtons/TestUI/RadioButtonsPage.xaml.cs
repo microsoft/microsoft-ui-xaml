@@ -203,7 +203,9 @@ namespace MUXControlsTestApp
 
         private void FocusSelectedItemButton_Clicked(object sender, RoutedEventArgs e)
         {
-            ((Control)TestRadioButtons.SelectedItem).Focus(FocusState.Keyboard);
+            var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
+            var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
+            ((Control)repeater.TryGetElement(TestRadioButtons.SelectedIndex)).Focus(FocusState.Keyboard);
         }
 
         private void Select5ThenChangeSourceButton_Clicked(object sender, RoutedEventArgs e)
