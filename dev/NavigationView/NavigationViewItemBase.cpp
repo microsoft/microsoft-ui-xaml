@@ -41,20 +41,13 @@ void NavigationViewItemBase::Position(NavigationViewListPosition value)
 
 winrt::NavigationView NavigationViewItemBase::GetNavigationView()
 {
-    //Because of Overflow popup, we can't get NavigationView by SharedHelpers::GetAncestorOfType
-    winrt::NavigationView navigationView{ nullptr };
-    auto navigationViewRepeater = GetNavigationViewRepeater();
-    if (navigationViewRepeater)
-    {
-        // TODO: Implement a NavigationViewRepeater and return NavigationView
-        //navigationView = winrt::get_self<NavigationViewList>(navigationViewList)->GetNavigationViewParent();
+    if (m_navigationView) {
+        return m_navigationView.get();
     }
     else
     {
-        // Like Settings, it's NavigationViewItem, but it's not in NavigationViewList. Give it a second chance
-        navigationView = SharedHelpers::GetAncestorOfType<winrt::NavigationView>(winrt::VisualTreeHelper::GetParent(*this));
+        return SharedHelpers::GetAncestorOfType<winrt::NavigationView>(winrt::VisualTreeHelper::GetParent(*this));
     }
-    return navigationView;
 }
 
 winrt::SplitView NavigationViewItemBase::GetSplitView()
@@ -68,8 +61,7 @@ winrt::SplitView NavigationViewItemBase::GetSplitView()
     return splitView;
 }
 
-winrt::ItemsRepeater NavigationViewItemBase::GetNavigationViewRepeater()
+void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const& navigationView)
 {
-    // Find parent NavigationViewList
-    return SharedHelpers::GetAncestorOfType<winrt::ItemsRepeater>(winrt::VisualTreeHelper::GetParent(*this));
+    m_navigationView = winrt::make_weak(navigationView);
 }
