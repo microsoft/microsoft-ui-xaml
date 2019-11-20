@@ -2337,8 +2337,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // App crashes when they have dependency on that visual, but the crash is not directly state that it's a header problem.   
         // NavigationView doesn't use quirk, but we determine the version by themeresource.
         // As a workaround, we 'quirk' it for RS4 or before release. if it's RS4 or before, HeaderVisible is not related to Header().
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "C")]
         public void HeaderIsVisibleForTargetRS4OrBelowApp()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -2891,8 +2891,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "C")]
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -3426,9 +3426,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "D")]
-        [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "D")]
+        //[TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }))
