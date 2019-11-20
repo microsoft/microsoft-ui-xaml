@@ -16,4 +16,3 @@ public:
         const winrt::Compositor& compositor,
         winrt::IInspectable& diagnostics);
 };
-
