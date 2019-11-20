@@ -99,6 +99,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Verify that when wrapping is on, clicking the down button wraps to the max value.");
                 downButton.InvokeAndWait();
                 Verify.AreEqual(100, numBox.Value);
+
+                Log.Comment("Verify that incrementing after typing in a value validates the text first.");
+                EnterText(numBox, "50", false);
+                upButton.InvokeAndWait();
+                Verify.AreEqual(55, numBox.Value);
             }
         }
 

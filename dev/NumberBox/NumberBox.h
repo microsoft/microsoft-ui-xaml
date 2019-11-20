@@ -65,6 +65,7 @@ private:
     void CoerceMaximum();
     void CoerceValue();
     void UpdateTextToValue();
+    void UpdateValueToText();
 
     void SetSpinButtonVisualState();
     void StepValue(bool isPositive);

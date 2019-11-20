@@ -136,7 +136,17 @@ void NumberBox::OnApplyTemplate()
     m_displayRounder.SignificantDigits(12);
 
     SetSpinButtonVisualState();
-    UpdateTextToValue();
+
+    if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
+        && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
+    {
+        // If Text has been set, but Value hasn't, update Value based on Text.
+        UpdateValueToText();
+    }
+    else
+    {
+        UpdateTextToValue();
+    }
 }
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -208,11 +218,16 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
 {
     if (!m_textUpdating)
     {
-        if (auto && textBox = m_textBox.get())
-        {
-            textBox.Text(Text());
-            ValidateInput();
-        }
+        UpdateValueToText();
+    }
+}
+
+void NumberBox::UpdateValueToText()
+{
+    if (auto && textBox = m_textBox.get())
+    {
+        textBox.Text(Text());
+        ValidateInput();
     }
 }
 
@@ -385,6 +400,9 @@ void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::Poin
 
 void NumberBox::StepValue(bool isPositive)
 {
+    // Before adjusting the value, validate the contents of the textbox so we don't override it.
+    ValidateInput();
+
     auto newVal = Value();
 
     if (isPositive)

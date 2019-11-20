@@ -39,7 +39,8 @@
 
             <CheckBox x:Name="WrapCheckBox" AutomationProperties.Name="WrapCheckBox" IsChecked="False" Content="Wrap Enabled"/>
 
-            <controls:NumberBox x:Name="StepNumberBox" AutomationProperties.Name="StepNumberBox" Value="1" Header="Step"/>
+            <!-- Set Text instead of Value to verify that it works -->
+            <controls:NumberBox x:Name="StepNumberBox" AutomationProperties.Name="StepNumberBox" Text="1" Header="Step"/>
 
             <StackPanel Orientation="Horizontal">
                 <CheckBox x:Name="MinCheckBox" AutomationProperties.Name="MinCheckBox" IsChecked="False" Checked="MinCheckBox_CheckChanged" Unchecked="MinCheckBox_CheckChanged" MinWidth="32" VerticalAlignment="Bottom"/>
@@ -48,7 +49,8 @@
 
             <StackPanel Orientation="Horizontal">
                 <CheckBox x:Name="MaxCheckBox" AutomationProperties.Name="MaxCheckBox" IsChecked="False" Checked="MaxCheckBox_CheckChanged" Unchecked="MaxCheckBox_CheckChanged" MinWidth="32" VerticalAlignment="Bottom"/>
-                <controls:NumberBox x:Name="MaxNumberBox" AutomationProperties.Name="MaxNumberBox" Header="Maximum" Value="100" IsEnabled="False" ValueChanged="MaxValueChanged"/>
+                <!-- Verify that setting Value overrides setting Text -->
+                <controls:NumberBox x:Name="MaxNumberBox" AutomationProperties.Name="MaxNumberBox" Header="Maximum" Value="100" Text="50" IsEnabled="False" ValueChanged="MaxValueChanged"/>
             </StackPanel>
 
             <Button x:Name="CustomFormatterButton" AutomationProperties.Name="CustomFormatterButton" Content="Custom Formatter" Click="CustomFormatterButton_Click" Margin="0,4,0,0"/>
