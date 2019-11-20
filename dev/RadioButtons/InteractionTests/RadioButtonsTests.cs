@@ -62,7 +62,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     RadioButton item1 = FindElement.ByName<RadioButton>("Radio Button 1");
                     Verify.IsTrue(item1.IsSelected);
 
-                    SelectByItem(3);
+                    SelectByIndex(3);
                     VerifySelectedIndex(3);
                     RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
                     Verify.IsTrue(item3.IsSelected);
@@ -514,12 +514,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             SetIndexToSelect(index);
             elements.GetSelectByIndexButton().Click();
-        }
-
-        void SelectByItem(int index)
-        {
-            SetIndexToSelect(index);
-            elements.GetSelectByItemButton().Click();
         }
 
         void SetIndexToSelect(int index)

@@ -12,14 +12,14 @@ unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
 
     Object ItemsSource;
     Windows.Foundation.Collections.IVector<Object> Items{ get; };
-    Windows.UI.Xaml.DataTemplate ItemTemplate;
+    [MUX_DEFAULT_VALUE("winrt::RadioButtonsElementFactory{}")]
+    Object ItemTemplate;
 
-    Windows.UI.Xaml.UIElement ContainerFromItem(Object item);
     Windows.UI.Xaml.UIElement ContainerFromIndex(Int32 index);
 
     [MUX_DEFAULT_VALUE("-1")]
     Int32 SelectedIndex;
-    Object SelectedItem;
+    Object SelectedItem{ get; };
     event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
 
     [MUX_DEFAULT_VALUE("1")]

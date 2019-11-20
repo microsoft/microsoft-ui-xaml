@@ -147,19 +147,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void SelectByItemButton_Click(object sender, RoutedEventArgs e)
-        {
-            var index = getIndexToSelect();
-            if(index != -2)
-            {
-                if(index == -1)
-                {
-                    TestRadioButtons.SelectedItem = null;
-                }
-                TestRadioButtons.SelectedItem = m_radioButtonItemCollection.ElementAt(index);
-            }
-        }
-
         private int getIndexToSelect()
         {
             if (Int32.TryParse(IndexToSelectTextBlock.Text, out int value))
@@ -244,13 +231,11 @@ namespace MUXControlsTestApp
         {
             if (ItemTypeComboBox.SelectedItem == StringsComboBoxItem)
             {
-                SelectByItemButton.IsEnabled = false;
                 InsertDisplayRadioButtonButton.IsEnabled = false;
                 return m_stringItemCollection;
             }
             else
             {
-                SelectByItemButton.IsEnabled = true;
                 InsertDisplayRadioButtonButton.IsEnabled = true;
                 return m_radioButtonItemCollection;
             }

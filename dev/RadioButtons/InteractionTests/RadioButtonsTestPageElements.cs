@@ -64,12 +64,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button SelectByIndexButton;
 
-        public Button GetSelectByItemButton()
-        {
-            return GetElement(ref SelectByItemButton, "SelectByItemButton");
-        }
-        private Button SelectByItemButton;
-
         public Button GetInsertDisplayRadioButtonButton()
         {
             return GetElement(ref InsertDisplayRadioButtonButton, "InsertDisplayRadioButtonButton");

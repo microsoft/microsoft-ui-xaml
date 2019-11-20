@@ -125,7 +125,6 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
         }
 
         UpdateSelectedIndex();
-        UpdateSelectedItem();
         UpdateMaximumColumns();
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
@@ -402,10 +401,6 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedIndex();
     }
-    else if (property == s_SelectedItemProperty)
-    {
-        UpdateSelectedItem();
-    }
 }
 
 void RadioButtons::UpdateItemsSource()
@@ -449,48 +444,12 @@ void RadioButtons::UpdateMaximumColumns()
     }
 }
 
-void RadioButtons::UpdateSelectedItem()
-{
-    if (!m_currentlySelecting)
-    {
-        if (auto const selectedItem = SelectedItem())
-        {
-            if (auto const repeater = m_repeater.get())
-            {
-                if (auto const itemsSourceView = repeater.ItemsSourceView())
-                {
-                    if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
-                    {
-                        return Select(inspectingDataSource->IndexOf(selectedItem));
-                    }
-                }
-            }
-        }
-        Select(-1);
-    }
-}
-
 void RadioButtons::UpdateSelectedIndex()
 {
     if (!m_currentlySelecting)
     {
         Select(SelectedIndex());
     }
-}
-
-winrt::UIElement RadioButtons::ContainerFromItem(winrt::IInspectable const& item)
-{
-    if (auto const repeater = m_repeater.get())
-    {
-        if (auto const itemsSourceView = repeater.ItemsSourceView())
-        {
-            if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
-            {
-                return repeater.TryGetElement(inspectingDataSource->IndexOf(item));
-            }
-        }
-    }
-    return nullptr;
 }
 
 winrt::UIElement RadioButtons::ContainerFromIndex(int index)

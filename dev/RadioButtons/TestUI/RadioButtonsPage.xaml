@@ -21,7 +21,14 @@
 
             <Grid Grid.Column="0" Margin="5" MinWidth="500" MaxWidth="800">
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
-                    <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
+                    <StackPanel>
+                        <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
+                        <controls:RadioButtons Header="A Second Radio Buttons">
+                            <RadioButton>"I'm really a Radio Button"</RadioButton>
+                            <x:String>I'm just a string</x:String>
+                            <Button>And I'm a Button!</Button>
+                        </controls:RadioButtons>
+                    </StackPanel>
                 </ScrollViewer>
             </Grid>
             <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
@@ -79,9 +86,8 @@
 
                             <TextBlock Text="Select Item:" Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             <TextBox x:Name="IndexToSelectTextBlock" AutomationProperties.Name="IndexToSelectTextBlock" Text="0" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" />
-                            <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Right" Grid.Row="8" Grid.Column="0" Click="SelectByIndexButton_Click"/>
-                            <Button Content="Select By Item" x:Name="SelectByItemButton" AutomationProperties.Name="SelectByItemButton" HorizontalAlignment="Left" Grid.Row="8" Grid.Column="1" Click="SelectByItemButton_Click"/>
-                            
+                            <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Click="SelectByIndexButton_Click"/>
+
                             <TextBlock Text="Add a custom Radio Button" HorizontalAlignment="Center" Foreground="Red" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"/>
                             <RadioButton x:Name="DisplayRadioButton" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
                             <Button x:Name="UpdateDisplayRadioButtonButton" Grid.Row="11" Grid.Column="0" HorizontalAlignment="Center" Content="Update" Click="UpdateDisplayRadioButtonButton_Click"/>

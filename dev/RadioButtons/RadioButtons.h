@@ -31,7 +31,6 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    winrt::UIElement ContainerFromItem(winrt::IInspectable const& item);
     winrt::UIElement ContainerFromIndex(int index);
 
     void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -62,7 +61,6 @@ private:
     winrt::IInspectable GetItemsSource();
     void UpdateMaximumColumns();
 
-    void UpdateSelectedItem();
     void UpdateSelectedIndex();
 
     void Select(int index);
