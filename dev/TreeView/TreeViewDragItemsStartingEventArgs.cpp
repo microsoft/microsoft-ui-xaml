@@ -8,7 +8,7 @@
 
 void TreeViewDragItemsStartingEventArgs::DragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args)
 {
-    m_dragItemsStartingEventArgs = std::forward<const winrt::DragItemsStartingEventArgs>(args);
+    m_dragItemsStartingEventArgs = args;
 }
 
 bool TreeViewDragItemsStartingEventArgs::Cancel() const

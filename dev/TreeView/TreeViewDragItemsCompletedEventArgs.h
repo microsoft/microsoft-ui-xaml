@@ -13,7 +13,10 @@ public:
     void DragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args);
     DataPackageOperation DropResult() const;
     winrt::IVectorView<winrt::IInspectable> Items();
+    void NewParent(const winrt::IInspectable& parent);
+    winrt::IInspectable NewParent();
 
 private:
     winrt::DragItemsCompletedEventArgs m_dragItemsCompletedEventArgs{ nullptr };
+    winrt::IInspectable m_newParent;
 };

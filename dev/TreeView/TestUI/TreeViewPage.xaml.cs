@@ -721,7 +721,14 @@ namespace MUXControlsTestApp
 
         private void DragItemsCompletedForApiTest(TreeView sender, TreeViewDragItemsCompletedEventArgs args)
         {
-            Results.Text += "->DragItemsCompleted:" + GetDraggedItemsNames(args.Items);
+            Results.Text += "\nDragItemsCompleted:" + GetDraggedItemsNames(args.Items);
+
+            var parent = args.NewParent;
+            if (parent != null)
+            {
+                var parentName = IsInContentMode() ? (parent as TreeViewItemSource).Content : (parent as TreeViewNode).Content.ToString();
+                Results.Text += "\nNewParent: " + parentName;
+            }
         }
 
         private String GetDraggedItemsNames(IEnumerable<object> items)

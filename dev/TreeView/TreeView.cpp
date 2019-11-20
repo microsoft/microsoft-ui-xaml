@@ -258,6 +258,21 @@ void TreeView::OnListControlDragItemsCompleted(const winrt::IInspectable& sender
 {
     auto treeViewArgs = winrt::make_self<TreeViewDragItemsCompletedEventArgs>();
     treeViewArgs->DragItemsCompletedEventArgs(args);
+
+    auto items = args.Items();
+    if (items && items.Size() > 0)
+    {
+        auto listControl = ListControl();
+        if (auto draggedNode = listControl->NodeFromItem(items.GetAt(0)))
+        {
+            auto parentNode = draggedNode.Parent();
+            if (parentNode && parentNode != m_rootNode.get())
+            {
+                treeViewArgs->NewParent(listControl->ItemFromNode(parentNode));
+            }
+        }
+    }
+
     m_dragItemsCompletedEventSource(*this, *treeViewArgs);
 }
 
