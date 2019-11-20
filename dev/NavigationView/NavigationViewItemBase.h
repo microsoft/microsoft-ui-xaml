@@ -60,8 +60,11 @@ public:
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
-    winrt::ItemsRepeater GetNavigationViewRepeater();
+    void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+protected:
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
     NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
+
 };

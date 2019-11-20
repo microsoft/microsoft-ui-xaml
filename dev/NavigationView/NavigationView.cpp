@@ -743,6 +743,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        nvibImpl->SetNavigationViewParent(*this);
 
         // Visual state info propagation
         if (IsTopNavigationView())
