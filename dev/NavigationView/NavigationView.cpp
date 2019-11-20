@@ -573,16 +573,13 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
     auto prevItem = SelectedItem();
 
     // Get required info to raise ItemInvoked
-    // TODO: Clean up into separate methods
     winrt::IInspectable nextItem = nullptr;
     auto itemIndex = parentIR.GetElementIndex(nvi);
-    auto itemsSource = parentIR.ItemsSource();
-    winrt::ItemsSourceView dataSource = nullptr;
-    if (itemsSource)
+    auto itemsSourceView = parentIR.ItemsSourceView();
+    if (itemsSourceView)
     {
-        dataSource = winrt::ItemsSourceView(itemsSource);
-        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSource));
-        nextItem = inspectingDataSource->GetAtCore(itemIndex);
+        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
+        nextItem = inspectingDataSource->GetAt(itemIndex);
     }
 
     // This method only gets called when an item has recieved interaction, therefore raise ItemInvoked
@@ -833,19 +830,23 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
         nvi.SetValue(GetNavigationViewItemRevokersProperty(), nullptr);
     }
 
-    // Todo: Only unlink when source defined from MenuItems
-    // Unlink Element from panel
-    auto panel = ir.try_as<winrt::Panel>();
-    if (panel)
+    // If data was defined in MarkUp, we want to unlink the containers from the parent repeater
+    // in case we are required to move it to a different repeater.
+    if (MenuItems().Size() > 0)
     {
-        auto children = panel.Children();
-        unsigned int childIndex = 0;
-        bool found = children.IndexOf(args.Element(), childIndex);
-        if (!found)
+        // Unlink Element from panel
+        auto panel = ir.try_as<winrt::Panel>();
+        if (panel)
         {
-            throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+            auto children = panel.Children();
+            unsigned int childIndex = 0;
+            bool found = children.IndexOf(args.Element(), childIndex);
+            if (!found)
+            {
+                throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+            }
+            children.RemoveAt(childIndex);
         }
-        children.RemoveAt(childIndex);
     }
 }
 
