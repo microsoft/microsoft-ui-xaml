@@ -25,8 +25,6 @@ RadioButtons::RadioButtons()
     PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
     GotFocus({ this, &RadioButtons::OnChildGotFocus });
-    KeyDown({ this, &RadioButtons::KeyDownHandler });
-    KeyUp({ this, &RadioButtons::KeyUpHandler });
 
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
     // To ensure proper lifetime management we create revokers for these elements and attach
@@ -133,22 +131,6 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
     }
 }
 
-void RadioButtons::KeyDownHandler(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
-{
-    if (args.Key() == winrt::VirtualKey::Control)
-    {
-        m_isControlDown = true;
-    }
-}
-
-void RadioButtons::KeyUpHandler(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
-{
-    if (args.Key() == winrt::VirtualKey::Control)
-    {
-        m_isControlDown = false;
-    }
-}
-
 void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args)
 {
     switch (args.Key())
@@ -206,7 +188,7 @@ winrt::FindNextElementOptions RadioButtons::GetFindNextElementOptions()
 // Selection follows focus unless control key is held down.
 void RadioButtons::OnChildGotFocus(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
-    if (!m_isControlDown)
+    if(winrt::Window::Current().CoreWindow().GetAsyncKeyState(winrt::VirtualKey::Control) != winrt::CoreVirtualKeyStates::Down)
     {
         if (auto const repeater = m_repeater.get())
         {

@@ -49,8 +49,6 @@ private:
 
     void OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args);
     void OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEventArgs&);
-    void KeyDownHandler(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
-    void KeyUpHandler(const winrt::IInspectable&, const winrt::KeyRoutedEventArgs& args);
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementClearing(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementClearingEventArgs& args);
     void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
@@ -75,7 +73,6 @@ private:
     bool MoveFocusPrevious();
     bool MoveFocus(int initialIndexIncrement);
 
-    bool m_isControlDown{ false };
     int m_selectedIndex{ -1 };
     bool m_currentlySelecting{ false };
 
