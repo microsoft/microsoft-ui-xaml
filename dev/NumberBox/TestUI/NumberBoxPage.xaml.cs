@@ -45,11 +45,11 @@ namespace MUXControlsTestApp
             {
                 if (ValidationComboBox.SelectedIndex == 0)
                 {
-                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.InvalidInputOverwritten;
+                    TestNumberBox.ValidationMode = NumberBoxValidationMode.InvalidInputOverwritten;
                 }
                 else if (ValidationComboBox.SelectedIndex == 1)
                 {
-                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.Disabled;
+                    TestNumberBox.ValidationMode = NumberBoxValidationMode.Disabled;
                 }
             }
         }

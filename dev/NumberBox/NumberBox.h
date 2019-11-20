@@ -42,7 +42,7 @@ public:
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

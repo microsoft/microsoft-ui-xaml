@@ -243,6 +243,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Check("HyperScrollCheckBox");
 
+                Log.Comment("Verify that scroll doesn't work when the control doesn't have focus.");
+                InputHelper.RotateWheel(numBox, 1);
+                Wait.ForIdle();
+                Verify.AreEqual(0, numBox.Value);
+
+                FindTextBox(numBox).SetFocus();
+
                 InputHelper.RotateWheel(numBox, 1);
                 InputHelper.RotateWheel(numBox, 1);
                 Wait.ForIdle();

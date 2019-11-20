@@ -216,7 +216,7 @@ void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEven
     }
 }
 
-void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     ValidateInput();
 }
@@ -270,7 +270,7 @@ void NumberBox::CoerceValue()
 {
     // Validate that the value is in bounds
     const auto value = Value();
-    if (!std::isnan(value) && !IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    if (!std::isnan(value) && !IsInBounds(value) && ValidationMode() == winrt::NumberBoxValidationMode::InvalidInputOverwritten)
     {
         // Coerce value to be within range
         const auto max = Maximum();
@@ -308,7 +308,7 @@ void NumberBox::ValidateInput()
 
             if (!value)
             {
-                if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                if (ValidationMode() == winrt::NumberBoxValidationMode::InvalidInputOverwritten)
                 {
                     // Override text to current value
                     UpdateTextToValue();
@@ -368,7 +368,7 @@ void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::Poin
 {
     if (auto && textBox = m_textBox.get())
     {
-        if (HyperScrollEnabled() && textBox.FocusState() != winrt::FocusState::Unfocused)
+        if (IsHyperScrollEnabled() && textBox.FocusState() != winrt::FocusState::Unfocused)
         {
             const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
             if (delta > 0)
@@ -396,7 +396,7 @@ void NumberBox::StepValue(bool isPositive)
         newVal -= StepFrequency();
     }
 
-    if (WrapEnabled())
+    if (IsWrapEnabled())
     {
         const auto max = Maximum();
         const auto min = Minimum();

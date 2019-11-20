@@ -71,8 +71,8 @@
                     ValueChanged="NumberBoxValueChanged"
                     StepFrequency="{x:Bind StepNumberBox.Value, Mode=OneWay}"
                     AcceptsCalculation="{x:Bind CalculationCheckBox.IsChecked.Value, Mode=OneWay}"
-                    HyperScrollEnabled="{x:Bind HyperScrollCheckBox.IsChecked.Value, Mode=OneWay}"
-                    WrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
+                    IsHyperScrollEnabled="{x:Bind HyperScrollCheckBox.IsChecked.Value, Mode=OneWay}"
+                    IsWrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
                     IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
                 <StackPanel Orientation="Horizontal">

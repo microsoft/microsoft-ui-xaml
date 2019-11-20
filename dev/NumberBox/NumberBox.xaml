@@ -62,7 +62,12 @@
                             Grid.Column="0"
                             Header="{TemplateBinding Header}"
                             HeaderTemplate="{TemplateBinding HeaderTemplate}"
-                            PlaceholderText="{TemplateBinding PlaceholderText}"/>
+                            PlaceholderText="{TemplateBinding PlaceholderText}"
+                            SelectionFlyout="{TemplateBinding SelectionFlyout}"
+                            SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
+                            TextReadingOrder="{TemplateBinding TextReadingOrder}"
+                            PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
+                            Description="{TemplateBinding Description}"/>
 
                         <Popup x:Name="UpDownPopup"
                             Grid.Column="1"

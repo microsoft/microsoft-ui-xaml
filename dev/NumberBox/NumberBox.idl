@@ -12,7 +12,7 @@ enum NumberBoxSpinButtonPlacementMode
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-enum NumberBoxBasicValidationMode
+enum NumberBoxValidationMode
 {
     InvalidInputOverwritten,
     Disabled
@@ -47,26 +47,31 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_DEFAULT_VALUE("1")]
     Double StepFrequency;
 
-    Object Header;
-    Windows.UI.Xaml.DataTemplate HeaderTemplate;
-
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
 
+    // TextBox properties
+    Object Header;
+    Windows.UI.Xaml.DataTemplate HeaderTemplate;
     String PlaceholderText;
+    Windows.UI.Xaml.Controls.Primitives.FlyoutBase SelectionFlyout;
+    Windows.UI.Xaml.Media.SolidColorBrush SelectionHighlightColor;
+    Windows.UI.Xaml.TextReadingOrder TextReadingOrder;
+    Boolean PreventKeyboardDisplayOnProgrammaticFocus;
+    Object Description;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    NumberBoxBasicValidationMode BasicValidationMode;
+    NumberBoxValidationMode ValidationMode;
 
     [MUX_DEFAULT_VALUE("winrt::NumberBoxSpinButtonPlacementMode::Hidden")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode{ get; set; };
 
     [MUX_DEFAULT_VALUE("false")]
-    Boolean HyperScrollEnabled;
+    Boolean IsHyperScrollEnabled;
 
     [MUX_DEFAULT_VALUE("false")]
-    Boolean WrapEnabled;
+    Boolean IsWrapEnabled;
 
     [MUX_DEFAULT_VALUE("false")]
     Boolean AcceptsCalculation;
@@ -81,16 +86,21 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SelectionHighlightColorProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty TextReadingOrderProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty DescriptionProperty{ get; };
 
-    static Windows.UI.Xaml.DependencyProperty BasicValidationModeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty ValidationModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SpinButtonPlacementModeProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty HyperScrollEnabledProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty WrapEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsHyperScrollEnabledProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsWrapEnabledProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty AcceptsCalculationProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty NumberFormatterProperty{ get; };
