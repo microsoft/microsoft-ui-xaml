@@ -24,12 +24,12 @@ class ProgressRingAnimatedVisual :
     public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual>
 {
     static constexpr auto c_durationTicks = 20000000ms;
-    winrt::Compositor const _c;
-    winrt::ExpressionAnimation const _reusableExpressionAnimation;
-    winrt::CubicBezierEasingFunction _cubicBezierEasingFunction;
-    winrt::StepEasingFunction _holdThenStepEasingFunction;
-    winrt::ContainerVisual _root;
-    winrt::ExpressionAnimation _scalarExpressionAnimation;
+    winrt::Compositor const _c{ nullptr };
+    winrt::ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+    winrt::CubicBezierEasingFunction _cubicBezierEasingFunction{ nullptr };
+    winrt::StepEasingFunction _holdThenStepEasingFunction{ nullptr };
+    winrt::ContainerVisual _root{ nullptr };
+    winrt::ExpressionAnimation _scalarExpressionAnimation{ nullptr };
 
     // Layer (Shape): Radial
     // Transforms: Radial
@@ -101,7 +101,7 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateContainerShape();
         result.TransformMatrix({5, 0, 0, 5, 50, 50});
-        auto shapes = result.Shapes;
+        auto shapes = result.Shapes();
         shapes.Append(ContainerShape_1());
         return result;
     }
@@ -111,7 +111,7 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionContainerShape ContainerShape_1()
     {
         auto result = _c.CreateContainerShape();
-        auto shapes = result.Shapes;
+        auto shapes = result.Shapes();
         shapes.Append(SpriteShape_2());
         shapes.Append(SpriteShape_3());
         result.StartAnimation(L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_900());
@@ -186,9 +186,9 @@ class ProgressRingAnimatedVisual :
     winrt::ContainerVisual Root()
     {
         auto result = _root = _c.CreateContainerVisual();
-        auto propertySet = result.Properties;
+        auto propertySet = result.Properties();
         propertySet.InsertScalar(L"Progress", 0);
-        auto children = result.Children;
+        auto children = result.Children();
         children.InsertAtTop(ShapeVisual());
         return result;
     }
@@ -218,7 +218,7 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateShapeVisual();
         result.Size({ 100, 100 });
-        auto shapes = result.Shapes;
+        auto shapes = result.Shapes();
         // SolidLayerRectangle
         shapes.Append(SpriteShape_0());
         // Ellipse Path

@@ -3,8 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
-    xmlns:lottie="using:Microsoft.Toolkit.Uwp.UI.Lottie"
-    xmlns:animatedvisuals="using:AnimatedVisuals">
+    xmlns:ProgressRingAnimatedVisual="using:ProgressRingAnimatedVisual">
 
     <Style TargetType="local:ProgressRing">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
@@ -16,12 +15,10 @@
                     <Grid x:Name="LayoutRoot" Background="Transparent">
                         
                         <!-- Lottie -->
-                        <Border Style="{StaticResource LottiePlayer}">
+                        <Border>
                             <!--AnimatedVisualPlayer with AutoPlay-->
-                            <local:AnimatedVisualPlayer x:Name="Json_Player">
-                                <!--Codegen class AnimatedVisuals/LottieLogo1.cs-->
-                                <!--<lottie:LottieVisualSource x:Name="Json_Source"
-                                               UriSource="ms-appx:///Assets/LottieLogo1.json" />-->
+                            <local:AnimatedVisualPlayer x:Name="LottiePlayer">
+
                             </local:AnimatedVisualPlayer>
                         </Border>
 

@@ -28,8 +28,7 @@ void ProgressRing::OnApplyTemplate()
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
 
-    
-    auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(L"Json_Player", controlProtected);
+    auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(L"LottiePlayer", controlProtected);
     player.Source(winrt::make<RadialLoading>());
 
     UpdateRing();
