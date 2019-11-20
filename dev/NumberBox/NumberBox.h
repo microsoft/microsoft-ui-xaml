@@ -53,12 +53,12 @@ public:
 
 private:
 
-    void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-    void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
     void CoerceMinimum();
@@ -83,7 +83,6 @@ private:
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
-    winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::Button::Click_revoker m_popupUpButtonClickRevoker{};
     winrt::Button::Click_revoker m_popupDownButtonClickRevoker{};

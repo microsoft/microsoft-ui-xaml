@@ -41,9 +41,10 @@ NumberBox::NumberBox()
     formatter.FractionDigits(0);
     NumberFormatter(formatter);
 
-    PointerWheelChanged({ this, &NumberBox::OnScroll });
+    PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
 
     GotFocus({ this, &NumberBox::OnNumberBoxGotFocus });
+    LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
 }
@@ -86,7 +87,6 @@ void NumberBox::OnApplyTemplate()
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
-            m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
@@ -238,7 +238,7 @@ void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::Ro
     }
 }
 
-void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NumberBox::OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
 
@@ -364,18 +364,21 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
     }
 }
 
-void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    if (HyperScrollEnabled())
+    if (auto && textBox = m_textBox.get())
     {
-        const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
-        if (delta > 0)
+        if (HyperScrollEnabled() && textBox.FocusState() != winrt::FocusState::Unfocused)
         {
-            StepValueUp();
-        }
-        else if (delta < 0)
-        {
-            StepValueDown();
+            const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
+            if (delta > 0)
+            {
+                StepValueUp();
+            }
+            else if (delta < 0)
+            {
+                StepValueDown();
+            }
         }
     }
 }
