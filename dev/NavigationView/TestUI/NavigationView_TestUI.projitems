@@ -58,10 +58,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewRS4Page.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -71,10 +67,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)NavigationViewCaseBundle.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewRS3Page.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -122,9 +114,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewInitPage.xaml.cs">
       <DependentUpon>NavigationViewInitPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewRS4Page.xaml.cs">
-      <DependentUpon>NavigationViewRS4Page.xaml</DependentUpon>
-    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavPage.xaml</DependentUpon>
     </Compile>
@@ -133,9 +122,6 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewCaseBundle.xaml.cs">
       <DependentUpon>NavigationViewCaseBundle.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewRS3Page.xaml.cs">
-      <DependentUpon>NavigationViewRS3Page.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewTopNavOnlyPage.xaml.cs">
       <DependentUpon>NavigationViewTopNavOnlyPage.xaml</DependentUpon>
