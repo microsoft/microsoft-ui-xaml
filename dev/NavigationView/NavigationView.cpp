@@ -618,49 +618,13 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
-    // TODO: Check whether invoked item is already selected (therefore only raise item invoked)????
     if (m_selectionModel && itemSelectsOnInvoked)
     {
         winrt::IndexPath ip = GetIndexPathForContainer(nvi);
         m_selectionModel.SelectAt(ip);
     }
+
     ClosePaneIfNeccessaryAfterItemIsClicked();
-
-    //            // In current implementation, when customer clicked a NavigationViewItem, ListView raised ItemInvoke, and we ignored it
-    //        // then ListView raised SelectionChange event. And NavigationView listen to this event and raise ItemInvoked, and then SelectionChanged.
-    //        // This caused a problem that if customer changed SelectedItem in ItemInvoked, ListView.SelectionChanged event doesn't know about it.
-    //        // So need to see make nextActualItem the same as SelectedItem.
-    //auto selectedItem = SelectedItem();
-    //if (nextActualItem != selectedItem)
-    //{
-    //    const auto& invokedItem = nextActualItem;
-    //    nextActualItem = selectedItem;
-    //    isSettingsItem = IsSettingsItem(nextActualItem);
-    //    recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-
-    //    // Customer set SelectedItem to null in ItemInvoked event, so we unselect the old selectedItem.
-    //    if (invokedItem && !nextActualItem)
-    //    {
-    //        UnselectPrevItem(invokedItem, nextActualItem);
-    //    }
-    //}
-
-    // TODO: Check whether invoked item is already selected (therefore only raise item invoked)
-        //    if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
-    //    {
-    //        // Aways keep one item is selected except Settings
-
-    //        // So you're wondering - wait if the menu was previously selected, how can
-    //        // the removed item not be a NavigationViewItem? Well, if you say clear a
-    //        // NavigationView of MenuItems() and replace it with MenuItemsSource() full
-    //        // of strings, you may end up in this state which necessitates the following
-    //        // check:
-    //        if (auto itemAsNVI = prevItem.try_as<winrt::NavigationViewItem>())
-    //        {
-    //            itemAsNVI.IsSelected(true);
-    //        }
-    //    }
-
 }
 
 bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
@@ -2023,29 +1987,27 @@ bool NavigationView::BumperNavigation(int offset)
 
             if (index >= 0)
             {
-                MUX_FAIL_FAST_MSG("Update implementation to handle itemsrepeater");
-                //TODO: UPDATE IMPLEMENTATION FOR ITEMSREPEATER
+                //TODO: Do some testing to verify the repeater implementation works as expected
 
-                //auto topNavListView = m_topNavListView.get();
-                //auto itemsList = topNavListView.Items();
-                //auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
-                //index += offset;
+                auto topNavRepeater = m_topNavRepeater.get();
+                auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
+                index += offset;
 
-                //while (index > -1 && index < topPrimaryListSize)
-                //{
-                //    auto newItem = itemsList.GetAt(index);
-                //    if (auto newNavViewItem = newItem.try_as<winrt::NavigationViewItem>())
-                //    {
-                //        // This is done to skip Separators or other items that are not NavigationViewItems
-                //        if (winrt::get_self<NavigationViewItem>(newNavViewItem)->SelectsOnInvoked())
-                //        {
-                //            topNavListView.SelectedItem(newItem);
-                //            return true;
-                //        }
-                //    }
+                while (index > -1 && index < topPrimaryListSize)
+                {
+                    auto newItem = topNavRepeater.TryGetElement(index);
+                    if (auto newNavViewItem = newItem.try_as<winrt::NavigationViewItem>())
+                    {
+                        // This is done to skip Separators or other items that are not NavigationViewItems
+                        if (winrt::get_self<NavigationViewItem>(newNavViewItem)->SelectsOnInvoked())
+                        {
+                            newNavViewItem.IsSelected(true);
+                            return true;
+                        }
+                    }
 
-                //    index += offset;
-                //}
+                    index += offset;
+                }
             }
         }
     }
@@ -2418,22 +2380,16 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
     {
         //TODO: Implement for repeater  (Propagate to all items)
         //TODO: Remove temporary implementation in ElementPrepared
-        //MUX_FAIL_FAST_MSG("This codepath should not be hit, not updated.");
-        //auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
+        auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
 
-        //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::LeftListView,
-        //    [showFocusVisual](NavigationViewList* list)
-        //{
-        //    list->SetShowFocusVisual(showFocusVisual);
-        //}
-        //);
-
-        //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::TopListView,
-        //    [showFocusVisual](NavigationViewList* list)
-        //{
-        //    list->SetShowFocusVisual(showFocusVisual);
-        //}
-        //);
+        if (IsTopNavigationView())
+        {
+            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), showFocusVisual);
+        }
+        else
+        {
+            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), showFocusVisual);
+        }
     }
 }
 
@@ -2448,38 +2404,28 @@ void NavigationView::PropagateNavigationViewAsParent()
     //    );
 }
 
-//void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function)
-//{
-//    //TODO: IMPLEMENT FOR ITEMSREPEATER
-//    if (NavigationViewPropagateTarget::LeftListView == target || 
-//        NavigationViewPropagateTarget::All == target)
-//    {
-//        //PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
-//    }
-//    if (NavigationViewPropagateTarget::TopListView == target ||
-//        NavigationViewPropagateTarget::All == target)
-//    {
-//        //PropagateChangeToNavigationViewList(m_topNavListView.get(), function);
-//    }
-//    if (NavigationViewPropagateTarget::OverflowListView == target ||
-//        NavigationViewPropagateTarget::All == target)
-//    {
-//        //PropagateChangeToNavigationViewList(m_topNavListOverflowView.get(), function);
-//    }
-//}
+void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
+{
+    if (ir)
+    {
+        if (auto itemsSourceView = ir.ItemsSourceView())
+        {
+            auto numberOfItems = itemsSourceView.Count();
+            for (int i = 0; i < numberOfItems; i++)
+            {
+                if (auto nvib = ir.TryGetElement(i))
+                {
+                    if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
+                    {
+                        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                        nviImpl->UseSystemFocusVisuals(showFocusVisual);
+                    }
+                }
 
-//void NavigationView::PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function)
-//{
-//    // TODO: Implement for repeater
-//    //if (listView)
-//    //{
-//    //    if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-//    //    {
-//    //        auto container = winrt::get_self<NavigationViewList>(navigationViewList);
-//    //        function(container);
-//    //    }
-//    //}
-//}
+            }
+        }
+    }
+}
 
 void NavigationView::InvalidateTopNavPrimaryLayout()
 {
