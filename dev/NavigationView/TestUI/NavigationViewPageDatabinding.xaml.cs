@@ -113,6 +113,10 @@ namespace MUXControlsTestApp
             {
                 NavView.SelectedItem = NavView.SettingsItem;
             }
+            else if (tag == "Item 3")
+            {
+                NavView.SelectedItem = "Item 3";
+            }
         }
 
         private void PaneDisplayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)

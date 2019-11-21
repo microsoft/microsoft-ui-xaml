@@ -43,6 +43,7 @@
                     <ComboBoxItem Content="Music" Tag="Music"/>
                     <ComboBoxItem Content="Movies" Tag="Movies"/>
                     <ComboBoxItem Content="TV" Tag="TV"/>
+                    <ComboBoxItem Content="Item 3" Tag="Item 3"/>
                     <ComboBoxItem Content="Settings" Tag="Settings"/>
                 </ComboBox>
                 <ComboBox x:Name="PaneDisplayModeCombobox"

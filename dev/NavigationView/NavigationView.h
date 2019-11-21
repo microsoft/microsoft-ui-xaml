@@ -230,6 +230,7 @@ private:
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
 
+    void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
     winrt::IndexPath GetIndexPathForContainer(winrt::NavigationViewItemBase nvib);
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib);
