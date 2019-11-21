@@ -24,7 +24,6 @@ RadioButtons::RadioButtons()
     // because RadioButton has a key down handler for up and down that gets called before we can intercept. Issue #1634.
     PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
-    GotFocus({ this, &RadioButtons::OnChildGotFocus });
 
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
     // To ensure proper lifetime management we create revokers for these elements and attach
@@ -62,12 +61,12 @@ void RadioButtons::OnApplyTemplate()
 // When focus comes from outside the RadioButtons control we will put focus on the selected radio button.
 void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::GettingFocusEventArgs& args)
 {
-    auto const inputDevice = args.InputDevice();
-    if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
+    if (auto const repeater = m_repeater.get())
     {
-        if(m_selectedIndex >= 0)
+        auto const inputDevice = args.InputDevice();
+        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
         {
-            if (auto const repeater = m_repeater.get())
+            if (m_selectedIndex >= 0)
             {
                 if (auto const oldFocusedElement = args.OldFocusedElement())
                 {
@@ -87,13 +86,16 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                         {
                             if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                             {
-                                args.TrySetNewFocusedElement(selectedItem);
+                                if (args.TrySetNewFocusedElement(selectedItem))
+                                {
+                                    args.Handled(true);
+                                }
                             }
                         }
                         // If focus is coming from the first element to the last element (or last to first), via keyboard we know (suspect)
                         // that RadioButton has interfered and we want to correct. 
                         else if (oldFocusedRepeaterIndex == 0 ||
-                                    oldFocusedRepeaterIndex == repeaterItemCount - 1)
+                            oldFocusedRepeaterIndex == repeaterItemCount - 1)
                         {
                             if (auto const newFocusedElement = args.NewFocusedElement())
                             {
@@ -103,13 +105,27 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                                     if ((oldFocusedRepeaterIndex == 0 && newFocusedRepeaterIndex == repeaterItemCount - 1) ||
                                         (oldFocusedRepeaterIndex == repeaterItemCount - 1 && newFocusedRepeaterIndex == 0))
                                     {
-                                        args.TrySetNewFocusedElement(oldFocusedElement);
+                                        if (args.TrySetNewFocusedElement(oldFocusedElement))
+                                        {
+                                            args.Handled(true);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        if ((winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+            winrt::CoreVirtualKeyStates::Down) !=
+            winrt::CoreVirtualKeyStates::Down)
+        {
+            if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
+            {
+                Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                args.Handled(true);
             }
         }
     }
@@ -185,9 +201,11 @@ winrt::FindNextElementOptions RadioButtons::GetFindNextElementOptions()
 }
 
 // Selection follows focus unless control key is held down.
-void RadioButtons::OnChildGotFocus(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
+void RadioButtons::OnChildGettingFocus(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
-    if(winrt::Window::Current().CoreWindow().GetAsyncKeyState(winrt::VirtualKey::Control) != winrt::CoreVirtualKeyStates::Down)
+    auto const coreWindow = winrt::Window::Current().CoreWindow();
+    //auto const dummy = coreWindow.GetAsyncKeyState(winrt::VirtualKey::Control);
+    if((coreWindow.GetAsyncKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
     {
         if (auto const repeater = m_repeater.get())
         {

@@ -55,7 +55,7 @@ private:
     void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnChildGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
+    void OnChildGettingFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
 
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();

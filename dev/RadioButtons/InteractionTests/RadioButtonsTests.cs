@@ -500,7 +500,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Clicking on item 'Radio Button " + index + "'");
                 RadioButton item = FindElement.ByName<RadioButton>("Radio Button " + index);
-                item.Tap();
+                item.Click();
             }
         }
 
