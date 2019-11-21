@@ -110,19 +110,16 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
 
     m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
     m_leftNavItemsRepeaterElementClearingRevoker.revoke();
-    m_leftNavItemsRepeaterElementIndexChangedRevoker.revoke();
     m_leftNavRepeaterLoadedRevoker.revoke();
     m_leftNavRepeater.set(nullptr);
 
     m_topNavItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavItemsRepeaterElementClearingRevoker.revoke();
-    m_topNavItemsRepeaterElementIndexChangedRevoker.revoke();
     m_topNavRepeaterLoadedRevoker.revoke();
     m_topNavRepeater.set(nullptr);
 
     m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
     m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
-    m_topNavOverflowItemsRepeaterElementIndexChangedRevoker.revoke();
     m_topNavRepeaterOverflowView.set(nullptr);
 }
 
@@ -269,7 +266,6 @@ void NavigationView::OnApplyTemplate()
 
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
-        m_leftNavItemsRepeaterElementIndexChangedRevoker = leftNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
  
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -298,7 +294,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
-        m_topNavItemsRepeaterElementIndexChangedRevoker = topNavRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -315,7 +310,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
-        m_topNavOverflowItemsRepeaterElementIndexChangedRevoker = topNavListOverflowRepeater.ElementIndexChanged(winrt::auto_revoke, { this, &NavigationView::RepeaterElementIndexChanged });
 
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
@@ -544,7 +538,6 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvib);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
 
-            // TODO: Verify if this indexPath comparison is needed
             if (indexPath && indexPathFromModel && indexPath.GetAt(0) == indexPathFromModel.GetAt(0))
             {
                 m_selectionModel.DeselectAt(indexPath);
@@ -814,11 +807,6 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
             children.RemoveAt(childIndex);
         }
     }
-}
-
-void NavigationView::RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args)
-{
-    // TODO: Implement if needed
 }
 
 // Hook up the Settings Item Invoked event listener
@@ -1987,8 +1975,6 @@ bool NavigationView::BumperNavigation(int offset)
 
             if (index >= 0)
             {
-                //TODO: Do some testing to verify the repeater implementation works as expected
-
                 auto topNavRepeater = m_topNavRepeater.get();
                 auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
                 index += offset;
@@ -2026,7 +2012,6 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             {
                 if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
                     auto index = ir.GetElementIndex(element);
                     if (index != -1)
                     {
@@ -2039,7 +2024,6 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             {
                 if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
                     auto index = ir.GetElementIndex(element);
                     if (index != -1)
                     {
@@ -2054,7 +2038,6 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             {
                 if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    // TODO: Exception is being thrown here if element is not part of ItemsRepeater
                     int index = ir.GetElementIndex(element);
                     if (index != -1)
                     {
@@ -2378,8 +2361,6 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 {
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
-        //TODO: Implement for repeater  (Propagate to all items)
-        //TODO: Remove temporary implementation in ElementPrepared
         auto showFocusVisual = ShouldShowFocusVisual();
 
         if (IsTopNavigationView())
@@ -2642,7 +2623,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 
     if (needInvalidMeasure || m_shouldInvalidateMeasureOnNextLayoutUpdate)
     {
-        MUX_FAIL_FAST_MSG("THIS CODE PATH SHOULD NOT BE HIT ANYMORE!");
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
         SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
@@ -3651,21 +3631,6 @@ void NavigationView::UpdateSelectedItem()
     if (settingsItem && item == settingsItem)
     {
         OnSettingsInvoked();
-    }
-    else
-    {
-        //TODO: Verify that this implementation is no longer needed!
-        //auto lv = m_topNavListView.get();
-        //if (!IsTopNavigationView())
-        //{
-        //    //TODO: Update for LeftNavigationView
-        //    lv = NULL;
-        //}
-
-        //if (lv)
-        //{
-        //    lv.SelectedItem(item);
-        //}
     }
 }
 

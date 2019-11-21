@@ -223,7 +223,6 @@ private:
 
     void RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args);
     void RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args);
-    void RepeaterElementIndexChanged(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementIndexChangedEventArgs args);
 
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
