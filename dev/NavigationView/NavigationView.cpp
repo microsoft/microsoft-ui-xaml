@@ -759,6 +759,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
             }
         }
 
+        // TODO: Remove?
         //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
@@ -789,23 +790,19 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
         nvi.SetValue(GetNavigationViewItemRevokersProperty(), nullptr);
     }
 
-    // If data was defined in MarkUp, we want to unlink the containers from the parent repeater
+    // We want to unlink the containers from the parent repeater
     // in case we are required to move it to a different repeater.
-    if (MenuItems().Size() > 0)
+    auto panel = ir.try_as<winrt::Panel>();
+    if (panel)
     {
-        // Unlink Element from panel
-        auto panel = ir.try_as<winrt::Panel>();
-        if (panel)
+        auto children = panel.Children();
+        unsigned int childIndex = 0;
+        bool found = children.IndexOf(args.Element(), childIndex);
+        if (!found)
         {
-            auto children = panel.Children();
-            unsigned int childIndex = 0;
-            bool found = children.IndexOf(args.Element(), childIndex);
-            if (!found)
-            {
-                throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
-            }
-            children.RemoveAt(childIndex);
+            throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
         }
+        children.RemoveAt(childIndex);
     }
 }
 
