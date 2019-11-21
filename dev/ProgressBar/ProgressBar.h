@@ -19,6 +19,8 @@ class ProgressBar :
 public:
     ProgressBar();
 
+    virtual winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElement
     void OnApplyTemplate();
 

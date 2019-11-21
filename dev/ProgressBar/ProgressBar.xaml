@@ -40,7 +40,7 @@
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
-                                
+
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Updating" />
@@ -123,7 +123,6 @@
                             </Border>
                         </Border>
                     </Grid>
-                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
