@@ -76,29 +76,86 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Check("MinCheckBox");
                 Check("MaxCheckBox");
 
-                numBox.SetValue(98);
-                Wait.ForIdle();
-                Log.Comment("Verify that when wrapping is off, clicking the up button won't go past the max value.");
-                upButton.InvokeAndWait();
-                Verify.AreEqual(100, numBox.Value);
-
+                numBox.SetValue(100);
                 Check("WrapCheckBox");
 
-                Log.Comment("Verify that when wrapping is on, clicking the up button wraps to the min value.");
+                Log.Comment("Verify that when wrapping is on, and value is at max, clicking the up button wraps to the min value.");
                 upButton.InvokeAndWait();
                 Verify.AreEqual(0, numBox.Value);
-
-                Uncheck("WrapCheckBox");
-
-                Log.Comment("Verify that when wrapping is off, clicking the down button won't go past the min value.");
-                downButton.InvokeAndWait();
-                Verify.AreEqual(0, numBox.Value);
-
-                Check("WrapCheckBox");
 
                 Log.Comment("Verify that when wrapping is on, clicking the down button wraps to the max value.");
                 downButton.InvokeAndWait();
                 Verify.AreEqual(100, numBox.Value);
+
+                Log.Comment("Verify that incrementing after typing in a value validates the text first.");
+                EnterText(numBox, "50", false);
+                upButton.InvokeAndWait();
+                Verify.AreEqual(55, numBox.Value);
+            }
+        }
+
+
+        [TestMethod]
+        public void UpDownEnabledTest()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+
+                ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
+                spinModeComboBox.SelectItemByName("Inline");
+                Wait.ForIdle();
+
+                Button upButton = FindButton(numBox, "Increase");
+                Button downButton = FindButton(numBox, "Decrease");
+
+                Check("MinCheckBox");
+                Check("MaxCheckBox");
+
+                Log.Comment("Verify that when Value is at Minimum, the down spin button is disabled.");
+                Verify.IsTrue(upButton.IsEnabled);
+                Verify.IsFalse(downButton.IsEnabled);
+
+                Log.Comment("Verify that when Value is at Maximum, the up spin button is disabled.");
+                numBox.SetValue(100);
+                Wait.ForIdle();
+                Verify.IsFalse(upButton.IsEnabled);
+                Verify.IsTrue(downButton.IsEnabled);
+
+                Log.Comment("Verify that when wrapping is enabled, spin buttons are enabled.");
+                Check("WrapCheckBox");
+                Verify.IsTrue(upButton.IsEnabled);
+                Verify.IsTrue(downButton.IsEnabled);
+                Uncheck("WrapCheckBox");
+
+                Log.Comment("Verify that when Maximum is updated the up button is updated also.");
+                RangeValueSpinner maxBox = FindElement.ByName<RangeValueSpinner>("MaxNumberBox");
+                maxBox.SetValue(200);
+                Wait.ForIdle();
+                Verify.IsTrue(upButton.IsEnabled);
+                Verify.IsTrue(downButton.IsEnabled);
+
+                Log.Comment("Verify that spin buttons are disabled if value is NaN.");
+                numBox.SetValue(double.NaN);
+                Wait.ForIdle();
+                Verify.IsFalse(upButton.IsEnabled);
+                Verify.IsFalse(downButton.IsEnabled);
+
+                ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
+                validationComboBox.SelectItemByName("Disabled");
+                Wait.ForIdle();
+
+                Log.Comment("Verify that when validation is off, spin buttons are enabled");
+                numBox.SetValue(0);
+                Wait.ForIdle();
+                Verify.IsTrue(upButton.IsEnabled);
+                Verify.IsTrue(downButton.IsEnabled);
+
+                Log.Comment("...except in the NaN case");
+                numBox.SetValue(double.NaN);
+                Wait.ForIdle();
+                Verify.IsFalse(upButton.IsEnabled);
+                Verify.IsFalse(downButton.IsEnabled);
             }
         }
 
@@ -243,6 +300,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Check("HyperScrollCheckBox");
 
+                Log.Comment("Verify that scroll doesn't work when the control doesn't have focus.");
+                InputHelper.RotateWheel(numBox, 1);
+                Wait.ForIdle();
+                Verify.AreEqual(0, numBox.Value);
+
+                FindTextBox(numBox).SetFocus();
+
                 InputHelper.RotateWheel(numBox, 1);
                 InputHelper.RotateWheel(numBox, 1);
                 Wait.ForIdle();
@@ -341,19 +405,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("100", newValueTextBlock.GetText());
                 Verify.AreEqual("0", oldValueTextBlock.GetText());
 
-                Log.Comment("Verify that setting value to NaN is invalid and does not fire an event.");
+                Log.Comment("Verify that setting text to an empty string sets value to NaN.");
+                EnterText(numBox, "");
+                Verify.AreEqual("", textTextBlock.GetText());
+                Verify.AreEqual("NaN", newValueTextBlock.GetText());
+                Verify.AreEqual("100", oldValueTextBlock.GetText());
+
+                Log.Comment("Verify that setting value to NaN doesn't have any effect");
                 Button nanbutton = FindElement.ByName<Button>("SetValueNaNButton");
                 nanbutton.InvokeAndWait();
-                Verify.AreEqual("100", textTextBlock.GetText());
-                Verify.AreEqual("100", newValueTextBlock.GetText());
-                Verify.AreEqual("0", oldValueTextBlock.GetText());
-
-                Log.Comment("Verify that setting value to NaN is valid when validation is disabled.");
-                ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
-                validationComboBox.SelectItemByName("Disabled");
-                Wait.ForIdle();
-                nanbutton.InvokeAndWait();
-                Verify.AreEqual("NaN", textTextBlock.GetText());
+                Verify.AreEqual("", textTextBlock.GetText());
                 Verify.AreEqual("NaN", newValueTextBlock.GetText());
                 Verify.AreEqual("100", oldValueTextBlock.GetText());
             }

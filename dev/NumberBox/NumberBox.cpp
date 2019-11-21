@@ -10,9 +10,17 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
-static constexpr wstring_view c_tabViewDownButtonName{ L"DownSpinButton"sv };
-static constexpr wstring_view c_tabViewUpButtonName{ L"UpSpinButton"sv };
-static constexpr wstring_view c_tabViewTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
+static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
+static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
+static constexpr wstring_view c_numberBoxPopupButtonName{ L"PopupButton"sv };
+static constexpr wstring_view c_numberBoxPopupName{ L"UpDownPopup"sv };
+static constexpr wstring_view c_numberBoxPopupDownButtonName{ L"PopupDownSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupUpButtonName{ L"PopupUpSpinButton"sv };
+static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoot"sv };
+
+static constexpr double c_popupShadowDepth = 16.0;
+static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupShadowDepth"sv };
 
 // Shockingly, there is no standard function for trimming strings.
 const std::wstring c_whitespace = L" \n\r\t\f\v";
@@ -33,9 +41,10 @@ NumberBox::NumberBox()
     formatter.FractionDigits(0);
     NumberFormatter(formatter);
 
-    PointerWheelChanged({ this, &NumberBox::OnScroll });
+    PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
 
     GotFocus({ this, &NumberBox::OnNumberBoxGotFocus });
+    LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
 }
@@ -49,45 +58,84 @@ void NumberBox::OnApplyTemplate()
 {
     const winrt::IControlProtected controlProtected = *this;
 
-    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_tabViewDownButtonName, controlProtected))
+    const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
+    const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
+
+    if (const auto spinDown = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxDownButtonName, controlProtected))
     {
-        m_upButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+        m_downButtonClickRevoker = spinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
 
         // Do localization for the down button
         if (winrt::AutomationProperties::GetName(spinDown).empty())
         {
-            const auto spinDownName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxDownSpinButtonName);
             winrt::AutomationProperties::SetName(spinDown, spinDownName);
         }
     }
 
-    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_tabViewUpButtonName, controlProtected))
+    if (const auto spinUp = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxUpButtonName, controlProtected))
     {
-        m_downButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+        m_upButtonClickRevoker = spinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
 
         // Do localization for the up button
         if (winrt::AutomationProperties::GetName(spinUp).empty())
         {
-            const auto spinUpName = ResourceAccessor::GetLocalizedStringResource(SR_NumberBoxUpSpinButtonName);
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
     }
 
     m_textBox.set([this, controlProtected]() {
-        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_tabViewTextBoxName, controlProtected);
+        const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
-            m_textBoxLostFocusRevoker = textBox.LostFocus(winrt::auto_revoke, { this, &NumberBox::OnTextBoxLostFocus });
-            m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
+            m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
         }
         return textBox;
     }());
 
+    m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
+
+    if (const auto popupRoot = GetTemplateChildT<winrt::UIElement>(c_numberBoxPopupContentRootName, controlProtected))
+    {
+        if (SharedHelpers::IsThemeShadowAvailable())
+        {
+            if (!popupRoot.Shadow())
+            {
+                popupRoot.Shadow(winrt::ThemeShadow{});
+                auto&& translation = popupRoot.Translation();
+
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_numberBoxPopupShadowDepthName, winrt::Application::Current().Resources(), box_value(c_popupShadowDepth)));
+
+                popupRoot.Translation({ translation.x, translation.y, (float)shadowDepth });
+            }
+        }
+    }
+
+    if (const auto popupSpinDown = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxPopupDownButtonName, controlProtected))
+    {
+        m_popupDownButtonClickRevoker = popupSpinDown.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinDownClick });
+    }
+
+    if (const auto popupSpinUp = GetTemplateChildT<winrt::RepeatButton>(c_numberBoxPopupUpButtonName, controlProtected))
+    {
+        m_popupUpButtonClickRevoker = popupSpinUp.Click(winrt::auto_revoke, { this, &NumberBox::OnSpinUpClick });
+    }
+
     // .NET rounds to 12 significant digits when displaying doubles, so we will do the same.
     m_displayRounder.SignificantDigits(12);
 
-    SetSpinButtonVisualState();
-    UpdateTextToValue();
+    UpdateSpinButtonPlacement();
+    UpdateSpinButtonEnabled();
+
+    if (ReadLocalValue(s_ValueProperty) == winrt::DependencyProperty::UnsetValue()
+        && ReadLocalValue(s_TextProperty) != winrt::DependencyProperty::UnsetValue())
+    {
+        // If Text has been set, but Value hasn't, update Value based on Text.
+        UpdateValueToText();
+    }
+    else
+    {
+        UpdateTextToValue();
+    }
 }
 
 void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -106,15 +154,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
         CoerceValue();
 
         auto newValue = Value();
-
-        if (std::isnan(newValue) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
-        {
-            // In the validation case, we don't consider NaN to be valid.
-            newValue = oldValue;
-            Value(newValue);
-        }
-
-        if (newValue != oldValue)
+        if (newValue != oldValue && !(std::isnan(newValue) && std::isnan(oldValue)))
         {
             // Fire ValueChanged event
             const auto valueChangedArgs = winrt::make_self<NumberBoxValueChangedEventArgs>(oldValue, newValue);
@@ -128,6 +168,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
         }
 
         UpdateTextToValue();
+        UpdateSpinButtonEnabled();
     }
 }
 
@@ -135,12 +176,26 @@ void NumberBox::OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedE
 {
     CoerceMaximum();
     CoerceValue();
+
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     CoerceMinimum();
     CoerceValue();
+
+    UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSpinButtonEnabled();
+}
+
+void NumberBox::OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -160,24 +215,30 @@ void NumberBox::ValidateNumberFormatter(winrt::INumberFormatter2 value)
 
 void NumberBox::OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    SetSpinButtonVisualState();
+    UpdateSpinButtonPlacement();
 }
 
 void NumberBox::OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (!m_textUpdating)
     {
-        if (auto && textBox = m_textBox.get())
-        {
-            textBox.Text(Text());
-            ValidateInput();
-        }
+        UpdateValueToText();
     }
 }
 
-void NumberBox::OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NumberBox::UpdateValueToText()
+{
+    if (auto && textBox = m_textBox.get())
+    {
+        textBox.Text(Text());
+        ValidateInput();
+    }
+}
+
+void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     ValidateInput();
+    UpdateSpinButtonEnabled();
 }
 
 void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
@@ -187,12 +248,26 @@ void NumberBox::OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::Ro
     {
         textBox.SelectAll();
     }
+
+    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Compact)
+    {
+        if (auto && popup = m_popup.get())
+        {
+            popup.IsOpen(true);
+        }
+    }
 }
 
-void NumberBox::OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NumberBox::OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     ValidateInput();
+
+    if (auto && popup = m_popup.get())
+    {
+        popup.IsOpen(false);
+    }
 }
+
 void NumberBox::CoerceMinimum()
 {
     const auto max = Maximum();
@@ -215,7 +290,7 @@ void NumberBox::CoerceValue()
 {
     // Validate that the value is in bounds
     const auto value = Value();
-    if (!std::isnan(value) && !IsInBounds(value) && BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+    if (!std::isnan(value) && !IsInBounds(value) && ValidationMode() == winrt::NumberBoxValidationMode::InvalidInputOverwritten)
     {
         // Coerce value to be within range
         const auto max = Maximum();
@@ -240,7 +315,7 @@ void NumberBox::ValidateInput()
         // Handles empty TextBox case, set text to current value
         if (text.empty())
         {
-            UpdateTextToValue();
+            Value(std::numeric_limits<double>::quiet_NaN());
         }
         else
         {
@@ -253,7 +328,7 @@ void NumberBox::ValidateInput()
 
             if (!value)
             {
-                if (BasicValidationMode() == winrt::NumberBoxBasicValidationMode::InvalidInputOverwritten)
+                if (ValidationMode() == winrt::NumberBoxValidationMode::InvalidInputOverwritten)
                 {
                     // Override text to current value
                     UpdateTextToValue();
@@ -285,7 +360,7 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
     StepValueUp();
 }
 
-void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
     switch (args.OriginalKey())
     {
@@ -309,51 +384,59 @@ void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRo
     }
 }
 
-void NumberBox::OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
+void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args)
 {
-    if (HyperScrollEnabled())
+    if (auto && textBox = m_textBox.get())
     {
-        const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
-        if (delta > 0)
+        if (IsHyperScrollEnabled() && textBox.FocusState() != winrt::FocusState::Unfocused)
         {
-            StepValueUp();
-        }
-        else if (delta < 0)
-        {
-            StepValueDown();
+            const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
+            if (delta > 0)
+            {
+                StepValueUp();
+            }
+            else if (delta < 0)
+            {
+                StepValueDown();
+            }
         }
     }
 }
 
 void NumberBox::StepValue(bool isPositive)
 {
+    // Before adjusting the value, validate the contents of the textbox so we don't override it.
+    ValidateInput();
+
     auto newVal = Value();
-
-    if (isPositive)
+    if (!std::isnan(newVal))
     {
-        newVal += StepFrequency();
-    }
-    else
-    {
-        newVal -= StepFrequency();
-    }
-
-    if (WrapEnabled())
-    {
-        const auto max = Maximum();
-        const auto min = Minimum();
-
-        if (newVal > max)
+        if (isPositive)
         {
-            newVal = min;
+            newVal += StepFrequency();
         }
-        else if (newVal < min)
+        else
         {
-            newVal = max;
+            newVal -= StepFrequency();
         }
-    }
 
-    Value(newVal);
+        if (IsWrapEnabled())
+        {
+            const auto max = Maximum();
+            const auto min = Minimum();
+
+            if (newVal > max)
+            {
+                newVal = min;
+            }
+            else if (newVal < min)
+            {
+                newVal = max;
+            }
+        }
+
+        Value(newVal);
+    }
 }
 
 // Updates TextBox.Text with the formatted Value
@@ -361,34 +444,81 @@ void NumberBox::UpdateTextToValue()
 {
     if (auto&& textBox = m_textBox.get())
     {
-        // Rounding the value here will prevent displaying digits caused by floating point imprecision.
-        const auto roundedValue = m_displayRounder.RoundDouble(Value());
-
-        const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
-        textBox.Text(formattedValue);
-
-        auto scopeGuard = gsl::finally([this]()
+        const auto value = Value();
+        if (std::isnan(value))
         {
-            m_textUpdating = false;
-        });
-        m_textUpdating = true;
-        Text(formattedValue);
+            // Display NaN as empty string
+            textBox.Text(L"");
+            Text(L"");
+        }
+        else
+        {
+            // Rounding the value here will prevent displaying digits caused by floating point imprecision.
+            const auto roundedValue = m_displayRounder.RoundDouble(value);
 
-        // This places the caret at the end of the text.
-        textBox.Select(formattedValue.size(), 0);
+            const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
+            textBox.Text(formattedValue);
+
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_textUpdating = false;
+            });
+            m_textUpdating = true;
+            Text(formattedValue);
+
+            // This places the caret at the end of the text.
+            textBox.Select(formattedValue.size(), 0);
+        }
     }
 }
 
-void NumberBox::SetSpinButtonVisualState()
+void NumberBox::UpdateSpinButtonPlacement()
 {
-    if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Inline)
+    const auto spinButtonMode = SpinButtonPlacementMode();
+
+    if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Inline)
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsVisible", false);
     }
-    else if (SpinButtonPlacementMode() == winrt::NumberBoxSpinButtonPlacementMode::Hidden)
+    else if (spinButtonMode == winrt::NumberBoxSpinButtonPlacementMode::Compact)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"SpinButtonsPopup", false);
+    }
+    else
     {
         winrt::VisualStateManager::GoToState(*this, L"SpinButtonsCollapsed", false);
     }
+}
+
+void NumberBox::UpdateSpinButtonEnabled()
+{
+    auto value = Value();
+    bool isUpButtonEnabled = false;
+    bool isDownButtonEnabled = false;
+
+    if (!std::isnan(value))
+    {
+        if (IsWrapEnabled() || ValidationMode() != winrt::NumberBoxValidationMode::InvalidInputOverwritten)
+        {
+            // If wrapping is enabled, or invalid values are allowed, then the buttons should be enabled
+            isUpButtonEnabled = true;
+            isDownButtonEnabled = true;
+        }
+        else
+        {
+            if (value < Maximum())
+            {
+                isUpButtonEnabled = true;
+            }
+            if (value > Minimum())
+            {
+                isDownButtonEnabled = true;
+            }
+        }
+    }
+
+    winrt::VisualStateManager::GoToState(*this, isUpButtonEnabled ? L"UpSpinButtonEnabled" : L"UpSpinButtonDisabled", false);
+    winrt::VisualStateManager::GoToState(*this, isDownButtonEnabled ? L"DownSpinButtonEnabled" : L"DownSpinButtonDisabled", false);
 }
 
 bool NumberBox::IsInBounds(double value)
