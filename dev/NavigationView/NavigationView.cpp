@@ -260,6 +260,8 @@ void NavigationView::OnApplyTemplate()
 
     m_topNavGrid.set(GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected));
 
+    UpdateNavigationViewItemsFactory();
+
     // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
     if (auto leftNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_menuItemsHost, controlProtected))
     {
@@ -271,12 +273,6 @@ void NavigationView::OnApplyTemplate()
  
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
-        winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
-        if (!newIElementFactory)
-        {
-            newIElementFactory = MenuItemTemplateSelector();
-        }
-        (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
 
         //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
@@ -306,12 +302,6 @@ void NavigationView::OnApplyTemplate()
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
-        winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
-        if (!newIElementFactory)
-        {
-            newIElementFactory = MenuItemTemplateSelector();
-        }
-        (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
         topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
@@ -491,7 +481,6 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
 
     if (IsTopNavigationView())
     {
-        InvalidateTopNavPrimaryLayout();
         UpdateSelectedItem();
     }
 }
@@ -2997,19 +2986,20 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
 }
 
+void NavigationView::UpdateNavigationViewItemsFactory()
+{
+    winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
+    if (!newIElementFactory)
+    {
+        newIElementFactory = MenuItemTemplateSelector();
+    }
+    (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
+}
+
 void NavigationView::SyncItemTemplates()
 {
-    //TODO: Implement and force tree rebuild after update
-
-    //winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
-    //if (!newIElementFactory)
-    //{
-    //    newIElementFactory = MenuItemTemplateSelector();
-    //}
-
-    //m_leftNavRepeater.get().ItemTemplate(nullptr);
-    //(*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
-    //m_leftNavRepeater.get().ItemTemplate(*m_navigationViewItemsFactory);
+    // TODO: Invalidate Layout?
+    UpdateNavigationViewItemsFactory();
 }
 
 void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
