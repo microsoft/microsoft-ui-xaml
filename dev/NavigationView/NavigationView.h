@@ -275,6 +275,7 @@ private:
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
+    bool ShouldShowFocusVisual();
     int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
     winrt::IInspectable LeftNavGetItemFromIndex(int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);

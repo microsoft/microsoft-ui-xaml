@@ -544,7 +544,6 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvib);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
 
-            // TODO: Update to support more than one level indexpath
             // TODO: Verify if this indexPath comparison is needed
             if (indexPath && indexPathFromModel && indexPath.GetAt(0) == indexPathFromModel.GetAt(0))
             {
@@ -758,9 +757,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
         {
             auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
             nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
-            // TODO: Temporary workaround
-            auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
-            nviImpl->UseSystemFocusVisuals(showFocusVisual);
+            nviImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -2370,7 +2367,7 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
     {
         //TODO: Implement for repeater  (Propagate to all items)
         //TODO: Remove temporary implementation in ElementPrepared
-        auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
+        auto showFocusVisual = ShouldShowFocusVisual();
 
         if (IsTopNavigationView())
         {
@@ -2381,6 +2378,11 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
             PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), showFocusVisual);
         }
     }
+}
+
+bool NavigationView::ShouldShowFocusVisual()
+{
+    return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
 }
 
 void NavigationView::PropagateNavigationViewAsParent()
