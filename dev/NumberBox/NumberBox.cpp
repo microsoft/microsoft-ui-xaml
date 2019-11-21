@@ -506,13 +506,11 @@ void NumberBox::UpdateSpinButtonEnabled()
         }
         else
         {
-            // Otherwise, only enabled the buttons if the result would be in bounds.
-            const auto stepFrequency = StepFrequency();
-            if (value + stepFrequency <= Maximum())
+            if (value < Maximum())
             {
                 isUpButtonEnabled = true;
             }
-            if (value - stepFrequency >= Minimum())
+            if (value > Minimum())
             {
                 isDownButtonEnabled = true;
             }

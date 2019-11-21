@@ -76,9 +76,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Check("MinCheckBox");
                 Check("MaxCheckBox");
 
+                numBox.SetValue(100);
                 Check("WrapCheckBox");
 
-                Log.Comment("Verify that when wrapping is on, clicking the up button wraps to the min value.");
+                Log.Comment("Verify that when wrapping is on, and value is at max, clicking the up button wraps to the min value.");
                 upButton.InvokeAndWait();
                 Verify.AreEqual(0, numBox.Value);
 
