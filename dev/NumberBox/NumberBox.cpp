@@ -94,9 +94,9 @@ void NumberBox::OnApplyTemplate()
 
     m_popup.set(GetTemplateChildT<winrt::Popup>(c_numberBoxPopupName, controlProtected));
 
-    if (const auto popupRoot = GetTemplateChildT<winrt::UIElement>(c_numberBoxPopupContentRootName, controlProtected))
+    if (SharedHelpers::IsThemeShadowAvailable())
     {
-        if (SharedHelpers::IsThemeShadowAvailable())
+        if (const auto popupRoot = GetTemplateChildT<winrt::UIElement>(c_numberBoxPopupContentRootName, controlProtected))
         {
             if (!popupRoot.Shadow())
             {
@@ -153,7 +153,7 @@ void NumberBox::OnValuePropertyChanged(const winrt::DependencyPropertyChangedEve
 
         CoerceValue();
 
-        auto newValue = Value();
+        const auto newValue = Value();
         if (newValue != oldValue && !(std::isnan(newValue) && std::isnan(oldValue)))
         {
             // Fire ValueChanged event
@@ -442,33 +442,29 @@ void NumberBox::StepValue(bool isPositive)
 // Updates TextBox.Text with the formatted Value
 void NumberBox::UpdateTextToValue()
 {
-    if (auto&& textBox = m_textBox.get())
+    if (auto && textBox = m_textBox.get())
     {
+        winrt::hstring newText = L"";
+
         const auto value = Value();
-        if (std::isnan(value))
-        {
-            // Display NaN as empty string
-            textBox.Text(L"");
-            Text(L"");
-        }
-        else
+        if (!std::isnan(value))
         {
             // Rounding the value here will prevent displaying digits caused by floating point imprecision.
             const auto roundedValue = m_displayRounder.RoundDouble(value);
-
-            const auto formattedValue = NumberFormatter().FormatDouble(roundedValue);
-            textBox.Text(formattedValue);
-
-            auto scopeGuard = gsl::finally([this]()
-            {
-                m_textUpdating = false;
-            });
-            m_textUpdating = true;
-            Text(formattedValue);
-
-            // This places the caret at the end of the text.
-            textBox.Select(formattedValue.size(), 0);
+            newText = NumberFormatter().FormatDouble(roundedValue);
         }
+
+        textBox.Text(newText);
+
+        auto scopeGuard = gsl::finally([this]()
+        {
+            m_textUpdating = false;
+        });
+        m_textUpdating = true;
+        Text(newText.data());
+
+        // This places the caret at the end of the text.
+        textBox.Select(static_cast<int32_t>(newText.size()), 0);
     }
 }
 
@@ -492,7 +488,7 @@ void NumberBox::UpdateSpinButtonPlacement()
 
 void NumberBox::UpdateSpinButtonEnabled()
 {
-    auto value = Value();
+    const auto value = Value();
     bool isUpButtonEnabled = false;
     bool isDownButtonEnabled = false;
 
