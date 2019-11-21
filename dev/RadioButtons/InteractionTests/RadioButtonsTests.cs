@@ -71,7 +71,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Failing with a crash, todo: investigate.
+        //[TestMethod] Crashing tests, issue #1655
         public void BasicKeyboardTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
@@ -190,12 +190,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifySelectedFocusedIndex(6);
                     KeyboardHelper.PressKey(Key.Right);
                     VerifySelectedFocusedIndex(9);
-                    //There is a known bug here where pressing down will put focus
+                    //There is a known bug here where pressing down or right will put focus
                     //On the first item because RadioButton handles the event.
                     //RadioButtons doesn't catch this because it only catches when the
                     //Last item is focused, but that item is disabled here...
-                    //Bug #....
+                    //Bug #1654
                     //KeyboardHelper.PressKey(Key.Down);
+                    //VerifySelectedFocusedIndex(9);
+                    //KeyboardHelper.PressKey(Key.Right);
                     //VerifySelectedFocusedIndex(9);
 
                     InsertDisabledRadioButton(6);

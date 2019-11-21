@@ -55,7 +55,6 @@ private:
     void OnChildChecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildUnchecked(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnChildPreviewKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnChildGettingFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs&);
 
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
@@ -70,6 +69,7 @@ private:
     bool MoveFocusNext();
     bool MoveFocusPrevious();
     bool MoveFocus(int initialIndexIncrement);
+    bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
 
     int m_selectedIndex{ -1 };
     bool m_currentlySelecting{ false };

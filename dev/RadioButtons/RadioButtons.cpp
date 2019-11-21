@@ -72,17 +72,8 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                 {
                     if (auto const oldFocusedElementAsUIElement = oldFocusedElement.try_as<winrt::UIElement>())
                     {
-                        auto const oldFocusedRepeaterIndex = repeater.GetElementIndex(oldFocusedElementAsUIElement);
-                        auto const repeaterItemCount = [repeater]()
-                        {
-                            if (auto const itemsSourceView = repeater.ItemsSourceView())
-                            {
-                                return itemsSourceView.Count();
-                            }
-                            return 0;
-                        }();
                         // If focus is coming from outside the repeater, put focus on the selected item.
-                        if (oldFocusedRepeaterIndex < 0)
+                        if (repeater.GetElementIndex(oldFocusedElementAsUIElement) < 0)
                         {
                             if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                             {
@@ -92,32 +83,12 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                                 }
                             }
                         }
-                        // If focus is coming from the first element to the last element (or last to first), via keyboard we know (suspect)
-                        // that RadioButton has interfered and we want to correct. 
-                        else if (oldFocusedRepeaterIndex == 0 ||
-                            oldFocusedRepeaterIndex == repeaterItemCount - 1)
-                        {
-                            if (auto const newFocusedElement = args.NewFocusedElement())
-                            {
-                                if (auto const newFocusedElementAsUIElement = newFocusedElement.try_as<winrt::UIElement>())
-                                {
-                                    auto const newFocusedRepeaterIndex = repeater.GetElementIndex(newFocusedElementAsUIElement);
-                                    if ((oldFocusedRepeaterIndex == 0 && newFocusedRepeaterIndex == repeaterItemCount - 1) ||
-                                        (oldFocusedRepeaterIndex == repeaterItemCount - 1 && newFocusedRepeaterIndex == 0))
-                                    {
-                                        if (args.TrySetNewFocusedElement(oldFocusedElement))
-                                        {
-                                            args.Handled(true);
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
         }
 
+        // Selection follows focus unless control is held down.
         if ((winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
             winrt::CoreVirtualKeyStates::Down) !=
             winrt::CoreVirtualKeyStates::Down)
@@ -153,44 +124,98 @@ void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt
     case winrt::VirtualKey::Down:
         if (MoveFocusNext())
         {
-            args.Handled(true);
+            return args.Handled(true);
         }
         else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadDown)
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Next))
+            {
+                return args.Handled(true);
+            }
         }
+        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
         break;
     case winrt::VirtualKey::Up:
         if (MoveFocusPrevious())
         {
-            args.Handled(true);
+            return args.Handled(true);
         }
         else if (args.OriginalKey() == winrt::VirtualKey::GamepadDPadUp)
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Previous))
+            {
+                return args.Handled(true);
+            }
         }
+        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
         break;
     case winrt::VirtualKey::Right:
         if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadRight)
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right, GetFindNextElementOptions()))
+            {
+                return args.Handled(true);
+            }
         }
         else
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Right))
+            {
+                return args.Handled(true);
+            }
         }
+        args.Handled(HandleEdgeCaseFocus(false, args.OriginalSource()));
         break;
+
     case winrt::VirtualKey::Left:
         if (args.OriginalKey() != winrt::VirtualKey::GamepadDPadLeft)
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left, GetFindNextElementOptions()))
+            {
+                return args.Handled(true);
+            }
         }
         else
         {
-            args.Handled(winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left));
+            if (winrt::FocusManager::TryMoveFocus(winrt::FocusNavigationDirection::Left))
+            {
+                return args.Handled(true);
+            }
         }
+        args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
         break;
     }
+}
+
+// If we haven't handled the key yet and the original source was the first(for up and left)
+// or last(for down and right) element in the repeater we need to handle the key so
+// RadioButton doesn't, which would result in the behavior.
+bool RadioButtons::HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source)
+{
+    if (auto const repeater = m_repeater.get())
+    {
+        if (auto const sourceAsUIElement = source.try_as<winrt::UIElement>())
+        {
+            auto const index = [first, repeater]()
+            {
+                if (first)
+                {
+                    return 0;
+                }
+                if (auto const itemsSourceView = repeater.ItemsSourceView())
+                {
+                    return itemsSourceView.Count() - 1;
+                }
+                return -1;
+            }();
+
+            if (repeater.GetElementIndex(sourceAsUIElement) == index)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 winrt::FindNextElementOptions RadioButtons::GetFindNextElementOptions()
@@ -198,23 +223,6 @@ winrt::FindNextElementOptions RadioButtons::GetFindNextElementOptions()
     auto const findNextElementOptions = winrt::FindNextElementOptions{};
     findNextElementOptions.SearchRoot(*this);
     return findNextElementOptions;
-}
-
-// Selection follows focus unless control key is held down.
-void RadioButtons::OnChildGettingFocus(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
-{
-    auto const coreWindow = winrt::Window::Current().CoreWindow();
-    //auto const dummy = coreWindow.GetAsyncKeyState(winrt::VirtualKey::Control);
-    if((coreWindow.GetAsyncKeyState(winrt::VirtualKey::Control) & winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
-    {
-        if (auto const repeater = m_repeater.get())
-        {
-            if (auto const originalSourceAsUIE = args.OriginalSource().as<winrt::UIElement>())
-            {
-                Select(repeater.GetElementIndex(originalSourceAsUIE));
-            }
-        }
-    }
 }
 
 void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
