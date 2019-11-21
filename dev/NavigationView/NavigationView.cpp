@@ -727,6 +727,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
 
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
+      
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->SetNavigationViewParent(*this);
 
@@ -746,6 +747,23 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
         else
         {
             nvibImpl->Position(NavigationViewListPosition::LeftNav);
+        }
+
+        // Apply any custom container styling
+        if (auto menuItemContainerStyle = MenuItemContainerStyle())
+        {
+            nvib.Style(menuItemContainerStyle);
+        }
+        else if (auto menuItemContainerStyleSelector = MenuItemContainerStyleSelector())
+        {
+            auto index = args.Index();
+            auto itemsSourceView = ir.ItemsSourceView();
+            auto item = itemsSourceView.GetAt(index);
+            auto selectedStyle = menuItemContainerStyleSelector.SelectStyle(item, nvib);
+            if (selectedStyle)
+            {
+                nvib.Style(selectedStyle);
+            }
         }
 
         //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
