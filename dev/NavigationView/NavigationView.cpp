@@ -443,7 +443,6 @@ void NavigationView::OnApplyTemplate()
     UpdateBackAndCloseButtonsVisibility();
     UpdateSingleSelectionFollowsFocusTemplateSetting();
     UpdateNavigationViewUseSystemVisual();
-    PropagateNavigationViewAsParent();
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
@@ -481,6 +480,7 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
 
     if (IsTopNavigationView())
     {
+        InvalidateTopNavPrimaryLayout();
         UpdateSelectedItem();
     }
 }
@@ -673,7 +673,6 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(winrt::NavigationViewI
         return IndexPath::CreateFromIndices(path);
     }
 
-    // TODO: Hack to know when to stop
     while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
     {
         if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
@@ -719,8 +718,6 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(winrt::NavigationViewI
 
 void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
 {
-    // TODO: Verify that this ListView introduced check still works with ItemsRepeater implementation.
-    // TODO: WILL PROBABLY BE LESS EXPENSIVE TO MOVE ELSEWHERE (MAYBE IN THE CUSTOM IELEMENTFACTORY IMPLEMENTATION)
     // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
     // Certain items are disallowed in a NavigationView's items list. Check for them.
     if (args.Element().try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
@@ -2383,17 +2380,6 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 bool NavigationView::ShouldShowFocusVisual()
 {
     return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
-}
-
-void NavigationView::PropagateNavigationViewAsParent()
-{
-    // TODO: Implement for repeater
-    //PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::All,
-    //    [this](NavigationViewList* list)
-    //        {
-    //            list->SetNavigationViewParent(*this);
-    //        }
-    //    );
 }
 
 void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
