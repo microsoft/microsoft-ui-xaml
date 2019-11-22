@@ -273,6 +273,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void GamepadTest()
         {
+            if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Warning("Test is disabled on pre-RS4 because Gamepad interaction is not supported pre-RS4");
+                return;
+            }
+
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
