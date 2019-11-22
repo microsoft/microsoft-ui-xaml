@@ -10,10 +10,9 @@ class TreeViewDragItemsCompletedEventArgs :
     public ReferenceTracker<TreeViewDragItemsCompletedEventArgs, winrt::implementation::TreeViewDragItemsCompletedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    void DragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args);
+    TreeViewDragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args, const winrt::IInspectable& newParent);
     DataPackageOperation DropResult() const;
     winrt::IVectorView<winrt::IInspectable> Items();
-    void NewParent(const winrt::IInspectable& parent);
     winrt::IInspectable NewParent();
 
 private:

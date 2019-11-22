@@ -249,30 +249,28 @@ void TreeView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs
 
 void TreeView::OnListControlDragItemsStarting(const winrt::IInspectable& sender, const winrt::DragItemsStartingEventArgs& args)
 {
-    auto treeViewArgs = winrt::make_self<TreeViewDragItemsStartingEventArgs>();
-    treeViewArgs->DragItemsStartingEventArgs(args);
+    const auto treeViewArgs = winrt::make_self<TreeViewDragItemsStartingEventArgs>(args);
     m_dragItemsStartingEventSource(*this, *treeViewArgs);
 }
 
 void TreeView::OnListControlDragItemsCompleted(const winrt::IInspectable& sender, const winrt::DragItemsCompletedEventArgs& args)
 {
-    auto treeViewArgs = winrt::make_self<TreeViewDragItemsCompletedEventArgs>();
-    treeViewArgs->DragItemsCompletedEventArgs(args);
-
-    auto items = args.Items();
+    winrt::IInspectable newParent = nullptr;
+    const auto items = args.Items();
     if (items && items.Size() > 0)
     {
-        auto listControl = ListControl();
-        if (auto draggedNode = listControl->NodeFromItem(items.GetAt(0)))
+        const auto listControl = ListControl();
+        if (const auto draggedNode = listControl->NodeFromItem(items.GetAt(0)))
         {
-            auto parentNode = draggedNode.Parent();
+            const auto parentNode = draggedNode.Parent();
             if (parentNode && parentNode != m_rootNode.get())
             {
-                treeViewArgs->NewParent(listControl->ItemFromNode(parentNode));
+                newParent = listControl->ItemFromNode(parentNode);
             }
         }
     }
 
+    const auto treeViewArgs = winrt::make_self<TreeViewDragItemsCompletedEventArgs>(args, newParent);
     m_dragItemsCompletedEventSource(*this, *treeViewArgs);
 }
 

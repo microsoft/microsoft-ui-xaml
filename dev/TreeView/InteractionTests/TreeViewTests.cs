@@ -1919,7 +1919,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         private void TreeViewDragMultipleItemsTest(bool isContentMode = false)
         {
             // InputHelper.DragToTarget() does not work properly on lower versions
-            if (IsPhoneDevice() || IsLowerThanRS5())
+            if (IsLowerThanRS5())
             {
                 return;
             }
