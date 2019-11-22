@@ -271,8 +271,6 @@ void NavigationView::OnApplyTemplate()
 
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
 
-        //m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
-
         //// Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
         //if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
         //{
@@ -283,13 +281,6 @@ void NavigationView::OnApplyTemplate()
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
     if (auto topNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsHost, controlProtected))
     {
-        //m_topNavListView.set(topNavListView);
-
-        //m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
-
-        //m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
-        //m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
-
         m_topNavRepeater.set(topNavRepeater);
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
@@ -303,9 +294,6 @@ void NavigationView::OnApplyTemplate()
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
     if (auto topNavListOverflowRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsOverflowHost, controlProtected))
     {
-        //m_topNavListOverflowView.set(topNavListOverflowView);
-        //m_topNavListOverflowViewSelectionChangedRevoker = topNavListOverflowView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemSelectionChanged });
-
         m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
 
         m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
@@ -1841,42 +1829,70 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
                 OnNavigationViewItemInvoked(nvi);
                 break;
             case winrt::VirtualKey::Home:
-                KeyboardFocusFirstItem();
+                KeyboardFocusFirstItemFromItem(nvi);
                 break;
             case winrt::VirtualKey::End:
-                KeyboardFocusLastItem();
+                KeyboardFocusLastItemFromItem(nvi);
                 break;
             }
         }
     }
 }
 
-void NavigationView::KeyboardFocusFirstItem()
+void NavigationView::KeyboardFocusFirstItemFromItem(winrt::NavigationViewItemBase nvib)
 {
-    if (!IsTopNavigationView())
+    winrt::UIElement firstElement{ nullptr };
+    if (IsTopNavigationView())
     {
-        auto firstElement = m_leftNavRepeater.get().TryGetElement(0);
-        if (auto nvib = firstElement.try_as<winrt::NavigationViewItemBase>())
+        bool isContainerInOverflow = IsContainerInOverflow(nvib);
+        if (isContainerInOverflow)
         {
-            nvib.Focus(winrt::FocusState::Keyboard);
+            firstElement = m_topNavRepeaterOverflowView.get().TryGetElement(0);
         }
+        else
+        {
+            firstElement = m_topNavRepeater.get().TryGetElement(0);
+        }
+    }
+    else
+    {
+        firstElement = m_leftNavRepeater.get().TryGetElement(0);
+    }
+
+    if (auto nvib = firstElement.try_as<winrt::NavigationViewItemBase>())
+    {
+        nvib.Focus(winrt::FocusState::Keyboard);
     }
 }
 
-void NavigationView::KeyboardFocusLastItem()
+void NavigationView::KeyboardFocusLastItemFromItem(winrt::NavigationViewItemBase nvib)
 {
-    if (!IsTopNavigationView())
+    winrt::ItemsRepeater ir { nullptr };
+    if (IsTopNavigationView())
     {
-        auto leftIR = m_leftNavRepeater.get();
-        auto leftItemsSourceView = leftIR.ItemsSourceView();
-        if (leftItemsSourceView)
+        bool isContainerInOverflow = IsContainerInOverflow(nvib);
+        if (isContainerInOverflow)
         {
-            auto lastIndex = leftItemsSourceView.Count() - 1;
-            auto lastElement = m_leftNavRepeater.get().TryGetElement(lastIndex);
-            if (auto nvib = lastElement.try_as<winrt::NavigationViewItemBase>())
-            {
-                nvib.Focus(winrt::FocusState::Keyboard);
-            }
+            ir = m_topNavRepeaterOverflowView.get();
+        }
+        else
+        {
+            ir = m_topNavRepeater.get();
+        }
+    }
+    else
+    {
+        ir = m_leftNavRepeater.get();
+    }
+
+    auto itemsSourceView = ir.ItemsSourceView();
+    if (itemsSourceView)
+    {
+        auto lastIndex = itemsSourceView.Count() - 1;
+        auto lastElement = ir.TryGetElement(lastIndex);
+        if (auto nvib = lastElement.try_as<winrt::NavigationViewItemBase>())
+        {
+            nvib.Focus(winrt::FocusState::Keyboard);
         }
     }
 }
@@ -3866,7 +3882,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
     return nullptr;
 }
 
-bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase item)
+bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase nvib)
 {
     if (auto selectedItem = m_selectionModel.SelectedIndex())
     {
@@ -3876,7 +3892,7 @@ bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::Naviga
             selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
         }
 
-        return selectedItemContainer == item;
+        return selectedItemContainer == nvib;
     }
     return false;
 }
@@ -3884,4 +3900,17 @@ bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::Naviga
 winrt::ItemsRepeater NavigationView::LeftNavRepeater()
 {
     return m_leftNavRepeater.get();
+}
+
+bool NavigationView::IsContainerInOverflow(winrt::NavigationViewItemBase nvib)
+{
+    if (IsTopNavigationView())
+    {
+        auto parentIR = GetParentItemsRepeaterForContainer(nvib);
+        if (parentIR == m_topNavRepeaterOverflowView.get())
+        {
+            return true;
+        }
+    }
+    return false;
 }
