@@ -277,6 +277,8 @@ private:
     winrt::IInspectable LeftNavGetItemFromIndex(int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);
     bool IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase item);
+    void KeyboardFocusFirstItem();
+    void KeyboardFocusLastItem();
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

@@ -1838,6 +1838,42 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
             case winrt::VirtualKey::Space:
                 OnNavigationViewItemInvoked(nvi);
                 break;
+            case winrt::VirtualKey::Home:
+                KeyboardFocusFirstItem();
+                break;
+            case winrt::VirtualKey::End:
+                KeyboardFocusLastItem();
+                break;
+            }
+        }
+    }
+}
+
+void NavigationView::KeyboardFocusFirstItem()
+{
+    if (!IsTopNavigationView())
+    {
+        auto firstElement = m_leftNavRepeater.get().TryGetElement(0);
+        if (auto nvib = firstElement.try_as<winrt::NavigationViewItemBase>())
+        {
+            nvib.Focus(winrt::FocusState::Keyboard);
+        }
+    }
+}
+
+void NavigationView::KeyboardFocusLastItem()
+{
+    if (!IsTopNavigationView())
+    {
+        auto leftIR = m_leftNavRepeater.get();
+        auto leftItemsSourceView = leftIR.ItemsSourceView();
+        if (leftItemsSourceView)
+        {
+            auto lastIndex = leftItemsSourceView.Count() - 1;
+            auto lastElement = m_leftNavRepeater.get().TryGetElement(lastIndex);
+            if (auto nvib = lastElement.try_as<winrt::NavigationViewItemBase>())
+            {
+                nvib.Focus(winrt::FocusState::Keyboard);
             }
         }
     }
