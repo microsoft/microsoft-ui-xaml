@@ -48,21 +48,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Changing Value of ProgressBar");
 
-                UIObject testProgressBar = FindElement.ByName("TestProgressBar");
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
+                RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
+                Verify.AreEqual(0, progressBar.Value);
 
-                double oldValue = Convert.ToDouble(valueText.DocumentText);
+                double oldValue = progressBar.Value;
 
                 // NOTE: Interaction tests can only access what accessibility tools see. In this case, we can find the button because we
                 // set AutomationProperties.Name on the button in ProgressBarPage.xaml
                 Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
                 changeValueButton.InvokeAndWait();
 
-                double newValue = Convert.ToDouble(valueText.DocumentText);
+                double newValue = progressBar.Value;
                 double diff = Math.Abs(oldValue - newValue);
 
                 Log.Comment("ProgressBar value changed");
-                Verify.IsGreaterThan(diff, Convert.ToDouble(0));
+                Verify.IsGreaterThan(diff, 0.0);
             }
         }
 
@@ -73,16 +73,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Set ProgressBar settings to default for testing");
 
-                UIObject testProgressBar = FindElement.ByName("TestProgressBar");
+                RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
 
                 Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
                 Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
                 Edit widthInput = FindElement.ByName<Edit>("WidthInput");
 
-                TextBlock minimumInputText = FindElement.ByName<TextBlock>("MinimumInputText");
-                TextBlock maximumInputText = FindElement.ByName<TextBlock>("MaximumInputText");
                 TextBlock widthInputText = FindElement.ByName<TextBlock>("WidthInputText");
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
                 TextBlock indicatorWidthText = FindElement.ByName<TextBlock>("IndicatorWidthText");
 
                 Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
@@ -92,28 +89,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 maximumInput.SetValue("100");
                 widthInput.SetValue("100");
 
-                Verify.AreEqual(Convert.ToDouble(minimumInputText.DocumentText), 0);
-                Verify.AreEqual(Convert.ToDouble(maximumInputText.DocumentText), 100);
+                Verify.AreEqual(progressBar.Minimum, 0);
+                Verify.AreEqual(progressBar.Maximum, 100);
                 Verify.AreEqual(Convert.ToDouble(widthInputText.DocumentText), 100);
 
                 Log.Comment("Changing value of ProgressBar updates Indicator Width");
 
                 changeValueButton.Invoke();
 
-                Verify.AreEqual(Convert.ToDouble(valueText.DocumentText), Convert.ToDouble(indicatorWidthText.DocumentText));
+                Verify.AreEqual(progressBar.Value, Convert.ToDouble(indicatorWidthText.DocumentText));
 
                 Log.Comment("Updating width of ProgressBar also updates Indicator Width");
                 widthInput.SetValue("150");
 
                 updateWidthButton.InvokeAndWait();
 
-                Verify.AreEqual(Math.Ceiling(Convert.ToDouble(valueText.DocumentText) * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual(Math.Ceiling(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Changing value of ProgressBar of different width updates Indicator width");
 
                 changeValueButton.InvokeAndWait();
 
-                Verify.AreEqual(Math.Ceiling(Convert.ToDouble(valueText.DocumentText) * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual(Math.Ceiling(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Updating Maximum and Minimum also updates Indicator Width");
 
@@ -122,8 +119,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 changeValueButton.InvokeAndWait();
 
-                double range = Convert.ToDouble(maximumInputText.DocumentText) - Convert.ToDouble(minimumInputText.DocumentText);
-                double adjustedValueFromRange = Convert.ToDouble(valueText.DocumentText) - Convert.ToDouble(minimumInputText.DocumentText);
+                double range = progressBar.Maximum - progressBar.Minimum;
+                double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
                 double calculatedValue = Math.Ceiling((adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText));
 
                 Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
@@ -137,14 +134,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Updating Minimum and Maximum value of ProgressBar");
 
-                UIObject testProgressBar = FindElement.ByName("TestProgressBar");
+                RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
 
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
-                TextBlock minimumInputText = FindElement.ByName<TextBlock>("MinimumInputText");
-                TextBlock maximumInputText = FindElement.ByName<TextBlock>("MaximumInputText");
-
-                double oldMinimumInputText = Convert.ToDouble(minimumInputText.DocumentText);
-                double oldMaximumInputText = Convert.ToDouble(maximumInputText.DocumentText);
+                double oldMinimumInputText = progressBar.Minimum;
+                double oldMaximumInputText = progressBar.Maximum;
 
                 Edit minimumInput = FindElement.ByName<Edit>("MinimumInput");
                 Edit maximumInput = FindElement.ByName<Edit>("MaximumInput");
@@ -155,8 +148,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button updateMinMaxButton = FindElement.ByName<Button>("UpdateMinMaxButton");
                 updateMinMaxButton.InvokeAndWait();
 
-                double newMinimumInputText = Convert.ToDouble(minimumInputText.DocumentText);
-                double newMaximumInputText = Convert.ToDouble(maximumInputText.DocumentText);
+                double newMinimumInputText = progressBar.Minimum;
+                double newMaximumInputText = progressBar.Maximum;
 
                 Verify.AreNotSame(oldMinimumInputText, newMinimumInputText, "Minimum updated");
                 Verify.AreNotSame(oldMaximumInputText, newMaximumInputText, "Maximum updated");
@@ -168,15 +161,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 maximumInput.SetValue("5");
                 updateMinMaxButton.InvokeAndWait();
 
-                Verify.AreEqual(minimumInputText.DocumentText, maximumInputText.DocumentText, "Maximum updates to equal Minimum");
+                Verify.AreEqual(progressBar.Minimum, progressBar.Maximum, "Maximum updates to equal Minimum");
 
                 Log.Comment("Updating Minimum and Maximum when Minimum > Value");
 
                 minimumInput.SetValue("15");
                 updateMinMaxButton.InvokeAndWait();
 
-                Verify.AreEqual(valueText.DocumentText, minimumInputText.DocumentText, "Value updates to equal Minimum");
-                Verify.AreEqual(maximumInputText.DocumentText, minimumInputText.DocumentText, "Maximum also updates to equal Minimum");
+                Verify.AreEqual(progressBar.Value, progressBar.Minimum, "Value updates to equal Minimum");
+                Verify.AreEqual(progressBar.Maximum, progressBar.Minimum, "Maximum also updates to equal Minimum");
 
                 Log.Comment("Updating Minimum and Maximum to be a decimal number");
 
@@ -185,12 +178,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 updateMinMaxButton.InvokeAndWait();
 
-                double oldValue = Convert.ToDouble(valueText.DocumentText);
+                double oldValue = progressBar.Value;
 
                 Button changeValueButton = FindElement.ByName<Button>("ChangeValueButton");
                 changeValueButton.InvokeAndWait();
 
-                double newValue = Convert.ToDouble(valueText.DocumentText);
+                double newValue = progressBar.Value;
                 double diff = Math.Abs(oldValue - newValue);
 
                 Verify.IsGreaterThan(diff, Convert.ToDouble(0), "Value of ProgressBar increments properly within range with decimal Minimum and Maximum");
@@ -264,7 +257,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Set ProgressBar Padding settings to default for testing");
 
-                UIObject testProgressBar = FindElement.ByName("TestProgressBar");
+                RangeValueSpinner progressBar = FindElement.ByName<RangeValueSpinner>("TestProgressBar");
 
                 Edit paddingLeftInput = FindElement.ByName<Edit>("PaddingLeftInput");
                 Edit paddingRightInput = FindElement.ByName<Edit>("PaddingRightInput");
@@ -295,9 +288,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Button updateValueButton = FindElement.ByName<Button>("UpdateValueButton");
                 updateValueButton.InvokeAndWait();
 
-                TextBlock valueText = FindElement.ByName<TextBlock>("ValueText");
-
-                double maxIndicatorWidth = Convert.ToDouble(valueText.DocumentText) - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
+                double maxIndicatorWidth = progressBar.Value - Convert.ToDouble(paddingLeftText.DocumentText) - Convert.ToDouble(paddingRightText.DocumentText);
 
                 Verify.AreEqual(maxIndicatorWidth, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator at max width is offset by Padding");
             }
