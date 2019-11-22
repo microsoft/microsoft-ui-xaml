@@ -1,5 +1,6 @@
-﻿<Page
+﻿<local:NavPage
     x:Class="ItemsRepeaterDemos.GroupingDemo"
+    xmlns:local="using:ItemsRepeaterDemos"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"
@@ -16,6 +17,7 @@
                         <!-- Inner Repeater (Group Items) -->
                         <mux:ItemsRepeater 
                             ItemsSource="{Binding DeclaredMembers}" >
+
                         </mux:ItemsRepeater>
                         <!-- Group Footer -->
                         <TextBlock Text="Footer!" Foreground="Gray" />
@@ -24,7 +26,7 @@
             </mux:ItemsRepeater>
         </ScrollViewer>
     </Grid>
-</Page>
+</local:NavPage>
 
 
 
@@ -51,10 +53,9 @@
 
 <!--<DataTemplate>
     <StackPanel Margin="10, 0">
-        --><!-- Second level of grouping --><!--
         <TextBlock Text="{Binding}" />
         <mux:ItemsRepeater  Margin="10, 0"
-                                        ItemsSource="{Binding CustomAttributes}" >
+              ItemsSource="{Binding CustomAttributes}" >
         </mux:ItemsRepeater>
     </StackPanel>
 </DataTemplate>-->

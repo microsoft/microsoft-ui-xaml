@@ -1,4 +1,4 @@
-﻿<Page
+﻿<local:NavPage
     x:Class="ItemsRepeaterDemos.LayoutDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -15,12 +15,12 @@
                     <Button Content="{Binding}" />
                 </DataTemplate>
                 <mux:ItemsRepeater.Layout>
-                    <mux:StackLayout Spacing="10" />
+                    <mux:UniformGridLayout MinColumnSpacing="10" MinRowSpacing="10" MinItemWidth="100" MinItemHeight="100"/>
                 </mux:ItemsRepeater.Layout>
             </mux:ItemsRepeater>
         </ScrollViewer>
     </Grid>
-</Page>
+</local:NavPage>
 
 
 

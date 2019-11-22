@@ -3,7 +3,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterDemos
 {
-    public sealed partial class GroupingDemo : Page
+    public sealed partial class GroupingDemo : NavPage
     {
         public GroupingDemo()
         {

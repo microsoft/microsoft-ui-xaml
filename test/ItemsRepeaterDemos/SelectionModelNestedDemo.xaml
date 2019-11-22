@@ -1,5 +1,5 @@
-﻿<Page
-    x:Class="ItemsRepeaterDemos.SelectionModelDemo"
+﻿<local:NavPage
+    x:Class="ItemsRepeaterDemos.SelectionModelNestedDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:ItemsRepeaterDemos"
@@ -70,7 +70,7 @@
             <ToggleButton x:Name="multipleSelection" 
                           IsChecked="False" 
                           Checked="OnMultipleSelectionClicked" 
-                          Unchecked="OnMultipleSelectionClicked">Multiple</ToggleButton>
+                          Unchecked="OnMultipleSelectionClicked">Extended Selection</ToggleButton>
         </StackPanel>
         <controls:ItemsRepeaterScrollHost Grid.Row="1">
             <ScrollViewer>
@@ -84,4 +84,4 @@
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
     </Grid>
-</Page>
+</local:NavPage>

@@ -15,11 +15,13 @@
             <local:NavigateButton Target="local:ItemTemplateDemo" />
             <local:NavigateButton Target="local:LayoutDemo" />
             <local:NavigateButton Target="local:GroupingDemo" />
-            <local:NavigateButton Target="local:SelectionModelDemo" />
+
+            <local:NavigateButton Target="local:KeyIndexMappingDemo" />
+            <local:NavigateButton Target="local:SelectionModelFlatDemo" />
+            <local:NavigateButton Target="local:SelectionModelNestedDemo" />
 
             <local:NavigateButton Target="local:AnimationDemo" />
-            <!--local:NavigateButton Target="local:MaintainViewportDemo" /-->
-            <!--local:NavigateButton Target="local:KeyIndexMappingDemo" /-->
+            <local:NavigateButton Target="local:MaintainViewportDemo" />
         </StackPanel>
     </Grid>
 </Page>

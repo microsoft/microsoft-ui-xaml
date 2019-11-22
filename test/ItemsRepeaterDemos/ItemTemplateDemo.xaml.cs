@@ -1,16 +1,47 @@
-﻿using System.Linq;
+﻿using Microsoft.UI.Xaml.Controls;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterDemos
 {
-    public sealed partial class ItemTemplateDemo : Page
+    public sealed partial class ItemTemplateDemo : NavPage
     {
         public ItemTemplateDemo()
         {
             this.InitializeComponent();
 
-            repeater.ItemsSource = Enumerable.Range(0, 10);
+            repeater.ItemsSource = Enumerable.Range(0, 10000);
+        }
+    }
+
+    public class MyFactory: IElementFactoryShim
+    {
+        List<Button> pool = new List<Button>();
+
+        public UIElement GetElement(Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs args)
+        {
+            Button element = null;
+            if(pool.Count > 0)
+            {
+                element = pool[0];
+                pool.RemoveAt(0);
+            }
+            else
+            {
+                element = new Button();
+            }
+
+            element.Content = args.Data;
+
+            return element;
+        }
+
+        public void RecycleElement(Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs args)
+        {
+            pool.Add(args.Element as Button);
         }
     }
 

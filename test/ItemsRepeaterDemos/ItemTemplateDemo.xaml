@@ -1,23 +1,19 @@
-﻿<Page
+﻿<local:NavPage
     x:Class="ItemsRepeaterDemos.ItemTemplateDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:ItemsRepeaterDemos"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:mux="using:Microsoft.UI.Xaml.Controls"    
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
         <ScrollViewer>
             <mux:ItemsRepeater x:Name="repeater">
-                <DataTemplate>
-                    <Button Content="{Binding}" />
-                </DataTemplate>
+                <local:MyFactory />
             </mux:ItemsRepeater>
         </ScrollViewer>
     </Grid>
-</Page>
+</local:NavPage>
 
 
 
@@ -45,6 +41,14 @@
 <!--<DataTemplate>
                     <Button Content="{Binding}" />
                 </DataTemplate>-->
+
+<!--<DataTemplate x:DataType="x:Int32">
+    <StackPanel>
+        <Button Content="{x:Bind}" />
+        <Button Content="{x:Bind}" x:Phase="2"/>
+    </StackPanel>
+</DataTemplate>-->
+
 <!--<local:MySelector>
                     <local:MySelector.Template1>
                         <DataTemplate>

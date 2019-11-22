@@ -7,7 +7,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterDemos
 {
-    public sealed partial class LayoutDemo : Page
+    public sealed partial class LayoutDemo : NavPage
     {
         public LayoutDemo()
         {

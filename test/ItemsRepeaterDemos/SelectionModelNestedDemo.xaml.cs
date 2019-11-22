@@ -7,15 +7,16 @@ using Windows.UI.Xaml.Controls;
 
 namespace ItemsRepeaterDemos
 {
-    public sealed partial class SelectionModelDemo : Page
+    public sealed partial class SelectionModelNestedDemo : NavPage
     {
         static object _data = Data.CreateNested(3, 2, 4);
-        public SelectionModelDemo()
+        public SelectionModelNestedDemo()
         {
             this.InitializeComponent();
             rootRepeater.ItemsSource = _data;
             selectionModel.Source = _data;
             selectionModel.PropertyChanged += SelectionModel_PropertyChanged;
+            selectionModel.SingleSelect = true;
         }
 
         private void SelectionModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

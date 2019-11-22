@@ -1,14 +1,22 @@
-﻿<Page
+﻿<local:NavPage
     x:Class="ItemsRepeaterDemos.MaintainViewportDemo"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:ItemsRepeaterDemos"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
+    xmlns:mux="using:Microsoft.UI.Xaml.Controls"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
 
+    <Grid>
+        <StackPanel>
+            <TextBlock>Index:</TextBlock>
+            <TextBox x:Name="indexTextBox" Text="0" />
+            <Button Click="Button_Click">Insert Item</Button>
+            
+            <ScrollViewer Width="600" Height="800" HorizontalAnchorRatio="0.0" VerticalAnchorRatio="0.0">
+                <mux:ItemsRepeater x:Name="repeater">
+                </mux:ItemsRepeater>
+            </ScrollViewer>
+        </StackPanel>
     </Grid>
-</Page>
+</local:NavPage>
