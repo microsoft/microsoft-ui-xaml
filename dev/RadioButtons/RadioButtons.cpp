@@ -22,7 +22,10 @@ RadioButtons::RadioButtons()
     // Override normal up/down/left/right behavior -- down should always go to the next item and up to the previous.
     // left and right should be spacial but contained to the RadioButtons control. We have to attach to PreviewKeyDown
     // because RadioButton has a key down handler for up and down that gets called before we can intercept. Issue #1634.
-    PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
+    if (auto const thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
+    {
+        PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
+    }
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
@@ -77,9 +80,12 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                         {
                             if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                             {
-                                if (args.TrySetNewFocusedElement(selectedItem))
+                                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                                 {
-                                    args.Handled(true);
+                                    if (args.TrySetNewFocusedElement(selectedItem))
+                                    {
+                                        args.Handled(true);
+                                    }
                                 }
                             }
                         }
@@ -88,10 +94,10 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
             }
         }
 
-        // Selection follows focus unless control is held down.
-        if ((winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) !=
-            winrt::CoreVirtualKeyStates::Down)
+        // On RS3+ Selection follows focus unless control is held down.
+        if (SharedHelpers::IsRS3OrHigher() && 
+            (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
         {
             if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
             {
@@ -398,7 +404,7 @@ bool RadioButtons::MoveFocus(int indexIncrement)
                         {
                             if (itemAsControl.IsEnabled() && itemAsControl.IsTabStop())
                             {
-                                itemAsControl.Focus(winrt::Windows::UI::Xaml::FocusState::Keyboard);
+                                itemAsControl.Focus(winrt::FocusState::Keyboard);
                                 return true;
                             }
                         }
