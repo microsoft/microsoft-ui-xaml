@@ -58,7 +58,6 @@ private:
 
     void UpdateItemsSource();
     winrt::IInspectable GetItemsSource();
-    void UpdateMaximumColumns();
 
     void UpdateSelectedIndex();
 

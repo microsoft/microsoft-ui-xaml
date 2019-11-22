@@ -19,6 +19,7 @@
                         <local:ItemsRepeater x:Name="InnerRepeater" ItemTemplate="{TemplateBinding ItemTemplate}">
                             <local:ItemsRepeater.Layout>
                                 <primitives:ColumnMajorUniformToLargestGridLayout
+                                    MaximumColumns="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaximumColumns}"
                                     ColumnSpacing="{ThemeResource RadioButtonsColumnSpacing}"
                                     RowSpacing="{ThemeResource RadioButtonsRowSpacing}"/>
                             </local:ItemsRepeater.Layout>

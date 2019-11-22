@@ -135,8 +135,7 @@ void ColumnMajorUniformToLargestGridLayout::OnRowSpacingPropertyChanged(const wi
 
 void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    auto const maxColumns = MaximumColumns();
-    if (maxColumns <= 0)
+    if (args.NewValue() <= 0)
     {
         throw winrt::hresult_invalid_argument();
     }

@@ -118,7 +118,6 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
         }
 
         UpdateSelectedIndex();
-        UpdateMaximumColumns();
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
 }
@@ -425,10 +424,6 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateItemsSource();
     }
-    else if (property == s_MaximumColumnsProperty)
-    {
-        UpdateMaximumColumns();
-    }
     else if (property == s_SelectedIndexProperty)
     {
         UpdateSelectedIndex();
@@ -459,20 +454,6 @@ winrt::IInspectable RadioButtons::GetItemsSource()
     else
     {
         return Items();
-    }
-}
-
-void RadioButtons::UpdateMaximumColumns()
-{
-    if (auto const repeater = m_repeater.get())
-    {
-        if (auto const layout = repeater.Layout())
-        {
-            if (auto const customlayout = layout.try_as<winrt::ColumnMajorUniformToLargestGridLayout>())
-            {
-                customlayout.MaximumColumns(MaximumColumns());
-            }
-        }
     }
 }
 
