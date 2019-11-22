@@ -112,6 +112,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void MultiColumnKeyboardTest()
         {
+            if(!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -169,6 +174,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void DisabledItemsKeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -235,6 +245,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void DisabledItemsAtTopOfColumnKeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -287,6 +302,59 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     VerifySelectedFocusedIndex(8);
 
                     ElementCache.Clear();
+                }
+            }
+        }
+
+        public void RS2MultiColumnKeyboardTest()
+        {
+            if (!PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS2 keyboarding behavior");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        bool useBackup = type == RadioButtonsSourceType.String;
+                        SetNumberOfColumns(3);
+                        TapOnItem(3, useBackup);
+                        VerifySelectedFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifyFocusedIndex(4);
+                        KeyboardHelper.PressKey(Key.Up);
+                        VerifyFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Left);
+                        VerifyFocusedIndex(2);
+                        KeyboardHelper.PressKey(Key.Right);
+                        VerifyFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Right);
+                        VerifyFocusedIndex(4);
+                        VerifySelectedIndex(3);
+
+                        TapOnItem(9, useBackup);
+                        VerifySelectedFocusedIndex(9);
+                        KeyboardHelper.PressKey(Key.Left);
+                        VerifyFocusedIndex(8);
+                        KeyboardHelper.PressKey(Key.Right);
+                        VerifyFocusedIndex(9);
+                        KeyboardHelper.PressKey(Key.Right);
+                        VerifyFocusedIndex(0);
+                        KeyboardHelper.PressKey(Key.Tab);
+                        VerifyFocusedIndex(1);
+                        VerifySelectedIndex(9);
+
+                        TapOnItem(9, useBackup);
+                        VerifySelectedFocusedIndex(9);
+                        KeyboardHelper.PressKey(Key.Tab);
+                        VerifyRadioButtonsHasFocus(false);
+                    }
                 }
             }
         }
