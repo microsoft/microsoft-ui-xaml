@@ -143,6 +143,16 @@
                             </StackPanel>
                         </controls:TabViewItem>
 
+                        <controls:TabViewItem x:Name="DisabledTab" AutomationProperties.Name="DisabledTab" Header="Disabled" IsEnabled="False">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Admin"/>
+                            </controls:TabViewItem.IconSource>
+
+                            <StackPanel>
+                                <TextBlock Padding="16">This tab can't be selected.</TextBlock>
+                            </StackPanel>
+                        </controls:TabViewItem>
+
                         <controls:TabViewItem x:Name="LastTab" AutomationProperties.Name="LastTab" Header="Contact">
                             <controls:TabViewItem.IconSource>
                                 <controls:SymbolIconSource Symbol="Contact"/>
