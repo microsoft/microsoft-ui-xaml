@@ -18,8 +18,13 @@ public:
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
-    // IRangeValueProvider
     bool IsReadOnly() { return true; }
+    double Value();
+    double SmallChange();
+    double LargeChange();
+    double Minimum();
+    double Maximum();
+    void SetValue(double value);
 
 private:
     com_ptr<ProgressBar> GetImpl();

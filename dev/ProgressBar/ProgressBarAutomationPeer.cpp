@@ -45,3 +45,34 @@ com_ptr<ProgressBar> ProgressBarAutomationPeer::GetImpl()
 
     return impl;
 }
+
+// IRangeValueProvider
+double ProgressBarAutomationPeer::Value()
+{
+    return GetImpl()->Value();
+}
+
+double ProgressBarAutomationPeer::SmallChange()
+{
+    return NAN;
+}
+
+double ProgressBarAutomationPeer::LargeChange()
+{
+    return NAN;
+}
+
+double ProgressBarAutomationPeer::Minimum()
+{
+    return GetImpl()->Minimum();
+}
+
+double ProgressBarAutomationPeer::Maximum()
+{
+    return GetImpl()->Maximum();
+}
+
+void ProgressBarAutomationPeer::SetValue(double value)
+{
+    GetImpl()->Value(value);
+}

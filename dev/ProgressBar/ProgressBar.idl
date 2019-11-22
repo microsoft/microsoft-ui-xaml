@@ -50,7 +50,7 @@ namespace MU_XAP_NAMESPACE
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ProgressBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+unsealed runtimeclass ProgressBarAutomationPeer : Windows.UI.Xaml.Automation.Peers.RangeBaseAutomationPeer
 {
     ProgressBarAutomationPeer(MU_XC_NAMESPACE.ProgressBar owner);
 }
