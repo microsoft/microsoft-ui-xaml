@@ -17,12 +17,12 @@ struct RoutedEventHandler_revoker
     RoutedEventHandler_revoker() noexcept = default;
     RoutedEventHandler_revoker(RoutedEventHandler_revoker const&) = delete;
     RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker const&) = delete;
-    RoutedEventHandler_revoker(RoutedEventHandler_revoker&& other)
+    RoutedEventHandler_revoker(RoutedEventHandler_revoker&& other) noexcept
     {
         move_from(other);
     }
 
-    RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker&& other)
+    RoutedEventHandler_revoker& operator=(RoutedEventHandler_revoker&& other) noexcept
     {
         move_from(other);
         return *this;

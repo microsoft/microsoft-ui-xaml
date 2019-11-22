@@ -147,12 +147,12 @@ struct PropertyChanged_revoker
    PropertyChanged_revoker() noexcept = default;
    PropertyChanged_revoker(PropertyChanged_revoker const&) = delete;
    PropertyChanged_revoker& operator=(PropertyChanged_revoker const&) = delete;
-   PropertyChanged_revoker(PropertyChanged_revoker&& other)
+   PropertyChanged_revoker(PropertyChanged_revoker&& other) noexcept
    {
        move_from(other);
    }
 
-   PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other)
+   PropertyChanged_revoker& operator=(PropertyChanged_revoker&& other) noexcept
    {
        move_from(other);
        return *this;
@@ -160,7 +160,7 @@ struct PropertyChanged_revoker
 
    PropertyChanged_revoker(winrt::DependencyObject const& object, const winrt::DependencyProperty&  dp, int64_t token) :
         m_object(object),
-        m_property(std::move(dp)),
+        m_property(dp),
         m_token(token)
     {}
 

@@ -732,7 +732,7 @@ void AnimatedVisualPlayer::OnAutoPlayPropertyChanged(
         auto from = 0;
         auto to = 1;
         auto looped = true;
-        PlayAsync(from, to, looped);
+        auto ignore = PlayAsync(from, to, looped);
     }
 }
 
@@ -911,7 +911,7 @@ void AnimatedVisualPlayer::UpdateContent()
         auto to = 1;
         auto looped = true;
         // NOTE: If !IsAnimatedVisualLoaded() then this is a no-op.
-        PlayAsync(from, to, looped);
+        auto ignore = PlayAsync(from, to, looped);
     }
 }
 

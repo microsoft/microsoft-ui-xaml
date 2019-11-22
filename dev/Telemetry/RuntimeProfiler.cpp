@@ -5,6 +5,9 @@
 #include "RuntimeProfiler.h"
 #include "TraceLogging.h"
 
+#pragma warning(push)
+#pragma warning(disable : 26812)
+
 #define DEFINE_PROFILEGROUP(name, group, size) \
     CMethodProfileGroup<size>        name(group)
 
@@ -15,8 +18,8 @@ namespace RuntimeProfiler {
     struct FunctionTelemetryCount
     {
         volatile LONG      *pInstanceCount{ nullptr };
-        volatile UINT16     uTypeIndex;
-        volatile UINT16     uMethodIndex;
+        volatile UINT16     uTypeIndex{};
+        volatile UINT16     uMethodIndex{};
     };
 
     class CMethodProfileGroupBase
@@ -283,3 +286,5 @@ STDAPI_(void) SendTelemetryOnSuspend() noexcept
 {
     RuntimeProfiler::FireEvent(true);
 }
+
+#pragma warning(pop)

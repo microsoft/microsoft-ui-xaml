@@ -133,7 +133,7 @@
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
     <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
-	  <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
+    <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -166,14 +166,18 @@
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
-  <!-- Disable code analysis until this compiler bug is fixed: Bug 616860: /analyze on pch.cpp using C++/WinRT takes 25 minutes and runs out of memory -->
-  <!-- <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
+  <PropertyGroup Condition="
+    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
+    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
+    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
+    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup> -->
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -224,7 +228,7 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -239,6 +243,12 @@
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
+      <!-- Pipelines agents are low-memory configurations that struggle to compile code analysis in parallel. See 
+          https://developercommunity.visualstudio.com/content/problem/831568/cl-analyze-runs-out-of-memory.html
+          for more details. While we get that resolved (either with a fix in VS or better agents), we need
+          to disable MultiProc compile. Use NUMBER_OF_PROCESSORS==2 to check if it's one of the underpowered Azure
+          Pipelines VMs -->
+      <MultiProcessorCompilation Condition="'$(Configuration)'=='Debug' AND '$(NUMBER_OF_PROCESSORS)'=='2'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
