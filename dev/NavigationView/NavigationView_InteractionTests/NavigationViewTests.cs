@@ -2668,9 +2668,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     SetNavViewHeight(ControlHeight.Small);
 
-                    // Need to get hold of the pane and search through its children for the scrollbar so as to avoid the scrollbar in the content area
-                    ListView paneListView = new ListView(FindElement.ById("MenuItemsHost"));
-
                     UIObject lastItem = FindElement.ByName("TV");
                     UIObject firstItem = FindElement.ByName("Home");
 
