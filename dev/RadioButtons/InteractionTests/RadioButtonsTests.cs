@@ -374,8 +374,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         bool useBackup = type == RadioButtonsSourceType.String;
                         SetNumberOfColumns(3);
 
-                        TapOnItem(9, useBackup);
-                        VerifySelectedFocusedIndex(9);
+                        // On RS2 the keyboarding model is different which results in different behavior here.
+                        if (!PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                        {
+                            TapOnItem(3, useBackup);
+                            VerifySelectedFocusedIndex(3);
+                        }
+                        else
+                        {
+                            TapOnItem(9, useBackup);
+                            VerifySelectedFocusedIndex(9);
+                        }
                         GamepadHelper.PressButton(null, GamepadButton.DPadDown);
                         VerifyRadioButtonsHasFocus(false);
 
@@ -396,6 +405,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ControlKeyKeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test fails on RS2 because of a repeater bug: #1447");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
