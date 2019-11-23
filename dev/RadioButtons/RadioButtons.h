@@ -60,6 +60,7 @@ private:
     winrt::IInspectable GetItemsSource();
 
     void UpdateSelectedIndex();
+    void UpdateSelectedItem();
 
     void Select(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
