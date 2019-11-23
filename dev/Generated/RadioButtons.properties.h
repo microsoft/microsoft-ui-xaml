@@ -18,8 +18,8 @@ public:
     void ItemsSource(winrt::IInspectable const& value);
     winrt::IInspectable ItemsSource();
 
-    void ItemTemplate(winrt::DataTemplate const& value);
-    winrt::DataTemplate ItemTemplate();
+    void ItemTemplate(winrt::IInspectable const& value);
+    winrt::IInspectable ItemTemplate();
 
     void MaximumColumns(int value);
     int MaximumColumns();

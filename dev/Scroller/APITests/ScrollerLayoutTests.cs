@@ -543,7 +543,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller = new Scroller();
                 scroller.Content = imageScrollerContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -893,7 +893,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scroller.Content = imageScrollerContent;
                     scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
 
                 // Constraining the Image height and making the Scroller smaller than the Image
                 imageScrollerContent.Width = c_imageWidth;
@@ -961,7 +961,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.Content = imageScrollerContent;
                 scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
 
                 // Constraining the Image height and making the Scroller smaller than the Image
                 imageScrollerContent.Width = c_imageWidth;
