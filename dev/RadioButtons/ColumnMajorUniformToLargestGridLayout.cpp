@@ -135,11 +135,15 @@ void ColumnMajorUniformToLargestGridLayout::OnRowSpacingPropertyChanged(const wi
 
 void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (unbox_value<double>(args.NewValue()) <= 0)
+    InvalidateMeasure();
+}
+
+void ColumnMajorUniformToLargestGridLayout::ValidateGreaterThanZero(int value)
+{
+    if (value <= 0)
     {
         throw winrt::hresult_invalid_argument();
     }
-    InvalidateMeasure();
 }
 
 
