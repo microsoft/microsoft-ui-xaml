@@ -375,7 +375,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetNumberOfColumns(3);
 
                         // On RS2 the keyboarding model is different which results in different behavior here.
-                        if (!PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
+                        if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone3))
                         {
                             TapOnItem(3, useBackup);
                             VerifySelectedFocusedIndex(3);
