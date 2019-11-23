@@ -104,13 +104,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 widthInput.SetValue("150");
                 updateWidthButton.InvokeAndWait();
 
-                Verify.AreEqual(progressBar.Value * 1.5, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual(Math.Round(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Changing value of ProgressBar of different width updates Indicator width");
 
                 changeValueButton.InvokeAndWait();
 
-                Verify.AreEqual(progressBar.Value * 1.5, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual(Math.Round(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Updating Maximum and Minimum also updates Indicator Width");
 
@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
                 double calculatedValue = (adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText);
 
-                Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
+                Verify.AreEqual(Math.Round(calculatedValue, MidpointRounding.AwayFromZero), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
             }
         }
 
