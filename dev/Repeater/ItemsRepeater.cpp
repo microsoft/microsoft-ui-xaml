@@ -509,6 +509,8 @@ void ItemsRepeater::OnDataSourcePropertyChanged(const winrt::ItemsSourceView& ol
         m_itemsSourceViewChanged.revoke();
     }
 
+   
+
     if (newValue)
     {
         m_itemsSourceViewChanged = newValue.CollectionChanged(winrt::auto_revoke, { this, &ItemsRepeater::OnItemsSourceViewChanged });
@@ -714,7 +716,7 @@ void ItemsRepeater::OnItemsSourceViewChanged(const winrt::IInspectable& sender, 
 
     if (auto layout = Layout())
     {
-        if (auto virtualLayout = layout.as<winrt::VirtualizingLayout>())
+        if (auto virtualLayout = layout.try_as<winrt::VirtualizingLayout>())
         {
             virtualLayout.OnItemsChangedCore(GetLayoutContext(), sender, args);
         }

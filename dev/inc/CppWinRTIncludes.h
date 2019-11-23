@@ -188,6 +188,7 @@ namespace winrt
     using ContentControl = winrt::Windows::UI::Xaml::Controls::ContentControl;
     using ContentPresenter = winrt::Windows::UI::Xaml::Controls::ContentPresenter;
     using Control = ::winrt::Windows::UI::Xaml::Controls::Control;
+    using IControl = ::winrt::Windows::UI::Xaml::Controls::IControl;
     using DataTemplateSelector = winrt::Windows::UI::Xaml::Controls::DataTemplateSelector;
     using DisabledFormattingAccelerators = winrt::Windows::UI::Xaml::Controls::DisabledFormattingAccelerators;
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
@@ -240,6 +241,7 @@ namespace winrt
     using Panel = winrt::Windows::UI::Xaml::Controls::Panel;
     using PasswordBox = winrt::Windows::UI::Xaml::Controls::PasswordBox;
     using PathIcon = winrt::Windows::UI::Xaml::Controls::PathIcon;
+    using RadioButton = winrt::Windows::UI::Xaml::Controls::RadioButton;
     using RichEditBox = winrt::Windows::UI::Xaml::Controls::RichEditBox;
     using RichTextBlock = winrt::Windows::UI::Xaml::Controls::RichTextBlock;
     using RichTextBlockOverflow = winrt::Windows::UI::Xaml::Controls::RichTextBlockOverflow;
@@ -329,6 +331,7 @@ namespace winrt
     using Selector = winrt::Windows::UI::Xaml::Controls::Primitives::Selector;
     using SelectorItem = winrt::Windows::UI::Xaml::Controls::Primitives::SelectorItem;
     using ToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::ToggleButton;
+    using IToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::IToggleButton;
 
     // using namespace winrt::Windows::UI::Xaml::Automation::Peers;
     using AccessibilityView = winrt::Windows::UI::Xaml::Automation::Peers::AccessibilityView;

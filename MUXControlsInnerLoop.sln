@@ -414,6 +414,7 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_InteractionTests", "dev\ProgressBar\InteractionTests\ProgressBar_InteractionTests.shproj", "{3D044EC1-C9D3-4745-B79E-E7BED66E93F8}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProgressBar_TestUI", "dev\ProgressBar\TestUI\ProgressBar_TestUI.shproj", "{1A5321F3-B837-4EB6-9547-37CC70088EA9}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NumberBox", "NumberBox", "{E95C2CA1-FF23-47CC-A896-CC5175B37890}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NumberBox", "dev\NumberBox\NumberBox.vcxitems", "{9D23C997-1F46-444A-8C07-4A4BFF7E4E63}"
@@ -559,7 +560,7 @@ Global
 		dev\IconSource\IconSource.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Lights\Lights.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\Materials\Acrylic\AcrylicBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
-		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
+		dev\Materials\Reveal\RevealBrush.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4	
 		dev\ProgressBar\ProgressBar.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\NumberBox\NumberBox.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
 		dev\ResourceHelper\ResourceHelper.vcxitems*{ad0c90b0-4845-4d4b-88f1-86f653f8171b}*SharedItemsImports = 4
