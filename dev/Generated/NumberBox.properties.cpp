@@ -372,11 +372,6 @@ winrt::IInspectable NumberBoxProperties::Description()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_DescriptionProperty));
 }
 
-void NumberBoxProperties::Header(winrt::IInspectable const& value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
-}
-
 winrt::IInspectable NumberBoxProperties::Header()
 {
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
