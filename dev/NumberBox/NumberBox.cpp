@@ -22,6 +22,15 @@ static constexpr wstring_view c_numberBoxPopupContentRootName{ L"PopupContentRoo
 static constexpr double c_popupShadowDepth = 16.0;
 static constexpr wstring_view c_numberBoxPopupShadowDepthName{ L"NumberBoxPopupShadowDepth"sv };
 
+// Shockingly, there is no standard function for trimming strings.
+const std::wstring c_whitespace = L" \n\r\t\f\v";
+std::wstring trim(const std::wstring& s)
+{
+    size_t start = s.find_first_not_of(c_whitespace);
+    size_t end = s.find_last_not_of(c_whitespace);
+    return (start == std::wstring::npos || end == std::wstring::npos) ? L"" : s.substr(start, end - start + 1);
+}
+
 NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
@@ -264,10 +273,7 @@ void NumberBox::CoerceMinimum()
     const auto max = Maximum();
     if (Minimum() > max)
     {
-        if (auto && popup = m_popup.get())
-        {
-            popup.IsOpen(true);
-        }
+        Minimum(max);
     }
 }
 

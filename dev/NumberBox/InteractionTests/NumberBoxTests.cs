@@ -160,6 +160,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
+        public void ValueTextTest()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+
+                Log.Comment("Verify that focusing the NumberBox selects the text");
+                numBox.SetFocus();
+                Wait.ForIdle();
+                Wait.ForSeconds(3);
+                Edit edit = FindTextBox(numBox);
+                Verify.AreEqual("0", edit.GetTextSelection());
+
+                Log.Comment("Verify that setting the value through UIA changes the textbox text");
+                numBox.SetValue(10);
+                Wait.ForIdle();
+                Verify.AreEqual("10", edit.GetText());
+
+                Log.Comment("Verify that setting the text programmatically changes the value and textbox text");
+                Button button = FindElement.ByName<Button>("SetTextButton");
+                button.InvokeAndWait();
+                Verify.AreEqual(15, numBox.Value);
+                Verify.AreEqual("15", edit.GetText());
+
+                Log.Comment("Verify that even if the value doesn't change, the textbox text is updated");
+                EnterText(numBox, " 15 ");
+                Verify.AreEqual("15", edit.GetText());
+            }
+        }
+
+        [TestMethod]
         public void MinMaxTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
