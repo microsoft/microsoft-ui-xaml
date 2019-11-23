@@ -59,7 +59,7 @@ double ProgressBarAutomationPeer::SmallChange()
 
 double ProgressBarAutomationPeer::LargeChange()
 {
-    return NAN;
+    return std::numeric_limits<double>::quiet_NaN();
 }
 
 double ProgressBarAutomationPeer::Minimum()
