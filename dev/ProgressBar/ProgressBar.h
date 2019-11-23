@@ -20,7 +20,7 @@ public:
     ProgressBar();
 
     virtual winrt::AutomationPeer OnCreateAutomationPeer();
-
+    winrt::AutomationPeer OnCreateAutomationPeer();
     // IFrameworkElement
     void OnApplyTemplate();
 
