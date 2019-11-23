@@ -26,6 +26,11 @@
                             <VisualStateGroup x:Name="CommonStates">
 
                                 <VisualStateGroup.Transitions>
+                                    <VisualTransition From="Updating" To="Determinate">
+                                        <Storyboard>
+                                            <RepositionThemeAnimation TargetName="ProgressBarIndicator" FromHorizontalOffset="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.IndicatorLengthDelta}" />
+                                        </Storyboard>
+                                    </VisualTransition>
                                     <VisualTransition From="Paused" To="Determinate">
                                         <Storyboard>
                                             <DoubleAnimation
@@ -39,13 +44,14 @@
                                 
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
+                                <VisualState x:Name="Updating" />
                                 <VisualState x:Name="Indeterminate">
                                     <Storyboard RepeatBehavior="Forever">
                                         <DoubleAnimationUsingKeyFrames
                                             Storyboard.TargetName="ProgressBarIndicator"
                                             Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)"
                                             Duration="0:0:1">
-                                            <EasingDoubleKeyFrame KeyTime="0" Value="0">
+                                            <EasingDoubleKeyFrame KeyTime="0" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition}">
                                                 <EasingDoubleKeyFrame.EasingFunction>
                                                     <CubicEase/>
                                                 </EasingDoubleKeyFrame.EasingFunction>
