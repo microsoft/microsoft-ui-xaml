@@ -1362,17 +1362,27 @@ void TeachingTip::RevokeViewportChangedEvent()
 
 void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
 {
-    RepositionPopup();
+    // Reposition popup when target/window has finished determining sizes
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong()](){
+            strongThis->RepositionPopup();
+        }
+    );
 }
 
 void TeachingTip::XamlRootChanged(const winrt::XamlRoot& xamlRoot, const winrt::XamlRootChangedEventArgs&)
 {
-    auto xamlRootSize = xamlRoot.Size();
-    if (xamlRootSize != m_currentXamlRootSize)
-    {
-        m_currentXamlRootSize = xamlRootSize;
-        RepositionPopup();
-    }
+    // Reposition popup when target has finished determining its own position.
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong(),xamlRootSize = xamlRoot.Size()](){
+            if (xamlRootSize != strongThis->m_currentXamlRootSize)
+            {
+                strongThis->m_currentXamlRootSize = xamlRootSize;
+                strongThis->RepositionPopup();
+            }
+        }
+    );
+
 }
 
 void TeachingTip::RepositionPopup()
