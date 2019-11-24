@@ -73,19 +73,17 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
             {
                 if (auto const oldFocusedElement = args.OldFocusedElement())
                 {
-                    if (auto const oldFocusedElementAsUIElement = oldFocusedElement.try_as<winrt::UIElement>())
+                    auto oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
+                    // If focus is coming from outside the repeater, put focus on the selected item.
+                    if (repeater != oldElementParent)
                     {
-                        // If focus is coming from outside the repeater, put focus on the selected item.
-                        if (repeater.GetElementIndex(oldFocusedElementAsUIElement) < 0)
+                        if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                         {
-                            if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                            if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                             {
-                                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                                if (args.TrySetNewFocusedElement(selectedItem))
                                 {
-                                    if (args.TrySetNewFocusedElement(selectedItem))
-                                    {
-                                        args.Handled(true);
-                                    }
+                                    args.Handled(true);
                                 }
                             }
                         }
