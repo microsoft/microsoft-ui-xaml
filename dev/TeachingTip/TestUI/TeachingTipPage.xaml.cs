@@ -64,6 +64,7 @@ namespace MUXControlsTestApp
             TeachingTipTestHooks.OffsetChanged += TeachingTipTestHooks_OffsetChanged;
             this.TeachingTipInVisualTree.Closed += TeachingTipInVisualTree_Closed;
             this.TeachingTipInResources.Closed += TeachingTipInResources_Closed;
+            this.TeachingTipInResourcesOnEdge.Closed += TeachingTipInResourcesOnEdge_Closed;
             this.ContentScrollViewer.ViewChanged += ContentScrollViewer_ViewChanged;
         }
 
@@ -72,6 +73,13 @@ namespace MUXControlsTestApp
             if (TeachingTipInResourcesRoot != null)
             {
                 TeachingTipInResourcesRoot.SizeChanged -= TeachingTip_SizeChanged;
+            }
+        }
+        private void TeachingTipInResourcesOnEdge_Closed(TeachingTip sender, TeachingTipClosedEventArgs args)
+        {
+            if (TeachingTipInResourcesOnEdge != null)
+            {
+                TeachingTipInResourcesOnEdge.SizeChanged -= TeachingTip_SizeChanged;
             }
         }
 
@@ -662,6 +670,12 @@ namespace MUXControlsTestApp
             TeachingTipInResourcesOnEdge.IsOpen = true;
             TeachingTipInResourcesOnEdge.SizeChanged += TeachingTip_SizeChanged;
             TeachingTip_SizeChanged(TeachingTipInResourcesOnEdge, null);
+        }
+
+        public void GetEdgeTeachingTipOffset_Clicked(object sender, RoutedEventArgs args)
+        {
+            EdgeTeachingTipOffset.Text = TeachingTipTestHooks.GetHorizontalOffset(TeachingTipInResourcesOnEdge).ToString()  
+                + ";" + TeachingTipTestHooks.GetVerticalOffset(TeachingTipInResourcesOnEdge).ToString();
         }
 
         public void OnShowAfterDelayButtonClicked(object sender, RoutedEventArgs args)

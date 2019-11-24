@@ -376,6 +376,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -543,6 +544,11 @@
                         <Button Grid.Row="48" Grid.Column="0" x:Name="RemoveTeachingTipButton" Click="RemoveTeachingTipButton_Click">Remove tooltip from page</Button>
                         <CheckBox  Grid.Row="48" Grid.Column="1" x:Name="VisualTreeTeachingTipContentTextBlockUnloaded">Visual tree teachingtip unloaded</CheckBox>
                         <Button Grid.Row="49" x:Name="RemoveButtonFromVisualTreeButton" Click="RemoveOpenButton_Click">Remove button from visual tree</Button>
+                        <StackPanel Grid.Row="50" Orientation="Horizontal">
+                            <Button x:Name="GetEdgeTeachingTipOffset" Click="GetEdgeTeachingTipOffset_Clicked"
+                                    AutomationProperties.Name="GetEdgeTeachingTipOffset">Get TeachingTip on edge offset</Button>
+                            <TextBlock x:Name="EdgeTeachingTipOffset" AutomationProperties.Name="EdgeTeachingTipOffset">0;0</TextBlock>
+                        </StackPanel>
                     </Grid>
                 </ScrollViewer>
 
@@ -572,7 +578,7 @@
         </ScrollViewer>
 
         <Grid Grid.Column="2">
-            <Button x:Name="targetButtonRightEdge" HorizontalAlignment="Right" VerticalAlignment="Top" Click="OnShowButtonClickedRightEdge"
+            <Button x:Name="targetButtonRightEdge" HorizontalAlignment="Right" AutomationProperties.Name="TargetButtonRightEdge" VerticalAlignment="Top" Click="OnShowButtonClickedRightEdge"
                     Height="40" Width="100">Click to open TeachingTip
                 <Button.Resources>
                     <muxc:TeachingTip x:Name="TeachingTipInResourcesOnEdge" 
