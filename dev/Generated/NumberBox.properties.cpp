@@ -8,18 +8,25 @@
 
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
-GlobalDependencyProperty NumberBoxProperties::s_BasicValidationModeProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_AcceptsCalculationProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_DescriptionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_HyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_HeaderTemplateProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IsHyperScrollEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_IsWrapEnabledProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaximumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinimumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_NumberFormatterProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_PlaceholderTextProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_PreventKeyboardDisplayOnProgrammaticFocusProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SelectionFlyoutProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SelectionHighlightColorProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_TextReadingOrderProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_ValidationModeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValueProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_WrapEnabledProperty{ nullptr };
 
 NumberBoxProperties::NumberBoxProperties()
     : m_valueChangedEventSource{static_cast<NumberBox*>(this)}
@@ -29,38 +36,71 @@ NumberBoxProperties::NumberBoxProperties()
 
 void NumberBoxProperties::EnsureProperties()
 {
-    if (!s_BasicValidationModeProperty)
+    if (!s_AcceptsCalculationProperty)
     {
-        s_BasicValidationModeProperty =
+        s_AcceptsCalculationProperty =
             InitializeDependencyProperty(
-                L"BasicValidationMode",
-                winrt::name_of<winrt::NumberBoxBasicValidationMode>(),
+                L"AcceptsCalculation",
+                winrt::name_of<bool>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxedDefaultValue(),
-                winrt::PropertyChangedCallback(&OnBasicValidationModePropertyChanged));
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                nullptr);
+    }
+    if (!s_DescriptionProperty)
+    {
+        s_DescriptionProperty =
+            InitializeDependencyProperty(
+                L"Description",
+                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                nullptr);
     }
     if (!s_HeaderProperty)
     {
         s_HeaderProperty =
             InitializeDependencyProperty(
                 L"Header",
-                winrt::name_of<winrt::hstring>(),
+                winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<winrt::hstring>::BoxedDefaultValue(),
+                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
                 nullptr);
     }
-    if (!s_HyperScrollEnabledProperty)
+    if (!s_HeaderTemplateProperty)
     {
-        s_HyperScrollEnabledProperty =
+        s_HeaderTemplateProperty =
             InitializeDependencyProperty(
-                L"HyperScrollEnabled",
+                L"HeaderTemplate",
+                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_IsHyperScrollEnabledProperty)
+    {
+        s_IsHyperScrollEnabledProperty =
+            InitializeDependencyProperty(
+                L"IsHyperScrollEnabled",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 nullptr);
+    }
+    if (!s_IsWrapEnabledProperty)
+    {
+        s_IsWrapEnabledProperty =
+            InitializeDependencyProperty(
+                L"IsWrapEnabled",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnIsWrapEnabledPropertyChanged));
     }
     if (!s_MaximumProperty)
     {
@@ -106,6 +146,39 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_PreventKeyboardDisplayOnProgrammaticFocusProperty)
+    {
+        s_PreventKeyboardDisplayOnProgrammaticFocusProperty =
+            InitializeDependencyProperty(
+                L"PreventKeyboardDisplayOnProgrammaticFocus",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_SelectionFlyoutProperty)
+    {
+        s_SelectionFlyoutProperty =
+            InitializeDependencyProperty(
+                L"SelectionFlyout",
+                winrt::name_of<winrt::FlyoutBase>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::FlyoutBase>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_SelectionHighlightColorProperty)
+    {
+        s_SelectionHighlightColorProperty =
+            InitializeDependencyProperty(
+                L"SelectionHighlightColor",
+                winrt::name_of<winrt::SolidColorBrush>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::SolidColorBrush>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_SpinButtonPlacementModeProperty)
     {
         s_SpinButtonPlacementModeProperty =
@@ -126,7 +199,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<double>::BoxValueIfNecessary(1),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnStepFrequencyPropertyChanged));
     }
     if (!s_TextProperty)
     {
@@ -139,6 +212,28 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::hstring>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnTextPropertyChanged));
     }
+    if (!s_TextReadingOrderProperty)
+    {
+        s_TextReadingOrderProperty =
+            InitializeDependencyProperty(
+                L"TextReadingOrder",
+                winrt::name_of<winrt::TextReadingOrder>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::TextReadingOrder>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ValidationModeProperty)
+    {
+        s_ValidationModeProperty =
+            InitializeDependencyProperty(
+                L"ValidationMode",
+                winrt::name_of<winrt::NumberBoxValidationMode>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NumberBoxValidationMode>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnValidationModePropertyChanged));
+    }
     if (!s_ValueProperty)
     {
         s_ValueProperty =
@@ -150,41 +245,37 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<double>::BoxValueIfNecessary(0),
                 winrt::PropertyChangedCallback(&OnValuePropertyChanged));
     }
-    if (!s_WrapEnabledProperty)
-    {
-        s_WrapEnabledProperty =
-            InitializeDependencyProperty(
-                L"WrapEnabled",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
-    }
 }
 
 void NumberBoxProperties::ClearProperties()
 {
-    s_BasicValidationModeProperty = nullptr;
+    s_AcceptsCalculationProperty = nullptr;
+    s_DescriptionProperty = nullptr;
     s_HeaderProperty = nullptr;
-    s_HyperScrollEnabledProperty = nullptr;
+    s_HeaderTemplateProperty = nullptr;
+    s_IsHyperScrollEnabledProperty = nullptr;
+    s_IsWrapEnabledProperty = nullptr;
     s_MaximumProperty = nullptr;
     s_MinimumProperty = nullptr;
     s_NumberFormatterProperty = nullptr;
     s_PlaceholderTextProperty = nullptr;
+    s_PreventKeyboardDisplayOnProgrammaticFocusProperty = nullptr;
+    s_SelectionFlyoutProperty = nullptr;
+    s_SelectionHighlightColorProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
     s_StepFrequencyProperty = nullptr;
     s_TextProperty = nullptr;
+    s_TextReadingOrderProperty = nullptr;
+    s_ValidationModeProperty = nullptr;
     s_ValueProperty = nullptr;
-    s_WrapEnabledProperty = nullptr;
 }
 
-void NumberBoxProperties::OnBasicValidationModePropertyChanged(
+void NumberBoxProperties::OnIsWrapEnabledPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnBasicValidationModePropertyChanged(args);
+    winrt::get_self<NumberBox>(owner)->OnIsWrapEnabledPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnMaximumPropertyChanged(
@@ -229,12 +320,28 @@ void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnSpinButtonPlacementModePropertyChanged(args);
 }
 
+void NumberBoxProperties::OnStepFrequencyPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnStepFrequencyPropertyChanged(args);
+}
+
 void NumberBoxProperties::OnTextPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnTextPropertyChanged(args);
+}
+
+void NumberBoxProperties::OnValidationModePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnValidationModePropertyChanged(args);
 }
 
 void NumberBoxProperties::OnValuePropertyChanged(
@@ -245,34 +352,64 @@ void NumberBoxProperties::OnValuePropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnValuePropertyChanged(args);
 }
 
-void NumberBoxProperties::BasicValidationMode(winrt::NumberBoxBasicValidationMode const& value)
+void NumberBoxProperties::AcceptsCalculation(bool value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_BasicValidationModeProperty, ValueHelper<winrt::NumberBoxBasicValidationMode>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_AcceptsCalculationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-winrt::NumberBoxBasicValidationMode NumberBoxProperties::BasicValidationMode()
+bool NumberBoxProperties::AcceptsCalculation()
 {
-    return ValueHelper<winrt::NumberBoxBasicValidationMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_BasicValidationModeProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_AcceptsCalculationProperty));
 }
 
-void NumberBoxProperties::Header(winrt::hstring const& value)
+void NumberBoxProperties::Description(winrt::IInspectable const& value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::hstring>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_DescriptionProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-winrt::hstring NumberBoxProperties::Header()
+winrt::IInspectable NumberBoxProperties::Description()
 {
-    return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_DescriptionProperty));
 }
 
-void NumberBoxProperties::HyperScrollEnabled(bool value)
+void NumberBoxProperties::Header(winrt::IInspectable const& value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_HyperScrollEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_HeaderProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-bool NumberBoxProperties::HyperScrollEnabled()
+winrt::IInspectable NumberBoxProperties::Header()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HyperScrollEnabledProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderProperty));
+}
+
+void NumberBoxProperties::HeaderTemplate(winrt::DataTemplate const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+}
+
+winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
+{
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderTemplateProperty));
+}
+
+void NumberBoxProperties::IsHyperScrollEnabled(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IsHyperScrollEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::IsHyperScrollEnabled()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsHyperScrollEnabledProperty));
+}
+
+void NumberBoxProperties::IsWrapEnabled(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_IsWrapEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::IsWrapEnabled()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsWrapEnabledProperty));
 }
 
 void NumberBoxProperties::Maximum(double value)
@@ -317,6 +454,36 @@ winrt::hstring NumberBoxProperties::PlaceholderText()
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_PlaceholderTextProperty));
 }
 
+void NumberBoxProperties::PreventKeyboardDisplayOnProgrammaticFocus(bool value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_PreventKeyboardDisplayOnProgrammaticFocusProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NumberBoxProperties::PreventKeyboardDisplayOnProgrammaticFocus()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_PreventKeyboardDisplayOnProgrammaticFocusProperty));
+}
+
+void NumberBoxProperties::SelectionFlyout(winrt::FlyoutBase const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SelectionFlyoutProperty, ValueHelper<winrt::FlyoutBase>::BoxValueIfNecessary(value));
+}
+
+winrt::FlyoutBase NumberBoxProperties::SelectionFlyout()
+{
+    return ValueHelper<winrt::FlyoutBase>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SelectionFlyoutProperty));
+}
+
+void NumberBoxProperties::SelectionHighlightColor(winrt::SolidColorBrush const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SelectionHighlightColorProperty, ValueHelper<winrt::SolidColorBrush>::BoxValueIfNecessary(value));
+}
+
+winrt::SolidColorBrush NumberBoxProperties::SelectionHighlightColor()
+{
+    return ValueHelper<winrt::SolidColorBrush>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SelectionHighlightColorProperty));
+}
+
 void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_SpinButtonPlacementModeProperty, ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(value));
@@ -347,6 +514,26 @@ winrt::hstring NumberBoxProperties::Text()
     return ValueHelper<winrt::hstring>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextProperty));
 }
 
+void NumberBoxProperties::TextReadingOrder(winrt::TextReadingOrder const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_TextReadingOrderProperty, ValueHelper<winrt::TextReadingOrder>::BoxValueIfNecessary(value));
+}
+
+winrt::TextReadingOrder NumberBoxProperties::TextReadingOrder()
+{
+    return ValueHelper<winrt::TextReadingOrder>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_TextReadingOrderProperty));
+}
+
+void NumberBoxProperties::ValidationMode(winrt::NumberBoxValidationMode const& value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_ValidationModeProperty, ValueHelper<winrt::NumberBoxValidationMode>::BoxValueIfNecessary(value));
+}
+
+winrt::NumberBoxValidationMode NumberBoxProperties::ValidationMode()
+{
+    return ValueHelper<winrt::NumberBoxValidationMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValidationModeProperty));
+}
+
 void NumberBoxProperties::Value(double value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
@@ -355,16 +542,6 @@ void NumberBoxProperties::Value(double value)
 double NumberBoxProperties::Value()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValueProperty));
-}
-
-void NumberBoxProperties::WrapEnabled(bool value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_WrapEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool NumberBoxProperties::WrapEnabled()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_WrapEnabledProperty));
 }
 
 winrt::event_token NumberBoxProperties::ValueChanged(winrt::TypedEventHandler<winrt::NumberBox, winrt::NumberBoxValueChangedEventArgs> const& value)

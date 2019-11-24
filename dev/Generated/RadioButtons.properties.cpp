@@ -62,10 +62,10 @@ void RadioButtonsProperties::EnsureProperties()
         s_ItemTemplateProperty =
             InitializeDependencyProperty(
                 L"ItemTemplate",
-                winrt::name_of<winrt::DataTemplate>(),
+                winrt::name_of<winrt::IInspectable>(),
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
-                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
+                ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(winrt::RadioButtonsElementFactory{}),
                 winrt::PropertyChangedCallback(&OnItemTemplatePropertyChanged));
     }
     if (!s_MaximumColumnsProperty)
@@ -200,14 +200,14 @@ winrt::IInspectable RadioButtonsProperties::ItemsSource()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_ItemsSourceProperty));
 }
 
-void RadioButtonsProperties::ItemTemplate(winrt::DataTemplate const& value)
+void RadioButtonsProperties::ItemTemplate(winrt::IInspectable const& value)
 {
-    static_cast<RadioButtons*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
+    static_cast<RadioButtons*>(this)->SetValue(s_ItemTemplateProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
 }
 
-winrt::DataTemplate RadioButtonsProperties::ItemTemplate()
+winrt::IInspectable RadioButtonsProperties::ItemTemplate()
 {
-    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_ItemTemplateProperty));
+    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_ItemTemplateProperty));
 }
 
 void RadioButtonsProperties::MaximumColumns(int value)
