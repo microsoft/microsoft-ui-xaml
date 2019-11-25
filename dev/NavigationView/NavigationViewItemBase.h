@@ -41,18 +41,6 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnPointerReleased(winrt::PointerRoutedEventArgs const& args) {
-        __super::OnPointerReleased(args);
-    };
-
-    virtual void OnKeyDown(winrt::KeyRoutedEventArgs const& args) {
-        __super::OnKeyDown(args);
-    };
-
-    virtual void OnKeyUp(winrt::KeyRoutedEventArgs const& args) {
-        __super::OnKeyUp(args);
-    };
-
     virtual void OnNavigationViewPositionChanged() {}
 
     NavigationViewListPosition Position();
