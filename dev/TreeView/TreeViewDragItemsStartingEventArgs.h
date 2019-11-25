@@ -9,7 +9,7 @@ class TreeViewDragItemsStartingEventArgs :
     public ReferenceTracker<TreeViewDragItemsStartingEventArgs, winrt::implementation::TreeViewDragItemsStartingEventArgsT, winrt::composing, winrt::composable>
 {
 public:
-    void DragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args);
+    TreeViewDragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args);
     bool Cancel() const;
     void Cancel(const bool value);
     DataPackage Data() const;

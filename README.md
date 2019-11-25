@@ -65,7 +65,7 @@ You don't need version checks or conditional XAML markup to use WinUI controls o
 
 The Microsoft.UI.Xaml 2.2 NuGet package requires your project to have TargetPlatformVersion &gt;= 10.0.18362.0 and TargetPlatformMinVersion &gt;= 10.0.15063.0 when building. 
 
-Your app's users can be on any of the following supported Windows versions:
+Your app's users can be on any of the following supported Windows 10 versions:
 
 * Windows Insider Previews
 * May 2019 Update (18362 aka "19H1")

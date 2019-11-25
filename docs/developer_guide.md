@@ -181,15 +181,5 @@ Visual tree dumps are stored [here](https://github.com/microsoft/microsoft-ui-xa
 ## Telemetry
 
 This project collects usage data and sends it to Microsoft to help improve our 
-products and services. Note however that no data collection is performed by default
-when using your private builds. An environment variable called "EmitTelemetryEvents"
-must be defined during the build for data collection to be turned on.
-
-When using the Build.cmd script, you can use its /EmitTelemetryEvents option to define
-that variable.
-Or when building in Visual Studio, you can first define the environment variable in a
-Command Prompt window and then launch the solution from there:
-
-1. In a Command Prompt window, set the required environment variable: set EmitTelemetryEvents=true
-2. Then from that same Command Prompt, open the Visual Studio solution: MUXControls.sln
-3. Recompile the solution in Visual Studio. The build will use that environment variable.
+products and services. Note however that no data collection is performed
+when using your private builds.
