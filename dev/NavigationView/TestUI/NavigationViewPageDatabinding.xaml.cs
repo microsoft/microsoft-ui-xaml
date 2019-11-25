@@ -126,5 +126,11 @@ namespace MUXControlsTestApp
             NavView.PaneDisplayMode = mode;
         }
 
+        private void GetNavViewActiveVisualStates_Click(object sender, RoutedEventArgs e)
+        {
+            var visualstates = Utilities.VisualStateHelper.GetCurrentVisualStateName(NavView);
+            NavViewActiveVisualStatesResult.Text = string.Join(",", visualstates);
+        }
+
     }
 }

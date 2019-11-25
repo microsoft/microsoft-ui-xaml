@@ -58,6 +58,11 @@
                     <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                 </ComboBox>
                 <Button Content="MenuItem for Container" Click="GetMenuItemForContainer" />
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
+                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates:</TextBlock>
+                    <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>
