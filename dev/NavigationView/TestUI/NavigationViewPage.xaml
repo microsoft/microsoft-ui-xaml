@@ -25,7 +25,6 @@
                 PaneTitle="NavView Test"
                 DisplayModeChanged="NavView_DisplayModeChanged"
                 SelectionChanged="NavView_SelectionChanged"
-                ItemInvoked="NavView_ItemInvoked"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 CompactModeThresholdWidth="480"

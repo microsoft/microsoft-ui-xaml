@@ -311,12 +311,6 @@ namespace MUXControlsTestApp
             }
         }
 
-        void NavView_ItemInvoked(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)
-        {
-            var item = args.InvokedItem;
-            var itemContainer = args.InvokedItemContainer;
-        }
-
         private void MoviesEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
         {
             MoviesItem.IsEnabled = true;
