@@ -72,12 +72,6 @@ if "%1" == "/UseInternalSDK" (
     shift
     goto :MoreArguments
 )
-if "%1" == "/EmitTelemetryEvents" (
-    REM echo EmitTelemetryEvents
-    set EMITTELEMETRYEVENTS=1
-    shift
-    goto :MoreArguments
-)
 if "%1" == "/project" (
     set PROJECTPATH=%~2
     shift
@@ -128,7 +122,6 @@ set EXTRAMSBUILDPARAMS=
 if "%MUXFINAL%" == "1" ( set EXTRAMSBUILDPARAMS=/p:MUXFinalRelease=true )
 if "%USEINSIDERSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInsiderSDK=true )
 if "%USEINTERNALSDK%" == "1" ( set EXTRAMSBUILDPARAMS=/p:UseInternalSDK=true )
-if "%EMITTELEMETRYEVENTS%" == "1" ( set EXTRAMSBUILDPARAMS=/p:EmitTelemetryEvents=true )
 
 
 if "%BUILDTARGET%" NEQ "" ( set EXTRAMSBUILDPARAMS=%EXTRAMSBUILDPARAMS% %BUILDTARGET% )
@@ -185,7 +178,6 @@ echo        /leanmux - build lean mux for the store
 echo        /muxfinal - build "final" bits which have the winmd stripped of experimental types
 echo        /UseInsiderSDK - build using insider SDK
 echo        /UseInternalSDK - build using internal SDK
-echo        /EmitTelemetryEvents - build with telemetry events turned on
 echo        /project ^<path^> - builds a specific project
 echo        /usevsprerelease - use the prerelease VS on the machine instead of latest stable
 echo        /target - specify the msbuild target. Specify multiple times to build multiple targets.

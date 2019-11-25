@@ -1,19 +1,32 @@
-namespace MU_XCP_NAMESPACE
+﻿namespace MU_XCP_NAMESPACE
 {
-
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass RadioButtonsListView : Windows.UI.Xaml.Controls.ListView
+[default_interface]
+unsealed runtimeclass RadioButtonsElementFactory : MU_XC_NAMESPACE.ElementFactory
 {
-    RadioButtonsListView();
+    RadioButtonsElementFactory();
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
 [default_interface]
-unsealed runtimeclass RadioButtonsListViewItem : Windows.UI.Xaml.Controls.ListViewItem
+unsealed runtimeclass ColumnMajorUniformToLargestGridLayout : MU_XC_NAMESPACE.NonVirtualizingLayout
 {
-    RadioButtonsListViewItem();
+    ColumnMajorUniformToLargestGridLayout();
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateGreaterThanZero")]
+    Int32 MaximumColumns{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty MaximumColumnsProperty{ get; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Int32 ColumnSpacing{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty ColumnSpacingProperty{ get; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Int32 RowSpacing{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty RowSpacingProperty{ get; };
 }
 
 }

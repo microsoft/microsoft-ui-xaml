@@ -19,6 +19,8 @@
     <file src="license.txt"/>
 
     <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml\sdk\Microsoft.UI.Xaml.winmd"/>
+    <file target="lib\uap10.0" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.FrameworkPackagePRI\Microsoft.UI.Xaml.pri"/>
+
     <file target="lib\uap10.0" src="Intellisense\Microsoft.UI.Xaml.xml"/>
     <file target="lib\uap10.0\Design" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.design.dll"/>
 
@@ -35,7 +37,5 @@
     <file target="build\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
     <file target="buildTransitive\$ID$.props" src="MUXControls-Nuget-FrameworkPackage.props"/>
     <file target="build\native\$ID$.targets" src="MUXControls-Nuget-FrameworkPackage.targets"/>
-    <file target="build\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Compact.xaml"/>
-    <file target="buildTransitive\DensityStyles\Compact.xaml" src="$BUILDOUTPUT$\$BUILDFLAVOR$\$BUILDARCH$\FrameworkPackage\Compact.xaml"/>
   </files>
 </package>
