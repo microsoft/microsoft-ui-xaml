@@ -71,6 +71,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void FocusComingFromAnotherRepeaterTest()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+            {
+                Log.Warning("This test requires TrySetNewFocusedElement from RS4");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                SetItemType(RadioButtonsSourceType.RadioButton);
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+
+                    TapOnItem(3);
+                    VerifySelectedFocusedIndex(3);
+                    RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
+                    Verify.IsTrue(item3.IsSelected);
+
+                    KeyboardHelper.PressKey(Key.Tab);
+                    VerifyRadioButtonsHasFocus(false);
+                    Verify.IsTrue(item3.IsSelected);
+
+                    KeyboardHelper.PressDownModifierKey(ModifierKey.Shift);
+                    KeyboardHelper.PressKey(Key.Tab);
+                    KeyboardHelper.ReleaseModifierKey(ModifierKey.Shift);
+                    VerifySelectedFocusedIndex(3);
+                    Verify.IsTrue(item3.IsSelected);
+
+                }
+            }
+        }
+
         //[TestMethod] Crashing tests, issue #1655
         public void BasicKeyboardTest()
         {
