@@ -125,4 +125,8 @@
     <value>Tilføj ny fane</value>
     <comment>Tooltip for the add new tab button.</comment>
   </data>
+  <data name="TabViewCloseButtonName" xml:space="preserve">
+    <value>Luk fane</value>
+    <comment>Automation name for the close button on each tab.</comment>
+  </data>
 </root>

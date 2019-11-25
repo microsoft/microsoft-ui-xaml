@@ -26,7 +26,7 @@ This document outlines the process for how you can propose or contribute new fea
 
 1. **Create Issue**  
 All code changes must be tied to an Issue. 
-To propose a new feature or API please start by filing a new issue in the [issue tracker](https://github.com/microsoft/microsoft-ui-xaml/issues) using the [Feature Request template](https://github.com/Microsoft/microsoft-ui-xaml/issues/new?template=feature_request.md).  
+To propose a new feature or API please start by filing a new issue in the [issue tracker](https://github.com/microsoft/microsoft-ui-xaml/issues) using the [Feature Proposal template](https://github.com/Microsoft/microsoft-ui-xaml/issues/new?template=feature_proposal.md).  
 Include as much detail as you have. It's fine if it's not a complete design: just a summary and rationale is a good starting point.
 
 2. **Wait for Team Owner**  

@@ -24,7 +24,7 @@ namespace MUXControlsTestApp
         public ProgressBarPage()
         {
             this.InitializeComponent();
-            Loaded += ProgressBarPage_Loaded;  
+            Loaded += ProgressBarPage_Loaded;
         }
 
         private void ProgressBarPage_Loaded(object sender, RoutedEventArgs e)
@@ -79,7 +79,7 @@ namespace MUXControlsTestApp
             else
             {
                 TestProgressBar.Value += 1;
-            }           
+            }
         }
 
         public void UpdatePadding_Click(object sender, RoutedEventArgs e)

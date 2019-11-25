@@ -543,7 +543,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter = new ScrollingPresenter();
                 scrollingPresenter.Content = imageScrollingPresenterContent;
 
-                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
@@ -893,7 +893,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenter.Content = imageScrollingPresenterContent;
                     scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
+                    SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
                 // Constraining the Image height and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Width = c_imageWidth;
@@ -961,7 +961,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scrollingPresenter.Content = imageScrollingPresenterContent;
                 scrollingPresenter.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent: scrollingPresenterLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
                 // Constraining the Image height and making the ScrollingPresenter smaller than the Image
                 imageScrollingPresenterContent.Width = c_imageWidth;
