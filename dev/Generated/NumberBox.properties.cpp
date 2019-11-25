@@ -8,11 +8,10 @@
 
 CppWinRTActivatableClassWithDPFactory(NumberBox)
 
-GlobalDependencyProperty NumberBoxProperties::s_AcceptsCalculationProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_AcceptsExpressionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_DescriptionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderTemplateProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_IsHyperScrollEnabledProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsWrapEnabledProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaximumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinimumProperty{ nullptr };
@@ -36,11 +35,11 @@ NumberBoxProperties::NumberBoxProperties()
 
 void NumberBoxProperties::EnsureProperties()
 {
-    if (!s_AcceptsCalculationProperty)
+    if (!s_AcceptsExpressionProperty)
     {
-        s_AcceptsCalculationProperty =
+        s_AcceptsExpressionProperty =
             InitializeDependencyProperty(
-                L"AcceptsCalculation",
+                L"AcceptsExpression",
                 winrt::name_of<bool>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
@@ -78,17 +77,6 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
-                nullptr);
-    }
-    if (!s_IsHyperScrollEnabledProperty)
-    {
-        s_IsHyperScrollEnabledProperty =
-            InitializeDependencyProperty(
-                L"IsHyperScrollEnabled",
-                winrt::name_of<bool>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<bool>::BoxValueIfNecessary(false),
                 nullptr);
     }
     if (!s_IsWrapEnabledProperty)
@@ -249,11 +237,10 @@ void NumberBoxProperties::EnsureProperties()
 
 void NumberBoxProperties::ClearProperties()
 {
-    s_AcceptsCalculationProperty = nullptr;
+    s_AcceptsExpressionProperty = nullptr;
     s_DescriptionProperty = nullptr;
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
-    s_IsHyperScrollEnabledProperty = nullptr;
     s_IsWrapEnabledProperty = nullptr;
     s_MaximumProperty = nullptr;
     s_MinimumProperty = nullptr;
@@ -352,14 +339,14 @@ void NumberBoxProperties::OnValuePropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnValuePropertyChanged(args);
 }
 
-void NumberBoxProperties::AcceptsCalculation(bool value)
+void NumberBoxProperties::AcceptsExpression(bool value)
 {
-    static_cast<NumberBox*>(this)->SetValue(s_AcceptsCalculationProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+    static_cast<NumberBox*>(this)->SetValue(s_AcceptsExpressionProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
 }
 
-bool NumberBoxProperties::AcceptsCalculation()
+bool NumberBoxProperties::AcceptsExpression()
 {
-    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_AcceptsCalculationProperty));
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_AcceptsExpressionProperty));
 }
 
 void NumberBoxProperties::Description(winrt::IInspectable const& value)
@@ -390,16 +377,6 @@ void NumberBoxProperties::HeaderTemplate(winrt::DataTemplate const& value)
 winrt::DataTemplate NumberBoxProperties::HeaderTemplate()
 {
     return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_HeaderTemplateProperty));
-}
-
-void NumberBoxProperties::IsHyperScrollEnabled(bool value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_IsHyperScrollEnabledProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
-}
-
-bool NumberBoxProperties::IsHyperScrollEnabled()
-{
-    return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsHyperScrollEnabledProperty));
 }
 
 void NumberBoxProperties::IsWrapEnabled(bool value)
