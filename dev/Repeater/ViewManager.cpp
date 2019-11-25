@@ -249,7 +249,8 @@ int ViewManager::GetElementIndex(const winrt::com_ptr<VirtualizationInfo>& virtI
 {
     if (!virtInfo)
     {
-        throw winrt::hresult_invalid_argument(L"Element is not a child of this ItemsRepeater.");
+        //Element is not a child of this ItemsRepeater.
+        return -1;
     }
 
     return virtInfo->IsRealized() || virtInfo->IsInUniqueIdResetPool() ? virtInfo->Index() : -1;
