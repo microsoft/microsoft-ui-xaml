@@ -88,6 +88,7 @@ void NumberBox::OnApplyTemplate()
         if (textBox)
         {
             m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
     }());
@@ -322,7 +323,7 @@ void NumberBox::ValidateInput()
             // Setting NumberFormatter to something that isn't an INumberParser will throw an exception, so this should be safe
             const auto numberParser = NumberFormatter().as<winrt::INumberParser>();
 
-            const winrt::IReference<double> value = AcceptsCalculation()
+            const winrt::IReference<double> value = AcceptsExpression()
                 ? NumberBoxParser::Compute(text, numberParser)
                 : numberParser.ParseDouble(text);
 
@@ -362,25 +363,36 @@ void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEv
 
 void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
 {
+    // Handle these on key down so that we get repeat behavior.
     switch (args.OriginalKey())
     {
-        case winrt::VirtualKey::Enter:
-        case winrt::VirtualKey::GamepadA:
-            ValidateInput();
-            break;
-
-        case winrt::VirtualKey::Escape:
-        case winrt::VirtualKey::GamepadB:
-            UpdateTextToValue();
-            break;
-
         case winrt::VirtualKey::Up:
             StepValueUp();
+            args.Handled(true);
             break;
 
         case winrt::VirtualKey::Down:
             StepValueDown();
+            args.Handled(true);
             break;
+    }
+}
+
+void NumberBox::OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
+{
+    switch (args.OriginalKey())
+    {
+    case winrt::VirtualKey::Enter:
+    case winrt::VirtualKey::GamepadA:
+        ValidateInput();
+        args.Handled(true);
+        break;
+
+    case winrt::VirtualKey::Escape:
+    case winrt::VirtualKey::GamepadB:
+        UpdateTextToValue();
+        args.Handled(true);
+        break;
     }
 }
 
@@ -388,7 +400,7 @@ void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::Poin
 {
     if (auto && textBox = m_textBox.get())
     {
-        if (IsHyperScrollEnabled() && textBox.FocusState() != winrt::FocusState::Unfocused)
+        if (textBox.FocusState() != winrt::FocusState::Unfocused)
         {
             const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
             if (delta > 0)

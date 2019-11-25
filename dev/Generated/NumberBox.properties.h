@@ -9,8 +9,8 @@ class NumberBoxProperties
 public:
     NumberBoxProperties();
 
-    void AcceptsCalculation(bool value);
-    bool AcceptsCalculation();
+    void AcceptsExpression(bool value);
+    bool AcceptsExpression();
 
     void Description(winrt::IInspectable const& value);
     winrt::IInspectable Description();
@@ -20,9 +20,6 @@ public:
 
     void HeaderTemplate(winrt::DataTemplate const& value);
     winrt::DataTemplate HeaderTemplate();
-
-    void IsHyperScrollEnabled(bool value);
-    bool IsHyperScrollEnabled();
 
     void IsWrapEnabled(bool value);
     bool IsWrapEnabled();
@@ -66,11 +63,10 @@ public:
     void Value(double value);
     double Value();
 
-    static winrt::DependencyProperty AcceptsCalculationProperty() { return s_AcceptsCalculationProperty; }
+    static winrt::DependencyProperty AcceptsExpressionProperty() { return s_AcceptsExpressionProperty; }
     static winrt::DependencyProperty DescriptionProperty() { return s_DescriptionProperty; }
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
-    static winrt::DependencyProperty IsHyperScrollEnabledProperty() { return s_IsHyperScrollEnabledProperty; }
     static winrt::DependencyProperty IsWrapEnabledProperty() { return s_IsWrapEnabledProperty; }
     static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
     static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
@@ -86,11 +82,10 @@ public:
     static winrt::DependencyProperty ValidationModeProperty() { return s_ValidationModeProperty; }
     static winrt::DependencyProperty ValueProperty() { return s_ValueProperty; }
 
-    static GlobalDependencyProperty s_AcceptsCalculationProperty;
+    static GlobalDependencyProperty s_AcceptsExpressionProperty;
     static GlobalDependencyProperty s_DescriptionProperty;
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
-    static GlobalDependencyProperty s_IsHyperScrollEnabledProperty;
     static GlobalDependencyProperty s_IsWrapEnabledProperty;
     static GlobalDependencyProperty s_MaximumProperty;
     static GlobalDependencyProperty s_MinimumProperty;

@@ -270,7 +270,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // [TestMethod] Disabled because GamePad A gets eaten by the TextBox.
+        [TestMethod]
         public void GamepadTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
@@ -297,8 +297,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
-
-                Check("HyperScrollCheckBox");
 
                 Log.Comment("Verify that scroll doesn't work when the control doesn't have focus.");
                 InputHelper.RotateWheel(numBox, 1);
@@ -421,17 +419,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void BasicCalculationTest()
+        public void BasicExpressionTest()
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
 
-                Log.Comment("Verify that calculations don't work if AcceptsCalculations is false");
+                Log.Comment("Verify that expressions don't work if AcceptsExpression is false");
                 EnterText(numBox, "5 + 3");
                 Verify.AreEqual(0, numBox.Value);
 
-                Check("CalculationCheckBox");
+                Check("ExpressionCheckBox");
 
                 int numErrors = 0;
                 const double resetValue = 1234;
