@@ -731,24 +731,7 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
         }
 
         // Apply any custom container styling
-        if (auto menuItemContainerStyle = MenuItemContainerStyle())
-        {
-            nvib.Style(menuItemContainerStyle);
-        }
-        else if (auto menuItemContainerStyleSelector = MenuItemContainerStyleSelector())
-        {
-            auto index = args.Index();
-            auto itemsSourceView = ir.ItemsSourceView();
-            auto item = itemsSourceView.GetAt(index);
-            auto selectedStyle = menuItemContainerStyleSelector.SelectStyle(item, nvib);
-            if (selectedStyle)
-            {
-                nvib.Style(selectedStyle);
-            }
-        }
-
-        // TODO: Remove?
-        //nvi.SetNavigationViewItemPresenterVisualState(PaneDisplayMode);
+        ApplyCustomMenuItemContainerStyling(nvib, ir, args.Index());
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
@@ -764,6 +747,24 @@ void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::Ite
             nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
             nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
             nvi.SetValue(GetNavigationViewItemRevokersProperty(), nviRevokers.as<winrt::IInspectable>());
+        }
+    }
+}
+
+void NavigationView::ApplyCustomMenuItemContainerStyling(winrt::NavigationViewItemBase nvib, winrt::ItemsRepeater ir, int index)
+{
+    if (auto menuItemContainerStyle = MenuItemContainerStyle())
+    {
+        nvib.Style(menuItemContainerStyle);
+    }
+    else if (auto menuItemContainerStyleSelector = MenuItemContainerStyleSelector())
+    {
+        auto itemsSourceView = ir.ItemsSourceView();
+        auto item = itemsSourceView.GetAt(index);
+        auto selectedStyle = menuItemContainerStyleSelector.SelectStyle(item, nvib);
+        if (selectedStyle)
+        {
+            nvib.Style(selectedStyle);
         }
     }
 }

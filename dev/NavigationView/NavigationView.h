@@ -280,6 +280,7 @@ private:
     bool IsContainerInOverflow(winrt::NavigationViewItemBase nvib);
     void KeyboardFocusFirstItemFromItem(winrt::NavigationViewItemBase nvib);
     void KeyboardFocusLastItemFromItem(winrt::NavigationViewItemBase nvib);
+    void ApplyCustomMenuItemContainerStyling(winrt::NavigationViewItemBase nvib, winrt::ItemsRepeater ir, int index);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

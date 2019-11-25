@@ -259,33 +259,7 @@
                                         HorizontalContentAlignment="Stretch"
                                         Grid.Column="2"/>
 
-                                    <!-- Top nav list -->
-                                    <!--<local:NavigationViewList
-                                        AutomationProperties.LandmarkType="Navigation"
-                                        AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                        x:Name="TopNavMenuItemsHost"
-                                        Grid.Column="3"
-                                        SelectionMode="Single"
-                                        IsItemClickEnabled="True"
-                                        ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                        ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                        ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                        ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                        ScrollViewer.HorizontalScrollMode="Disabled"
-                                        ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                                        ScrollViewer.VerticalScrollMode="Disabled"
-                                        ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                                        SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}">
-                                        <ListView.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <ItemsStackPanel Orientation="Horizontal"/>
-                                            </ItemsPanelTemplate>
-                                        </ListView.ItemsPanel>
-                                        <ListView.ItemContainerTransitions>
-                                            <TransitionCollection />
-                                        </ListView.ItemContainerTransitions>
-                                    </local:NavigationViewList>-->
-
+                                    <!-- Top nav ItemsRepeater -->
                                     <local:ItemsRepeaterScrollHost
                                             Grid.Column="3">
                                         <ScrollViewer
@@ -469,22 +443,7 @@
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="4" />
 
-                                        <!-- Left nav list -->
-                                        <!--<local:NavigationViewList
-                                            x:Name="MenuItemsHost"
-                                            AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
-                                            Grid.Row="6"
-                                            Margin="0,0,0,20"
-                                            SelectionMode="Single"
-                                            IsItemClickEnabled="True"
-                                            HorizontalAlignment="Stretch"
-                                            SelectedItem="{TemplateBinding SelectedItem}"
-                                            ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                            ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                            ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                            ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                            SingleSelectionFollowsFocus="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.SingleSelectionFollowsFocus}"/>-->
-
+                                        <!-- Left nav ItemsRepeater -->
                                         <local:ItemsRepeaterScrollHost
                                             Grid.Row="6"
                                             Margin="0,0,0,20"
