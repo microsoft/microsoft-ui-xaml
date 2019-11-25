@@ -117,6 +117,7 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
             AttachToLayoutChanged();
         }
 
+        UpdateSelectedItem();
         UpdateSelectedIndex();
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
@@ -428,6 +429,10 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedIndex();
     }
+    else if (property == s_SelectedItemProperty)
+    {
+        UpdateSelectedItem();
+    }
 }
 
 void RadioButtons::UpdateItemsSource()
@@ -462,6 +467,23 @@ void RadioButtons::UpdateSelectedIndex()
     if (!m_currentlySelecting)
     {
         Select(SelectedIndex());
+    }
+}
+
+void RadioButtons::UpdateSelectedItem()
+{
+    if (!m_currentlySelecting)
+    {
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
+                {
+                    Select(inspectingDataSource->IndexOf(SelectedItem()));
+                }
+            }
+        }
     }
 }
 

@@ -86,7 +86,8 @@
 
                             <TextBlock Text="Select Item:" Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                             <TextBox x:Name="IndexToSelectTextBlock" AutomationProperties.Name="IndexToSelectTextBlock" Text="0" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" />
-                            <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Click="SelectByIndexButton_Click"/>
+                            <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Click="SelectByIndexButton_Click"/>
+                            <Button Content="Select By Item" AutomationProperties.Name="SelectByItemButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="1" Click="SelectByItemButton_Click"/>
 
                             <TextBlock Text="Add a custom Radio Button" HorizontalAlignment="Center" Foreground="Red" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"/>
                             <RadioButton x:Name="DisplayRadioButton" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>

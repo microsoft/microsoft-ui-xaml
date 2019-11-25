@@ -147,6 +147,27 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectByItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            var index = getIndexToSelect();
+            if (index >= 0)
+            {
+                if (ItemTypeComboBox.SelectedItem == StringsComboBoxItem)
+                {
+                    TestRadioButtons.SelectedItem = m_stringItemCollection[index];
+                }
+                else if (ItemTypeComboBox.SelectedItem == RadioButtonElementsComboBoxItem)
+                {
+                    TestRadioButtons.SelectedItem = m_radioButtonItemCollection[index];
+                }
+            }
+            else
+            {
+                TestRadioButtons.SelectedItem = null;
+            }
+
+        }
+
         private int getIndexToSelect()
         {
             if (Int32.TryParse(IndexToSelectTextBlock.Text, out int value))

@@ -52,21 +52,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
-                SetItemType(RadioButtonsSourceType.RadioButton);
                 foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
                 {
                     SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
 
-                    SelectByIndex(1);
-                    VerifySelectedIndex(1);
-                    RadioButton item1 = FindElement.ByName<RadioButton>("Radio Button 1");
-                    Verify.IsTrue(item1.IsSelected);
+                        SelectByIndex(1);
+                        VerifySelectedIndex(1);
+                        RadioButton item1 = FindElement.ByName<RadioButton>("Radio Button 1");
+                        Verify.IsTrue(item1.IsSelected);
 
-                    SelectByIndex(3);
-                    VerifySelectedIndex(3);
-                    RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
-                    Verify.IsTrue(item3.IsSelected);
-                    Verify.IsFalse(item1.IsSelected);
+                        SelectByItem(3);
+                        VerifySelectedIndex(3);
+                        RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
+                        Verify.IsTrue(item3.IsSelected);
+                        Verify.IsFalse(item1.IsSelected);
+                    }
                 }
             }
         }
@@ -598,6 +601,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             SetIndexToSelect(index);
             elements.GetSelectByIndexButton().Click();
+        }
+
+        void SelectByItem(int index)
+        {
+            SetIndexToSelect(index);
+            elements.GetSelectByItemButton().Click();
         }
 
         void SetIndexToSelect(int index)
