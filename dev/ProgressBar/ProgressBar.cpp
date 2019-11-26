@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ProgressBar.h"
+#include "ProgressBarAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
@@ -23,6 +24,12 @@ ProgressBar::ProgressBar()
 
     SetValue(s_TemplateSettingsProperty, winrt::make<::ProgressBarTemplateSettings>());
 }
+
+winrt::AutomationPeer ProgressBar::OnCreateAutomationPeer()
+{
+    return winrt::make<ProgressBarAutomationPeer>(*this);
+}
+
 
 void ProgressBar::OnApplyTemplate()
 {
