@@ -142,7 +142,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        VerifyColorSelected("Blue");
+        //[TestMethod] Crashing tests, issue #1655
+        public void BasicKeyboardTest()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        bool useBackup = type == RadioButtonsSourceType.String;
+                        SetItemType(type);
+                        TapOnItem(3, useBackup);
+                        VerifySelectedFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(4);
+                        KeyboardHelper.PressKey(Key.Up);
+                        VerifySelectedFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Left);
+                        VerifySelectedFocusedIndex(3);
+                        KeyboardHelper.PressKey(Key.Right);
+                        VerifySelectedFocusedIndex(3);
 
                         TapOnItem(0, useBackup);
                         VerifySelectedFocusedIndex(0);
