@@ -155,6 +155,7 @@ NavigationView::NavigationView()
 
     m_selectionModel.SingleSelect(true);
     m_selectionChangedEventToken = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelSelectionChanged });
+
     m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
 }
 

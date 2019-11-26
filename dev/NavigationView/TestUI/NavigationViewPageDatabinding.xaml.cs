@@ -30,6 +30,7 @@ namespace MUXControlsTestApp
     {
 
         ObservableCollection<String> codeBehindItems = new ObservableCollection<String>();
+        int addedItemNumber = 0;
 
         public NavigationViewPageDatabinding()
         {
@@ -53,6 +54,11 @@ namespace MUXControlsTestApp
         {
             var container = NavView.ContainerFromMenuItem("Home") as NavigationViewItem;
             var isSelected = container.IsSelected;
+        }
+        private void AddMenuItem(object sender, RoutedEventArgs e)
+        {
+            codeBehindItems.Insert(0, "New Added Item #" + addedItemNumber);
+            addedItemNumber++;
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

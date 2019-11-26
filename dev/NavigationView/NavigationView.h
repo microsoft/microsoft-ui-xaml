@@ -202,7 +202,7 @@ private:
     void OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e);
+    void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & e);
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
@@ -367,7 +367,6 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
     winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavOverflowItemsRepeaterElementIndexChangedRevoker{};
-    //winrt::ItemsRepeater::Loaded_revoker m_topNavOverflowRepeaterLoadedRevoker{};
 
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
 

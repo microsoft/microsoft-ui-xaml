@@ -5,10 +5,9 @@
 
 #include "common.h"
 #include "ElementFactory.h"
-#include "NavigationViewItemsFactory.g.h"
 
 class NavigationViewItemsFactory :
-    public ReferenceTracker<NavigationViewItemsFactory, winrt::implementation::NavigationViewItemsFactoryT, ElementFactory>
+    public winrt::implements<NavigationViewItemsFactory, ElementFactory>
 {
 public:
     NavigationViewItemsFactory();

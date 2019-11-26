@@ -60,7 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)NavigationView.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.idl" />
     <Midl Include="$(MSBuildThisFileDirectory)NavigationViewItemAutomationPeer.idl" />
   </ItemGroup>
