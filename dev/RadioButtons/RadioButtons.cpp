@@ -448,7 +448,11 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     }
     else if (property == s_SelectedIndexProperty)
     {
-        Select(SelectedIndex());
+        UpdateSelectedIndex();
+    }
+    else if (property == s_SelectedItemProperty)
+    {
+        UpdateSelectedItem();
     }
 }
 

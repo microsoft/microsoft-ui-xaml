@@ -19,7 +19,7 @@ unsealed runtimeclass RadioButtons : Windows.UI.Xaml.Controls.Control
 
     [MUX_DEFAULT_VALUE("-1")]
     Int32 SelectedIndex;
-    Object SelectedItem{ get; };
+    Object SelectedItem;
     event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
 
     [MUX_DEFAULT_VALUE("1")]
