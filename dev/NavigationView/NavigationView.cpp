@@ -2666,10 +2666,18 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
                 m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
                 m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
             }
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
 
-            SetTopNavigationViewNextMode(TopNavigationViewLayoutState::OverflowNoChange);
-            InvalidateMeasure();
+            if (NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(selectedOverflowItemIndex))
+            {
+                needInvalidMeasure = true;
+            }
+
+            if (!needInvalidMeasure)
+            {
+                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
+                SetTopNavigationViewNextMode(TopNavigationViewLayoutState::OverflowNoChange);
+                InvalidateMeasure();
+            }
         }
     }
 
@@ -2681,6 +2689,58 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
         InvalidateTopNavPrimaryLayout();  
     }
+}
+
+bool NavigationView::NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex)
+{
+    bool needRearrange = false;
+
+    auto primaryList = m_topDataProvider.GetPrimaryItems();
+    auto primaryListSize = primaryList.Size();
+    auto indexInPrimary = m_topDataProvider.ConvertOriginalIndexToIndex(selectedOriginalIndex);
+    // We need to verify that through various overflow selection combinations, the primary
+    // items have not been put into a state of non-logical item layout (aka not in proper sequence).
+    // To verify this, if the newly selected item has items following it in the primary items:
+    // - we verify that they are meant to follow the selected item as specified in the original order
+    // - we verify that the preceding item is meant to directly precede the selected item in the original order
+    // If these two conditions are not met, we move all items to the primary list and trigger a re-arrangement of the items.
+    if (indexInPrimary < static_cast<int>(primaryListSize - 1))
+    {
+        auto nextIndexInPrimary = indexInPrimary + 1;
+        auto nextIndexInOriginal = selectedOriginalIndex + 1;
+        auto prevIndexInOriginal = selectedOriginalIndex - 1;
+
+        // Check whether item preceding the selected is not directly preceding
+        // in the original.
+        if (indexInPrimary > 0)
+        {
+            std::vector<int> prevIndexInVector;
+            prevIndexInVector.push_back(nextIndexInPrimary - 1);
+            auto prevOriginalIndexOfPrevPrimaryItem = m_topDataProvider.ConvertPrimaryIndexToIndex(prevIndexInVector);
+            if (prevOriginalIndexOfPrevPrimaryItem.at(0) != prevIndexInOriginal)
+            {
+                needRearrange = true;
+            }
+        }
+
+
+        // Check whether items following the selected item are out of order
+        while (!needRearrange && nextIndexInPrimary < static_cast<int>(primaryListSize))
+        {
+            std::vector<int> nextIndexInVector;
+            nextIndexInVector.push_back(nextIndexInPrimary);
+            auto originalIndex = m_topDataProvider.ConvertPrimaryIndexToIndex(nextIndexInVector);
+            if (nextIndexInOriginal != originalIndex.at(0))
+            {
+                needRearrange = true;
+                break;
+            }
+            nextIndexInPrimary++;
+            nextIndexInOriginal++;
+        }
+    }
+
+    return needRearrange;
 }
 
 void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size const& availableSize)

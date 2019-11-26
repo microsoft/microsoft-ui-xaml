@@ -272,6 +272,7 @@ private:
     bool ShouldPreserveNavigationViewRS4Behavior();
     bool ShouldPreserveNavigationViewRS3Behavior();
 
+    bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
     bool ShouldShowFocusVisual();
     int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
     winrt::IInspectable LeftNavGetItemFromIndex(int index);
