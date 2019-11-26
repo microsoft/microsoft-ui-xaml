@@ -34,6 +34,7 @@ namespace MUXControlsTestApp
             m_stringItemCollection = new ObservableCollection<string>();
             m_radioButtonItemCollection = new ObservableCollection<RadioButton>();
             this.Loaded += RadioButtonsPage_Loaded;
+            this.SecondTestRadioButton.SelectedItem = this.TheRadioButton;
         }
 
         private void RadioButtonsPage_Loaded(object sender, RoutedEventArgs e)

@@ -112,6 +112,7 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
             AttachToLayoutChanged();
         }
 
+        m_blockSelecting = false;
         if (ReadLocalValue(s_SelectedIndexProperty) == winrt::DependencyProperty::UnsetValue()
             && ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
         {
@@ -317,7 +318,7 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
 
 void RadioButtons::Select(int index)
 {
-    if(!m_currentlySelecting && m_selectedIndex != index)
+    if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
         // and the radio button being unselected, as well as updates the SelectedIndex

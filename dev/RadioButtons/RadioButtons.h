@@ -74,6 +74,7 @@ private:
 
     int m_selectedIndex{ -1 };
     bool m_currentlySelecting{ false };
+    bool m_blockSelecting{ true };
 
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 
