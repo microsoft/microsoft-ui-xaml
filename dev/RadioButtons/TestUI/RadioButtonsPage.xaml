@@ -23,12 +23,12 @@
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
                         <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
-                        <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons">
+                        <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
                             <RadioButton x:Name="TheRadioButton">"I'm really a Radio Button"</RadioButton>
                             <x:String>I'm just a string</x:String>
                             <Button>And I'm a Button!</Button>
                         </controls:RadioButtons>
-                        <controls:RadioButtons Header="A Third Radio Buttons" SelectedIndex="1">
+                        <controls:RadioButtons Header="A Third Radio Buttons, 1 selected" SelectedIndex="1">
                             <x:Double>0.0</x:Double>
                             <x:Double>1.0</x:Double>
                             <x:Double>2.0</x:Double>
