@@ -21,6 +21,7 @@
 #include "NavigationViewItemRevokers.h"
 #include "IndexPath.h"
 #include "InspectingDataSource.h"
+#include "NavigationViewAutomationPeer.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -79,6 +80,12 @@ static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numer
 NavigationView::~NavigationView()
 {
     UnhookEventsAndClearFields(true);
+}
+
+// IUIElement / IUIElementOverridesHelper
+winrt::AutomationPeer NavigationViewItem::OnCreateAutomationPeer()
+{
+    return winrt::make<NavigationViewAutomationPeer>(*this);
 }
 
 void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)

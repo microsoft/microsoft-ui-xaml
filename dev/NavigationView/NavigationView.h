@@ -55,6 +55,9 @@ public:
     winrt::Size MeasureOverride(winrt::Size const& availableSize);
 #pragma endregion
 
+    // IUIElement / IUIElementOverridesHelper
+    winrt::AutomationPeer OnCreateAutomationPeer();
+
     winrt::IInspectable MenuItemFromContainer(winrt::DependencyObject const& container);
     winrt::DependencyObject ContainerFromMenuItem(winrt::IInspectable const& item);
 
