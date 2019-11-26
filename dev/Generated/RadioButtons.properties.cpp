@@ -41,10 +41,10 @@ void RadioButtonsProperties::EnsureProperties()
         s_HeaderTemplateProperty =
             InitializeDependencyProperty(
                 L"HeaderTemplate",
-                winrt::name_of<winrt::IInspectable>(),
+                winrt::name_of<winrt::DataTemplate>(),
                 winrt::name_of<winrt::RadioButtons>(),
                 false /* isAttached */,
-                ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
+                ValueHelper<winrt::DataTemplate>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnHeaderTemplatePropertyChanged));
     }
     if (!s_ItemsProperty)
@@ -201,14 +201,14 @@ winrt::IInspectable RadioButtonsProperties::Header()
     return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_HeaderProperty));
 }
 
-void RadioButtonsProperties::HeaderTemplate(winrt::IInspectable const& value)
+void RadioButtonsProperties::HeaderTemplate(winrt::DataTemplate const& value)
 {
-    static_cast<RadioButtons*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::IInspectable>::BoxValueIfNecessary(value));
+    static_cast<RadioButtons*>(this)->SetValue(s_HeaderTemplateProperty, ValueHelper<winrt::DataTemplate>::BoxValueIfNecessary(value));
 }
 
-winrt::IInspectable RadioButtonsProperties::HeaderTemplate()
+winrt::DataTemplate RadioButtonsProperties::HeaderTemplate()
 {
-    return ValueHelper<winrt::IInspectable>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_HeaderTemplateProperty));
+    return ValueHelper<winrt::DataTemplate>::CastOrUnbox(static_cast<RadioButtons*>(this)->GetValue(s_HeaderTemplateProperty));
 }
 
 void RadioButtonsProperties::Items(winrt::IVector<winrt::IInspectable> const& value)

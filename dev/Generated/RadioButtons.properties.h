@@ -12,8 +12,8 @@ public:
     void Header(winrt::IInspectable const& value);
     winrt::IInspectable Header();
 
-    void HeaderTemplate(winrt::IInspectable const& value);
-    winrt::IInspectable HeaderTemplate();
+    void HeaderTemplate(winrt::DataTemplate const& value);
+    winrt::DataTemplate HeaderTemplate();
 
     void Items(winrt::IVector<winrt::IInspectable> const& value);
     winrt::IVector<winrt::IInspectable> Items();

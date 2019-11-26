@@ -74,6 +74,16 @@ void ColumnMajorUniformToLargestGridLayoutProperties::OnMaxColumnsPropertyChange
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::ColumnMajorUniformToLargestGridLayout>();
+
+    auto value = winrt::unbox_value<int>(args.NewValue());
+    auto coercedValue = value;
+    winrt::get_self<ColumnMajorUniformToLargestGridLayout>(owner)->ValidateGreaterThanZero(coercedValue);
+    if (value != coercedValue)
+    {
+        sender.SetValue(args.Property(), winrt::box_value<int>(coercedValue));
+        return;
+    }
+
     winrt::get_self<ColumnMajorUniformToLargestGridLayout>(owner)->OnMaxColumnsPropertyChanged(args);
 }
 
@@ -97,7 +107,9 @@ float ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing()
 
 void ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns(int value)
 {
-    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_MaxColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(value));
+    int coercedValue = value;
+    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->ValidateGreaterThanZero(coercedValue);
+    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_MaxColumnsProperty, ValueHelper<int>::BoxValueIfNecessary(coercedValue));
 }
 
 int ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns()
