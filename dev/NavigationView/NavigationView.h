@@ -90,6 +90,8 @@ public:
         winrt::NavigationViewItemBase const& container = nullptr,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
     void RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi);
+    void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+
     bool IsSettingsItem(winrt::IInspectable const& item);
 
     static winrt::DependencyProperty GetNavigationViewItemRevokersProperty()
@@ -105,7 +107,7 @@ public:
         return s_NavigationViewItemRevokersProperty;
     }
 
-    void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+    // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
 
@@ -236,7 +238,6 @@ private:
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib);
     winrt::FrameworkElement GetParentForFrameworkElement(winrt::FrameworkElement fe);
     bool IsRootItemsRepeater(winrt::hstring name);
-    bool IsRealized(winrt::IndexPath indexPath);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };

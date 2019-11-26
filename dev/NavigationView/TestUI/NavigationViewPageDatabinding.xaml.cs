@@ -63,21 +63,6 @@ namespace MUXControlsTestApp
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            //if (args.SelectedItem != null)
-            //{
-            //    var itemdata = args.SelectedItem as NavigationViewItem;
-            //    if (itemdata != null)
-            //    {
-            //        if (itemdata.Content != null)
-            //        {
-            //            NavView.Header = itemdata.Content + " as header";
-            //        }
-            //        else if (args.IsSettingsSelected) // to handle settings without content case in top nav
-            //        {
-            //            NavView.Header = "Settings as header";
-            //        }
-            //    }
-            //}
         }
 
         void NavView_ItemInvoked(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)

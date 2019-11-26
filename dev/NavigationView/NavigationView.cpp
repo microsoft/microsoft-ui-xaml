@@ -278,12 +278,6 @@ void NavigationView::OnApplyTemplate()
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
-
-        //// Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
-        //if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
-        //{
-        //    leftNavListView.SingleSelectionFollowsFocus(false);
-        //}
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -436,8 +430,6 @@ void NavigationView::OnApplyTemplate()
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
-
-    // Initial setup for ItemsRepeater
     SyncItemTemplates();
 }
 
@@ -544,13 +536,13 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
 
 void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi)
 {
+    winrt::IInspectable nextItem = nullptr;
+    auto prevItem = SelectedItem();
     auto parentIR = GetParentItemsRepeaterForContainer(nvi);
+
     bool isInOverflow = parentIR.Name() == c_overflowRepeater;
     bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
-    auto prevItem = SelectedItem();
 
-    // Get required info to raise ItemInvoked
-    winrt::IInspectable nextItem = nullptr;
     auto itemIndex = parentIR.GetElementIndex(nvi);
     auto itemsSourceView = parentIR.ItemsSourceView();
     if (itemsSourceView)
@@ -558,8 +550,6 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
         auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
         nextItem = inspectingDataSource->GetAt(itemIndex);
     }
-
-    // This method only gets called when an item has recieved interaction, therefore raise ItemInvoked
 
     // Other transition other than default only apply to topnav
     // when clicking overflow on topnav, transition is from bottom
@@ -609,20 +599,6 @@ bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
     return (name == c_topNavRepeater ||
         name == c_leftRepeater ||
         name == c_overflowRepeater);
-}
-
-bool NavigationView::IsRealized(winrt::IndexPath indexPath)
-{
-    bool isRealized = true;
-    for (int i = 0; i < indexPath.GetSize(); i++)
-    {
-        if (indexPath.GetAt(i) < 0)
-        {
-            isRealized = false;
-            break;
-        }
-    }
-    return isRealized;
 }
 
 winrt::FrameworkElement NavigationView::GetParentForFrameworkElement(winrt::FrameworkElement fe)
@@ -794,11 +770,10 @@ void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::Ite
         auto children = panel.Children();
         unsigned int childIndex = 0;
         bool found = children.IndexOf(args.Element(), childIndex);
-        if (!found)
+        if (found)
         {
-            throw winrt::hresult_error(E_FAIL, L"ItemsRepeater's child not found in its Children collection.");
+            children.RemoveAt(childIndex);
         }
-        children.RemoveAt(childIndex);
     }
 }
 
@@ -3864,7 +3839,10 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
         auto itemIndex = m_topDataProvider.IndexOf(data, NavigationViewSplitVectorID::PrimaryList);
         if (itemIndex >= 0)
         {
-            return ir.TryGetElement(itemIndex).try_as<T>();
+            if (auto container = ir.TryGetElement(itemIndex))
+            {
+                return container.try_as<T>();
+            }
         }
     }
     else
@@ -3951,7 +3929,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 
 bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase nvib)
 {
-    if (auto selectedItem = m_selectionModel.SelectedIndex())
+    if (auto selectedItem = m_selectionModel.SelectedItem())
     {
         auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
         if (!selectedItemContainer)
