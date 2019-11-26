@@ -193,6 +193,15 @@ public:
         }
     }
 
+    static bool EvaluateNullableBool(winrt::IReference<bool> const& nullableBool)
+    {
+        if (nullableBool)
+        {
+            return nullableBool.GetBoolean();
+        }
+        return false;
+    }
+
     template<typename AncestorType>
     static AncestorType GetAncestorOfType(winrt::DependencyObject const& firstGuess)
     {

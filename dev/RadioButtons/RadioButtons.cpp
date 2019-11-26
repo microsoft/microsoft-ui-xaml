@@ -242,8 +242,7 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
 
             // If the developer adds a checked toggle button to the collection, update selection to this item.
-            auto const isChecked = toggleButton.IsChecked();
-            if (isChecked && isChecked.GetBoolean())
+            if (SharedHelpers::EvaluateNullableBool(toggleButton.IsChecked()))
             {
                 Select(args.Index());
             }
@@ -268,8 +267,7 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
         // If the removed element was the selected one, update selection to -1
         if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
         {
-            auto const isChecked = elementAsToggle.IsChecked();
-            if(isChecked && isChecked.GetBoolean())
+            if (SharedHelpers::EvaluateNullableBool(elementAsToggle.IsChecked()))
             {
                 Select(-1);
             }
@@ -286,8 +284,7 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
         // When the selected item's index changes, update selection to match
         if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
         {
-            auto const isChecked = elementAsToggle.IsChecked();
-            if (isChecked && isChecked.GetBoolean())
+            if (SharedHelpers::EvaluateNullableBool(elementAsToggle.IsChecked()))
             {
                 Select(args.NewIndex());
             }
