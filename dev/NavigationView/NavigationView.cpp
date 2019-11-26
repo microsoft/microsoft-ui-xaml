@@ -413,6 +413,8 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         // Do localization for settings item label and Automation Name
         auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
         winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
+        settingsItem.Tag(box_value(localizedSettingsName));
+
         UpdateSettingsItemToolTip();
 
         // Add the name only in case of horizontal nav
