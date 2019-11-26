@@ -44,9 +44,9 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
             static_cast<float>(children.Size()));
         return winrt::Size(
             (m_largestChildSize.Width * actualColumnCount) + 
-            (ColumnSpacing() * (actualColumnCount - 1)),
+            (static_cast<float>(ColumnSpacing()) * (actualColumnCount - 1)),
             (m_largestChildSize.Height * maxItemsPerColumn) +
-            (RowSpacing() * (maxItemsPerColumn - 1))
+            (static_cast<float>(RowSpacing()) * (maxItemsPerColumn - 1))
         );
     }
     return winrt::Size(0, 0);
