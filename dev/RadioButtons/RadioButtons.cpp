@@ -115,6 +115,7 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
             AttachToLayoutChanged();
         }
 
+        UpdateSelectedItem();
         UpdateSelectedIndex();
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
@@ -239,6 +240,12 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
                 
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
+
+            // If the developer adds a checked toggle button to the collection, update selection to this item.
+            if (SharedHelpers::IsTrue(toggleButton.IsChecked()))
+            {
+                Select(args.Index());
+            }
         }
         if (auto const repeater = m_repeater.get())
         {
@@ -256,6 +263,15 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
     if (auto const element = args.Element())
     {
         element.SetValue(s_childHandlersProperty, nullptr);
+
+        // If the removed element was the selected one, update selection to -1
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
+            {
+                Select(-1);
+            }
+        }
     }
 }
 
@@ -264,10 +280,15 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
     if (auto const element = args.Element())
     {
         element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.NewIndex() + 1));
-    }
-    if (args.OldIndex() == m_selectedIndex)
-    {
-        Select(args.NewIndex());
+
+        // When the selected item's index changes, update selection to match
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
+            {
+                Select(args.NewIndex());
+            }
+        }
     }
 }
 
@@ -280,9 +301,9 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
             auto const count = itemSourceView.Count();
             for (auto index = 0; index < count; index++)
             {
-                if (auto const radioButton = repeater.TryGetElement(index))
+                if (auto const element = repeater.TryGetElement(index))
                 {
-                    radioButton.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
+                    element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
                 }
             }
         }
@@ -426,6 +447,19 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedIndex();
     }
+    else if (property == s_SelectedItemProperty)
+    {
+        UpdateSelectedItem();
+    }
+}
+
+winrt::UIElement RadioButtons::ContainerFromIndex(int index)
+{
+    if (auto const repeater = m_repeater.get())
+    {
+        return repeater.TryGetElement(index);
+    }
+    return nullptr;
 }
 
 void RadioButtons::UpdateItemsSource()
@@ -463,13 +497,21 @@ void RadioButtons::UpdateSelectedIndex()
     }
 }
 
-winrt::UIElement RadioButtons::ContainerFromIndex(int index)
+void RadioButtons::UpdateSelectedItem()
 {
-    if (auto const repeater = m_repeater.get())
+    if (!m_currentlySelecting)
     {
-        return repeater.TryGetElement(index);
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
+                {
+                    Select(inspectingDataSource->IndexOf(SelectedItem()));
+                }
+            }
+        }
     }
-    return nullptr;
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true

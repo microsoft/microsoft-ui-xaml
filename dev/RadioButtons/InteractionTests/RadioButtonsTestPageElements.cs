@@ -28,17 +28,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private UIObject TestRadioButtons;
 
-        public Edit GetMaximumColumnsTextBlock()
+        public Edit GetMaxColumnsTextBlock()
         {
-            return GetElement(ref MaximumColumnsTextBlock, "MaximumColumnsTextBlock");
+            return GetElement(ref MaxColumnsTextBlock, "MaxColumnsTextBlock");
         }
-        private Edit MaximumColumnsTextBlock;
+        private Edit MaxColumnsTextBlock;
 
-        public Button GetSetMaximumColumnsButton()
+        public Button GetSetMaxColumnsButton()
         {
-            return GetElement(ref SetMaximumColumnsButton, "SetMaximumColumnsButton");
+            return GetElement(ref SetMaxColumnsButton, "SetMaxColumnsButton");
         }
-        private Button SetMaximumColumnsButton;
+        private Button SetMaxColumnsButton;
 
         public Edit GetNumberOfItemsTextBlock()
         {
@@ -64,6 +64,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button SelectByIndexButton;
 
+        public Button GetSelectByItemButton()
+        {
+            return GetElement(ref SelectByItemButton, "SelectByItemButton");
+        }
+        private Button SelectByItemButton;
+
         public Button GetInsertDisplayRadioButtonButton()
         {
             return GetElement(ref InsertDisplayRadioButtonButton, "InsertDisplayRadioButtonButton");
@@ -88,6 +94,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private CheckBox CustomDisabledCheckBox;
 
+        public CheckBox GetCustomCheckedCheckBox()
+        {
+            return GetElement(ref CustomCheckedCheckBox, "CustomCheckedCheckBox");
+        }
+        private CheckBox CustomCheckedCheckBox;
+
         public TextBlock GetSelectedIndexTextBlock()
         {
             return GetElement(ref SelectedIndexTextBlock, "SelectedIndexTextBlock");
@@ -99,7 +111,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref SelectedItemTextBlock, "SelectedItemTextBlock");
         }
         private TextBlock SelectedItemTextBlock;
-        
+
+        public TextBlock GetSelectedPositionInSetTextBlock()
+        {
+            return GetElement(ref SelectedPositionInSetTextBlock, "SelectedPositionInSetTextBlock");
+        }
+        private TextBlock SelectedPositionInSetTextBlock;
+
+        public TextBlock GetSelectedSizeOfSetTextBlock()
+        {
+            return GetElement(ref SelectedSizeOfSetTextBlock, "SelectedSizeOfSetTextBlock");
+        }
+        private TextBlock SelectedSizeOfSetTextBlock;
+
         public CheckBox GetRadioButtonsHasFocusCheckBox()
         {
             return GetElement(ref RadioButtonsHasFocusCheckBox, "RadioButtonsHasFocusCheckBox");

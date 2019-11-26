@@ -15,7 +15,7 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaximumColumns());
+        auto const maxColumns = std::max(1, MaxColumns());
         MUX_ASSERT(maxColumns > 0);
         auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(maxColumns)));
 
@@ -44,9 +44,9 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
             static_cast<float>(children.Size()));
         return winrt::Size(
             (m_largestChildSize.Width * actualColumnCount) + 
-            (ColumnSpacing() * (actualColumnCount - 1)),
+            (static_cast<float>(ColumnSpacing()) * (actualColumnCount - 1)),
             (m_largestChildSize.Height * maxItemsPerColumn) +
-            (RowSpacing() * (maxItemsPerColumn - 1))
+            (static_cast<float>(RowSpacing()) * (maxItemsPerColumn - 1))
         );
     }
     return winrt::Size(0, 0);
@@ -58,14 +58,14 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaximumColumns());
+        auto const maxColumns = std::max(1, MaxColumns());
         MUX_ASSERT(maxColumns > 0);
         auto const itemCount = children.Size();
         auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<double>(itemCount) / static_cast<double>(maxColumns)));
         auto const numberOfColumnsWithExtraElements = static_cast<int>(itemCount % maxColumns);
 
-        auto const columnSpacing = ColumnSpacing();
-        auto const rowSpacing = RowSpacing();
+        auto const columnSpacing = static_cast<float>(ColumnSpacing());
+        auto const rowSpacing = static_cast<float>(RowSpacing());
 
         auto horizontalOffset = 0.0f;
         auto verticalOffset = 0.0f;
@@ -133,7 +133,7 @@ void ColumnMajorUniformToLargestGridLayout::OnRowSpacingPropertyChanged(const wi
     InvalidateMeasure();
 }
 
-void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void ColumnMajorUniformToLargestGridLayout::OnMaxColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     InvalidateMeasure();
 }
@@ -145,7 +145,6 @@ void ColumnMajorUniformToLargestGridLayout::ValidateGreaterThanZero(int value)
         throw winrt::hresult_invalid_argument();
     }
 }
-
 
 //Testhooks helpers, only function while m_testHooksEnabled == true
 

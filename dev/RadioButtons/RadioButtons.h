@@ -5,6 +5,7 @@
 
 #include "common.h"
 
+#include "RadioButtonsElementFactory.h"
 #include "RadioButtons.g.h"
 #include "RadioButtons.properties.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"
@@ -60,6 +61,7 @@ private:
     winrt::IInspectable GetItemsSource();
 
     void UpdateSelectedIndex();
+    void UpdateSelectedItem();
 
     void Select(int index);
     winrt::IInspectable GetDataAtIndex(int index, bool containerIsChecked);
