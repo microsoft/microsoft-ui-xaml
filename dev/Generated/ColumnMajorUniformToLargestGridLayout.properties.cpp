@@ -24,10 +24,10 @@ void ColumnMajorUniformToLargestGridLayoutProperties::EnsureProperties()
         s_ColumnSpacingProperty =
             InitializeDependencyProperty(
                 L"ColumnSpacing",
-                winrt::name_of<float>(),
+                winrt::name_of<double>(),
                 winrt::name_of<winrt::ColumnMajorUniformToLargestGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<float>::BoxedDefaultValue(),
+                ValueHelper<double>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnColumnSpacingPropertyChanged));
     }
     if (!s_MaxColumnsProperty)
@@ -46,10 +46,10 @@ void ColumnMajorUniformToLargestGridLayoutProperties::EnsureProperties()
         s_RowSpacingProperty =
             InitializeDependencyProperty(
                 L"RowSpacing",
-                winrt::name_of<float>(),
+                winrt::name_of<double>(),
                 winrt::name_of<winrt::ColumnMajorUniformToLargestGridLayout>(),
                 false /* isAttached */,
-                ValueHelper<float>::BoxedDefaultValue(),
+                ValueHelper<double>::BoxedDefaultValue(),
                 winrt::PropertyChangedCallback(&OnRowSpacingPropertyChanged));
     }
 }
@@ -95,14 +95,14 @@ void ColumnMajorUniformToLargestGridLayoutProperties::OnRowSpacingPropertyChange
     winrt::get_self<ColumnMajorUniformToLargestGridLayout>(owner)->OnRowSpacingPropertyChanged(args);
 }
 
-void ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing(float value)
+void ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing(double value)
 {
-    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_ColumnSpacingProperty, ValueHelper<float>::BoxValueIfNecessary(value));
+    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_ColumnSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
 }
 
-float ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing()
+double ColumnMajorUniformToLargestGridLayoutProperties::ColumnSpacing()
 {
-    return ValueHelper<float>::CastOrUnbox(static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->GetValue(s_ColumnSpacingProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->GetValue(s_ColumnSpacingProperty));
 }
 
 void ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns(int value)
@@ -117,12 +117,12 @@ int ColumnMajorUniformToLargestGridLayoutProperties::MaxColumns()
     return ValueHelper<int>::CastOrUnbox(static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->GetValue(s_MaxColumnsProperty));
 }
 
-void ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing(float value)
+void ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing(double value)
 {
-    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_RowSpacingProperty, ValueHelper<float>::BoxValueIfNecessary(value));
+    static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->SetValue(s_RowSpacingProperty, ValueHelper<double>::BoxValueIfNecessary(value));
 }
 
-float ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing()
+double ColumnMajorUniformToLargestGridLayoutProperties::RowSpacing()
 {
-    return ValueHelper<float>::CastOrUnbox(static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->GetValue(s_RowSpacingProperty));
+    return ValueHelper<double>::CastOrUnbox(static_cast<ColumnMajorUniformToLargestGridLayout*>(this)->GetValue(s_RowSpacingProperty));
 }

@@ -14,11 +14,11 @@ unsealed runtimeclass ColumnMajorUniformToLargestGridLayout : MU_XC_NAMESPACE.No
     static Windows.UI.Xaml.DependencyProperty MaxColumnsProperty{ get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Single ColumnSpacing{ get; set; };
+    Double ColumnSpacing{ get; set; };
     static Windows.UI.Xaml.DependencyProperty ColumnSpacingProperty{ get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Single RowSpacing{ get; set; };
+    Double RowSpacing{ get; set; };
     static Windows.UI.Xaml.DependencyProperty RowSpacingProperty{ get; };
 }
 

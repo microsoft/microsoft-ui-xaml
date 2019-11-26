@@ -9,14 +9,14 @@ class ColumnMajorUniformToLargestGridLayoutProperties
 public:
     ColumnMajorUniformToLargestGridLayoutProperties();
 
-    void ColumnSpacing(float value);
-    float ColumnSpacing();
+    void ColumnSpacing(double value);
+    double ColumnSpacing();
 
     void MaxColumns(int value);
     int MaxColumns();
 
-    void RowSpacing(float value);
-    float RowSpacing();
+    void RowSpacing(double value);
+    double RowSpacing();
 
     static winrt::DependencyProperty ColumnSpacingProperty() { return s_ColumnSpacingProperty; }
     static winrt::DependencyProperty MaxColumnsProperty() { return s_MaxColumnsProperty; }

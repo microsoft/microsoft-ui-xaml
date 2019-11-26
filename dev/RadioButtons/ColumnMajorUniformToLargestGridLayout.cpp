@@ -64,8 +64,8 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
         auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<double>(itemCount) / static_cast<double>(maxColumns)));
         auto const numberOfColumnsWithExtraElements = static_cast<int>(itemCount % maxColumns);
 
-        auto const columnSpacing = ColumnSpacing();
-        auto const rowSpacing = RowSpacing();
+        auto const columnSpacing = static_cast<float>(ColumnSpacing());
+        auto const rowSpacing = static_cast<float>(RowSpacing());
 
         auto horizontalOffset = 0.0f;
         auto verticalOffset = 0.0f;
