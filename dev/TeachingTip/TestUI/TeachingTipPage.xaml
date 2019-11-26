@@ -582,7 +582,7 @@
                     Height="40" Width="100">Click to open TeachingTip
                 <Button.Resources>
                     <muxc:TeachingTip x:Name="TeachingTipInResourcesOnEdge" 
-                                          AutomationProperties.Name="TeachingTipInResources"
+                                          AutomationProperties.Name="TeachingTipInResourcesOnEdge"
                                           Title="We've Added Auto Saving!" 
                                           Subtitle="Documents will now automatically save to OneDrive." 
                                           Target="{x:Bind targetButtonRightEdge}">
