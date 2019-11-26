@@ -629,7 +629,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                         KeyboardHelper.PressKey(Key.Down);
                         VerifyFocusedIndex(1);
-                        if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                        if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
                         {
                             Log.Warning("This check requires selection follows focus which isn't available on RS2");
                             VerifySelectedIndex(1);
