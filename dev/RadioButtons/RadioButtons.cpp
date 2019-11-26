@@ -242,6 +242,13 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
                 
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
+
+            // If the developer adds a checked toggle button to the collection, update selection to this item.
+            auto const isChecked = toggleButton.IsChecked();
+            if (isChecked && isChecked.GetBoolean())
+            {
+                Select(args.Index());
+            }
         }
         if (auto const repeater = m_repeater.get())
         {
@@ -259,6 +266,16 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
     if (auto const element = args.Element())
     {
         element.SetValue(s_childHandlersProperty, nullptr);
+
+        // If the removed element was the selected one, update selection to -1
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            auto const isChecked = elementAsToggle.IsChecked();
+            if(isChecked && isChecked.GetBoolean())
+            {
+                Select(-1);
+            }
+        }
     }
 }
 
@@ -267,10 +284,16 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
     if (auto const element = args.Element())
     {
         element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.NewIndex() + 1));
-    }
-    if (args.OldIndex() == m_selectedIndex)
-    {
-        Select(args.NewIndex());
+
+        // When the selected item's index changes, update selection to match
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            auto const isChecked = elementAsToggle.IsChecked();
+            if (isChecked && isChecked.GetBoolean())
+            {
+                Select(args.NewIndex());
+            }
+        }
     }
 }
 
@@ -283,9 +306,9 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
             auto const count = itemSourceView.Count();
             for (auto index = 0; index < count; index++)
             {
-                if (auto const radioButton = repeater.TryGetElement(index))
+                if (auto const element = repeater.TryGetElement(index))
                 {
-                    radioButton.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
+                    element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
                 }
             }
         }

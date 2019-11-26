@@ -15,7 +15,7 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaximumColumns());
+        auto const maxColumns = std::max(1, MaxColumns());
         MUX_ASSERT(maxColumns > 0);
         auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(maxColumns)));
 
@@ -58,7 +58,7 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaximumColumns());
+        auto const maxColumns = std::max(1, MaxColumns());
         MUX_ASSERT(maxColumns > 0);
         auto const itemCount = children.Size();
         auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<double>(itemCount) / static_cast<double>(maxColumns)));
@@ -133,7 +133,7 @@ void ColumnMajorUniformToLargestGridLayout::OnRowSpacingPropertyChanged(const wi
     InvalidateMeasure();
 }
 
-void ColumnMajorUniformToLargestGridLayout::OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void ColumnMajorUniformToLargestGridLayout::OnMaxColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (args.NewValue() <= 0)
     {

@@ -5,6 +5,7 @@
 
 #include "common.h"
 
+#include "RadioButtonsElementFactory.h"
 #include "RadioButtons.g.h"
 #include "RadioButtons.properties.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"

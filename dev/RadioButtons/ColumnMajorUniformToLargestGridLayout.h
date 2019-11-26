@@ -24,7 +24,7 @@ public:
 
     void OnColumnSpacingPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
     void OnRowSpacingPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
-    void OnMaximumColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
+    void OnMaxColumnsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs&);
 
     //Testhooks helpers, only function while m_testHooksEnabled == true
     void SetTestHooksEnabled(bool enabled);
