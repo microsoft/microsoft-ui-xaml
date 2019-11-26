@@ -67,40 +67,37 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
     if (auto const repeater = m_repeater.get())
     {
         auto const inputDevice = args.InputDevice();
-        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
+        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
-            if (m_selectedIndex >= 0)
+            if (auto const oldFocusedElement = args.OldFocusedElement())
             {
-                if (auto const oldFocusedElement = args.OldFocusedElement())
+                auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
+                // If focus is coming from outside the repeater, put focus on the selected item.
+                if (repeater != oldElementParent)
                 {
-                    auto oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-                    // If focus is coming from outside the repeater, put focus on the selected item.
-                    if (repeater != oldElementParent)
+                    if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                     {
-                        if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                        if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                         {
-                            if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                            if (args.TrySetNewFocusedElement(selectedItem))
                             {
-                                if (args.TrySetNewFocusedElement(selectedItem))
-                                {
-                                    args.Handled(true);
-                                }
+                                args.Handled(true);
                             }
                         }
                     }
                 }
-            }
-        }
 
-        // On RS3+ Selection follows focus unless control is held down.
-        if (SharedHelpers::IsRS3OrHigher() && 
-            (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
-        {
-            if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
-            {
-                Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                args.Handled(true);
+                // On RS3+ Selection follows focus unless control is held down.
+                else if (SharedHelpers::IsRS3OrHigher() &&
+                    (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                        winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+                {
+                    if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
+                    {
+                        Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                        args.Handled(true);
+                    }
+                }
             }
         }
     }
@@ -115,8 +112,16 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
             AttachToLayoutChanged();
         }
 
-        UpdateSelectedItem();
-        UpdateSelectedIndex();
+        if (ReadLocalValue(s_SelectedIndexProperty) == winrt::DependencyProperty::UnsetValue()
+            && ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
+        {
+            UpdateSelectedItem();
+        }
+        else
+        {
+            UpdateSelectedIndex();
+        }
+
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
 }
