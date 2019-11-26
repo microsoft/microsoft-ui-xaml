@@ -193,7 +193,7 @@ public:
         }
     }
 
-    static bool EvaluateNullableBool(winrt::IReference<bool> const& nullableBool)
+    static bool IsTrue(winrt::IReference<bool> const& nullableBool)
     {
         if (nullableBool)
         {
