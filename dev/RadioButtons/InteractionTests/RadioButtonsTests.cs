@@ -609,6 +609,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void ScrollViewerSettingSelectionDoesNotMoveFocus()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test is disabled on RS2 because it requires RS3+ keyboarding behavior.");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -628,12 +633,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifyFocusedIndex(0);
 
                         KeyboardHelper.PressKey(Key.Down);
-                        VerifyFocusedIndex(1);
-                        if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
-                        {
-                            Log.Warning("This check requires selection follows focus which isn't available on RS2");
-                            VerifySelectedIndex(1);
-                        }
+                        VerifySelectedFocusedIndex(1);
                     }
                 }
             }
