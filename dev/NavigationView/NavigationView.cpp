@@ -83,7 +83,7 @@ NavigationView::~NavigationView()
 }
 
 // IUIElement / IUIElementOverridesHelper
-winrt::AutomationPeer NavigationViewItem::OnCreateAutomationPeer()
+winrt::AutomationPeer NavigationView::OnCreateAutomationPeer()
 {
     return winrt::make<NavigationViewAutomationPeer>(*this);
 }
@@ -3981,4 +3981,21 @@ bool NavigationView::IsContainerInOverflow(winrt::NavigationViewItemBase nvib)
         }
     }
     return false;
+}
+
+winrt::NavigationViewItem NavigationView::GetSelectedContainer()
+{
+    winrt::NavigationViewItem selectedContainer{ nullptr };
+    if (auto selectedItem = SelectedItem())
+    {
+        if (auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItem>())
+        {
+            selectedContainer = selectedItemContainer;
+        }
+        else
+        {
+            selectedContainer = NavigationViewItemOrSettingsContentFromData(selectedItem);
+        }
+    }
+    return selectedContainer;
 }

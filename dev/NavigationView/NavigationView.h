@@ -108,6 +108,7 @@ public:
 
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
     winrt::ItemsRepeater LeftNavRepeater();
+    winrt::NavigationViewItem GetSelectedContainer();
 
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();

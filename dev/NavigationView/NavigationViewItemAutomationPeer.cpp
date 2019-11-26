@@ -325,8 +325,16 @@ bool NavigationViewItemAutomationPeer::IsSelected()
 
 winrt::IRawElementProviderSimple NavigationViewItemAutomationPeer::SelectionContainer()
 {
-    // TODO: Implement
-    return this->try_as<winrt::IRawElementProviderSimple>();
+    winrt::IRawElementProviderSimple provider{ nullptr };
+    if (auto navview = GetParentNavigationView())
+    {
+        if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(navview))
+        {
+            provider = ProviderFromPeer(peer);
+        }
+    }
+
+    return provider;
 }
 
 void NavigationViewItemAutomationPeer::AddToSelection()
