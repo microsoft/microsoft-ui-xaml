@@ -608,8 +608,7 @@ bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
 {
     return (name == c_topNavRepeater ||
         name == c_leftRepeater ||
-        name == c_overflowRepeater ||
-        name == c_flyoutItemsRepeater);
+        name == c_overflowRepeater);
 }
 
 bool NavigationView::IsRealized(winrt::IndexPath indexPath)
@@ -3102,7 +3101,6 @@ void NavigationView::UpdateNavigationViewItemsFactory()
 
 void NavigationView::SyncItemTemplates()
 {
-    // TODO: Invalidate Layout?
     UpdateNavigationViewItemsFactory();
 }
 

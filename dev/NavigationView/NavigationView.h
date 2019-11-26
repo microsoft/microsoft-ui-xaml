@@ -37,7 +37,6 @@ enum class NavigationRecommendedTransitionDirection
 static constexpr auto c_topNavRepeater = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_leftRepeater = L"MenuItemsHost"sv;
 static constexpr auto c_overflowRepeater = L"TopNavMenuItemsOverflowHost"sv;
-static constexpr auto c_flyoutItemsRepeater = L"flyoutItemsRepeater"sv;
 
 class NavigationView :
     public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>,
@@ -356,17 +355,14 @@ private:
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_leftNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_leftNavItemsRepeaterElementClearingRevoker{};
-    winrt::ItemsRepeater::ElementIndexChanged_revoker m_leftNavItemsRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_leftNavRepeaterLoadedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavItemsRepeaterElementClearingRevoker{};
-    winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavItemsRepeaterElementIndexChangedRevoker{};
     winrt::ItemsRepeater::Loaded_revoker m_topNavRepeaterLoadedRevoker{};
 
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
-    winrt::ItemsRepeater::ElementIndexChanged_revoker m_topNavOverflowItemsRepeaterElementIndexChangedRevoker{};
 
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
 

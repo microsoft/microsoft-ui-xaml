@@ -290,19 +290,6 @@
                                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                                     </Style>
                                                 </Flyout.FlyoutPresenterStyle>
-                                                <!--<local:NavigationViewList                                                     
-                                                    x:Name="TopNavMenuItemsOverflowHost" 
-                                                    ItemTemplate="{TemplateBinding MenuItemTemplate}"
-                                                    ItemTemplateSelector="{TemplateBinding MenuItemTemplateSelector}"
-                                                    ItemContainerStyle="{TemplateBinding MenuItemContainerStyle}"
-                                                    ItemContainerStyleSelector="{TemplateBinding MenuItemContainerStyleSelector}"
-                                                    SingleSelectionFollowsFocus="False"
-                                                    IsItemClickEnabled="True"
-                                                    ElementSoundMode="{TemplateBinding ElementSoundMode}">
-                                                    <ListView.ItemContainerTransitions>
-                                                        <TransitionCollection />
-                                                    </ListView.ItemContainerTransitions>
-                                                </local:NavigationViewList>-->
                                                 <local:ItemsRepeaterScrollHost>
                                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                         <local:ItemsRepeater
