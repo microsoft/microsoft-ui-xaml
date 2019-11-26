@@ -67,13 +67,13 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
     if (auto const repeater = m_repeater.get())
     {
         auto const inputDevice = args.InputDevice();
-        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
+        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
             if (m_selectedIndex >= 0)
             {
                 if (auto const oldFocusedElement = args.OldFocusedElement())
                 {
-                    auto oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
+                    auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
                     // If focus is coming from outside the repeater, put focus on the selected item.
                     if (repeater != oldElementParent)
                     {
@@ -88,19 +88,19 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
                             }
                         }
                     }
-                }
-            }
-        }
 
-        // On RS3+ Selection follows focus unless control is held down.
-        if (SharedHelpers::IsRS3OrHigher() && 
-            (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
-        {
-            if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
-            {
-                Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                args.Handled(true);
+                    // On RS3+ Selection follows focus unless control is held down.
+                    if (SharedHelpers::IsRS3OrHigher() &&
+                        (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+                    {
+                        if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
+                        {
+                            Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                            args.Handled(true);
+                        }
+                    }
+                }
             }
         }
     }

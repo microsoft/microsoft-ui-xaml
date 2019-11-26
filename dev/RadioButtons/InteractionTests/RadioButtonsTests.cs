@@ -431,7 +431,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void GamepadCanEscape()
+        public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
@@ -468,6 +468,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(7);
                         GamepadHelper.PressButton(null, GamepadButton.DPadRight);
                         VerifyRadioButtonsHasFocus(false);
+
+                        TapOnItem(7, useBackup);
+                        VerifySelectedFocusedIndex(7);
+                        GamepadHelper.PressButton(null, GamepadButton.DPadDown);
+                        VerifySelectedIndex(7);
+                        VerifyFocusedIndex(8);
+
+                        GamepadHelper.PressButton(null, GamepadButton.DPadLeft);
+                        VerifySelectedIndex(7);
+                        VerifyFocusedIndex(5);
                     }
                 }
             }
@@ -596,6 +606,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void ScrollViewerSettingSelectionDoesNotMoveFocus()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        SelectByIndex(3);
+                        VerifySelectedIndex(3);
+                        VerifyRadioButtonsHasFocus(false);
+
+                        elements.GetReproTextBlock().Click();
+                        VerifySelectedIndex(3);
+                        // This behavior is probably wrong, it is probably more correct for focus to be on the selected item...
+                        VerifyFocusedIndex(0);
+
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(1);
+                    }
+                }
+            }
+        }
 
         void SetNumberOfColumns(int columns)
         {
