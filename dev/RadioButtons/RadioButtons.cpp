@@ -465,8 +465,7 @@ winrt::UIElement RadioButtons::ContainerFromIndex(int index)
     return nullptr;
 }
 
-// Test Hooks helpers, only function when m_testHooksEnabled == true
-void RadioButtons::SetTestHooksEnabled(bool enabled)
+void RadioButtons::UpdateItemsSource()
 {
     Select(-1);
     m_itemsSourceChanged.revoke();
@@ -516,15 +515,6 @@ void RadioButtons::UpdateSelectedItem()
             }
         }
     }
-}
-
-winrt::UIElement RadioButtons::ContainerFromIndex(int index)
-{
-    if (auto const repeater = m_repeater.get())
-    {
-        return repeater.TryGetElement(index);
-    }
-    return nullptr;
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true
