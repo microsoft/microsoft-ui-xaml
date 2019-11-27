@@ -59,7 +59,7 @@ public:
     static constexpr winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
     static constexpr winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
     static constexpr winrt::ScrollingInputKinds s_defaultIgnoredInputKind{ winrt::ScrollingInputKinds::None };
-    static constexpr winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::None };
+    static constexpr winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::Both };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };

@@ -622,13 +622,13 @@ winrt::Size ScrollingPresenter::MeasureOverride(winrt::Size const& availableSize
         // to be scrollable in those directions.
         winrt::Size contentAvailableSize
         {
-            (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::Both) ?
+            (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::None) ?
                 availableSize.Width : std::numeric_limits<float>::infinity(),
-            (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::Both) ?
+            (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::None) ?
                 availableSize.Height : std::numeric_limits<float>::infinity()
         };
 
-        if (m_contentOrientation != winrt::ScrollingContentOrientation::None)
+        if (m_contentOrientation != winrt::ScrollingContentOrientation::Both)
         {
             const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
@@ -636,13 +636,13 @@ winrt::Size ScrollingPresenter::MeasureOverride(winrt::Size const& availableSize
             {
                 winrt::Thickness contentMargin = contentAsFE.Margin();
 
-                if (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::Both)
+                if (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::None)
                 {
                     // Even though the content's Width is constrained, take into account the MinWidth, Width and MaxWidth values
                     // potentially set on the content so it is allowed to grow accordingly.
                     contentAvailableSize.Width = static_cast<float>(GetComputedMaxWidth(availableSize.Width, contentAsFE));
                 }
-                if (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::Both)
+                if (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::None)
                 {
                     // Even though the content's Height is constrained, take into account the MinHeight, Height and MaxHeight values
                     // potentially set on the content so it is allowed to grow accordingly.

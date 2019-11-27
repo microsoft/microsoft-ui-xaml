@@ -60,7 +60,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const ScrollingChainMode c_defaultZoomChainMode = ScrollingChainMode.Auto;
         private const ZoomMode c_defaultZoomMode = ZoomMode.Disabled;
         private const ScrollingInputKinds c_defaultIgnoredInputKind = ScrollingInputKinds.None;
-        private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.None;
+        private const ScrollingContentOrientation c_defaultContentOrientation = ScrollingContentOrientation.Both;
         private const double c_defaultMinZoomFactor = 0.1;
         private const double c_defaultZoomFactor = 1.0;
         private const double c_defaultMaxZoomFactor = 10.0;

@@ -456,7 +456,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                         grids[1].MaxHeight = 200;
                         grids[2].MaxWidth = double.PositiveInfinity;
                         grids[2].MaxHeight = double.PositiveInfinity;
-                        scrollingPresenters[1].ContentOrientation = ScrollingContentOrientation.None;
+                        scrollingPresenters[1].ContentOrientation = ScrollingContentOrientation.Both;
                         scrollingPresenters[2].ContentOrientation = ScrollingContentOrientation.Horizontal;
                     }
                     else
