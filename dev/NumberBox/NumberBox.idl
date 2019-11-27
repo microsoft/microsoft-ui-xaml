@@ -46,7 +46,10 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
     [MUX_DEFAULT_VALUE("1")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Double StepFrequency;
+    Double SmallChange;
+
+    [MUX_DEFAULT_VALUE("1")]
+    Double LargeChange;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     String Text;
@@ -84,7 +87,8 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty MinimumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty MaximumProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty ValueProperty{ get; };
-    static Windows.UI.Xaml.DependencyProperty StepFrequencyProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty SmallChangeProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LargeChangeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
 
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };

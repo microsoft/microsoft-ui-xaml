@@ -64,14 +64,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 downButton.InvokeAndWait();
                 Verify.AreEqual(0, numBox.Value);
 
-                Log.Comment("Change Step value to 5");
-                RangeValueSpinner stepNumBox = FindElement.ByName<RangeValueSpinner>("StepNumberBox");
-                stepNumBox.SetValue(5);
+                Log.Comment("Change SmallChange value to 5");
+                RangeValueSpinner smallChangeNumBox = FindElement.ByName<RangeValueSpinner>("SmallChangeNumberBox");
+                smallChangeNumBox.SetValue(5);
                 Wait.ForIdle();
 
                 Log.Comment("Verify that up button increases value by 5");
                 upButton.InvokeAndWait();
                 Verify.AreEqual(5, numBox.Value);
+
+                Log.Comment("Change LargeChange value to 50");
+                RangeValueSpinner largeChangeNumBox = FindElement.ByName<RangeValueSpinner>("LargeChangeNumberBox");
+                largeChangeNumBox.SetValue(50);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that up button increases value by 50");
+                upButton.InvokeAndWait();
+                Verify.AreEqual(55, numBox.Value);
 
                 Check("MinCheckBox");
                 Check("MaxCheckBox");

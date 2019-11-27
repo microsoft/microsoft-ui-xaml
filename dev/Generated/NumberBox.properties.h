@@ -24,6 +24,9 @@ public:
     void IsWrapEnabled(bool value);
     bool IsWrapEnabled();
 
+    void LargeChange(double value);
+    double LargeChange();
+
     void Maximum(double value);
     double Maximum();
 
@@ -45,11 +48,11 @@ public:
     void SelectionHighlightColor(winrt::SolidColorBrush const& value);
     winrt::SolidColorBrush SelectionHighlightColor();
 
+    void SmallChange(double value);
+    double SmallChange();
+
     void SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value);
     winrt::NumberBoxSpinButtonPlacementMode SpinButtonPlacementMode();
-
-    void StepFrequency(double value);
-    double StepFrequency();
 
     void Text(winrt::hstring const& value);
     winrt::hstring Text();
@@ -68,6 +71,7 @@ public:
     static winrt::DependencyProperty HeaderProperty() { return s_HeaderProperty; }
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IsWrapEnabledProperty() { return s_IsWrapEnabledProperty; }
+    static winrt::DependencyProperty LargeChangeProperty() { return s_LargeChangeProperty; }
     static winrt::DependencyProperty MaximumProperty() { return s_MaximumProperty; }
     static winrt::DependencyProperty MinimumProperty() { return s_MinimumProperty; }
     static winrt::DependencyProperty NumberFormatterProperty() { return s_NumberFormatterProperty; }
@@ -75,8 +79,8 @@ public:
     static winrt::DependencyProperty PreventKeyboardDisplayOnProgrammaticFocusProperty() { return s_PreventKeyboardDisplayOnProgrammaticFocusProperty; }
     static winrt::DependencyProperty SelectionFlyoutProperty() { return s_SelectionFlyoutProperty; }
     static winrt::DependencyProperty SelectionHighlightColorProperty() { return s_SelectionHighlightColorProperty; }
+    static winrt::DependencyProperty SmallChangeProperty() { return s_SmallChangeProperty; }
     static winrt::DependencyProperty SpinButtonPlacementModeProperty() { return s_SpinButtonPlacementModeProperty; }
-    static winrt::DependencyProperty StepFrequencyProperty() { return s_StepFrequencyProperty; }
     static winrt::DependencyProperty TextProperty() { return s_TextProperty; }
     static winrt::DependencyProperty TextReadingOrderProperty() { return s_TextReadingOrderProperty; }
     static winrt::DependencyProperty ValidationModeProperty() { return s_ValidationModeProperty; }
@@ -87,6 +91,7 @@ public:
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IsWrapEnabledProperty;
+    static GlobalDependencyProperty s_LargeChangeProperty;
     static GlobalDependencyProperty s_MaximumProperty;
     static GlobalDependencyProperty s_MinimumProperty;
     static GlobalDependencyProperty s_NumberFormatterProperty;
@@ -94,8 +99,8 @@ public:
     static GlobalDependencyProperty s_PreventKeyboardDisplayOnProgrammaticFocusProperty;
     static GlobalDependencyProperty s_SelectionFlyoutProperty;
     static GlobalDependencyProperty s_SelectionHighlightColorProperty;
+    static GlobalDependencyProperty s_SmallChangeProperty;
     static GlobalDependencyProperty s_SpinButtonPlacementModeProperty;
-    static GlobalDependencyProperty s_StepFrequencyProperty;
     static GlobalDependencyProperty s_TextProperty;
     static GlobalDependencyProperty s_TextReadingOrderProperty;
     static GlobalDependencyProperty s_ValidationModeProperty;
@@ -125,11 +130,11 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnSpinButtonPlacementModePropertyChanged(
+    static void OnSmallChangePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnStepFrequencyPropertyChanged(
+    static void OnSpinButtonPlacementModePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
