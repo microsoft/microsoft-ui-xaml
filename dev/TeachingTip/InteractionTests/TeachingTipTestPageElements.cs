@@ -382,6 +382,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private Button effectiveRemoveOpenButton;
 
+        public Button GetOpenTeachingTipOnEdgeButton()
+        {
+            return GetElement(ref effectiveOpenTeachingTipOnEdgeButton, "TargetButtonRightEdge");
+        }
+        private Button effectiveOpenTeachingTipOnEdgeButton;
+
+        public Button GetTeachingTipOnEdgeOffsetButton()
+        {
+            return GetElement(ref effectiveTeachingTipOnEdgeOffsetButton, "GetEdgeTeachingTipOffset");
+        }
+        private Button effectiveTeachingTipOnEdgeOffsetButton;
+
+        public TextBlock GetTeachingTipOnEdgeOffsetTextblock()
+        {
+            return GetElement(ref effectiveTeachingTipOnEdgeOffsetTextblock, "EdgeTeachingTipOffset");
+        }
+        private TextBlock effectiveTeachingTipOnEdgeOffsetTextblock;
+
+        public double GetTeachingTipOnEdgeHorizontalOffset()
+        {
+            return double.Parse(GetTeachingTipOnEdgeOffsetTextblock().GetText().Split(";")[0]);
+        }
+        public double GetTeachingTipOnEdgeVerticalOffset()
+        {
+            return double.Parse(GetTeachingTipOnEdgeOffsetTextblock().GetText().Split(";")[1]);
+        }
+
         private T GetElement<T>(ref T element, string elementName) where T : UIObject
         {
             if (element == null)
