@@ -16,9 +16,12 @@
 #include "NavigationViewSelectionChangedEventArgs.h"
 #include "NavigationViewItemInvokedEventArgs.h"
 #include "RuntimeProfiler.h"
-#include "NavigationViewList.h"
 #include "Utils.h"
 #include "TraceLogging.h"
+#include "NavigationViewItemRevokers.h"
+#include "IndexPath.h"
+#include "InspectingDataSource.h"
+#include "NavigationViewAutomationPeer.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -70,13 +73,6 @@ static constexpr int c_toggleButtonHeightWhenShouldPreserveNavigationViewRS3Beha
 static constexpr int c_backButtonRowDefinition = 1;
 static constexpr float c_paneElevationTranslationZ = 32;
 
-// A tricky to help to stop layout cycle. As we know, we may have this:
-// 1 .. first time invalid measure, normal case because of virtualization
-// 2 .. data update before next invalid measure
-// 3 .. possible layout cycle. a buffer
-// so 4 is selected for threshold.
-constexpr int s_measureOnInitStep2CountThreshold{ 4 };
-
 constexpr int s_itemNotFound{ -1 };
 
 static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity() };
@@ -84,6 +80,12 @@ static winrt::Size c_infSize{ std::numeric_limits<float>::infinity(), std::numer
 NavigationView::~NavigationView()
 {
     UnhookEventsAndClearFields(true);
+}
+
+// IUIElement / IUIElementOverridesHelper
+winrt::AutomationPeer NavigationView::OnCreateAutomationPeer()
+{
+    return winrt::make<NavigationViewAutomationPeer>(*this);
 }
 
 void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
@@ -96,24 +98,6 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_settingsItemKeyDownRevoker.revoke();
     m_settingsItemKeyUpRevoker.revoke();
     m_settingsItem.set(nullptr);
-
-    m_leftNavListViewSelectionChangedRevoker.revoke();
-    m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();       
-    m_leftNavListView.set(nullptr);
-
-    m_leftNavListViewSelectionChangedRevoker.revoke();
-    m_leftNavListViewItemClickRevoker.revoke();
-    m_leftNavListViewLoadedRevoker.revoke();      
-    m_leftNavListView.set(nullptr);
-
-    m_topNavListViewSelectionChangedRevoker.revoke();
-    m_topNavListViewItemClickRevoker.revoke();
-    m_topNavListViewLoadedRevoker.revoke();
-    m_topNavListView.set(nullptr);
-
-    m_topNavListOverflowViewSelectionChangedRevoker.revoke();
-    m_topNavListOverflowView.set(nullptr);
 
     m_paneSearchButtonClickRevoker.revoke();
     m_paneSearchButton.set(nullptr);
@@ -130,6 +114,20 @@ void NavigationView::UnhookEventsAndClearFields(bool isFromDestructor)
     m_paneHeaderCloseButtonColumn.set(nullptr);
     m_paneHeaderToggleButtonColumn.set(nullptr);
     m_paneHeaderContentBorderRow.set(nullptr);
+
+    m_leftNavItemsRepeaterElementPreparedRevoker.revoke();
+    m_leftNavItemsRepeaterElementClearingRevoker.revoke();
+    m_leftNavRepeaterLoadedRevoker.revoke();
+    m_leftNavRepeater.set(nullptr);
+
+    m_topNavItemsRepeaterElementPreparedRevoker.revoke();
+    m_topNavItemsRepeaterElementClearingRevoker.revoke();
+    m_topNavRepeaterLoadedRevoker.revoke();
+    m_topNavRepeater.set(nullptr);
+
+    m_topNavOverflowItemsRepeaterElementPreparedRevoker.revoke();
+    m_topNavOverflowItemsRepeaterElementClearingRevoker.revoke();
+    m_topNavRepeaterOverflowView.set(nullptr);
 }
 
 NavigationView::NavigationView()
@@ -154,6 +152,58 @@ NavigationView::NavigationView()
 
     Unloaded({ this, &NavigationView::OnUnloaded });
     Loaded({ this, &NavigationView::OnLoaded });
+
+    m_selectionModel.SingleSelect(true);
+    m_selectionChangedEventToken = m_selectionModel.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionModelSelectionChanged });
+
+    m_navigationViewItemsFactory = winrt::make_self<NavigationViewItemsFactory>();
+}
+
+void NavigationView::OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e)
+{
+    auto selectedItem = selectionModel.SelectedItem();
+    auto selectedIndex = selectionModel.SelectedIndex();
+
+    // Ignore this callback if the SelectedItem property of NavigationView is already set to the item
+    // being passed in this callback. This is because the item has already been selected
+    // via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
+    // TODO: Update SelectedItem comparison to work for the exact same item datasource scenario
+    if (m_shouldIgnoreNextSelectionChange ||
+        selectedItem == SelectedItem())
+    {
+        return;
+    }
+
+    if (IsTopNavigationView())
+    {
+        // If selectedIndex does not exist, means item is being deselected through API
+        auto isInOverflow = selectedIndex ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
+        if (isInOverflow)
+        {
+            // SelectOverflowItem is moving data in/out of overflow.
+            auto scopeGuard = gsl::finally([this]()
+                {
+                    m_selectionChangeFromOverflowMenu = false;
+                });
+            m_selectionChangeFromOverflowMenu = true;
+
+            CloseTopNavigationViewFlyout();
+
+            if (!IsSelectionSuppressed(selectedItem))
+            {
+                SelectOverflowItem(selectedItem);
+            }
+        }
+        else
+        {
+            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+        }
+    }
+    else
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+    }
+
 }
 
 void NavigationView::OnApplyTemplate()
@@ -215,45 +265,43 @@ void NavigationView::OnApplyTemplate()
 
     m_topNavGrid.set(GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected));
 
+    UpdateNavigationViewItemsFactory();
+
     // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
-    if (auto leftNavListView = GetTemplateChildT<winrt::ListView>(c_menuItemsHost, controlProtected))
+    if (auto leftNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_menuItemsHost, controlProtected))
     {
-        m_leftNavListView.set(leftNavListView);
+        m_leftNavRepeater.set(leftNavRepeater);
 
-        m_leftNavListViewLoadedRevoker = leftNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+        m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
+        m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
+ 
+        m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
-        m_leftNavListViewSelectionChangedRevoker = leftNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
-        m_leftNavListViewItemClickRevoker = leftNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
-
-        SetNavigationViewListPosition(leftNavListView, NavigationViewListPosition::LeftNav);
-
-        // Since RS5, SingleSelectionFollowsFocus is set by XAML other than by code
-        if (SharedHelpers::IsRS1OrHigher() && ShouldPreserveNavigationViewRS4Behavior())
-        {
-            leftNavListView.SingleSelectionFollowsFocus(false);
-        }
+        leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
-    if (auto topNavListView = GetTemplateChildT<winrt::ListView>(c_topNavMenuItemsHost, controlProtected))
+    if (auto topNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsHost, controlProtected))
     {
-        m_topNavListView.set(topNavListView);
+        m_topNavRepeater.set(topNavRepeater);
 
-        m_topNavListViewLoadedRevoker = topNavListView.Loaded(winrt::auto_revoke, { this, &NavigationView::OnListViewLoaded });
+        m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
+        m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
 
-        m_topNavListViewSelectionChangedRevoker = topNavListView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnSelectionChanged });
-        m_topNavListViewItemClickRevoker = topNavListView.ItemClick(winrt::auto_revoke, { this, &NavigationView::OnItemClick });
+        m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
-        SetNavigationViewListPosition(topNavListView, NavigationViewListPosition::TopPrimary);
+        topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
-    if (auto topNavListOverflowView = GetTemplateChildT<winrt::ListView>(c_topNavMenuItemsOverflowHost, controlProtected))
+    if (auto topNavListOverflowRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsOverflowHost, controlProtected))
     {
-        m_topNavListOverflowView.set(topNavListOverflowView);
-        m_topNavListOverflowViewSelectionChangedRevoker = topNavListOverflowView.SelectionChanged(winrt::auto_revoke, { this, &NavigationView::OnOverflowItemSelectionChanged });
+        m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
 
-        SetNavigationViewListPosition(topNavListOverflowView, NavigationViewListPosition::TopOverflow);
+        m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
+        m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
+
+        topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
 
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
@@ -379,10 +427,354 @@ void NavigationView::OnApplyTemplate()
     UpdateBackAndCloseButtonsVisibility();
     UpdateSingleSelectionFollowsFocusTemplateSetting();
     UpdateNavigationViewUseSystemVisual();
-    PropagateNavigationViewAsParent();
     UpdatePaneVisibility();
     UpdateVisualState();
     UpdatePaneTitleMargins();
+    SyncItemTemplates();
+}
+
+void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
+{
+    auto dataSource = MenuItemsSource();
+    if (!dataSource)
+    {
+        dataSource = MenuItems();
+        UpdateSelectionForMenuItems();
+    }
+
+    // Selection Model has same representation of data regardless
+    // of pane mode, so only update if the ItemsSource data itself
+    // has changed.
+    if (forceSelectionModelUpdate){
+        m_selectionModel.Source(dataSource);
+    }
+
+    if (IsTopNavigationView())
+    {
+        UpdateLeftRepeaterItemSource(nullptr);
+        UpdateTopNavRepeatersItemSource(dataSource);
+    }
+    else
+    {
+        UpdateTopNavRepeatersItemSource(nullptr);
+        UpdateLeftRepeaterItemSource(dataSource);
+    }
+
+    if (IsTopNavigationView())
+    {
+        InvalidateTopNavPrimaryLayout();
+        UpdateSelectedItem();
+    }
+}
+
+void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& items)
+{
+    UpdateItemsRepeaterItemsSource(m_leftNavRepeater.get(), items);
+}
+
+void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items)
+{
+    // Unhook TopNav repeater
+    UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+    UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+
+    // Change data source and setup vectors
+    m_topDataProvider.SetDataSource(items);
+
+    // rebinding
+    if (items)
+    {
+        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), m_topDataProvider.GetPrimaryItems());
+        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), m_topDataProvider.GetOverflowItems());
+    }
+    else
+    {
+        UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
+        UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
+    }
+}
+
+void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& ir,
+    const winrt::IInspectable& itemsSource)
+{
+    if (ir)
+    {
+        auto oldItemsSource = ir.ItemsSource();
+        if (oldItemsSource != itemsSource)
+        {
+            ir.ItemsSource(itemsSource);
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
+{
+    auto nvib = sender.try_as<winrt::NavigationViewItemBase>();
+    if (nvib)
+    {
+        // Check whether the container that triggered this call back is the selected container
+        bool newItemIsSelectedItem = IsContainerTheSelectedItemInTheSelectionModel(nvib);
+        bool newIsSelected = nvib.IsSelected();
+
+        if (newIsSelected && !newItemIsSelectedItem)
+        {
+            winrt::IndexPath ip = GetIndexPathForContainer(nvib);
+            m_selectionModel.SelectAt(ip);
+        }
+        else if (!newIsSelected && newItemIsSelectedItem)
+        {
+            auto indexPath = GetIndexPathForContainer(nvib);
+            auto indexPathFromModel = m_selectionModel.SelectedIndex();
+
+            if (indexPath && indexPathFromModel && indexPath.GetAt(0) == indexPathFromModel.GetAt(0))
+            {
+                m_selectionModel.DeselectAt(indexPath);
+            }
+        }
+    }
+}
+
+void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi)
+{
+    winrt::IInspectable nextItem = nullptr;
+    auto prevItem = SelectedItem();
+    auto parentIR = GetParentItemsRepeaterForContainer(nvi);
+
+    bool isInOverflow = parentIR.Name() == c_overflowRepeater;
+    bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
+
+    auto itemIndex = parentIR.GetElementIndex(nvi);
+    auto itemsSourceView = parentIR.ItemsSourceView();
+    if (itemsSourceView)
+    {
+        auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
+        nextItem = inspectingDataSource->GetAt(itemIndex);
+    }
+
+    // Other transition other than default only apply to topnav
+    // when clicking overflow on topnav, transition is from bottom
+    // otherwise if prevItem is on left side of nextActualItem, transition is from left
+    //           if prevItem is on right side of nextActualItem, transition is from right
+    // click on Settings item is considered Default
+    NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
+    if (IsTopNavigationView() && itemSelectsOnInvoked)
+    {
+        if (isInOverflow)
+        {
+            recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+        }
+        else if (prevItem && nvi)
+        {
+            recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem), nvi);
+        }
+    }
+
+    RaiseItemInvoked(nextItem, false /*isSettings*/, nvi, recommendedDirection);
+}
+
+void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi)
+{
+    auto selectedItem = SelectedItem();
+    RaiseItemInvokedForNavigationViewItem(nvi);
+    auto selectedItemAfterInvokeCallback = SelectedItem();
+
+    // User changed selectionstate in the ItemInvoked callback
+    if (selectedItem != selectedItemAfterInvokeCallback)
+    {
+        return;
+    }
+
+    bool itemSelectsOnInvoked = nvi.SelectsOnInvoked();
+    if (m_selectionModel && itemSelectsOnInvoked)
+    {
+        winrt::IndexPath ip = GetIndexPathForContainer(nvi);
+        m_selectionModel.SelectAt(ip);
+    }
+
+    ClosePaneIfNeccessaryAfterItemIsClicked();
+}
+
+bool NavigationView::IsRootItemsRepeater(winrt::hstring name)
+{
+    return (name == c_topNavRepeater ||
+        name == c_leftRepeater ||
+        name == c_overflowRepeater);
+}
+
+winrt::FrameworkElement NavigationView::GetParentForFrameworkElement(winrt::FrameworkElement fe)
+{
+    auto parent = fe.Parent().try_as<winrt::FrameworkElement>();
+    if (!parent)
+    {
+        parent = (winrt::VisualTreeHelper::GetParent(fe)).try_as<winrt::FrameworkElement>();
+    }
+    return parent;
+}
+
+winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib)
+{
+    auto child = nvib.try_as<winrt::FrameworkElement>();
+    auto parent = GetParentForFrameworkElement(child);
+
+    if (parent != nullptr)
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            return parentIR;
+        }
+    }
+    return nullptr;
+}
+
+winrt::IndexPath NavigationView::GetIndexPathForContainer(winrt::NavigationViewItemBase nvib)
+{
+    auto path = std::vector<int>();
+
+    auto child = (nvib).try_as<winrt::FrameworkElement>();
+    auto parent = GetParentForFrameworkElement(child);
+    if (parent == nullptr)
+    {
+        return IndexPath::CreateFromIndices(path);
+    }
+
+    while (!(parent.try_as<winrt::ItemsRepeater>()) || !IsRootItemsRepeater((parent.try_as<winrt::ItemsRepeater>()).Name()))
+    {
+        if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+        {
+            path.insert(path.begin(), parentIR.GetElementIndex(child));
+        }
+
+        child = parent;
+        auto name = parent.Name();
+        parent = GetParentForFrameworkElement(parent);
+    }
+
+    if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
+    {
+        path.insert(path.begin(), parentIR.GetElementIndex(child));
+    }
+
+    auto rootRepeaterName = (parent.try_as<winrt::ItemsRepeater>()).Name();
+
+    // If item is in one of the disconnected ItemRepeaters, account for that in IndexPath calculations
+    if (rootRepeaterName == c_overflowRepeater)
+    {
+        // Convert index of selected item in overflow to index in datasource
+        auto containerIndex = m_topNavRepeaterOverflowView.get().GetElementIndex(child);
+        auto item = m_topDataProvider.GetOverflowItems().GetAt(containerIndex);
+        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        path.erase(path.begin());
+        path.insert(path.begin(), indexAtRoot);
+    }
+    else if (rootRepeaterName == c_topNavRepeater)
+    {
+        // Convert index of selected item in overflow to index in datasource
+        auto containerIndex = m_topNavRepeater.get().GetElementIndex(child);
+        auto item = m_topDataProvider.GetPrimaryItems().GetAt(containerIndex);
+        auto indexAtRoot = m_topDataProvider.IndexOf(item);
+        path.erase(path.begin());
+        path.insert(path.begin(), indexAtRoot);
+    }
+
+    return IndexPath::CreateFromIndices(path);
+}
+
+
+void NavigationView::RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args)
+{
+    // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
+    // Certain items are disallowed in a NavigationView's items list. Check for them.
+    if (args.Element().try_as<winrt::Windows::UI::Xaml::Controls::NavigationViewItemBase>())
+    {
+        throw winrt::hresult_invalid_argument(L"MenuItems contains a Windows.UI.Xaml.Controls.NavigationViewItem. This control requires that the NavigationViewItems be of type Microsoft.UI.Xaml.Controls.NavigationViewItem.");
+    }
+
+    if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
+    {
+      
+        auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        nvibImpl->SetNavigationViewParent(*this);
+
+        // Visual state info propagation
+        if (IsTopNavigationView())
+        {
+            if (ir == m_topNavRepeater.get())
+            {
+                nvibImpl->Position(NavigationViewListPosition::TopPrimary);
+
+            }
+            else
+            {
+                nvibImpl->Position(NavigationViewListPosition::TopOverflow);
+            }
+        }
+        else
+        {
+            nvibImpl->Position(NavigationViewListPosition::LeftNav);
+        }
+
+        // Apply any custom container styling
+        ApplyCustomMenuItemContainerStyling(nvib, ir, args.Index());
+
+        if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
+        {
+            auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+            nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+            nviImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
+
+            // Register for item events
+            auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
+            nviRevokers->tappedRevoker = nvi.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+            nviRevokers->keyDownRevoker = nvi.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+            nviRevokers->keyUpRevoker = nvi.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
+            nviRevokers->gotFocusRevoker = nvi.GotFocus(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemOnGotFocus });
+            nviRevokers->isSelectedRevoker = RegisterPropertyChanged(nvi, winrt::SelectorItem::IsSelectedProperty(), { this, &NavigationView::OnNavigationViewItemIsSelectedPropertyChanged });
+            nvi.SetValue(GetNavigationViewItemRevokersProperty(), nviRevokers.as<winrt::IInspectable>());
+        }
+    }
+}
+
+void NavigationView::ApplyCustomMenuItemContainerStyling(winrt::NavigationViewItemBase nvib, winrt::ItemsRepeater ir, int index)
+{
+    if (auto menuItemContainerStyle = MenuItemContainerStyle())
+    {
+        nvib.Style(menuItemContainerStyle);
+    }
+    else if (auto menuItemContainerStyleSelector = MenuItemContainerStyleSelector())
+    {
+        auto itemsSourceView = ir.ItemsSourceView();
+        auto item = itemsSourceView.GetAt(index);
+        auto selectedStyle = menuItemContainerStyleSelector.SelectStyle(item, nvib);
+        if (selectedStyle)
+        {
+            nvib.Style(selectedStyle);
+        }
+    }
+}
+
+void NavigationView::RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args)
+{
+    if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
+    {
+        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+        nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
+        // Revoke all the events that we were listing to on the item
+        nvi.SetValue(GetNavigationViewItemRevokersProperty(), nullptr);
+    }
+
+    // We want to unlink the containers from the parent repeater
+    // in case we are required to move it to a different repeater.
+    auto panel = ir.try_as<winrt::Panel>();
+    if (panel)
+    {
+        auto children = panel.Children();
+        unsigned int childIndex = 0;
+        bool found = children.IndexOf(args.Element(), childIndex);
+        if (found)
+        {
+            children.RemoveAt(childIndex);
+        }
+    }
 }
 
 // Hook up the Settings Item Invoked event listener
@@ -406,9 +798,9 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         m_settingsItemKeyUpRevoker.revoke();
 
         m_settingsItem.set(settingsItem);
-        m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnSettingsTapped });
-        m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyDown });
-        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnSettingsKeyUp });
+        m_settingsItemTappedRevoker = settingsItem.Tapped(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemTapped });
+        m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
+        m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
         // Do localization for settings item label and Automation Name
         auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
@@ -444,48 +836,29 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
 //   -> Another MeasureOverride(register LayoutUpdated) -> LayoutUpdated(unregister LayoutUpdated) -> Done
 winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
 {
-    if (!ShouldIgnoreMeasureOverride())
+    if (IsTopNavigationView() && IsTopPrimaryListVisible())
     {
-        auto scopeGuard = gsl::finally([this]()
+        if (availableSize.Width == std::numeric_limits<float>::infinity())
         {
-            m_shouldIgnoreOverflowItemSelectionChange = false;
-            m_shouldIgnoreNextSelectionChange = false;
-        });
-        m_shouldIgnoreOverflowItemSelectionChange = true;
-        m_shouldIgnoreNextSelectionChange = true;
-
-        if (IsTopNavigationView() && IsTopPrimaryListVisible())
-        {
-            if (availableSize.Width == std::numeric_limits<float>::infinity())
-            {
-                // We have infinite space, so move all items to primary list
-                m_topDataProvider.MoveAllItemsToPrimaryList();
-            }
-            else
-            {
-                HandleTopNavigationMeasureOverride(availableSize);
-
-                if (m_topNavigationMode != TopNavigationViewLayoutState::Normal && m_topNavigationMode != TopNavigationViewLayoutState::Overflow)
-                {
-                    RequestInvalidateMeasureOnNextLayoutUpdate();
-                }
-#ifdef DEBUG
-                if (m_topDataProvider.Size() > 0)
-                {
-                    // We should always have at least one item in primary.
-                    MUX_ASSERT(m_topDataProvider.GetPrimaryItems().Size() > 0);
-                }
-#endif // DEBUG
-            }
+            // We have infinite space, so move all items to primary list
+            m_topDataProvider.MoveAllItemsToPrimaryList();
         }
+        else
+        {
+            HandleTopNavigationMeasureOverride(availableSize);
+#ifdef DEBUG
+            if (m_topDataProvider.Size() > 0)
+            {
+                // We should always have at least one item in primary.
+                MUX_ASSERT(m_topDataProvider.GetPrimaryItems().Size() > 0);
+            }
+#endif // DEBUG
+        }
+    }
 
-        m_layoutUpdatedToken.revoke();
-        m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
-    }
-    else
-    {
-        RequestInvalidateMeasureOnNextLayoutUpdate();
-    }
+    m_layoutUpdatedToken.revoke();
+    m_layoutUpdatedToken = LayoutUpdated(winrt::auto_revoke, { this, &NavigationView::OnLayoutUpdated });
+
     return __super::MeasureOverride(availableSize);
 }
 
@@ -501,28 +874,15 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     }
     else
     {
-        // For some unknown reason, ListView may not always selected a item on the first time when we update the datasource.
-        // If it's not selected, we re-selected it.
-        auto selectedItem = SelectedItem();
-        if (selectedItem)
-        {
-            auto container = NavigationViewItemOrSettingsContentFromData(selectedItem);
-            if (container && !container.IsSelected() && container.SelectsOnInvoked())
-            {
-                container.IsSelected(true);
-
-            }
-        }
-
         // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
         // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
         if (auto lastSelectedItemInTopNav = m_lastSelectedItemPendingAnimationInTopNav.get())
         {
-            AnimateSelectionChanged(lastSelectedItemInTopNav, selectedItem);
+            AnimateSelectionChanged(lastSelectedItemInTopNav, SelectedItem());
         }
         else
         {
-            AnimateSelectionChanged(nullptr, selectedItem);
+            AnimateSelectionChanged(nullptr, SelectedItem());
         }
     }
 }
@@ -722,7 +1082,7 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            if (auto paneList = m_leftNavListView)
+            if (auto paneList = m_leftNavRepeater)
             {
                 if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline)
                 {
@@ -742,7 +1102,7 @@ void NavigationView::OnSplitViewPaneOpened(const winrt::DependencyObject& /*send
 
 void NavigationView::OnSplitViewPaneOpening(const winrt::DependencyObject& /*sender*/, const winrt::IInspectable& obj)
 {
-    if (m_leftNavListView)
+    if (m_leftNavRepeater)
     {
         // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
         winrt::VisualStateManager::GoToState(*this, L"ListSizeFull", true /*useTransitions*/);
@@ -942,51 +1302,6 @@ std::function<void ()> NavigationView::SetPaneTitleFrameworkElementParent(const 
         }
     }
     return nullptr;
-}
-
-void NavigationView::OnSettingsTapped(const winrt::IInspectable& /*sender*/, const winrt::TappedRoutedEventArgs& /*args*/)
-{
-    OnSettingsInvoked();
-}
-
-void NavigationView::OnSettingsKeyDown(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    auto key = args.Key();
-
-    // Because ListViewItem eats the events, we only get these keys on KeyDown.
-    if (key == winrt::VirtualKey::Space ||
-        key == winrt::VirtualKey::Enter)
-    {
-        args.Handled(true);
-        OnSettingsInvoked();
-    }
-}
-
-void NavigationView::OnSettingsKeyUp(const winrt::IInspectable& /*sender*/, const winrt::KeyRoutedEventArgs& args)
-{
-    if (!args.Handled())
-    {
-        // Because ListViewItem eats the events, we only get these keys on KeyUp.
-        if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-        {
-            args.Handled(true);
-            OnSettingsInvoked();
-        }
-    }
-}
-
-void NavigationView::OnSettingsInvoked()
-{
-    auto prevItem = SelectedItem();
-    auto settingsItem = m_settingsItem.get();
-    if (IsSettingsItem(prevItem))
-    {
-        RaiseItemInvoked(settingsItem, true /*isSettings*/);
-    }
-    else if (settingsItem)
-    {
-        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(settingsItem);
-    }
 }
 
 winrt::float2 c_frame1point1 = winrt::float2(0.9f, 0.1f);
@@ -1236,92 +1551,6 @@ winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectabl
     return nullptr;
 }
 
-//SFF = SelectionFollowsFocus 
-//SOI = SelectsOnInvoked
-//
-//                  !SFF&SOI     SFF&SOI     !SFF&&!SOI     SFF&&!SOI
-//ItemInvoke        FIRE         FIRE        FIRE         FIRE
-//SelectionChanged  FIRE         FIRE        DO NOT FIRE  DO NOT FIRE
-
-//If OnItemClick
-//  If SelectsOnInvoked and previous item == new item, raise OnItemInvoked(same item would not have select change event)
-//  else let SelectionChanged to raise OnItemInvoked event
-//If SelectionChanged, it changes SelectedItem -> OnPropertyChange -> ChangeSelection. On ChangeSelection:
-//  If !SelectsOnInvoked for new item. Undo the selection.
-//  If SelectsOnInvoked, raise OnItemInvoked(if not from API), then raise SelectionChanged.
-void NavigationView::OnSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
-{
-    if (!m_shouldIgnoreNextSelectionChange)
-    {
-        winrt::IInspectable prevItem{ nullptr };
-        winrt::IInspectable nextItem{ nullptr };
-
-        if (args.RemovedItems().Size() > 0)
-        {
-            prevItem = args.RemovedItems().GetAt(0);
-        }
-
-        if (args.AddedItems().Size() > 0)
-        {
-            nextItem = args.AddedItems().GetAt(0);
-        }
-
-        if (prevItem && !nextItem && !IsSettingsItem(prevItem)) // try to unselect an item but it's not allowed
-        {
-            // Aways keep one item is selected except Settings
-
-            // So you're wondering - wait if the menu was previously selected, how can
-            // the removed item not be a NavigationViewItem? Well, if you say clear a
-            // NavigationView of MenuItems() and replace it with MenuItemsSource() full
-            // of strings, you may end up in this state which necessitates the following
-            // check:
-            if (auto itemAsNVI = prevItem.try_as<winrt::NavigationViewItem>())
-            {
-                itemAsNVI.IsSelected(true);
-            }
-        }
-        else
-        {
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nextItem);
-        }
-    }
-}
-
-void NavigationView::OnOverflowItemSelectionChanged(const winrt::IInspectable& /*sender*/, const winrt::SelectionChangedEventArgs& args)
-{   
-    // SelectOverflowItem is moving data in/out of overflow. it caused another round of OnOverflowItemSelectionChanged
-    // also in MeasureOverride, it may raise OnOverflowItemSelectionChanged.
-    // Ignore it if it's m_isHandleOverflowItemClick or m_isMeasureOverriding;
-    if (!m_shouldIgnoreNextMeasureOverride && !m_shouldIgnoreOverflowItemSelectionChange)
-    {
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_shouldIgnoreNextMeasureOverride = false;
-            m_selectionChangeFromOverflowMenu = false;
-        });
-        m_shouldIgnoreNextMeasureOverride = true;
-        m_selectionChangeFromOverflowMenu = true;
-
-        if (args.AddedItems().Size() > 0)
-        {
-            auto nextItem = args.AddedItems().GetAt(0);
-            if (nextItem)
-            {
-                CloseTopNavigationViewFlyout();
-
-                if (!IsSelectionSuppressed(nextItem))
-                {
-                    SelectOverflowItem(nextItem);
-                }
-                else
-                {
-                    RaiseItemInvoked(nextItem, false /*isSettings*/);
-                }
-            }           
-        }
-    }
-}
-
 void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, bool isSettingsItem, NavigationRecommendedTransitionDirection recommendedDirection)
 {
     auto eventArgs = winrt::make_self<NavigationViewSelectionChangedEventArgs>();
@@ -1339,103 +1568,52 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 // If nextItem is selectionsuppressed, we should undo the selection. We didn't undo it OnSelectionChange because we want change by API has the same undo logic.
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
-    auto nextActualItem = nextItem;
-    if (!m_shouldIgnoreNextSelectionChange)
+    bool isSettingsItem = IsSettingsItem(nextItem);
+    bool isSelectionSuppressed = IsSelectionSuppressed(nextItem);
+
+    if (isSelectionSuppressed)
     {
-        auto scopeGuard = gsl::finally([this]()
-        {
-            m_shouldIgnoreNextSelectionChange = false;
-        });
-        m_shouldIgnoreNextSelectionChange = true;
+        UndoSelectionAndRevertSelectionTo(prevItem, nextItem);
 
-        bool isSettingsItem = IsSettingsItem(nextActualItem);
-
-        bool isSelectionSuppressed = IsSelectionSuppressed(nextActualItem);
-        if (isSelectionSuppressed)
-        {
-            UndoSelectionAndRevertSelectionTo(prevItem, nextActualItem);
-
-            // Undo only happened when customer clicked a selectionsuppressed item. 
-            // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
-            RaiseItemInvoked(nextActualItem, isSettingsItem);
-        }
-        else
-        {
-            // Other transition other than default only apply to topnav
-            // when clicking overflow on topnav, transition is from bottom
-            // otherwise if prevItem is on left side of nextActualItem, transition is from left
-            //           if prevItem is on right side of nextActualItem, transition is from right
-            // click on Settings item is considered Default
-            NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-            if (IsTopNavigationView())
-            {
-                if (m_selectionChangeFromOverflowMenu)
-                {
-                    recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
-                }
-                else if (!isSettingsItem && prevItem && nextActualItem)
-                {
-                    recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
-                        NavigationViewItemBaseOrSettingsContentFromData(nextActualItem));
-                }
-            }
-
-            // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
-            // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
-            // And SelectionChanged is after we selected the new item.
-            {
-                if (m_shouldRaiseInvokeItemInSelectionChange)
-                {
-                    RaiseItemInvoked(nextActualItem, isSettingsItem, nullptr/*container*/, recommendedDirection);
-
-                    // In current implementation, when customer clicked a NavigationViewItem, ListView raised ItemInvoke, and we ignored it
-                    // then ListView raised SelectionChange event. And NavigationView listen to this event and raise ItemInvoked, and then SelectionChanged.
-                    // This caused a problem that if customer changed SelectedItem in ItemInvoked, ListView.SelectionChanged event doesn't know about it.
-                    // So need to see make nextActualItem the same as SelectedItem.
-                    auto selectedItem = SelectedItem();
-                    if (nextActualItem != selectedItem)
-                    {
-                        const auto& invokedItem = nextActualItem;
-                        nextActualItem = selectedItem;
-                        isSettingsItem = IsSettingsItem(nextActualItem);
-                        recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-
-                        // Customer set SelectedItem to null in ItemInvoked event, so we unselect the old selectedItem.
-                        if (invokedItem && !nextActualItem)
-                        {
-                            UnselectPrevItem(invokedItem, nextActualItem);
-                        }
-                    }
-                }
-                UnselectPrevItem(prevItem, nextActualItem);
-
-                ChangeSelectStatusForItem(nextActualItem, true /*selected*/);
-                RaiseSelectionChangedEvent(nextActualItem, isSettingsItem, recommendedDirection);
-            }
-
-            AnimateSelectionChanged(prevItem, nextActualItem);
-
-            ClosePaneIfNeccessaryAfterItemIsClicked();
-        }
+        // Undo only happened when customer clicked a selectionsuppressed item. 
+        // To simplify the logic, OnItemClick didn't raise the event and it's been delayed to here.
+        RaiseItemInvoked(nextItem, isSettingsItem);
     }
-}
-
-void NavigationView::OnItemClick(const winrt::IInspectable& /*sender*/, const winrt::ItemClickEventArgs& args)
-{
-    auto clickedItem = args.ClickedItem();
-
-    auto itemContainer = GetContainerForClickedItem(clickedItem);
-
-    auto selectedItem = SelectedItem();
-    // If SelectsOnInvoked and previous item(selected item) == new item(clicked item), raise OnItemClicked (same item would not have selectchange event)
-    // Others would be invoked by SelectionChanged. Please see ChangeSelection for more details.
-    //
-    // args.ClickedItem itself is the content of ListViewItem, so it can't be compared directly with SelectedItem or do IsSelectionSuppressed
-    // We workaround this by compare the selectedItem.content with clickeditem by DoesSelectedItemContainContent.
-    // If selecteditem.content == item, selecteditem is used to deduce the selectionsuppressed flag
-    if (!m_shouldIgnoreNextSelectionChange && DoesSelectedItemContainContent(clickedItem, itemContainer) && !IsSelectionSuppressed(selectedItem))
+    else
     {
-        RaiseItemInvoked(selectedItem, false /*isSettings*/, itemContainer);
+        // Need to raise ItemInvoked for when the settings item gets invoked
+        if (isSettingsItem)
+        {
+            RaiseItemInvoked(nextItem, isSettingsItem);
+        }
+        // Other transition other than default only apply to topnav
+        // when clicking overflow on topnav, transition is from bottom
+        // otherwise if prevItem is on left side of nextActualItem, transition is from left
+        //           if prevItem is on right side of nextActualItem, transition is from right
+        // click on Settings item is considered Default
+        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default;
+        if (IsTopNavigationView())
+        {
+            if (m_selectionChangeFromOverflowMenu)
+            {
+                recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+            }
+            else if (!isSettingsItem && prevItem && nextItem)
+            {
+                recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
+                    NavigationViewItemBaseOrSettingsContentFromData(nextItem));
+            }
+        }
+
+        // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
+        // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
+        // And SelectionChanged is after we selected the new item.
+        UnselectPrevItem(prevItem, nextItem);
+        ChangeSelectStatusForItem(nextItem, true /*selected*/);
+
+        RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
+
+        AnimateSelectionChanged(prevItem, nextItem);
 
         ClosePaneIfNeccessaryAfterItemIsClicked();
     }
@@ -1592,6 +1770,161 @@ void NavigationView::UpdateVisualStateForDisplayModeGroup(const winrt::Navigatio
     }
 }
 
+void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args)
+{
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsSettingsItem(nvi))
+        {
+            OnSettingsInvoked();
+        }
+        else
+        {
+            OnNavigationViewItemInvoked(nvi);
+        }
+        nvi.Focus(winrt::FocusState::Pointer);
+    }
+}
+
+void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    auto key = args.Key();
+
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsSettingsItem(nvi))
+        {
+            // Because ListViewItem eats the events, we only get these keys on KeyDown.
+            if (key == winrt::VirtualKey::Space ||
+                key == winrt::VirtualKey::Enter)
+            {
+                args.Handled(true);
+                OnSettingsInvoked();
+            }
+        }
+        else
+        {
+            switch (args.Key())
+            {
+            case winrt::VirtualKey::GamepadA:
+            case winrt::VirtualKey::Enter:
+            case winrt::VirtualKey::Space:
+                OnNavigationViewItemInvoked(nvi);
+                break;
+            case winrt::VirtualKey::Home:
+                KeyboardFocusFirstItemFromItem(nvi);
+                break;
+            case winrt::VirtualKey::End:
+                KeyboardFocusLastItemFromItem(nvi);
+                break;
+            }
+        }
+    }
+}
+
+void NavigationView::KeyboardFocusFirstItemFromItem(winrt::NavigationViewItemBase nvib)
+{
+    winrt::UIElement firstElement{ nullptr };
+    if (IsTopNavigationView())
+    {
+        bool isContainerInOverflow = IsContainerInOverflow(nvib);
+        if (isContainerInOverflow)
+        {
+            firstElement = m_topNavRepeaterOverflowView.get().TryGetElement(0);
+        }
+        else
+        {
+            firstElement = m_topNavRepeater.get().TryGetElement(0);
+        }
+    }
+    else
+    {
+        firstElement = m_leftNavRepeater.get().TryGetElement(0);
+    }
+
+    if (auto nvib = firstElement.try_as<winrt::NavigationViewItemBase>())
+    {
+        nvib.Focus(winrt::FocusState::Keyboard);
+    }
+}
+
+void NavigationView::KeyboardFocusLastItemFromItem(winrt::NavigationViewItemBase nvib)
+{
+    winrt::ItemsRepeater ir { nullptr };
+    if (IsTopNavigationView())
+    {
+        bool isContainerInOverflow = IsContainerInOverflow(nvib);
+        if (isContainerInOverflow)
+        {
+            ir = m_topNavRepeaterOverflowView.get();
+        }
+        else
+        {
+            ir = m_topNavRepeater.get();
+        }
+    }
+    else
+    {
+        ir = m_leftNavRepeater.get();
+    }
+
+    auto itemsSourceView = ir.ItemsSourceView();
+    if (itemsSourceView)
+    {
+        auto lastIndex = itemsSourceView.Count() - 1;
+        auto lastElement = ir.TryGetElement(lastIndex);
+        if (auto nvib = lastElement.try_as<winrt::NavigationViewItemBase>())
+        {
+            nvib.Focus(winrt::FocusState::Keyboard);
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    if (!args.Handled())
+    {
+        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+        {
+            if (IsSettingsItem(nvi))
+            {
+                // Because ListViewItem eats the events, we only get these keys on KeyUp.
+                if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
+                {
+                    args.Handled(true);
+                    OnSettingsInvoked();
+                }
+            }
+        }
+    }
+}
+
+void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, winrt::RoutedEventArgs const& e)
+{
+    if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+    {
+        if (IsNavigationViewListSingleSelectionFollowsFocus() && nvi.SelectsOnInvoked())
+        {
+            OnNavigationViewItemInvoked(nvi);
+        }
+    }
+}
+
+void NavigationView::OnSettingsInvoked()
+{
+    auto prevItem = SelectedItem();
+    auto settingsItem = m_settingsItem.get();
+    if (IsSettingsItem(prevItem))
+    {
+        RaiseItemInvoked(settingsItem, true /*isSettings*/);
+    }
+    else if (settingsItem)
+    {
+        SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(settingsItem);
+    }
+}
+
+
 void NavigationView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
 {
     const auto& eventArgs = e;
@@ -1676,20 +2009,19 @@ bool NavigationView::BumperNavigation(int offset)
 
             if (index >= 0)
             {
-                auto topNavListView = m_topNavListView.get();
-                auto itemsList = topNavListView.Items();
+                auto topNavRepeater = m_topNavRepeater.get();
                 auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
                 index += offset;
 
                 while (index > -1 && index < topPrimaryListSize)
                 {
-                    auto newItem = itemsList.GetAt(index);
+                    auto newItem = topNavRepeater.TryGetElement(index);
                     if (auto newNavViewItem = newItem.try_as<winrt::NavigationViewItem>())
                     {
                         // This is done to skip Separators or other items that are not NavigationViewItems
                         if (winrt::get_self<NavigationViewItem>(newNavViewItem)->SelectsOnInvoked())
                         {
-                            topNavListView.SelectedItem(newItem);
+                            newNavViewItem.IsSelected(true);
                             return true;
                         }
                     }
@@ -1709,33 +2041,46 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
     {
         if (IsTopNavigationView())
         {
-            winrt::IInspectable item{ nullptr };
             // Search topnav first, if not found, search overflow
-            if (auto lv = m_topNavListView.get())
+            if (auto ir = m_topNavRepeater.get())
             {
-                item = lv.ItemFromContainer(nvi);
-                if (item)
+                if (auto element = nvi.try_as<winrt::UIElement>())
                 {
-                    return item;
+                    auto index = ir.GetElementIndex(element);
+                    if (index != -1)
+                    {
+                        return m_topDataProvider.GetPrimaryItems().GetAt(index);
+                    }
                 }
             }
 
-            if (auto lv = m_topNavListOverflowView.get())
+            if (auto ir = m_topNavRepeaterOverflowView.get())
             {
-                item = lv.ItemFromContainer(nvi);
+                if (auto element = nvi.try_as<winrt::UIElement>())
+                {
+                    auto index = ir.GetElementIndex(element);
+                    if (index != -1)
+                    {
+                        return m_topDataProvider.GetOverflowItems().GetAt(index);
+                    }
+                }
             }
-            return item;
         }
         else
         {
-            if (auto lv = m_leftNavListView.get())
+            if (auto ir = m_leftNavRepeater.get())
             {
-                auto item = lv.ItemFromContainer(nvi);
-                return item;
+                if (auto element = nvi.try_as<winrt::UIElement>())
+                {
+                    int index = ir.GetElementIndex(element);
+                    if (index != -1)
+                    {
+                        return LeftNavGetItemFromIndex(index);
+                    }
+                }
             }
         }
     }
-
     return nullptr;
 }
 
@@ -1760,15 +2105,8 @@ void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEve
     // If it's InitStep1, it means that we didn't start the layout yet.
     if (m_topNavigationMode != TopNavigationViewLayoutState::InitStep1)
     {
-        {
-            auto scopeGuard = gsl::finally([this]()
-            {
-                m_shouldIgnoreOverflowItemSelectionChange = false;
-            });
-            m_shouldIgnoreOverflowItemSelectionChange = true;
-            m_topDataProvider.MoveAllItemsToPrimaryList();
-        }
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep2);
+        m_topDataProvider.MoveAllItemsToPrimaryList();
+        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         InvalidateTopNavPrimaryLayout();
     }
 
@@ -1796,14 +2134,7 @@ void NavigationView::TopNavigationViewItemContentChanged()
 {
     if (m_appliedTemplate)
     {
-        if (ShouldIgnoreMeasureOverride())
-        {
-            RequestInvalidateMeasureOnNextLayoutUpdate();
-        }
-        else
-        {
-            InvalidateMeasure();
-        }
+        InvalidateMeasure();
     }
 }
 
@@ -1862,10 +2193,12 @@ winrt::NavigationTransitionInfo NavigationView::CreateNavigationTransitionInfo(N
 NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitionDirection(winrt::DependencyObject const& prev, winrt::DependencyObject const& next)
 {
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
-    if (auto topNavListView = m_topNavListView.get())
+    if (auto ir = m_topNavRepeater.get())
     {
-        auto prevIndex = prev ? topNavListView.IndexFromContainer(prev) : s_itemNotFound;
-        auto nextIndex = next ? topNavListView.IndexFromContainer(next) : s_itemNotFound;
+        // Currently GetElementIndex throws if container is not in its list. Work around this issue by manually checking whether
+        // passed in item is a settings item.
+        auto prevIndex = (prev && !IsSettingsItem(prev)) ? ir.GetElementIndex(prev.try_as<winrt::UIElement>()) : s_itemNotFound;
+        auto nextIndex = (next && !IsSettingsItem(next)) ? ir.GetElementIndex(next.try_as<winrt::UIElement>()) : s_itemNotFound;
         if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
         {
             // One item is settings, so have problem to get the index
@@ -1881,30 +2214,6 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
         }
     }
     return recommendedTransitionDirection;
-}
-
-winrt::NavigationViewItemBase NavigationView::GetContainerForClickedItem(winrt::IInspectable const& itemData)
-{
-    // ListViewBase::OnItemClick raises ItemClicked event, but it doesn't provide the container of a item
-    // If it's an virtualized panel like ItemsStackPanel, IsItemItsOwnContainer is called before raise the event in ListViewBase::OnItemClick.
-    // Here we assume the LastItemCalledInIsItemItsOwnContainerOverride is the container.
-    winrt::NavigationViewItemBase container{ nullptr };
-    auto listView = IsTopNavigationView() ? m_topNavListView.get() : m_leftNavListView.get();
-    MUX_ASSERT(listView);
-
-    if (auto navListView = listView.try_as<winrt::NavigationViewList>())
-    {
-        container = winrt::get_self<NavigationViewList>(navListView)->GetLastItemCalledInIsItemItsOwnContainerOverride();
-    }
-
-    // Most likely we didn't use ItemStackPanel. but we still try to see if we can find a matched container.
-    if (!container && itemData)
-    {
-        container = listView.ContainerFromItem(itemData).try_as<winrt::NavigationViewItemBase>();
-    }
-
-    MUX_ASSERT(container && container.Content() == itemData);
-    return container;
 }
 
 NavigationViewTemplateSettings* NavigationView::GetTemplateSettings()
@@ -1925,17 +2234,12 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newItem = args.NewValue();
+
     ChangeSelection(args.OldValue(), newItem);
 
     if (m_appliedTemplate && IsTopNavigationView())
     {
-        // In above ChangeSelection function, m_shouldIgnoreNextSelectionChange is set to true first and then set to false when leaving the function scope. 
-        // When customer select an item by API, SelectionChanged event is raised in ChangeSelection and customer may change the layout.
-        // MeasureOverride is executed but it did nothing since m_shouldIgnoreNextSelectionChange is true in ChangeSelection function.
-        // InvalidateMeasure to make MeasureOverride happen again
-        bool measureOverrideDidNothing = m_shouldInvalidateMeasureOnNextLayoutUpdate && !m_layoutUpdatedToken;
-            
-        if (measureOverrideDidNothing ||
+        if (!m_layoutUpdatedToken ||
             (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
@@ -1946,17 +2250,6 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
 void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item)
 {
     // SelectedItem can be set by API or be clicking/selecting ListViewItem or by clicking on settings
-    // We should not raise ItemInvoke if SelectedItem is changed by API.
-    // If isChangingSelection, this function is called in an inner loop and it should be called from API, so don't change m_shouldRaiseInvokeItemInSelectionChange
-    // Otherwise, it's not from API and expect ItemInvoke when selectionchanged.
-
-    bool isChangingSelection = m_shouldIgnoreNextSelectionChange;
-    
-    if (!isChangingSelection)
-    {
-        m_shouldRaiseInvokeItemInSelectionChange = true;
-    }
-
     if (IsTopNavigationView())
     {
         bool shouldAnimateToSelectedItemFromFlyout = true;
@@ -1984,37 +2277,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
     }
 
     SelectedItem(item);
-    if (!isChangingSelection)
-    {
-        m_shouldRaiseInvokeItemInSelectionChange = false;
-    }
-}
-
-bool NavigationView::DoesSelectedItemContainContent(winrt::IInspectable const& item, winrt::NavigationViewItemBase const& itemContainer)
-{
-    // If item and selected item has same container, it would be selected item
-    bool isSelectedItem = false;
-    auto selectedItem = SelectedItem();
-    if (selectedItem && (item || itemContainer))
-    {
-        if (item && item == selectedItem)
-        {
-            isSelectedItem = true;
-        }
-        else if (auto selectItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>()) //SelectedItem itself is a container
-        {
-            isSelectedItem = selectItemContainer == itemContainer;
-        }
-        else // selectedItem itself is data
-        {
-            auto selectedItemContainer = NavigationViewItemBaseOrSettingsContentFromData(selectedItem);
-            if (selectedItemContainer && itemContainer)
-            {
-                isSelectedItem = selectedItemContainer == itemContainer;
-            }
-        }
-    }
-    return isSelectedItem;
 }
 
 void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected)
@@ -2043,17 +2305,18 @@ bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
 
 void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem)
 {
-    // ListView already handled unselect by itself if ListView raise SelectChanged by itself.
-    // We only need to handle unselect when:
-    // 1, select from setting to listviewitem or null
-    // 2, select from listviewitem to setting
-    // 3, select from listviewitem to null from API.
     if (prevItem && prevItem != nextItem)
     {
-        if (IsSettingsItem(prevItem) || (nextItem && IsSettingsItem(nextItem)) || !nextItem)
-        {
-            ChangeSelectStatusForItem(prevItem, false /*selected*/);
-        }
+        bool setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange;
+        auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse]()
+            {
+                if (setIgnoreNextSelectionChangeToFalse)
+                {
+                    m_shouldIgnoreNextSelectionChange = false;
+                }
+            });
+        m_shouldIgnoreNextSelectionChange = true;
+        ChangeSelectStatusForItem(prevItem, false /*selected*/);
     }
 }
 
@@ -2132,72 +2395,43 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 {
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
-        auto showFocusVisual = SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
+        auto showFocusVisual = ShouldShowFocusVisual();
 
-        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::LeftListView,
-            [showFocusVisual](NavigationViewList* list)
+        if (IsTopNavigationView())
         {
-            list->SetShowFocusVisual(showFocusVisual);
+            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), showFocusVisual);
         }
-        );
-
-        PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::TopListView,
-            [showFocusVisual](NavigationViewList* list)
+        else
         {
-            list->SetShowFocusVisual(showFocusVisual);
+            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), showFocusVisual);
         }
-        );
     }
 }
 
-void NavigationView::SetNavigationViewListPosition(winrt::ListView& listView, NavigationViewListPosition position)
+bool NavigationView::ShouldShowFocusVisual()
 {
-    if (listView)
-    {
-        if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-        {
-            winrt::get_self<NavigationViewList>(navigationViewList)->SetNavigationViewListPosition(position);
-        }
-    }
+    return SelectionFollowsFocus() == winrt::NavigationViewSelectionFollowsFocus::Disabled;
 }
 
-void NavigationView::PropagateNavigationViewAsParent()
-{    
-    PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget::All,
-        [this](NavigationViewList* list)
+void NavigationView::PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual)
+{
+    if (ir)
+    {
+        if (auto itemsSourceView = ir.ItemsSourceView())
+        {
+            auto numberOfItems = itemsSourceView.Count();
+            for (int i = 0; i < numberOfItems; i++)
             {
-                list->SetNavigationViewParent(*this);
+                if (auto nvib = ir.TryGetElement(i))
+                {
+                    if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
+                    {
+                        auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                        nviImpl->UseSystemFocusVisuals(showFocusVisual);
+                    }
+                }
+
             }
-        );
-}
-
-void NavigationView::PropagateChangeToNavigationViewLists(NavigationViewPropagateTarget target, std::function<void(NavigationViewList*)> const& function)
-{
-    if (NavigationViewPropagateTarget::LeftListView == target || 
-        NavigationViewPropagateTarget::All == target)
-    {
-        PropagateChangeToNavigationViewList(m_leftNavListView.get(), function);
-    }
-    if (NavigationViewPropagateTarget::TopListView == target ||
-        NavigationViewPropagateTarget::All == target)
-    {
-        PropagateChangeToNavigationViewList(m_topNavListView.get(), function);
-    }
-    if (NavigationViewPropagateTarget::OverflowListView == target ||
-        NavigationViewPropagateTarget::All == target)
-    {
-        PropagateChangeToNavigationViewList(m_topNavListOverflowView.get(), function);
-    }
-}
-
-void NavigationView::PropagateChangeToNavigationViewList(winrt::ListView const& listView, std::function<void(NavigationViewList*)> const& function)
-{
-    if (listView)
-    {
-        if (auto navigationViewList = listView.try_as<winrt::NavigationViewList>())
-        {
-            auto container = winrt::get_self<NavigationViewList>(navigationViewList);
-            function(container);
         }
     }
 }
@@ -2217,7 +2451,7 @@ float NavigationView::MeasureTopNavigationViewDesiredWidth(winrt::Size const& av
 
 float NavigationView::MeasureTopNavMenuItemsHostDesiredWidth(winrt::Size const& availableSize)
 {
-    return LayoutUtils::MeasureAndGetDesiredWidthFor(m_topNavListView.get(), availableSize);
+    return LayoutUtils::MeasureAndGetDesiredWidthFor(m_topNavRepeater.get(), availableSize);
 }
 
 float NavigationView::GetTopNavigationViewActualWidth()
@@ -2232,12 +2466,12 @@ bool NavigationView::IsTopNavigationFirstMeasure()
     // ItemsStackPanel have two round of measure. the first measure only measure the first child, then provide a roughly estimation
     // second measure would initialize the containers.
     bool firstMeasure = false;
-    if (auto listView = m_topNavListView.get())
+    if (auto ir = m_topNavRepeater.get())
     {
         int size = m_topDataProvider.GetPrimaryListSize();
         if (size > 1)
         {
-            auto container = listView.ContainerFromIndex(1);
+            auto container = ir.TryGetElement(1);
             firstMeasure = !container;
         }
     }
@@ -2264,32 +2498,7 @@ void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& avail
         {
             m_topDataProvider.MoveAllItemsToPrimaryList();
         }
-        else
-        {
-             ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep2, availableSize);
-        }
-        break;
-    case TopNavigationViewLayoutState::InitStep2: // Realized virtualization items
-        {
-            // Bug 18196691: For some reason(eg: customer hide topnav grid or it's parent from code directly), 
-            // The 2nd item may never been realized. and it will enter into a layout_cycle.
-            // For performance reason, we don't go through the visualtree to determine if ListView is actually visible or not
-            // m_measureOnInitStep2Count is used to avoid the cycle
-
-            // In our test environment, m_measureOnInitStep2Count should <= 2 since we didn't hide anything from code
-            // so the assert count is different from s_measureOnInitStep2CountThreshold 
-            MUX_ASSERT(m_measureOnInitStep2Count <= 2);
-
-            if (m_measureOnInitStep2Count >= s_measureOnInitStep2CountThreshold || !IsTopNavigationFirstMeasure())
-            {
-                m_measureOnInitStep2Count = 0;
-                ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
-            }
-            else
-            {
-                m_measureOnInitStep2Count++;
-            }
-        }
+        ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
         break;
 
     case TopNavigationViewLayoutState::InitStep3: // Waiting for moving data to overflow
@@ -2397,7 +2606,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
 
     if (!needInvalidMeasure)
     {
-        //
         auto actualWidth = GetTopNavigationViewActualWidth();
         auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
         MUX_ASSERT(desiredWidth <= actualWidth);
@@ -2437,19 +2645,21 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
         {
             // Exchange items between Primary and Overflow
             {
-                auto scopeGuard = gsl::finally([this]()
-                {
-                    m_shouldIgnoreNextSelectionChange = false;
-                });
-                m_shouldIgnoreNextSelectionChange = true;
-
                 m_topDataProvider.MoveItemsToPrimaryList(itemsToBeAdded);
                 m_topDataProvider.MoveItemsOutOfPrimaryList(itemsToBeRemoved);
             }
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
 
-            SetTopNavigationViewNextMode(TopNavigationViewLayoutState::OverflowNoChange);
-            InvalidateMeasure();
+            if (NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(selectedOverflowItemIndex))
+            {
+                needInvalidMeasure = true;
+            }
+
+            if (!needInvalidMeasure)
+            {
+                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
+                SetTopNavigationViewNextMode(TopNavigationViewLayoutState::OverflowNoChange);
+                InvalidateMeasure();
+            }
         }
     }
 
@@ -2457,10 +2667,62 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
     {
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep2);
+        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
         InvalidateTopNavPrimaryLayout();  
     }
+}
+
+bool NavigationView::NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex)
+{
+    bool needRearrange = false;
+
+    auto primaryList = m_topDataProvider.GetPrimaryItems();
+    auto primaryListSize = primaryList.Size();
+    auto indexInPrimary = m_topDataProvider.ConvertOriginalIndexToIndex(selectedOriginalIndex);
+    // We need to verify that through various overflow selection combinations, the primary
+    // items have not been put into a state of non-logical item layout (aka not in proper sequence).
+    // To verify this, if the newly selected item has items following it in the primary items:
+    // - we verify that they are meant to follow the selected item as specified in the original order
+    // - we verify that the preceding item is meant to directly precede the selected item in the original order
+    // If these two conditions are not met, we move all items to the primary list and trigger a re-arrangement of the items.
+    if (indexInPrimary < static_cast<int>(primaryListSize - 1))
+    {
+        auto nextIndexInPrimary = indexInPrimary + 1;
+        auto nextIndexInOriginal = selectedOriginalIndex + 1;
+        auto prevIndexInOriginal = selectedOriginalIndex - 1;
+
+        // Check whether item preceding the selected is not directly preceding
+        // in the original.
+        if (indexInPrimary > 0)
+        {
+            std::vector<int> prevIndexInVector;
+            prevIndexInVector.push_back(nextIndexInPrimary - 1);
+            auto prevOriginalIndexOfPrevPrimaryItem = m_topDataProvider.ConvertPrimaryIndexToIndex(prevIndexInVector);
+            if (prevOriginalIndexOfPrevPrimaryItem.at(0) != prevIndexInOriginal)
+            {
+                needRearrange = true;
+            }
+        }
+
+
+        // Check whether items following the selected item are out of order
+        while (!needRearrange && nextIndexInPrimary < static_cast<int>(primaryListSize))
+        {
+            std::vector<int> nextIndexInVector;
+            nextIndexInVector.push_back(nextIndexInPrimary);
+            auto originalIndex = m_topDataProvider.ConvertPrimaryIndexToIndex(nextIndexInVector);
+            if (nextIndexInOriginal != originalIndex.at(0))
+            {
+                needRearrange = true;
+                break;
+            }
+            nextIndexInPrimary++;
+            nextIndexInOriginal++;
+        }
+    }
+
+    return needRearrange;
 }
 
 void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size const& availableSize)
@@ -2564,7 +2826,7 @@ std::vector<int> NavigationView::FindMovableItemsToBeRemovedFromPrimaryList(floa
 std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float availableWidth)
 {
     std::vector<int> toBeMoved;
-    if (auto listView = m_topNavListView.get())
+    if (auto ir = m_topNavRepeater.get())
     {
         int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), PrimaryList);
         int size = m_topDataProvider.GetPrimaryListSize();
@@ -2578,7 +2840,7 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
                 bool shouldMove = true;
                 if (requiredWidth <= availableWidth)
                 {
-                    auto container = listView.ContainerFromIndex(i);
+                    auto container = ir.TryGetElement(i);
                     if (container)
                     {
                         if (auto containerAsUIElement = container.try_as<winrt::UIElement>())
@@ -2638,11 +2900,11 @@ double NavigationView::GetPaneToggleButtonHeight()
 void NavigationView::UpdateTopNavigationWidthCache()
 {
     int size = m_topDataProvider.GetPrimaryListSize();
-    if (auto topNavigationView = m_topNavListView.get())
+    if (auto ir = m_topNavRepeater.get())
     {
         for (int i = 0; i < size; i++)
         {
-            auto container = topNavigationView.ContainerFromIndex(i);
+            auto container = ir.TryGetElement(i);
             if (container)
             {
                 if (auto containerAsUIElement = container.try_as<winrt::UIElement>())
@@ -2666,7 +2928,7 @@ bool NavigationView::IsTopNavigationView()
 
 bool NavigationView::IsTopPrimaryListVisible()
 {
-    return m_topNavListView && (TemplateSettings().TopPaneVisibility() == winrt::Visibility::Visible);
+    return m_topNavRepeater && (TemplateSettings().TopPaneVisibility() == winrt::Visibility::Visible);
 }
 
 void NavigationView::CoerceToGreaterThanZero(double& value)
@@ -2723,11 +2985,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_MenuItemsSourceProperty)
     {
-        UpdateListViewItemSource();
+        UpdateRepeaterItemsSource(true);
     }
     else if (property == s_MenuItemsProperty)
     {
-        UpdateListViewItemSource();
+        UpdateRepeaterItemsSource(true);
     }
     else if (property == s_PaneDisplayModeProperty)
     {
@@ -2735,9 +2997,9 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
+        UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
-        UpdatePaneToggleButtonVisibility();
         UpdatePaneVisibility();
         UpdateVisualState();
     }
@@ -2795,25 +3057,37 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         UpdateTitleBarPadding();
     }
+    else if (property == s_MenuItemTemplateProperty ||
+             property == s_MenuItemTemplateSelectorProperty)
+    {
+        SyncItemTemplates();
+    }
 }
 
-void NavigationView::OnListViewLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
+void NavigationView::UpdateNavigationViewItemsFactory()
+{
+    winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
+    if (!newIElementFactory)
+    {
+        newIElementFactory = MenuItemTemplateSelector();
+    }
+    (*m_navigationViewItemsFactory).UserElementFactory(newIElementFactory);
+}
+
+void NavigationView::SyncItemTemplates()
+{
+    UpdateNavigationViewItemsFactory();
+}
+
+void NavigationView::OnRepeaterLoaded(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
     if (auto item = SelectedItem())
     {
         if (!IsSelectionSuppressed(item))
         {
-            // Work around for issue where NavigationViewItem doesn't report
-            // its initial IsSelected state properly on RS2 and older builds.
-            //
-            // Without this, the visual state is proper, but the actual 
-            // IsSelected reported by the NavigationViewItem is not.
-            if (!SharedHelpers::IsRS3OrHigher())
+            if (auto navViewItem = NavigationViewItemOrSettingsContentFromData(item))
             {
-                if (auto navViewItem = item.try_as<winrt::NavigationViewItem>())
-                {
-                    navViewItem.IsSelected(true);
-                }
+                navViewItem.IsSelected(true);
             }
         }
         AnimateSelectionChanged(nullptr /* prevItem */, item);
@@ -2930,7 +3204,7 @@ void NavigationView::UpdatePaneDisplayMode()
     }
 
     UpdateContentBindingsForPaneDisplayMode();
-    UpdateListViewItemSource();
+    UpdateRepeaterItemsSource(false);
 }
 
 void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode)
@@ -3268,69 +3542,6 @@ void NavigationView::UpdatePaneTitleMargins()
     }
 }
 
-void NavigationView::UpdateLeftNavListViewItemSource(const winrt::IInspectable& items)
-{
-    UpdateListViewItemsSource(m_leftNavListView.get(), items);
-}
-
-void NavigationView::UpdateTopNavListViewItemSource(const winrt::IInspectable& items)
-{
-    if (m_topDataProvider.ShouldChangeDataSource(items))
-    {
-        // unbinding Data from ListView
-        UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-        UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
-
-        // Change data source and setup vectors
-        m_topDataProvider.SetDataSource(items);
-
-        // rebinding
-        if (items)
-        {
-            UpdateListViewItemsSource(m_topNavListView.get(), m_topDataProvider.GetPrimaryItems());
-            UpdateListViewItemsSource(m_topNavListOverflowView.get(), m_topDataProvider.GetOverflowItems());
-        }
-        else
-        {
-            UpdateListViewItemsSource(m_topNavListView.get(), nullptr);
-            UpdateListViewItemsSource(m_topNavListOverflowView.get(), nullptr);
-        }
-    }
-}
-
-void NavigationView::UpdateListViewItemSource()
-{
-    if (!m_appliedTemplate)
-    {
-        return;
-    }
-
-    auto dataSource = MenuItemsSource();
-    if (!dataSource)
-    {
-        dataSource = MenuItems();
-        UpdateSelectionForMenuItems();
-    }
-
-    // Always unset the data source first from old ListView, then set data source for new ListView.
-    if (IsTopNavigationView())
-    {
-        UpdateLeftNavListViewItemSource(nullptr);
-        UpdateTopNavListViewItemSource(dataSource);
-    }
-    else
-    {
-        UpdateTopNavListViewItemSource(nullptr);
-        UpdateLeftNavListViewItemSource(dataSource);
-    }
- 
-    if (IsTopNavigationView())
-    {
-        InvalidateTopNavPrimaryLayout();
-        UpdateSelectedItem();
-    }
-}
-
 void NavigationView::UpdateSelectionForMenuItems()
 {
     // Allow customer to set selection by NavigationViewItem.IsSelected.
@@ -3339,39 +3550,34 @@ void NavigationView::UpdateSelectionForMenuItems()
     //         <NavigationView.MenuItems>
     //              <NavigationViewItem Content = "Collection" IsSelected = "True" / >
     //         </NavigationView.MenuItems>
-    if (!SelectedItem() && !m_shouldIgnoreNextSelectionChange)
+    if (!SelectedItem())
     {
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
+            bool foundFirstSelected = false;
             for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
             {
                 if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
                 {
                     if (item.IsSelected())
                     {
-                        auto scopeGuard = gsl::finally([this]()
-                            {
-                                m_shouldIgnoreNextSelectionChange = false;
-                            });
-                        m_shouldIgnoreNextSelectionChange = true;
-                        SelectedItem(item);
-                        break;
+                        if (!foundFirstSelected)
+                        {
+                            auto scopeGuard = gsl::finally([this]()
+                                {
+                                    m_shouldIgnoreNextSelectionChange = false;
+                                });
+                            m_shouldIgnoreNextSelectionChange = true;
+                            SelectedItem(item);
+                            foundFirstSelected = true;
+                        }
+                        else
+                        {
+                            item.IsSelected(false);
+                        }
                     }
                 }
             }
-        }
-    }
-}
-
-void NavigationView::UpdateListViewItemsSource(const winrt::ListView& listView, 
-    const winrt::IInspectable& itemsSource)
-{
-    if (listView)
-    {
-        auto oldItemsSource = listView.ItemsSource();
-        if (oldItemsSource != itemsSource)
-        {
-            listView.ItemsSource(itemsSource);
         }
     }
 }
@@ -3392,11 +3598,6 @@ void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
     {
         ClosePane();
     }
-}
-
-bool NavigationView::ShouldIgnoreMeasureOverride()
-{
-    return m_shouldIgnoreNextMeasureOverride || m_shouldIgnoreOverflowItemSelectionChange || m_shouldIgnoreNextSelectionChange;
 }
 
 bool NavigationView::NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar)
@@ -3524,19 +3725,6 @@ void NavigationView::UpdateSelectedItem()
     {
         OnSettingsInvoked();
     }
-    else
-    {
-        auto lv = m_leftNavListView.get();
-        if (IsTopNavigationView())
-        {
-            lv = m_topNavListView.get();
-        }
-
-        if (lv)
-        {
-            lv.SelectedItem(item);
-        }
-    }
 }
 
 void NavigationView::RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode)
@@ -3631,4 +3819,160 @@ void NavigationView::UpdatePaneShadow()
         shadowReceiver.Width(OpenPaneLength());
         shadowReceiver.Margin(shadowReceiverMargin);
     }
+}
+
+template<typename T> T NavigationView::GetContainerForData(const winrt::IInspectable& data)
+{
+    if (!data)
+    {
+        return nullptr;
+    }
+
+    if (auto nvi = data.try_as<T>())
+    {
+        return nvi;
+    }
+
+    if (IsTopNavigationView())
+    {
+        auto ir = m_topNavRepeater.get();
+        auto itemIndex = m_topDataProvider.IndexOf(data, NavigationViewSplitVectorID::PrimaryList);
+        if (itemIndex >= 0)
+        {
+            if (auto container = ir.TryGetElement(itemIndex))
+            {
+                return container.try_as<T>();
+            }
+        }
+    }
+    else
+    {
+        auto ir = m_leftNavRepeater.get();
+        int indexOfData = LeftNavGetIndexFromItem(data);
+        if (indexOfData > -1 && ir)
+        {
+            if (auto container = ir.TryGetElement(indexOfData))
+            {
+                return container.try_as<T>();
+            }
+        }
+    }
+
+    if (auto settingsItem = m_settingsItem.get())
+    {
+        if (settingsItem == data || settingsItem.Content() == data)
+        {
+            return settingsItem.try_as<T>();
+        }
+    }
+
+    return nullptr;
+}
+
+int NavigationView::LeftNavGetIndexFromItem(const winrt::IInspectable& data)
+{
+    if (m_leftNavRepeater)
+    {
+        winrt::ItemsSourceView dataSourceView = m_leftNavRepeater.get().ItemsSourceView();
+        if (dataSourceView)
+        {
+            auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(dataSourceView));
+            return inspectingDataSource->IndexOf(data);
+        }
+    }
+    return -1;
+}
+
+winrt::IInspectable NavigationView::LeftNavGetItemFromIndex(int index)
+{
+    if (m_leftNavRepeater)
+    {
+        winrt::ItemsSourceView dataSourceView = m_leftNavRepeater.get().ItemsSourceView();
+        if (dataSourceView)
+        {
+            return dataSourceView.GetAt(index);
+        }
+    }
+    return nullptr;
+}
+
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& indexPath)
+{
+    auto index = indexPath.GetAt(0);
+    if (IsTopNavigationView())
+    {
+        // Get the repeater that is presenting this item
+        auto ir = m_topNavRepeater.get();
+        if (!m_topDataProvider.IsItemInPrimaryList(index))
+        {
+            ir = m_topNavRepeaterOverflowView.get();
+        }
+
+        // Get the index of the item in the repeater
+        auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
+
+        // Get the container of the item
+        if (auto container = ir.TryGetElement(irIndex))
+        {
+            return container.try_as<winrt::NavigationViewItemBase>();
+        }
+    }
+    else
+    {
+        if (auto container = m_leftNavRepeater.get().TryGetElement(index))
+        {
+            return container.try_as<winrt::NavigationViewItemBase>();
+        }
+    }
+    return nullptr;
+}
+
+bool NavigationView::IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase nvib)
+{
+    if (auto selectedItem = m_selectionModel.SelectedItem())
+    {
+        auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItemBase>();
+        if (!selectedItemContainer)
+        {
+            selectedItemContainer = GetContainerForIndexPath(m_selectionModel.SelectedIndex());
+        }
+
+        return selectedItemContainer == nvib;
+    }
+    return false;
+}
+
+winrt::ItemsRepeater NavigationView::LeftNavRepeater()
+{
+    return m_leftNavRepeater.get();
+}
+
+bool NavigationView::IsContainerInOverflow(winrt::NavigationViewItemBase nvib)
+{
+    if (IsTopNavigationView())
+    {
+        auto parentIR = GetParentItemsRepeaterForContainer(nvib);
+        if (parentIR == m_topNavRepeaterOverflowView.get())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+winrt::NavigationViewItem NavigationView::GetSelectedContainer()
+{
+    winrt::NavigationViewItem selectedContainer{ nullptr };
+    if (auto selectedItem = SelectedItem())
+    {
+        if (auto selectedItemContainer = selectedItem.try_as<winrt::NavigationViewItem>())
+        {
+            selectedContainer = selectedItemContainer;
+        }
+        else
+        {
+            selectedContainer = NavigationViewItemOrSettingsContentFromData(selectedItem);
+        }
+    }
+    return selectedContainer;
 }

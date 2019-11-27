@@ -16,7 +16,7 @@ public:
     void OnApplyTemplate() override;
 
 private:
-    void OnNavigationViewListPositionChanged() override;
+    void OnNavigationViewPositionChanged() override;
     void UpdateVisualState(bool useTransitions);
 
     bool m_appliedTemplate{ false };

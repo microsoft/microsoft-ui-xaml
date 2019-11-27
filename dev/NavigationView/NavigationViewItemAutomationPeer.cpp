@@ -47,10 +47,10 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
 {
     winrt::IInspectable result = __super::GetPatternCore(pattern);
 
-    if (!result && pattern == winrt::PatternInterface::Invoke)
+    if (!result && (pattern == winrt::PatternInterface::SelectionItem ||
+        pattern == winrt::PatternInterface::Invoke))
     {
-        // The settings item is outside the ListView, so we need to handle its invoke method ourselves.
-        result = *this;
+        return *this;
     }
 
     return result;
@@ -113,11 +113,18 @@ void NavigationViewItemAutomationPeer::Invoke()
 {
     if (auto navView = GetParentNavigationView())
     {
-        // This method should only be called for the settings item, but let's make sure.
         winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
-        if (navigationViewItem == navView.SettingsItem())
+
+        if (navigationViewItem)
         {
-            winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            if (navigationViewItem == navView.SettingsItem())
+            {
+                winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            }
+            else
+            {
+                winrt::get_self<NavigationView>(navView)->OnNavigationViewItemInvoked(navigationViewItem);
+            }
         }
     }
 }
@@ -199,7 +206,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
     
     if (auto navview = GetParentNavigationView())
     {
-        if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
+        if (auto repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
         {
             if (auto parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
             {
@@ -210,7 +217,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 
                     for (auto const& child : children)
                     {
-                        if (auto dependencyObject = listview.ContainerFromIndex(index))
+                        if (auto dependencyObject = repeater.TryGetElement(index))
                         {
                             if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
                             {
@@ -305,4 +312,50 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(wi
     }
 
     return returnValue;
+}
+
+bool NavigationViewItemAutomationPeer::IsSelected()
+{
+    if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        return nvi.IsSelected();
+    }
+    return false;
+}
+
+winrt::IRawElementProviderSimple NavigationViewItemAutomationPeer::SelectionContainer()
+{
+    winrt::IRawElementProviderSimple provider{ nullptr };
+    if (auto navview = GetParentNavigationView())
+    {
+        if (auto peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(navview))
+        {
+            provider = ProviderFromPeer(peer);
+        }
+    }
+
+    return provider;
+}
+
+void NavigationViewItemAutomationPeer::AddToSelection()
+{
+    ChangeSelection(true);
+}
+
+void NavigationViewItemAutomationPeer::Select()
+{
+    ChangeSelection(true);
+}
+
+void NavigationViewItemAutomationPeer::RemoveFromSelection()
+{
+    ChangeSelection(false);
+}
+
+void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
+{
+    if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        nvi.IsSelected(isSelected);
+    }
 }

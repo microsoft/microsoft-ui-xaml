@@ -8,6 +8,7 @@
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
+#include <InspectingDataSource.h>
 
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
@@ -17,7 +18,7 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItem::OnNavigationViewListPositionChanged()
+void NavigationViewItem::OnNavigationViewPositionChanged()
 {
     UpdateVisualStateNoTransition();
 }
@@ -158,7 +159,7 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     winrt::VisualStateManager::GoToState(*this, stateName, false /*useTransitions*/);
 }
 
-void NavigationViewItem::UpdateVisualStateForNavigationViewListPositionChange()
+void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
 {
     auto position = Position();
     auto stateName = c_OnLeftNavigation;
@@ -239,7 +240,7 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
     if (!m_appliedTemplate)
         return;
 
-    UpdateVisualStateForNavigationViewListPositionChange();
+    UpdateVisualStateForNavigationViewPositionChange();
 
     bool shouldShowIcon = ShouldShowIcon();
     bool shouldShowContent = ShouldShowContent();
@@ -309,18 +310,15 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
     SuggestedToolTipChanged(newContent);
     UpdateVisualStateNoTransition();
 
-    // Two ways are used to notify the content change on TopNav and asking for a layout update:
-    //  1. The NavigationViewItem can't find its parent NavigationView, just mark it. Possibly NavigationViewItem is moved to overflow but menu is not opened.
-    //  2. NavigationViewItem request update by NavigationView::TopNavigationViewItemContentChanged.
     if (!IsOnLeftNav())
     {
+        // Content has changed for the item, so we want to trigger a re-measure. Set the flag
+        // to indicate that content has changed for this item and force a re-measure if item
+        // has access to NavigationView.
+        m_isContentChangeHandlingDelayedForTopNav = true;
         if (auto navView = GetNavigationView())
         {
             winrt::get_self<NavigationView>(navView)->TopNavigationViewItemContentChanged();
-        } 
-        else
-        {
-            m_isContentChangeHandlingDelayedForTopNav = true;
         }
     }
 }

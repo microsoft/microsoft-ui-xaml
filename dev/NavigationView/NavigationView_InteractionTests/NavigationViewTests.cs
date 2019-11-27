@@ -2344,8 +2344,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // App crashes when they have dependency on that visual, but the crash is not directly state that it's a header problem.   
         // NavigationView doesn't use quirk, but we determine the version by themeresource.
         // As a workaround, we 'quirk' it for RS4 or before release. if it's RS4 or before, HeaderVisible is not related to Header().
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "C")]
         public void HeaderIsVisibleForTargetRS4OrBelowApp()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -2668,9 +2668,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 {
                     SetNavViewHeight(ControlHeight.Small);
 
-                    // Need to get hold of the pane and search through its children for the scrollbar so as to avoid the scrollbar in the content area
-                    ListView paneListView = new ListView(FindElement.ById("MenuItemsHost"));
-
                     UIObject lastItem = FindElement.ByName("TV");
                     UIObject firstItem = FindElement.ByName("Home");
 
@@ -2898,8 +2895,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "C")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "C")]
         public void ToolTipCustomContentTest() // Verify tooltips don't appear for custom NavViewItems (split off due to CatGates timeout)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
@@ -3433,9 +3430,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
-        [TestProperty("TestSuite", "D")]
-        [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
+        //[TestMethod]
+        //[TestProperty("TestSuite", "D")]
+        //[TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }))
@@ -4193,11 +4190,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public bool IsUsingRS4Style { get; private set; }
         public static List<RegressionTestScenario> BuildLeftNavRegressionTestScenarios()
         {
-            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.LeftNavRS4);
+            return BuildTestScenarios(RegressionTestType.LeftNav);
         }
         public static List<RegressionTestScenario> BuildAllRegressionTestScenarios()
         {
-            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.LeftNavRS4 | RegressionTestType.TopNav);
+            return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.TopNav);
         }
         public static List<RegressionTestScenario> BuildTopNavRegressionTestScenarios()
         {
@@ -4209,7 +4206,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 new Dictionary<RegressionTestType, RegressionTestScenario>
             {
                     { RegressionTestType.LeftNav, new RegressionTestScenario("NavigationView Test", isLeftnavTest: true, isUsingRS4Style: false)},
-                    { RegressionTestType.LeftNavRS4, new RegressionTestScenario("NavigationView Regression Test", isLeftnavTest: true, isUsingRS4Style: true)},
                     { RegressionTestType.TopNav, new RegressionTestScenario("NavigationView TopNav Test", isLeftnavTest: false, isUsingRS4Style: false)},
             };
 
