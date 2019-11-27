@@ -13,9 +13,9 @@ public:
     TreeViewDragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args, const winrt::IInspectable& newParent);
     DataPackageOperation DropResult() const;
     winrt::IVectorView<winrt::IInspectable> Items();
-    winrt::IInspectable NewParent();
+    winrt::IInspectable NewParentItem();
 
 private:
     winrt::DragItemsCompletedEventArgs m_dragItemsCompletedEventArgs{ nullptr };
-    winrt::IInspectable m_newParent;
+    winrt::IInspectable m_newParentItem;
 };
