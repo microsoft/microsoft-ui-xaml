@@ -73,7 +73,11 @@ private:
     bool HandleEdgeCaseFocus(bool first, const winrt::IInspectable& source);
 
     int m_selectedIndex{ -1 };
+    // This is used to guard against reentrency when calling select, since select changes
+    // the Selected Index/Item which in turn calls select.
     bool m_currentlySelecting{ false };
+    // We block selection before the control has loaded.
+    // This is to ensure that we do not overwrite a provided Selected Index/Item value.
     bool m_blockSelecting{ true };
 
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
