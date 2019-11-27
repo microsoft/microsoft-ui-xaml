@@ -28,6 +28,7 @@
                             <x:String>I'm just a string</x:String>
                             <Button>And I'm a Button!</Button>
                         </controls:RadioButtons>
+                        <TextBlock MaxWidth="300" x:Name="ReproTextBlock" AutomationProperties.Name="ReproTextBlock" TextWrapping="WrapWholeWords">Click me to have Scroll Viewer place focus on the first radio button. Selection shouldn't change but down will move selection and focus to the second radio button.</TextBlock>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
@@ -59,6 +60,8 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <!--20-->
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
