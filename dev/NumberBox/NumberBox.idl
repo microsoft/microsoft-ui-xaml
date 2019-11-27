@@ -48,7 +48,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double SmallChange;
 
-    [MUX_DEFAULT_VALUE("1")]
+    [MUX_DEFAULT_VALUE("10")]
     Double LargeChange;
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]

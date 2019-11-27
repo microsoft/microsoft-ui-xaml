@@ -99,7 +99,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(1),
+                ValueHelper<double>::BoxValueIfNecessary(10),
                 nullptr);
     }
     if (!s_MaximumProperty)

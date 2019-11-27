@@ -367,22 +367,22 @@ void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::Key
     switch (args.OriginalKey())
     {
         case winrt::VirtualKey::Up:
+            StepValue(SmallChange());
+            args.Handled(true); 
+            break;
+
+        case winrt::VirtualKey::Down:
             StepValue(-SmallChange());
             args.Handled(true);
             break;
 
-        case winrt::VirtualKey::Down:
-            StepValue(SmallChange());
-            args.Handled(true);
-            break;
-
         case winrt::VirtualKey::PageUp:
-            StepValue(-LargeChange());
+            StepValue(LargeChange());
             args.Handled(true);
             break;
 
         case winrt::VirtualKey::PageDown:
-            StepValue(LargeChange());
+            StepValue(-LargeChange());
             args.Handled(true);
             break;
     }

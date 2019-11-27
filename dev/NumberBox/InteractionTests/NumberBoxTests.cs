@@ -73,15 +73,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 upButton.InvokeAndWait();
                 Verify.AreEqual(5, numBox.Value);
 
-                Log.Comment("Change LargeChange value to 50");
-                RangeValueSpinner largeChangeNumBox = FindElement.ByName<RangeValueSpinner>("LargeChangeNumberBox");
-                largeChangeNumBox.SetValue(50);
-                Wait.ForIdle();
-
-                Log.Comment("Verify that up button increases value by 50");
-                upButton.InvokeAndWait();
-                Verify.AreEqual(55, numBox.Value);
-
                 Check("MinCheckBox");
                 Check("MaxCheckBox");
 
@@ -276,6 +267,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
                 Verify.AreEqual(75, numBox.Value);
+
+                Log.Comment("Verify that pressing PageUp key increases value by 10");
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                Verify.AreEqual(85, numBox.Value);
             }
         }
 
