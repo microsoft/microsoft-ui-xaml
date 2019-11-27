@@ -454,13 +454,13 @@ namespace MUXControlsTestApp.Utilities
             return null;
         }
 
-        public void OnScrollCompleted(
+        public void NotifyScrollCompleted(
             ScrollingScrollInfo info)
         {
             int offsetChangeId = info.OffsetsChangeId;
 
             RaiseLogMessage(
-                "CompositionScrollController: OnScrollCompleted for Orientation=" + Orientation +
+                "CompositionScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId);
 
             if (lstOffsetChangeIds.Contains(offsetChangeId))
@@ -488,7 +488,7 @@ namespace MUXControlsTestApp.Utilities
             if (OffsetChangeCompleted != null)
             {
                 RaiseLogMessage(
-                    "CompositionScrollController: OnScrollCompleted raising OffsetChangeCompleted event.");
+                    "CompositionScrollController: NotifyScrollCompleted raising OffsetChangeCompleted event.");
                 OffsetChangeCompleted(this, new CompositionScrollControllerOffsetChangeCompletedEventArgs(offsetChangeId));
             }
         }

@@ -7045,13 +7045,13 @@ void ScrollingPresenter::CompleteViewChange(
 
     if (onHorizontalOffsetChangeCompleted && m_horizontalScrollController)
     {
-        m_horizontalScrollController.get().OnScrollCompleted(
+        m_horizontalScrollController.get().NotifyScrollCompleted(
             winrt::ScrollingScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 
     if (onVerticalOffsetChangeCompleted && m_verticalScrollController)
     {
-        m_verticalScrollController.get().OnScrollCompleted(
+        m_verticalScrollController.get().NotifyScrollCompleted(
             winrt::ScrollingScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 }

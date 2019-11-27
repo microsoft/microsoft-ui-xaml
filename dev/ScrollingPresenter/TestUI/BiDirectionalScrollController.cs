@@ -316,11 +316,11 @@ namespace MUXControlsTestApp.Utilities
                 return defaultAnimation;
             }
 
-            public void OnScrollCompleted(
+            public void NotifyScrollCompleted(
                 ScrollingScrollInfo info)
             {
                 RaiseLogMessage(
-                    "UniScrollController: OnScrollCompleted for Orientation=" + Orientation +
+                    "UniScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
                     " with OffsetsChangeId=" + info.OffsetsChangeId);
 
                 ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info.OffsetsChangeId));

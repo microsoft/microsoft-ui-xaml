@@ -733,13 +733,13 @@ namespace MUXControlsTestApp
             return null;
         }
 
-        public void OnScrollCompleted(
+        public void NotifyScrollCompleted(
             ScrollingScrollInfo info)
         {
             int offsetChangeId = info.OffsetsChangeId;
 
             LogMessage(
-                "ScrollBarController: OnScrollCompleted for Orientation=" + Orientation +
+                "ScrollBarController: NotifyScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId);
 
             if (lstScrollToIds.Contains(offsetChangeId))

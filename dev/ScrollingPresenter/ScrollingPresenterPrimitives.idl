@@ -203,7 +203,7 @@ interface IScrollController
     void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
     Windows.UI.Composition.CompositionAnimation GetScrollAnimation(MU_XC_NAMESPACE.ScrollingScrollInfo scrollInfo, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void OnScrollCompleted(MU_XC_NAMESPACE.ScrollingScrollInfo scrollInfo);
+    void NotifyScrollCompleted(MU_XC_NAMESPACE.ScrollingScrollInfo scrollInfo);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;

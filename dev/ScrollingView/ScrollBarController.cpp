@@ -178,7 +178,7 @@ winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
     return nullptr;
 }
 
-void ScrollBarController::OnScrollCompleted(
+void ScrollBarController::NotifyScrollCompleted(
     winrt::ScrollingScrollInfo info)
 {
     SCROLLINGVIEW_TRACE_INFO(

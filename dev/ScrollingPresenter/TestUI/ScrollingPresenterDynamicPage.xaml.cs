@@ -89,6 +89,7 @@ namespace MUXControlsTestApp
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
         private List<QueuedOperation> lstQueuedOperations = new List<QueuedOperation>();
+        private TextBlock textBlock;
         private Viewbox viewbox;
         private TilePanel tilePanel;
         private Image largeImg;
@@ -147,6 +148,15 @@ namespace MUXControlsTestApp
 
         private void CreateChildren()
         {
+            textBlock = new TextBlock();
+            textBlock.TextWrapping = TextWrapping.Wrap;
+            string textBlockText = string.Empty;
+            for (int i = 0; i < 50; i++)
+            {
+                textBlockText += "Large TextBlock Text. ";
+            }
+            textBlock.Text = textBlockText;
+
             viewbox = new Viewbox();
             tilePanel = new TilePanel();
             tilePanel.TileCount = 100;
@@ -743,6 +753,9 @@ namespace MUXControlsTestApp
                     case 9:
                         newContent = viewbox;
                         break;
+                    case 10:
+                        newContent = textBlock;
+                        break;
                 }
 
                 if (chkPreserveProperties.IsChecked == true && currentContent != null && newContent != null)
@@ -827,6 +840,10 @@ namespace MUXControlsTestApp
             else if (scrollingPresenter.Content is Viewbox)
             {
                 cmbContent.SelectedIndex = 9;
+            }
+            else if (scrollingPresenter.Content is TextBox)
+            {
+                cmbContent.SelectedIndex = 10;
             }
         }
 
