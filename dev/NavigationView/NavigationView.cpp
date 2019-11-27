@@ -1842,9 +1842,9 @@ void NavigationView::KeyboardFocusFirstItemFromItem(winrt::NavigationViewItemBas
         firstElement = m_leftNavRepeater.get().TryGetElement(0);
     }
 
-    if (auto nvib = firstElement.try_as<winrt::NavigationViewItemBase>())
+    if (auto nvibFirst = firstElement.try_as<winrt::NavigationViewItemBase>())
     {
-        nvib.Focus(winrt::FocusState::Keyboard);
+        nvibFirst.Focus(winrt::FocusState::Keyboard);
     }
 }
 
@@ -1873,9 +1873,9 @@ void NavigationView::KeyboardFocusLastItemFromItem(winrt::NavigationViewItemBase
     {
         auto lastIndex = itemsSourceView.Count() - 1;
         auto lastElement = ir.TryGetElement(lastIndex);
-        if (auto nvib = lastElement.try_as<winrt::NavigationViewItemBase>())
+        if (auto nvibLast = lastElement.try_as<winrt::NavigationViewItemBase>())
         {
-            nvib.Focus(winrt::FocusState::Keyboard);
+            nvibLast.Focus(winrt::FocusState::Keyboard);
         }
     }
 }
