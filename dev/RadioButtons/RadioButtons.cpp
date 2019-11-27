@@ -113,8 +113,7 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
         }
 
         m_blockSelecting = false;
-        if (ReadLocalValue(s_SelectedIndexProperty) == winrt::DependencyProperty::UnsetValue()
-            && ReadLocalValue(s_SelectedItemProperty) != winrt::DependencyProperty::UnsetValue())
+        if (SelectedIndex() == -1 && SelectedItem())
         {
             UpdateSelectedItem();
         }
