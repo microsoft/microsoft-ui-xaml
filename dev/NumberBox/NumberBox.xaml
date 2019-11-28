@@ -29,6 +29,7 @@
                                 <VisualState x:Name="SpinButtonsPopup">
                                     <VisualState.Setters>
                                         <Setter Target="InputBox.Style" Value="{StaticResource NumberBoxTextBoxStyle}" />
+                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
