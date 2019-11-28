@@ -23,12 +23,17 @@
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
                         <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
-                        <controls:RadioButtons Header="A Second Radio Buttons">
-                            <RadioButton>"I'm really a Radio Button"</RadioButton>
+                        <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
+                            <RadioButton x:Name="TheRadioButton">"I'm really a Radio Button"</RadioButton>
                             <x:String>I'm just a string</x:String>
                             <Button>And I'm a Button!</Button>
                         </controls:RadioButtons>
                         <TextBlock MaxWidth="300" x:Name="ReproTextBlock" AutomationProperties.Name="ReproTextBlock" TextWrapping="WrapWholeWords">Click me to have Scroll Viewer place focus on the first radio button. Selection shouldn't change but down will move selection and focus to the second radio button.</TextBlock>
+                        <controls:RadioButtons Header="A Third Radio Buttons, 1 selected" SelectedIndex="1">
+                            <x:Double>0.0</x:Double>
+                            <x:Double>1.0</x:Double>
+                            <x:Double>2.0</x:Double>
+                        </controls:RadioButtons>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
