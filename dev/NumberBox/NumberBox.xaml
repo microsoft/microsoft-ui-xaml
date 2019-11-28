@@ -29,7 +29,6 @@
                                 <VisualState x:Name="SpinButtonsPopup">
                                     <VisualState.Setters>
                                         <Setter Target="InputBox.Style" Value="{StaticResource NumberBoxTextBoxStyle}" />
-                                        <contract7Present:Setter Target="InputBox.CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}}" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -180,6 +179,7 @@
         <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
         <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
         <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
+        <contract7Present:Setter Property="CornerRadius" Value="{Binding Source={ThemeResource ControlCornerRadius}}" />
         <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
         <contract7Present:Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
