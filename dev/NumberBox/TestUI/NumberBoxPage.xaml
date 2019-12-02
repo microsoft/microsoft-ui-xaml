@@ -7,6 +7,7 @@
     xmlns:local="using:MUXControlsTestApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
     mc:Ignorable="d">
@@ -63,32 +64,54 @@
 
         <Grid Grid.Column="1">
 
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" contract5Present:Spacing="4">
-                <controls:NumberBox
-                    x:Name="TestNumberBox"
-                    AutomationProperties.Name="TestNumberBox"
-                    Header="NumberBox"
-                    PlaceholderText="Text"
-                    ValueChanged="NumberBoxValueChanged"
-                    SmallChange="{x:Bind SmallChangeNumberBox.Value, Mode=OneWay}"
-                    LargeChange="{x:Bind LargeChangeNumberBox.Value, Mode=OneWay}"
-                    AcceptsExpression="{x:Bind ExpressionCheckBox.IsChecked.Value, Mode=OneWay}"
-                    IsWrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
-                    IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Orientation="Horizontal" contract5Present:Spacing="4">
+                <!--Standard NumberBox test UI -->
+                <StackPanel>
+                    <controls:NumberBox
+                        x:Name="TestNumberBox"
+                        AutomationProperties.Name="TestNumberBox"
+                        Header="NumberBox"
+                        PlaceholderText="Text"
+                        ValueChanged="NumberBoxValueChanged"
+                        SmallChange="{x:Bind SmallChangeNumberBox.Value, Mode=OneWay}"
+                        LargeChange="{x:Bind LargeChangeNumberBox.Value, Mode=OneWay}"
+                        AcceptsExpression="{x:Bind ExpressionCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsWrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
+                        IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Value:" Margin="0,0,5,0" />
-                    <TextBlock x:Name="NewValueTextBox" AutomationProperties.Name="NewValueTextBox" Text="0" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Value:" Margin="0,0,5,0" />
+                        <TextBlock x:Name="NewValueTextBox" AutomationProperties.Name="NewValueTextBox" Text="0" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Old Value:" Margin="0,0,5,0" />
+                        <TextBlock x:Name="OldValueTextBox" AutomationProperties.Name="OldValueTextBox"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Text:" Margin="0,0,5,0" />
+                        <TextBlock x:Name="TextTextBox" AutomationProperties.Name="TextTextBox" Text="0"/>
+                    </StackPanel>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Old Value:" Margin="0,0,5,0" />
-                    <TextBlock x:Name="OldValueTextBox" AutomationProperties.Name="OldValueTextBox"/>
-                </StackPanel>
+                <!-- NumberBox for nested scrolling bug(s)-->
+                <StackPanel Margin="10,0,0,0">
+                    <TextBlock>NumberBox inside ScrollViewer test</TextBlock>
+                    <ScrollViewer x:Name="ScrollviewerWithScroll" Height="50"
+                                  Width="200"
+                            ViewChanged="ScrollviewerWithScroll_ViewChanged">
+                        <StackPanel>
+                            <controls:NumberBox x:Name="NumberBoxInScroller"
+                                    AutomationProperties.Name="NumberBoxInScroller"/>
+                            <controls:NumberBox/>
+                            <controls:NumberBox/>
+                        </StackPanel>
+                    </ScrollViewer>
 
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Text:" Margin="0,0,5,0" />
-                    <TextBlock x:Name="TextTextBox" AutomationProperties.Name="TextTextBox" Text="0"/>
+                    <TextBlock x:Name="VerticalOffsetDisplayBlock" Text="0"
+                            AutomationProperties.Name="VerticalOffsetDisplayBlock"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

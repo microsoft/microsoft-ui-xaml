@@ -119,5 +119,10 @@ namespace MUXControlsTestApp
         {
             TextTextBox.Text = TestNumberBox.Text;
         }
+
+        private void ScrollviewerWithScroll_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            VerticalOffsetDisplayBlock.Text = (sender as Windows.UI.Xaml.Controls.ScrollViewer).VerticalOffset.ToString();
+        }
     }
 }
