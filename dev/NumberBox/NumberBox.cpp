@@ -421,6 +421,8 @@ void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::Poin
             {
                 StepValue(-SmallChange());
             }
+            // Only set as handled when we actually changed our state.
+            args.Handled(true);
         }
     }
 }
