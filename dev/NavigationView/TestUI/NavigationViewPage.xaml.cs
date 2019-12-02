@@ -13,6 +13,7 @@ using Windows.ApplicationModel.Core;
 using NavigationViewDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using NavigationViewSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewSelectionChangedEventArgs;
+using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewDisplayModeChangedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewDisplayModeChangedEventArgs;
 using NavigationViewPaneClosingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewPaneClosingEventArgs;
@@ -21,6 +22,7 @@ using NavigationViewBackRequestedEventArgs = Microsoft.UI.Xaml.Controls.Navigati
 using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
 using NavigationViewSelectionFollowsFocus = Microsoft.UI.Xaml.Controls.NavigationViewSelectionFollowsFocus;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
@@ -32,6 +34,36 @@ namespace MUXControlsTestApp
         private bool m_useFocusVisualKindReveal = false;
         // FocusVisualKind impacts other testing, recover to setting in unload page
         private FocusVisualKind m_focusVisualKind;
+
+        private int _selectionChangedEventsFired;
+        public int m_selectionChangedEventsFired
+        {
+            get
+            {
+                return _selectionChangedEventsFired;
+            }
+            set
+            {
+                _selectionChangedEventsFired = value;
+                NumberOfSelectionChangedEventsRaisedTextBlock.Text = _selectionChangedEventsFired.ToString();
+            }
+        }
+
+        private int _itemInvokedEventsFired = 0;
+        public int m_itemInvokedEventsFired
+        {
+            get
+            {
+                return _itemInvokedEventsFired;
+            }
+            set
+            {
+                _itemInvokedEventsFired = value;
+                NumberOfItemInvokedEventsRaisedTextBlock.Text = _itemInvokedEventsFired.ToString();
+            }
+        }
+
+
         public NavigationViewPage()
         {
             this.InitializeComponent();
@@ -292,8 +324,20 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void ResetEventCounters_Click(object sender, RoutedEventArgs e)
+        {
+            m_itemInvokedEventsFired = 0;
+            m_selectionChangedEventsFired = 0;
+        }
+
+        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        {
+            m_itemInvokedEventsFired++;
+        }
+
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            m_selectionChangedEventsFired++;
             if (args.SelectedItem != null)
             {
                 var itemdata = args.SelectedItem as NavigationViewItem;

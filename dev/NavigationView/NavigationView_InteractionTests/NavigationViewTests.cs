@@ -4048,6 +4048,69 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCorrectNumberOfEventsRaised()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                TextBlock itemInvokedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfItemInvokedEventsRaisedTextBlock"));
+                TextBlock selectionChangedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfSelectionChangedEventsRaisedTextBlock"));
+
+                Log.Comment("Verify that only one SelectionChanged event was raised.");
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "1");
+
+                Log.Comment("Invoke MusicItem.");
+                UIObject item1 = FindElement.ByName("Music");
+                item1.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify event counts.");
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "1");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "2");
+
+                Log.Comment("Invoke selected item (MusicItem).");
+                item1.Click();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "2");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "2");
+
+                Log.Comment("Clear event counters.");
+                Button resetEventCounters = new Button(FindElement.ByName("ResetEventCounters"));
+                resetEventCounters.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+
+                Log.Comment("Verify that switching pane mode to top does not raise any events.");
+                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+
+                Log.Comment("Verify that switching pane mode to auto does not raise any events.");
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyEventsReturnExpectedData()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                Log.Comment("Verify that item invoked returns expected parameters.");
+
+                Log.Comment("Verify that selection changed event returns expected parameters");
+
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
