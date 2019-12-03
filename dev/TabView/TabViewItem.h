@@ -53,7 +53,6 @@ public:
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
     winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
 
-    void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
