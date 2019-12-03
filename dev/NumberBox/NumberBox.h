@@ -87,6 +87,7 @@ private:
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
+    winrt::TextBox::PreviewKeyDown_revoker m_textBoxPreviewKeyDownRevoker{};
     winrt::TextBox::KeyDown_revoker m_textBoxKeyDownRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
     winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
