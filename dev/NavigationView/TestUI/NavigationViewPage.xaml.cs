@@ -333,13 +333,33 @@ namespace MUXControlsTestApp
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             m_itemInvokedEventsFired++;
+
+            // Reset argument type indicatiors
+            ItemInvokedItemType.Text = "null";
+            ItemInvokedItemContainerType.Text = "null";
+
+            if (args.InvokedItem != null)
+            {
+                ItemInvokedItemType.Text = args.InvokedItem.GetType().ToString();
+            }
+
+            if (args.InvokedItemContainer != null)
+            {
+                ItemInvokedItemContainerType.Text = args.InvokedItemContainer.GetType().ToString();
+            }
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            // Reset argument type indicatiors
+            SelectionChangedItemType.Text = "null";
+            SelectionChangedItemContainerType.Text = "null";
+
             m_selectionChangedEventsFired++;
             if (args.SelectedItem != null)
             {
+                SelectionChangedItemType.Text = args.SelectedItem.GetType().ToString();
+
                 var itemdata = args.SelectedItem as NavigationViewItem;
                 if (itemdata != null)
                 {
@@ -352,6 +372,11 @@ namespace MUXControlsTestApp
                         NavView.Header = "Settings as header";
                     }
                 }
+            }
+
+            if (args.SelectedItemContainer != null)
+            {
+                SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
             }
         }
 
