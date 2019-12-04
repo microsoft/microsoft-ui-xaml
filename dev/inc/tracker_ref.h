@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "SharedHelpers.h"
+
 struct __declspec(novtable) ITrackerHandleManager
 {
     virtual ~ITrackerHandleManager() = default;
@@ -78,13 +80,6 @@ struct __declspec(novtable) ITrackerHandleManager
     bool m_wasEnsureCalled{};
 #endif
 
-    // Specifies if this instance is composed by an outer object.
-    // Only returns true if this is an AggregableComObject<T> instance.
-    virtual bool IsComposed()
-    {
-        return false;
-    }
-
 protected:
     ::ITrackerOwner* m_trackerOwnerInnerNoRef{ nullptr };
 };
@@ -128,9 +123,10 @@ enum class TrackerRefFallback
     FallbackToComPtrBeforeRS4
 };
 
-template<typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*, typename IUnknownAccessorT = typename IUnknownAccessor<T>>
+template<typename T, TrackerRefFallback fallback = TrackerRefFallback::None, typename RawStorageT = ::IUnknown*>
 class tracker_ref sealed
 {
+    using IUnknownAccessorT = typename IUnknownAccessor<T>;
 public:
     explicit tracker_ref(const ITrackerHandleManager* owner)
     {
