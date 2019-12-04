@@ -107,7 +107,7 @@
                                 Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
                                 BorderBrush="{ThemeResource ToolTipBorderBrush}"
                                 BorderThickness="{ThemeResource ToolTipBorderThemeThickness}"
-                                contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                CornerRadius="{ThemeResource OverlayCornerRadius}">
 
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
