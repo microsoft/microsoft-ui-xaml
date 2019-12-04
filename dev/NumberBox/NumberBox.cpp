@@ -87,7 +87,17 @@ void NumberBox::OnApplyTemplate()
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
-            m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            if (SharedHelpers::IsRS3OrHigher())
+            {
+                // Listen to PreviewKeyDown because textbox eats the down arrow key in some circumstances.
+                m_textBoxPreviewKeyDownRevoker = textBox.PreviewKeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            }
+            else
+            {
+                // This is better than nothing.
+                m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            }
+
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
