@@ -5,7 +5,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\SdkVersion.props" Condition="$(BuildingWithBuildExe) == 'true'" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') And $(BuildingWithBuildExe) != 'true'" />
-  <Import Project="$(MSBuildProjectDirectory)\..\..\..\mux.PGO.props" /> 
+  <Import Project="$(MSBuildProjectDirectory)\..\..\..\mux.PGO.props" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\FeatureAreas.props" />
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -266,6 +266,9 @@
     <Content Include="$(MSBuildThisFileDirectory)Assets\TimePicker.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\ToolTip.png" />
     <Content Include="$(MSBuildThisFileDirectory)Assets\TreeView.png" />
+    <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxHiddenSpinButtons-6.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxHiddenSpinButtons-7.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxHiddenSpinButtons.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
