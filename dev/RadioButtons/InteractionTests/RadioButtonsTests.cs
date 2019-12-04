@@ -527,6 +527,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetItemType(type);
                         SetNumberOfColumns(1);
                         SetNumberOfItems(10);
+                        SetBorderWidthToInf();
 
                         VerifyLayoutData(10, 1, 0);
                         SetNumberOfColumns(3);
@@ -538,10 +539,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetNumberOfColumns(10);
                         VerifyLayoutData(1, 10, 0);
                         SetNumberOfColumns(20);
-                        VerifyLayoutData(0, 10, 10);
+                        VerifyLayoutData(1, 10, 0);
 
                         SetNumberOfItems(77);
                         VerifyLayoutData(3, 20, 17);
+
+                        SetBorderWidth(100);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(200);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(300);
+                        VerifyLayoutData(38, 2, 1);
+                        SetBorderWidth(400);
+                        VerifyLayoutData(25, 3, 2);
+                        SetBorderWidth(500);
+                        VerifyLayoutData(25, 3, 2);
+                        SetBorderWidth(520);
+                        VerifyLayoutData(19, 4, 1);
                     }
                 }
             }
@@ -649,6 +663,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             elements.GetNumberOfItemsTextBlock().SetValue(items.ToString());
             elements.GetSetNumberOfItemsButton().Click();
+        }
+
+        void SetBorderWidth(float width)
+        {
+            elements.GetBorderWidthTextBox().SetValue(width.ToString());
+            elements.GetSetBorderWidthButton().Click();
+        }
+
+        void SetBorderWidthToInf()
+        {
+            elements.GetBorderWidthTextBox().SetValue("inf");
+            elements.GetSetBorderWidthButton().Click();
         }
 
         void SetSource(RadioButtonsSourceLocation location)

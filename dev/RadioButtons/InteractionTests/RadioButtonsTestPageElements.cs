@@ -184,6 +184,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private ComboBox SourceComboBox;
 
+        public Edit GetBorderWidthTextBox()
+        {
+            return GetElement(ref BorderWidthTextBox, "BorderWidthTextBox");
+        }
+        private Edit BorderWidthTextBox;
+
+        public Button GetSetBorderWidthButton()
+        {
+            return GetElement(ref SetBorderWidthButton, "SetBorderWidthButton");
+        }
+        private Button SetBorderWidthButton;
+
         public Button GetFocusSelectedItemButton()
         {
             return GetElement(ref FocusSelectedItemButton, "FocusSelectedItemButton");
