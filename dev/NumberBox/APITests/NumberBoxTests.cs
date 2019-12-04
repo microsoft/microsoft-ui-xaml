@@ -37,6 +37,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 numberBox = new NumberBox();
+                numberBox.Width = 200;
+                numberBox.Height = 100;
             });
             TestUtilities.SetAsVisualTreeRoot(numberBox);
             Verify.IsNotNull(numberBox);

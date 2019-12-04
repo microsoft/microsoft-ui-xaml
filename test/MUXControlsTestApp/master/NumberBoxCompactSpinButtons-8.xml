@@ -31,10 +31,8 @@
         BorderThickness=1,1,1,1
         BorderBrush=#99000000
         Background=#66FFFFFF
-        CornerRadius=2,0,0,2
+        CornerRadius=2,2,2,2
         Name=InputBox
-        MinWidth=64
-        MinHeight=32
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
@@ -66,7 +64,7 @@
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
-        Visibility=Visible
+        Visibility=Collapsed
         RenderSize=0,0
     [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
         Padding=8,5,8,6
@@ -83,5 +81,5 @@
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
-        Visibility=Visible
+        Visibility=Collapsed
         RenderSize=0,0
