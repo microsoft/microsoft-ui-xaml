@@ -15,12 +15,12 @@ parameters:
   matrix: 
     Release_x86:
       buildPlatform: 'x86'
-      buildConfiguration: 'release'
+      buildConfiguration: 'debug'
       # %3b is the escape code for ';' which is used as the delimiter
       helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
-      buildConfiguration: 'release'
+      buildConfiguration: 'debug'
       helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs4.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
 
 jobs:
