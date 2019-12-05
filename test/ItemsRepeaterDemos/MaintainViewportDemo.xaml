@@ -13,7 +13,8 @@
             <TextBox x:Name="indexTextBox" Text="0" />
             <Button Click="Button_Click">Insert Item</Button>
             
-            <ScrollViewer Width="600" Height="800" HorizontalAnchorRatio="0.0" VerticalAnchorRatio="0.0">
+            <ScrollViewer Width="600" Height="800"
+                          HorizontalAnchorRatio="0.0" VerticalAnchorRatio="0.0">
                 <mux:ItemsRepeater x:Name="repeater">
                 </mux:ItemsRepeater>
             </ScrollViewer>

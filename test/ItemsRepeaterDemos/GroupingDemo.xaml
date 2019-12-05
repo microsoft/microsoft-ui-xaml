@@ -8,19 +8,21 @@
 
     <Grid>
         <ScrollViewer Margin="20">
-            <!-- Outer Repeater (Groups) -->
             <mux:ItemsRepeater x:Name="repeater">
-                <DataTemplate>  <!-- One for each Type -->
+                <DataTemplate>
                     <StackPanel Margin="10, 0">
-                        <!-- Group Header -->
                         <TextBlock Text="{Binding FullName}" FontSize="20"/>
-                        <!-- Inner Repeater (Group Items) -->
                         <mux:ItemsRepeater 
-                            ItemsSource="{Binding DeclaredMembers}" >
-
+                                ItemsSource="{Binding DeclaredMembers}" >
+                            <DataTemplate>
+                                <StackPanel Margin="10, 0">
+                                    <TextBlock Text="{Binding}" />
+                                    <mux:ItemsRepeater  Margin="10, 0"
+                                        ItemsSource="{Binding CustomAttributes}" >
+                                    </mux:ItemsRepeater>
+                                </StackPanel>
+                            </DataTemplate>
                         </mux:ItemsRepeater>
-                        <!-- Group Footer -->
-                        <TextBlock Text="Footer!" Foreground="Gray" />
                     </StackPanel>
                 </DataTemplate>
             </mux:ItemsRepeater>
@@ -42,39 +44,59 @@
 
 
 
+<!--
 
+<DataTemplate>
+    <StackPanel Margin="10, 0">
+        <TextBlock Text="{Binding FullName}" FontSize="20"/>
+    </StackPanel>
+</DataTemplate>
 
+-->
 
+<!-- 
 
+<mux:ItemsRepeater 
+    ItemsSource="{Binding DeclaredMembers}" >
+</mux:ItemsRepeater>
 
+-->
 
+<!--
 
-
-
-<!--<DataTemplate>
+<DataTemplate>
     <StackPanel Margin="10, 0">
         <TextBlock Text="{Binding}" />
         <mux:ItemsRepeater  Margin="10, 0"
-              ItemsSource="{Binding CustomAttributes}" >
+                ItemsSource="{Binding CustomAttributes}" >
         </mux:ItemsRepeater>
     </StackPanel>
-</DataTemplate>-->
+</DataTemplate>
 
+-->
 
 <!--<Grid>
     <ScrollViewer Margin="20">
-        --><!-- Outer Repeater (Groups) --><!--
+        -->
+<!-- Outer Repeater (Groups) -->
+<!--
         <mux:ItemsRepeater x:Name="repeater">
             <DataTemplate>
                 <StackPanel BorderThickness="1" BorderBrush="Gray" Margin="10, 0">
-                    --><!-- Group Header --><!--
+                    -->
+<!-- Group Header -->
+<!--
                     <TextBlock Text="{Binding FullName}" FontSize="20"/>
-                    --><!-- Inner Repeater (Group Items) --><!--
+                    -->
+<!-- Inner Repeater (Group Items) -->
+<!--
                     <mux:ItemsRepeater 
                             ItemsSource="{Binding DeclaredMembers}" >
                         <DataTemplate>
                             <StackPanel Margin="10, 0">
-                                --><!-- Second level of grouping --><!--
+                                -->
+<!-- Second level of grouping -->
+<!--
                                 <TextBlock Text="{Binding}" />
                                 <mux:ItemsRepeater  Margin="10, 0"
                                         ItemsSource="{Binding CustomAttributes}" >
@@ -82,7 +104,9 @@
                             </StackPanel>
                         </DataTemplate>
                     </mux:ItemsRepeater>
-                    --><!-- Group Footer --><!--
+                    -->
+<!-- Group Footer -->
+<!--
                     <TextBlock Text="Footer!" Foreground="Gray" />
                 </StackPanel>
             </DataTemplate>

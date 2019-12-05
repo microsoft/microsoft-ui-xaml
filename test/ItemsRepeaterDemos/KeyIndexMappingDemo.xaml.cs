@@ -12,45 +12,37 @@ namespace ItemsRepeaterDemos
 {
     public sealed partial class KeyIndexMappingDemo : NavPage
     {
-        MyCollection SourceForRepeater = new MyCollection();
+        MyCollection SourceForRepeater = new MyCollection(null);
 
         public KeyIndexMappingDemo()
         {
             this.InitializeComponent();
 
-            SourceForRepeater.Update(Assembly.GetExecutingAssembly().GetTypes());
+            SourceForRepeater.InitializeCollection(Assembly.GetExecutingAssembly().GetTypes());
             repeater.ItemsSource = SourceForRepeater;
         }
 
         private void OnSortAscClick(object sender, RoutedEventArgs e)
         {
-            SourceForRepeater.Update(Assembly.GetExecutingAssembly().GetTypes().OrderBy(i => i.ToString()));
+            SourceForRepeater.InitializeCollection(Assembly.GetExecutingAssembly().GetTypes().OrderBy(i => i.ToString()));
         }
 
         private void OnSortDesClick(object sender, RoutedEventArgs e)
         {
-            SourceForRepeater.Update(Assembly.GetExecutingAssembly().GetTypes().OrderByDescending(i => i.ToString()));
+            SourceForRepeater.InitializeCollection(Assembly.GetExecutingAssembly().GetTypes().OrderByDescending(i => i.ToString()));
         }
 
         private void filterText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            SourceForRepeater.Update(Assembly.GetExecutingAssembly().GetTypes().Where(i => i.ToString().Contains(filterText.Text, StringComparison.InvariantCultureIgnoreCase)));
+            SourceForRepeater.InitializeCollection(Assembly.GetExecutingAssembly().GetTypes().Where(i => i.ToString().Contains(filterText.Text, StringComparison.InvariantCultureIgnoreCase)));
         }
     }
 
     public class MyCollection : IList, INotifyCollectionChanged, IKeyIndexMapping
     {
-        List<object> inner = new List<object>();
-
-        public bool IsFixedSize => false;
-
-        public bool IsReadOnly => false;
+        private List<object> inner = new List<object>();
 
         public int Count => inner.Count;
-
-        public bool IsSynchronized => false;
-
-        public object SyncRoot => throw new NotImplementedException();
 
         public object this[int index]
         {
@@ -65,25 +57,23 @@ namespace ItemsRepeaterDemos
             }
         }
 
-        public MyCollection()
-        {
-
-        }
-
         public MyCollection(IEnumerable<object> collection)
         {
-            Update(collection);
+            InitializeCollection(collection);
         }
 
-        public void Update(IEnumerable<object> collection)
+        public void InitializeCollection(IEnumerable<object> collection)
         {
             inner.Clear();
-            inner.AddRange(collection);
+            if (collection != null)
+            {
+                inner.AddRange(collection);
+            }
+
             if (CollectionChanged != null)
             {
                 CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
             }
-            
         }
 
         public event NotifyCollectionChangedEventHandler CollectionChanged;
@@ -99,6 +89,17 @@ namespace ItemsRepeaterDemos
         }
 
         #region Not used by ItemsRepeater
+
+        public bool IsSynchronized => false;
+
+
+        public bool IsFixedSize => false;
+
+        public bool IsReadOnly => false;
+
+
+        public object SyncRoot => throw new NotImplementedException();
+
         public int Add(object value)
         {
             throw new NotImplementedException();
