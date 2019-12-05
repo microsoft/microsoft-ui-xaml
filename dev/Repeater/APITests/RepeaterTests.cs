@@ -170,7 +170,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
             Log.Warning("Skipping test for Debug builds.");
             return;
-#endif
+#else
+
             ItemsRepeater rootRepeater = null;
             ScrollViewer scrollViewer = null;
             ItemsRepeaterScrollHost scrollhost = null;
@@ -229,6 +230,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     Verify.AreEqual(i * 4, anchorIndex);
                 });
             }
+#endif
         }
 
         // Ensure that scrolling a nested repeater works when the 
