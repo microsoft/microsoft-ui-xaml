@@ -55,6 +55,9 @@ namespace IXMPTestApp.Tests
                         <Rectangle Width='100' Height='100' Fill='Red' />
                     </controls:ParallaxView>");
 
+                // This test case is disabled in Debug configuration due to:
+                // Bug #1725: RecyclingElementFactory.Templates cannot be set from Xaml on RS4 and below in debug configuration (using reflection provider) 
+#if !DEBUG
                 Log.Comment("Loading ItemsRepeater...");
                 XamlReader.Load(@"
                     <controls:ItemsRepeaterScrollHost
@@ -79,6 +82,7 @@ namespace IXMPTestApp.Tests
                             </controls:ItemsRepeater>
                         </ScrollViewer>
                     </controls:ItemsRepeaterScrollHost>");
+#endif
 
                 Log.Comment("Loading SwipeControl...");
                 XamlReader.Load(@"

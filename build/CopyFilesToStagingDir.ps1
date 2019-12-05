@@ -65,10 +65,10 @@ if($PublishAppxFiles)
 # Publish pdbs:
 $symbolsOutputDir = "$($FullPublishDir)\Symbols\"
 PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\IXMPTestApp\IXMPTestApp.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\IXMPTestApp.TAEF\IXMPTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXTestUtilities\MUXTestUtilities.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControls.Test\MUXControls.Test.pdb $symbolsOutputDir
-PublishFile -IfExists $FullBuildOutput\MUXControlsTestApp\MUXControlsTestApp.pdb $symbolsOutputDir
+PublishFile -IfExists $FullBuildOutput\\MUXControlsTestApp.TAEF\MUXControlsTestApp.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\MUXControlsTestAppWPF\MUXControlsTestAppWPF.pdb $symbolsOutputDir
 PublishFile -IfExists $FullBuildOutput\TestAppCX\TestAppCX.pdb $symbolsOutputDir
