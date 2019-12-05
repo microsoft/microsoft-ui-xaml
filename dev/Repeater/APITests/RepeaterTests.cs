@@ -168,7 +168,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 #if DEBUG
             // Test is failing in chk configuration due to:
             // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
-            Log.LogWarning("Skipping test for Debug builds.")
+            Log.LogWarning("Skipping test for Debug builds.");
             return;
 #endif
             ItemsRepeater rootRepeater = null;

@@ -31,7 +31,7 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
-      Release_x64:
+      Debug_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Debug'
 
