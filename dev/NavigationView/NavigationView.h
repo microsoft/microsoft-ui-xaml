@@ -34,10 +34,6 @@ enum class NavigationRecommendedTransitionDirection
     Default // Currently it's mapping to EntranceNavigationTransitionInfo and is subject to change.
 };
 
-static constexpr auto c_topNavRepeater = L"TopNavMenuItemsHost"sv;
-static constexpr auto c_leftRepeater = L"MenuItemsHost"sv;
-static constexpr auto c_overflowRepeater = L"TopNavMenuItemsOverflowHost"sv;
-
 class NavigationView :
     public ReferenceTracker<NavigationView, winrt::implementation::NavigationViewT>,
     public NavigationViewProperties
@@ -85,27 +81,7 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
-    void RaiseItemInvoked(winrt::IInspectable const& item,
-        bool isSettings,
-        winrt::NavigationViewItemBase const& container = nullptr,
-        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
-    void RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi);
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
-
-    bool IsSettingsItem(winrt::IInspectable const& item);
-
-    static winrt::DependencyProperty GetNavigationViewItemRevokersProperty()
-    {
-        static GlobalDependencyProperty s_NavigationViewItemRevokersProperty =
-            InitializeDependencyProperty(
-                L"NavigationViewItemRevokers",
-                winrt::name_of<winrt::IInspectable>(),
-                winrt::name_of<winrt::NavigationViewItem>(),
-                true /* isAttached */,
-                nullptr /* defaultValue */);
-
-        return s_NavigationViewItemRevokersProperty;
-    }
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
@@ -132,6 +108,23 @@ private:
     void UpdateNavigationViewUseSystemVisual();
     void PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual);
     void UpdatePaneShadow();
+    void UpdateNavigationViewItemsFactory();
+    void SyncItemTemplates();
+    winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
+    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
+    bool IsRootItemsRepeater(const winrt::DependencyObject& element);
+    void RaiseItemInvoked(winrt::IInspectable const& item,
+        bool isSettings,
+        winrt::NavigationViewItemBase const& container = nullptr,
+        NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
+    void RaiseItemInvokedForNavigationViewItem(const winrt::NavigationViewItem& nvi);
+    bool IsSettingsItem(winrt::IInspectable const& item);
+
+    // This property is attached to the NavigationViewItems that are being
+    // displayed by the repeaters in this control. It is used to keep track of the
+    // revokers for NavigationViewItem events and allows them to get revoked when
+    // the item gets cleaned up
+    GlobalDependencyProperty s_NavigationViewItemRevokersProperty{ nullptr };
 
     void InvalidateTopNavPrimaryLayout();
     // Measure functions for top navigation   
@@ -184,7 +177,7 @@ private:
     void UpdatePaneTitleMargins();
     void UpdateLeftRepeaterItemSource(const winrt::IInspectable& items);
     void UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items);
-    void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
+    static void UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& listView, const winrt::IInspectable& itemsSource);
     void UpdateSelectionForMenuItems();
     bool m_InitialNonForcedModeUpdate{ true };
 
@@ -226,18 +219,11 @@ private:
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
 
-    void RepeaterElementPrepared(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementPreparedEventArgs args);
-    void RepeaterElementClearing(winrt::ItemsRepeater ir, winrt::ItemsRepeaterElementClearingEventArgs args);
+    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
+    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
-    void OnSelectionModelSelectionChanged(winrt::SelectionModel selectionModel, winrt::SelectionModelSelectionChangedEventArgs e);
-
-    void UpdateNavigationViewItemsFactory();
-    void SyncItemTemplates();
-    winrt::IndexPath GetIndexPathForContainer(winrt::NavigationViewItemBase nvib);
-    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(winrt::NavigationViewItemBase nvib);
-    winrt::FrameworkElement GetParentForFrameworkElement(winrt::FrameworkElement fe);
-    bool IsRootItemsRepeater(winrt::hstring name);
+    void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
@@ -278,14 +264,14 @@ private:
 
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
     bool ShouldShowFocusVisual();
-    int LeftNavGetIndexFromItem(const winrt::IInspectable& data);
-    winrt::IInspectable LeftNavGetItemFromIndex(int index);
+    int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
+    winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);
-    bool IsContainerTheSelectedItemInTheSelectionModel(winrt::NavigationViewItemBase nvib);
-    bool IsContainerInOverflow(winrt::NavigationViewItemBase nvib);
-    void KeyboardFocusFirstItemFromItem(winrt::NavigationViewItemBase nvib);
-    void KeyboardFocusLastItemFromItem(winrt::NavigationViewItemBase nvib);
-    void ApplyCustomMenuItemContainerStyling(winrt::NavigationViewItemBase nvib, winrt::ItemsRepeater ir, int index);
+    bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
+    bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
+    void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
+    void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
+    void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
@@ -365,7 +351,7 @@ private:
     winrt::ItemsRepeater::ElementPrepared_revoker m_topNavOverflowItemsRepeaterElementPreparedRevoker{};
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
 
-    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedEventToken{};
+    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
@@ -386,9 +372,6 @@ private:
 
     // Because virtualization for ItemsStackPanel, not all containers are realized. It request another round of MeasureOverride
     bool m_shouldInvalidateMeasureOnNextLayoutUpdate{ false };
-
-    // when exchanging items between overflow and primary, it cause selectionchange. and then item invoked, and may cause MeasureOverride like customer changed something.
-    bool m_shouldIgnoreNextMeasureOverride{ false };
 
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
     bool m_selectionChangeFromOverflowMenu{ false };
