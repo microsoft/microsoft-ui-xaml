@@ -238,10 +238,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyFocusedItemIsRecycledOnCollectionReset()
         {
-            List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
-
-            const int targetIndex = 4;
-            string targetItem = items[targetIndex];
             List<Layout> layouts = new List<Layout>();
             RunOnUIThread.Execute(() =>
             {
@@ -250,7 +246,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
 
             foreach (var layout in layouts)
-            { 
+            {
+                List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+                const int targetIndex = 4;
+                string targetItem = items[targetIndex];
                 ItemsRepeater repeater = null;
 
                 RunOnUIThread.Execute(() =>
