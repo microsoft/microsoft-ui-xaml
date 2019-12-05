@@ -62,7 +62,7 @@
             </ScrollViewer>
         </controls:ItemsRepeaterScrollHost>
         
-        <controls:ItemsRepeater ItemsSource="{x:Bind ResettingListItems, Mode=OneWay}" Grid.Row="2" x:Name="ResettingCollectionRepeater">
+        <controls:ItemsRepeater ItemsSource="{x:Bind ResettingListItems}" Grid.Row="2" x:Name="ResettingCollectionRepeater">
             <controls:ItemsRepeater.ItemTemplate>
                 <DataTemplate>
                     <Grid Width="300" HorizontalAlignment="Left">
