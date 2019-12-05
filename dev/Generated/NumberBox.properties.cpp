@@ -13,6 +13,7 @@ GlobalDependencyProperty NumberBoxProperties::s_DescriptionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_IsWrapEnabledProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_LargeChangeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MaximumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_MinimumProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_NumberFormatterProperty{ nullptr };
@@ -20,8 +21,8 @@ GlobalDependencyProperty NumberBoxProperties::s_PlaceholderTextProperty{ nullptr
 GlobalDependencyProperty NumberBoxProperties::s_PreventKeyboardDisplayOnProgrammaticFocusProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SelectionFlyoutProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SelectionHighlightColorProperty{ nullptr };
+GlobalDependencyProperty NumberBoxProperties::s_SmallChangeProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_SpinButtonPlacementModeProperty{ nullptr };
-GlobalDependencyProperty NumberBoxProperties::s_StepFrequencyProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_TextReadingOrderProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_ValidationModeProperty{ nullptr };
@@ -89,6 +90,17 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
                 winrt::PropertyChangedCallback(&OnIsWrapEnabledPropertyChanged));
+    }
+    if (!s_LargeChangeProperty)
+    {
+        s_LargeChangeProperty =
+            InitializeDependencyProperty(
+                L"LargeChange",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(10),
+                nullptr);
     }
     if (!s_MaximumProperty)
     {
@@ -167,6 +179,17 @@ void NumberBoxProperties::EnsureProperties()
                 ValueHelper<winrt::SolidColorBrush>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_SmallChangeProperty)
+    {
+        s_SmallChangeProperty =
+            InitializeDependencyProperty(
+                L"SmallChange",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::NumberBox>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxValueIfNecessary(1),
+                winrt::PropertyChangedCallback(&OnSmallChangePropertyChanged));
+    }
     if (!s_SpinButtonPlacementModeProperty)
     {
         s_SpinButtonPlacementModeProperty =
@@ -177,17 +200,6 @@ void NumberBoxProperties::EnsureProperties()
                 false /* isAttached */,
                 ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(winrt::NumberBoxSpinButtonPlacementMode::Hidden),
                 winrt::PropertyChangedCallback(&OnSpinButtonPlacementModePropertyChanged));
-    }
-    if (!s_StepFrequencyProperty)
-    {
-        s_StepFrequencyProperty =
-            InitializeDependencyProperty(
-                L"StepFrequency",
-                winrt::name_of<double>(),
-                winrt::name_of<winrt::NumberBox>(),
-                false /* isAttached */,
-                ValueHelper<double>::BoxValueIfNecessary(1),
-                winrt::PropertyChangedCallback(&OnStepFrequencyPropertyChanged));
     }
     if (!s_TextProperty)
     {
@@ -242,6 +254,7 @@ void NumberBoxProperties::ClearProperties()
     s_HeaderProperty = nullptr;
     s_HeaderTemplateProperty = nullptr;
     s_IsWrapEnabledProperty = nullptr;
+    s_LargeChangeProperty = nullptr;
     s_MaximumProperty = nullptr;
     s_MinimumProperty = nullptr;
     s_NumberFormatterProperty = nullptr;
@@ -249,8 +262,8 @@ void NumberBoxProperties::ClearProperties()
     s_PreventKeyboardDisplayOnProgrammaticFocusProperty = nullptr;
     s_SelectionFlyoutProperty = nullptr;
     s_SelectionHighlightColorProperty = nullptr;
+    s_SmallChangeProperty = nullptr;
     s_SpinButtonPlacementModeProperty = nullptr;
-    s_StepFrequencyProperty = nullptr;
     s_TextProperty = nullptr;
     s_TextReadingOrderProperty = nullptr;
     s_ValidationModeProperty = nullptr;
@@ -299,20 +312,20 @@ void NumberBoxProperties::OnNumberFormatterPropertyChanged(
     winrt::get_self<NumberBox>(owner)->OnNumberFormatterPropertyChanged(args);
 }
 
+void NumberBoxProperties::OnSmallChangePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnSmallChangePropertyChanged(args);
+}
+
 void NumberBoxProperties::OnSpinButtonPlacementModePropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::NumberBox>();
     winrt::get_self<NumberBox>(owner)->OnSpinButtonPlacementModePropertyChanged(args);
-}
-
-void NumberBoxProperties::OnStepFrequencyPropertyChanged(
-    winrt::DependencyObject const& sender,
-    winrt::DependencyPropertyChangedEventArgs const& args)
-{
-    auto owner = sender.as<winrt::NumberBox>();
-    winrt::get_self<NumberBox>(owner)->OnStepFrequencyPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnTextPropertyChanged(
@@ -389,6 +402,16 @@ bool NumberBoxProperties::IsWrapEnabled()
     return ValueHelper<bool>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_IsWrapEnabledProperty));
 }
 
+void NumberBoxProperties::LargeChange(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_LargeChangeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::LargeChange()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_LargeChangeProperty));
+}
+
 void NumberBoxProperties::Maximum(double value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_MaximumProperty, ValueHelper<double>::BoxValueIfNecessary(value));
@@ -461,6 +484,16 @@ winrt::SolidColorBrush NumberBoxProperties::SelectionHighlightColor()
     return ValueHelper<winrt::SolidColorBrush>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SelectionHighlightColorProperty));
 }
 
+void NumberBoxProperties::SmallChange(double value)
+{
+    static_cast<NumberBox*>(this)->SetValue(s_SmallChangeProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double NumberBoxProperties::SmallChange()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SmallChangeProperty));
+}
+
 void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlacementMode const& value)
 {
     static_cast<NumberBox*>(this)->SetValue(s_SpinButtonPlacementModeProperty, ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::BoxValueIfNecessary(value));
@@ -469,16 +502,6 @@ void NumberBoxProperties::SpinButtonPlacementMode(winrt::NumberBoxSpinButtonPlac
 winrt::NumberBoxSpinButtonPlacementMode NumberBoxProperties::SpinButtonPlacementMode()
 {
     return ValueHelper<winrt::NumberBoxSpinButtonPlacementMode>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_SpinButtonPlacementModeProperty));
-}
-
-void NumberBoxProperties::StepFrequency(double value)
-{
-    static_cast<NumberBox*>(this)->SetValue(s_StepFrequencyProperty, ValueHelper<double>::BoxValueIfNecessary(value));
-}
-
-double NumberBoxProperties::StepFrequency()
-{
-    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_StepFrequencyProperty));
 }
 
 void NumberBoxProperties::Text(winrt::hstring const& value)

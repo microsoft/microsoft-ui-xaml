@@ -4,10 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract5Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,5)"
+    xmlns:contract5NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,5)"
     xmlns:contract6Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,6)"
-    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
+    xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)"
+    xmlns:contract8Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,8)">
 
     <Style TargetType="local:NumberBox">
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
         <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
         <Setter Property="Template">
@@ -96,11 +100,14 @@
                             Grid.Column="1"
                             VerticalOffset="{ThemeResource NumberBoxPopupVerticalOffset}"
                             HorizontalOffset="{ThemeResource NumberBoxPopupHorizonalOffset}"
+                            contract8Present:ShouldConstrainToRootBounds="False"
                             HorizontalAlignment="Left">
 
                             <Grid x:Name="PopupContentRoot"
-                                    Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
-                                    contract7Present:CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                Background="{ThemeResource SystemControlBackgroundAltHighBrush}"
+                                BorderBrush="{ThemeResource ToolTipBorderBrush}"
+                                BorderThickness="{ThemeResource ToolTipBorderThemeThickness}"
+                                CornerRadius="{ThemeResource OverlayCornerRadius}">
 
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
@@ -140,7 +147,7 @@
         </Setter>
     </Style>
 
-    <Style x:Name="NumberBoxSpinButtonStyle" TargetType="RepeatButton">
+    <Style x:Name="NumberBoxSpinButtonStyle" TargetType="RepeatButton" BasedOn="{StaticResource DefaultRepeatButtonStyle}">
         <Style.Setters>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="MinWidth" Value="34"/>
@@ -164,29 +171,12 @@
             <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}"/>
         </Style.Setters>
     </Style>
-    
-    <Style x:Name="NumberBoxTextBoxStyle" TargetType="TextBox">
-        <Setter Property="Foreground" Value="{ThemeResource TextControlForeground}" />
-        <Setter Property="Background" Value="{ThemeResource TextControlBackground}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}" />
-        <Setter Property="SelectionHighlightColor" Value="{ThemeResource TextControlSelectionHighlightColor}" />
-        <Setter Property="BorderThickness" Value="{ThemeResource TextControlBorderThemeThickness}" />
-        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
-        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-        <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.VerticalScrollMode" Value="Auto" />
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden" />
-        <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False" />
-        <Setter Property="Padding" Value="{ThemeResource TextControlThemePadding}" />
-        <contract6Present:Setter Property="UseSystemFocusVisuals" Value="{ThemeResource IsApplicationFocusVisualKindReveal}" />
-        <contract7Present:Setter Property="ContextFlyout" Value="{StaticResource TextControlCommandBarContextFlyout}" />
-        <contract7Present:Setter Property="SelectionFlyout" Value="{StaticResource TextControlCommandBarSelectionFlyout}" />
+
+    <Style x:Key="NumberBoxTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource DefaultTextBoxStyle}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
                     <Grid>
-
                         <Grid.Resources>
                             <Style x:Name="DeleteButtonStyle" TargetType="Button">
                                 <Setter Property="Template">
@@ -195,8 +185,9 @@
                                             <Grid x:Name="ButtonLayoutGrid"
                                                 BorderBrush="{ThemeResource TextControlButtonBorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                Background="{ThemeResource TextControlButtonBackground}">
-
+                                                Background="{ThemeResource TextControlButtonBackground}"
+                                                contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                                                contract7NotPresent:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}">
                                                 <VisualStateManager.VisualStateGroups>
                                                     <VisualStateGroup x:Name="CommonStates">
                                                         <VisualState x:Name="Normal" />
@@ -274,9 +265,10 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundDisabled}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
-                                        </contract5Present:ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlPlaceholderForegroundDisabled}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundDisabled}}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
@@ -289,9 +281,10 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
-                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
-                                        </contract5Present:ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlPlaceholderForegroundPointerOver}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundPointerOver}}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundPointerOver}" />
                                         </ObjectAnimationUsingKeyFrames>
@@ -300,14 +293,18 @@
                                 <VisualState x:Name="Focused">
 
                                     <Storyboard>
-                                        <contract5Present:ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
-                                        </contract5Present:ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PlaceholderTextContentPresenter" Storyboard.TargetProperty="Foreground">
+                                            <contract5NotPresent:DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlPlaceholderForegroundFocused}" />
+                                            <contract5Present:DiscreteObjectKeyFrame KeyTime="0" Value="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForegroundFocused}}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="Background">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBackgroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderBrush">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderBrushFocused}" />
+                                        </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="BorderElement" Storyboard.TargetProperty="BorderThickness">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlBorderThemeThicknessFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
@@ -371,10 +368,11 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}"
                             Control.IsTemplateFocusTarget="True"
-                            MinWidth="{ThemeResource TextControlThemeMinWidth}"
-                            MinHeight="{ThemeResource TextControlThemeMinHeight}" />
+                            MinWidth="{TemplateBinding MinWidth}"
+                            MinHeight="{TemplateBinding MinHeight}" />
                         <ScrollViewer x:Name="ContentElement"
                             Grid.Row="1"
                             Grid.Column="0"
@@ -390,10 +388,13 @@
                             IsTabStop="False"
                             AutomationProperties.AccessibilityView="Raw"
                             ZoomMode="Disabled" />
+
                         <TextBlock x:Name="PlaceholderTextContentPresenter"
                             Grid.Row="1"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
+                            contract5NotPresent:Foreground="{ThemeResource TextControlPlaceholderForeground}"
+                            contract5Present:Foreground="{Binding PlaceholderForeground, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue={ThemeResource TextControlPlaceholderForeground}}"
                             Margin="{TemplateBinding BorderThickness}"
                             Padding="{TemplateBinding Padding}"
                             Text="{TemplateBinding PlaceholderText}"
@@ -405,14 +406,15 @@
                             Grid.Column="1"
                             Style="{StaticResource DeleteButtonStyle}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            Margin="{ThemeResource HelperButtonThemePadding}"
+                            contract7Present:CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=CornerRadius, Converter={StaticResource RightCornerRadiusFilterConverter}}"
+                            Padding="{ThemeResource HelperButtonThemePadding}"
                             IsTabStop="False"
                             Visibility="Collapsed"
                             AutomationProperties.AccessibilityView="Raw"
                             FontSize="{TemplateBinding FontSize}"
                             MinWidth="34"
                             VerticalAlignment="Stretch" />
-                        <ContentPresenter x:Name="DescriptionPresenter"
+                        <contract7Present:ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
                             Grid.Column="0"
                             Grid.ColumnSpan="2"
@@ -420,7 +422,7 @@
                             Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
                             AutomationProperties.AccessibilityView="Raw"
                             x:Load="False"/>
-                        
+
                         <TextBlock
                             Grid.Row="1"
                             Grid.Column="2"
@@ -432,11 +434,10 @@
                             Text="&#xEC8F;"
                             FontFamily="{ThemeResource SymbolThemeFontFamily}"
                             AutomationProperties.AccessibilityView="Raw" />
-
                     </Grid>
-
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
     </Style>
+
 </ResourceDictionary>

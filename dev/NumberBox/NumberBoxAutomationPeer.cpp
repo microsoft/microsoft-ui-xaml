@@ -64,12 +64,12 @@ double NumberBoxAutomationPeer::Value()
 
 double NumberBoxAutomationPeer::SmallChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->SmallChange();
 }
 
 double NumberBoxAutomationPeer::LargeChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->LargeChange();
 }
 
 void NumberBoxAutomationPeer::SetValue(double value)
