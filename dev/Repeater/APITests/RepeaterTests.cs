@@ -28,6 +28,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Collections.Generic;
+using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
@@ -143,6 +144,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreSame(dataSource, repeater.GetValue(ItemsRepeater.ItemsSourceProperty) as ItemsSourceView);
                 Verify.AreSame(dataSource, repeater.ItemsSourceView);
             });
+        }
+
+        [TestMethod]
+        public void VerifyClearingItemsSourceClearsElements()
+        {
+            var data = new ObservableCollection<string>(Enumerable.Range(0, 4).Select(i => "Item #" + i));
+            var mapping = (List<ContentControl>)null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                mapping = Enumerable.Range(0, data.Count).Select(i => new ContentControl { Width = 40, Height = 40 }).ToList();
+
+                var dataSource = MockItemsSource.CreateDataSource(data, supportsUniqueIds: false);
+                var elementFactory = MockElementFactory.CreateElementFactory(mapping);
+                ItemsRepeater repeater = new ItemsRepeater();
+                repeater.ItemsSource = dataSource;
+                repeater.ItemTemplate = elementFactory;
+                // This was an issue only for NonVirtualizing layouts
+                repeater.Layout = new MyCustomNonVirtualizingStackLayout();
+                Content = repeater;
+                Content.UpdateLayout();
+
+                repeater.ItemsSource = null;
+            });
+
+            foreach(var item in mapping)
+            {
+                Verify.IsNull(item.Parent);
+            }
         }
 
         [TestMethod]
