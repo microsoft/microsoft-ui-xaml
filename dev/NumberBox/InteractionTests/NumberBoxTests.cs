@@ -320,6 +320,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.RotateWheel(numBox, -1);
                 Wait.ForIdle();
                 Verify.AreEqual(-1, numBox.Value);
+
+                // Testing for 1705
+                RangeValueSpinner numBoxInScrollViewer = FindElement.ByName<RangeValueSpinner>("NumberBoxInScroller");
+                FindTextBox(numBoxInScrollViewer).SetFocus();
+                InputHelper.RotateWheel(numBoxInScrollViewer, 1);
+                InputHelper.RotateWheel(numBoxInScrollViewer, 1);
+                Wait.ForIdle();
+                Verify.AreEqual(2, numBoxInScrollViewer.Value);
+
+                TextBlock vertOffset = FindElement.ByName<TextBlock>("VerticalOffsetDisplayBlock");
+                Verify.AreEqual("0", vertOffset.GetText());
+
             }
         }
 
