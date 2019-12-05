@@ -133,18 +133,33 @@ void ColumnMajorUniformToLargestGridLayout::OnMaxColumnsPropertyChanged(const wi
 
 int ColumnMajorUniformToLargestGridLayout::CalculateColumns(int childCount, float maxItemWidth, float availableWidth)
 {
-    auto const maxColumns = MaxColumns();
-    auto const columnSpacing = ColumnSpacing();
+    /*
+    --------------------------------------------------------------
+    |      |-----------|-----------| | widthNeededForExtraColumn |
+    |                                |                           |
+    |      |------|    |------|      | ColumnSpacing             |
+    | |----|      |----|      |----| | maxItemWidth              |
+    |  O RB        O RB        O RB  |                           |
+    --------------------------------------------------------------
+    */
 
-    // Every column after the first takes maxItemWidth + columnSpacing size.
-    auto const extraSpaceAfterFirstColumn = availableWidth - maxItemWidth;
-    auto const maxExtraColumns = std::max(0.0, std::floor(extraSpaceAfterFirstColumn / (columnSpacing + maxItemWidth)));
-
+    // Every column execpt the first takes this ammount of space to fit on screen.
+    auto const widthNeededForExtraColumn = ColumnSpacing() + maxItemWidth;
     // The number of columns from data and api ignoring available space
-    auto const currentMaxColumns = std::min(maxColumns, childCount);
+    auto const requestedColumnCount = std::min(MaxColumns(), childCount);
+
+    // If columns can be added with effectively 0 extra space return as many columns as needed.
+    if (widthNeededForExtraColumn < std::numeric_limits<float>::epsilon())
+    {
+        return requestedColumnCount;
+    }
+
+    auto const extraWidthAfterFirstColumn = availableWidth - maxItemWidth;
+    auto const maxExtraColumns = std::max(0.0, std::floor(extraWidthAfterFirstColumn / widthNeededForExtraColumn));
+
     // The smaller of number of columns from data and api and
     // the number of columns the available space can support
-    auto const effectiveColumnCount = std::min(static_cast<double>(currentMaxColumns), maxExtraColumns + 1);
+    auto const effectiveColumnCount = std::min(static_cast<double>(requestedColumnCount), maxExtraColumns + 1);
     // return 1 even if there isn't any data
     return std::max(1, static_cast<int>(effectiveColumnCount));
 }
