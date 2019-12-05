@@ -550,11 +550,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifyLayoutData(77, 1, 0);
                         SetBorderWidth(300);
                         VerifyLayoutData(38, 2, 1);
-                        SetBorderWidth(400);
-                        VerifyLayoutData(25, 3, 2);
                         SetBorderWidth(500);
                         VerifyLayoutData(25, 3, 2);
-                        SetBorderWidth(520);
+                        SetBorderWidth(550);
                         VerifyLayoutData(19, 4, 1);
                     }
                 }

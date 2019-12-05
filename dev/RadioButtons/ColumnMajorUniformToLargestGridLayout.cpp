@@ -136,11 +136,16 @@ int ColumnMajorUniformToLargestGridLayout::CalculateColumns(int childCount, floa
     auto const maxColumns = MaxColumns();
     auto const columnSpacing = ColumnSpacing();
 
+    // Every column after the first takes maxItemWidth + columnSpacing size.
     auto const extraSpaceAfterFirstColumn = availableWidth - maxItemWidth;
     auto const maxExtraColumns = std::max(0.0, std::floor(extraSpaceAfterFirstColumn / (columnSpacing + maxItemWidth)));
 
+    // The number of columns from data and api ignoring available space
     auto const currentMaxColumns = std::min(maxColumns, childCount);
+    // The smaller of number of columns from data and api and
+    // the number of columns the available space can support
     auto const effectiveColumnCount = std::min(static_cast<double>(currentMaxColumns), maxExtraColumns + 1);
+    // return 1 even if there isn't any data
     return std::max(1, static_cast<int>(effectiveColumnCount));
 }
 
