@@ -20,6 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
+using Layout = Microsoft.UI.Xaml.Controls.Layout;
 using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 using RecyclingElementFactory = Microsoft.UI.Xaml.Controls.RecyclingElementFactory;
 using RecyclePool = Microsoft.UI.Xaml.Controls.RecyclePool;
@@ -267,52 +268,63 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyFocusedItemIsRecycledOnCollectionReset()
         {
-            List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
-            ItemsRepeater repeater = null;
-            const int targetIndex = 4;
-            string targetItem = items[targetIndex]; 
-            
+            List<Layout> layouts = new List<Layout>();
             RunOnUIThread.Execute(() =>
             {
-                repeater = new ItemsRepeater() {
-                    ItemsSource = items,
-                    ItemTemplate = CreateDataTemplateWithContent(@"<Button Content='{Binding}'/>")
-                };
-                Content = repeater;
+                layouts.Add(new MyCustomNonVirtualizingStackLayout());
+                layouts.Add(new StackLayout());
             });
-            
-            IdleSynchronizer.Wait();
 
-            RunOnUIThread.Execute(() =>
+            foreach (var layout in layouts)
             {
-                Log.Comment("Setting Focus on item " + targetIndex);
-                Button toFocus = (Button)repeater.TryGetElement(targetIndex);
-                Verify.AreEqual(targetItem, toFocus.Content as string);
-                toFocus.Focus(FocusState.Keyboard);
-            });
+                List<string> items = new List<string> { "item0", "item1", "item2", "item3", "item4", "item5", "item6", "item7", "item8", "item9" };
+                const int targetIndex = 4;
+                string targetItem = items[targetIndex];
+                ItemsRepeater repeater = null;
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            { 
-                Log.Comment("Removing focused element from collection");
-                items.Remove(targetItem);
-
-                Log.Comment("Reset the collection with an empty list");
-                repeater.ItemsSource = new List<string>() ;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() => 
-            { 
-                Log.Comment("Verify new elements");
-                for (int i = 0; i < items.Count; i++)
+                RunOnUIThread.Execute(() =>
                 {
-                    Button currentButton = (Button)repeater.TryGetElement(i);
-                    Verify.IsNull(currentButton);
-                }
-            });
+                    repeater = new ItemsRepeater() {
+                        ItemsSource = items,
+                        ItemTemplate = CreateDataTemplateWithContent(@"<Button Content='{Binding}'/>"),
+                        Layout = layout
+                    };
+                    Content = repeater;
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Setting Focus on item " + targetIndex);
+                    Button toFocus = (Button)repeater.TryGetElement(targetIndex);
+                    Verify.AreEqual(targetItem, toFocus.Content as string);
+                    toFocus.Focus(FocusState.Keyboard);
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Removing focused element from collection");
+                    items.Remove(targetItem);
+
+                    Log.Comment("Reset the collection with an empty list");
+                    repeater.ItemsSource = new List<string>();
+                });
+
+                IdleSynchronizer.Wait();
+
+                RunOnUIThread.Execute(() =>
+                {
+                    Log.Comment("Verify new elements");
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        Button currentButton = (Button)repeater.TryGetElement(i);
+                        Verify.IsNull(currentButton);
+                    }
+                });
+            }
         }
 
         private DataTemplate CreateDataTemplateWithContent(string content)
