@@ -28,7 +28,7 @@ winrt::Deferral TeachingTipClosingEventArgs::GetDeferral()
 
     com_ptr<TeachingTipClosingEventArgs> strongThis = get_strong();
 
-    winrt::DeferralCompletedHandler instance{ [strongThis]()
+    winrt::Deferral instance{ [strongThis]()
     {
         strongThis->CheckThread();
         strongThis->DecrementDeferralCount();

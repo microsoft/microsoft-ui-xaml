@@ -44,7 +44,7 @@ winrt::Deferral RefreshRequestedEventArgs::GetDeferral()
 
     com_ptr<RefreshRequestedEventArgs> strongThis = get_strong();
 
-    winrt::DeferralCompletedHandler instance{ [strongThis]()
+    winrt::Deferral instance{ [strongThis]()
         {
             strongThis->CheckThread();
             strongThis->DecrementDeferralCount();
