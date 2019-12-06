@@ -165,9 +165,12 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 #endif
         if (!this->m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
         {
+#pragma warning(push)
+#pragma warning(disable : 26444) // Disable es.84, there is sometimes a return value that needs to be assigned and ignored
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
             winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
             //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+#pragma warning(pop)
         }
         if (this->m_inner)
         {
@@ -215,10 +218,15 @@ inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(_In_ unsigned i
     extern "C" __declspec(allocate(section)) __declspec(selectany) const ::Microsoft::WRL::Details::CreatorMap* const __minATLObjMap_##className = &__object_##className; \
     WrlCreatorMapIncludePragma(className)
 
+#pragma warning(push)
+#pragma warning(disable : 26812) // Disable Enum.3 here, it fires at usage sites instead of declaration sites and we can't resolve it.
+
 namespace CppWinRTTemp
 {
     static TrustLevel __stdcall GetTrustLevel_BaseTrust() { return BaseTrust;  }
 }
+
+#pragma warning(pop)
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \
     namespace CppWinRTTemp { static auto __stdcall RuntimeClassName__##className() { return winrt::name_of<className::class_type>().data(); } } \

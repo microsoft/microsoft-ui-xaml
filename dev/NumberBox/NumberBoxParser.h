@@ -8,7 +8,7 @@
 #include <regex>
 #include <stack>
 
-enum MathTokenType
+enum class MathTokenType
 {
     Numeric,
     Operator,

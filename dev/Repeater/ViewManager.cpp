@@ -474,7 +474,7 @@ void ViewManager::EnsureFirstLastRealizedIndices()
     if (m_firstRealizedElementIndexHeldByLayout == FirstRealizedElementIndexDefault)
     {
         // This will ensure that the indexes are updated.
-        GetElementIfAlreadyHeldByLayout(0);
+        auto element = GetElementIfAlreadyHeldByLayout(0);
     }
 }
 
