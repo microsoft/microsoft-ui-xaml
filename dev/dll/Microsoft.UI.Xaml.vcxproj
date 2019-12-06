@@ -243,12 +243,6 @@
       <PreprocessorDefinitions>DISABLE_WINRT_DEPRECATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization Condition="'$(Configuration)'=='Release'">MinSpace</Optimization>
       <ConformanceMode>true</ConformanceMode>
-      <!-- Pipelines agents are low-memory configurations that struggle to compile code analysis in parallel. See 
-          https://developercommunity.visualstudio.com/content/problem/831568/cl-analyze-runs-out-of-memory.html
-          for more details. While we get that resolved (either with a fix in VS or better agents), we need
-          to disable MultiProc compile. Use NUMBER_OF_PROCESSORS==2 to check if it's one of the underpowered Azure
-          Pipelines VMs -->
-      <MultiProcessorCompilation Condition="'$(RunCodeAnalysis)'=='true' AND '$(NUMBER_OF_PROCESSORS)'=='2'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
