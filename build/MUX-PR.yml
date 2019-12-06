@@ -31,9 +31,9 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
-      Debug_x64:
+      Release_x64:
         buildPlatform: 'x64'
-        buildConfiguration: 'Debug'
+        buildConfiguration: 'Release'
 
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
