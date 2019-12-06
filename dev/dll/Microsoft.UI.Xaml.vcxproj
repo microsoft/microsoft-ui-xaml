@@ -248,7 +248,7 @@
           for more details. While we get that resolved (either with a fix in VS or better agents), we need
           to disable MultiProc compile. Use NUMBER_OF_PROCESSORS==2 to check if it's one of the underpowered Azure
           Pipelines VMs -->
-      <MultiProcessorCompilation Condition="'$(Configuration)'=='Debug' AND '$(NUMBER_OF_PROCESSORS)'=='2'">false</MultiProcessorCompilation>
+      <MultiProcessorCompilation Condition="'$(RunCodeAnalysis)'=='true' AND '$(NUMBER_OF_PROCESSORS)'=='2'">false</MultiProcessorCompilation>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
