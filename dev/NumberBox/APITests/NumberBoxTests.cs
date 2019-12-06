@@ -33,28 +33,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            NumberBox numberBox = null;
-            RunOnUIThread.Execute(() =>
-            {
-                numberBox = new NumberBox();
-                numberBox.Width = 200;
-                numberBox.Height = 100;
-            });
-            TestUtilities.SetAsVisualTreeRoot(numberBox);
-            Verify.IsNotNull(numberBox);
-            VisualTreeTestHelper.VerifyVisualTree(root: numberBox, masterFilePrefix: "NumberBoxHiddenSpinButtons");
+            using (VisualTreeVerifier visualTreeVerifier = new VisualTreeVerifier())
+            { 
+                NumberBox numberBox = null;
+                RunOnUIThread.Execute(() =>
+                {
+                    numberBox = new NumberBox();
+                    numberBox.Width = 200;
+                    numberBox.Height = 100;
+                });
+                TestUtilities.SetAsVisualTreeRoot(numberBox);
+                Verify.IsNotNull(numberBox);
+                visualTreeVerifier.VerifyVisualTreeNoException(root: numberBox, masterFilePrefix: "NumberBoxHiddenSpinButtons");
 
-            RunOnUIThread.Execute(() =>
-            {
-                numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact;
-            });
-            VisualTreeTestHelper.VerifyVisualTree(root: numberBox, masterFilePrefix: "NumberBoxCompactSpinButtons");
+                RunOnUIThread.Execute(() =>
+                {
+                    numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact;
+                });
+                visualTreeVerifier.VerifyVisualTreeNoException(root: numberBox, masterFilePrefix: "NumberBoxCompactSpinButtons");
 
-            RunOnUIThread.Execute(() =>
-            {
-                numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
-            });
-            VisualTreeTestHelper.VerifyVisualTree(root: numberBox, masterFilePrefix: "NumberBoxInlineSpinButtons");
+                RunOnUIThread.Execute(() =>
+                {
+                    numberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
+                });
+                visualTreeVerifier.VerifyVisualTreeNoException(root: numberBox, masterFilePrefix: "NumberBoxInlineSpinButtons");
+            }
         }
     }
 }
