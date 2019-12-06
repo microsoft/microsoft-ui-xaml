@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RatingControl.h"
 
-CppWinRTActivatableClassWithDPFactory(RatingControl)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RatingControl)
+}
+
+#include "RatingControl.g.cpp"
 
 GlobalDependencyProperty RatingControlProperties::s_CaptionProperty{ nullptr };
 GlobalDependencyProperty RatingControlProperties::s_InitialSetValueProperty{ nullptr };

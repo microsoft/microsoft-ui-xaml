@@ -262,6 +262,7 @@ inline bool SetFocus(winrt::DependencyObject const& object, winrt::FocusState fo
 template <typename D, typename T, typename ... I>
 struct __declspec(empty_bases) DeriveFromPanelHelper_base : winrt::Windows::UI::Xaml::Controls::PanelT<D, winrt::default_interface<T>, winrt::composable, I...>
 {
+    using composable = T;
     using class_type = typename T;
 
     operator class_type() const noexcept

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "BitmapIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(BitmapIconSource)
+}
+
+#include "BitmapIconSource.g.cpp"
 
 GlobalDependencyProperty BitmapIconSourceProperties::s_ShowAsMonochromeProperty{ nullptr };
 GlobalDependencyProperty BitmapIconSourceProperties::s_UriSourceProperty{ nullptr };

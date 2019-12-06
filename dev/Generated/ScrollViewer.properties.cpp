@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ScrollViewer.h"
 
-CppWinRTActivatableClassWithDPFactory(ScrollViewer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ScrollViewer)
+}
+
+#include "ScrollViewer.g.cpp"
 
 GlobalDependencyProperty ScrollViewerProperties::s_ComputedHorizontalScrollBarVisibilityProperty{ nullptr };
 GlobalDependencyProperty ScrollViewerProperties::s_ComputedVerticalScrollBarVisibilityProperty{ nullptr };

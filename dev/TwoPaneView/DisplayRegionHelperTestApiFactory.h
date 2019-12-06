@@ -5,4 +5,4 @@
 
 #include "DisplayRegionHelperTestApi.h"
 
-CppWinRTActivatableClassWithBasicFactory(DisplayRegionHelperTestApi)
+#include "DisplayRegionHelperTestApi.properties.cpp"

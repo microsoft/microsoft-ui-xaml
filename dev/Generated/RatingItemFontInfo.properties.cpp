@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RatingItemFontInfo.h"
 
-CppWinRTActivatableClassWithDPFactory(RatingItemFontInfo)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RatingItemFontInfo)
+}
+
+#include "RatingItemFontInfo.g.cpp"
 
 GlobalDependencyProperty RatingItemFontInfoProperties::s_DisabledGlyphProperty{ nullptr };
 GlobalDependencyProperty RatingItemFontInfoProperties::s_GlyphProperty{ nullptr };

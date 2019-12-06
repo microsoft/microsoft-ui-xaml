@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeViewNode.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeViewNode)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeViewNode)
+}
+
+#include "TreeViewNode.g.cpp"
 
 GlobalDependencyProperty TreeViewNodeProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty TreeViewNodeProperties::s_DepthProperty{ nullptr };

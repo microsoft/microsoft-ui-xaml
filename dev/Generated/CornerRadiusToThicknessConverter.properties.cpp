@@ -6,7 +6,12 @@
 #include "common.h"
 #include "CornerRadiusToThicknessConverter.h"
 
-CppWinRTActivatableClassWithDPFactory(CornerRadiusToThicknessConverter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CornerRadiusToThicknessConverter)
+}
+
+#include "CornerRadiusToThicknessConverter.g.cpp"
 
 GlobalDependencyProperty CornerRadiusToThicknessConverterProperties::s_ConversionKindProperty{ nullptr };
 

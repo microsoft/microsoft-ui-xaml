@@ -6,7 +6,12 @@
 #include "common.h"
 #include "XamlControlsResources.h"
 
-CppWinRTActivatableClassWithDPFactory(XamlControlsResources)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(XamlControlsResources)
+}
+
+#include "XamlControlsResources.g.cpp"
 
 GlobalDependencyProperty XamlControlsResourcesProperties::s_UseCompactResourcesProperty{ nullptr };
 

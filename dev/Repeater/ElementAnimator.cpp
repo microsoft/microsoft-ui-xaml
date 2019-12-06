@@ -6,39 +6,9 @@
 #include "ItemsRepeater.common.h"
 #include "ElementAnimator.h"
 
-CppWinRTActivatableClassWithBasicFactory(ElementAnimator);
+#include "ElementAnimator.properties.cpp"
 
 #pragma region IElementAnimator
-
-winrt::event_token ElementAnimator::ShowAnimationCompleted(winrt::ElementAnimationCompleted const& value)
-{
-    return m_showAnimationCompleted.add(value);
-}
-
-void ElementAnimator::ShowAnimationCompleted(winrt::event_token const& token)
-{
-    m_showAnimationCompleted.remove(token);
-}
-
-winrt::event_token ElementAnimator::HideAnimationCompleted(winrt::ElementAnimationCompleted const& value)
-{
-    return m_hideAnimationCompleted.add(value);
-}
-
-void ElementAnimator::HideAnimationCompleted(winrt::event_token const& token)
-{
-    m_hideAnimationCompleted.remove(token);
-}
-
-winrt::event_token ElementAnimator::BoundsChangeAnimationCompleted(winrt::ElementAnimationCompleted const& value)
-{
-    return m_boundsChangeAnimationCompleted.add(value);
-}
-
-void ElementAnimator::BoundsChangeAnimationCompleted(winrt::event_token const& token)
-{
-    m_boundsChangeAnimationCompleted.remove(token);
-}
 
 void ElementAnimator::OnElementShown(
     winrt::UIElement const& element,
@@ -191,17 +161,17 @@ winrt::AnimationContext ElementAnimator::SharedContext()
 
 void ElementAnimator::OnShowAnimationCompleted(winrt::UIElement const& element)
 {
-    m_showAnimationCompleted(*this, element);
+    m_showAnimationCompletedEventSource(*this, element);
 }
 
 void ElementAnimator::OnHideAnimationCompleted(winrt::UIElement const& element)
 {
-    m_hideAnimationCompleted(*this, element);
+    m_hideAnimationCompletedEventSource(*this, element);
 }
 
 void ElementAnimator::OnBoundsChangeAnimationCompleted(winrt::UIElement const& element)
 {
-    m_boundsChangeAnimationCompleted(*this, element);
+    m_boundsChangeAnimationCompletedEventSource(*this, element);
 }
 
 #pragma endregion

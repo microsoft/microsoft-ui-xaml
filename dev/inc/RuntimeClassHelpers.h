@@ -188,60 +188,25 @@ private:
     DWORD m_owningThreadId{};
 };
 
-template<typename Factory>
-inline HRESULT STDMETHODCALLTYPE CppWinRTCreateActivationFactory(_In_ unsigned int *flags, _In_ const ::Microsoft::WRL::Details::CreatorMap* entry, REFIID riid, _Outptr_ IUnknown **ppFactory) throw()
-{
-    try
-    {
-        auto activationFactory = winrt::make<Factory>();
-
-        *flags |= DisableCaching;
-
-        winrt::check_hresult(winrt::get_unknown(activationFactory)->QueryInterface(riid, (void**)ppFactory));
-        __analysis_assume(*ppFactory);
-
-        CATCH_RETURN;
-    }
-}
-
-#define CppWinRTInternalWrlCreateCreatorMap(className, runtimeClassName, trustLevel, creatorFunction, section) \
-    __declspec(selectany) ::Microsoft::WRL::Details::FactoryCache __objectFactory__##className = { nullptr, 0 }; \
-    extern __declspec(selectany) const ::Microsoft::WRL::Details::CreatorMap __object_##className = { \
-        creatorFunction, \
-        runtimeClassName, \
-        trustLevel, \
-        &__objectFactory__##className,\
-        nullptr}; \
-    extern "C" __declspec(allocate(section)) __declspec(selectany) const ::Microsoft::WRL::Details::CreatorMap* const __minATLObjMap_##className = &__object_##className; \
-    WrlCreatorMapIncludePragma(className)
-
-namespace CppWinRTTemp
-{
-    static TrustLevel __stdcall GetTrustLevel_BaseTrust() { return BaseTrust;  }
-}
+////////////////////////////////
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \
-    namespace CppWinRTTemp { static auto __stdcall RuntimeClassName__##className() { return winrt::name_of<className::class_type>().data(); } } \
-    CppWinRTInternalWrlCreateCreatorMap(\
-        className, \
-        reinterpret_cast<const IID*>(&CppWinRTTemp::RuntimeClassName__##className), \
-        &CppWinRTTemp::GetTrustLevel_BaseTrust, \
-        CppWinRTCreateActivationFactory<factory>, \
-        "minATL$__r")
+    namespace factory_implementation { using className = factory; }; \
+    namespace implementation { using className = ::className; }; \
 
 #define CppWinRTActivatableClass(className) \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithBasicFactory(className) \
-    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, className> {}; \
+    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> {}; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 
 #define CppWinRTActivatableClassWithDPFactory(className) \
-    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, className> \
+    struct className##Factory : public winrt::factory_implementation::className##T<className##Factory, ::className> \
     { \
         className##Factory() { EnsureProperties(); } \
-        static void ClearProperties() { className::ClearProperties(); }\
-        static void EnsureProperties() { className::EnsureProperties(); }\
+        static void ClearProperties() { ::className::ClearProperties(); }\
+        static void EnsureProperties() { ::className::EnsureProperties(); }\
     }; \
     CppWinRTActivatableClassWithFactory(className, className##Factory)
 

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "NavigationViewTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(NavigationViewTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(NavigationViewTemplateSettings)
+}
+
+#include "NavigationViewTemplateSettings.g.cpp"
 
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_BackButtonVisibilityProperty{ nullptr };
 GlobalDependencyProperty NavigationViewTemplateSettingsProperties::s_LeftPaneVisibilityProperty{ nullptr };
