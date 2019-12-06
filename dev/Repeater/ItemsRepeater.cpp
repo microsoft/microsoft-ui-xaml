@@ -366,14 +366,17 @@ void ItemsRepeater::OnPropertyChanged(const winrt::DependencyPropertyChangedEven
 
     if (property == s_ItemsSourceProperty)
     {
-        auto newValue = args.NewValue();
-        auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
-        if (newValue && !newDataSource)
+        if (args.NewValue() != args.OldValue())
         {
-            newDataSource = winrt::ItemsSourceView(newValue);
-        }
+            auto newValue = args.NewValue();
+            auto newDataSource = newValue.try_as<winrt::ItemsSourceView>();
+            if (newValue && !newDataSource)
+            {
+                newDataSource = winrt::ItemsSourceView(newValue);
+            }
 
-        OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+            OnDataSourcePropertyChanged(m_itemsSourceView.get(), newDataSource);
+        }
     }
     else if (property == s_ItemTemplateProperty)
     {

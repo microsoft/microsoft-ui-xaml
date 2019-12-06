@@ -175,7 +175,6 @@ NavigationView::NavigationView()
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
 {
     auto selectedItem = selectionModel.SelectedItem();
-    auto selectedIndex = selectionModel.SelectedIndex();
 
     // Ignore this callback if the SelectedItem property of NavigationView is already set to the item
     // being passed in this callback. This is because the item has already been selected
@@ -189,6 +188,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
     if (IsTopNavigationView())
     {
+        auto selectedIndex = selectionModel.SelectedIndex();
         // If selectedIndex does not exist, means item is being deselected through API
         auto isInOverflow = selectedIndex ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
@@ -216,7 +216,6 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
     {
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
     }
-
 }
 
 void NavigationView::OnApplyTemplate()
@@ -506,11 +505,7 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 {
     if (ir)
     {
-        auto oldItemsSource = ir.ItemsSource();
-        if (oldItemsSource != itemsSource)
-        {
-            ir.ItemsSource(itemsSource);
-        }
+        ir.ItemsSource(itemsSource);
     }
 }
 
@@ -620,7 +615,7 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
 {
     auto path = std::vector<int>();
 
-    auto child = (nvib).try_as<winrt::DependencyObject>();
+    winrt::DependencyObject child = nvib;
     auto parent = winrt::VisualTreeHelper::GetParent(child);
     if (!parent)
     {
@@ -632,9 +627,11 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
     {
         if (auto parentIR = parent.try_as<winrt::ItemsRepeater>())
         {
-            path.insert(path.begin(), parentIR.GetElementIndex(child.try_as<winrt::UIElement>()));
+            if (auto childElement = child.try_as<winrt::UIElement>())
+            {
+                path.insert(path.begin(), parentIR.GetElementIndex(childElement));
+            }
         }
-
         child = parent;
         parent = winrt::VisualTreeHelper::GetParent(parent);
     }
