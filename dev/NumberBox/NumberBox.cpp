@@ -87,7 +87,17 @@ void NumberBox::OnApplyTemplate()
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
         if (textBox)
         {
-            m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            if (SharedHelpers::IsRS3OrHigher())
+            {
+                // Listen to PreviewKeyDown because textbox eats the down arrow key in some circumstances.
+                m_textBoxPreviewKeyDownRevoker = textBox.PreviewKeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            }
+            else
+            {
+                // This is better than nothing.
+                m_textBoxKeyDownRevoker = textBox.KeyDown(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyDown });
+            }
+
             m_textBoxKeyUpRevoker = textBox.KeyUp(winrt::auto_revoke, { this, &NumberBox::OnNumberBoxKeyUp });
         }
         return textBox;
@@ -189,7 +199,7 @@ void NumberBox::OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedE
     UpdateSpinButtonEnabled();
 }
 
-void NumberBox::OnStepFrequencyPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void NumberBox::OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateSpinButtonEnabled();
 }
@@ -353,12 +363,12 @@ void NumberBox::ValidateInput()
 
 void NumberBox::OnSpinDownClick(winrt::IInspectable const&  sender, winrt::RoutedEventArgs const& args)
 {
-    StepValueDown();
+    StepValue(-SmallChange());
 }
 
 void NumberBox::OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args)
 {
-    StepValueUp();
+    StepValue(SmallChange());
 }
 
 void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args)
@@ -367,12 +377,22 @@ void NumberBox::OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::Key
     switch (args.OriginalKey())
     {
         case winrt::VirtualKey::Up:
-            StepValueUp();
-            args.Handled(true);
+            StepValue(SmallChange());
+            args.Handled(true); 
             break;
 
         case winrt::VirtualKey::Down:
-            StepValueDown();
+            StepValue(-SmallChange());
+            args.Handled(true);
+            break;
+
+        case winrt::VirtualKey::PageUp:
+            StepValue(LargeChange());
+            args.Handled(true);
+            break;
+
+        case winrt::VirtualKey::PageDown:
+            StepValue(-LargeChange());
             args.Handled(true);
             break;
     }
@@ -405,17 +425,19 @@ void NumberBox::OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::Poin
             const auto delta = args.GetCurrentPoint(*this).Properties().MouseWheelDelta();
             if (delta > 0)
             {
-                StepValueUp();
+                StepValue(SmallChange());
             }
             else if (delta < 0)
             {
-                StepValueDown();
+                StepValue(-SmallChange());
             }
+            // Only set as handled when we actually changed our state.
+            args.Handled(true);
         }
     }
 }
 
-void NumberBox::StepValue(bool isPositive)
+void NumberBox::StepValue(double change)
 {
     // Before adjusting the value, validate the contents of the textbox so we don't override it.
     ValidateInput();
@@ -423,14 +445,7 @@ void NumberBox::StepValue(bool isPositive)
     auto newVal = Value();
     if (!std::isnan(newVal))
     {
-        if (isPositive)
-        {
-            newVal += StepFrequency();
-        }
-        else
-        {
-            newVal -= StepFrequency();
-        }
+        newVal += change;
 
         if (IsWrapEnabled())
         {
