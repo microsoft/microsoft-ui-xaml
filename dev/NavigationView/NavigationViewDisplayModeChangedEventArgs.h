@@ -18,5 +18,3 @@ public:
 private:
     winrt::NavigationViewDisplayMode m_DisplayMode;
 };
-
-//CppWinRTActivatableClassWithBasicFactory(NavigationViewDisplayModeChangedEventArgs);

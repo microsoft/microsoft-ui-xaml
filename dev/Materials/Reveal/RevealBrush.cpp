@@ -16,14 +16,8 @@
 #include "vector.h"
 #include "RuntimeProfiler.h"
 
-namespace winrt::Microsoft::UI::Xaml::Media
-{
-    CppWinRTActivatableClassWithDPFactory(RevealBackgroundBrush)
-    CppWinRTActivatableClassWithDPFactory(RevealBorderBrush)
-}
-
-#include "RevealBorderBrush.g.cpp"
-#include "RevealBackgroundBrush.g.cpp"
+#include "RevealBorderBrush.properties.cpp"
+#include "RevealBackgroundBrush.properties.cpp"
 
 const winrt::Color RevealBrush::sc_defaultColor{ 0, 255, 255, 255 };
 
