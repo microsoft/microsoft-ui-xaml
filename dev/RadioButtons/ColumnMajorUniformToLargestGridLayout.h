@@ -37,6 +37,8 @@ public:
     void LayoutChanged(winrt::event_token const& token);
 
 private:
+    int CalculateColumns(int childCount, float maxItemWidth, float availableWidth);
+    int m_actualColumnCount{ 1 };
     winrt::Size m_largestChildSize{ 0,0 };
 
     //Testhooks helpers, only function while m_testHooksEnabled == true

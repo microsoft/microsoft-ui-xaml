@@ -22,7 +22,9 @@
             <Grid Grid.Column="0" Margin="5" MinWidth="500" MaxWidth="800">
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
-                        <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
+                        <Border x:Name="TestRadioButtonsBorder" BorderBrush="Black" BorderThickness="1">
+                            <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
+                        </Border>
                         <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
                             <RadioButton x:Name="TheRadioButton">"I'm really a Radio Button"</RadioButton>
                             <x:String>I'm just a string</x:String>
@@ -68,6 +70,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <!--20-->
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -111,9 +114,11 @@
                             <TextBlock Text="Checked:" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="16" Grid.Column="0"/>
                             <CheckBox x:Name="CustomCheckedCheckBox" AutomationProperties.Name="CustomCheckedCheckBox" HorizontalAlignment="Left" Grid.Row="16" Grid.Column="1"/>
                             <TextBlock Text="TestPage Utilities" HorizontalAlignment="Center" Foreground="Red" Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="2"/>
-                            <Button Content="Focus Selected Item" AutomationProperties.Name="FocusSelectedItemButton" Grid.Row="18" Grid.Column="0" Grid.ColumnSpan="2" Click="FocusSelectedItemButton_Clicked"/>
-                            <Button Content="Select 5 then change source" AutomationProperties.Name="Select5ThenChangeSourceButton" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2" Click="Select5ThenChangeSourceButton_Clicked"/>
-                            <CheckBox x:Name="AllowInvalidValuesCheckBox" AutomationProperties.Name="AllowInvalidValuesCheckBox" Content="Allow Invalid Values" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="2" />
+                            <TextBox x:Name="BorderWidthTextBox" AutomationProperties.Name="BorderWidthTextBox" Text="inf" Grid.Row="18" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Button x:Name="SetBorderWidthButton" AutomationProperties.Name="SetBorderWidthButton" Content="Set" Grid.Row="18" Grid.Column="1" HorizontalAlignment="Left" Click="SetBorderWidthButton_Click"/>
+                            <Button Content="Focus Selected Item" AutomationProperties.Name="FocusSelectedItemButton" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2" Click="FocusSelectedItemButton_Clicked"/>
+                            <Button Content="Select 5 then change source" AutomationProperties.Name="Select5ThenChangeSourceButton" Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="2" Click="Select5ThenChangeSourceButton_Clicked"/>
+                            <CheckBox x:Name="AllowInvalidValuesCheckBox" AutomationProperties.Name="AllowInvalidValuesCheckBox" Content="Allow Invalid Values" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" Grid.Row="21" Grid.Column="0" Grid.ColumnSpan="2" />
                         </Grid>
                     </ScrollViewer>
                     <ScrollViewer Margin="5">
