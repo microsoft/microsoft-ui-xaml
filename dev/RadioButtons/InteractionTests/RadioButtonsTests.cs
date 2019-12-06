@@ -142,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Crashing tests, issue #1655
+        [TestMethod]
         public void BasicKeyboardTest()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
