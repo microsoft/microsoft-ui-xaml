@@ -5,22 +5,38 @@
 #include "NavigationViewItemsFactory.h"
 #include "NavigationViewItemBase.h"
 #include "NavigationViewItem.h"
+#include "ItemTemplateWrapper.h"
+
 
 NavigationViewItemsFactory::NavigationViewItemsFactory()
 {
 }
 
+void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable newValue)
+{
+    m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
+    if (!m_itemTemplateWrapper)
+    {
+        // ItemTemplate set does not implement IElementFactoryShim. We also 
+        // want to support DataTemplate and DataTemplateSelectors automagically.
+        if (auto dataTemplate = newValue.try_as<winrt::DataTemplate>())
+        {
+            m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(dataTemplate);
+        }
+        else if (auto selector = newValue.try_as<winrt::DataTemplateSelector>())
+        {
+            m_itemTemplateWrapper = winrt::make<ItemTemplateWrapper>(selector);
+        }
+    }
+}
+
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
     winrt::IInspectable newContent = args.Data();
-    // Attempt to get NavigationViewItemBase from user defined IElementFactory
-    if (m_userElementFactory)
+    // Attempt to get NavigationViewItemBase from user defined ItemTemplate
+    if (m_itemTemplateWrapper)
     {
-        // Convert to args argument in the Windows::UI::Xaml namespace
-        m_getArgsWUX.Data(args.Data());
-        m_getArgsWUX.Parent(args.Parent());
-        auto element = m_userElementFactory.GetElement(m_getArgsWUX);
-
+        auto element = m_itemTemplateWrapper.GetElement(args);
         if (element.try_as<winrt::NavigationViewItemBase>())
         {
             return element;
@@ -43,11 +59,22 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
 
 void NavigationViewItemsFactory::RecycleElementCore(winrt::ElementFactoryRecycleArgs const& args)
 {
-    if (m_userElementFactory)
+    if (m_itemTemplateWrapper)
     {
-        // Convert to args argument in the Windows::UI::Xaml namespace
-        m_recycleArgsWUX.Element(args.Element());
-        m_recycleArgsWUX.Parent(args.Parent());
-        m_userElementFactory.RecycleElement(m_recycleArgsWUX);
+        m_itemTemplateWrapper.RecycleElement(args);
+    }
+    else
+    {
+        // We want to unlink the containers from the parent repeater
+        // in case we are required to move it to a different repeater.
+        if (auto panel = args.Parent().try_as<winrt::Panel>())
+        {
+            auto children = panel.Children();
+            unsigned int childIndex = 0;
+            if (children.IndexOf(args.Element(), childIndex))
+            {
+                children.RemoveAt(childIndex);
+            }
+        }
     }
 }

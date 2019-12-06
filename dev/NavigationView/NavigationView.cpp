@@ -737,18 +737,6 @@ void NavigationView::RepeaterElementClearing(const winrt::ItemsRepeater& ir, con
         // Revoke all the events that we were listing to on the item
         nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     }
-
-    // We want to unlink the containers from the parent repeater
-    // in case we are required to move it to a different repeater.
-    if (auto panel = ir.try_as<winrt::Panel>())
-    {
-        auto children = panel.Children();
-        unsigned int childIndex = 0;
-        if (children.IndexOf(args.Element(), childIndex))
-        {
-            children.RemoveAt(childIndex);
-        }
-    }
 }
 
 // Hook up the Settings Item Invoked event listener
@@ -1826,8 +1814,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
     winrt::ItemsRepeater ir { nullptr };
     if (IsTopNavigationView())
     {
-        bool isContainerInOverflow = IsContainerInOverflow(nvib);
-        if (isContainerInOverflow)
+        if (IsContainerInOverflow(nvib))
         {
             ir = m_topNavRepeaterOverflowView.get();
         }
@@ -3040,12 +3027,12 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
 
 void NavigationView::UpdateNavigationViewItemsFactory()
 {
-    winrt::Windows::UI::Xaml::IElementFactory newIElementFactory = MenuItemTemplate();
-    if (!newIElementFactory)
+    winrt::IInspectable newItemTemplate = MenuItemTemplate();
+    if (!newItemTemplate)
     {
-        newIElementFactory = MenuItemTemplateSelector();
+        newItemTemplate = MenuItemTemplateSelector();
     }
-    m_navigationViewItemsFactory->UserElementFactory(newIElementFactory);
+    m_navigationViewItemsFactory->UserElementFactory(newItemTemplate);
 }
 
 void NavigationView::SyncItemTemplates()

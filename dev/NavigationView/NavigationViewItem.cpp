@@ -8,8 +8,6 @@
 #include "NavigationViewItem.h"
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
-#include <InspectingDataSource.h>
-
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 

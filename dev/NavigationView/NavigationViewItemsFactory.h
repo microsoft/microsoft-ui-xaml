@@ -12,7 +12,7 @@ class NavigationViewItemsFactory :
 public:
     NavigationViewItemsFactory();
 
-    void UserElementFactory(winrt::Windows::UI::Xaml::IElementFactory elementFactory) { m_userElementFactory = elementFactory; };
+    void UserElementFactory(winrt::IInspectable newValue);
 
 #pragma region IElementFactoryOverrides
     winrt::UIElement GetElementCore(winrt::ElementFactoryGetArgs const& args);
@@ -20,8 +20,6 @@ public:
 #pragma endregion
 
 private:
-    winrt::Windows::UI::Xaml::IElementFactory m_userElementFactory{ nullptr };
-    winrt::Windows::UI::Xaml::ElementFactoryGetArgs m_getArgsWUX{};
-    winrt::Windows::UI::Xaml::ElementFactoryRecycleArgs m_recycleArgsWUX{};
+    winrt::Microsoft::UI::Xaml::Controls::IElementFactoryShim m_itemTemplateWrapper{ nullptr };
 
 };
