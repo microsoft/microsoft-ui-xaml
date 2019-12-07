@@ -605,13 +605,9 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
     auto itemTemplateFactory = m_owner->ItemTemplateShim();
 
     winrt::UIElement element = nullptr;
-    bool itemsSourceContainsElements = false;
     if (!itemTemplateFactory)
     {
         element = data.try_as<winrt::UIElement>();
-        // No item template provided and ItemsSource contains objects derived from UIElement.
-        // In this case, just use the data directly as elements.
-        itemsSourceContainsElements = element != nullptr;
     }
 
     if (!element)
@@ -654,7 +650,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         REPEATER_TRACE_PERF(L"ElementRecycled");
     }
 
-    if (!itemsSourceContainsElements)
+    if (data != element)
     {
         // Prepare the element
         // If we are phasing, run phase 0 before setting DataContext. If phase 0 is not 
@@ -704,7 +700,7 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
 
     repeater->OnElementPrepared(element, index);
 
-    if (!itemsSourceContainsElements)
+    if (data != element)
     {
         m_phaser.PhaseElement(element, virtInfo);
     }

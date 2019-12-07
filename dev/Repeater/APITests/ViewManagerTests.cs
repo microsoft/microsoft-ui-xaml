@@ -586,6 +586,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateDataContextDoesNotGetOverwritten()
+        {
+            ItemsRepeater repeater = null;
+            const string c_element1DataContext = "Element1_DataContext";
+
+            RunOnUIThread.Execute(() =>
+            {
+                List<Button> data = new List<Button>();
+
+                var element1 = new Button();
+                element1.Content = "Element1_Content";
+                element1.DataContext = c_element1DataContext;
+                data.Add(element1);
+
+                var elementFactory = new DataAsElementElementFactory();
+
+                repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = elementFactory,
+                    Layout = new StackLayout()
+                };
+
+                Content = repeater;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                // Verify that DataContext is still the same
+                var firstElement = repeater.TryGetElement(0) as Button;
+                var retrievedDataContextItem1 = firstElement.DataContext as string;
+                Verify.IsTrue(retrievedDataContextItem1 == c_element1DataContext);
+            });
+        }
+
         // [TestMethod] Issue 1018
         public void ValidateFocusMoveOnElementCleared()
         {
