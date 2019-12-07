@@ -931,7 +931,7 @@ void MaterialHelper::UpdatePolicyStatus(bool onUIThread)
             }
             else
             {
-                m_dispatcher.RunAsync(winrt::CoreDispatcherPriority::Normal, callback);
+                auto ignore = m_dispatcher.RunAsync(winrt::CoreDispatcherPriority::Normal, callback);
             }
         }
     }

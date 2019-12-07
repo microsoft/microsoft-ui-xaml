@@ -366,7 +366,7 @@ void SharedHelpers::ScheduleActionAfterWait(
     // The callback that is given to CreateTimer is called off of the UI thread.
     // In order to make this useful by making it so we can interact with XAML objects,
     // we'll use the dispatcher to first post our work to the UI thread before executing it.
-    winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
+    auto timer = winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
         [action, dispatcherHelper](auto const&)
         {
             dispatcherHelper.RunAsync(action);
@@ -384,7 +384,7 @@ winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const win
     writer.WriteBytes(winrt::array_view<const byte>(bytes));
     SyncWait(writer.StoreAsync());
     SyncWait(writer.FlushAsync());
-    writer.DetachStream();
+    auto detachedStream = writer.DetachStream();
     writer.Close();
 
     stream.Seek(0);

@@ -165,9 +165,12 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 #endif
         if (!this->m_inner) // We need to derive from DependencyObject. Do so if it didn't happen yet.
         {
+#pragma warning(push)
+#pragma warning(disable : 26444) // Disable es.84, there is sometimes a return value that needs to be assigned and ignored
             // Internally derive from DependencyObject to get ReferenceTracker behavior.
             winrt::impl::call_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>([&](auto&& f) { f.CreateInstance(*this, this->m_inner); });
             //winrt::get_activation_factory<winrt::DependencyObject, winrt::IDependencyObjectFactory>().CreateInstance(*this, this->m_inner);
+#pragma warning(pop)
         }
         if (this->m_inner)
         {
@@ -187,8 +190,6 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 private:
     DWORD m_owningThreadId{};
 };
-
-////////////////////////////////
 
 #define CppWinRTActivatableClassWithFactory(className, factory) \
     namespace factory_implementation { using className = factory; }; \

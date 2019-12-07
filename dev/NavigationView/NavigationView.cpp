@@ -1674,7 +1674,7 @@ bool NavigationView::BumperNavigation(int offset)
     {
         if (auto nvi = NavigationViewItemOrSettingsContentFromData(item))
         {
-            auto index = m_topDataProvider.IndexOf(item, PrimaryList);
+            auto index = m_topDataProvider.IndexOf(item, NavigationViewSplitVectorID::PrimaryList);
 
             if (index >= 0)
             {
@@ -1938,7 +1938,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
         bool measureOverrideDidNothing = m_shouldInvalidateMeasureOnNextLayoutUpdate && !m_layoutUpdatedToken;
             
         if (measureOverrideDidNothing ||
-            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
+            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, NavigationViewSplitVectorID::PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
         }
@@ -2568,7 +2568,7 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
     std::vector<int> toBeMoved;
     if (auto listView = m_topNavListView.get())
     {
-        int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), PrimaryList);
+        int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), NavigationViewSplitVectorID::PrimaryList);
         int size = m_topDataProvider.GetPrimaryListSize();
 
         float requiredWidth = 0;

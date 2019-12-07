@@ -6,7 +6,7 @@
 
 class SelectionModel;
 
-enum SelectionState
+enum class SelectionState
 {
     Selected,
     NotSelected,

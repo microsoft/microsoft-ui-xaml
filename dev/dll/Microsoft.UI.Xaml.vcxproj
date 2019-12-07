@@ -167,14 +167,18 @@
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
-  <!-- Disable code analysis until this compiler bug is fixed: Bug 616860: /analyze on pch.cpp using C++/WinRT takes 25 minutes and runs out of memory -->
-  <!-- <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
+  <PropertyGroup Condition="
+    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
+    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
+    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
+    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup> -->
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -227,7 +231,7 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>

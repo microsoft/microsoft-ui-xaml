@@ -756,7 +756,7 @@ winrt::TreeViewNode TreeViewItem::TreeNode()
 void TreeViewItem::UpdateNodeIsExpandedAsync(winrt::TreeViewNode const& node, bool isExpanded)
 {
     auto dispatcher = winrt::Window::Current().Dispatcher();
-    dispatcher.RunAsync(
+    auto ignore = dispatcher.RunAsync(
         winrt::CoreDispatcherPriority::Normal,
         winrt::DispatchedHandler([node, isExpanded]()
     {
