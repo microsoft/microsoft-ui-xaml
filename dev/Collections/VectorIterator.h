@@ -55,7 +55,7 @@ public:
 
     bool HasCurrent()
     {
-        uint32_t size = m_vector.get().Size();
+        const uint32_t size = m_vector.get().Size();
         return m_currentIndex < size;
     }
 
