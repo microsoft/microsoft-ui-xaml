@@ -3,7 +3,7 @@
 
 #pragma once
 
-#define WINRT_LEAN_AND_MEAN 1
+//#define WINRT_LEAN_AND_MEAN 1
 
 #define NOMINMAX
 
