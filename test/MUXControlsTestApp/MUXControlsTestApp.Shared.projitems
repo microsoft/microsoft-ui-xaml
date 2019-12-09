@@ -271,11 +271,13 @@
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxHiddenSpinButtons-7.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxHiddenSpinButtons.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxCompactSpinButtons-7.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxCompactSpinButtons-8.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxCompactSpinButtons.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxInlineSpinButtons-4.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxInlineSpinButtons-6.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxInlineSpinButtons-7.xml" />
     <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxInlineSpinButtons-8.xml" />
+    <Content Include="$(MSBuildThisFileDirectory)master\NumberBoxInlineSpinButtons.xml" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\AutoSave.png" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\LargeWisteria.jpg" />
     <Content Include="$(MSBuildThisFileDirectory)\Assets\rating_disabled.png" />
