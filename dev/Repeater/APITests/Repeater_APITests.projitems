@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EffectiveViewportScrollViewerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ElementAnimatorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\ElementFromElementElementFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutCollectionChangeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)FlowLayoutTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IndexPathTests.cs" />

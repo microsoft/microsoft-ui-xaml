@@ -597,45 +597,69 @@ winrt::UIElement ViewManager::GetElementFromPinnedElements(int index)
     return element;
 }
 
+// There are several cases handled here with respect to which element gets returned and when DataContext is modified.
+//
+// 1. If there is no ItemTemplate:
+//    1.1 If data is a UIElement -> the data is returned
+//    1.2 If data is not a UIElement -> a default DataTemplate is used to fetch element and DataContext is set to data**
+//
+// 2. If there is an ItemTemplate:
+//    2.1 If data is not a FrameworkElement -> Element is fetched from ElementFactory and DataContext is set to the data**
+//    2.2 If data is a FrameworkElement:
+//        2.2.1 If Element returned by the ElementFactory is the same as the data -> Element (a.k.a. data) is returned as is
+//        2.2.2 If Element returned by the ElementFactory is not the same as the data
+//                 -> Element that is fetched from the ElementFactory is returned and
+//                    DataContext is set to the data's DataContext (if it exists), otherwise it is set to the data itself**
+//
+// **data context is set only if no x:Bind was used. ie. No data template component on the root.
 winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
 {
     // The view generator is the provider of last resort.
-    auto data = m_owner->ItemsSourceView().GetAt(index);
-    
-    auto itemTemplateFactory = m_owner->ItemTemplateShim();
+    auto const data = m_owner->ItemsSourceView().GetAt(index);
 
-    winrt::UIElement element = nullptr;
-    if (!itemTemplateFactory)
+    auto const element = [this, data, index, providedElementFactory = m_owner->ItemTemplateShim()]()
     {
-        element = data.try_as<winrt::UIElement>();
-    }
-
-    if (!element)
-    {
-        if (!itemTemplateFactory)
+        if (!providedElementFactory)
         {
-            // If no ItemTemplate was provided, use a default 
-            auto factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
-            m_owner->ItemTemplate(factory);
-            itemTemplateFactory = m_owner->ItemTemplateShim();
+            if (auto const dataAsElement = data.try_as<winrt::UIElement>())
+            {
+                return dataAsElement;
+            }
         }
 
-        if (!m_ElementFactoryGetArgs)
+        auto const elementFactory = [this, providedElementFactory]()
         {
-            // Create one.
-            m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
-        }
+            if (!providedElementFactory)
+            {
+                // If no ItemTemplate was provided, use a default
+                auto const factory = winrt::XamlReader::Load(L"<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><TextBlock Text='{Binding}'/></DataTemplate>").as<winrt::DataTemplate>();
+                m_owner->ItemTemplate(factory);
+                return m_owner->ItemTemplateShim();
+            }
+            return providedElementFactory;
+        }();
 
-        auto args = m_ElementFactoryGetArgs.get();
+        auto const args = [this]()
+        {
+            if (!m_ElementFactoryGetArgs)
+            {
+                m_ElementFactoryGetArgs = tracker_ref<winrt::ElementFactoryGetArgs>(m_owner, *winrt::make_self<ElementFactoryGetArgs>());
+            }
+            return m_ElementFactoryGetArgs.get();
+        }();
+
+        auto scopeGuard = gsl::finally([args]()
+            {
+                args.Data(nullptr);
+                args.Parent(nullptr);
+            });
+
         args.Data(data);
         args.Parent(*m_owner);
         args.as<ElementFactoryGetArgs>()->Index(index);
 
-        element = itemTemplateFactory.GetElement(args);
-
-        args.Data(nullptr);
-        args.Parent(nullptr);
-    }
+        return elementFactory.GetElement(args);
+    }();
 
     auto virtInfo = ItemsRepeater::TryGetVirtualizationInfo(element);
     if (!virtInfo)
@@ -673,7 +697,22 @@ winrt::UIElement ViewManager::GetElementFromElementFactory(int index)
         {
             // Set data context only if no x:Bind was used. ie. No data template component on the root.
             auto elementAsFE = element.try_as<winrt::FrameworkElement>();
-            elementAsFE.DataContext(data);
+            // If the passed in data is a UIElement and is different from the element returned by 
+            // the template factory then we need to propagate the DataContext.
+            // Otherwise just set the DataContext on the element as the data.
+            auto const elementDataContext = [this, data]()
+            {
+                if (auto const dataAsElement = data.try_as<winrt::FrameworkElement>())
+                {
+                    if (auto const dataDataContext = dataAsElement.DataContext())
+                    {
+                        return dataDataContext;
+                    }
+                }
+                return data;
+            }();
+
+            elementAsFE.DataContext(elementDataContext);
         }
     }
 

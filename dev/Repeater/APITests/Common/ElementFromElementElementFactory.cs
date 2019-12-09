@@ -9,15 +9,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common
     using Microsoft.UI.Xaml.Controls;
     using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 
-    class DataAsElementElementFactory : ElementFactory
+    class ElementFromElementElementFactory : ElementFactory
     {
         protected override UIElement GetElementCore(ElementFactoryGetArgs args)
         {
-            return args.Data as UIElement;
+            var button = new Button();
+            button.Content = args.Data;
+            return button;
         }
 
         protected override void RecycleElementCore(ElementFactoryRecycleArgs args)
         {
+            var container = args.Element as Button;
+            container.Content = null;
         }
     }
 }
