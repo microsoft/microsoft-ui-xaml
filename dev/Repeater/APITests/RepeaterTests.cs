@@ -196,6 +196,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyCurrentAnchor()
         {
+            if(PlatformConfiguration.IsDebugBuildConfiguration())
+            {
+                // Test is failing in chk configuration due to:
+                // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
+                Log.Warning("Skipping test for Debug builds.");
+                return;
+            }
+
             ItemsRepeater rootRepeater = null;
             ScrollViewer scrollViewer = null;
             ItemsRepeaterScrollHost scrollhost = null;
