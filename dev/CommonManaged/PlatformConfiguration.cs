@@ -101,5 +101,14 @@ namespace Common
         {
             return !IsOsVersionGreaterThanOrEqual(version);
         }
+
+        public static bool IsDebugBuildConfiguration()
+        {
+#if DEBUG
+            return true;
+#else
+            return false;
+#endif
+        }
     }
 }
