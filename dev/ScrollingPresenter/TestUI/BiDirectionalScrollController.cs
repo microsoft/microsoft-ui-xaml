@@ -99,29 +99,29 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            public bool IsInteractionVisualRailEnabled
+            public bool IsInteractionElementRailEnabled
             {
                 get
                 {
-                    RaiseLogMessage("UniScrollController: get_IsInteractionVisualRailEnabled for Orientation=" + Orientation);
+                    RaiseLogMessage("UniScrollController: get_IsInteractionElementRailEnabled for Orientation=" + Orientation);
                     return Owner.IsRailing;
                 }
             }
 
-            public Visual InteractionVisual
+            public UIElement InteractionElement
             {
                 get
                 {
-                    RaiseLogMessage("UniScrollController: get_InteractionVisual for Orientation=" + Orientation);
-                    return Owner.GetParentInteractionVisual();
+                    RaiseLogMessage("UniScrollController: get_InteractionElement for Orientation=" + Orientation);
+                    return Owner.GetParentInteractionElement();
                 }
             }
 
-            public Orientation InteractionVisualScrollOrientation
+            public Orientation InteractionElementScrollOrientation
             {
                 get
                 {
-                    RaiseLogMessage("UniScrollController: get_InteractionVisualScrollOrientation for Orientation=" + Orientation);
+                    RaiseLogMessage("UniScrollController: get_InteractionElementScrollOrientation for Orientation=" + Orientation);
                     return Orientation;
                 }
             }
@@ -221,7 +221,7 @@ namespace MUXControlsTestApp.Utilities
                     OffsetPropertyName = offsetPropertyName.Trim();
                     MultiplierPropertyName = multiplierPropertyName.Trim();
 
-                    UpdateInteractionVisualScrollMultiplier();
+                    UpdateInteractionElementScrollMultiplier();
 
                     if (ThumbOffsetAnimation == null)
                     {
@@ -301,7 +301,7 @@ namespace MUXControlsTestApp.Utilities
 
                 if (updateThumbSize && !Owner.UpdateThumbSize())
                 {
-                    UpdateInteractionVisualScrollMultiplier();
+                    UpdateInteractionElementScrollMultiplier();
                 }
             }
 
@@ -340,13 +340,13 @@ namespace MUXControlsTestApp.Utilities
                 return false;
             }
 
-            internal void UpdateInteractionVisualScrollMultiplier()
+            internal void UpdateInteractionElementScrollMultiplier()
             {
                 if (ExpressionAnimationSources != null && !string.IsNullOrWhiteSpace(MultiplierPropertyName))
                 {
-                    float interactionVisualScrollMultiplier = Owner.GetInteractionVisualScrollMultiplier(Orientation, MaxOffset, MinOffset);
+                    float interactionVisualScrollMultiplier = Owner.GetInteractionElementScrollMultiplier(Orientation, MaxOffset, MinOffset);
 
-                    RaiseLogMessage("UniScrollController: UpdateInteractionVisualScrollMultiplier for Orientation=" + Orientation + ", InteractionVisualScrollMultiplier=" + interactionVisualScrollMultiplier);
+                    RaiseLogMessage("UniScrollController: UpdateInteractionElementScrollMultiplier for Orientation=" + Orientation + ", InteractionElementScrollMultiplier=" + interactionVisualScrollMultiplier);
                     ExpressionAnimationSources.InsertScalar(MultiplierPropertyName, interactionVisualScrollMultiplier);
                 }
             }
@@ -445,30 +445,34 @@ namespace MUXControlsTestApp.Utilities
 
             private void StartThumbAnimation()
             {
-                if (Owner.InteractionVisual != null && ThumbOffsetAnimation != null)
+                if (Owner.InteractionElement != null && ThumbOffsetAnimation != null)
                 {
+                    Visual interactionVisual = ElementCompositionPreview.GetElementVisual(Owner.InteractionElement);
+
                     if (Orientation == Orientation.Horizontal)
                     {
-                        Owner.InteractionVisual.StartAnimation("Translation.X", ThumbOffsetAnimation);
+                        interactionVisual.StartAnimation("Translation.X", ThumbOffsetAnimation);
                     }
                     else
                     {
-                        Owner.InteractionVisual.StartAnimation("Translation.Y", ThumbOffsetAnimation);
+                        interactionVisual.StartAnimation("Translation.Y", ThumbOffsetAnimation);
                     }
                 }
             }
 
             private void StopThumbAnimation()
             {
-                if (Owner.InteractionVisual != null)
+                if (Owner.InteractionElement != null)
                 {
+                    Visual interactionVisual = ElementCompositionPreview.GetElementVisual(Owner.InteractionElement);
+
                     if (Orientation == Orientation.Horizontal)
                     {
-                        Owner.InteractionVisual.StopAnimation("Translation.X");
+                        interactionVisual.StopAnimation("Translation.X");
                     }
                     else
                     {
-                        Owner.InteractionVisual.StopAnimation("Translation.Y");
+                        interactionVisual.StopAnimation("Translation.Y");
                     }
                 }
             }
@@ -625,12 +629,12 @@ namespace MUXControlsTestApp.Utilities
                     Thumb.ManipulationMode |= ManipulationModes.TranslateRailsX | ManipulationModes.TranslateRailsY;
                 }
 
-                InteractionVisual = ElementCompositionPreview.GetElementVisual(Thumb);
+                InteractionElement = Thumb;
                 ElementCompositionPreview.SetIsTranslationEnabled(Thumb, true);
             }
             else
             {
-                InteractionVisual = null;
+                InteractionElement = null;
             }
 
             HookHandlers();
@@ -638,11 +642,10 @@ namespace MUXControlsTestApp.Utilities
             RaiseInteractionInfoChanged();
         }
 
-        internal Visual GetParentInteractionVisual()
+        internal UIElement GetParentInteractionElement()
         {
-            RaiseLogMessage("BiDirectionalScrollController: GetParentInteractionVisual");
-            return (Thumb != null && Thumb.Parent != null) ?
-                ElementCompositionPreview.GetElementVisual(Thumb.Parent as UIElement) : null;
+            RaiseLogMessage("BiDirectionalScrollController: GetParentInteractionElement");
+            return (Thumb != null && Thumb.Parent != null) ? Thumb.Parent as UIElement : null;
         }
 
         internal bool AreScrollerInteractionsAllowed
@@ -657,7 +660,7 @@ namespace MUXControlsTestApp.Utilities
             private set;
         }
 
-        internal Visual InteractionVisual
+        internal UIElement InteractionElement
         {
             get;
             private set;
@@ -1033,28 +1036,28 @@ namespace MUXControlsTestApp.Utilities
                 {
                     RaiseLogMessage("BiDirectionalScrollController: UpdateThumbSize for Orientation=Horizontal, setting Width=" + newSize.Width);
                     Thumb.Width = newSize.Width;
-                    var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateHorizontalInteractionVisualScrollMultiplier);
+                    var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateHorizontalInteractionElementScrollMultiplier);
                     return true;
                 }
                 if (newSize.Height != Thumb.Height)
                 {
                     RaiseLogMessage("BiDirectionalScrollController: UpdateThumbSize for Orientation=Vertical, setting Height=" + newSize.Height);
                     Thumb.Height = newSize.Height;
-                    var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateVerticalInteractionVisualScrollMultiplier);
+                    var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateVerticalInteractionElementScrollMultiplier);
                     return true;
                 }
             }
             return false;
         }
 
-        private void UpdateHorizontalInteractionVisualScrollMultiplier()
+        private void UpdateHorizontalInteractionElementScrollMultiplier()
         {
-            horizontalScrollController.UpdateInteractionVisualScrollMultiplier();
+            horizontalScrollController.UpdateInteractionElementScrollMultiplier();
         }
 
-        private void UpdateVerticalInteractionVisualScrollMultiplier()
+        private void UpdateVerticalInteractionElementScrollMultiplier()
         {
-            verticalScrollController.UpdateInteractionVisualScrollMultiplier();
+            verticalScrollController.UpdateInteractionElementScrollMultiplier();
         }
 
         private Point ScrollingPresenterOffsetFromThumbOffset(Point thumbOffset)
@@ -1328,7 +1331,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        internal float GetInteractionVisualScrollMultiplier(Orientation orientation, double maxOffset, double minOffset)
+        internal float GetInteractionElementScrollMultiplier(Orientation orientation, double maxOffset, double minOffset)
         {
             if (Thumb != null)
             {

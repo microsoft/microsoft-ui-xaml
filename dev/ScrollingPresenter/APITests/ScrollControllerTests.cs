@@ -65,11 +65,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(horizontalScrollController.AreScrollControllerInteractionsAllowed);
                 Verify.IsTrue(horizontalScrollController.AreScrollerInteractionsAllowed);
                 Verify.IsFalse(horizontalScrollController.IsInteracting);
-                Verify.IsNull(horizontalScrollController.InteractionVisual);
+                Verify.IsNull(horizontalScrollController.InteractionElement);
                 Verify.IsTrue(verticalScrollController.AreScrollControllerInteractionsAllowed);
                 Verify.IsTrue(verticalScrollController.AreScrollerInteractionsAllowed);
                 Verify.IsFalse(verticalScrollController.IsInteracting);
-                Verify.IsNull(verticalScrollController.InteractionVisual);
+                Verify.IsNull(verticalScrollController.InteractionElement);
             });
         }
 

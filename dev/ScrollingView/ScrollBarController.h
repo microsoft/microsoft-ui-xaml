@@ -25,11 +25,11 @@ public:
 
     bool IsInteracting();
 
-    bool IsInteractionVisualRailEnabled();
+    bool IsInteractionElementRailEnabled();
 
-    winrt::Visual InteractionVisual();
+    winrt::UIElement InteractionElement();
 
-    winrt::Orientation InteractionVisualScrollOrientation();
+    winrt::Orientation InteractionElementScrollOrientation();
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,

@@ -196,9 +196,9 @@ interface IScrollController
     Boolean AreScrollControllerInteractionsAllowed { get; };
     Boolean AreScrollerInteractionsAllowed { get; };
     Boolean IsInteracting { get; };
-    Boolean IsInteractionVisualRailEnabled { get; };
-    Windows.UI.Composition.Visual InteractionVisual { get; };
-    Windows.UI.Xaml.Controls.Orientation InteractionVisualScrollOrientation { get; };
+    Boolean IsInteractionElementRailEnabled { get; };
+    Windows.UI.Xaml.UIElement InteractionElement { get; };
+    Windows.UI.Xaml.Controls.Orientation InteractionElementScrollOrientation { get; };
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);

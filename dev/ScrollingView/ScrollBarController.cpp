@@ -54,21 +54,21 @@ bool ScrollBarController::IsInteracting()
     return m_isInteracting;
 }
 
-bool ScrollBarController::IsInteractionVisualRailEnabled()
+bool ScrollBarController::IsInteractionElementRailEnabled()
 {
-    // Unused because InteractionVisual returns null.
+    // Unused because InteractionElement returns null.
     return true;
 }
 
-winrt::Visual ScrollBarController::InteractionVisual()
+winrt::UIElement ScrollBarController::InteractionElement()
 {
     // This IScrollController implementation has no touch-manipulatable element.
     return nullptr;
 }
 
-winrt::Orientation ScrollBarController::InteractionVisualScrollOrientation()
+winrt::Orientation ScrollBarController::InteractionElementScrollOrientation()
 {
-    // Unused because InteractionVisual returns null.
+    // Unused because InteractionElement returns null.
     MUX_ASSERT(m_scrollBar);
     return m_scrollBar.Orientation();
 }
@@ -80,7 +80,7 @@ void ScrollBarController::SetExpressionAnimationSources(
     winrt::hstring const& offsetPropertyName,
     winrt::hstring const& multiplierPropertyName)
 {
-    // Unused because InteractionVisual returns null.
+    // Unused because InteractionElement returns null.
     SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
@@ -243,7 +243,7 @@ void ScrollBarController::ScrollFromRequested(winrt::event_token const& token)
 winrt::event_token ScrollBarController::InteractionRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerInteractionRequestedEventArgs> const& value)
 {
     SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // Because this IScrollController implementation does not expose an InteractionVisual, 
+    // Because this IScrollController implementation does not expose an InteractionElement, 
     // this InteractionRequested event is not going to be raised.
     return {};
 }
@@ -251,7 +251,7 @@ winrt::event_token ScrollBarController::InteractionRequested(winrt::TypedEventHa
 void ScrollBarController::InteractionRequested(winrt::event_token const& token)
 {
     SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
-    // Because this IScrollController implementation does not expose an InteractionVisual, 
+    // Because this IScrollController implementation does not expose an InteractionElement, 
     // this InteractionRequested event is not going to be raised.
 }
 

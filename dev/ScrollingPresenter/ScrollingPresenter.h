@@ -577,10 +577,10 @@ private:
         const winrt::UIElement& content);
     void HookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController,
-        bool hasInteractionVisual);
+        bool hasInteractionElement);
     void HookVerticalScrollControllerEvents(
         const winrt::IScrollController& verticalScrollController,
-        bool hasInteractionVisual);
+        bool hasInteractionElement);
     void UnhookCompositionTargetRendering();
     void UnhookContentPropertyChanged(
         const winrt::UIElement& content);

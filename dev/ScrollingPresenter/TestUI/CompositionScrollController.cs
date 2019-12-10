@@ -196,7 +196,7 @@ namespace MUXControlsTestApp.Utilities
                     }
 
                     isThumbPositionMirrored = value;
-                    UpdateInteractionVisualScrollMultiplier();
+                    UpdateInteractionElementScrollMultiplier();
                     UpdateInteractionFrameworkElementOffset();
 
                     if (IsAnimatingThumbOffset)
@@ -252,7 +252,7 @@ namespace MUXControlsTestApp.Utilities
                 this.offsetPropertyName = offsetPropertyName.Trim();
                 this.multiplierPropertyName = multiplierPropertyName.Trim();
 
-                UpdateInteractionVisualScrollMultiplier();
+                UpdateInteractionElementScrollMultiplier();
 
                 if (thumbOffsetAnimation == null && IsAnimatingThumbOffset)
                 {
@@ -329,7 +329,7 @@ namespace MUXControlsTestApp.Utilities
 
             if (updateInteractionFrameworkElementSize && !UpdateInteractionFrameworkElementSize())
             {
-                UpdateInteractionVisualScrollMultiplier();
+                UpdateInteractionElementScrollMultiplier();
             }
 
             UpdateInteractionFrameworkElementOffset();
@@ -512,36 +512,36 @@ namespace MUXControlsTestApp.Utilities
             private set;
         }
 
-        public bool IsInteractionVisualRailEnabled
+        public bool IsInteractionElementRailEnabled
         {
             get
             {
-                RaiseLogMessage("CompositionScrollController: get_IsInteractionVisualRailEnabled for Orientation=" + Orientation);
+                RaiseLogMessage("CompositionScrollController: get_IsInteractionElementRailEnabled for Orientation=" + Orientation);
                 return true;
             }
         }
 
-        public Visual InteractionVisual
+        public UIElement InteractionElement
         {
             get
             {
                 // Note: Returning interactionVisual causes flickers when interacting with it (InteractionTracker issue).
-                RaiseLogMessage("CompositionScrollController: get_InteractionVisual for Orientation=" + Orientation);
+                RaiseLogMessage("CompositionScrollController: get_InteractionElement for Orientation=" + Orientation);
                 return (IsThumbPannable && IsEnabled && interactionFrameworkElement != null && interactionFrameworkElement.Parent != null) ? 
-                    ElementCompositionPreview.GetElementVisual(interactionFrameworkElement.Parent as FrameworkElement) : null;
+                    interactionFrameworkElement.Parent as UIElement : null;
             }
         }
 
-        public Orientation InteractionVisualScrollOrientation
+        public Orientation InteractionElementScrollOrientation
         {
             get
             {
-                RaiseLogMessage("CompositionScrollController: get_InteractionVisualScrollOrientation for Orientation=" + Orientation);
+                RaiseLogMessage("CompositionScrollController: get_InteractionElementScrollOrientation for Orientation=" + Orientation);
                 return Orientation;
             }
         }
 
-        private float InteractionVisualScrollMultiplier
+        private float InteractionElementScrollMultiplier
         {
             get
             {
@@ -559,7 +559,7 @@ namespace MUXControlsTestApp.Utilities
                     }
                     if (parentDim != interactionFrameworkElementDim)
                     {
-                        RaiseLogMessage("CompositionScrollController: InteractionVisualScrollMultiplier evaluation:");
+                        RaiseLogMessage("CompositionScrollController: InteractionElementScrollMultiplier evaluation:");
                         RaiseLogMessage("maxOffset:" + maxOffset);
                         RaiseLogMessage("minOffset:" + minOffset);
                         RaiseLogMessage("interactionFrameworkElementDim:" + interactionFrameworkElementDim);
@@ -915,13 +915,13 @@ namespace MUXControlsTestApp.Utilities
             RaiseInteractionInfoChanged();
         }
 
-        private void UpdateInteractionVisualScrollMultiplier()
+        private void UpdateInteractionElementScrollMultiplier()
         {
             if (expressionAnimationSources != null && !string.IsNullOrWhiteSpace(multiplierPropertyName))
             {
-                float interactionVisualScrollMultiplier = InteractionVisualScrollMultiplier;
+                float interactionVisualScrollMultiplier = InteractionElementScrollMultiplier;
 
-                RaiseLogMessage("CompositionScrollController: UpdateInteractionVisualScrollMultiplier for Orientation=" + Orientation + ", InteractionVisualScrollMultiplier=" + interactionVisualScrollMultiplier);
+                RaiseLogMessage("CompositionScrollController: UpdateInteractionElementScrollMultiplier for Orientation=" + Orientation + ", InteractionElementScrollMultiplier=" + interactionVisualScrollMultiplier);
                 expressionAnimationSources.InsertScalar(multiplierPropertyName, interactionVisualScrollMultiplier);
             }
         }
@@ -986,7 +986,7 @@ namespace MUXControlsTestApp.Utilities
                     {
                         RaiseLogMessage("CompositionScrollController: UpdateInteractionFrameworkElementSize for Orientation=Horizontal, setting Width=" + newWidth);
                         interactionFrameworkElement.Width = newWidth;
-                        var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateInteractionVisualScrollMultiplier);
+                        var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateInteractionElementScrollMultiplier);
                         return true;
                     }
                 }
@@ -1005,7 +1005,7 @@ namespace MUXControlsTestApp.Utilities
                     {
                         RaiseLogMessage("CompositionScrollController: UpdateInteractionFrameworkElementSize for Orientation=Vertical, setting Height=" + newHeight);
                         interactionFrameworkElement.Height = newHeight;
-                        var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateInteractionVisualScrollMultiplier);
+                        var ignored = Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Low, UpdateInteractionElementScrollMultiplier);
                         return true;
                     }
                 }
