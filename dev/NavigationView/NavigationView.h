@@ -138,11 +138,11 @@ private:
     void HandleTopNavigationMeasureOverride(winrt::Size const& availableSize);
     void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size & availableSize);
     void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
-    void ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState nextMode, const winrt::Windows::Foundation::Size & availableSize);
-    void HandleTopNavigationMeasureOverrideStep3(winrt::Size const& availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
-    void SetTopNavigationViewNextMode(TopNavigationViewLayoutState nextMode);
     void SelectOverflowItem(winrt::IInspectable const& item);
+
+    void ResetAndRearrangeTopNavItems(winrt::Size const& availableSize);
+    void ArrangeTopNavItems(winrt::Size const& availableSize);
 
     void ShrinkTopNavigationSize(float desiredWidth, winrt::Size const& availableSize);
 

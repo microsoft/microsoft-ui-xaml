@@ -2067,7 +2067,6 @@ void NavigationView::OnTopNavDataSourceChanged(winrt::NotifyCollectionChangedEve
     if (m_topNavigationMode != TopNavigationViewLayoutState::InitStep1)
     {
         m_topDataProvider.MoveAllItemsToPrimaryList();
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         InvalidateTopNavPrimaryLayout();
     }
 
@@ -2449,31 +2448,30 @@ bool NavigationView::HasTopNavigationViewItemNotInPrimaryList()
     return m_topDataProvider.GetPrimaryListSize() != m_topDataProvider.Size();
 }
 
+void NavigationView::ResetAndRearrangeTopNavItems(winrt::Size const& availableSize)
+{
+    if (HasTopNavigationViewItemNotInPrimaryList())
+    {
+        m_topDataProvider.MoveAllItemsToPrimaryList();
+    }
+    ArrangeTopNavItems(availableSize);
+}
+
 void NavigationView::HandleTopNavigationMeasureOverride(winrt::Size const& availableSize)
 {
-    auto mode = m_topNavigationMode; // mode is for debugging because m_topNavigationMode is changing but we don't want to loss it in the stack
-    switch (mode)
+    // Determine if TopNav is in Overflow
+    if (HasTopNavigationViewItemNotInPrimaryList())
     {
-    case TopNavigationViewLayoutState::InitStep1: // Move all data to primary
-        if (HasTopNavigationViewItemNotInPrimaryList())
-        {
-            m_topDataProvider.MoveAllItemsToPrimaryList();
-        }
-        ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
-        break;
-
-    case TopNavigationViewLayoutState::InitStep3: // Waiting for moving data to overflow
-        HandleTopNavigationMeasureOverrideStep3(availableSize);
-        break;
-    case TopNavigationViewLayoutState::Normal:
-        HandleTopNavigationMeasureOverrideNormal(availableSize);
-        break;
-    case TopNavigationViewLayoutState::Overflow:
         HandleTopNavigationMeasureOverrideOverflow(availableSize);
-        break;
-    case TopNavigationViewLayoutState::OverflowNoChange:
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::Overflow);
-        break;
+    }
+    else
+    {
+        HandleTopNavigationMeasureOverrideNormal(availableSize);
+    }
+
+    if (m_topNavigationMode == TopNavigationViewLayoutState::InitStep1)
+    {
+        m_topNavigationMode = TopNavigationViewLayoutState::Normal;
     }
 }
 
@@ -2482,7 +2480,7 @@ void NavigationView::HandleTopNavigationMeasureOverrideNormal(const winrt::Windo
     auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
     if (desiredWidth > availableSize.Width)
     {
-        ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep3, availableSize);
+        ResetAndRearrangeTopNavItems(availableSize);
     }
 }
 
@@ -2499,7 +2497,7 @@ void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Win
         if (availableSize.Width >= desiredWidth + fullyRecoverWidth + m_topNavigationRecoveryGracePeriodWidth)
         {
             // It's possible to recover from Overflow to Normal state, so we restart the MeasureOverride from first step
-            ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::InitStep1, availableSize);
+            ResetAndRearrangeTopNavItems(availableSize);
         }
         else
         {
@@ -2516,21 +2514,11 @@ void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Win
     }
 }
 
-void NavigationView::ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState nextMode, const winrt::Size & availableSize)
-{
-    SetTopNavigationViewNextMode(nextMode);
-    HandleTopNavigationMeasureOverride(availableSize);
-}
-
-void NavigationView::HandleTopNavigationMeasureOverrideStep3(winrt::Size const& availableSize)
+void NavigationView::ArrangeTopNavItems(winrt::Size const& availableSize)
 {
     SetOverflowButtonVisibility(winrt::Visibility::Collapsed);
     auto desiredWidth = MeasureTopNavigationViewDesiredWidth(c_infSize);
-    if (desiredWidth < availableSize.Width)
-    {
-        ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState::Normal, availableSize);
-    }
-    else
+    if (!(desiredWidth < availableSize.Width))
     {
         // overflow
         SetOverflowButtonVisibility(winrt::Visibility::Visible);
@@ -2549,11 +2537,6 @@ void NavigationView::SetOverflowButtonVisibility(winrt::Visibility const& visibi
     {
        GetTemplateSettings()->OverflowButtonVisibility(visibility);
     }
-}
-
-void NavigationView::SetTopNavigationViewNextMode(TopNavigationViewLayoutState nextMode)
-{
-    m_topNavigationMode = nextMode;
 }
 
 void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
@@ -2618,7 +2601,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
             if (!needInvalidMeasure)
             {
                 SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
-                SetTopNavigationViewNextMode(TopNavigationViewLayoutState::OverflowNoChange);
                 InvalidateMeasure();
             }
         }
@@ -2628,7 +2610,6 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
     {
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
-        SetTopNavigationViewNextMode(TopNavigationViewLayoutState::InitStep3);
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
         InvalidateTopNavPrimaryLayout();  
     }
@@ -2689,7 +2670,6 @@ bool NavigationView::NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int
 void NavigationView::ShrinkTopNavigationSize(float desiredWidth, winrt::Size const& availableSize)
 {   
     UpdateTopNavigationWidthCache();
-    SetTopNavigationViewNextMode(TopNavigationViewLayoutState::Overflow);
 
     auto selectedItemIndex = GetSelectedItemIndex();
 
