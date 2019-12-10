@@ -256,15 +256,20 @@ bool SharedHelpers::IsAPIContractV3Available()
     return IsAPIContractVxAvailable<3>();
 }
 
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
     static bool isInFrameworkPackage = []() {
         // Special type that we manually list here which is not part of the Nuget dll distribution package. 
         // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-        winrt::hstring detectorType(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector");
+        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.;
+        // NOTE: calling the "internal" winrt_get_activation_factory in module.g.cpp so we don't raise an exception when
+        // this fails in prerelease builds.
+        
         winrt::IActivationFactory activationFactory;
-        if (SUCCEEDED(WINRT_GetActivationFactory(winrt::get_abi(detectorType), winrt::put_abi(activationFactory))))
+        *winrt::put_abi(activationFactory) = winrt_get_activation_factory(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv);
+        if (activationFactory)
         {
             return true;
         }

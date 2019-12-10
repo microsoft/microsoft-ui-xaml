@@ -3,8 +3,6 @@
 
 #pragma once
 
-//#define WINRT_LEAN_AND_MEAN 1
-
 #define NOMINMAX
 
 #pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)

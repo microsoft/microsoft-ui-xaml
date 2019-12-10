@@ -40,6 +40,9 @@ public:
     static winrt::DependencyProperty ReuseKeyProperty() { return s_reuseKeyProperty; }
     static winrt::hstring GetReuseKey(winrt::UIElement const& element);
     static void SetReuseKey(winrt::UIElement const& element, winrt::hstring const& value);
+
+    static winrt::RecyclePool GetPoolInstance(winrt::DataTemplate const& dataTemplate);
+    static void SetPoolInstance(winrt::DataTemplate const& dataTemplate, winrt::RecyclePool const& recyclePool);
 #pragma endregion
 
     static void EnsureProperties();
