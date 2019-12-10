@@ -242,6 +242,27 @@ namespace MUXControlsTestApp
             ((Control)repeater.TryGetElement(TestRadioButtons.SelectedIndex)).Focus(FocusState.Keyboard);
         }
 
+        private void SetBorderWidthButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(this.BorderWidthTextBox.Text == "inf")
+            {
+                this.TestRadioButtonsBorder.Width = float.NaN;
+                this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                if(float.TryParse(this.BorderWidthTextBox.Text, out float value))
+                {
+                    this.TestRadioButtonsBorder.Width = value;
+                    this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.Black);
+                }
+                else
+                {
+                    this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.DarkRed);
+                }
+            }
+        }
+
         private void Select5ThenChangeSourceButton_Clicked(object sender, RoutedEventArgs e)
         {
             TestRadioButtons.SelectedIndex = 5;

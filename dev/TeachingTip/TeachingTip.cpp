@@ -1235,7 +1235,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
 
     if (attachDeferralCompletedHandler)
     {
-        winrt::DeferralCompletedHandler instance{ [strongThis = get_strong(), args]()
+        winrt::Deferral instance{ [strongThis = get_strong(), args]()
             {
                 strongThis->CheckThread();
                 if (!args->Cancel())

@@ -2,7 +2,7 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildProjectDirectory)\..\..\FeatureAreas.props" />
-  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" />
   <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.props')" />
   <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.props')" />
@@ -133,7 +133,7 @@
     <Import Project="..\SplitView\SplitView.vcxitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true' Or $(FeatureScrollBarEnabled) == 'productOnly'" />
     <Import Project="..\ContentDialog\ContentDialog.vcxitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true' Or $(FeatureContentDialogEnabled) == 'productOnly'" />
     <Import Project="..\ProgressBar\ProgressBar.vcxitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true' Or $(FeatureProgressBarEnabled) == 'productOnly'" />
-	  <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
+    <Import Project="..\NumberBox\NumberBox.vcxitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true' Or $(FeatureNumberBoxEnabled) == 'productOnly'" />
   </ImportGroup>
   <ItemGroup>
     <SharedPage Include="@(Page)" />
@@ -166,14 +166,18 @@
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
-  <!-- Disable code analysis until this compiler bug is fixed: Bug 616860: /analyze on pch.cpp using C++/WinRT takes 25 minutes and runs out of memory -->
-  <!-- <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <!-- Run code analysis: Release (locally only) -OR- Debug (pipeline only) -OR- Debug Intellisense -->
+  <PropertyGroup Condition="
+    ('$(Configuration)'=='Release' AND '$(TF_BUILD)'!='True') OR
+    ('$(Configuration)'=='Debug' AND '$(TF_BUILD)'=='True') OR
+    ('$(Configuration)'=='Debug' AND '$(IntelliSenseBuild)'=='1')
+    ">
     <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup>
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup> -->
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -224,7 +228,7 @@
         $(MiniWindowsSDKIncludePath);
       </AdditionalIncludeDirectories>
       <AdditionalOptions>/std:c++17 /bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions>/Wv:18 /Zm1000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/Wv:18 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">%(AdditionalOptions) /d2FH4</AdditionalOptions>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -432,7 +436,7 @@
     <Import Project="..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets" Condition="Exists('..\..\packages\Microsoft.Build.Tasks.Git.1.0.0-beta2-18618-05\build\Microsoft.Build.Tasks.Git.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" />
     <Import Project="..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets" Condition="Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" />
-    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets" Condition="Exists('..\..\packages\MUXPGODatabase.0.0.2\build\MUXPGODatabase.targets')" />
   </ImportGroup>
   <PropertyGroup>
@@ -624,8 +628,8 @@
   <Target Name="MakeSDKMetadata" AfterTargets="CppWinRTMergeProjectWinMDInputs" BeforeTargets="XamlMetadataCodeGenMUX" Inputs="$(OutDir)Unmerged\Microsoft.UI.Xaml.winmd" Outputs="$(OutDir)sdk\Microsoft.UI.xaml.winmd">
     <PropertyGroup>
       <MdMergeExe>"$(WindowsSdkDir)bin\$(WindowsTargetPlatformVersion)\$(PreferredToolArchitecture)\mdmerge.exe"</MdMergeExe>
-      <_MdMergeParameters>-v @(_MdMergeRefsDistinct->'-metadata_dir "%(RelativeDir)."', ' ')</_MdMergeParameters>
-      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" -i "$(CppWinRTUnmergedDir)" -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
+      <_MdMergeParameters>-v @(CppWinRTMdMergeMetadataDirectories->'-metadata_dir &quot;%(RelativeDir).&quot;', ' ')</_MdMergeParameters>
+      <_MdMergeParameters>$(_MdMergeParameters) -o "$(OutDir)\sdk" @(CppWinRTMdMergeInputs->'-i &quot;%(Identity)&quot;', ' ') -partial -n:3 -createPublicMetadata -transformExperimental:transform</_MdMergeParameters>
     </PropertyGroup>
     <Exec Command="$(MdMergeExe) $(_MdMergeParameters)" />
   </Target>
@@ -661,8 +665,8 @@
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.Common.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.Common.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.props'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.SourceLink.GitHub.1.0.0-beta2-18618-05\build\Microsoft.SourceLink.GitHub.targets'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.props'))" />
-    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.190722.3\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Windows.CppWinRT.2.0.191202.6\build\native\Microsoft.Windows.CppWinRT.targets'))" />
   </Target>
   <Target Name="RunBinSkim" AfterTargets="AfterBuild" Condition="'$(Configuration)'=='Release'">
     <PropertyGroup>

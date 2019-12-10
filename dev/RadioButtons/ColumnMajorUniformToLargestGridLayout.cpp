@@ -15,10 +15,6 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaxColumns());
-        MUX_ASSERT(maxColumns > 0);
-        auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(maxColumns)));
-
         m_largestChildSize = [children, availableSize]()
         {
             auto largestChildWidth = 0.0f;
@@ -39,12 +35,11 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
             return winrt::Size(largestChildWidth, largestChildHeight);
         }();
 
-        auto const actualColumnCount = std::min(
-            static_cast<float>(maxColumns),
-            static_cast<float>(children.Size()));
+        m_actualColumnCount = CalculateColumns(children.Size(), m_largestChildSize.Width, availableSize.Width);
+        auto const maxItemsPerColumn = static_cast<int>(std::ceil(static_cast<double>(children.Size()) / static_cast<double>(m_actualColumnCount)));
         return winrt::Size(
-            (m_largestChildSize.Width * actualColumnCount) + 
-            (static_cast<float>(ColumnSpacing()) * (actualColumnCount - 1)),
+            (m_largestChildSize.Width * m_actualColumnCount) +
+            (static_cast<float>(ColumnSpacing()) * (m_actualColumnCount - 1)),
             (m_largestChildSize.Height * maxItemsPerColumn) +
             (static_cast<float>(RowSpacing()) * (maxItemsPerColumn - 1))
         );
@@ -58,11 +53,9 @@ winrt::Size ColumnMajorUniformToLargestGridLayout::ArrangeOverride(
 {
     if (auto const children = context.Children())
     {
-        auto const maxColumns = std::max(1, MaxColumns());
-        MUX_ASSERT(maxColumns > 0);
         auto const itemCount = children.Size();
-        auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<double>(itemCount) / static_cast<double>(maxColumns)));
-        auto const numberOfColumnsWithExtraElements = static_cast<int>(itemCount % maxColumns);
+        auto const minitemsPerColumn = static_cast<int>(std::floor(static_cast<float>(itemCount) / m_actualColumnCount));
+        auto const numberOfColumnsWithExtraElements = static_cast<int>(itemCount % static_cast<int>(m_actualColumnCount));
 
         auto const columnSpacing = static_cast<float>(ColumnSpacing());
         auto const rowSpacing = static_cast<float>(RowSpacing());
@@ -138,6 +131,39 @@ void ColumnMajorUniformToLargestGridLayout::OnMaxColumnsPropertyChanged(const wi
     InvalidateMeasure();
 }
 
+int ColumnMajorUniformToLargestGridLayout::CalculateColumns(int childCount, float maxItemWidth, float availableWidth)
+{
+    /*
+    --------------------------------------------------------------
+    |      |-----------|-----------| | widthNeededForExtraColumn |
+    |                                |                           |
+    |      |------|    |------|      | ColumnSpacing             |
+    | |----|      |----|      |----| | maxItemWidth              |
+    |  O RB        O RB        O RB  |                           |
+    --------------------------------------------------------------
+    */
+
+    // Every column execpt the first takes this ammount of space to fit on screen.
+    auto const widthNeededForExtraColumn = ColumnSpacing() + maxItemWidth;
+    // The number of columns from data and api ignoring available space
+    auto const requestedColumnCount = std::min(MaxColumns(), childCount);
+
+    // If columns can be added with effectively 0 extra space return as many columns as needed.
+    if (widthNeededForExtraColumn < std::numeric_limits<float>::epsilon())
+    {
+        return requestedColumnCount;
+    }
+
+    auto const extraWidthAfterFirstColumn = availableWidth - maxItemWidth;
+    auto const maxExtraColumns = std::max(0.0, std::floor(extraWidthAfterFirstColumn / widthNeededForExtraColumn));
+
+    // The smaller of number of columns from data and api and
+    // the number of columns the available space can support
+    auto const effectiveColumnCount = std::min(static_cast<double>(requestedColumnCount), maxExtraColumns + 1);
+    // return 1 even if there isn't any data
+    return std::max(1, static_cast<int>(effectiveColumnCount));
+}
+
 void ColumnMajorUniformToLargestGridLayout::ValidateGreaterThanZero(int value)
 {
     if (value <= 0)
@@ -147,7 +173,6 @@ void ColumnMajorUniformToLargestGridLayout::ValidateGreaterThanZero(int value)
 }
 
 //Testhooks helpers, only function while m_testHooksEnabled == true
-
 void ColumnMajorUniformToLargestGridLayout::SetTestHooksEnabled(bool enabled)
 {
     m_testHooksEnabled = enabled;

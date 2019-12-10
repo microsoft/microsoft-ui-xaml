@@ -6,7 +6,7 @@
 #include "MenuBarItem.g.h"
 #include "MenuBarItem.properties.h"
 
-enum FlyoutLocation
+enum class FlyoutLocation
 {
     Left,
     Right

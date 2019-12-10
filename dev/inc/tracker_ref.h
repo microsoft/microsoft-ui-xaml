@@ -179,7 +179,7 @@ public:
     // carefully so that we don't end up with two tracker_ref instances
     // with the same data.
     // Move constructor.
-    tracker_ref(tracker_ref&& other)
+    tracker_ref(tracker_ref&& other) noexcept
         : m_owner(std::move(other.m_owner))
         , m_handle(std::move(other.m_handle))
         , m_valueNoRef(std::move(other.m_valueNoRef))
@@ -189,7 +189,7 @@ public:
         other.m_valueNoRef = nullptr;
     }
     // Move assignment operator.
-    tracker_ref& operator=(tracker_ref&& other)
+    tracker_ref& operator=(tracker_ref&& other) noexcept
     {
         if (this != std::addressof(other))
         {
