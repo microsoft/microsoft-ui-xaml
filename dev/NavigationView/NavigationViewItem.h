@@ -41,9 +41,6 @@ public:
     // NavigationViewItemPresenter. But NavigationViewItemPresenter is created after NavigationViewItem. 
     // It provides a chance for NavigationViewItemPresenter to request visualstate refresh
     void UpdateVisualStateNoTransition();
-    
-    bool IsContentChangeHandlingDelayedForTopNav() { return m_isContentChangeHandlingDelayedForTopNav; }
-    void ClearIsContentChangeHandlingDelayedForTopNavFlag() { m_isContentChangeHandlingDelayedForTopNav = false; }
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -84,5 +81,4 @@ private:
 
     bool m_appliedTemplate{ false };
     bool m_hasKeyboardFocus{ false };
-    bool m_isContentChangeHandlingDelayedForTopNav{ false };
 };

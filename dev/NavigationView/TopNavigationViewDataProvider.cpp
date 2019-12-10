@@ -321,31 +321,6 @@ bool TopNavigationViewDataProvider::IsValidWidthForItem(int index)
     return IsValidWidth(width);
 }
 
-void TopNavigationViewDataProvider::InvalidWidthCacheIfOverflowItemContentChanged()
-{
-    bool shouldRefreshCache = false;
-    for (int i = 0; i < Size(); i++)
-    {
-        if (!IsItemInPrimaryList(i))
-        {
-            if (auto navItem = GetAt(i).try_as<winrt::NavigationViewItem>())
-            {
-                auto itemPointer = winrt::get_self<NavigationViewItem>(navItem);
-                if (itemPointer->IsContentChangeHandlingDelayedForTopNav())
-                {
-                    itemPointer->ClearIsContentChangeHandlingDelayedForTopNavFlag();
-                    shouldRefreshCache = true;
-                }
-            }
-        }
-    }
-
-    if (shouldRefreshCache)
-    {
-        InvalidWidthCache();
-    }
-}
-
 void TopNavigationViewDataProvider::SetWidthForItem(int index, float width)
 {
     if (IsValidWidth(width))

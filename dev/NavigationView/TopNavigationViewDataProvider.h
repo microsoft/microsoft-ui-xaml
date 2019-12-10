@@ -62,8 +62,6 @@ public:
     bool HasInvalidWidth(std::vector<int> & items);
     bool IsValidWidthForItem(int index);
 
-    void InvalidWidthCacheIfOverflowItemContentChanged();
-
     // If value is not in the raw data set or can't be move to primarylist, then return false
     bool IsItemSelectableInPrimaryList(const winrt::IInspectable& value);
 protected:

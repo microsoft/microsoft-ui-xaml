@@ -310,10 +310,7 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
 
     if (!IsOnLeftNav())
     {
-        // Content has changed for the item, so we want to trigger a re-measure. Set the flag
-        // to indicate that content has changed for this item and force a re-measure if item
-        // has access to NavigationView.
-        m_isContentChangeHandlingDelayedForTopNav = true;
+        // Content has changed for the item, so we want to trigger a re-measure
         if (auto navView = GetNavigationView())
         {
             winrt::get_self<NavigationView>(navView)->TopNavigationViewItemContentChanged();

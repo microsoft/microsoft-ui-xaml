@@ -444,12 +444,15 @@ void NavigationView::OnApplyTemplate()
 
 void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
 {
-    auto itemsSource = MenuItemsSource();
-    if (!itemsSource)
+    auto const itemsSource = [this]()
     {
-        itemsSource = MenuItems();
+        if (auto const menuItemsSource = MenuItemsSource())
+        {
+            return menuItemsSource;
+        }
         UpdateSelectionForMenuItems();
-    }
+        return MenuItems().as<winrt::IInspectable>();
+    }();
 
     // Selection Model has same representation of data regardless
     // of pane mode, so only update if the ItemsSource data itself
@@ -689,7 +692,6 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
             auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-            nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
             nviImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
 
             // Register for item events
@@ -730,7 +732,6 @@ void NavigationView::RepeaterElementClearing(const winrt::ItemsRepeater& ir, con
     if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
     {
         auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-        nviImpl->ClearIsContentChangeHandlingDelayedForTopNavFlag();
         // Revoke all the events that we were listing to on the item
         nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
     }
@@ -826,23 +827,15 @@ void NavigationView::OnLayoutUpdated(const winrt::IInspectable& sender, const wi
     // We only need to handle once after MeasureOverride, so revoke the token.
     m_layoutUpdatedToken.revoke();
 
-    if (m_shouldInvalidateMeasureOnNextLayoutUpdate)
+    // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
+    // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
+    if (auto lastSelectedItemInTopNav = m_lastSelectedItemPendingAnimationInTopNav.get())
     {
-        m_shouldInvalidateMeasureOnNextLayoutUpdate = false;
-        InvalidateMeasure();
+        AnimateSelectionChanged(lastSelectedItemInTopNav, SelectedItem());
     }
     else
     {
-        // In topnav, when an item in overflow menu is clicked, the animation is delayed because that item is not move to primary list yet.
-        // And it depends on LayoutUpdated to re-play the animation. m_lastSelectedItemPendingAnimationInTopNav is the last selected overflow item.
-        if (auto lastSelectedItemInTopNav = m_lastSelectedItemPendingAnimationInTopNav.get())
-        {
-            AnimateSelectionChanged(lastSelectedItemInTopNav, SelectedItem());
-        }
-        else
-        {
-            AnimateSelectionChanged(nullptr, SelectedItem());
-        }
+        AnimateSelectionChanged(nullptr, SelectedItem());
     }
 }
 
@@ -2092,6 +2085,7 @@ void NavigationView::TopNavigationViewItemContentChanged()
 {
     if (m_appliedTemplate)
     {
+        m_topDataProvider.InvalidWidthCache();
         InvalidateMeasure();
     }
 }
@@ -2436,11 +2430,6 @@ bool NavigationView::IsTopNavigationFirstMeasure()
     return firstMeasure;
 }
 
-void NavigationView::RequestInvalidateMeasureOnNextLayoutUpdate()
-{
-    m_shouldInvalidateMeasureOnNextLayoutUpdate = true;
-}
-
 bool NavigationView::HasTopNavigationViewItemNotInPrimaryList()
 {
     return m_topDataProvider.GetPrimaryListSize() != m_topDataProvider.Size();
@@ -2500,15 +2489,8 @@ void NavigationView::HandleTopNavigationMeasureOverrideOverflow(const winrt::Win
         }
         else
         {
-            m_topDataProvider.InvalidWidthCacheIfOverflowItemContentChanged();
-
             auto movableItems = FindMovableItemsRecoverToPrimaryList(availableSize.Width- desiredWidth, {}/*includeItems*/);
             m_topDataProvider.MoveItemsToPrimaryList(movableItems);
-            if (m_topDataProvider.HasInvalidWidth(movableItems))
-            {
-                m_topDataProvider.ResetAttachedData(); // allow every item to be recovered in next MeasureOverride
-                RequestInvalidateMeasureOnNextLayoutUpdate();
-            }
         }
     }
 }
