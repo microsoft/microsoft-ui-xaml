@@ -9,9 +9,17 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+    <Grid x:Name="LayoutRoot" >
 
-        <StackPanel Margin="50" Background="Silver" >
+        <StackPanel Margin="50" Background="Silver">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="SetSmallWidth" AutomationProperties.Name="SetSmallWidth" Content="Small Width" Click="SetSmallWidth_Click" Margin="0,0,12,0"/>
+                <Button x:Name="SetLargeWidth" AutomationProperties.Name="SetLargeWidth" Content="Large Width" Click="SetLargeWidth_Click" Margin="0,0,12,0"/>
+                <Button x:Name="GetWidthsButton" AutomationProperties.Name="GetWidthsButton" Content="Get Widths" Click="GetWidthsButton_Click" Margin="0,0,12,0"/>
+                <TextBlock x:Name="WidthEqualText" AutomationProperties.Name="WidthEqualText" Margin="0,0,12,0"/>
+                <TextBlock x:Name="WidthSizeToContentText" AutomationProperties.Name="WidthSizeToContentText"/>
+            </StackPanel>
+
             <TextBlock Text="SizeToContent, Auto Column Width" />
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -133,7 +141,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <controls:TabView HorizontalAlignment="Left" TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
+                <controls:TabView x:Name="TabViewEqual" AutomationProperties.Name="TabViewEqual" HorizontalAlignment="Left" TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A">
                             <TextBlock>TabA</TextBlock>
@@ -167,7 +175,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <controls:TabView HorizontalAlignment="Left" TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
+                <controls:TabView x:Name="TabViewSizeToContent" AutomationProperties.Name="TabViewSizeToContent" HorizontalAlignment="Left" TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
                     <controls:TabView.TabItems>
                         <controls:TabViewItem Header="Tab A Long Name">
                             <TextBlock>TabA</TextBlock>
