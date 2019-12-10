@@ -128,6 +128,74 @@
                 </controls:TabView>
             </Grid>
 
+            <TextBlock Text="HorizonalAlignment = Left, Equal tab widths" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:TabView HorizontalAlignment="Left" TabWidthMode="Equal" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
+                    <controls:TabView.TabItems>
+                        <controls:TabViewItem Header="Tab A">
+                            <TextBlock>TabA</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab B">
+                            <TextBlock>TabB</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab C">
+                            <TextBlock>TabC</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab D">
+                            <TextBlock>TabD</TextBlock>
+                        </controls:TabViewItem>
+                    </controls:TabView.TabItems>
+                    <controls:TabView.TabStripFooter>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </controls:TabView.TabStripFooter>
+                </controls:TabView>
+            </Grid>
+
+            <TextBlock Text="HorizonalAlignment = Left, SizeToContent tabs" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <controls:TabView HorizontalAlignment="Left" TabWidthMode="SizeToContent" TabCloseRequested="Tabs_TabCloseRequested" AddTabButtonClick="Tabview_AddTabButtonClick" >
+                    <controls:TabView.TabItems>
+                        <controls:TabViewItem Header="Tab A Long Name">
+                            <TextBlock>TabA</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab B Even Longer Name">
+                            <TextBlock>TabB</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab C Super Super Long Name">
+                            <TextBlock>TabC</TextBlock>
+                        </controls:TabViewItem>
+                        <controls:TabViewItem Header="Tab D Reasonably Long Too">
+                            <TextBlock>TabD</TextBlock>
+                        </controls:TabViewItem>
+                    </controls:TabView.TabItems>
+                    <controls:TabView.TabStripFooter>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Middle" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2" Text="Right" Margin="6,3,6,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </controls:TabView.TabStripFooter>
+                </controls:TabView>
+            </Grid>
+
         </StackPanel>
         
     </Grid>
