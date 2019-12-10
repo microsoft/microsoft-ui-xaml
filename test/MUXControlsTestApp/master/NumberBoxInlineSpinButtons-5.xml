@@ -65,7 +65,7 @@
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
-        Visibility=Collapsed
+        Visibility=Visible
         RenderSize=0,0
     [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
         Padding=8,5,8,6
@@ -81,5 +81,5 @@
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
-        Visibility=Collapsed
+        Visibility=Visible
         RenderSize=0,0
