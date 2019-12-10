@@ -50,6 +50,8 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+    m_titleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
+    m_subtitleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, controlProtected));
 
     if (auto&& container = m_container.get())
     {
@@ -171,8 +173,28 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
+        toggleVisibilityForNullContent(m_titleTextBox.get(), Title());
+    }
+    else if (property == s_SubtitleProperty)
+    {
+        toggleVisibilityForNullContent(m_subtitleTextBox.get(), Subtitle());
     }
 
+}
+
+void TeachingTip::toggleVisibilityForNullContent(const winrt::UIElement& element, const winrt::hstring& content)
+{
+    if (element)
+    {
+        if (content)
+        {
+            element.Visibility(winrt::Visibility::Visible);
+        }
+        else
+        {
+            element.Visibility(winrt::Visibility::Collapsed);
+        }
+    }
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
