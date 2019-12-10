@@ -16,14 +16,8 @@ struct bringintoview_event_revoker;
 
 enum class TopNavigationViewLayoutState
 {
-    InitStep1 = 0, // Move all data to primary
-    InitStep2, // Realized virtualization items
-    InitStep3, // Waiting for moving data to overflow
-    Normal,
-    Overflow,
-    OverflowNoChange // InvalidateMeasure but not move any items. It happens when we have enough information 
-                     // to swap an navigationviewitem to overflow, InvalidateMeasure is only used to update
-                     // SelectionIndicate. Otherwise FindSelectionIndicator may be nullptr for the overflow item
+    Uninitialized = 0,
+    Initialized
 };
 
 enum class NavigationRecommendedTransitionDirection
@@ -131,18 +125,16 @@ private:
     float MeasureTopNavigationViewDesiredWidth(winrt::Size const& availableSize);
     float MeasureTopNavMenuItemsHostDesiredWidth(winrt::Size const& availableSize);
     float GetTopNavigationViewActualWidth();
-    bool IsTopNavigationFirstMeasure();
 
-    void RequestInvalidateMeasureOnNextLayoutUpdate();
     bool HasTopNavigationViewItemNotInPrimaryList();
     void HandleTopNavigationMeasureOverride(winrt::Size const& availableSize);
     void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size & availableSize);
     void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
-    void ContinueHandleTopNavigationMeasureOverride(TopNavigationViewLayoutState nextMode, const winrt::Windows::Foundation::Size & availableSize);
-    void HandleTopNavigationMeasureOverrideStep3(winrt::Size const& availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
-    void SetTopNavigationViewNextMode(TopNavigationViewLayoutState nextMode);
     void SelectOverflowItem(winrt::IInspectable const& item);
+
+    void ResetAndRearrangeTopNavItems(winrt::Size const& availableSize);
+    void ArrangeTopNavItems(winrt::Size const& availableSize);
 
     void ShrinkTopNavigationSize(float desiredWidth, winrt::Size const& availableSize);
 
@@ -370,13 +362,10 @@ private:
     // Customer clicked listview->listview raised OnSelectChange->SelectedItem property changed->ChangeSelection->Undo the selection by SelectedItem(prevItem) (we want it stop here)->ChangeSelection again ->...
     bool m_shouldIgnoreNextSelectionChange{ false };
 
-    // Because virtualization for ItemsStackPanel, not all containers are realized. It request another round of MeasureOverride
-    bool m_shouldInvalidateMeasureOnNextLayoutUpdate{ false };
-
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
     bool m_selectionChangeFromOverflowMenu{ false };
 
-    TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::InitStep1 };
+    TopNavigationViewLayoutState m_topNavigationMode{ TopNavigationViewLayoutState::Uninitialized };
 
     // A threshold to stop recovery from overflow to normal happens immediately on resize.
     float m_topNavigationRecoveryGracePeriodWidth{ 5.f };
