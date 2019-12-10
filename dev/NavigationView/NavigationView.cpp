@@ -765,6 +765,8 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         // Do localization for settings item label and Automation Name
         auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
         winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
+        settingsItem.Tag(box_value(localizedSettingsName));
+
         UpdateSettingsItemToolTip();
 
         // Add the name only in case of horizontal nav
@@ -1956,7 +1958,7 @@ bool NavigationView::BumperNavigation(int offset)
     {
         if (auto nvi = NavigationViewItemOrSettingsContentFromData(item))
         {
-            auto index = m_topDataProvider.IndexOf(item, PrimaryList);
+            auto index = m_topDataProvider.IndexOf(item, NavigationViewSplitVectorID::PrimaryList);
 
             if (index >= 0)
             {
@@ -2190,7 +2192,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
     if (m_appliedTemplate && IsTopNavigationView())
     {
         if (!m_layoutUpdatedToken ||
-            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, PrimaryList) == s_itemNotFound)) // selection is in overflow
+            (newItem && m_topDataProvider.IndexOf(newItem) != s_itemNotFound && m_topDataProvider.IndexOf(newItem, NavigationViewSplitVectorID::PrimaryList) == s_itemNotFound)) // selection is in overflow
         {
             InvalidateTopNavPrimaryLayout();
         }
@@ -2730,7 +2732,7 @@ std::vector<int> NavigationView::FindMovableItemsBeyondAvailableWidth(float avai
     std::vector<int> toBeMoved;
     if (auto ir = m_topNavRepeater.get())
     {
-        int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), PrimaryList);
+        int selectedItemIndexInPrimary = m_topDataProvider.IndexOf(SelectedItem(), NavigationViewSplitVectorID::PrimaryList);
         int size = m_topDataProvider.GetPrimaryListSize();
 
         float requiredWidth = 0;

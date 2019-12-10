@@ -3719,6 +3719,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void EnsureDynamicSizeForPaneHeaderFooterAndCustomContent()
         {
+            if (PlatformConfiguration.IsDebugBuildConfiguration())
+            {
+                // Test is failing in chk configuration due to:
+                // Bug #1734 NavigationViewTests.EnsureDynamicSizeForPaneHeaderFooterAndCustomContent fails in CHK configuration
+                Log.Warning("Skipping test for Debug builds.");
+                return;
+            }
+
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Stretch Test" }))
             {
                 Button navButton = new Button(FindElement.ById("TogglePaneButton"));

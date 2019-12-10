@@ -723,7 +723,7 @@ namespace MUXControlsTestApp
         {
             Results.Text += "\nDragItemsCompleted:" + GetDraggedItemsNames(args.Items);
 
-            var parent = args.NewParent;
+            var parent = args.NewParentItem;
             if (parent != null)
             {
                 var parentName = IsInContentMode() ? (parent as TreeViewItemSource).Content : (parent as TreeViewNode).Content.ToString();

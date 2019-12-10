@@ -495,6 +495,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void CloseButtonDoesNotShowWhenVisibilityIsToggled()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                // Wait for the test page's timer to set visibility to the close button to visible
+                Wait.ForMilliseconds(2);
+                Wait.ForIdle();
+
+                UIObject notCloseableTab = FindElement.ByName("NotCloseableTab");
+                var closeButton = FindCloseButton(notCloseableTab);
+                Verify.IsNull(closeButton);
+            }
+        }
+
         public void PressButtonAndVerifyText(String buttonName, String textBlockName, String expectedText)
         {
             Button button = FindElement.ByName<Button>(buttonName);

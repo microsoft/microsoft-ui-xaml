@@ -64,9 +64,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 downButton.InvokeAndWait();
                 Verify.AreEqual(0, numBox.Value);
 
-                Log.Comment("Change Step value to 5");
-                RangeValueSpinner stepNumBox = FindElement.ByName<RangeValueSpinner>("StepNumberBox");
-                stepNumBox.SetValue(5);
+                Log.Comment("Change SmallChange value to 5");
+                RangeValueSpinner smallChangeNumBox = FindElement.ByName<RangeValueSpinner>("SmallChangeNumberBox");
+                smallChangeNumBox.SetValue(5);
                 Wait.ForIdle();
 
                 Log.Comment("Verify that up button increases value by 5");
@@ -267,6 +267,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 KeyboardHelper.PressKey(Key.Down);
                 Wait.ForIdle();
                 Verify.AreEqual(75, numBox.Value);
+
+                Log.Comment("Verify that pressing PageUp key increases value by 10");
+                KeyboardHelper.PressKey(Key.PageUp);
+                Wait.ForIdle();
+                Verify.AreEqual(85, numBox.Value);
             }
         }
 
@@ -315,6 +320,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.RotateWheel(numBox, -1);
                 Wait.ForIdle();
                 Verify.AreEqual(-1, numBox.Value);
+
+                // Testing for 1705
+                RangeValueSpinner numBoxInScrollViewer = FindElement.ByName<RangeValueSpinner>("NumberBoxInScroller");
+                FindTextBox(numBoxInScrollViewer).SetFocus();
+                InputHelper.RotateWheel(numBoxInScrollViewer, 1);
+                InputHelper.RotateWheel(numBoxInScrollViewer, 1);
+                Wait.ForIdle();
+                Verify.AreEqual(2, numBoxInScrollViewer.Value);
+
+                TextBlock vertOffset = FindElement.ByName<TextBlock>("VerticalOffsetDisplayBlock");
+                Verify.AreEqual("0", vertOffset.GetText());
+
             }
         }
 

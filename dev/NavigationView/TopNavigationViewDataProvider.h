@@ -4,7 +4,7 @@
 #pragma once
 
 #include "SplitDataSourceBase.h"
-enum NavigationViewSplitVectorID
+enum class NavigationViewSplitVectorID
 {
     NotInitialized = 0,
     PrimaryList = 1,

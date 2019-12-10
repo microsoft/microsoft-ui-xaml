@@ -106,6 +106,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         private TextBlock SelectedIndexTextBlock;
 
+        public TextBlock GetReproTextBlock()
+        {
+            return GetElement(ref ReproTextBlock, "ReproTextBlock");
+        }
+        private TextBlock ReproTextBlock;
+
         public TextBlock GetSelectedItemTextBlock()
         {
             return GetElement(ref SelectedItemTextBlock, "SelectedItemTextBlock");
@@ -177,6 +183,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             return GetElement(ref SourceComboBox, "SourceComboBox");
         }
         private ComboBox SourceComboBox;
+
+        public Edit GetBorderWidthTextBox()
+        {
+            return GetElement(ref BorderWidthTextBox, "BorderWidthTextBox");
+        }
+        private Edit BorderWidthTextBox;
+
+        public Button GetSetBorderWidthButton()
+        {
+            return GetElement(ref SetBorderWidthButton, "SetBorderWidthButton");
+        }
+        private Button SetBorderWidthButton;
 
         public Button GetFocusSelectedItemButton()
         {

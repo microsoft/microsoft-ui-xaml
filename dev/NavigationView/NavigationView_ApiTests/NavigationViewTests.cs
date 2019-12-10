@@ -477,6 +477,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
+        [TestMethod]
+        public void VerifySettingsItemTag()
+        {
+            NavigationView navView = null;
+            NavigationViewItem settingsItem = null;
+
+            RunOnUIThread.Execute(() =>
+            {
+                navView = new NavigationView();
+
+                navView.IsSettingsVisible = true;
+                navView.IsPaneOpen = true;
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
+                MUXControlsTestApp.App.TestContentRoot = navView;
+            });
+
+            IdleSynchronizer.Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
+                settingsItem = (NavigationViewItem)navView.SettingsItem;
+                Verify.AreEqual(settingsItem.Tag, "Settings");
+
+                MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
         // Disabled per GitHub Issue #211
         //[TestMethod]
         public void VerifyCanNotAddWUXItems()

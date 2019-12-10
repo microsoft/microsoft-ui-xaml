@@ -19,8 +19,8 @@ TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandl
         return IndexOf(value);
     };
 
-    auto primaryVector = std::make_shared<SplitVectorT>(m_owner, PrimaryList, lambda);
-    auto overflowVector = std::make_shared<SplitVectorT>(m_owner, OverflowList, lambda);
+    auto primaryVector = std::make_shared<SplitVectorT>(m_owner, NavigationViewSplitVectorID::PrimaryList, lambda);
+    auto overflowVector = std::make_shared<SplitVectorT>(m_owner, NavigationViewSplitVectorID::OverflowList, lambda);
     
     InitializeSplitVectors({ primaryVector, overflowVector });
 }
@@ -28,12 +28,12 @@ TopNavigationViewDataProvider::TopNavigationViewDataProvider(const ITrackerHandl
 
 winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetPrimaryItems()
 {
-    return GetVector(PrimaryList)->GetVector();
+    return GetVector(NavigationViewSplitVectorID::PrimaryList)->GetVector();
 }
 
 winrt::IVector<winrt::IInspectable> TopNavigationViewDataProvider::GetOverflowItems()
 {
-    return GetVector(OverflowList)->GetVector();
+    return GetVector(NavigationViewSplitVectorID::OverflowList)->GetVector();
 }
 
 // The raw data is from MenuItems or MenuItemsSource
@@ -96,7 +96,7 @@ int TopNavigationViewDataProvider::Size()
 
 NavigationViewSplitVectorID TopNavigationViewDataProvider::DefaultVectorIDOnInsert()
 {
-    return NotInitialized;
+    return NavigationViewSplitVectorID::NotInitialized;
 }
 
 float TopNavigationViewDataProvider::DefaultAttachedData()
@@ -108,7 +108,7 @@ void TopNavigationViewDataProvider::MoveAllItemsToPrimaryList()
 {
     for (int i = 0; i < Size(); i++)
     {
-        MoveItemToVector(i, PrimaryList);
+        MoveItemToVector(i, NavigationViewSplitVectorID::PrimaryList);
     }
 }
 
@@ -117,7 +117,7 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
     std::vector<int> indexes;
     if (!indexesInPrimary.empty())
     {
-        auto vector = GetVector(PrimaryList);
+        auto vector = GetVector(NavigationViewSplitVectorID::PrimaryList);
         if (vector)
         {
             // transform PrimaryList index to OrignalVector index
@@ -144,12 +144,12 @@ int TopNavigationViewDataProvider::ConvertOriginalIndexToIndex(int originalIndex
 
 void TopNavigationViewDataProvider::MoveItemsOutOfPrimaryList(std::vector<int> const& indexes)
 {
-    MoveItemsToList(indexes, OverflowList);
+    MoveItemsToList(indexes, NavigationViewSplitVectorID::OverflowList);
 }
 
 void TopNavigationViewDataProvider::MoveItemsToPrimaryList(std::vector<int> const& indexes)
 {
-    MoveItemsToList(indexes, PrimaryList);
+    MoveItemsToList(indexes, NavigationViewSplitVectorID::PrimaryList);
 }
 
 void TopNavigationViewDataProvider::MoveItemsToList(std::vector<int> const& indexes, NavigationViewSplitVectorID vectorID)
@@ -193,7 +193,7 @@ int TopNavigationViewDataProvider::GetNavigationViewItemCountInTopNav()
 
 void TopNavigationViewDataProvider::UpdateWidthForPrimaryItem(int indexInPrimary, float width)
 {
-    auto vector = GetVector(PrimaryList);
+    auto vector = GetVector(NavigationViewSplitVectorID::PrimaryList);
     if (vector)
     {
         auto index = vector->IndexToIndexInOriginalVector(indexInPrimary);
@@ -344,7 +344,7 @@ void TopNavigationViewDataProvider::ChangeDataSource(winrt::ItemsSourceView newV
         Clear();
 
         m_dataSource.set(newValue);
-        SyncAndInitVectorFlagsWithID(NotInitialized, DefaultAttachedData());
+        SyncAndInitVectorFlagsWithID(NavigationViewSplitVectorID::NotInitialized, DefaultAttachedData());
 
         if (newValue)
         {
@@ -353,12 +353,12 @@ void TopNavigationViewDataProvider::ChangeDataSource(winrt::ItemsSourceView newV
     }
 
     // Move all to primary list
-    MoveItemsToVector(NotInitialized);
+    MoveItemsToVector(NavigationViewSplitVectorID::NotInitialized);
 }
 
 bool TopNavigationViewDataProvider::IsItemInPrimaryList(int index)
 {
-    return GetVectorIDForItem(index) == PrimaryList;
+    return GetVectorIDForItem(index) == NavigationViewSplitVectorID::PrimaryList;
 }
 
 bool TopNavigationViewDataProvider::IsContainerNavigationViewItem(int index)

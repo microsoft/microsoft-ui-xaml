@@ -270,6 +270,16 @@ void TabView::OnListViewLoaded(const winrt::IInspectable&, const winrt::RoutedEv
         SelectedIndex(listView.SelectedIndex());
         SelectedItem(listView.SelectedItem());
 
+        // Find TabsItemsPresenter and listen for SizeChanged
+        m_itemsPresenter.set([this, listView]() {
+            auto itemsPresenter = SharedHelpers::FindInVisualTreeByName(listView, L"TabsItemsPresenter").as<winrt::ItemsPresenter>();
+            if (itemsPresenter)
+            {
+                m_itemsPresenterSizeChangedRevoker = itemsPresenter.SizeChanged(winrt::auto_revoke, { this, &TabView::OnItemsPresenterSizeChanged });
+            }
+            return itemsPresenter;
+        }());
+
         auto scrollViewer = SharedHelpers::FindInVisualTreeByName(listView, L"ScrollViewer").as<winrt::FxScrollViewer>();
         m_scrollViewer.set(scrollViewer);
         if (scrollViewer)
@@ -302,6 +312,11 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
 }
 
 void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs&)
+{
+    UpdateTabWidths();
+}
+
+void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdateTabWidths();
 }
@@ -564,7 +579,14 @@ void TabView::UpdateTabWidths()
                     if (auto listview = m_listView.get())
                     {
                         listview.MaxWidth(availableWidth);
-                        winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Auto);
+
+                        // Calculate if the scroll buttons should be visible.
+                        if (auto itemsPresenter = m_itemsPresenter.get())
+                        {
+                            winrt::FxScrollViewer::SetHorizontalScrollBarVisibility(listview, itemsPresenter.ActualWidth() > availableWidth
+                                ? winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Visible
+                                : winrt::Windows::UI::Xaml::Controls::ScrollBarVisibility::Hidden);
+                        }
                     }
                 }
                 else if (TabWidthMode() == winrt::TabViewWidthMode::Equal)
@@ -617,7 +639,6 @@ void TabView::UpdateTabWidths()
         }
     }
 }
-
 
 void TabView::UpdateSelectedItem()
 {
