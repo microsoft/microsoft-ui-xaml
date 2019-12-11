@@ -761,6 +761,9 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         m_settingsItemKeyDownRevoker = settingsItem.KeyDown(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyDown });
         m_settingsItemKeyUpRevoker = settingsItem.KeyUp(winrt::auto_revoke, { this, &NavigationView::OnNavigationViewItemKeyUp });
 
+        auto nvibImpl = winrt::get_self<NavigationViewItem>(settingsItem);
+        nvibImpl->SetNavigationViewParent(*this);
+
         // Do localization for settings item label and Automation Name
         auto localizedSettingsName = ResourceAccessor::GetLocalizedStringResource(SR_SettingsButtonName);
         winrt::AutomationProperties::SetName(settingsItem, localizedSettingsName);
