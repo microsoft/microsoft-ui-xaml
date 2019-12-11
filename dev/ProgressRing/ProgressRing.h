@@ -20,7 +20,6 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);

@@ -32,13 +32,6 @@ void ProgressRing::OnApplyTemplate()
     RenderAll();
 }
 
-void  ProgressRing::OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    winrt::IDependencyProperty property = args.Property();
-    
-    // TODO: Implement
-}
-
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     RenderAll();
@@ -69,14 +62,18 @@ void ProgressRing::RenderSegment()
     if (auto&& barArc = m_barArc.get())
     {
         const double thickness = StrokeThickness();
-        const double range = Maximum() - Minimum();
-        const double delta = Value() - Minimum();
+        const double minimum = Minimum();
+        const double range = Maximum() - minimum;
+        const double delta = Value() - minimum;
 
         double normalizedRange = (range == 0.0) ? 0.0 : (delta / range);
-        normalizedRange = std::min(std::max(0.0, normalizedRange), 0.9999);
+
+        // normalizedRange offsets calculation to display a full ring when value = 100%
+        // std::nextafter is set as a float as winrt::Point takes floats 
+        normalizedRange = std::min(normalizedRange, static_cast<double>(std::nextafterf(1.0, 0.0)));
 
         const double angle = 2 * M_PI * normalizedRange;
-        const auto size = ComputeEllipseSize(thickness, Width(), Height());
+        const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
         const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
@@ -85,34 +82,36 @@ void ProgressRing::RenderSegment()
         barArc.IsLargeArc(angle >= M_PI);
         barArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
     }
-
 }
 
 void ProgressRing::RenderAll()
 {
+    const double thickness = StrokeThickness();
+    const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+
+    const float segmentWidth = size.Width;
+    const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
+
     if (auto&& outlineFigure = m_outlineFigure.get())
     {
-        if (auto&& outlineArc = m_outlineArc.get())
-        {
-            if (auto&& barFigure = m_barFigure.get())
-            {
-                if (auto&& barArc = m_barArc.get())
-                {
-                    const double thickness = StrokeThickness();
-                    const auto size = ComputeEllipseSize(thickness, Width(), Height());
-
-                    const float segmentWidth = size.Width;
-                    const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
-
-                    outlineFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
-                    barFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
-                    outlineArc.Size(winrt::Size(segmentWidth, size.Height));
-                    barArc.Size(winrt::Size(segmentWidth, size.Height));
-                    outlineArc.Point(winrt::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
-
-                    RenderSegment();
-                }
-            }
-        }
+        outlineFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
     }
+
+    if (auto&& barFigure = m_barFigure.get())
+    {
+        barFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
+    }
+
+    if (auto&& outlineArc = m_outlineArc.get())
+    {
+        outlineArc.Size(winrt::Size(segmentWidth, size.Height));
+        outlineArc.Point(winrt::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
+    }
+
+    if (auto&& barArc = m_barArc.get())
+    {  
+        barArc.Size(winrt::Size(segmentWidth, size.Height));
+    }
+
+    RenderSegment();
 }

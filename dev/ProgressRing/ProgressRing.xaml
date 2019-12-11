@@ -17,7 +17,7 @@
                         <Path
                             Fill="{TemplateBinding Background}"
                             Stroke="{TemplateBinding BorderBrush}"
-                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=StrokeThickness}"
+                            StrokeThickness="{TemplateBinding StrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
                             <Path.Data>
@@ -43,7 +43,7 @@
                         <Path
                             Fill="Transparent"
                             Stroke="{TemplateBinding Foreground}"
-                            StrokeThickness="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=StrokeThickness}"
+                            StrokeThickness="{TemplateBinding StrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
                             <Path.Data>
