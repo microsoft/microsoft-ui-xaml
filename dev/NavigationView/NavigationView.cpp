@@ -682,8 +682,8 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
         // Visual state info propagation
         auto position = IsTopNavigationView() ?
                         ir == m_topNavRepeater.get() ?
-                        NavigationViewListPosition::TopPrimary : NavigationViewListPosition::TopOverflow :
-                        NavigationViewListPosition::LeftNav;
+                        NavigationViewRepeaterPosition::TopPrimary : NavigationViewRepeaterPosition::TopOverflow :
+                        NavigationViewRepeaterPosition::LeftNav;
         nvibImpl->Position(position);
 
         // Apply any custom container styling
@@ -691,8 +691,7 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
-            auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-            nviImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
+            nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -785,17 +784,6 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
     }
 }
 
-// Unlike other control, NavigationView only move items into/out of overflow on MeasureOverride. 
-// and the actual measure is done by __super::MeasureOverride.
-// We can't move items in LayoutUpdated or OnLoaded, otherwise it would trig another MeasureOverride.
-// Because of Items Container restriction, apps may crash if we move the same item out of overflow, 
-// and then move it back to overflow in the same measureoveride(busy, unlink failure, in transition...).
-// TopNavigationViewLayoutState is used to guarantee above will not happen
-// 
-// Because of ItemsStackPanel and overflow, we need to run MeasureOverride multiple times. RequestInvalidateMeasureOnNextLayoutUpdate is helping with this.  
-// Here is a typical scenario:
-//  MeasureOverride(RequestInvalidateMeasureOnNextLayoutUpdate and register LayoutUpdated) -> LayoutUpdated(unregister LayoutUpdated) -> InvalidMeasure 
-//   -> Another MeasureOverride(register LayoutUpdated) -> LayoutUpdated(unregister LayoutUpdated) -> Done
 winrt::Size NavigationView::MeasureOverride(winrt::Size const& availableSize)
 {
     if (IsTopNavigationView() && IsTopPrimaryListVisible())
@@ -1778,22 +1766,21 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
 
 void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    winrt::UIElement firstElement{ nullptr };
-    if (IsTopNavigationView())
+    auto const firstElement = [this, nvib]()
     {
-        if (IsContainerInOverflow(nvib))
+        if (IsTopNavigationView())
         {
-            firstElement = m_topNavRepeaterOverflowView.get().TryGetElement(0);
+            if (IsContainerInOverflow(nvib))
+            {
+                return m_topNavRepeaterOverflowView.get().TryGetElement(0);
+            }
+            else
+            {
+                return m_topNavRepeater.get().TryGetElement(0);
+            }
         }
-        else
-        {
-            firstElement = m_topNavRepeater.get().TryGetElement(0);
-        }
-    }
-    else
-    {
-        firstElement = m_leftNavRepeater.get().TryGetElement(0);
-    }
+        return m_leftNavRepeater.get().TryGetElement(0);
+    }();
 
     if (auto nvibFirst = firstElement.try_as<winrt::NavigationViewItemBase>())
     {
@@ -1803,22 +1790,24 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 
 void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    winrt::ItemsRepeater ir { nullptr };
-    if (IsTopNavigationView())
+    auto const ir = [this, nvib]()
     {
-        if (IsContainerInOverflow(nvib))
+        if (IsTopNavigationView())
         {
-            ir = m_topNavRepeaterOverflowView.get();
+            if (IsContainerInOverflow(nvib))
+            {
+                return m_topNavRepeaterOverflowView.get();
+            }
+            else
+            {
+                return m_topNavRepeater.get();
+            }
         }
         else
         {
-            ir = m_topNavRepeater.get();
+            return m_leftNavRepeater.get();
         }
-    }
-    else
-    {
-        ir = m_leftNavRepeater.get();
-    }
+    }();
 
     if (auto itemsSourceView = ir.ItemsSourceView())
     {

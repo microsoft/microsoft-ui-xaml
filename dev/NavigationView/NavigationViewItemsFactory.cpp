@@ -7,11 +7,6 @@
 #include "NavigationViewItem.h"
 #include "ItemTemplateWrapper.h"
 
-
-NavigationViewItemsFactory::NavigationViewItemsFactory()
-{
-}
-
 void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable newValue)
 {
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
@@ -32,23 +27,17 @@ void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable newValue
 
 winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactoryGetArgs const& args)
 {
-    winrt::IInspectable newContent = args.Data();
-    // Attempt to get NavigationViewItemBase from user defined ItemTemplate
-    if (m_itemTemplateWrapper)
-    {
-        auto element = m_itemTemplateWrapper.GetElement(args);
-        if (element.try_as<winrt::NavigationViewItemBase>())
+    auto const newContent = [itemTemplateWrapper = m_itemTemplateWrapper, args]() {
+        if (itemTemplateWrapper)
         {
-            return element;
+            return itemTemplateWrapper.GetElement(args).as<winrt::IInspectable>();
         }
+        return args.Data();
+    }();
 
-        newContent = element;
-    }
-
-    //Check whether the data is its own container
-    if (auto data = args.Data().try_as<winrt::NavigationViewItemBase>())
+    if (auto newItem = newContent.try_as<winrt::NavigationViewItemBase>())
     {
-        return data;
+        return newItem;
     }
 
     // Create a wrapping container for the data

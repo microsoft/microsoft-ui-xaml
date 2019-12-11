@@ -11,7 +11,7 @@ enum class NavigationViewVisualStateDisplayMode
     MinimalWithBackButton
 };
 
-enum class NavigationViewListPosition
+enum class NavigationViewRepeaterPosition
 {
     LeftNav,
     TopPrimary,

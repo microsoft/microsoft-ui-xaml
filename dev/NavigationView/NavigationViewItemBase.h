@@ -41,10 +41,10 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnNavigationViewPositionChanged() {}
+    virtual void OnNavigationViewRepeaterPositionChanged() {}
 
-    NavigationViewListPosition Position();
-    void Position(NavigationViewListPosition value);
+    NavigationViewRepeaterPosition Position();
+    void Position(NavigationViewRepeaterPosition value);
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
@@ -53,6 +53,6 @@ protected:
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
 
 };

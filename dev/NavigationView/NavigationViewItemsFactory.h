@@ -10,8 +10,6 @@ class NavigationViewItemsFactory :
     public winrt::implements<NavigationViewItemsFactory, ElementFactory>
 {
 public:
-    NavigationViewItemsFactory();
-
     void UserElementFactory(winrt::IInspectable newValue);
 
 #pragma region IElementFactoryOverrides

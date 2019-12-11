@@ -45,7 +45,7 @@ public:
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
-    void OnNavigationViewPositionChanged() override;
+    void OnNavigationViewRepeaterPositionChanged() override;
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);

@@ -16,7 +16,7 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItem::OnNavigationViewPositionChanged()
+void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualStateNoTransition();
 }
@@ -163,7 +163,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     auto stateName = c_OnLeftNavigation;
 
     bool handled = false;
-    if (position == NavigationViewListPosition::LeftNav)
+    if (position == NavigationViewRepeaterPosition::LeftNav)
     {
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
@@ -175,7 +175,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
             }
         }
     }
-    else if (position == NavigationViewListPosition::TopPrimary)
+    else if (position == NavigationViewRepeaterPosition::TopPrimary)
     {
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
@@ -186,7 +186,7 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
             stateName = c_OnTopNavigationPrimary;
         }
     }
-    else if (position == NavigationViewListPosition::TopOverflow)
+    else if (position == NavigationViewRepeaterPosition::TopOverflow)
     {
         stateName = c_OnTopNavigationOverflow;
     }
@@ -277,12 +277,12 @@ bool NavigationViewItem::ShouldShowContent()
 
 bool NavigationViewItem::IsOnLeftNav()
 {
-    return Position() == NavigationViewListPosition::LeftNav;
+    return Position() == NavigationViewRepeaterPosition::LeftNav;
 }
 
 bool NavigationViewItem::IsOnTopPrimary()
 {
-    return Position() == NavigationViewListPosition::TopPrimary;
+    return Position() == NavigationViewRepeaterPosition::TopPrimary;
 }
 
 NavigationViewItemPresenter * NavigationViewItem::GetPresenter()

@@ -46,7 +46,7 @@ private:
     bool IsOnTopNavigation();
     bool IsOnTopNavigationOverflow();
     bool IsSettingsItem();
-    NavigationViewListPosition GetNavigationViewListPosition();
+    NavigationViewRepeaterPosition GetNavigationViewRepeaterPosition();
     int32_t GetNavigationViewItemCountInPrimaryList();
     int32_t GetNavigationViewItemCountInTopNav();
     int32_t GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput);

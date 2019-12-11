@@ -133,12 +133,7 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
 
 int TopNavigationViewDataProvider::ConvertOriginalIndexToIndex(int originalIndex)
 {
-    auto vector = GetVector(PrimaryList);
-    if (!IsItemInPrimaryList(originalIndex))
-    {
-        vector = GetVector(OverflowList);
-    }
-
+    auto const vector = GetVector(IsItemInPrimaryList(originalIndex) ? NavigationViewSplitVectorID::PrimaryList : NavigationViewSplitVectorID::OverflowList);
     return vector->IndexFromIndexInOriginalVector(originalIndex);
 }
 

@@ -25,29 +25,23 @@ struct NavigationViewItemBaseFactory :
 
 CppWinRTActivatableClassWithFactory(NavigationViewItemBase, NavigationViewItemBaseFactory);
 
-NavigationViewListPosition NavigationViewItemBase::Position()
+NavigationViewRepeaterPosition NavigationViewItemBase::Position()
 {
     return m_position;
 }
 
-void NavigationViewItemBase::Position(NavigationViewListPosition value)
+void NavigationViewItemBase::Position(NavigationViewRepeaterPosition value)
 {
     if (m_position != value)
     {
         m_position = value;
-        OnNavigationViewPositionChanged();
+        OnNavigationViewRepeaterPositionChanged();
     }
 }
 
 winrt::NavigationView NavigationViewItemBase::GetNavigationView()
 {
-    if (m_navigationView) {
-        return m_navigationView.get();
-    }
-    else
-    {
-        return SharedHelpers::GetAncestorOfType<winrt::NavigationView>(winrt::VisualTreeHelper::GetParent(*this));
-    }
+    return m_navigationView.get();
 }
 
 winrt::SplitView NavigationViewItemBase::GetSplitView()
