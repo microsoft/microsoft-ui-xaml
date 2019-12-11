@@ -15,6 +15,8 @@ TeachingTipTestHooksProperties::TeachingTipTestHooksProperties()
     , m_idleStatusChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
     , m_offsetChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
     , m_openedStatusChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
+    , m_subtitleVisibilityChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
+    , m_titleVisibilityChangedEventSource{static_cast<TeachingTipTestHooks*>(this)}
 {
 }
 
@@ -74,4 +76,24 @@ winrt::event_token TeachingTipTestHooksProperties::OpenedStatusChanged(winrt::Ty
 void TeachingTipTestHooksProperties::OpenedStatusChanged(winrt::event_token const& token)
 {
     m_openedStatusChangedEventSource.remove(token);
+}
+
+winrt::event_token TeachingTipTestHooksProperties::SubtitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+{
+    return m_subtitleVisibilityChangedEventSource.add(value);
+}
+
+void TeachingTipTestHooksProperties::SubtitleVisibilityChanged(winrt::event_token const& token)
+{
+    m_subtitleVisibilityChangedEventSource.remove(token);
+}
+
+winrt::event_token TeachingTipTestHooksProperties::TitleVisibilityChanged(winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable> const& value)
+{
+    return m_titleVisibilityChangedEventSource.add(value);
+}
+
+void TeachingTipTestHooksProperties::TitleVisibilityChanged(winrt::event_token const& token)
+{
+    m_titleVisibilityChangedEventSource.remove(token);
 }

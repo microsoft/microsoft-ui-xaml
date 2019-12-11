@@ -173,28 +173,43 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
-        toggleVisibilityForNullContent(m_titleTextBox.get(), Title());
+        if (ToggleVisibilityForEmptyContent(m_titleTextBox.get(), Title()))
+        {
+            TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
+        }
     }
     else if (property == s_SubtitleProperty)
     {
-        toggleVisibilityForNullContent(m_subtitleTextBox.get(), Subtitle());
+        if (ToggleVisibilityForEmptyContent(m_subtitleTextBox.get(), Subtitle()))
+        {
+            TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
+        }
     }
 
 }
 
-void TeachingTip::toggleVisibilityForNullContent(const winrt::UIElement& element, const winrt::hstring& content)
+bool TeachingTip::ToggleVisibilityForEmptyContent(const winrt::UIElement& element, const winrt::hstring& content)
 {
     if (element)
     {
-        if (content)
+        if (content != L"")
         {
-            element.Visibility(winrt::Visibility::Visible);
+            if (element.Visibility() == winrt::Visibility::Collapsed)
+            {
+                element.Visibility(winrt::Visibility::Visible);
+                return true;
+            }
         }
         else
         {
-            element.Visibility(winrt::Visibility::Collapsed);
+            if (element.Visibility() == winrt::Visibility::Visible)
+            {
+                element.Visibility(winrt::Visibility::Collapsed);
+                return true;
+            }
         }
     }
+    return false;
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
@@ -2340,6 +2355,24 @@ double TeachingTip::GetVerticalOffset()
         return popup.VerticalOffset();
     }
     return 0.0;
+}
+
+winrt::Visibility TeachingTip::GetTitleVisibility()
+{
+    if (auto&& titleTextBox = m_titleTextBox.get())
+    {
+        return titleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
+}
+
+winrt::Visibility TeachingTip::GetSubtitleVisibility()
+{
+    if (auto&& subtitleTextBox = m_subtitleTextBox.get())
+    {
+        return subtitleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
 }
 
 void TeachingTip::UpdatePopupRequestedTheme()
