@@ -7,8 +7,6 @@
 #include "NavigationViewList.h"
 #include "NavigationView.h"
 
-#include "NavigationViewItemBase.g.cpp"
-
 NavigationViewListPosition NavigationViewItemBase::Position()
 {
     return m_position;
