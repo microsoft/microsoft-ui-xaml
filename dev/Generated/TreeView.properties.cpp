@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeView.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeView)
+}
+
+#include "TreeView.g.cpp"
 
 GlobalDependencyProperty TreeViewProperties::s_CanDragItemsProperty{ nullptr };
 GlobalDependencyProperty TreeViewProperties::s_CanReorderItemsProperty{ nullptr };

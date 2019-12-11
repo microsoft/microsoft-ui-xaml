@@ -29,5 +29,3 @@ private:
     static com_ptr<RadioButtonsTestHooks> s_testHooks;
     winrt::event<winrt::TypedEventHandler<winrt::RadioButtons, winrt::IInspectable>> m_layoutChangedEventSource;
 };
-
-CppWinRTActivatableClassWithBasicFactory(RadioButtonsTestHooks)

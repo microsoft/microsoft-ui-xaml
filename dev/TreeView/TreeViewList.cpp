@@ -9,7 +9,7 @@
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItem.h"
 
-CppWinRTActivatableClassWithBasicFactory(TreeViewList);
+#include "TreeViewList.properties.cpp"
 
 TreeViewList::TreeViewList()
 {

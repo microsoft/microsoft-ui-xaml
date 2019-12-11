@@ -8,7 +8,7 @@
 #include "FlowLayoutAlgorithm.h"
 #include "UniformGridLayoutState.h"
 
-CppWinRTActivatableClassWithBasicFactory(UniformGridLayoutState);
+#include "UniformGridLayoutState.properties.cpp"
 
 void UniformGridLayoutState::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TwoPaneView.h"
 
-CppWinRTActivatableClassWithDPFactory(TwoPaneView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TwoPaneView)
+}
+
+#include "TwoPaneView.g.cpp"
 
 GlobalDependencyProperty TwoPaneViewProperties::s_MinTallModeHeightProperty{ nullptr };
 GlobalDependencyProperty TwoPaneViewProperties::s_MinWideModeWidthProperty{ nullptr };

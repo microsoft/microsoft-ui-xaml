@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColorSpectrum.h"
 
-CppWinRTActivatableClassWithDPFactory(ColorSpectrum)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ColorSpectrum)
+}
+
+#include "ColorSpectrum.g.cpp"
 
 GlobalDependencyProperty ColorSpectrumProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty ColorSpectrumProperties::s_ComponentsProperty{ nullptr };

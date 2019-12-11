@@ -4,6 +4,7 @@
 #pragma once
 
 #include "SelectionModel.g.h"
+#include "SelectionModel.properties.h"
 
 struct SelectedItemInfo
 {
@@ -12,19 +13,14 @@ struct SelectedItemInfo
 };
 
 class SelectionModel :
-    public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>
+    public ReferenceTracker<SelectionModel, winrt::implementation::SelectionModelT, winrt::Windows::UI::Xaml::Data::ICustomPropertyProvider, winrt::composing>,
+    public SelectionModelProperties
 {
 public:
     SelectionModel();
     ~SelectionModel();
 
 #pragma region ISelectionModel
-    winrt::event_token SelectionChanged(winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelSelectionChangedEventArgs> const& value);
-    void SelectionChanged(winrt::event_token const& token);
-
-    winrt::event_token ChildrenRequested(winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelChildrenRequestedEventArgs> const& value);
-    void ChildrenRequested(winrt::event_token const& token);
-
     winrt::IInspectable Source();
     void Source(winrt::IInspectable const& value);
 
@@ -110,8 +106,6 @@ private:
     winrt::IVectorView<winrt::IndexPath> m_selectedIndicesCached{ nullptr };
     winrt::IVectorView<winrt::IInspectable> m_selectedItemsCached{ nullptr };
 
-    event_source<winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelChildrenRequestedEventArgs>> m_getChildrenEventSource{ this };
-    event_source<winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelSelectionChangedEventArgs>> m_selectionChangedEventSource{ this };
     event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{ this };
 
     // Cached Event args to avoid creation cost every time

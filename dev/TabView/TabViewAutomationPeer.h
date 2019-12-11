@@ -18,5 +18,3 @@ public:
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 };
-
-CppWinRTActivatableClassWithBasicFactory(TabViewAutomationPeer);

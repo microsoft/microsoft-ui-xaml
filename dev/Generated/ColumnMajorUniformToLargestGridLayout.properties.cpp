@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"
 
-CppWinRTActivatableClassWithDPFactory(ColumnMajorUniformToLargestGridLayout)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ColumnMajorUniformToLargestGridLayout)
+}
+
+#include "ColumnMajorUniformToLargestGridLayout.g.cpp"
 
 GlobalDependencyProperty ColumnMajorUniformToLargestGridLayoutProperties::s_ColumnSpacingProperty{ nullptr };
 GlobalDependencyProperty ColumnMajorUniformToLargestGridLayoutProperties::s_MaxColumnsProperty{ nullptr };

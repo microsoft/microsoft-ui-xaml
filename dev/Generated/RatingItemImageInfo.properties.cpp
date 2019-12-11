@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RatingItemImageInfo.h"
 
-CppWinRTActivatableClassWithDPFactory(RatingItemImageInfo)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RatingItemImageInfo)
+}
+
+#include "RatingItemImageInfo.g.cpp"
 
 GlobalDependencyProperty RatingItemImageInfoProperties::s_DisabledImageProperty{ nullptr };
 GlobalDependencyProperty RatingItemImageInfoProperties::s_ImageProperty{ nullptr };

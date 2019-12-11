@@ -7,7 +7,7 @@
 #include "ScrollerTypeLogging.h"
 #include "ScrollOptions.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollOptions);
+#include "ScrollOptions.properties.cpp"
 
 ScrollOptions::ScrollOptions(
     winrt::AnimationMode const& animationMode)

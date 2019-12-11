@@ -9,7 +9,7 @@
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
-CppWinRTActivatableClassWithBasicFactory(TreeViewItemDataAutomationPeer);
+#include "TreeViewItemDataAutomationPeer.properties.cpp"
 
 TreeViewItemDataAutomationPeer::TreeViewItemDataAutomationPeer(winrt::IInspectable const& item, winrt::TreeViewListAutomationPeer const& parent) :
     ReferenceTracker(item, parent)

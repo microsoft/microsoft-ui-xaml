@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TabViewItemTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(TabViewItemTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TabViewItemTemplateSettings)
+}
+
+#include "TabViewItemTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TabViewItemTemplateSettingsProperties::s_IconElementProperty{ nullptr };
 

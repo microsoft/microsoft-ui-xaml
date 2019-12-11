@@ -12,7 +12,7 @@
 #include "Microsoft.UI.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-CppWinRTActivatableClassWithBasicFactory(RevealHoverLight)
+#include "RevealHoverLight.properties.cpp"
 
 static constexpr EasingInfo c_LinearEasing = EasingInfo{ EasingTypes::Linear,{ 0.f, 0.f },{ 0.f, 0.f } };
 static constexpr EasingInfo c_CubicEasing1 = EasingInfo{ EasingTypes::CubicBezier,{ 0.5f, 0.f } ,{ 0.6f, 1.f } };

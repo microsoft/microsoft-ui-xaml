@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SwipeItem.h"
 
-CppWinRTActivatableClassWithDPFactory(SwipeItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SwipeItem)
+}
+
+#include "SwipeItem.g.cpp"
 
 GlobalDependencyProperty SwipeItemProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty SwipeItemProperties::s_BehaviorOnInvokedProperty{ nullptr };

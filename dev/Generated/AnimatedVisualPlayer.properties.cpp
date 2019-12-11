@@ -6,7 +6,12 @@
 #include "common.h"
 #include "AnimatedVisualPlayer.h"
 
-CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(AnimatedVisualPlayer)
+}
+
+#include "AnimatedVisualPlayer.g.cpp"
 
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_AutoPlayProperty{ nullptr };
 GlobalDependencyProperty AnimatedVisualPlayerProperties::s_DiagnosticsProperty{ nullptr };

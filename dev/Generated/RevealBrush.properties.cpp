@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RevealBrush.h"
 
-CppWinRTActivatableClassWithDPFactory(RevealBrush)
+namespace winrt::Microsoft::UI::Xaml::Media
+{
+    CppWinRTActivatableClassWithDPFactory(RevealBrush)
+}
+
+#include "RevealBrush.g.cpp"
 
 GlobalDependencyProperty RevealBrushProperties::s_AlwaysUseFallbackProperty{ nullptr };
 GlobalDependencyProperty RevealBrushProperties::s_ColorProperty{ nullptr };

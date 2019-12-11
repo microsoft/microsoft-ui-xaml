@@ -14,7 +14,7 @@ double ScrollerAutomationPeer::s_minimumPercent{ 0.0 };
 double ScrollerAutomationPeer::s_maximumPercent{ 100.0 };
 double ScrollerAutomationPeer::s_noScroll{ -1.0 };
 
-CppWinRTActivatableClassWithBasicFactory(ScrollerAutomationPeer);
+#include "ScrollerAutomationPeer.properties.cpp"
 
 ScrollerAutomationPeer::ScrollerAutomationPeer(winrt::Scroller const& owner)
     : ReferenceTracker(owner)

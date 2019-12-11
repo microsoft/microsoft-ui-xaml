@@ -65,5 +65,3 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_effectiveHeroContentPlacementChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_offsetChangedEventSource;
 };
-
-CppWinRTActivatableClassWithBasicFactory(TeachingTipTestHooks)
