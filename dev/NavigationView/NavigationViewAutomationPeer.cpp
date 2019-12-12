@@ -8,9 +8,8 @@
 #include "NavigationView.h"
 #include "NavigationViewItemBase.h"
 #include "SharedHelpers.h"
+#include "NavigationViewAutomationPeer.properties.cpp"
 
-
-CppWinRTActivatableClassWithBasicFactory(NavigationViewAutomationPeer);
 
 NavigationViewAutomationPeer::NavigationViewAutomationPeer(winrt::NavigationView const& owner) :
     ReferenceTracker(owner)
