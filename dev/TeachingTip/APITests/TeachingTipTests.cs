@@ -166,28 +166,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             IdleSynchronizer.Wait();
             loadedEvent.WaitOne();
         }
-
-        [TestMethod]
-        public void SettingTitleToNullCollapsesTitleTextBox()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                TeachingTip teachingTip = new TeachingTip();
-                var border = VisualTreeHelper.GetChild(teachingTip, 0);
-                var grid1 = VisualTreeHelper.GetChild(border, 0);
-                var grid2 = VisualTreeHelper.GetChild(grid1, 0);
-                var grid3 = VisualTreeHelper.GetChild(grid2, 0);
-                var grid4 = VisualTreeHelper.GetChild(grid3, 0);
-                var sv = VisualTreeHelper.GetChild(grid4, 0);
-                var stackPanel = VisualTreeHelper.GetChild(sv, 0);
-                var grid = VisualTreeHelper.GetChild(stackPanel, 0);
-                var stackPanel2 = VisualTreeHelper.GetChild(grid, 0);
-                var titleTextBlock = VisualTreeHelper.GetChild(stackPanel2, 0) as Control;
-                Verify.AreEqual(Visibility.Collapsed, titleTextBlock.Visibility);
-
-                teachingTip.Title = "Title";
-                Verify.AreEqual(Visibility.Visible, titleTextBlock.Visibility);
-            });
-        }
     }
 }
