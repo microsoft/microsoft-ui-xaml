@@ -47,7 +47,7 @@ namespace MUXControlsTestApp
             codeBehindItems.Add("Item 4");
 
             //NavView.MenuItemsSource = codeBehindItems;
-            //NavView.SelectedItem = codeBehindItems[0];
+            NavView.SelectedItem = codeBehindItems[0];
         }
 
         private void GetMenuItemForContainer(object sender, RoutedEventArgs e)
@@ -63,6 +63,9 @@ namespace MUXControlsTestApp
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            var selectedItem = args.SelectedItem;
+            var selectedItemContainer = args.SelectedItemContainer;
+            var isSettingsSelected = args.IsSettingsSelected;
         }
 
         void NavView_ItemInvoked(NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs args)

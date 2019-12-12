@@ -176,12 +176,14 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 {
     auto selectedItem = selectionModel.SelectedItem();
 
-    // Ignore this callback if the SelectedItem property of NavigationView is already set to the item
-    // being passed in this callback. This is because the item has already been selected
-    // via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
+    // Ignore this callback if:
+    // 1. the SelectedItem property of NavigationView is already set to the item
+    //    being passed in this callback. This is because the item has already been selected
+    //    via API and we are just updating the m_selectionModel state to accurately reflect the new selection.
+    // 2. Template has not been applied yet. SelectionModel's selectedIndex state will get properly updated
+    //    after the repeater finishes loading.
     // TODO: Update SelectedItem comparison to work for the exact same item datasource scenario
-    if (m_shouldIgnoreNextSelectionChange ||
-        selectedItem == SelectedItem())
+    if (m_shouldIgnoreNextSelectionChange || selectedItem == SelectedItem() || !m_appliedTemplate)
     {
         return;
     }
