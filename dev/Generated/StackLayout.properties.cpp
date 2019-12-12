@@ -6,7 +6,12 @@
 #include "common.h"
 #include "StackLayout.h"
 
-CppWinRTActivatableClassWithDPFactory(StackLayout)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(StackLayout)
+}
+
+#include "StackLayout.g.cpp"
 
 GlobalDependencyProperty StackLayoutProperties::s_DisableVirtualizationProperty{ nullptr };
 GlobalDependencyProperty StackLayoutProperties::s_OrientationProperty{ nullptr };

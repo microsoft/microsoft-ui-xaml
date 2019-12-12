@@ -8,7 +8,7 @@
 #include "PullToRefreshHelperTestApi.h"
 #include "PullToRefreshHelperTestApiFactory.h"
 
-CppWinRTActivatableClassWithBasicFactory(PullToRefreshHelperTestApi)
+#include "PullToRefreshHelperTestApi.properties.cpp"
 
 winrt::RefreshInteractionRatioChangedEventArgs PullToRefreshHelperTestApi::CreateRefreshInteractionRatioChangedEventArgsInstance(double value)
 {

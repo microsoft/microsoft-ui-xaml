@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ColorPicker.h"
 
-CppWinRTActivatableClassWithDPFactory(ColorPicker)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ColorPicker)
+}
+
+#include "ColorPicker.g.cpp"
 
 GlobalDependencyProperty ColorPickerProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty ColorPickerProperties::s_ColorSpectrumComponentsProperty{ nullptr };

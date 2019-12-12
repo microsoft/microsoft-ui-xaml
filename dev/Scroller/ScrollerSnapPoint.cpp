@@ -173,7 +173,7 @@ bool ScrollSnapPointBase::OnUpdateViewport(double newViewport)
 /////////////////////////////////////////////////////////////////////
 //////////////    Irregular Scroll Snap Points   ////////////////////
 /////////////////////////////////////////////////////////////////////
-CppWinRTActivatableClassWithBasicFactory(ScrollSnapPoint);
+#include "ScrollSnapPoint.properties.cpp"
 
 ScrollSnapPoint::ScrollSnapPoint(
     double snapPointValue,
@@ -559,7 +559,7 @@ double ScrollSnapPoint::Evaluate(
 /////////////////////////////////////////////////////////////////////
 /////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
-CppWinRTActivatableClassWithBasicFactory(RepeatedScrollSnapPoint);
+#include "RepeatedScrollSnapPoint.properties.cpp"
 
 RepeatedScrollSnapPoint::RepeatedScrollSnapPoint(
     double offset,
@@ -1090,7 +1090,7 @@ bool ZoomSnapPointBase::OnUpdateViewport(double newViewport)
 /////////////////////////////////////////////////////////////////////
 //////////////     Irregular Zoom Snap Points    ////////////////////
 /////////////////////////////////////////////////////////////////////
-CppWinRTActivatableClassWithBasicFactory(ZoomSnapPoint);
+#include "ZoomSnapPoint.properties.cpp"
 
 ZoomSnapPoint::ZoomSnapPoint(
     double snapPointValue)
@@ -1450,7 +1450,7 @@ double ZoomSnapPoint::Evaluate(
 /////////////////////////////////////////////////////////////////////
 /////////////////    Repeated Snap Points    ////////////////////////
 /////////////////////////////////////////////////////////////////////
-CppWinRTActivatableClassWithBasicFactory(RepeatedZoomSnapPoint);
+#include "RepeatedZoomSnapPoint.properties.cpp"
 
 RepeatedZoomSnapPoint::RepeatedZoomSnapPoint(
     double offset,

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "FlowLayout.h"
 
-CppWinRTActivatableClassWithDPFactory(FlowLayout)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(FlowLayout)
+}
+
+#include "FlowLayout.g.cpp"
 
 GlobalDependencyProperty FlowLayoutProperties::s_LineAlignmentProperty{ nullptr };
 GlobalDependencyProperty FlowLayoutProperties::s_MinColumnSpacingProperty{ nullptr };

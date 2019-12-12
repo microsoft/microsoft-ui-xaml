@@ -22,7 +22,7 @@ $(ActivatableTypes)
           <Path>Microsoft.UI.Xaml.dll</Path>
           <!-- Special type that we manually list here which is not part of the Nuget dll distribution package. 
                This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package. -->
-          <ActivatableClass ActivatableClassId="Microsoft.UI.Xaml.Controls.Internal.FrameworkPackageDetector" ThreadingModel="both" />
+          <ActivatableClass ActivatableClassId="Microsoft.UI.Private.Controls.FrameworkPackageDetector" ThreadingModel="both" />
         </InProcessServer>
       </Extension>
     </Extensions>

@@ -7,6 +7,8 @@
 #include "MenuBarAutomationPeer.h"
 #include "Utils.h"
 
+#include "MenuBarAutomationPeer.properties.cpp"
+
 MenuBarAutomationPeer::MenuBarAutomationPeer(winrt::MenuBar const& owner) : ReferenceTracker(owner)
 {
 }

@@ -30,4 +30,3 @@ public:
     }
 };
 
-CppWinRTActivatableClassWithFactory(ItemsSourceView, ItemsSourceViewFactory)

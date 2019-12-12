@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RadioButtons.h"
 
-CppWinRTActivatableClassWithDPFactory(RadioButtons)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RadioButtons)
+}
+
+#include "RadioButtons.g.cpp"
 
 GlobalDependencyProperty RadioButtonsProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty RadioButtonsProperties::s_HeaderTemplateProperty{ nullptr };

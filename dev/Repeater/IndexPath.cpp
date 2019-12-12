@@ -6,7 +6,7 @@
 #include "ItemsRepeater.common.h"
 #include "IndexPath.h"
 
-CppWinRTActivatableClassWithBasicFactory(IndexPath);
+#include "IndexPath.properties.cpp"
 
 IndexPath::IndexPath(int index)
 {

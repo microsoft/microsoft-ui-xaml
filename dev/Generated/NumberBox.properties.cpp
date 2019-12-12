@@ -6,7 +6,12 @@
 #include "common.h"
 #include "NumberBox.h"
 
-CppWinRTActivatableClassWithDPFactory(NumberBox)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(NumberBox)
+}
+
+#include "NumberBox.g.cpp"
 
 GlobalDependencyProperty NumberBoxProperties::s_AcceptsExpressionProperty{ nullptr };
 GlobalDependencyProperty NumberBoxProperties::s_DescriptionProperty{ nullptr };

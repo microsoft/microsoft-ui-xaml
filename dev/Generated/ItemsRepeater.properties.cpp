@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ItemsRepeater.h"
 
-CppWinRTActivatableClassWithDPFactory(ItemsRepeater)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ItemsRepeater)
+}
+
+#include "ItemsRepeater.g.cpp"
 
 GlobalDependencyProperty ItemsRepeaterProperties::s_AnimatorProperty{ nullptr };
 GlobalDependencyProperty ItemsRepeaterProperties::s_BackgroundProperty{ nullptr };
