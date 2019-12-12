@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeViewItemTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeViewItemTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeViewItemTemplateSettings)
+}
+
+#include "TreeViewItemTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TreeViewItemTemplateSettingsProperties::s_CollapsedGlyphVisibilityProperty{ nullptr };
 GlobalDependencyProperty TreeViewItemTemplateSettingsProperties::s_DragItemsCountProperty{ nullptr };

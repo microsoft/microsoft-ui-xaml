@@ -12,4 +12,4 @@ public:
     bool GoToElementStateCore(winrt::hstring const& stateName, bool useTransitions);
 };
 
-CppWinRTActivatableClassWithBasicFactory(RevealListViewItemPresenter)
+#include "RevealListViewItemPresenter.properties.cpp"

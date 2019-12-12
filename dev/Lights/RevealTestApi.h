@@ -48,5 +48,3 @@ private:
 
     winrt::ApplicationTheme m_targetTheme{};
 };
-
-CppWinRTActivatableClassWithBasicFactory(RevealTestApi)

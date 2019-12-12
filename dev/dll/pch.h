@@ -21,9 +21,13 @@
 
 #include <windows.h>
 
-#include <wrl\implements.h>
-#include <wrl\module.h>
-#include <wrl\event.h>
+// Basic WinRT ABI things -- without including all of WRL
+#include <inspectable.h>
+#include <hstring.h>
+#include <eventtoken.h>
+#include <activation.h>
+#include <weakreference.h>
+#include <guiddef.h>
 
 #define MUX_ASSERT(X) _ASSERT(X) 
 #define MUX_ASSERT_MSG(X, MSG) _ASSERT_EXPR(X, MSG)

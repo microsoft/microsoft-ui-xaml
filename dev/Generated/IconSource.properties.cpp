@@ -6,7 +6,12 @@
 #include "common.h"
 #include "IconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(IconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(IconSource)
+}
+
+#include "IconSource.g.cpp"
 
 GlobalDependencyProperty IconSourceProperties::s_ForegroundProperty{ nullptr };
 

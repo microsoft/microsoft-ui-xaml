@@ -6,7 +6,12 @@
 #include "common.h"
 #include "NavigationView.h"
 
-CppWinRTActivatableClassWithDPFactory(NavigationView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(NavigationView)
+}
+
+#include "NavigationView.g.cpp"
 
 GlobalDependencyProperty NavigationViewProperties::s_AlwaysShowHeaderProperty{ nullptr };
 GlobalDependencyProperty NavigationViewProperties::s_AutoSuggestBoxProperty{ nullptr };

@@ -7,6 +7,8 @@
 #include "RatingControlAutomationPeer.h"
 #include "Utils.h"
 
+#include "RatingControlAutomationPeer.properties.cpp"
+
 RatingControlAutomationPeer::RatingControlAutomationPeer(winrt::FrameworkElement const& owner)
     : ReferenceTracker(owner)
 {

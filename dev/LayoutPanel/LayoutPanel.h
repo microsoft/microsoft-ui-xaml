@@ -3,48 +3,16 @@
 
 #pragma once
 #include "LayoutPanel.g.h"
+#include "LayoutPanel.properties.h"
 
 class LayoutPanel : 
-    public ReferenceTracker<LayoutPanel, winrt::implementation::LayoutPanelT>
+    public ReferenceTracker<LayoutPanel, winrt::implementation::LayoutPanelT>,
+    public LayoutPanelProperties
 {
 public:
 
-    winrt::Layout Layout();
-    void Layout(winrt::Layout const& value);
-
-    winrt::Brush BorderBrush();
-    void BorderBrush(winrt::Brush const& value);
-
-    winrt::Thickness BorderThickness();
-    void BorderThickness(winrt::Thickness const& value);
-
-    winrt::Thickness Padding();
-    void Padding(winrt::Thickness const& value);
-
-    winrt::CornerRadius CornerRadius();
-    void CornerRadius(winrt::CornerRadius const& value);
-
-    static winrt::DependencyProperty LayoutProperty() { return s_layoutProperty; }
-    static winrt::DependencyProperty BorderBrushProperty() { return s_borderBrushProperty; }
-    static winrt::DependencyProperty BorderThicknessProperty() { return s_borderThicknessProperty; }
-    static winrt::DependencyProperty CornerRadiusProperty() { return s_cornerRadiusProperty; }
-    static winrt::DependencyProperty PaddingProperty() { return s_paddingProperty; }
-
-    static GlobalDependencyProperty s_layoutProperty;
-    static GlobalDependencyProperty s_borderBrushProperty;
-    static GlobalDependencyProperty s_borderThicknessProperty;
-    static GlobalDependencyProperty s_cornerRadiusProperty;
-    static GlobalDependencyProperty s_paddingProperty;
-
     winrt::IInspectable LayoutState() { return m_layoutState.get(); }
     void LayoutState(winrt::IInspectable const& value) { m_layoutState.set(value); }
-
-    static void EnsureProperties();
-    static void ClearProperties();
-
-    static void OnPropertyChanged(
-        winrt::DependencyObject const& sender,
-        winrt::DependencyPropertyChangedEventArgs const& args);
 
     void OnPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
 
@@ -65,5 +33,3 @@ private:
     void InvalidateMeasureForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
     void InvalidateArrangeForLayout(winrt::Layout const& sender, winrt::IInspectable const& args);
 };
-
-CppWinRTActivatableClassWithDPFactory(LayoutPanel);

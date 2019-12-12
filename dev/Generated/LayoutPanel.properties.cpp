@@ -6,7 +6,12 @@
 #include "common.h"
 #include "LayoutPanel.h"
 
-CppWinRTActivatableClassWithDPFactory(LayoutPanel)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(LayoutPanel)
+}
+
+#include "LayoutPanel.g.cpp"
 
 GlobalDependencyProperty LayoutPanelProperties::s_BorderBrushProperty{ nullptr };
 GlobalDependencyProperty LayoutPanelProperties::s_BorderThicknessProperty{ nullptr };
@@ -30,7 +35,7 @@ void LayoutPanelProperties::EnsureProperties()
                 winrt::name_of<winrt::LayoutPanel>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Brush>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnBorderBrushPropertyChanged));
     }
     if (!s_BorderThicknessProperty)
     {
@@ -41,7 +46,7 @@ void LayoutPanelProperties::EnsureProperties()
                 winrt::name_of<winrt::LayoutPanel>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnBorderThicknessPropertyChanged));
     }
     if (!s_CornerRadiusProperty)
     {
@@ -52,7 +57,7 @@ void LayoutPanelProperties::EnsureProperties()
                 winrt::name_of<winrt::LayoutPanel>(),
                 false /* isAttached */,
                 ValueHelper<winrt::CornerRadius>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnCornerRadiusPropertyChanged));
     }
     if (!s_LayoutProperty)
     {
@@ -63,7 +68,7 @@ void LayoutPanelProperties::EnsureProperties()
                 winrt::name_of<winrt::LayoutPanel>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Layout>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnLayoutPropertyChanged));
     }
     if (!s_PaddingProperty)
     {
@@ -74,7 +79,7 @@ void LayoutPanelProperties::EnsureProperties()
                 winrt::name_of<winrt::LayoutPanel>(),
                 false /* isAttached */,
                 ValueHelper<winrt::Thickness>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnPaddingPropertyChanged));
     }
 }
 
@@ -85,6 +90,46 @@ void LayoutPanelProperties::ClearProperties()
     s_CornerRadiusProperty = nullptr;
     s_LayoutProperty = nullptr;
     s_PaddingProperty = nullptr;
+}
+
+void LayoutPanelProperties::OnBorderBrushPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::LayoutPanel>();
+    winrt::get_self<LayoutPanel>(owner)->OnPropertyChanged(args);
+}
+
+void LayoutPanelProperties::OnBorderThicknessPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::LayoutPanel>();
+    winrt::get_self<LayoutPanel>(owner)->OnPropertyChanged(args);
+}
+
+void LayoutPanelProperties::OnCornerRadiusPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::LayoutPanel>();
+    winrt::get_self<LayoutPanel>(owner)->OnPropertyChanged(args);
+}
+
+void LayoutPanelProperties::OnLayoutPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::LayoutPanel>();
+    winrt::get_self<LayoutPanel>(owner)->OnPropertyChanged(args);
+}
+
+void LayoutPanelProperties::OnPaddingPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::LayoutPanel>();
+    winrt::get_self<LayoutPanel>(owner)->OnPropertyChanged(args);
 }
 
 void LayoutPanelProperties::BorderBrush(winrt::Brush const& value)

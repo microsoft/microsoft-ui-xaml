@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ToggleSplitButton.h"
 
-CppWinRTActivatableClassWithDPFactory(ToggleSplitButton)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ToggleSplitButton)
+}
+
+#include "ToggleSplitButton.g.cpp"
 
 GlobalDependencyProperty ToggleSplitButtonProperties::s_IsCheckedProperty{ nullptr };
 

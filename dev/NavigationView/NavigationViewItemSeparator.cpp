@@ -6,7 +6,7 @@
 #include "NavigationViewItemSeparator.h"
 #include "Utils.h"
 
-CppWinRTActivatableClassWithBasicFactory(NavigationViewItemSeparator);
+#include "NavigationViewItemSeparator.properties.cpp"
 
 NavigationViewItemSeparator::NavigationViewItemSeparator()
 {

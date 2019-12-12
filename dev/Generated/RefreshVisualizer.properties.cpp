@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RefreshVisualizer.h"
 
-CppWinRTActivatableClassWithDPFactory(RefreshVisualizer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RefreshVisualizer)
+}
+
+#include "RefreshVisualizer.g.cpp"
 
 GlobalDependencyProperty RefreshVisualizerProperties::s_ContentProperty{ nullptr };
 GlobalDependencyProperty RefreshVisualizerProperties::s_InfoProviderProperty{ nullptr };

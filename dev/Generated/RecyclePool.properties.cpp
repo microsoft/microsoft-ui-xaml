@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RecyclePool.h"
 
-CppWinRTActivatableClassWithDPFactory(RecyclePool)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RecyclePool)
+}
+
+#include "RecyclePool.g.cpp"
 
 GlobalDependencyProperty RecyclePoolProperties::s_PoolInstanceProperty{ nullptr };
 

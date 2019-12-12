@@ -4,10 +4,6 @@
 #include "pch.h"
 #include "common.h"
 #include "TraceLogging.h"
-#include <initguid.h>
-#include <wrl\module.h>
-
-using namespace Microsoft::WRL;
 
 HINSTANCE g_hInstance = nullptr;
 
@@ -30,35 +26,13 @@ STDAPI_(BOOL) DllMain(_In_ HINSTANCE hInstance, _In_ DWORD reason, _In_opt_ void
     return TRUE;
 }
 
-STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory **factory)
+HRESULT WINAPI DllGetActivationFactory(_In_ HSTRING activatableClassId, _Out_ ::IActivationFactory** factory)
 {
-    return Module<InProc>::GetModule().GetActivationFactory(activatibleClassId, factory);
+    return WINRT_GetActivationFactory(activatableClassId, reinterpret_cast<void**>(factory));
 }
 
 __control_entrypoint(DllExport)
-STDAPI DllCanUnloadNow()
+HRESULT __stdcall DllCanUnloadNow()
 {
-    if (winrt::get_module_lock())
-    {
-        return S_FALSE;
-    }
-
-    if (!Module<InProc>::GetModule().Terminate())
-    {
-        return S_FALSE;
-    }
-
-    winrt::clear_factory_cache();
-
-    return S_OK;
+    return WINRT_CanUnloadNow();
 }
-
-_Check_return_
-STDAPI  DllGetClassObject(_In_ REFCLSID rclsid, _In_ REFIID riid, _Outptr_ LPVOID FAR* ppv) 
-{
-    return Module<InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
-}
-
-// Microsoft.UI.Xaml.def includes this as an export, but it only applies to WUXC.
-// We'll stub it out for MUX to avoid the build error we get otherwise.
-extern "C" void XamlTestHookFreeControlsResourceLibrary() { }
