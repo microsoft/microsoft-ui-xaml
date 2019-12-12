@@ -6,6 +6,7 @@
 #include "TypeLogging.h"
 #include "ScrollingPresenterTypeLogging.h"
 #include "ScrollingScrollOptions.h"
+
 #include "ScrollingScrollOptions.properties.cpp"
 
 ScrollingScrollOptions::ScrollingScrollOptions(

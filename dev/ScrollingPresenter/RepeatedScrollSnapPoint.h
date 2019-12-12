@@ -3,4 +3,4 @@
 
 #pragma once
 
-#include "ScrollerSnapPoint.h"
+#include "SnapPoint.h"
