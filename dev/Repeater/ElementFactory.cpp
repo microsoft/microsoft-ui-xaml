@@ -5,7 +5,7 @@
 #include "common.h"
 #include "ElementFactory.h"
 
-CppWinRTActivatableClassWithBasicFactory(ElementFactory);
+#include "ElementFactory.properties.cpp"
 
 #pragma region IElementFactory
 

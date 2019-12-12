@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TabViewItem.h"
 
-CppWinRTActivatableClassWithDPFactory(TabViewItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TabViewItem)
+}
+
+#include "TabViewItem.g.cpp"
 
 GlobalDependencyProperty TabViewItemProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_HeaderTemplateProperty{ nullptr };

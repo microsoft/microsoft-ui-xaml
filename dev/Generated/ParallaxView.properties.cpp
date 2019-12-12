@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ParallaxView.h"
 
-CppWinRTActivatableClassWithDPFactory(ParallaxView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ParallaxView)
+}
+
+#include "ParallaxView.g.cpp"
 
 GlobalDependencyProperty ParallaxViewProperties::s_ChildProperty{ nullptr };
 GlobalDependencyProperty ParallaxViewProperties::s_HorizontalShiftProperty{ nullptr };

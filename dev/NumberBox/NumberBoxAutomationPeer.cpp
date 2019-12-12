@@ -8,6 +8,8 @@
 #include "NumberBoxAutomationPeer.h"
 #include "Utils.h"
 
+#include "NumberBoxAutomationPeer.properties.cpp"
+
 NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner)
     : ReferenceTracker(owner)
 {

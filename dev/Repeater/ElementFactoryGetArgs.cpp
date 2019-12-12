@@ -5,6 +5,7 @@
 #include "common.h"
 #include "ElementFactoryGetArgs.h"
 
+#include "ElementFactoryGetArgs.properties.cpp"
 
 #pragma region IElementFactoryGetArgs
 

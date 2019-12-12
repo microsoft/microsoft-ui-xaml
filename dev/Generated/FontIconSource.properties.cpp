@@ -6,7 +6,12 @@
 #include "common.h"
 #include "FontIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(FontIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(FontIconSource)
+}
+
+#include "FontIconSource.g.cpp"
 
 GlobalDependencyProperty FontIconSourceProperties::s_FontFamilyProperty{ nullptr };
 GlobalDependencyProperty FontIconSourceProperties::s_FontSizeProperty{ nullptr };

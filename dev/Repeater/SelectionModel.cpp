@@ -14,7 +14,7 @@
 #include "SelectedItems.h"
 #include "CustomProperty.h"
 
-CppWinRTActivatableClassWithBasicFactory(SelectionModel);
+#include "SelectionModel.properties.cpp"
 
 SelectionModel::SelectionModel()
 {
@@ -35,26 +35,6 @@ SelectionModel::~SelectionModel()
 }
 
 #pragma region ISelectionModel
-
-winrt::event_token SelectionModel::SelectionChanged(winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelSelectionChangedEventArgs> const& value)
-{
-    return m_selectionChangedEventSource.add(value);
-}
-
-void SelectionModel::SelectionChanged(winrt::event_token const& token)
-{
-    m_selectionChangedEventSource.remove(token);
-}
-
-winrt::event_token SelectionModel::ChildrenRequested(winrt::TypedEventHandler<winrt::SelectionModel, winrt::SelectionModelChildrenRequestedEventArgs> const& value)
-{
-    return m_getChildrenEventSource.add(value);
-}
-
-void SelectionModel::ChildrenRequested(winrt::event_token const& token)
-{
-    m_getChildrenEventSource.remove(token);
-}
 
 winrt::IInspectable SelectionModel::Source()
 {
@@ -521,7 +501,7 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
 {
     winrt::IInspectable resolved = nullptr;
     // Raise ChildrenRequested event if there is a handler
-    if (m_getChildrenEventSource)
+    if (m_childrenRequestedEventSource)
     {
         if (!m_childrenRequestedEventArgs)
         {
@@ -532,7 +512,7 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
             winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(data, sourceNode);
         }
 
-        m_getChildrenEventSource(*this, m_childrenRequestedEventArgs.get());
+        m_childrenRequestedEventSource(*this, m_childrenRequestedEventArgs.get());
         resolved = m_childrenRequestedEventArgs.get().Children();
 
         // Clear out the values in the args so that it cannot be used after the event handler call.

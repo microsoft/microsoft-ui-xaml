@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RefreshContainer.h"
 
-CppWinRTActivatableClassWithDPFactory(RefreshContainer)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RefreshContainer)
+}
+
+#include "RefreshContainer.g.cpp"
 
 GlobalDependencyProperty RefreshContainerProperties::s_PullDirectionProperty{ nullptr };
 GlobalDependencyProperty RefreshContainerProperties::s_VisualizerProperty{ nullptr };

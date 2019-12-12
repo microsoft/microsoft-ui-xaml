@@ -5,4 +5,3 @@
 
 #include "SwipeTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(SwipeTestHooks)

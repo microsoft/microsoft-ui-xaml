@@ -77,5 +77,3 @@ private:
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_titleVisibilityChangedEventSource;
     winrt::event<winrt::TypedEventHandler<winrt::TeachingTip, winrt::IInspectable>> m_subtitleVisibilityChangedEventSource;
 };
-
-CppWinRTActivatableClassWithBasicFactory(TeachingTipTestHooks)

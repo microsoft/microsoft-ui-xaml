@@ -29,5 +29,3 @@ public:
 private:
     winrt::TeachingTip GetTeachingTip();
 };
-
-CppWinRTActivatableClassWithBasicFactory(TeachingTipAutomationPeer)

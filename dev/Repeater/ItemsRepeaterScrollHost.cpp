@@ -8,7 +8,7 @@
 #include "DoubleUtil.h"
 #include "RuntimeProfiler.h"
 
-CppWinRTActivatableClassWithBasicFactory(ItemsRepeaterScrollHost)
+#include "ItemsRepeaterScrollHost.properties.cpp"
 
 ItemsRepeaterScrollHost::ItemsRepeaterScrollHost()
 {

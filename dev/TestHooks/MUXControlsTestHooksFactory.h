@@ -5,4 +5,4 @@
 
 #include "MUXControlsTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(MUXControlsTestHooks)
+#include "MUXControlsTestHooks.properties.cpp"

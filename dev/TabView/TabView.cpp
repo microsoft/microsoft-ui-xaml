@@ -31,7 +31,6 @@ TabView::TabView()
     SetDefaultStyleKey(this);
 
     Loaded({ this, &TabView::OnLoaded });
-    SizeChanged({ this, &TabView::OnSizeChanged });
 
     // KeyboardAccelerator is only available on RS3+
     if (SharedHelpers::IsRS3OrHigher())
@@ -311,11 +310,6 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
     UpdateTabWidths();
 }
 
-void TabView::OnSizeChanged(const winrt::IInspectable&, const winrt::SizeChangedEventArgs&)
-{
-    UpdateTabWidths();
-}
-
 void TabView::OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)
 {
     UpdateTabWidths();
@@ -534,7 +528,12 @@ void TabView::OnScrollIncreaseClick(const winrt::IInspectable&, const winrt::Rou
 
 winrt::Size TabView::MeasureOverride(winrt::Size const& availableSize)
 {
-    previousAvailableSize = availableSize;
+    if (previousAvailableSize.Width != availableSize.Width)
+    {
+        previousAvailableSize = availableSize;
+        UpdateTabWidths();
+    }
+
     return __super::MeasureOverride(availableSize);
 }
 

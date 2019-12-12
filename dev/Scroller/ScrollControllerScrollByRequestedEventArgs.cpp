@@ -7,7 +7,7 @@
 #include "ScrollerTypeLogging.h"
 #include "ScrollControllerScrollByRequestedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollControllerScrollByRequestedEventArgs);
+#include "ScrollControllerScrollByRequestedEventArgs.properties.cpp"
 
 ScrollControllerScrollByRequestedEventArgs::ScrollControllerScrollByRequestedEventArgs(
     double offsetDelta,

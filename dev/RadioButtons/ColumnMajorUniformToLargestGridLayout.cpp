@@ -7,8 +7,6 @@
 #include "Utils.h"
 #include "ColumnMajorUniformToLargestGridLayout.h"
 
-CppWinRTActivatableClassWithBasicFactory(ColumnMajorUniformToLargestGridLayout);
-
 winrt::Size ColumnMajorUniformToLargestGridLayout::MeasureOverride(
     winrt::NonVirtualizingLayoutContext const& context,
     winrt::Size const& availableSize)
