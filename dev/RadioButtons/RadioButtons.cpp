@@ -24,7 +24,11 @@ RadioButtons::RadioButtons()
     // because RadioButton has a key down handler for up and down that gets called before we can intercept. Issue #1634.
     if (auto const thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
-        PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
+        thisAsIUIElement7.PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
+    }
+    if (auto const thisAsIUIElement4 = this->try_as<winrt::IUIElement4>())
+    {
+        thisAsIUIElement4.AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
     }
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
@@ -194,6 +198,11 @@ void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
         break;
     }
+}
+
+void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
+{
+    this->Focus(winrt::FocusState::Keyboard);
 }
 
 // If we haven't handled the key yet and the original source was the first(for up and left)
