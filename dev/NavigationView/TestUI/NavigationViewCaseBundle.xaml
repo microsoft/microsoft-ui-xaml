@@ -12,7 +12,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="40">
             <Button x:Name="NavigationViewPage" AutomationProperties.Name="NavigationView Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Test</Button>
-            <Button x:Name="NavigationViewPageDatabinding" AutomationProperties.Name="NavigationView Test Databinding" Margin="2" HorizontalAlignment="Stretch">NavigationView Test Databinding</Button>
+            <Button x:Name="NavigationViewPageDataContext" AutomationProperties.Name="NavigationViewPageDataContext" Margin="2" HorizontalAlignment="Stretch">NavigationView DataContext</Button>
             <Button x:Name="NavigationViewTopNavPage" AutomationProperties.Name="NavigationView TopNav Test" Margin="2" HorizontalAlignment="Stretch">NavigationView TopNav Test</Button>
             <Button x:Name="NavigationViewTopNavOnlyPage" AutomationProperties.Name="Top NavigationView Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Test</Button>
             <Button x:Name="NavigationViewTopNavStorePage" AutomationProperties.Name="Top NavigationView Store Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Store Test</Button>

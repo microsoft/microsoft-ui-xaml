@@ -4045,6 +4045,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyDataContextCanBeUsedForNavigation()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationViewPageDataContext" }))
+            {
+                TextBlock vavViewSelectedDataContext = new TextBlock(FindElement.ByName("NavViewSelectedDataContext"));
+                Verify.IsTrue(vavViewSelectedDataContext.GetText() == "Item #0_DataContext");
+
+                Log.Comment("Click Item #3");
+                var menuItem = FindElement.ByName("Item #3");
+                InputHelper.LeftClick(menuItem);
+                Wait.ForIdle();
+
+                Verify.IsTrue(vavViewSelectedDataContext.GetText() == "Item #3_DataContext");
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))

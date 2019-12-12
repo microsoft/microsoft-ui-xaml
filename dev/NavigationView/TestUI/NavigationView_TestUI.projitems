@@ -34,7 +34,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)NavigationViewPageDatabinding.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)NavigationViewPageDataContext.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -96,8 +96,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewMinimalPage.xaml.cs">
       <DependentUpon>NavigationViewMinimalPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPageDatabinding.xaml.cs">
-      <DependentUpon>NavigationViewPageDatabinding.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationViewPageDataContext.xaml.cs">
+      <DependentUpon>NavigationViewPageDataContext.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)NavigationViewStretchPage.xaml.cs">
       <DependentUpon>NavigationViewStretchPage.xaml</DependentUpon>

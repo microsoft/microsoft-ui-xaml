@@ -19,7 +19,7 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
             NavigationViewPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPage), 0); };
-            NavigationViewPageDatabinding.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPageDatabinding), 0); };
+            NavigationViewPageDataContext.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewPageDataContext), 0); };
             NavigationViewTopNavPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavPage), 0); };
             NavigationViewTopNavOnlyPage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavOnlyPage), 0); };
             NavigationViewTopNavStorePage.Click += delegate { Frame.NavigateWithoutAnimation(typeof(NavigationViewTopNavStorePage), 0); };
