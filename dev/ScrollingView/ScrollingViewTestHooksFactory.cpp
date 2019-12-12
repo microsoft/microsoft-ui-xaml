@@ -4,3 +4,4 @@
 #include "pch.h"
 #include "common.h"
 #include "ScrollingViewTestHooksFactory.h"
+#include "ScrollingViewTestHooks.properties.cpp"

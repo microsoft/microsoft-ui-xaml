@@ -67,40 +67,37 @@ void RadioButtons::OnGettingFocus(const winrt::IInspectable&, const winrt::Getti
     if (auto const repeater = m_repeater.get())
     {
         auto const inputDevice = args.InputDevice();
-        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard || inputDevice == winrt::FocusInputDeviceKind::GameController)
+        if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
         {
-            if (m_selectedIndex >= 0)
+            if (auto const oldFocusedElement = args.OldFocusedElement())
             {
-                if (auto const oldFocusedElement = args.OldFocusedElement())
+                auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
+                // If focus is coming from outside the repeater, put focus on the selected item.
+                if (repeater != oldElementParent)
                 {
-                    auto oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-                    // If focus is coming from outside the repeater, put focus on the selected item.
-                    if (repeater != oldElementParent)
+                    if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                     {
-                        if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                        if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                         {
-                            if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                            if (args.TrySetNewFocusedElement(selectedItem))
                             {
-                                if (args.TrySetNewFocusedElement(selectedItem))
-                                {
-                                    args.Handled(true);
-                                }
+                                args.Handled(true);
                             }
                         }
                     }
                 }
-            }
-        }
 
-        // On RS3+ Selection follows focus unless control is held down.
-        if (SharedHelpers::IsRS3OrHigher() && 
-            (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
-            winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
-        {
-            if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
-            {
-                Select(repeater.GetElementIndex(newFocusedElementAsUIE));
-                args.Handled(true);
+                // On RS3+ Selection follows focus unless control is held down.
+                else if (SharedHelpers::IsRS3OrHigher() &&
+                    (winrt::Window::Current().CoreWindow().GetKeyState(winrt::VirtualKey::Control) &
+                        winrt::CoreVirtualKeyStates::Down) != winrt::CoreVirtualKeyStates::Down)
+                {
+                    if (auto const newFocusedElementAsUIE = args.NewFocusedElement().as<winrt::UIElement>())
+                    {
+                        Select(repeater.GetElementIndex(newFocusedElementAsUIE));
+                        args.Handled(true);
+                    }
+                }
             }
         }
     }
@@ -115,7 +112,16 @@ void RadioButtons::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::Rou
             AttachToLayoutChanged();
         }
 
-        UpdateSelectedIndex();
+        m_blockSelecting = false;
+        if (SelectedIndex() == -1 && SelectedItem())
+        {
+            UpdateSelectedItem();
+        }
+        else
+        {
+            UpdateSelectedIndex();
+        }
+
         OnRepeaterCollectionChanged(nullptr, nullptr);
     }
 }
@@ -239,6 +245,12 @@ void RadioButtons::OnRepeaterElementPrepared(const winrt::ItemsRepeater&, const 
             childHandlers->uncheckedRevoker = toggleButton.Unchecked(winrt::auto_revoke, { this, &RadioButtons::OnChildUnchecked });
                 
             toggleButton.SetValue(s_childHandlersProperty, childHandlers.as<winrt::IInspectable>());
+
+            // If the developer adds a checked toggle button to the collection, update selection to this item.
+            if (SharedHelpers::IsTrue(toggleButton.IsChecked()))
+            {
+                Select(args.Index());
+            }
         }
         if (auto const repeater = m_repeater.get())
         {
@@ -256,6 +268,15 @@ void RadioButtons::OnRepeaterElementClearing(const winrt::ItemsRepeater&, const 
     if (auto const element = args.Element())
     {
         element.SetValue(s_childHandlersProperty, nullptr);
+
+        // If the removed element was the selected one, update selection to -1
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
+            {
+                Select(-1);
+            }
+        }
     }
 }
 
@@ -264,10 +285,15 @@ void RadioButtons::OnRepeaterElementIndexChanged(const winrt::ItemsRepeater&, co
     if (auto const element = args.Element())
     {
         element.SetValue(winrt::AutomationProperties::PositionInSetProperty(), box_value(args.NewIndex() + 1));
-    }
-    if (args.OldIndex() == m_selectedIndex)
-    {
-        Select(args.NewIndex());
+
+        // When the selected item's index changes, update selection to match
+        if (auto const elementAsToggle = element.try_as<winrt::ToggleButton>())
+        {
+            if (SharedHelpers::IsTrue(elementAsToggle.IsChecked()))
+            {
+                Select(args.NewIndex());
+            }
+        }
     }
 }
 
@@ -280,9 +306,9 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
             auto const count = itemSourceView.Count();
             for (auto index = 0; index < count; index++)
             {
-                if (auto const radioButton = repeater.TryGetElement(index))
+                if (auto const element = repeater.TryGetElement(index))
                 {
-                    radioButton.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
+                    element.SetValue(winrt::AutomationProperties::SizeOfSetProperty(), box_value(count));
                 }
             }
         }
@@ -291,7 +317,7 @@ void RadioButtons::OnRepeaterCollectionChanged(const winrt::IInspectable&, const
 
 void RadioButtons::Select(int index)
 {
-    if(!m_currentlySelecting && m_selectedIndex != index)
+    if(!m_blockSelecting && !m_currentlySelecting && m_selectedIndex != index)
     {
         // Calling Select updates the checked state on the radio button being selected
         // and the radio button being unselected, as well as updates the SelectedIndex
@@ -426,6 +452,19 @@ void RadioButtons::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
     {
         UpdateSelectedIndex();
     }
+    else if (property == s_SelectedItemProperty)
+    {
+        UpdateSelectedItem();
+    }
+}
+
+winrt::UIElement RadioButtons::ContainerFromIndex(int index)
+{
+    if (auto const repeater = m_repeater.get())
+    {
+        return repeater.TryGetElement(index);
+    }
+    return nullptr;
 }
 
 void RadioButtons::UpdateItemsSource()
@@ -463,13 +502,21 @@ void RadioButtons::UpdateSelectedIndex()
     }
 }
 
-winrt::UIElement RadioButtons::ContainerFromIndex(int index)
+void RadioButtons::UpdateSelectedItem()
 {
-    if (auto const repeater = m_repeater.get())
+    if (!m_currentlySelecting)
     {
-        return repeater.TryGetElement(index);
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const itemsSourceView = repeater.ItemsSourceView())
+            {
+                if (auto const inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView)))
+                {
+                    Select(inspectingDataSource->IndexOf(SelectedItem()));
+                }
+            }
+        }
     }
-    return nullptr;
 }
 
 // Test Hooks helpers, only function when m_testHooksEnabled == true

@@ -7,7 +7,7 @@
 #include "ScrollingPresenterTrace.h"
 #include "ScrollControllerInteractionRequestedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollControllerInteractionRequestedEventArgs)
+#include "ScrollControllerInteractionRequestedEventArgs.properties.cpp"
 
 ScrollControllerInteractionRequestedEventArgs::ScrollControllerInteractionRequestedEventArgs(
     const winrt::PointerPoint& pointerPoint)

@@ -7,24 +7,6 @@
 #include "NavigationViewList.h"
 #include "NavigationView.h"
 
-// NOTE: We need to manually define this factory because the IDL does not specify a create method which means that
-// technically in the ABI this type is not activatable. However we might get asked for this factory so we need to provide it.
-struct NavigationViewItemBaseFactory :
-    public winrt::implements<NavigationViewItemBaseFactory, winrt::IActivationFactory, winrt::INavigationViewItemBaseFactory>
-{
-    hstring GetRuntimeClassName() const
-    {
-        return winrt::hstring_name_of<winrt::NavigationViewItemBase>();
-    }
-
-    winrt::IInspectable ActivateInstance() const
-    {
-        throw winrt::hresult_not_implemented();
-    }
-};
-
-CppWinRTActivatableClassWithFactory(NavigationViewItemBase, NavigationViewItemBaseFactory);
-
 NavigationViewListPosition NavigationViewItemBase::Position()
 {
     return m_position;

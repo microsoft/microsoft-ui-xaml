@@ -9,6 +9,8 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+#include "ColorPickerSliderAutomationPeer.properties.cpp"
+
 ColorPickerSliderAutomationPeer::ColorPickerSliderAutomationPeer(winrt::ColorPickerSlider const& owner)
     : ReferenceTracker(owner)
 {

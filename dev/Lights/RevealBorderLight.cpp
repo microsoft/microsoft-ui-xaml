@@ -13,7 +13,7 @@
 #include "Microsoft.UI.Composition.Effects_impl.h"
 #pragma warning(pop)
 
-CppWinRTActivatableClassWithBasicFactory(RevealBorderLight)
+#include "RevealBorderLight.properties.cpp"
 
 static constexpr RevealBorderSpotlightStateDesc s_revealBorderSpotlightState
 {

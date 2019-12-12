@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TreeViewItem.h"
 
-CppWinRTActivatableClassWithDPFactory(TreeViewItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TreeViewItem)
+}
+
+#include "TreeViewItem.g.cpp"
 
 GlobalDependencyProperty TreeViewItemProperties::s_CollapsedGlyphProperty{ nullptr };
 GlobalDependencyProperty TreeViewItemProperties::s_ExpandedGlyphProperty{ nullptr };

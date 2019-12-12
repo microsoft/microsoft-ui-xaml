@@ -9,21 +9,21 @@ class ColumnMajorUniformToLargestGridLayoutProperties
 public:
     ColumnMajorUniformToLargestGridLayoutProperties();
 
-    void ColumnSpacing(int value);
-    int ColumnSpacing();
+    void ColumnSpacing(double value);
+    double ColumnSpacing();
 
-    void MaximumColumns(int value);
-    int MaximumColumns();
+    void MaxColumns(int value);
+    int MaxColumns();
 
-    void RowSpacing(int value);
-    int RowSpacing();
+    void RowSpacing(double value);
+    double RowSpacing();
 
     static winrt::DependencyProperty ColumnSpacingProperty() { return s_ColumnSpacingProperty; }
-    static winrt::DependencyProperty MaximumColumnsProperty() { return s_MaximumColumnsProperty; }
+    static winrt::DependencyProperty MaxColumnsProperty() { return s_MaxColumnsProperty; }
     static winrt::DependencyProperty RowSpacingProperty() { return s_RowSpacingProperty; }
 
     static GlobalDependencyProperty s_ColumnSpacingProperty;
-    static GlobalDependencyProperty s_MaximumColumnsProperty;
+    static GlobalDependencyProperty s_MaxColumnsProperty;
     static GlobalDependencyProperty s_RowSpacingProperty;
 
     static void EnsureProperties();
@@ -33,7 +33,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnMaximumColumnsPropertyChanged(
+    static void OnMaxColumnsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

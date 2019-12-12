@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SwipeControl.h"
 
-CppWinRTActivatableClassWithDPFactory(SwipeControl)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SwipeControl)
+}
+
+#include "SwipeControl.g.cpp"
 
 GlobalDependencyProperty SwipeControlProperties::s_BottomItemsProperty{ nullptr };
 GlobalDependencyProperty SwipeControlProperties::s_LeftItemsProperty{ nullptr };

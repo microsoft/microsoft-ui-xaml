@@ -33,4 +33,3 @@ private:
     com_ptr<NumberBox> GetImpl();
 };
 
-CppWinRTActivatableClassWithBasicFactory(NumberBoxAutomationPeer);

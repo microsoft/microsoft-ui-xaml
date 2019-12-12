@@ -6,6 +6,8 @@
 #include "PersonPicture.h"
 #include "PersonPictureAutomationPeer.h"
 
+#include "PersonPictureAutomationPeer.properties.cpp"
+
 PersonPictureAutomationPeer::PersonPictureAutomationPeer(winrt::PersonPicture const& owner) :
     ReferenceTracker(owner)
 {

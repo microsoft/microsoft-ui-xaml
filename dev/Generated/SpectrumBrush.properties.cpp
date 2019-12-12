@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SpectrumBrush.h"
 
-CppWinRTActivatableClassWithDPFactory(SpectrumBrush)
+namespace winrt::Microsoft::UI::Private::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SpectrumBrush)
+}
+
+#include "SpectrumBrush.g.cpp"
 
 GlobalDependencyProperty SpectrumBrushProperties::s_MaxSurfaceProperty{ nullptr };
 GlobalDependencyProperty SpectrumBrushProperties::s_MaxSurfaceOpacityProperty{ nullptr };

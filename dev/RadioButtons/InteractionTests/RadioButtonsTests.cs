@@ -62,11 +62,47 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     RadioButton item1 = FindElement.ByName<RadioButton>("Radio Button 1");
                     Verify.IsTrue(item1.IsSelected);
 
-                    SelectByIndex(3);
+                    SelectByItem(3);
                     VerifySelectedIndex(3);
                     RadioButton item3 = FindElement.ByName<RadioButton>("Radio Button 3");
                     Verify.IsTrue(item3.IsSelected);
                     Verify.IsFalse(item1.IsSelected);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void SelectByItem()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+            {
+                Log.Warning("This test requires TrySetNewFocusedElement from RS4");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                SetItemType(RadioButtonsSourceType.RadioButton);
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        if (location == RadioButtonsSourceLocation.Items && type == RadioButtonsSourceType.String)
+                        {
+                            // This is broken due to issue #1674. The items collection does not have a way to compare
+                            // boxed strings for equality.
+                            continue;
+                        }
+
+                        SetItemType(type);
+
+                        SelectByItem(1);
+                        VerifySelectedIndex(1);
+
+                        SelectByItem(3);
+                        VerifySelectedIndex(3);
+                    }
                 }
             }
         }
@@ -106,9 +142,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Crashing tests, issue #1655
+        [TestMethod]
         public void BasicKeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -395,7 +436,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        public void GamepadCanEscape()
+        public void GamepadCanEscapeAndDoesNotSelectWithFocus()
         {
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
@@ -432,6 +473,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifySelectedFocusedIndex(7);
                         GamepadHelper.PressButton(null, GamepadButton.DPadRight);
                         VerifyRadioButtonsHasFocus(false);
+
+                        TapOnItem(7, useBackup);
+                        VerifySelectedFocusedIndex(7);
+                        GamepadHelper.PressButton(null, GamepadButton.DPadDown);
+                        VerifySelectedIndex(7);
+                        VerifyFocusedIndex(8);
+
+                        GamepadHelper.PressButton(null, GamepadButton.DPadLeft);
+                        VerifySelectedIndex(7);
+                        VerifyFocusedIndex(5);
                     }
                 }
             }
@@ -481,6 +532,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetItemType(type);
                         SetNumberOfColumns(1);
                         SetNumberOfItems(10);
+                        SetBorderWidthToInf();
 
                         VerifyLayoutData(10, 1, 0);
                         SetNumberOfColumns(3);
@@ -492,10 +544,113 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetNumberOfColumns(10);
                         VerifyLayoutData(1, 10, 0);
                         SetNumberOfColumns(20);
-                        VerifyLayoutData(0, 10, 10);
+                        VerifyLayoutData(1, 10, 0);
 
                         SetNumberOfItems(77);
                         VerifyLayoutData(3, 20, 17);
+
+                        SetBorderWidth(100);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(200);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(300);
+                        VerifyLayoutData(38, 2, 1);
+                        SetBorderWidth(500);
+                        VerifyLayoutData(25, 3, 2);
+                        SetBorderWidth(550);
+                        VerifyLayoutData(19, 4, 1);
+                    }
+                }
+            }
+        }
+
+        [TestMethod]
+        public void UIAProperties()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                SetItemType(RadioButtonsSourceType.RadioButton);
+                SetSource(RadioButtonsSourceLocation.ItemSource);
+
+                SelectByIndex(1);
+                VerifySelectedIndex(1);
+                VerifySelectedPositionInSet(2);
+                VerifySelectedSizeOfSet(10);
+
+                SetNumberOfColumns(3);
+                VerifySelectedIndex(1);
+                VerifySelectedPositionInSet(2);
+                VerifySelectedSizeOfSet(10);
+
+                InsertEnabledRadioButton(0);
+                VerifySelectedIndex(2);
+                VerifySelectedPositionInSet(3);
+                VerifySelectedSizeOfSet(11);
+
+                InsertEnabledRadioButton(10);
+                VerifySelectedIndex(2);
+                VerifySelectedPositionInSet(3);
+                VerifySelectedSizeOfSet(12);
+
+                SelectByIndex(10);
+                VerifySelectedIndex(10);
+                VerifySelectedPositionInSet(11);
+                VerifySelectedSizeOfSet(12);
+
+                SetNumberOfItems(17);
+                SelectByIndex(16);
+                VerifySelectedIndex(16);
+                VerifySelectedPositionInSet(17);
+                VerifySelectedSizeOfSet(17);
+            }
+        }
+
+        [TestMethod]
+        public void InsertedCheckedRadioButtonGetsSelection()
+        {
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                SetItemType(RadioButtonsSourceType.RadioButton);
+                SetSource(RadioButtonsSourceLocation.ItemSource);
+
+                SelectByIndex(3);
+                VerifySelectedIndex(3);
+
+                InsertEnabledRadioButton(6, /*isChecked*/true);
+                VerifySelectedIndex(6);
+            }
+        }
+
+        [TestMethod]
+        public void ScrollViewerSettingSelectionDoesNotMoveFocus()
+        {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test is disabled on RS2 because it requires RS3+ keyboarding behavior.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        SelectByIndex(3);
+                        VerifySelectedIndex(3);
+                        VerifyRadioButtonsHasFocus(false);
+
+                        elements.GetReproTextBlock().Click();
+                        VerifySelectedIndex(3);
+                        // This behavior is probably wrong, it is probably more correct for focus to be on the selected item...
+                        VerifyFocusedIndex(0);
+
+                        KeyboardHelper.PressKey(Key.Down);
+                        VerifySelectedFocusedIndex(1);
                     }
                 }
             }
@@ -503,14 +658,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         void SetNumberOfColumns(int columns)
         {
-            elements.GetMaximumColumnsTextBlock().SetValue(columns.ToString());
-            elements.GetSetMaximumColumnsButton().Click();
+            elements.GetMaxColumnsTextBlock().SetValue(columns.ToString());
+            elements.GetSetMaxColumnsButton().Click();
         }
 
         void SetNumberOfItems(int items)
         {
             elements.GetNumberOfItemsTextBlock().SetValue(items.ToString());
             elements.GetSetNumberOfItemsButton().Click();
+        }
+
+        void SetBorderWidth(float width)
+        {
+            elements.GetBorderWidthTextBox().SetValue(width.ToString());
+            elements.GetSetBorderWidthButton().Click();
+        }
+
+        void SetBorderWidthToInf()
+        {
+            elements.GetBorderWidthTextBox().SetValue("inf");
+            elements.GetSetBorderWidthButton().Click();
         }
 
         void SetSource(RadioButtonsSourceLocation location)
@@ -539,19 +706,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        void InsertDisabledRadioButton(int index, string content = "Custom")
+        void InsertDisabledRadioButton(int index, bool isChecked = false, string content = "Custom")
         {
-            InsertRadioButton(index, true, content);
+            InsertRadioButton(index, true, isChecked, content);
         }
 
-        void InsertEnabledRadioButton(int index, string content = "Custom")
+        void InsertEnabledRadioButton(int index, bool isChecked = false, string content = "Custom")
         {
-            InsertRadioButton(index, false, content);
+            InsertRadioButton(index, false, isChecked, content);
         }
 
-        void InsertRadioButton(int index, bool disabled, string content = "Custom")
+        void InsertRadioButton(int index, bool disabled, bool isChecked = false, string content = "Custom")
         {
-            elements.GetCustomIndexTextBox().SetValue(index.ToString());
             if (disabled)
             {
                 elements.GetCustomDisabledCheckBox().Check();
@@ -560,8 +726,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 elements.GetCustomDisabledCheckBox().Uncheck();
             }
-            elements.GetCustomContentTextBox().SetValue(content);
 
+            if(isChecked)
+            {
+                elements.GetCustomCheckedCheckBox().Check();
+            }
+            else
+            {
+                elements.GetCustomCheckedCheckBox().Uncheck();
+            }
+
+            elements.GetCustomIndexTextBox().SetValue(index.ToString());
+            elements.GetCustomContentTextBox().SetValue(content);
             elements.GetInsertDisplayRadioButtonButton().Click();
         }
 
@@ -635,9 +811,24 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             elements.GetSelectByIndexButton().Click();
         }
 
+        void SelectByItem(int index)
+        {
+            SetIndexToSelect(index);
+            elements.GetSelectByItemButton().Click();
+        }
+
         void SetIndexToSelect(int index)
         {
             elements.GetIndexToSelectTextBlock().SetValue(index.ToString());
+        }
+
+        void VerifySelectedPositionInSet(int index)
+        {
+            Verify.AreEqual(index, Int32.Parse(elements.GetSelectedPositionInSetTextBlock().DocumentText));
+        }
+        void VerifySelectedSizeOfSet(int index)
+        {
+            Verify.AreEqual(index, Int32.Parse(elements.GetSelectedSizeOfSetTextBlock().DocumentText));
         }
 
         void VerifySelectedFocusedIndex(int index)

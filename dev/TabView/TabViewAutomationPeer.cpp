@@ -8,6 +8,8 @@
 #include "TabViewAutomationPeer.h"
 #include "Utils.h"
 
+#include "TabViewAutomationPeer.properties.cpp"
+
 TabViewAutomationPeer::TabViewAutomationPeer(winrt::TabView const& owner)
     : ReferenceTracker(owner)
 {

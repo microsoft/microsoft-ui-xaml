@@ -17,5 +17,3 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
     winrt::hstring GetClassNameCore();
 };
-
-CppWinRTActivatableClassWithBasicFactory(PersonPictureAutomationPeer)

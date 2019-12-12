@@ -17,6 +17,6 @@ public:
     void NewColor(winrt::Color const& value);
 
 private:
-    winrt::Color m_oldColor;
-    winrt::Color m_newColor;
+    winrt::Color m_oldColor{};
+    winrt::Color m_newColor{};
 };

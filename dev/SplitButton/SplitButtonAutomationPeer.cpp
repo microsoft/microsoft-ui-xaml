@@ -8,6 +8,8 @@
 #include "SplitButtonAutomationPeer.h"
 #include "Utils.h"
 
+#include "SplitButtonAutomationPeer.properties.cpp"
+
 SplitButtonAutomationPeer::SplitButtonAutomationPeer(winrt::SplitButton const& owner)
     : ReferenceTracker(owner)
 {

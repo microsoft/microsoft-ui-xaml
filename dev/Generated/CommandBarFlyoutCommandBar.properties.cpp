@@ -6,7 +6,12 @@
 #include "common.h"
 #include "CommandBarFlyoutCommandBar.h"
 
-CppWinRTActivatableClassWithDPFactory(CommandBarFlyoutCommandBar)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CommandBarFlyoutCommandBar)
+}
+
+#include "CommandBarFlyoutCommandBar.g.cpp"
 
 GlobalDependencyProperty CommandBarFlyoutCommandBarProperties::s_FlyoutTemplateSettingsProperty{ nullptr };
 

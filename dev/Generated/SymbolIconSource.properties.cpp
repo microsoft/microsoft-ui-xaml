@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SymbolIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(SymbolIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SymbolIconSource)
+}
+
+#include "SymbolIconSource.g.cpp"
 
 GlobalDependencyProperty SymbolIconSourceProperties::s_SymbolProperty{ nullptr };
 

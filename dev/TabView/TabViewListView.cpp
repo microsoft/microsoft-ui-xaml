@@ -10,7 +10,7 @@
 #include "TabView.h"
 #include "SharedHelpers.h"
 
-CppWinRTActivatableClassWithBasicFactory(TabViewListView);
+#include "TabViewListView.properties.cpp"
 
 TabViewListView::TabViewListView()
 {

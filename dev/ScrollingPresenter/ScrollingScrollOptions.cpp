@@ -6,8 +6,7 @@
 #include "TypeLogging.h"
 #include "ScrollingPresenterTypeLogging.h"
 #include "ScrollingScrollOptions.h"
-
-CppWinRTActivatableClassWithBasicFactory(ScrollingScrollOptions);
+#include "ScrollingScrollOptions.properties.cpp"
 
 ScrollingScrollOptions::ScrollingScrollOptions(
     winrt::AnimationMode const& animationMode)
