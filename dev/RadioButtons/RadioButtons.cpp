@@ -26,10 +26,8 @@ RadioButtons::RadioButtons()
     {
         thisAsIUIElement7.PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
     }
-    if (auto const thisAsIUIElement4 = this->try_as<winrt::IUIElement4>())
-    {
-        thisAsIUIElement4.AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
-    }
+
+    AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
@@ -202,6 +200,22 @@ void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt
 
 void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
 {
+    if (m_selectedIndex)
+    {
+        if (auto const repeater = m_repeater.get())
+        {
+            if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+            {
+                if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
+                {
+                    selectedItemAsControl.Focus(winrt::FocusState::Keyboard);
+                    return;
+                }
+            }
+        }
+    }
+    // If we don't have a selected index, focus the RadioButton's which under normal
+    // circumstances will put focus on the first radio button.
     this->Focus(winrt::FocusState::Keyboard);
 }
 

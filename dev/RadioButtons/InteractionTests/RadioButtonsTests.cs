@@ -682,6 +682,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         VerifyRadioButtonsHasFocus(false);
                         UseAccessKey();
                         VerifySelectedFocusedIndex(3);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
                     }
                 }
             }
