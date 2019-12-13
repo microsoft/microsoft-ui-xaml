@@ -5,11 +5,11 @@
 #include "common.h"
 #include "TypeLogging.h"
 #include "ScrollingPresenterTypeLogging.h"
-#include "ScrollingZoomOptions.h"
+#include "ScrollingScrollOptions.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollingZoomOptions);
+CppWinRTActivatableClassWithBasicFactory(ScrollingScrollOptions);
 
-ScrollingZoomOptions::ScrollingZoomOptions(
+ScrollingScrollOptions::ScrollingScrollOptions(
     winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
@@ -18,7 +18,7 @@ ScrollingZoomOptions::ScrollingZoomOptions(
     m_animationMode = animationMode;
 }
 
-ScrollingZoomOptions::ScrollingZoomOptions(
+ScrollingScrollOptions::ScrollingScrollOptions(
     winrt::ScrollingAnimationMode const& animationMode,
     winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
@@ -30,27 +30,28 @@ ScrollingZoomOptions::ScrollingZoomOptions(
     m_snapPointsMode = snapPointsMode;
 }
 
-winrt::ScrollingAnimationMode ScrollingZoomOptions::AnimationMode() const
+winrt::ScrollingAnimationMode ScrollingScrollOptions::AnimationMode() const
 {
     return m_animationMode;
 }
 
-void ScrollingZoomOptions::AnimationMode(winrt::ScrollingAnimationMode const& animationMode)
+void ScrollingScrollOptions::AnimationMode(winrt::ScrollingAnimationMode const& animationMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::AnimationModeToString(animationMode).c_str());
+
     m_animationMode = animationMode;
 }
 
-winrt::ScrollingSnapPointsMode ScrollingZoomOptions::SnapPointsMode() const
+winrt::ScrollingSnapPointsMode ScrollingScrollOptions::SnapPointsMode() const
 {
     return m_snapPointsMode;
 }
 
-void ScrollingZoomOptions::SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode)
+void ScrollingScrollOptions::SnapPointsMode(winrt::ScrollingSnapPointsMode const& snapPointsMode)
 {
     SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this,
         TypeLogging::SnapPointsModeToString(snapPointsMode).c_str());
+
     m_snapPointsMode = snapPointsMode;
 }
-
