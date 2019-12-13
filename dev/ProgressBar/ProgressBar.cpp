@@ -123,6 +123,8 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             if (IsIndeterminate())
             {
+                determinateProgressBarIndicator.Width(0);
+
                 if (auto&& indeterminateProgressBarIndicator = m_indeterminateProgressBarIndicator.get())
                 {
                     if (auto&& indeterminateProgressBarIndicator2 = m_indeterminateProgressBarIndicator2.get())
