@@ -469,7 +469,7 @@ void NavigationView::UpdateRepeaterItemsSource(bool forceSelectionModelUpdate)
         UpdateLeftRepeaterItemSource(nullptr);
         UpdateTopNavRepeatersItemSource(itemsSource);
         InvalidateTopNavPrimaryLayout();
-        UpdateSelectedItem();
+        SyncSettingsSelectionState();
     }
     else
     {
@@ -3615,7 +3615,7 @@ void NavigationView::UpdateTitleBarPadding()
     }
 }
 
-void NavigationView::UpdateSelectedItem()
+void NavigationView::SyncSettingsSelectionState()
 {
     auto item = SelectedItem();
     auto settingsItem = m_settingsItem.get();

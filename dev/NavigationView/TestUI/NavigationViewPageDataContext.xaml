@@ -13,15 +13,25 @@
         <muxcontrols:NavigationView
             x:Name="NavView"
             AutomationProperties.Name="NavView"
-            AutomationProperties.AutomationId="NavView"
-            PaneTitle="NavView Test"
+            AutomationProperties.AutomationId="NavView">
+            <!--PaneTitle="NavView Test"
             SelectionChanged="NavView_SelectionChanged"
             PaneDisplayMode="Left"
-            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+            Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">-->
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Content="Collection" />
+                <muxcontrols:NavigationViewItem Content="Albums" IsSelected="True" />
+                <muxcontrols:NavigationViewItem Content="People" IsSelected="True" />
+            </muxcontrols:NavigationView.MenuItems>
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
-                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">DataContext of SelectedItem: </TextBlock>
+                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">DataContext of SelectedItem:</TextBlock>
                     <TextBlock x:Name="NavViewSelectedDataContext" AutomationProperties.Name="NavViewSelectedDataContext" VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <Button x:Name="GetNavViewActiveVisualStates" AutomationProperties.Name="GetNavViewActiveVisualStates" Content="GetNavViewActiveVisualStates" Click="GetNavViewActiveVisualStates_Click"/>
+                    <TextBlock Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center">NavView Active VisualStates:</TextBlock>
+                    <TextBlock x:Name="NavViewActiveVisualStatesResult" AutomationProperties.Name="NavViewActiveVisualStatesResult" VerticalAlignment="Center"/>
                 </StackPanel>
             </StackPanel>
         </muxcontrols:NavigationView>

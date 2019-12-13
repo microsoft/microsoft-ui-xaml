@@ -162,7 +162,7 @@ private:
     void UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode oldDisplayMode, winrt::NavigationViewPaneDisplayMode newDisplayMode);
     void UpdatePaneVisibility();
     void UpdateContentBindingsForPaneDisplayMode();
-    void UpdateSelectedItem();
+    void SyncSettingsSelectionState();
     void UpdatePaneTabFocusNavigation();
     void UpdatePaneToggleSize();
     void UpdateBackAndCloseButtonsVisibility();

@@ -45,15 +45,13 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
-    auto const result = __super::GetPatternCore(pattern);
-
-    if (!result && (pattern == winrt::PatternInterface::SelectionItem ||
-        pattern == winrt::PatternInterface::Invoke))
+    if (pattern == winrt::PatternInterface::SelectionItem ||
+        pattern == winrt::PatternInterface::Invoke)
     {
         return *this;
     }
 
-    return result;
+    return __super::GetPatternCore(pattern);
 }
 
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
