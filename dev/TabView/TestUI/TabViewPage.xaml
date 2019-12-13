@@ -22,6 +22,7 @@
                 <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
                 <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
+                <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
 
                 <Button x:Name="RemoveTabButton" AutomationProperties.Name="RemoveTabButton" Content="Remove Tab" Margin="0,0,0,8" Click="RemoveTabButton_Click"/>
                 <Button x:Name="SelectItemButton" AutomationProperties.Name="SelectItemButton" Content="Select Item 1" Margin="0,0,0,8" Click="SelectItemButton_Click"/>
