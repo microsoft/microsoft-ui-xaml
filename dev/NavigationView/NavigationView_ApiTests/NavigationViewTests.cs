@@ -589,12 +589,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 navView.MenuItemsSource = menuItems;
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
-            });
 
-            IdleSynchronizer.Wait();
+                MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
                 var menuItem = "Item 2";
                 // Get container for item
                 var itemContainer = navView.ContainerFromMenuItem(menuItem) as NavigationViewItem;
@@ -607,6 +604,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(correctItemReturned, "Correct item should be returned for passed in container.");
 
                 MUXControlsTestApp.App.TestContentRoot = null;
+
             });
         }
 
@@ -630,12 +628,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.MenuItems.Add(menuItem1);
                 navView.MenuItems.Add(menuItem2);
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
-            });
 
-            IdleSynchronizer.Wait();
+                MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
                 // Get container for item
                 var itemContainer = navView.ContainerFromMenuItem(menuItem2) as NavigationViewItem;
                 bool correctContainerReturned = itemContainer != null && itemContainer == menuItem2;

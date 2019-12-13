@@ -35,7 +35,7 @@ namespace MUXControlsTestApp
         // FocusVisualKind impacts other testing, recover to setting in unload page
         private FocusVisualKind m_focusVisualKind;
 
-        private int _selectionChangedEventsFired;
+        private int _selectionChangedEventsFired = 0;
         public int m_selectionChangedEventsFired
         {
             get

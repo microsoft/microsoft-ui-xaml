@@ -4104,8 +4104,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
             {
-                String navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
-                String stringType = "System.String";
+                const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
+                const string stringType = "System.String";
 
                 var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
                 var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
@@ -4133,8 +4133,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
             {
-                String navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
-                String stringType = "System.String";
+                const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
+                const string stringType = "System.String";
 
                 var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
                 var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
