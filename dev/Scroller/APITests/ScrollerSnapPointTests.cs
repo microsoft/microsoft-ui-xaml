@@ -382,8 +382,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 // ZoomFactor expected to have snapped to first instance of repeated snap point: 5.
-                Verify.IsTrue(Math.Abs(scroller.HorizontalOffset - 2850.0) < c_defaultOffsetResultTolerance * scroller.ZoomFactor);
-                Verify.IsTrue(Math.Abs(scroller.VerticalOffset - 1400.0) < c_defaultOffsetResultTolerance * scroller.ZoomFactor);
+                // Scroll offsets do not snap and end close to 2850, 1400 for a centered content.
+                Verify.IsTrue(Math.Abs(scroller.HorizontalOffset - 2850.0) < 1.0);
+                Verify.IsTrue(Math.Abs(scroller.VerticalOffset - 1400.0) < 1.0);
                 Verify.AreEqual(5.0f, scroller.ZoomFactor);
             });
         }
