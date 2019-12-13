@@ -166,20 +166,20 @@
                         <Button AutomationProperties.Name="SetIconButton" Click="OnSetIconButtonClicked" Grid.Column="1" Grid.Row="5">Set</Button>
 
                         <TextBlock Grid.Row="6" Text="Title:" Foreground="Red"/>
-                        <ComboBox x:Name="TitleComboBox" Grid.Row="7">
+                        <ComboBox x:Name="TitleComboBox" AutomationProperties.Name="TitleComboBox" Grid.Row="7">
                             <ComboBoxItem x:Name="TitleNo">No title</ComboBoxItem>
                             <ComboBoxItem x:Name="TitleSmall">Small text</ComboBoxItem>
                             <ComboBoxItem x:Name="TitleLong">Long text</ComboBoxItem>
                         </ComboBox>
-                        <Button Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
+                        <Button AutomationProperties.Name="SetTitleButton" Click="OnSetTitleButtonClicked" Grid.Column="1" Grid.Row="7">Set</Button>
 
                         <TextBlock Grid.Row="8" Text="Subtitle:" Foreground="Red"/>
-                        <ComboBox x:Name="SubtitleComboBox" Grid.Row="9">
+                        <ComboBox x:Name="SubtitleComboBox" AutomationProperties.Name="SubtitleComboBox" Grid.Row="9">
                             <ComboBoxItem x:Name="SubtitleNo">No subtitle</ComboBoxItem>
                             <ComboBoxItem x:Name="SubtitleSmall">Small text</ComboBoxItem>
                             <ComboBoxItem x:Name="SubtitleLong">Long text</ComboBoxItem>
                         </ComboBox>
-                        <Button Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
+                        <Button AutomationProperties.Name="SetSubtitleButton" Click="OnSetSubtitleButtonClicked" Grid.Row="9" Grid.Column="1">Set</Button>
 
                         <TextBlock Grid.Row="10" Text="Content:" Foreground="Red"/>
                         <ComboBox x:Name="ContentComboBox" Grid.Row="11">
@@ -410,11 +410,19 @@
                             <TextBlock Text="Vert: "/>
                             <TextBlock x:Name="PopupVerticalOffsetTextBlock" AutomationProperties.Name="PopupVerticalOffsetTextBlock"/>
                         </StackPanel>
-                        <StackPanel Orientation="Horizontal" Grid.Row="7" Grid.Column="1">
+                        <StackPanel Orientation="Horizontal" Grid.Row="6" Grid.Column="1">
                             <TextBlock Text="Hor: "/>
                             <TextBlock x:Name="PopupHorizontalOffsetTextBlock" AutomationProperties.Name="PopupHorizontalOffsetTextBlock"/>
                         </StackPanel>
-                        <TextBlock Grid.Row="8" Text="Teaching Tip Size:" Foreground="Red"/>
+                        <TextBlock Grid.Row="7" Text="Teaching Tip Info:" Foreground="Red"/>
+                        <StackPanel Orientation="Horizontal" Grid.Row="8">
+                            <TextBlock Text="Title Vis:"/>
+                            <TextBlock x:Name="TitleVisibilityTextBlock" AutomationProperties.Name="TitleVisibilityTextBlock"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Grid.Row="8" Grid.Column="1">
+                            <TextBlock Text="Subtitle Vis:"/>
+                            <TextBlock x:Name="SubtitleVisibilityTextBlock" AutomationProperties.Name="SubtitleVisibilityTextBlock"/>
+                        </StackPanel>
                         <StackPanel Orientation="Horizontal" Grid.Row="9">
                             <TextBlock Text="Height: "/>
                             <TextBlock x:Name="TipHeightTextBlock" AutomationProperties.Name="TipHeightTextBlock"/>
