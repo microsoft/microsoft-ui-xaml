@@ -39,6 +39,14 @@
                                                 Duration="0:0:0.25" />
                                         </Storyboard>
                                     </VisualTransition>
+                                    <VisualTransition From="Indeterminate" To="Determinate">
+                                        <Storyboard>
+                                            <Storyboard>
+                                                <FadeInThemeAnimation TargetName="IndeterminateProgressBarIndicator" />
+                                                <FadeInThemeAnimation TargetName="IndeterminateProgressBarIndicator2" />
+                                            </Storyboard>
+                                        </Storyboard>
+                                    </VisualTransition>
                                 </VisualStateGroup.Transitions>
 
                                 <VisualState x:Name="Normal" />
@@ -60,27 +68,21 @@
                                             <SplineDoubleKeyFrame KeyTime="0:0:0.75" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
                                             <SplineDoubleKeyFrame KeyTime="0:0:2" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
                                         </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimation Storyboard.TargetName="IndeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0" />
+                                        <DoubleAnimation Storyboard.TargetName="IndeterminateProgressBarIndicator2"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="1"
+                                            Duration="0" />
                                         <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
-                                        <DoubleAnimation Storyboard.TargetName="DeterminateProgressBarIndicator"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Error">
                                     <Storyboard>
                                         <DoubleAnimation
                                             Storyboard.TargetName="DeterminateProgressBarIndicator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.5" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateProgressBarIndicator"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.5" />
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="IndeterminateProgressBarIndicator2"
                                             Storyboard.TargetProperty="Opacity"
                                             To="0"
                                             Duration="0:0:0.5" />
@@ -113,36 +115,38 @@
                             <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
                                 <StackPanel Orientation="Horizontal">
                                     <Rectangle x:Name="DeterminateProgressBarIndicator"
-                                    Margin="{TemplateBinding Padding}"
-                                    Fill="{TemplateBinding Foreground}"         
-                                    HorizontalAlignment="Left"
-                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        Margin="{TemplateBinding Padding}"
+                                        Fill="{TemplateBinding Foreground}"         
+                                        HorizontalAlignment="Left"
+                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                     </Rectangle>
 
                                     <Rectangle x:Name="IndeterminateProgressBarIndicator"
-                                    Margin="{TemplateBinding Padding}"
-                                    Fill="{TemplateBinding Foreground}"         
-                                    HorizontalAlignment="Left"
-                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        Margin="{TemplateBinding Padding}"
+                                        Fill="{TemplateBinding Foreground}"         
+                                        HorizontalAlignment="Left"
+                                        Opacity="0"
+                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                         <Rectangle.RenderTransform>
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
 
                                     <Rectangle x:Name="IndeterminateProgressBarIndicator2"
-                                    Margin="{TemplateBinding Padding}"
-                                    Fill="{TemplateBinding Foreground}"         
-                                    HorizontalAlignment="Left"
-                                    contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
-                                    contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
+                                        Margin="{TemplateBinding Padding}"
+                                        Fill="{TemplateBinding Foreground}"         
+                                        HorizontalAlignment="Left"
+                                        Opacity="0"
+                                        contract7Present:RadiusX="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
+                                        contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}">
                                         <Rectangle.RenderTransform>
                                             <CompositeTransform/>
                                         </Rectangle.RenderTransform>
