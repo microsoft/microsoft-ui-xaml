@@ -4,5 +4,3 @@
 #pragma once
 
 #include "ScrollViewerTestHooks.h"
-
-CppWinRTActivatableClassWithBasicFactory(ScrollViewerTestHooks)

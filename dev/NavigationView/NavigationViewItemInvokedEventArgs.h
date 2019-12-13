@@ -28,4 +28,3 @@ private:
     tracker_ref<winrt::NavigationTransitionInfo> m_recommendedNavigationTransitionInfo{ this };
 };
 
-CppWinRTActivatableClassWithBasicFactory(NavigationViewItemInvokedEventArgs);

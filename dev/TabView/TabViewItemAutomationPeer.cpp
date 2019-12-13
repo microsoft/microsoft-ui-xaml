@@ -9,6 +9,8 @@
 #include "Utils.h"
 #include "SharedHelpers.h"
 
+#include "TabViewItemAutomationPeer.properties.cpp"
+
 TabViewItemAutomationPeer::TabViewItemAutomationPeer(winrt::TabViewItem const& owner)
     : ReferenceTracker(owner)
 {

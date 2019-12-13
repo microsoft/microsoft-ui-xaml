@@ -5,3 +5,4 @@
 #include "common.h"
 #include "ScrollerTestHooksFactory.h"
 
+#include "ScrollerTestHooks.properties.cpp"

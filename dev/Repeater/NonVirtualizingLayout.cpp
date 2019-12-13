@@ -8,7 +8,7 @@
 #include "NonVirtualizingLayout.h"
 #include "RuntimeProfiler.h"
 
-CppWinRTActivatableClassWithBasicFactory(NonVirtualizingLayout)
+#include "NonVirtualizingLayout.properties.cpp"
 
 #pragma region INonVirtualizingLayoutOverrides
 

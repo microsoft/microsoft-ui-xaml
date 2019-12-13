@@ -10,7 +10,7 @@
 #include "SharedHelpers.h"
 
 
-CppWinRTActivatableClassWithBasicFactory(NavigationViewItemAutomationPeer);
+#include "NavigationViewItemAutomationPeer.properties.cpp"
 
 NavigationViewItemAutomationPeer::NavigationViewItemAutomationPeer(winrt::NavigationViewItem const& owner) :
     ReferenceTracker(owner)

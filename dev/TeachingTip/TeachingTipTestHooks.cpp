@@ -2,6 +2,8 @@
 #include "common.h"
 #include "TeachingTipTestHooks.h"
 
+#include "TeachingTipTestHooks.properties.cpp"
+
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::s_testHooks{};
 
 com_ptr<TeachingTipTestHooks> TeachingTipTestHooks::EnsureGlobalTestHooks()

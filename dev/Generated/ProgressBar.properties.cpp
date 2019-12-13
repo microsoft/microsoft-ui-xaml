@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ProgressBar.h"
 
-CppWinRTActivatableClassWithDPFactory(ProgressBar)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ProgressBar)
+}
+
+#include "ProgressBar.g.cpp"
 
 GlobalDependencyProperty ProgressBarProperties::s_IsIndeterminateProperty{ nullptr };
 GlobalDependencyProperty ProgressBarProperties::s_ShowErrorProperty{ nullptr };

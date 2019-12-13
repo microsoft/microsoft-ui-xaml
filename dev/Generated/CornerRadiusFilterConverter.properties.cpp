@@ -6,7 +6,12 @@
 #include "common.h"
 #include "CornerRadiusFilterConverter.h"
 
-CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(CornerRadiusFilterConverter)
+}
+
+#include "CornerRadiusFilterConverter.g.cpp"
 
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_FilterProperty{ nullptr };
 GlobalDependencyProperty CornerRadiusFilterConverterProperties::s_ScaleProperty{ nullptr };

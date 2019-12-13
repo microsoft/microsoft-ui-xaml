@@ -6,7 +6,12 @@
 #include "common.h"
 #include "XamlAmbientLight.h"
 
-CppWinRTActivatableClassWithDPFactory(XamlAmbientLight)
+namespace winrt::Microsoft::UI::Private::Media
+{
+    CppWinRTActivatableClassWithDPFactory(XamlAmbientLight)
+}
+
+#include "XamlAmbientLight.g.cpp"
 
 GlobalDependencyProperty XamlAmbientLightProperties::s_ColorProperty{ nullptr };
 GlobalDependencyProperty XamlAmbientLightProperties::s_IsTargetProperty{ nullptr };

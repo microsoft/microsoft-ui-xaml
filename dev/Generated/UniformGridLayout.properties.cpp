@@ -6,7 +6,12 @@
 #include "common.h"
 #include "UniformGridLayout.h"
 
-CppWinRTActivatableClassWithDPFactory(UniformGridLayout)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(UniformGridLayout)
+}
+
+#include "UniformGridLayout.g.cpp"
 
 GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsJustificationProperty{ nullptr };
 GlobalDependencyProperty UniformGridLayoutProperties::s_ItemsStretchProperty{ nullptr };
