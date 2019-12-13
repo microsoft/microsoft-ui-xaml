@@ -168,8 +168,11 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
             return std::make_tuple(0.0f, 0.0f);
         }();
 
-        templateSettings->ContainerAnimationStartPosition(width * -1); // value = -100%
-        templateSettings->ContainerAnimationEndPosition(width * 2); // value = 200%
+        templateSettings->ContainerAnimationStartPosition(width * -0.4);
+        templateSettings->ContainerAnimationEndPosition(width * 1.2);
+
+        templateSettings->ContainerAnimationStartPosition2(width * -1); 
+        templateSettings->ContainerAnimationEndPosition2(width);
 
         const auto rectangle = [width, height, padding = Padding()]()
         {
