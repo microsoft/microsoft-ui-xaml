@@ -15,7 +15,9 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ClipRectProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPosition2Property{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPositionProperty{ nullptr };
+GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationStartPosition2Property{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_IndicatorLengthDeltaProperty{ nullptr };
 
 ProgressBarTemplateSettingsProperties::ProgressBarTemplateSettingsProperties()
@@ -47,11 +49,33 @@ void ProgressBarTemplateSettingsProperties::EnsureProperties()
                 ValueHelper<double>::BoxedDefaultValue(),
                 nullptr);
     }
+    if (!s_ContainerAnimationEndPosition2Property)
+    {
+        s_ContainerAnimationEndPosition2Property =
+            InitializeDependencyProperty(
+                L"ContainerAnimationEndPosition2",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
     if (!s_ContainerAnimationStartPositionProperty)
     {
         s_ContainerAnimationStartPositionProperty =
             InitializeDependencyProperty(
                 L"ContainerAnimationStartPosition",
+                winrt::name_of<double>(),
+                winrt::name_of<winrt::ProgressBarTemplateSettings>(),
+                false /* isAttached */,
+                ValueHelper<double>::BoxedDefaultValue(),
+                nullptr);
+    }
+    if (!s_ContainerAnimationStartPosition2Property)
+    {
+        s_ContainerAnimationStartPosition2Property =
+            InitializeDependencyProperty(
+                L"ContainerAnimationStartPosition2",
                 winrt::name_of<double>(),
                 winrt::name_of<winrt::ProgressBarTemplateSettings>(),
                 false /* isAttached */,
@@ -75,7 +99,9 @@ void ProgressBarTemplateSettingsProperties::ClearProperties()
 {
     s_ClipRectProperty = nullptr;
     s_ContainerAnimationEndPositionProperty = nullptr;
+    s_ContainerAnimationEndPosition2Property = nullptr;
     s_ContainerAnimationStartPositionProperty = nullptr;
+    s_ContainerAnimationStartPosition2Property = nullptr;
     s_IndicatorLengthDeltaProperty = nullptr;
 }
 
@@ -99,6 +125,16 @@ double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition()
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationEndPositionProperty));
 }
 
+void ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition2(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationEndPosition2Property, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::ContainerAnimationEndPosition2()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationEndPosition2Property));
+}
+
 void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition(double value)
 {
     static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationStartPositionProperty, ValueHelper<double>::BoxValueIfNecessary(value));
@@ -107,6 +143,16 @@ void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition(doub
 double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition()
 {
     return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationStartPositionProperty));
+}
+
+void ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2(double value)
+{
+    static_cast<ProgressBarTemplateSettings*>(this)->SetValue(s_ContainerAnimationStartPosition2Property, ValueHelper<double>::BoxValueIfNecessary(value));
+}
+
+double ProgressBarTemplateSettingsProperties::ContainerAnimationStartPosition2()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<ProgressBarTemplateSettings*>(this)->GetValue(s_ContainerAnimationStartPosition2Property));
 }
 
 void ProgressBarTemplateSettingsProperties::IndicatorLengthDelta(double value)

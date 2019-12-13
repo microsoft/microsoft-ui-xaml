@@ -15,20 +15,30 @@ public:
     void ContainerAnimationEndPosition(double value);
     double ContainerAnimationEndPosition();
 
+    void ContainerAnimationEndPosition2(double value);
+    double ContainerAnimationEndPosition2();
+
     void ContainerAnimationStartPosition(double value);
     double ContainerAnimationStartPosition();
+
+    void ContainerAnimationStartPosition2(double value);
+    double ContainerAnimationStartPosition2();
 
     void IndicatorLengthDelta(double value);
     double IndicatorLengthDelta();
 
     static winrt::DependencyProperty ClipRectProperty() { return s_ClipRectProperty; }
     static winrt::DependencyProperty ContainerAnimationEndPositionProperty() { return s_ContainerAnimationEndPositionProperty; }
+    static winrt::DependencyProperty ContainerAnimationEndPosition2Property() { return s_ContainerAnimationEndPosition2Property; }
     static winrt::DependencyProperty ContainerAnimationStartPositionProperty() { return s_ContainerAnimationStartPositionProperty; }
+    static winrt::DependencyProperty ContainerAnimationStartPosition2Property() { return s_ContainerAnimationStartPosition2Property; }
     static winrt::DependencyProperty IndicatorLengthDeltaProperty() { return s_IndicatorLengthDeltaProperty; }
 
     static GlobalDependencyProperty s_ClipRectProperty;
     static GlobalDependencyProperty s_ContainerAnimationEndPositionProperty;
+    static GlobalDependencyProperty s_ContainerAnimationEndPosition2Property;
     static GlobalDependencyProperty s_ContainerAnimationStartPositionProperty;
+    static GlobalDependencyProperty s_ContainerAnimationStartPosition2Property;
     static GlobalDependencyProperty s_IndicatorLengthDeltaProperty;
 
     static void EnsureProperties();
