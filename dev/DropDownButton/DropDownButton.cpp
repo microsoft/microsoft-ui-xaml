@@ -8,6 +8,8 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 
+#include "DropDownButton.properties.cpp"
+
 DropDownButton::DropDownButton()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_DropDownButton);

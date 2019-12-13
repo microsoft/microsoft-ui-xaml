@@ -8,6 +8,8 @@
 #include "ProgressBarAutomationPeer.h"
 #include "Utils.h"
 
+#include "ProgressBarAutomationPeer.properties.cpp"
+
 ProgressBarAutomationPeer::ProgressBarAutomationPeer(winrt::ProgressBar const& owner)
     : ReferenceTracker(owner)
 {

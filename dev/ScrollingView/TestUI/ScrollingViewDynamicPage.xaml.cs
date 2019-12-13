@@ -181,11 +181,11 @@ namespace MUXControlsTestApp
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         wuxScrollViewer.VerticalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.VerticalScrollBarVisibility);
                         break;
-                    case ScrollingContentOrientation.None:
+                    case ScrollingContentOrientation.Both:
                         wuxScrollViewer.HorizontalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.HorizontalScrollBarVisibility);
                         wuxScrollViewer.VerticalScrollBarVisibility = MuxScrollBarVisibilityToWuxScrollBarVisibility(scrollingView.VerticalScrollBarVisibility);
                         break;
-                    case ScrollingContentOrientation.Both:
+                    case ScrollingContentOrientation.None:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
@@ -708,7 +708,7 @@ namespace MUXControlsTestApp
                 switch (co)
                 {
                     case ScrollingContentOrientation.Vertical:
-                    case ScrollingContentOrientation.Both:
+                    case ScrollingContentOrientation.None:
                         wuxScrollViewer.HorizontalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:
@@ -733,7 +733,7 @@ namespace MUXControlsTestApp
                 switch (co)
                 {
                     case ScrollingContentOrientation.Horizontal:
-                    case ScrollingContentOrientation.Both:
+                    case ScrollingContentOrientation.None:
                         wuxScrollViewer.VerticalScrollBarVisibility = Windows.UI.Xaml.Controls.ScrollBarVisibility.Disabled;
                         break;
                     default:

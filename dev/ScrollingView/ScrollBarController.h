@@ -25,11 +25,11 @@ public:
 
     bool IsInteracting();
 
-    bool IsInteractionVisualRailEnabled();
+    bool IsInteractionElementRailEnabled();
 
-    winrt::Visual InteractionVisual();
+    winrt::UIElement InteractionElement();
 
-    winrt::Orientation InteractionVisualScrollOrientation();
+    winrt::Orientation InteractionElementScrollOrientation();
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,
@@ -52,7 +52,7 @@ public:
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
-    void OnScrollCompleted(
+    void NotifyScrollCompleted(
         winrt::ScrollingScrollInfo info);
 
     winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);

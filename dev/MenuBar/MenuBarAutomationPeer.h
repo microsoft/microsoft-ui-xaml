@@ -17,5 +17,3 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
 };
-
-CppWinRTActivatableClassWithBasicFactory(MenuBarAutomationPeer)

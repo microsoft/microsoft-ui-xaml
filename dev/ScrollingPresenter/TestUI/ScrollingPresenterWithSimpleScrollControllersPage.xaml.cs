@@ -645,16 +645,16 @@ namespace MUXControlsTestApp
             private set;
         }
 
-        public bool IsInteractionVisualRailEnabled
+        public bool IsInteractionElementRailEnabled
         {
             get
             {
-                // Unused because InteractionVisual returns null.
+                // Unused because InteractionElement returns null.
                 return false;
             }
         }
 
-        public Visual InteractionVisual
+        public UIElement InteractionElement
         {
             get
             {
@@ -662,7 +662,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        public Orientation InteractionVisualScrollOrientation
+        public Orientation InteractionElementScrollOrientation
         {
             get
             {
@@ -690,7 +690,7 @@ namespace MUXControlsTestApp
             }
             scrollBarTrackDim *= (1.0 - (scrollBar.ViewportSize / (scrollBar.Maximum - scrollBar.Minimum + scrollBar.ViewportSize)));
 
-            If InteractionVisual returned a non-null value, the multiplierPropertyName scalar would have to be set to this value:
+            If InteractionElement returned a non-null value, the multiplierPropertyName scalar would have to be set to this value:
                 (float)((scrollBar.Maximum - scrollBar.Minimum) / scrollBarTrackDim);
             */
         }
@@ -733,13 +733,13 @@ namespace MUXControlsTestApp
             return null;
         }
 
-        public void OnScrollCompleted(
+        public void NotifyScrollCompleted(
             ScrollingScrollInfo info)
         {
             int offsetChangeId = info.OffsetsChangeId;
 
             LogMessage(
-                "ScrollBarController: OnScrollCompleted for Orientation=" + Orientation +
+                "ScrollBarController: NotifyScrollCompleted for Orientation=" + Orientation +
                 " with offsetChangeId=" + offsetChangeId);
 
             if (lstScrollToIds.Contains(offsetChangeId))

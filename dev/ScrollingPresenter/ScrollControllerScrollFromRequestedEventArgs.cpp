@@ -7,7 +7,7 @@
 #include "ScrollingPresenter.h"
 #include "ScrollControllerScrollFromRequestedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollControllerScrollFromRequestedEventArgs);
+#include "ScrollControllerScrollFromRequestedEventArgs.properties.cpp"
 
 ScrollControllerScrollFromRequestedEventArgs::ScrollControllerScrollFromRequestedEventArgs(
     float offsetVelocity,

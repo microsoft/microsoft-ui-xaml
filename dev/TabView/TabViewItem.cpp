@@ -18,8 +18,6 @@ TabViewItem::TabViewItem()
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
-
-    Loaded({ this, &TabViewItem::OnLoaded });
 }
 
 void TabViewItem::OnApplyTemplate()
@@ -67,6 +65,8 @@ void TabViewItem::OnApplyTemplate()
         m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
     }
+
+    UpdateCloseButton();
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -106,10 +106,6 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
     return winrt::make<TabViewItemAutomationPeer>(*this);
 }
 
-void TabViewItem::OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args)
-{
-    UpdateCloseButton();
-}
 
 void TabViewItem::UpdateCloseButton()
 {

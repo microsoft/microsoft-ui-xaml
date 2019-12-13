@@ -8,6 +8,8 @@
 #include "NumberBoxAutomationPeer.h"
 #include "Utils.h"
 
+#include "NumberBoxAutomationPeer.properties.cpp"
+
 NumberBoxAutomationPeer::NumberBoxAutomationPeer(winrt::NumberBox const& owner)
     : ReferenceTracker(owner)
 {
@@ -64,12 +66,12 @@ double NumberBoxAutomationPeer::Value()
 
 double NumberBoxAutomationPeer::SmallChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->SmallChange();
 }
 
 double NumberBoxAutomationPeer::LargeChange()
 {
-    return GetImpl()->StepFrequency();
+    return GetImpl()->LargeChange();
 }
 
 void NumberBoxAutomationPeer::SetValue(double value)

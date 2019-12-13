@@ -2,6 +2,8 @@
 #include "common.h"
 #include "RadioButtonsTestHooks.h"
 
+#include "RadioButtonsTestHooks.properties.cpp"
+
 com_ptr<RadioButtonsTestHooks> RadioButtonsTestHooks::s_testHooks{};
 
 com_ptr<RadioButtonsTestHooks> RadioButtonsTestHooks::EnsureGlobalTestHooks()

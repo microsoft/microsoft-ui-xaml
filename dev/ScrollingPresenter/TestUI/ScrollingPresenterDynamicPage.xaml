@@ -225,6 +225,7 @@
                     <ComboBoxItem>VerticalStackPanel</ComboBoxItem>
                     <ComboBoxItem>TilePanel</ComboBoxItem>
                     <ComboBoxItem>Viewbox</ComboBoxItem>
+                    <ComboBoxItem>TextBlock</ComboBoxItem>
                 </ComboBox>
 
                 <TextBlock Text="ManipulationMode:" Grid.Row="14" Grid.Column="0" VerticalAlignment="Center"/>

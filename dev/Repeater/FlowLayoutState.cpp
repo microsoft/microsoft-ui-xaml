@@ -7,7 +7,7 @@
 #include "FlowLayoutAlgorithm.h"
 #include "FlowLayoutState.h"
 
-CppWinRTActivatableClassWithBasicFactory(FlowLayoutState);
+#include "FlowLayoutState.properties.cpp"
 
 void FlowLayoutState::InitializeForContext(
     const winrt::VirtualizingLayoutContext& context,

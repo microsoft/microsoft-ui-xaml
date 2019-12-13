@@ -34,6 +34,7 @@ namespace MUXControlsTestApp
             m_stringItemCollection = new ObservableCollection<string>();
             m_radioButtonItemCollection = new ObservableCollection<RadioButton>();
             this.Loaded += RadioButtonsPage_Loaded;
+            this.SecondTestRadioButton.SelectedItem = this.TheRadioButton;
         }
 
         private void RadioButtonsPage_Loaded(object sender, RoutedEventArgs e)
@@ -42,7 +43,7 @@ namespace MUXControlsTestApp
             RadioButtonsTestHooks.SetTestHooksEnabled(TestRadioButtons, true);
             RadioButtonsTestHooks.LayoutChanged += RadioButtonsTestHooks_LayoutChanged;
 
-            SetMaximumColumnsButton_Click(null, null);
+            SetMaxColumnsButton_Click(null, null);
             SetNumberOfItemsButton_Click(null, null);
             UpdateRadioButtonsSource();
             UpdateDisplayRadioButton();
@@ -57,7 +58,8 @@ namespace MUXControlsTestApp
 
         private void TestRadioButtons_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedIndexTextBlock.Text = TestRadioButtons.SelectedIndex.ToString();
+            var index = TestRadioButtons.SelectedIndex;
+            SelectedIndexTextBlock.Text = index.ToString();
             if (TestRadioButtons.SelectedItem != null)
             {
                 SelectedItemTextBlock.Text = TestRadioButtons.SelectedItem.ToString();
@@ -65,6 +67,21 @@ namespace MUXControlsTestApp
             else
             {
                 SelectedItemTextBlock.Text = "null";
+            }
+
+            if (index > 0)
+            {
+                var radioButton = TestRadioButtons.ContainerFromIndex(index);
+                if (radioButton != null)
+                {
+                    SelectedPositionInSetTextBlock.Text = radioButton.GetValue(AutomationProperties.PositionInSetProperty).ToString();
+                    SelectedSizeOfSetTextBlock.Text = radioButton.GetValue(AutomationProperties.SizeOfSetProperty).ToString();
+                }
+            }
+            else
+            {
+                SelectedPositionInSetTextBlock.Text = "-1";
+                SelectedSizeOfSetTextBlock.Text = "-1";
             }
         }
 
@@ -87,16 +104,16 @@ namespace MUXControlsTestApp
             RadioButtonsHasFocusCheckBox.IsChecked = false;
         }
 
-        private void SetMaximumColumnsButton_Click(object sender, RoutedEventArgs e)
+        private void SetMaxColumnsButton_Click(object sender, RoutedEventArgs e)
         {
-            if (UInt32.TryParse(MaximumColumnsTextBlock.Text, out uint value))
+            if (UInt32.TryParse(MaxColumnsTextBlock.Text, out uint value))
             {
-                TestRadioButtons.MaximumColumns = (int)value;
-                MaximumColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Black);
+                TestRadioButtons.MaxColumns = (int)value;
+                MaxColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Black);
             }
             else
             {
-                MaximumColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Red);
+                MaxColumnsTextBlock.BorderBrush = new SolidColorBrush(Colors.Red);
             }
         }
 
@@ -147,6 +164,34 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectByItemButton_Click(object sender, RoutedEventArgs e)
+        {
+            var index = getIndexToSelect();
+            if (index >= 0)
+            {
+                if (ItemTypeComboBox.SelectedItem == StringsComboBoxItem)
+                {
+                    if (SourceComboBox.SelectedItem == ItemsSourceComboBoxItem)
+                    {
+                        TestRadioButtons.SelectedItem = m_stringItemCollection[index];
+                    }
+                    else if (SourceComboBox.SelectedItem == ItemsComboBoxItem)
+                    {
+                        TestRadioButtons.SelectedItem = TestRadioButtons.Items[index];
+                    }
+                }
+                else if (ItemTypeComboBox.SelectedItem == RadioButtonElementsComboBoxItem)
+                {
+                    TestRadioButtons.SelectedItem = m_radioButtonItemCollection[index];
+                }
+            }
+            else
+            {
+                TestRadioButtons.SelectedItem = null;
+            }
+
+        }
+
         private int getIndexToSelect()
         {
             if (Int32.TryParse(IndexToSelectTextBlock.Text, out int value))
@@ -179,6 +224,7 @@ namespace MUXControlsTestApp
                 var radioButton = new RadioButton();
                 radioButton.Content = DisplayRadioButton.Content;
                 radioButton.IsEnabled = !(bool)CustomDisabledCheckBox.IsChecked;
+                radioButton.IsChecked = (bool)CustomCheckedCheckBox.IsChecked;
                 m_radioButtonItemCollection.Insert(Int32.Parse(CustomIndexTextBox.Text), radioButton);
 
                 if (SourceComboBox.SelectedItem == ItemsComboBoxItem)
@@ -186,6 +232,7 @@ namespace MUXControlsTestApp
                     UpdateRadioButtonsSource();
                 }
             }
+            TestRadioButtons_SelectionChanged(null, null);
         }
 
         private void FocusSelectedItemButton_Clicked(object sender, RoutedEventArgs e)
@@ -193,6 +240,27 @@ namespace MUXControlsTestApp
             var stackPanel = VisualTreeHelper.GetChild(TestRadioButtons, 0);
             var repeater = (ItemsRepeater)VisualTreeHelper.GetChild(stackPanel, 1);
             ((Control)repeater.TryGetElement(TestRadioButtons.SelectedIndex)).Focus(FocusState.Keyboard);
+        }
+
+        private void SetBorderWidthButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(this.BorderWidthTextBox.Text == "inf")
+            {
+                this.TestRadioButtonsBorder.Width = float.NaN;
+                this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.Black);
+            }
+            else
+            {
+                if(float.TryParse(this.BorderWidthTextBox.Text, out float value))
+                {
+                    this.TestRadioButtonsBorder.Width = value;
+                    this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.Black);
+                }
+                else
+                {
+                    this.BorderWidthTextBox.BorderBrush = new SolidColorBrush(Colors.DarkRed);
+                }
+            }
         }
 
         private void Select5ThenChangeSourceButton_Clicked(object sender, RoutedEventArgs e)

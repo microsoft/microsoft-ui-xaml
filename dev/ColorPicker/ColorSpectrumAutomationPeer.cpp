@@ -8,6 +8,8 @@
 #include "ResourceAccessor.h"
 #include "Utils.h"
 
+#include "ColorSpectrumAutomationPeer.properties.cpp"
+
 ColorSpectrumAutomationPeer::ColorSpectrumAutomationPeer(winrt::ColorSpectrum const& owner) :
     ReferenceTracker(owner)
 {

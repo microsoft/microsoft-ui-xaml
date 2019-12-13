@@ -7,10 +7,6 @@
 #include "Utils.h"
 #include "RadioButtonsElementFactory.h"
 
-CppWinRTActivatableClassWithBasicFactory(RadioButtonsElementFactory);
-
-// IItemsControlOverrides
-
 RadioButtonsElementFactory::RadioButtonsElementFactory()
 {
 }

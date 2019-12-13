@@ -552,7 +552,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual(scrollingPresenter.ContentOrientation, ScrollingContentOrientation.None);
+                Verify.AreEqual(scrollingPresenter.ContentOrientation, ScrollingContentOrientation.Both);
                 // Image is unconstrained and stretches to largest square contained in the 300 x 200 viewport: 200 x 200.
                 ValidateStretchedImageSize(
                     scrollingPresenter,
@@ -1111,7 +1111,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent: null, scrollingPresenterLoadedEvent);
 
                 // Constraining the Image width and height, and making the ScrollingPresenter smaller than the Image
-                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Both;
+                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.None;
                     scrollingPresenter.Width = c_scrollingPresenterWidth;
                     scrollingPresenter.Height = c_scrollingPresenterHeight;
                     compositor = Window.Current.Compositor;

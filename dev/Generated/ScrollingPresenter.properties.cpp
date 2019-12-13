@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ScrollingPresenter.h"
 
-CppWinRTActivatableClassWithDPFactory(ScrollingPresenter)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(ScrollingPresenter)
+}
+
+#include "ScrollingPresenter.g.cpp"
 
 GlobalDependencyProperty ScrollingPresenterProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty ScrollingPresenterProperties::s_ContentProperty{ nullptr };

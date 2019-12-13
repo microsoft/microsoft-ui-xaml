@@ -6,28 +6,11 @@
 #include "common.h"
 #include "RadioButtonsTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(RadioButtonsTestHooks)
-
-
-RadioButtonsTestHooksProperties::RadioButtonsTestHooksProperties()
-    : m_layoutChangedEventSource{static_cast<RadioButtonsTestHooks*>(this)}
+namespace winrt::Microsoft::UI::Private::Controls
 {
+    CppWinRTActivatableClassWithBasicFactory(RadioButtonsTestHooks)
 }
 
-void RadioButtonsTestHooksProperties::EnsureProperties()
-{
-}
+#include "RadioButtonsTestHooks.g.cpp"
 
-void RadioButtonsTestHooksProperties::ClearProperties()
-{
-}
 
-winrt::event_token RadioButtonsTestHooksProperties::LayoutChanged(winrt::TypedEventHandler<winrt::RadioButtons, winrt::IInspectable> const& value)
-{
-    return m_layoutChangedEventSource.add(value);
-}
-
-void RadioButtonsTestHooksProperties::LayoutChanged(winrt::event_token const& token)
-{
-    m_layoutChangedEventSource.remove(token);
-}

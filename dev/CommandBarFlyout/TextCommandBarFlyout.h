@@ -92,4 +92,3 @@ private:
     bool m_isSettingToggleButtonState = false;
 };
 
-CppWinRTActivatableClassWithBasicFactory(TextCommandBarFlyout);

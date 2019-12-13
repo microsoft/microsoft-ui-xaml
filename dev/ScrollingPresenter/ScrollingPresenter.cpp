@@ -285,7 +285,7 @@ void ScrollingPresenter::HorizontalScrollController(winrt::IScrollController con
     {
         HookHorizontalScrollControllerEvents(
             m_horizontalScrollController.get(),
-            m_horizontalScrollControllerVisualInteractionSource != nullptr /*hasInteractionVisual*/);
+            m_horizontalScrollControllerVisualInteractionSource != nullptr /*hasInteractionElement*/);
 
         UpdateScrollControllerValues(ScrollingPresenterDimension::HorizontalScroll);
         UpdateScrollControllerInteractionsAllowed(ScrollingPresenterDimension::HorizontalScroll);
@@ -344,7 +344,7 @@ void ScrollingPresenter::VerticalScrollController(winrt::IScrollController const
     {
         HookVerticalScrollControllerEvents(
             m_verticalScrollController.get(),
-            m_verticalScrollControllerVisualInteractionSource != nullptr /*hasInteractionVisual*/);
+            m_verticalScrollControllerVisualInteractionSource != nullptr /*hasInteractionElement*/);
 
         UpdateScrollControllerValues(ScrollingPresenterDimension::VerticalScroll);
         UpdateScrollControllerInteractionsAllowed(ScrollingPresenterDimension::VerticalScroll);
@@ -718,13 +718,13 @@ winrt::Size ScrollingPresenter::MeasureOverride(winrt::Size const& availableSize
         // to be scrollable in those directions.
         winrt::Size contentAvailableSize
         {
-            (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::Both) ?
+            (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::None) ?
                 availableSize.Width : std::numeric_limits<float>::infinity(),
-            (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::Both) ?
+            (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::None) ?
                 availableSize.Height : std::numeric_limits<float>::infinity()
         };
 
-        if (m_contentOrientation != winrt::ScrollingContentOrientation::None)
+        if (m_contentOrientation != winrt::ScrollingContentOrientation::Both)
         {
             const winrt::FrameworkElement contentAsFE = content.try_as<winrt::FrameworkElement>();
 
@@ -732,13 +732,13 @@ winrt::Size ScrollingPresenter::MeasureOverride(winrt::Size const& availableSize
             {
                 winrt::Thickness contentMargin = contentAsFE.Margin();
 
-                if (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::Both)
+                if (m_contentOrientation == winrt::ScrollingContentOrientation::Vertical || m_contentOrientation == winrt::ScrollingContentOrientation::None)
                 {
                     // Even though the content's Width is constrained, take into account the MinWidth, Width and MaxWidth values
                     // potentially set on the content so it is allowed to grow accordingly.
                     contentAvailableSize.Width = static_cast<float>(GetComputedMaxWidth(availableSize.Width, contentAsFE));
                 }
-                if (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::Both)
+                if (m_contentOrientation == winrt::ScrollingContentOrientation::Horizontal || m_contentOrientation == winrt::ScrollingContentOrientation::None)
                 {
                     // Even though the content's Height is constrained, take into account the MinHeight, Height and MaxHeight values
                     // potentially set on the content so it is allowed to grow accordingly.
@@ -2488,7 +2488,7 @@ void ScrollingPresenter::SetupScrollingPresenterVisualInteractionSource()
 }
 
 // Configures the VisualInteractionSource instance associated with the Visual handed in
-// through IScrollController::InteractionVisual.
+// through IScrollController::InteractionElement.
 void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
     ScrollingPresenterDimension dimension)
 {
@@ -2504,7 +2504,12 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         scrollControllerVisualInteractionSource = m_horizontalScrollControllerVisualInteractionSource;
         if (m_horizontalScrollController)
         {
-            interactionVisual = m_horizontalScrollController.get().InteractionVisual();
+            const winrt::UIElement interactionElement = m_horizontalScrollController.get().InteractionElement();
+
+            if (interactionElement)
+            {
+                interactionVisual = winrt::ElementCompositionPreview::GetElementVisual(interactionElement);
+            }
         }
     }
     else
@@ -2512,7 +2517,12 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         scrollControllerVisualInteractionSource = m_verticalScrollControllerVisualInteractionSource;
         if (m_verticalScrollController)
         {
-            interactionVisual = m_verticalScrollController.get().InteractionVisual();
+            const winrt::UIElement interactionElement = m_verticalScrollController.get().InteractionElement();
+
+            if (interactionElement)
+            {
+                interactionVisual = winrt::ElementCompositionPreview::GetElementVisual(interactionElement);
+            }
         }
     }
 
@@ -2597,8 +2607,8 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         // Setup the VisualInteractionSource instance.
         if (dimension == ScrollingPresenterDimension::HorizontalScroll)
         {
-            orientation = m_horizontalScrollController.get().InteractionVisualScrollOrientation();
-            isRailEnabled = m_horizontalScrollController.get().IsInteractionVisualRailEnabled();
+            orientation = m_horizontalScrollController.get().InteractionElementScrollOrientation();
+            isRailEnabled = m_horizontalScrollController.get().IsInteractionElementRailEnabled();
 
             if (orientation == winrt::Orientation::Horizontal)
             {
@@ -2613,8 +2623,8 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         }
         else
         {
-            orientation = m_verticalScrollController.get().InteractionVisualScrollOrientation();
-            isRailEnabled = m_verticalScrollController.get().IsInteractionVisualRailEnabled();
+            orientation = m_verticalScrollController.get().InteractionElementScrollOrientation();
+            isRailEnabled = m_verticalScrollController.get().IsInteractionElementRailEnabled();
 
             if (orientation == winrt::Orientation::Horizontal)
             {
@@ -2640,8 +2650,8 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
 // Configures the Position input modifiers of the VisualInteractionSource associated
 // with an IScrollController Visual.  The scalar called Multiplier from the CompositionPropertySet
 // used in IScrollController::SetExpressionAnimationSources determines the relative speed of
-// IScrollController::InteractionVisual compared to the ScrollingPresenter.Content element.
-// The InteractionVisual is clamped based on the Interaction's MinPosition and MaxPosition values.
+// IScrollController::InteractionElement compared to the ScrollingPresenter.Content element.
+// The InteractionElement is clamped based on the Interaction's MinPosition and MaxPosition values.
 // Four CompositionConditionalValue instances cover all scenarios:
 //  - the Position is moved closer to InteractionTracker.MinPosition while the multiplier is negative.
 //  - the Position is moved closer to InteractionTracker.MinPosition while the multiplier is positive.
@@ -5091,7 +5101,7 @@ void ScrollingPresenter::OnScrollControllerInteractionRequested(
 }
 
 // Invoked by an IScrollController implementation when one or more of its characteristics has changed:
-// InteractionVisual, InteractionVisualScrollOrientation or IsInteractionVisualRailEnabled.
+// InteractionElement, InteractionElementScrollOrientation or IsInteractionElementRailEnabled.
 void ScrollingPresenter::OnScrollControllerInteractionInfoChanged(
     const winrt::IScrollController& sender,
     const winrt::IInspectable& /*args*/)
@@ -7589,13 +7599,13 @@ void ScrollingPresenter::CompleteViewChange(
 
     if (onHorizontalOffsetChangeCompleted && m_horizontalScrollController)
     {
-        m_horizontalScrollController.get().OnScrollCompleted(
+        m_horizontalScrollController.get().NotifyScrollCompleted(
             winrt::ScrollingScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 
     if (onVerticalOffsetChangeCompleted && m_verticalScrollController)
     {
-        m_verticalScrollController.get().OnScrollCompleted(
+        m_verticalScrollController.get().NotifyScrollCompleted(
             winrt::ScrollingScrollInfo{ interactionTrackerAsyncOperation->GetViewChangeId() });
     }
 }

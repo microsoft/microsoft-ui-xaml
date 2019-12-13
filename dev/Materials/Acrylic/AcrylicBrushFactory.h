@@ -25,4 +25,8 @@ public:
         bool willTintColorAlwaysBeOpaque);
 };
 
-CppWinRTActivatableClass(AcrylicBrush)
+namespace winrt::Microsoft::UI::Xaml::Media
+{
+    namespace factory_implementation { using AcrylicBrush = ::AcrylicBrushFactory; };
+    namespace implementation { using AcrylicBrush = ::AcrylicBrush; };
+}

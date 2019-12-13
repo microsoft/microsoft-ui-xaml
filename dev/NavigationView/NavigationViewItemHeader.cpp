@@ -6,7 +6,7 @@
 #include "NavigationViewItemHeader.h"
 #include "NavigationView.h"
 
-CppWinRTActivatableClassWithBasicFactory(NavigationViewItemHeader);
+#include "NavigationViewItemHeader.properties.cpp"
 
 NavigationViewItemHeader::NavigationViewItemHeader()
 {

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RecyclingElementFactory.h"
 
-CppWinRTActivatableClassWithBasicFactory(RecyclingElementFactory)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(RecyclingElementFactory)
+}
+
+#include "RecyclingElementFactory.g.cpp"
 
 
 RecyclingElementFactoryProperties::RecyclingElementFactoryProperties()

@@ -256,15 +256,20 @@ bool SharedHelpers::IsAPIContractV3Available()
     return IsAPIContractVxAvailable<3>();
 }
 
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
     static bool isInFrameworkPackage = []() {
         // Special type that we manually list here which is not part of the Nuget dll distribution package. 
         // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-        Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
-        winrt::com_ptr<IActivationFactory> activationFactory;
-        if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
+        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.;
+        // NOTE: calling the "internal" winrt_get_activation_factory in module.g.cpp so we don't raise an exception when
+        // this fails in prerelease builds.
+        
+        winrt::IActivationFactory activationFactory;
+        *winrt::put_abi(activationFactory) = winrt_get_activation_factory(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv);
+        if (activationFactory)
         {
             return true;
         }
@@ -366,7 +371,7 @@ void SharedHelpers::ScheduleActionAfterWait(
     // The callback that is given to CreateTimer is called off of the UI thread.
     // In order to make this useful by making it so we can interact with XAML objects,
     // we'll use the dispatcher to first post our work to the UI thread before executing it.
-    winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
+    auto timer = winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
         [action, dispatcherHelper](auto const&)
         {
             dispatcherHelper.RunAsync(action);
@@ -384,7 +389,7 @@ winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const win
     writer.WriteBytes(winrt::array_view<const byte>(bytes));
     SyncWait(writer.StoreAsync());
     SyncWait(writer.FlushAsync());
-    writer.DetachStream();
+    auto detachedStream = writer.DetachStream();
     writer.Close();
 
     stream.Seek(0);

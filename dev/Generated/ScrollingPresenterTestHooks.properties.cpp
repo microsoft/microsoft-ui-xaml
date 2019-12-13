@@ -6,72 +6,11 @@
 #include "common.h"
 #include "ScrollingPresenterTestHooks.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterTestHooks)
-
-
-ScrollingPresenterTestHooksProperties::ScrollingPresenterTestHooksProperties()
-    : m_anchorEvaluatedEventSource{static_cast<ScrollingPresenterTestHooks*>(this)}
-    , m_contentLayoutOffsetXChangedEventSource{static_cast<ScrollingPresenterTestHooks*>(this)}
-    , m_contentLayoutOffsetYChangedEventSource{static_cast<ScrollingPresenterTestHooks*>(this)}
-    , m_expressionAnimationStatusChangedEventSource{static_cast<ScrollingPresenterTestHooks*>(this)}
-    , m_interactionSourcesChangedEventSource{static_cast<ScrollingPresenterTestHooks*>(this)}
+namespace winrt::Microsoft::UI::Private::Controls
 {
+    CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterTestHooks)
 }
 
-void ScrollingPresenterTestHooksProperties::EnsureProperties()
-{
-}
+#include "ScrollingPresenterTestHooks.g.cpp"
 
-void ScrollingPresenterTestHooksProperties::ClearProperties()
-{
-}
 
-winrt::event_token ScrollingPresenterTestHooksProperties::AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksAnchorEvaluatedEventArgs> const& value)
-{
-    return m_anchorEvaluatedEventSource.add(value);
-}
-
-void ScrollingPresenterTestHooksProperties::AnchorEvaluated(winrt::event_token const& token)
-{
-    m_anchorEvaluatedEventSource.remove(token);
-}
-
-winrt::event_token ScrollingPresenterTestHooksProperties::ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value)
-{
-    return m_contentLayoutOffsetXChangedEventSource.add(value);
-}
-
-void ScrollingPresenterTestHooksProperties::ContentLayoutOffsetXChanged(winrt::event_token const& token)
-{
-    m_contentLayoutOffsetXChangedEventSource.remove(token);
-}
-
-winrt::event_token ScrollingPresenterTestHooksProperties::ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value)
-{
-    return m_contentLayoutOffsetYChangedEventSource.add(value);
-}
-
-void ScrollingPresenterTestHooksProperties::ContentLayoutOffsetYChanged(winrt::event_token const& token)
-{
-    m_contentLayoutOffsetYChangedEventSource.remove(token);
-}
-
-winrt::event_token ScrollingPresenterTestHooksProperties::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
-{
-    return m_expressionAnimationStatusChangedEventSource.add(value);
-}
-
-void ScrollingPresenterTestHooksProperties::ExpressionAnimationStatusChanged(winrt::event_token const& token)
-{
-    m_expressionAnimationStatusChangedEventSource.remove(token);
-}
-
-winrt::event_token ScrollingPresenterTestHooksProperties::InteractionSourcesChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs> const& value)
-{
-    return m_interactionSourcesChangedEventSource.add(value);
-}
-
-void ScrollingPresenterTestHooksProperties::InteractionSourcesChanged(winrt::event_token const& token)
-{
-    m_interactionSourcesChangedEventSource.remove(token);
-}
