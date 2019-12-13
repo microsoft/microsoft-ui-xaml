@@ -442,15 +442,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CommonStyles", "CommonStyle
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonStyles", "dev\CommonStyles\CommonStyles.vcxitems", "{3A07FA59-C5C1-4B46-8B31-043F9CA91226}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXControlsTestAppWPF", "test\MUXControlsTestAppWPF\MUXControlsTestAppWPF.csproj", "{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}"
-	ProjectSection(ProjectDependencies) = postProject
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0} = {43B830B3-6CAA-4C1B-9B09-C324D9E578A0}
-	EndProjectSection
-EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "MUXControlsTestAppWPFPackage", "test\MUXControlsTestAppWPFPackage\MUXControlsTestAppWPFPackage.wapproj", "{03F7F4F7-0250-435E-A730-ED82F6A08652}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXControlsTestAppForIslands", "test\MUXControlsTestAppForIslands\MUXControlsTestAppForIslands.csproj", "{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXControlsTestApp", "test\MUXControlsTestApp\MSTest\MUXControlsTestApp.csproj", "{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MUXControlsTestApp.TAEF", "test\MUXControlsTestApp\TAEF\MUXControlsTestApp.TAEF.csproj", "{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7}"
@@ -464,8 +455,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXControls.Test", "MUXControls.Test", "{85F9040A-109D-42FF-9BE3-4CF4181DDEF1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXControlsTestApp", "MUXControlsTestApp", "{666B53C4-A747-4538-AA51-8FF9DEE1BF60}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MUXControlsTestAppWPF", "MUXControlsTestAppWPF", "{0457C4E5-F9BC-4E7E-B132-A64272904A95}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.UI.Xaml.Design", "dev\Microsoft.UI.Xaml.Design\Microsoft.UI.Xaml.Design.csproj", "{1CEEC8E3-419A-4304-841C-08A334B9E4FF}"
 EndProject
@@ -677,7 +666,6 @@ Global
 		dev\AutoSuggestBox\AutoSuggestBox.vcxitems*{417000d9-2641-4629-99f2-8f6033a6ac52}*SharedItemsImports = 9
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{42a51d3e-f06a-41a0-be4c-f94cddb80678}*SharedItemsImports = 13
 		dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems*{42d6e8f9-59fe-4ca5-83eb-69a7622f5742}*SharedItemsImports = 13
-		test\TestAppUtils\TestAppUtils.projitems*{43b830b3-6caa-4c1b-9b09-c324d9e578a0}*SharedItemsImports = 4
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{44deafbc-bb7a-4b02-aeab-29df2c2f8587}*SharedItemsImports = 13
 		dev\ResourceHelper\ResourceHelper.vcxitems*{45d41acc-2c3c-43d2-bc10-02aa73ffc7c7}*SharedItemsImports = 9
 		dev\ScrollingPresenter\APITests\ScrollingPresenter_APITests.projitems*{474b92f7-cd58-fed9-8569-9640529d1871}*SharedItemsImports = 13
@@ -703,8 +691,8 @@ Global
 		dev\PullToRefresh\RefreshContainer\InteractionTests\RefreshContainer_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\PullToRefresh\ScrollViewerIRefreshInfoProviderAdapter\InteractionTests\ScrollViewerAdapter_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\RadioButtons\InteractionTests\RadioButtons_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
-		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\RatingControl\InteractionTests\RatingControl_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
+		dev\Repeater\InteractionTests\Repeater_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\ScrollingPresenter\InteractionTests\ScrollingPresenter_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\ScrollingView\InteractionTests\ScrollingView_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{4d8c5d1b-f982-44a1-b744-dd0e51651bf2}*SharedItemsImports = 4
@@ -922,7 +910,6 @@ Global
 		dev\TwoPaneView\APITests\TwoPaneView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TwoPaneView\TestUI\TwoPaneView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		test\TestAppUtils\TestAppUtils.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
-		test\TestAppUtils\TestAppUtils.projitems*{e06d4457-eadb-4bfe-b5db-c9a34af0f8aa}*SharedItemsImports = 4
 		dev\SplitButton\InteractionTests\SplitButton_InteractionTests.projitems*{e1c861e2-c4d9-41e1-aed7-5e203451bd4d}*SharedItemsImports = 13
 		dev\DatePicker\TestUI\DatePicker_TestUI.projitems*{e20f725c-3a53-463b-ada9-ff2088aaca4d}*SharedItemsImports = 13
 		dev\CommandBarFlyout\TestUI\CommandBarFlyout_TestUI.projitems*{e63f1c1d-f06d-46a0-b5c2-184184e44f29}*SharedItemsImports = 13
@@ -1153,82 +1140,6 @@ Global
 		{906E225A-E99D-466E-AA60-E23384910D99}.Release|x86.ActiveCfg = Release|x86
 		{906E225A-E99D-466E-AA60-E23384910D99}.Release|x86.Build.0 = Release|x86
 		{906E225A-E99D-466E-AA60-E23384910D99}.Release|x86.Deploy.0 = Release|x86
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|Any CPU.ActiveCfg = Debug_test|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|ARM.ActiveCfg = Debug_test|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|arm64.ActiveCfg = Debug_test|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|x64.ActiveCfg = Debug_test|x64
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|x64.Build.0 = Debug_test|x64
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|x86.ActiveCfg = Debug_test|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug_test|x86.Build.0 = Debug_test|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|ARM.ActiveCfg = Debug|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|arm64.ActiveCfg = Debug|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|x64.ActiveCfg = Debug|x64
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|x86.ActiveCfg = Debug|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Debug|x86.Build.0 = Debug|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|Any CPU.ActiveCfg = Release|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|ARM.ActiveCfg = Release|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|arm64.ActiveCfg = Release|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|x64.ActiveCfg = Release|x64
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|x64.Build.0 = Release|x64
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|x86.ActiveCfg = Release|Win32
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA}.Release|x86.Build.0 = Release|Win32
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|Any CPU.ActiveCfg = Debug_test|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|Any CPU.Build.0 = Debug_test|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|Any CPU.Deploy.0 = Debug_test|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|ARM.ActiveCfg = Debug_test|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|arm64.ActiveCfg = Debug_test|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x64.ActiveCfg = Debug_test|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x64.Build.0 = Debug_test|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x64.Deploy.0 = Debug_test|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x86.ActiveCfg = Debug_test|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x86.Build.0 = Debug_test|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug_test|x86.Deploy.0 = Debug_test|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|arm64.ActiveCfg = Debug|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|x64.ActiveCfg = Debug|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|x86.ActiveCfg = Debug|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|x86.Build.0 = Debug|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Debug|x86.Deploy.0 = Debug|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|Any CPU.Build.0 = Release|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|ARM.ActiveCfg = Release|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|arm64.ActiveCfg = Release|Any CPU
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x64.ActiveCfg = Release|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x64.Build.0 = Release|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x64.Deploy.0 = Release|x64
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x86.ActiveCfg = Release|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x86.Build.0 = Release|x86
-		{03F7F4F7-0250-435E-A730-ED82F6A08652}.Release|x86.Deploy.0 = Release|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|Any CPU.ActiveCfg = Debug_test|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|ARM.ActiveCfg = Debug_test|ARM
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|arm64.ActiveCfg = Debug_test|arm64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x64.ActiveCfg = Debug_test|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x64.Build.0 = Debug_test|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x64.Deploy.0 = Debug_test|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x86.ActiveCfg = Debug_test|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x86.Build.0 = Debug_test|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug_test|x86.Deploy.0 = Debug_test|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|ARM.ActiveCfg = Debug|ARM
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|arm64.ActiveCfg = Debug|arm64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|x64.ActiveCfg = Debug|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|x86.ActiveCfg = Debug|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|x86.Build.0 = Debug|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Debug|x86.Deploy.0 = Debug|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|Any CPU.ActiveCfg = Release|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|ARM.ActiveCfg = Release|ARM
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|arm64.ActiveCfg = Release|arm64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x64.ActiveCfg = Release|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x64.Build.0 = Release|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x64.Deploy.0 = Release|x64
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x86.ActiveCfg = Release|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x86.Build.0 = Release|x86
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0}.Release|x86.Deploy.0 = Release|x86
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|Any CPU.ActiveCfg = Debug_test|x86
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|ARM.ActiveCfg = Debug_test|ARM
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546}.Debug_test|ARM.Build.0 = Debug_test|ARM
@@ -1634,9 +1545,6 @@ Global
 		{42D6E8F9-59FE-4CA5-83EB-69A7622F5742} = {D232C226-CD18-4509-B848-80083AA9892B}
 		{807E57C8-F3E8-4049-AB88-BE3D3285B441} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{3A07FA59-C5C1-4B46-8B31-043F9CA91226} = {807E57C8-F3E8-4049-AB88-BE3D3285B441}
-		{E06D4457-EADB-4BFE-B5DB-C9A34AF0F8AA} = {0457C4E5-F9BC-4E7E-B132-A64272904A95}
-		{03F7F4F7-0250-435E-A730-ED82F6A08652} = {0457C4E5-F9BC-4E7E-B132-A64272904A95}
-		{43B830B3-6CAA-4C1B-9B09-C324D9E578A0} = {0457C4E5-F9BC-4E7E-B132-A64272904A95}
 		{FBC396F5-26DD-4CA3-981E-C7BC9FEA4546} = {666B53C4-A747-4538-AA51-8FF9DEE1BF60}
 		{DEDC1E4F-CFA5-4443-83EB-E79D425DF7E7} = {666B53C4-A747-4538-AA51-8FF9DEE1BF60}
 		{E9FC52CD-519A-41BB-8092-523FFA9D5617} = {85F9040A-109D-42FF-9BE3-4CF4181DDEF1}
@@ -1644,7 +1552,6 @@ Global
 		{C9B1268D-8639-424F-8AEC-EF4EC5459184} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{85F9040A-109D-42FF-9BE3-4CF4181DDEF1} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{666B53C4-A747-4538-AA51-8FF9DEE1BF60} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
-		{0457C4E5-F9BC-4E7E-B132-A64272904A95} = {D3327F36-E161-4FED-A0F4-56F2B735827E}
 		{1CEEC8E3-419A-4304-841C-08A334B9E4FF} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{00832735-360B-46BB-9BFA-B8C281951D55} = {67599AD5-51EC-44CB-85CE-B60CD8CBA270}
 		{3353A4A7-87B3-4E43-8F8D-43C7380D1D56} = {00832735-360B-46BB-9BFA-B8C281951D55}

@@ -14,6 +14,8 @@
 #include <FeatureStaging-ShellViewManagement.h>
 #endif
 
+#include "AcrylicBrush.g.cpp"
+
 AcrylicBrush::AcrylicBrush()
 {
     //  Logging usage telemetry

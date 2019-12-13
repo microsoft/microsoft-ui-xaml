@@ -13,15 +13,19 @@ parameters:
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
   useBuildOutputFromPipeline: $(System.DefinitionId)
   matrix: 
+    Debug_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'debug'
+      # %3b is the escape code for ';' which is used as the delimiter
+      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs4.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
 
 jobs:
 - job: ${{ parameters.name }}

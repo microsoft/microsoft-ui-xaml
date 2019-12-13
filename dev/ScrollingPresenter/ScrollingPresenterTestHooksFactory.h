@@ -4,5 +4,3 @@
 #pragma once
 
 #include "ScrollingPresenterTestHooks.h"
-
-CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterTestHooks)

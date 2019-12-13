@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "AnimatedVisualPlayer.h"
 
@@ -14,5 +14,3 @@ public:
     hstring GetClassNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 };
-
-CppWinRTActivatableClassWithBasicFactory(AnimatedVisualPlayerAutomationPeer)

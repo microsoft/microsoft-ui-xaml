@@ -14,7 +14,7 @@ double ScrollingPresenterAutomationPeer::s_minimumPercent{ 0.0 };
 double ScrollingPresenterAutomationPeer::s_maximumPercent{ 100.0 };
 double ScrollingPresenterAutomationPeer::s_noScroll{ -1.0 };
 
-CppWinRTActivatableClassWithBasicFactory(ScrollingPresenterAutomationPeer);
+#include "ScrollingPresenterAutomationPeer.properties.cpp"
 
 ScrollingPresenterAutomationPeer::ScrollingPresenterAutomationPeer(winrt::ScrollingPresenter const& owner)
     : ReferenceTracker(owner)

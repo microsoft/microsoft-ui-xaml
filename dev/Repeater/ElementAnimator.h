@@ -5,30 +5,21 @@
 
 #include "ElementAnimator.g.h"
 
+#include "ElementAnimator.properties.h"
+
 // Given some elements and their animation context, ElementAnimator
 // animates them (show, hide and bounds change) and ensures the timing
 // is correct (hide -> bounds change -> show).
 // It's possible to customize the animations by inheriting from ElementAnimator
 // and overriding virtual/abstract members.
 class ElementAnimator :
-    public ReferenceTracker<ElementAnimator, winrt::implementation::ElementAnimatorT, winrt::composing>
+    public ReferenceTracker<ElementAnimator, winrt::implementation::ElementAnimatorT, winrt::composing>,
+    public ElementAnimatorProperties
 {    
     struct ElementInfo;
 
 public:
 #pragma region IElementAnimator
-
-    winrt::event_token ShowAnimationCompleted(winrt::ElementAnimationCompleted const& value);
-
-    void ShowAnimationCompleted(winrt::event_token const& token);
-
-    winrt::event_token HideAnimationCompleted(winrt::ElementAnimationCompleted const& value);
-
-    void HideAnimationCompleted(winrt::event_token const& token);
-
-    winrt::event_token BoundsChangeAnimationCompleted(winrt::ElementAnimationCompleted const& value);
-
-    void BoundsChangeAnimationCompleted(winrt::event_token const& token);
 
     void OnElementShown(
         winrt::UIElement const& element,
@@ -172,11 +163,6 @@ private:
     bool m_hasHideAnimationsPending{};
     bool m_hasBoundsChangeAnimationsPending{};
     winrt::AnimationContext m_sharedContext{};
-
-    // Events
-    event_source<winrt::ElementAnimationCompleted> m_showAnimationCompleted{ this };
-    event_source<winrt::ElementAnimationCompleted> m_hideAnimationCompleted{ this };
-    event_source<winrt::ElementAnimationCompleted> m_boundsChangeAnimationCompleted{ this };
 
     // Event tokens.
     winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_rendering{};

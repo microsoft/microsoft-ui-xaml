@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TeachingTip.h"
 
-CppWinRTActivatableClassWithDPFactory(TeachingTip)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TeachingTip)
+}
+
+#include "TeachingTip.g.cpp"
 
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TeachingTipProperties::s_ActionButtonCommandParameterProperty{ nullptr };

@@ -503,7 +503,7 @@ void RefreshVisualizer::RaiseRefreshRequested()
     PTR_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
     com_ptr<RefreshVisualizer> strongThis = get_strong();
 
-    winrt::DeferralCompletedHandler instance{ [strongThis]()
+    winrt::Deferral instance{ [strongThis]()
         {
             strongThis->CheckThread();
             strongThis->RefreshCompleted();

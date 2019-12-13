@@ -273,6 +273,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Verify.IsLessThan(GetTipVerticalOffset(), initialTipVerticalOffset);
                 }
+
+                // Test for bug #1547
+                // Maximize window first.
+                var getOnEdgeOffsetButton = elements.GetTeachingTipOnEdgeOffsetButton();
+                KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows);
+                Wait.ForIdle();
+
+                // Open TeachingTip
+                elements.GetOpenTeachingTipOnEdgeButton().InvokeAndWait();
+                
+                // Get offset values
+                getOnEdgeOffsetButton.InvokeAndWait();
+                double oldXOffset = elements.GetTeachingTipOnEdgeHorizontalOffset();
+
+                // "Restore" window width (aka unminimize)
+                KeyboardHelper.PressKey(Key.Down, ModifierKey.Windows);
+                getOnEdgeOffsetButton.InvokeAndWait();
+                Verify.IsLessThan(elements.GetTeachingTipOnEdgeHorizontalOffset(), oldXOffset);
+                
+                // Update values
+                getOnEdgeOffsetButton.InvokeAndWait();
+                oldXOffset = elements.GetTeachingTipOnEdgeHorizontalOffset();
+
+                // Maximize again
+                KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows);
+                getOnEdgeOffsetButton.InvokeAndWait();
+                Verify.IsGreaterThan(elements.GetTeachingTipOnEdgeHorizontalOffset(), oldXOffset);
             }
         }
 

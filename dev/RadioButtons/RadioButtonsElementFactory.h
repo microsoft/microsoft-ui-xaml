@@ -3,12 +3,10 @@
 
 #pragma once
 #include "common.h"
-#include "RadioButtonsElementFactory.g.h"
-#include "RadioButtonsElementFactory.properties.h"
 #include "ElementFactory.h"
 
 class RadioButtonsElementFactory :
-    public ReferenceTracker<RadioButtonsElementFactory, winrt::implementation::RadioButtonsElementFactoryT, ElementFactory>
+    public winrt::implements<RadioButtonsElementFactory, ElementFactory>
 {
 public:
     RadioButtonsElementFactory();

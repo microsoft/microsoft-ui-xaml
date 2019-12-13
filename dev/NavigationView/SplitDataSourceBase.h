@@ -175,7 +175,7 @@ public:
     {
         if (index >= 0 && index < RawDataSize())
         {
-            return m_splitVectors[m_flags[index]];
+            return m_splitVectors[static_cast<int>(m_flags[index])];
         }
         return nullptr;
     }
@@ -210,7 +210,7 @@ public:
             m_flags[index] = newVectorID;
 
             // insert item to vector which matches with the newVectorID
-            if (auto &toVector = m_splitVectors[newVectorID])
+            if (auto &toVector = m_splitVectors[static_cast<int>(newVectorID)])
             {
                 int pos = GetPreferIndex(index, newVectorID);
 
@@ -246,13 +246,13 @@ protected:
     {
         for (auto &vector: vectors)
         {
-            m_splitVectors[vector->GetVectorIDForItem()] = vector;
+            m_splitVectors[static_cast<int>(vector->GetVectorIDForItem())] = vector;
         }
     }
 
     std::shared_ptr<SplitVectorType> GetVector(SplitVectorID vectorID)
     {
-        return m_splitVectors[vectorID];
+        return m_splitVectors[static_cast<int>(vectorID)];
     }
 
 

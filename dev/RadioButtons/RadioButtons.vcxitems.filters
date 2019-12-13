@@ -10,10 +10,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtons.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)..\Generated\ColumnMajorUniformToLargestGridLayout.properties.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ColumnMajorUniformToLargestGridLayout.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsElementFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)RadioButtonsTestHooks.h" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)RadioButtons.xaml" />

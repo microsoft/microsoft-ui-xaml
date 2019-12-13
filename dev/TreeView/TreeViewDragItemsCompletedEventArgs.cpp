@@ -6,10 +6,10 @@
 #include "Vector.h"
 #include "TreeViewDragItemsCompletedEventArgs.h"
 
-TreeViewDragItemsCompletedEventArgs::TreeViewDragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args, const winrt::IInspectable& newParent)
+TreeViewDragItemsCompletedEventArgs::TreeViewDragItemsCompletedEventArgs(const winrt::DragItemsCompletedEventArgs& args, const winrt::IInspectable& newParentItem)
 {
     m_dragItemsCompletedEventArgs = args;
-    m_newParent = newParent;
+    m_newParentItem = newParentItem;
 }
 
 
@@ -23,7 +23,7 @@ winrt::IVectorView<winrt::IInspectable> TreeViewDragItemsCompletedEventArgs::Ite
     return m_dragItemsCompletedEventArgs.Items();
 }
 
-winrt::IInspectable TreeViewDragItemsCompletedEventArgs::NewParent()
+winrt::IInspectable TreeViewDragItemsCompletedEventArgs::NewParentItem()
 {
-    return m_newParent;
+    return m_newParentItem;
 }

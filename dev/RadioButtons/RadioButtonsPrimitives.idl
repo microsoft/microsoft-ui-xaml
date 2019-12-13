@@ -1,14 +1,7 @@
 ﻿namespace MU_XCP_NAMESPACE
 {
-[WUXC_VERSION_PREVIEW]
-[webhosthidden]
-[default_interface]
-unsealed runtimeclass RadioButtonsElementFactory : MU_XC_NAMESPACE.ElementFactory
-{
-    RadioButtonsElementFactory();
-}
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 [default_interface]
 unsealed runtimeclass ColumnMajorUniformToLargestGridLayout : MU_XC_NAMESPACE.NonVirtualizingLayout
@@ -17,15 +10,15 @@ unsealed runtimeclass ColumnMajorUniformToLargestGridLayout : MU_XC_NAMESPACE.No
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_PROPERTY_VALIDATION_CALLBACK("ValidateGreaterThanZero")]
-    Int32 MaximumColumns{ get; set; };
-    static Windows.UI.Xaml.DependencyProperty MaximumColumnsProperty{ get; };
+    Int32 MaxColumns{ get; set; };
+    static Windows.UI.Xaml.DependencyProperty MaxColumnsProperty{ get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 ColumnSpacing{ get; set; };
+    Double ColumnSpacing{ get; set; };
     static Windows.UI.Xaml.DependencyProperty ColumnSpacingProperty{ get; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Int32 RowSpacing{ get; set; };
+    Double RowSpacing{ get; set; };
     static Windows.UI.Xaml.DependencyProperty RowSpacingProperty{ get; };
 }
 

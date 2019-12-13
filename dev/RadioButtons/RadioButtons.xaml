@@ -10,16 +10,19 @@
 
     <Style x:Key="DefaultRadioButtonsStyle" TargetType="local:RadioButtons">
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="AutomationProperties.AccessibilityView" Value="Raw"/>
         <contract5Present:Setter Property="TabNavigation" Value="Once" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:RadioButtons">
                     <StackPanel>
-                        <ContentPresenter Content="{TemplateBinding Header}"/>
+                        <ContentPresenter
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"/>
                         <local:ItemsRepeater x:Name="InnerRepeater" ItemTemplate="{TemplateBinding ItemTemplate}">
                             <local:ItemsRepeater.Layout>
                                 <primitives:ColumnMajorUniformToLargestGridLayout
-                                    MaximumColumns="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaximumColumns}"
+                                    MaxColumns="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=MaxColumns}"
                                     ColumnSpacing="{ThemeResource RadioButtonsColumnSpacing}"
                                     RowSpacing="{ThemeResource RadioButtonsRowSpacing}"/>
                             </local:ItemsRepeater.Layout>
