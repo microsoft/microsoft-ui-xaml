@@ -263,7 +263,10 @@ bool SharedHelpers::IsInFrameworkPackage()
     static bool isInFrameworkPackage = []() {
         // Special type that we manually list here which is not part of the Nuget dll distribution package. 
         // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
+        // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
+        // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
+        // mater what comes back for the activationfactory. If it succeeds it means we're running against
+        // the framework package.
 
         winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
         winrt::IActivationFactory activationFactory;
