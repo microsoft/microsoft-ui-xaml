@@ -657,7 +657,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
         [TestMethod]
         public void AccessKeys()
-        {
+        { 
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
