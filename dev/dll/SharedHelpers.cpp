@@ -266,9 +266,10 @@ bool SharedHelpers::IsInFrameworkPackage()
         // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.;
         // NOTE: calling the "internal" winrt_get_activation_factory in module.g.cpp so we don't raise an exception when
         // this fails in prerelease builds.
-        
+
+        winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
         winrt::IActivationFactory activationFactory;
-        *winrt::put_abi(activationFactory) = winrt_get_activation_factory(L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv);
+        WINRT_RoGetActivationFactory(winrt::get_abi(typeName), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory));
         if (activationFactory)
         {
             return true;
