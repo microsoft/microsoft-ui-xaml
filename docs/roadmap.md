@@ -10,9 +10,9 @@ The WinUI team has two major efforts underway:
 
 ## WinUI 2
 
-The next release of WinUI 2 will be **WinUI 2.4**, ETA Q1 2020.
+The next release of WinUI 2 will be **WinUI 2.3**, ETA Q4 2019.
 
-2.4 will be an incremental release that includes new WinUI Xaml features and fixes for UWP apps on Windows 10. You can find a list of currently planned work in the [WinUI 2.3 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/8).
+2.3 will be an incremental release that includes new WinUI Xaml features and fixes for UWP apps on Windows 10. You can find a list of currently planned work in the [WinUI 2.3 milestone](https://github.com/microsoft/microsoft-ui-xaml/milestone/8).
 
 For installation instructions see [Getting started with the Windows UI Library](https://docs.microsoft.com/uwp/toolkits/winui/getting-started).
 

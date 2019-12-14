@@ -40,21 +40,15 @@ else
     [xml]$customProps = (Get-Content ..\..\version.props)
     $versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
     $versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
-    $versionPatch = $customProps.GetElementsByTagName("MUXVersionPatch").'#text'
 
-    if ((!$versionMajor) -or (!$versionMinor) -or (!$versionPatch))
+    if ((!$versionMajor) -or (!$versionMinor))
     {
-        Write-Error "Expected MUXVersionMajor, MUXVersionMinor, and MUXVersionPatch tags to be in version.props file"
+        Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
         Exit 1
     }
 
-    $version = "$versionMajor.$versionMinor.$versionPatch"
-
-    Write-Verbose "Version = $version"
-}
-
-if ($prereleaseversion)
-{
+    $version = "$versionMajor.$versionMinor"
+    
     $versiondate = $DateOverride
     if (-not $versiondate)
     {
@@ -63,8 +57,14 @@ if ($prereleaseversion)
         $versiondate += ($pstTime).ToString("yyMMdd")
     }
 
-    $version = "$version-$prereleaseversion.$versiondate$subversion"
-   
+    $version += "." + $versiondate + "$subversion"
+
+    Write-Verbose "Version = $version"
+}
+
+if ($prereleaseversion)
+{
+    $version = "$version-$prereleaseversion"
 }
 
 if (!(Test-Path $OutputDir)) { mkdir $OutputDir }

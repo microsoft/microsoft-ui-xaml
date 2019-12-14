@@ -9,7 +9,6 @@ parameters:
   buildFlavor: Release
   signConfig: ''
   useReleaseTag: 'false'
-  prereleaseVersionTag: 'prerelease'
 
 jobs:
 - job: ${{ parameters.jobName }}
@@ -61,7 +60,7 @@ jobs:
         Contents: '**\Microsoft.UI.Xaml*.appx'
 
   - powershell: |
-      $prereleaseTag = "${{ parameters.prereleaseVersionTag }}"
+      $prereleaseTag = "prerelease"
       if ("${{ parameters.useReleaseTag}}" -eq [bool]::TrueString) { $prereleaseTag = "" }
 
       & "$env:Build_SourcesDirectory\build\NuSpecs\build-nupkg.ps1" `

@@ -35,7 +35,6 @@ jobs:
   parameters:
     jobName: CreateNugetPackage
     dependsOn: Build
-    prereleaseVersionTag: pgo
  
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
