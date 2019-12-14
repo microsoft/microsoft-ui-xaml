@@ -34,7 +34,7 @@ using AnimationContext = Microsoft.UI.Xaml.Controls.AnimationContext;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ElementAnimatorTests : TestsBase
+    public class ElementAnimatorTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateElementAnimator()

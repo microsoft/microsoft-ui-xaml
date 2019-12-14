@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -45,15 +45,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
     class SpecialTreeViewNode : TreeViewNode { }
 
     [TestClass]
-    public class TreeViewTests
+    public class TreeViewTests : ApiTestBase
     {
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void TreeViewNodeTest()
         {
@@ -115,26 +108,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void TreeViewClearAndSetAtTest()
         {
-            TreeView treeView = null;
-            TreeViewList listControl = null;
-
-            var loadedWaiter = new ManualResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                treeView = new TreeView();
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    loadedWaiter.Set();
-                };
+                var treeView = new TreeView();
 
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-            });
-
-            Verify.IsTrue(loadedWaiter.WaitOne(TimeSpan.FromMinutes(1)), "Check if Loaded was successfully raised");
-            RunOnUIThread.Execute(() =>
-            {
+                Content = treeView;
+                Content.UpdateLayout();
+                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 // Verify TreeViewNode::SetAt
                 TreeViewNode setAtChildCheckNode = new TreeViewNode() { Content = "Set At Child" };
                 TreeViewNode setAtRootCheckNode = new TreeViewNode() { Content = "Set At Root" };
@@ -167,9 +147,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // test clear without any child node
                 treeView.RootNodes.Clear();
                 Verify.AreEqual(listControl.Items.Count, 0);
-
-                // Put things back
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -213,43 +190,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void TreeViewUpdateTest()
         {
-            TreeView treeView = null;
-            TreeViewList listControl = null;
-            TreeViewNode treeViewNode1 = null;
-            TreeViewNode treeViewNode2 = null;
-            TreeViewNode treeViewNode3 = null;
-            TreeViewNode treeViewNode4 = null;
-            TreeViewNode treeViewNode5 = null;
-
-            var loadedWaiter = new ManualResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                treeViewNode1 = new TreeViewNode();
-                treeViewNode2 = new TreeViewNode();
-                treeViewNode3 = new TreeViewNode();
-                treeViewNode4 = new TreeViewNode();
-                treeViewNode5 = new TreeViewNode();
+                var treeViewNode1 = new TreeViewNode();
+                var treeViewNode2 = new TreeViewNode();
+                var treeViewNode3 = new TreeViewNode();
+                var treeViewNode4 = new TreeViewNode();
+                var treeViewNode5 = new TreeViewNode();
 
                 treeViewNode1.Children.Add(treeViewNode2);
                 treeViewNode1.Children.Add(treeViewNode3);
                 treeViewNode1.Children.Add(treeViewNode4);
                 treeViewNode1.Children.Add(treeViewNode5);
 
-                treeView = new TreeView();
-
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    loadedWaiter.Set();
-                };
-
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-            });
-
-            Verify.IsTrue(loadedWaiter.WaitOne(TimeSpan.FromMinutes(1)), "Check if Loaded was successfully raised");
-            RunOnUIThread.Execute(() =>
-            {
+                var treeView = new TreeView();
+                Content = treeView;
+                Content.UpdateLayout();
+                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 treeView.RootNodes.Add(treeViewNode1);
                 Verify.AreEqual(listControl.Items.Count, 1);
 
@@ -274,9 +231,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 treeViewNode1.Children.Clear();
                 Verify.AreEqual(listControl.Items.Count, 1);
                 Verify.AreEqual(listControl.Items[0], treeViewNode1);
-
-                // Put things back
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -297,9 +251,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 stackPanel.Children.Add(inheritedTreeViewList);
                 inheritedTreeViewList.ItemsSource = data;
                 MUXControlsTestApp.App.TestContentRoot = stackPanel;
-
-                // Put things back
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -309,8 +260,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var treeView = new TreeView();
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-                treeView.UpdateLayout();
+                Content = treeView;
+                Content.UpdateLayout();
                 Verify.IsFalse(treeView.IsTabStop);
             });
         }
@@ -318,29 +269,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyClearingNodeWithNoChildren()
         {
-            TreeView treeView = null;
-            TreeViewList listControl = null;
-            TreeViewNode treeViewNode1 = null;
-
-            var loadedWaiter = new ManualResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                treeViewNode1 = new TreeViewNode();
-                treeView = new TreeView();
+                var treeViewNode1 = new TreeViewNode();
+                var treeView = new TreeView();
 
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
-                    loadedWaiter.Set();
-                };
-
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-            });
-
-            Verify.IsTrue(loadedWaiter.WaitOne(TimeSpan.FromMinutes(1)), "Check if Loaded was successfully raised");
-            RunOnUIThread.Execute(() =>
-            {
+                Content = treeView;
+                Content.UpdateLayout();
+                var listControl = FindVisualChildByName(treeView, "ListControl") as TreeViewList;
                 treeView.RootNodes.Add(treeViewNode1);
                 var children = (treeViewNode1.Children as IObservableVector<TreeViewNode>);
                 children.VectorChanged += (vector, args) =>
@@ -355,9 +291,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 // this should no-op and not crash
                 treeViewNode1.Children.Clear();
-
-                // Put things back
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -410,33 +343,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void ValidateTreeViewItemSourceChangeUpdatesChevronOpacity()
         {
-            var collection = new ObservableCollection<int>();
-            collection.Add(5);
-            TreeViewItem tvi = null;
-            TreeView treeView = null;
-
             RunOnUIThread.Execute(() =>
             {
-                treeView = new TreeView();
+                var treeView = new TreeView();
+                var collection = new ObservableCollection<int>();
+                collection.Add(5);
                 treeView.ItemsSource = collection;
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                tvi = (TreeViewItem)treeView.ContainerFromItem(5);
+                Content = treeView;
+                Content.UpdateLayout();
+                var tvi = (TreeViewItem)treeView.ContainerFromItem(5);
                 Verify.AreEqual(tvi.GlyphOpacity, 0.0);
                 tvi.ItemsSource = collection;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(tvi.GlyphOpacity, 1.0);
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -548,38 +467,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void TreeViewPendingSelectedNodesTest()
         {
-            TreeView treeView = null;
-            TreeViewNode node1 = null;
-            TreeViewNode node2 = null;
-
-            var loadedWaiter = new ManualResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                treeView = new TreeView();
+                var treeView = new TreeView();
                 treeView.SelectionMode = TreeViewSelectionMode.Multiple;
 
-                node1 = new TreeViewNode() { Content = "Node1" };
-                node2 = new TreeViewNode() { Content = "Node2" };
+                var node1 = new TreeViewNode() { Content = "Node1" };
+                var node2 = new TreeViewNode() { Content = "Node2" };
                 treeView.RootNodes.Add(node1);
                 treeView.RootNodes.Add(node2);
                 treeView.SelectedNodes.Add(node1);
 
-                treeView.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    loadedWaiter.Set();
-                };
-
-                MUXControlsTestApp.App.TestContentRoot = treeView;
-            });
-
-            Verify.IsTrue(loadedWaiter.WaitOne(TimeSpan.FromMinutes(1)), "Check if Loaded was successfully raised");
-            RunOnUIThread.Execute(() =>
-            {
+                Content = treeView;
+                Content.UpdateLayout();
                 Verify.AreEqual(true, IsMultiSelectCheckBoxChecked(treeView, node1));
                 Verify.AreEqual(false, IsMultiSelectCheckBoxChecked(treeView, node2));
-
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 

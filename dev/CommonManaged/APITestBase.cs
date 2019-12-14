@@ -17,9 +17,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
+namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    public class TestsBase
+    public class ApiTestBase
     {
         private Border _host;
 

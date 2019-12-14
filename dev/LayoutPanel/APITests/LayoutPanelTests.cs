@@ -30,46 +30,11 @@ using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingL
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class LayoutPanelTests
+    public partial class LayoutPanelTests : ApiTestBase
     {
-        private Border _host;
-
-        public const int DefaultWaitTimeInMS = 5000;
-
-        public UIElement Content
-        {
-            get { return _host.Child; }
-            set { _host.Child = value; }
-        }
-
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
         public static void ClassInitialize(TestContext context) { }
-
-        [TestInitialize]
-        public void Setup()
-        {
-            IdleSynchronizer.Wait();
-
-            var hostLoaded = new ManualResetEvent(false);
-            RunOnUIThread.Execute(() =>
-            {
-                _host = new Border();
-                _host.Loaded += delegate { hostLoaded.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = _host;
-            });
-            Verify.IsTrue(hostLoaded.WaitOne(DefaultWaitTimeInMS), "Waiting for loaded event");
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            // Put things back the way we found them.
-            RunOnUIThread.Execute(() =>
-            {
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
 
         [TestMethod]
         public void VerifyPaddingAndBorderThicknessLayoutOffset()

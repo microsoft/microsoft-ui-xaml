@@ -798,7 +798,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = verticalStackPanel;
+            Content = verticalStackPanel;
         }
 
         private void SetupUIWithBiDirectionalScrollController(
@@ -850,7 +850,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = horizontalStackPanel;
+            Content = horizontalStackPanel;
         }
     }
 }

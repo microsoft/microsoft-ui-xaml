@@ -30,7 +30,7 @@ using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationVie
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class NavigationViewTests
+    public class NavigationViewTests : ApiTestBase
     {
         private NavigationView SetupNavigationView(NavigationViewPaneDisplayMode paneDisplayMode = NavigationViewPaneDisplayMode.Auto)
         {
@@ -51,7 +51,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Width = 800.0;
                 navView.Height = 600.0;
                 navView.Content = "This is a simple test";
-                MUXControlsTestApp.App.TestContentRoot = navView;
+                Content = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
@@ -91,7 +91,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.Width = 800.0;
                 navView.Height = 600.0;
                 navView.Content = "This test should have enough NavigationViewItems to scroll.";
-                MUXControlsTestApp.App.TestContentRoot = navView;
+                Content = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
@@ -142,7 +142,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
                 navView.Height = 600.0;
-                MUXControlsTestApp.App.TestContentRoot = navView;
+                Content = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
             });
 
@@ -387,51 +387,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifySingleSelection()
         {
-            NavigationViewItem menuItem1 = null;
-            NavigationViewItem menuItem2 = null;
-            NavigationView navView = null;
-
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView();
-                MUXControlsTestApp.App.TestContentRoot = navView;
+                var navView = new NavigationView();
+                Content = navView;
 
-                menuItem1 = new NavigationViewItem();
-                menuItem2 = new NavigationViewItem();
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
                 menuItem1.Content = "Item 1";
                 menuItem2.Content = "Item 2";
 
                 navView.MenuItems.Add(menuItem1);
                 navView.MenuItems.Add(menuItem2);
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
-            });
+                Content.UpdateLayout();
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
                 Verify.IsFalse(menuItem1.IsSelected);
                 Verify.IsFalse(menuItem2.IsSelected);
                 Verify.AreEqual(navView.SelectedItem, null);
 
                 menuItem1.IsSelected = true;
-            });
+                Content.UpdateLayout();
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
                 Verify.IsTrue(menuItem1.IsSelected);
                 Verify.IsFalse(menuItem2.IsSelected);
                 Verify.AreEqual(navView.SelectedItem, menuItem1);
 
                 menuItem2.IsSelected = true;
-            });
+                Content.UpdateLayout();
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
                 Verify.IsTrue(menuItem2.IsSelected);
                 Verify.IsFalse(menuItem1.IsSelected, "MenuItem1 should have been deselected when MenuItem2 was selected");
                 Verify.AreEqual(navView.SelectedItem, menuItem2);
@@ -441,66 +425,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifySettingsItemToolTip()
         {
-            NavigationView navView = null;
-            NavigationViewItem settingsItem = null;
-
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView();
+                var navView = new NavigationView();
 
                 navView.IsSettingsVisible = true;
                 navView.IsPaneOpen = true;
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-                MUXControlsTestApp.App.TestContentRoot = navView;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                settingsItem = (NavigationViewItem)navView.SettingsItem;
+                Content = navView;
+                Content.UpdateLayout();
+                var settingsItem = (NavigationViewItem)navView.SettingsItem;
 
                 var toolTip = ToolTipService.GetToolTip(settingsItem);
                 Verify.IsNull(toolTip, "Verify tooltip is disabled when pane is open");
 
                 navView.IsPaneOpen = false;
-            });
+                Content.UpdateLayout();
 
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                var toolTip = ToolTipService.GetToolTip(settingsItem);
+                toolTip = ToolTipService.GetToolTip(settingsItem);
                 Verify.IsNotNull(toolTip, "Verify tooltip is enabled when pane is closed");
-
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
         [TestMethod]
         public void VerifySettingsItemTag()
         {
-            NavigationView navView = null;
-            NavigationViewItem settingsItem = null;
-
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView();
+                var navView = new NavigationView();
 
                 navView.IsSettingsVisible = true;
                 navView.IsPaneOpen = true;
                 navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Left;
-                MUXControlsTestApp.App.TestContentRoot = navView;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                settingsItem = (NavigationViewItem)navView.SettingsItem;
+                Content = navView;
+                Content.UpdateLayout();
+                var settingsItem = (NavigationViewItem)navView.SettingsItem;
                 Verify.AreEqual(settingsItem.Tag, "Settings");
-
-                MUXControlsTestApp.App.TestContentRoot = null;
             });
         }
 
@@ -548,19 +508,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void VerifyVerifyHeaderContentMargin(NavigationViewPaneDisplayMode paneDisplayMode, string masterFilePrefix)
         {
-            NavigationView navView = null;
             UIElement headerContent = null;
 
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView() { Header = "HEADER", PaneDisplayMode = paneDisplayMode, Width = 400.0 };
-                MUXControlsTestApp.App.TestContentRoot = navView;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                var navView = new NavigationView() { Header = "HEADER", PaneDisplayMode = paneDisplayMode, Width = 400.0 };
+                Content = navView;
+                Content.UpdateLayout();
                 Grid rootGrid = VisualTreeHelper.GetChild(navView, 0) as Grid;
                 if (rootGrid != null)
                 {
