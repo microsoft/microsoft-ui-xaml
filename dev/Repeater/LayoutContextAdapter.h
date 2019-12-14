@@ -15,22 +15,22 @@ public:
 
 #pragma region ILayoutContextOverrides
 
-    winrt::IInspectable LayoutStateCore();
-    void LayoutStateCore(winrt::IInspectable const& state);
+    winrt::IInspectable LayoutStateCore() override;
+    void LayoutStateCore(winrt::IInspectable const& state) override;
 
 #pragma endregion
 
 #pragma region IVirtualizingLayoutContextOverrides
 
-    int32_t ItemCountCore();
-    winrt::IInspectable GetItemAtCore(int index);
-    winrt::UIElement GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options);
-    void RecycleElementCore(winrt::UIElement const& element);
-    int32_t GetElementIndexCore(winrt::UIElement const& element);
+    int32_t ItemCountCore() override;
+    winrt::IInspectable GetItemAtCore(int index) override;
+    winrt::UIElement GetOrCreateElementAtCore(int index, winrt::ElementRealizationOptions const& options) override;
+    void RecycleElementCore(winrt::UIElement const& element) override;
+    int32_t GetElementIndexCore(winrt::UIElement const& element) override;
 
-    winrt::Rect RealizationRectCore();
+    winrt::Rect RealizationRectCore() override;
 
-    int32_t RecommendedAnchorIndexCore();
+    int32_t RecommendedAnchorIndexCore() override;
 
     winrt::Point LayoutOriginCore();
     void LayoutOriginCore(winrt::Point const& value);

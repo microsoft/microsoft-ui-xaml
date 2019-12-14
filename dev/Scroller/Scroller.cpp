@@ -452,7 +452,7 @@ winrt::ScrollInfo Scroller::ScrollTo(double horizontalOffset, double verticalOff
         throw winrt::hresult_error(E_NOTIMPL);
     }
 
-    int32_t viewChangeId;
+    int32_t viewChangeId{};
     ChangeOffsetsPrivate(
         horizontalOffset /*zoomedHorizontalOffset*/,
         verticalOffset /*zoomedVerticalOffset*/,
@@ -505,7 +505,7 @@ winrt::ScrollInfo Scroller::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IRe
         throw winrt::hresult_error(E_NOTIMPL);
     }
 
-    int32_t viewChangeId;
+    int32_t viewChangeId{};
     ChangeOffsetsWithAdditionalVelocityPrivate(
         offsetsVelocity,
         winrt::float2::zero() /*anticipatedOffsetsChange*/,
@@ -536,7 +536,7 @@ winrt::ZoomInfo Scroller::ZoomTo(float zoomFactor, winrt::IReference<winrt::floa
         throw winrt::hresult_error(E_NOTIMPL);
     }
 
-    int32_t viewChangeId;
+    int32_t viewChangeId{};
     ChangeZoomFactorPrivate(
         zoomFactor,
         centerPoint,
@@ -568,7 +568,7 @@ winrt::ZoomInfo Scroller::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt:
         throw winrt::hresult_error(E_NOTIMPL);
     }
 
-    int32_t viewChangeId;
+    int32_t viewChangeId{};
     ChangeZoomFactorPrivate(
         zoomFactorDelta,
         centerPoint,
@@ -591,7 +591,7 @@ winrt::ZoomInfo Scroller::ZoomFrom(float zoomFactorVelocity, winrt::IReference<w
         throw winrt::hresult_error(E_NOTIMPL);
     }
 
-    int32_t viewChangeId;
+    int32_t viewChangeId{};
     ChangeZoomFactorWithAdditionalVelocityPrivate(
         zoomFactorVelocity,
         0.0f /*anticipatedZoomFactorChange*/,

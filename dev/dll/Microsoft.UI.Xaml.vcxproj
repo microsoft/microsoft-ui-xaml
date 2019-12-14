@@ -176,6 +176,7 @@
     <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
     <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
     <CodeAnalysisRuleSet>..\..\build\PrefastWarnings.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>

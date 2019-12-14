@@ -113,7 +113,7 @@ struct ReferenceTracker : public ImplT<D, I ..., ::IReferenceTrackerExtension>, 
 
     // TEMP-BEGIN
 
-    HRESULT __stdcall QueryInterface(GUID const& id, void** object) noexcept
+    HRESULT __stdcall QueryInterface(GUID const& id, void** object) override noexcept
     {
         if (this->outer())
         {

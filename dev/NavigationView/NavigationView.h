@@ -40,7 +40,7 @@ class NavigationView :
 {
 public:
     NavigationView();
-    virtual ~NavigationView();
+    ~NavigationView();
 
     // IFrameworkElementOverrides
     void OnApplyTemplate();

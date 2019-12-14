@@ -1044,24 +1044,22 @@ void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& prevItem
 
             // get the item positions in the pane
             winrt::Point point = winrt::Point(0, 0);
-            float prevPos;
-            float nextPos;
 
             winrt::Point prevPosPoint = prevIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
             winrt::Point nextPosPoint = nextIndicator.TransformToVisual(paneContentGrid).TransformPoint(point);
             winrt::Size prevSize = prevIndicator.RenderSize();
             winrt::Size nextSize = nextIndicator.RenderSize();
 
-            if (IsTopNavigationView())
-            {
-                prevPos = prevPosPoint.X;
-                nextPos = nextPosPoint.X;
-            }
-            else
-            {
-                prevPos = prevPosPoint.Y;
-                nextPos = nextPosPoint.Y;
-            }
+            auto [prevPos, nextPos] = [=]() {
+                if (IsTopNavigationView())
+                {
+                    return std::make_tuple(prevPosPoint.X, nextPosPoint.X);
+                }
+                else
+                {
+                    return std::make_tuple(prevPosPoint.Y, nextPosPoint.Y);
+                }
+            }();
 
             winrt::Visual visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
             winrt::CompositionScopedBatch scopedBatch = visual.Compositor().CreateScopedBatch(winrt::CompositionBatchTypes::Animation);

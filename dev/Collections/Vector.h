@@ -538,9 +538,9 @@ struct VectorOptionsFromFlag :
         using VectorInnerType = ObservableVectorInnerImpl<##Options##>; \
     protected: \
         typename VectorInnerType *GetVectorInnerImpl() { return &m_vectorInnerImpl; } \
-        ITrackerHandleManager* GetExternalTrackerHandleManager() { return this; }; \
-        winrt::IInspectable GetVectorEventSender() { return *this; }; \
-        typename Options##::EventSource *GetVectorEventSource() { return &m_vectorEventSource; }; \
+        ITrackerHandleManager* GetExternalTrackerHandleManager() override { return this; }; \
+        winrt::IInspectable GetVectorEventSender() override { return *this; }; \
+        typename Options##::EventSource *GetVectorEventSource() override { return &m_vectorEventSource; }; \
     private: \
         typename VectorInnerType m_vectorInnerImpl{ this }; \
         typename Options##::EventSource m_vectorEventSource{ this }; \
@@ -596,7 +596,7 @@ protected:
     {
         m_indexOfFunction = indexOfFunction;
     }
-    virtual std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction() { return m_indexOfFunction; };
+    std::function<bool(T const& value, uint32_t& index)> GetCustomIndexOfFunction() override { return m_indexOfFunction; };
 private:
     std::function<bool(T const& value, uint32_t& index)> m_indexOfFunction{ };
 };
