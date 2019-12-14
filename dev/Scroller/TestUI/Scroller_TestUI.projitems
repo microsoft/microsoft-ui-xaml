@@ -19,8 +19,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerMousePanningPage.xaml.cs">
       <DependentUpon>ScrollerMousePanningPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml.cs">
-      <DependentUpon>ScrollerSnapPointsPage.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerScrollSnapPointsPage.xaml.cs">
+      <DependentUpon>ScrollerScrollSnapPointsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollerZoomSnapPointsPage.xaml.cs">
+      <DependentUpon>ScrollerZoomSnapPointsPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollerStackPanelAnchoringPage.xaml.cs">
       <DependentUpon>ScrollerStackPanelAnchoringPage.xaml</DependentUpon>
@@ -78,7 +81,12 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollerSnapPointsPage.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollerScrollSnapPointsPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollerZoomSnapPointsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
