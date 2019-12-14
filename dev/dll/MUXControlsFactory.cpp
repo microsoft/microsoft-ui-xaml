@@ -12,10 +12,22 @@
 
 #include "XamlControlsXamlMetaDataProvider.g.cpp"
 
+#include "FrameworkPackageDetector.g.h"
 namespace winrt::Microsoft::UI::Private::Controls
 {
-    namespace factory_implementation { using FrameworkPackageDetector = MUXControlsFactory; }
-    namespace implementation { using FrameworkPackageDetector = XamlMetadataProvider; }
+    // Provide stub implementations to satisfy the C++/WinRT exports.
+    namespace implementation
+    {
+        struct FrameworkPackageDetector : FrameworkPackageDetectorT<FrameworkPackageDetector>
+        {
+        };
+    }
+    namespace factory_implementation
+    {
+        struct FrameworkPackageDetector : FrameworkPackageDetectorT<FrameworkPackageDetector, winrt::Microsoft::UI::Private::Controls::implementation::FrameworkPackageDetector>
+        {
+        };
+    }
 }
 #include "FrameworkPackageDetector.g.cpp"
 

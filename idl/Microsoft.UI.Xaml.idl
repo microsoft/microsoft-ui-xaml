@@ -164,6 +164,7 @@ namespace MU_PRIVATE_CONTROLS_NAMESPACE
     [default_interface]
     runtimeclass FrameworkPackageDetector
     {
+        FrameworkPackageDetector();
     }
 }
 
