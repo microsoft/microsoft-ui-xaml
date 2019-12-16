@@ -6,17 +6,16 @@
 
     <Style TargetType="local:ProgressRing">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
+        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
         <Setter Property="StrokeThickness" Value="4" />
-        <Setter Property="Background" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
-                    <Grid x:Name="LayoutRoot" Background="{TemplateBinding Background}">
+                    <Grid x:Name="LayoutRoot" Background="Transparent">
                         <!-- Gray outline of progress bar -->
                         <Path
-                            Fill="{TemplateBinding Background}"
-                            Stroke="{TemplateBinding BorderBrush}"
+                            Fill="Transparent"
+                            Stroke="{TemplateBinding Background}"
                             StrokeThickness="{TemplateBinding StrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
