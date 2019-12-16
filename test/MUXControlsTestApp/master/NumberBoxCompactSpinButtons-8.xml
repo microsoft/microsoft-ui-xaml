@@ -5,13 +5,15 @@
     BorderBrush=[NULL]
     Background=[NULL]
     CornerRadius=0,0,0,0
+    Width=200
     Margin=0,0,0,0
+    Height=100
     FocusVisualSecondaryThickness=1,1,1,1
     FocusVisualSecondaryBrush=#99FFFFFF
     FocusVisualPrimaryThickness=2,2,2,2
     FocusVisualPrimaryBrush=#FF000000
     Visibility=Visible
-    RenderSize=800,567
+    RenderSize=200,100
   [Windows.UI.Xaml.Controls.Grid]
       Padding=0,0,0,0
       CornerRadius=0,0,0,0
@@ -24,7 +26,7 @@
       FocusVisualPrimaryThickness=2,2,2,2
       FocusVisualPrimaryBrush=#FF000000
       Visibility=Visible
-      RenderSize=800,567
+      RenderSize=200,100
     [Windows.UI.Xaml.Controls.TextBox]
         Padding=10,6,6,5
         Foreground=#FF000000
@@ -33,13 +35,15 @@
         Background=#66FFFFFF
         CornerRadius=2,2,2,2
         Name=InputBox
+        MinWidth=64
+        MinHeight=32
         Margin=0,0,0,0
         FocusVisualSecondaryThickness=1,1,1,1
         FocusVisualSecondaryBrush=#99FFFFFF
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
-        RenderSize=800,567
+        RenderSize=200,100
     [Windows.UI.Xaml.Controls.Primitives.Popup]
         Name=UpDownPopup
         Margin=0,0,0,0
@@ -48,7 +52,7 @@
         FocusVisualPrimaryThickness=2,2,2,2
         FocusVisualPrimaryBrush=#FF000000
         Visibility=Visible
-        RenderSize=0,567
+        RenderSize=0,100
     [Windows.UI.Xaml.Controls.Primitives.RepeatButton]
         Padding=8,5,8,6
         Foreground=#FF000000
