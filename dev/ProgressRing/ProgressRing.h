@@ -26,10 +26,10 @@ private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
-    void RenderSegment();
-    void RenderAll();
+    void UpdateSegment();
+    void UpdateRing();
 
-    static winrt::Size ComputeEllipseSize(const double thickness, const double width, const double height);
+    static winrt::Size ComputeEllipseSize(double thickness, double width, double height);
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::PathFigure> m_outlineFigure{ this };

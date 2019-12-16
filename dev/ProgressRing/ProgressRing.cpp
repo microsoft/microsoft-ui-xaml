@@ -23,31 +23,30 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
     m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
     m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
     m_barFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_barArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
 
-    RenderAll();
+    UpdateRing();
 }
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    RenderAll();
+    UpdateRing();
 }
 
 void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    RenderSegment();
+    UpdateSegment();
 }
 
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    RenderAll();
+    UpdateRing();
 }
 
-winrt::Size ProgressRing::ComputeEllipseSize(const double thickness, const double actualWidth, const double actualHeight)
+winrt::Size ProgressRing::ComputeEllipseSize(double thickness, double actualWidth, double actualHeight)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
     const double width = std::max((actualWidth - safeThickness) / 2.0, 0.0);
@@ -57,7 +56,7 @@ winrt::Size ProgressRing::ComputeEllipseSize(const double thickness, const doubl
 }
 
 
-void ProgressRing::RenderSegment()
+void ProgressRing::UpdateSegment()
 {
     if (auto&& barArc = m_barArc.get())
     {
@@ -84,7 +83,7 @@ void ProgressRing::RenderSegment()
     }
 }
 
-void ProgressRing::RenderAll()
+void ProgressRing::UpdateRing()
 {
     const double thickness = StrokeThickness();
     const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
@@ -113,5 +112,5 @@ void ProgressRing::RenderAll()
         barArc.Size(winrt::Size(segmentWidth, size.Height));
     }
 
-    RenderSegment();
+    UpdateSegment();
 }
