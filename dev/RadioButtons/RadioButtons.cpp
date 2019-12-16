@@ -425,9 +425,8 @@ bool RadioButtons::MoveFocus(int indexIncrement)
                     {
                         if (auto const itemAsControl = item.try_as<winrt::IControl>())
                         {
-                            if (itemAsControl.IsEnabled() && itemAsControl.IsTabStop())
+                            if (itemAsControl.Focus(winrt::FocusState::Programmatic))
                             {
-                                itemAsControl.Focus(winrt::FocusState::Keyboard);
                                 return true;
                             }
                         }
