@@ -200,23 +200,28 @@ void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt
 
 void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
 {
-    if (m_selectedIndex)
+    // If RadioButtons is an AccessKeyScope then we do not want to handle the access
+    // key invoked event because the user has (probably) set up access keys for the
+    // RadioButton elements.
+    if (!IsAccessKeyScope)
     {
-        if (auto const repeater = m_repeater.get())
+        if (m_selectedIndex)
         {
-            if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+            if (auto const repeater = m_repeater.get())
             {
-                if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
+                if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
                 {
-                    selectedItemAsControl.Focus(winrt::FocusState::Keyboard);
-                    return;
+                    if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
+                    {
+                        return args.Handled(selectedItemAsControl.Focus(winrt::FocusState::Programmatic));
+                    }
                 }
             }
         }
+        // If we don't have a selected index, focus the RadioButton's which under normal
+        // circumstances will put focus on the first radio button.
+        args.Handled(this->Focus(winrt::FocusState::Programmatic));
     }
-    // If we don't have a selected index, focus the RadioButton's which under normal
-    // circumstances will put focus on the first radio button.
-    this->Focus(winrt::FocusState::Keyboard);
 }
 
 // If we haven't handled the key yet and the original source was the first(for up and left)
