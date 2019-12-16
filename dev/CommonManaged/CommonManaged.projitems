@@ -10,7 +10,6 @@
     <Import_RootNamespace>CommonManaged</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)APITestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MSTestInterop.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PlatformConfiguration.cs" />
   </ItemGroup>
