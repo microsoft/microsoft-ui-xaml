@@ -2574,7 +2574,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // choose 2nd item so if it accidentally succeeds
                 // on firstor last item, we don't get false positives
                 Verify.AreEqual(2, positionInSet, "Position in set");
-                Verify.AreEqual(3, sizeOfSet, "Size of set");
+                Verify.AreEqual(4, sizeOfSet, "Size of set");
 
                 // Perform the test again with an IIterable (IEnumerable in C# projection)
                 Button changeButton = new Button(FindElement.ByName("ChangeToIEnumerableButton"));

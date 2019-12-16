@@ -577,17 +577,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyMenuItemAndContainerMappingMenuItemsSource()
         {
-            NavigationView navView = null;
-            ObservableCollection<String> menuItems = new ObservableCollection<String>();
-            menuItems.Add("Item 1");
-            menuItems.Add("Item 2");
-
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView();
+                var navView = new NavigationView();
                 MUXControlsTestApp.App.TestContentRoot = navView;
 
-                navView.MenuItemsSource = menuItems;
+                navView.MenuItemsSource = new ObservableCollection<String> { "Item 1", "Item 2" }; ;
                 navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
 
                 MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
@@ -604,24 +599,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(correctItemReturned, "Correct item should be returned for passed in container.");
 
                 MUXControlsTestApp.App.TestContentRoot = null;
-
             });
         }
 
         [TestMethod]
         public void VerifyMenuItemAndContainerMappingMenuItems()
         {
-            NavigationViewItem menuItem1 = null;
-            NavigationViewItem menuItem2 = null;
-            NavigationView navView = null;
-
             RunOnUIThread.Execute(() =>
             {
-                navView = new NavigationView();
+                var navView = new NavigationView();
                 MUXControlsTestApp.App.TestContentRoot = navView;
 
-                menuItem1 = new NavigationViewItem();
-                menuItem2 = new NavigationViewItem();
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
                 menuItem1.Content = "Item 1";
                 menuItem2.Content = "Item 2";
 
