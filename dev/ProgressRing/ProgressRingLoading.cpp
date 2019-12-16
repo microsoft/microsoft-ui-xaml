@@ -21,7 +21,7 @@ static bool IsRuntimeCompatible()
 }
 
 class ProgressRingAnimatedVisual :
-    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual, winrt::composable>
+    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual>
 {
     static constexpr auto c_durationTicks = 20000000ms;
     winrt::Compositor const _c{ nullptr };
@@ -327,7 +327,7 @@ class ProgressRingAnimatedVisual :
     }
 
 public:
-    AnimatedVisual(winrt::Compositor compositor)
+    ProgressRingAnimatedVisual(winrt::Compositor compositor)
         : _c(compositor)
     , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     {
@@ -359,5 +359,5 @@ winrt::IAnimatedVisual RadialLoading::TryCreateAnimatedVisual(
     {
         return nullptr;
     }
-    return { ProgressRingAnimatedVisual(compositor) };
+    return winrt::make<ProgressRingAnimatedVisual>(compositor);
 }
