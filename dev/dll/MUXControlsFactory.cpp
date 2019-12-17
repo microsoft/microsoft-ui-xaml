@@ -12,14 +12,6 @@
 
 #include "XamlControlsXamlMetaDataProvider.g.cpp"
 
-namespace winrt::Microsoft::UI::Private::Controls
-{
-    namespace factory_implementation { using FrameworkPackageDetector = MUXControlsFactory; }
-    namespace implementation { using FrameworkPackageDetector = XamlMetadataProvider; }
-}
-#include "FrameworkPackageDetector.g.cpp"
-
-
 bool MUXControlsFactory::s_initialized{ false };
 
 void MUXControlsFactory::EnsureInitialized()

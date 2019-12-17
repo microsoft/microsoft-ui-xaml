@@ -21,7 +21,8 @@
             <Button x:Name="navigateToChainingAndRailing" AutomationProperties.Name="navigateToChainingAndRailing" Margin="2" HorizontalAlignment="Stretch">Exercise Chaining and Railing properties</Button>
             <Button x:Name="navigateToStackPanelAnchoring" AutomationProperties.Name="navigateToStackPanelAnchoring" Margin="2" HorizontalAlignment="Stretch">StackPanel Anchoring</Button>
             <Button x:Name="navigateToRepeaterAnchoring" AutomationProperties.Name="navigateToRepeaterAnchoring" Margin="2" HorizontalAlignment="Stretch">Repeater Anchoring</Button>
-            <Button x:Name="navigateToSnapPoints" AutomationProperties.Name="navigateToSnapPoints" Margin="2" HorizontalAlignment="Stretch">Offset Snap Points</Button>
+            <Button x:Name="navigateToScrollSnapPoints" AutomationProperties.Name="navigateToScrollSnapPoints" Margin="2" HorizontalAlignment="Stretch">Scroll Snap Points</Button>
+            <Button x:Name="navigateToZoomSnapPoints" AutomationProperties.Name="navigateToZoomSnapPoints" Margin="2" HorizontalAlignment="Stretch">Zoom Snap Points</Button>
             <Button x:Name="navigateToBringIntoView" AutomationProperties.Name="navigateToBringIntoView" Margin="2" HorizontalAlignment="Stretch">Bring into view</Button>
             <Button x:Name="navigateToManipulationMode" AutomationProperties.Name="navigateToManipulationMode" Margin="2" HorizontalAlignment="Stretch">Exercise ManipulationMode property</Button>
             <Button x:Name="navigateToAccessibility" AutomationProperties.Name="navigateToAccessibility" Margin="2" HorizontalAlignment="Stretch">Exercise ScrollingPresenter AutomationPeer</Button>

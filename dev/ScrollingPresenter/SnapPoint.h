@@ -129,15 +129,15 @@ protected:
     static constexpr wstring_view s_maxApplicableValue{ L"maxAppValue"sv };
     static constexpr wstring_view s_minImpulseApplicableValue{ L"minImpAppValue"sv };
     static constexpr wstring_view s_maxImpulseApplicableValue{ L"maxImpAppValue"sv };
-    static constexpr wstring_view s_interval{ L"itv"sv };
-    static constexpr wstring_view s_start{ L"stt"sv };
-    static constexpr wstring_view s_end{ L"end"sv };
-    static constexpr wstring_view s_first{ L"fst"sv };
-    static constexpr wstring_view s_applicableRange{ L"aRg"sv };
-    static constexpr wstring_view s_impulseStart{ L"iStt"sv };
-    static constexpr wstring_view s_impulseEnd{ L"iEnd"sv };
-    static constexpr wstring_view s_impulseIgnoredValue{ L"iIgn"sv };
-    static constexpr wstring_view s_interactionTracker{ L"it"sv };
+    static constexpr wstring_view s_interval{ L"V"sv };
+    static constexpr wstring_view s_start{ L"S"sv };
+    static constexpr wstring_view s_end{ L"E"sv };
+    static constexpr wstring_view s_first{ L"P"sv };
+    static constexpr wstring_view s_applicableRange{ L"aR"sv };
+    static constexpr wstring_view s_impulseStart{ L"iS"sv };
+    static constexpr wstring_view s_impulseEnd{ L"iE"sv };
+    static constexpr wstring_view s_impulseIgnoredValue{ L"M"sv };
+    static constexpr wstring_view s_interactionTracker{ L"T"sv };
 };
 
 class ScrollSnapPointBase :

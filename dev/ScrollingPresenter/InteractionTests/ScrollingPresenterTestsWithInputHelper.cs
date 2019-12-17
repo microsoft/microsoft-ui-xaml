@@ -1322,7 +1322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 SetOutputDebugStringLevel("Verbose");
 
-                var elements = GoToSnapPointsPage();
+                var elements = GoToScrollSnapPointsPage();
 
                 int warningCount = 0;
                 const double viewportHeight = 500.0;
@@ -1456,7 +1456,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 SetOutputDebugStringLevel("Verbose");
 
-                var elements = GoToSnapPointsPage();
+                var elements = GoToScrollSnapPointsPage();
 
                 if (withTouch)
                 {
@@ -1620,7 +1620,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         private void SetUpOptionalIrregularSnapPoints(
-            SnapPointsTestPageElements elements,
+            ScrollSnapPointsTestPageElements elements,
             string previousValue,
             string previousRange,
             string snap1Value,
@@ -2910,7 +2910,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
+        private void SnapPointsPageChangeOffset(ScrollSnapPointsTestPageElements elements, String amount, double minValue, double maxValue)
         {
             Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", minValue: " + minValue + ", maxValue: " + maxValue);
 
@@ -2920,7 +2920,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 #endif
 
-        private void SnapPointsPageChangeOffset(SnapPointsTestPageElements elements, String amount, double value)
+        private void SnapPointsPageChangeOffset(ScrollSnapPointsTestPageElements elements, String amount, double value)
         {
             Log.Comment("SnapPointsPageChangeOffset with amount: " + amount + ", value: " + value);
 
@@ -2962,17 +2962,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Wait.ForIdle();
         }
 
-        private SnapPointsTestPageElements GoToSnapPointsPage()
+        private ScrollSnapPointsTestPageElements GoToScrollSnapPointsPage()
         {
-            Log.Comment("Navigating to SnapPointsPage");
-            UIObject navigateToSnapPointsUIObject = FindElement.ByName("navigateToSnapPoints");
-            Verify.IsNotNull(navigateToSnapPointsUIObject, "Verifying that navigateToSnapPoints Button was found");
+            Log.Comment("Navigating to ScrollSnapPointsPage");
+            UIObject navigateToScrollSnapPointsUIObject = FindElement.ByName("navigateToScrollSnapPoints");
+            Verify.IsNotNull(navigateToScrollSnapPointsUIObject, "Verifying that navigateToScrollSnapPoints Button was found");
 
-            Button navigateToSimpleContentsButton = new Button(navigateToSnapPointsUIObject);
-            navigateToSimpleContentsButton.Invoke();
+            Button navigateToScrollSnapPointsButton = new Button(navigateToScrollSnapPointsUIObject);
+            navigateToScrollSnapPointsButton.Invoke();
             Wait.ForIdle();
 
-            return GatherSnapPointsTestPageElements();
+            return GatherScrollSnapPointsTestPageElements();
         }
 
         private int WaitForOffsetUpdated(
@@ -3308,10 +3308,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Verify.AreEqual(0.0, Convert.ToDouble(text.Value));
         }
 
-        private SnapPointsTestPageElements GatherSnapPointsTestPageElements()
+        private ScrollSnapPointsTestPageElements GatherScrollSnapPointsTestPageElements()
         {
-            Log.Comment("GatherSnapPointsTestPageElements - entry");
-            var elements = new SnapPointsTestPageElements();
+            Log.Comment("GatherScrollSnapPointsTestPageElements - entry");
+            var elements = new ScrollSnapPointsTestPageElements();
             
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
@@ -3348,11 +3348,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
             elements.scrollingPresenterOffset.SetValue("0");
 
-            Log.Comment("GatherSnapPointsTestPageElements - exit");
+            Log.Comment("GatherScrollSnapPointsTestPageElements - exit");
             return elements;
         }
 
-        private struct SnapPointsTestPageElements
+        private struct ScrollSnapPointsTestPageElements
         {
             public Button btnAddMISnapPointUIObject;
             public Edit txtMISnapPointValueUIObject;
