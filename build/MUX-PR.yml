@@ -64,6 +64,7 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: Build
     primaryBuildArch: x64
+    prereleaseVersionTag: pr
 
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
