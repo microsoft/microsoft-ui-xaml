@@ -27,7 +27,7 @@ static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
 static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
 static constexpr auto c_rootSplitViewName = L"RootSplitView"sv;
-static constexpr auto c_leftRepeater = L"MenuItemsHost"sv;
+static constexpr auto c_menuItemsHost = L"MenuItemsHost"sv;
 static constexpr auto c_settingsName = L"SettingsNavPaneItem"sv;
 static constexpr auto c_settingsNameTopNav = L"SettingsTopNavPaneItem"sv;
 static constexpr auto c_selectionIndicatorName = L"SelectionIndicator"sv;
@@ -44,9 +44,9 @@ static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 
-static constexpr auto c_topNavRepeater = L"TopNavMenuItemsHost"sv;
+static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
-static constexpr auto c_overflowRepeater = L"TopNavMenuItemsOverflowHost"sv;
+static constexpr auto c_topNavMenuItemsOverflowHost = L"TopNavMenuItemsOverflowHost"sv;
 static constexpr auto c_topNavGrid = L"TopNavGrid"sv;
 static constexpr auto c_topNavContentOverlayAreaGrid = L"TopNavContentOverlayAreaGrid"sv;
 static constexpr auto c_leftNavPaneAutoSuggestBoxPresenter = L"PaneAutoSuggestBoxPresenter"sv;
@@ -280,7 +280,7 @@ void NavigationView::OnApplyTemplate()
     m_topNavGrid.set(GetTemplateChildT<winrt::Grid>(c_topNavGrid, controlProtected));
 
     // Change code to NOT do this if we're in top nav mode, to prevent it from being realized:
-    if (auto leftNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_leftRepeater, controlProtected))
+    if (auto leftNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_menuItemsHost, controlProtected))
     {
         m_leftNavRepeater.set(leftNavRepeater);
 
@@ -293,7 +293,7 @@ void NavigationView::OnApplyTemplate()
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
-    if (auto topNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavRepeater, controlProtected))
+    if (auto topNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsHost, controlProtected))
     {
         m_topNavRepeater.set(topNavRepeater);
 
@@ -306,7 +306,7 @@ void NavigationView::OnApplyTemplate()
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
-    if (auto topNavListOverflowRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_overflowRepeater, controlProtected))
+    if (auto topNavListOverflowRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsOverflowHost, controlProtected))
     {
         m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
 
@@ -485,10 +485,6 @@ void NavigationView::UpdateLeftRepeaterItemSource(const winrt::IInspectable& ite
 
 void NavigationView::UpdateTopNavRepeatersItemSource(const winrt::IInspectable& items)
 {
-    // Unhook TopNav repeater
-    UpdateItemsRepeaterItemsSource(m_topNavRepeater.get(), nullptr);
-    UpdateItemsRepeaterItemsSource(m_topNavRepeaterOverflowView.get(), nullptr);
-
     // Change data source and setup vectors
     m_topDataProvider.SetDataSource(items);
 
@@ -556,19 +552,22 @@ void NavigationView::RaiseItemInvokedForNavigationViewItem(const winrt::Navigati
 
     // Determine the recommeded transition direction.
     // Any transitions other than `Default` only apply in top nav scenarios.
-    auto recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-    if (IsTopNavigationView() && nvi.SelectsOnInvoked())
+    auto recommendedDirection = [this, prevItem, nvi, parentIR]()
     {
-        bool isInOverflow = parentIR.Name() == c_overflowRepeater;
-        if (isInOverflow)
+        if (IsTopNavigationView() && nvi.SelectsOnInvoked())
         {
-            recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+            bool isInOverflow = parentIR == m_topNavRepeaterOverflowView.get();
+            if (isInOverflow)
+            {
+                return NavigationRecommendedTransitionDirection::FromOverflow;
+            }
+            else if (prevItem)
+            {
+                return GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem), nvi);
+            }
         }
-        else if (prevItem)
-        {
-            recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem), nvi);
-        }
-    }
+        return NavigationRecommendedTransitionDirection::Default;
+    }();
 
     RaiseItemInvoked(nextItem, false /*isSettings*/, nvi, recommendedDirection);
 }
@@ -682,10 +681,18 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
         nvibImpl->SetNavigationViewParent(*this);
 
         // Visual state info propagation
-        auto position = IsTopNavigationView() ?
-                        ir == m_topNavRepeater.get() ?
-                        NavigationViewRepeaterPosition::TopPrimary : NavigationViewRepeaterPosition::TopOverflow :
-                        NavigationViewRepeaterPosition::LeftNav;
+        auto position = [this, ir]()
+        {
+            if(IsTopNavigationView())
+            {
+                if (ir == m_topNavRepeater.get())
+                {
+                    return NavigationViewRepeaterPosition::TopPrimary;
+                }
+                return NavigationViewRepeaterPosition::TopOverflow;
+            }
+            return NavigationViewRepeaterPosition::LeftNav;
+        }();
         nvibImpl->Position(position);
 
         // Apply any custom container styling
@@ -693,7 +700,10 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
-            nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
+            if (ir != m_topNavRepeaterOverflowView.get())
+            {
+                nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
+            }
 
             // Register for item events
             auto nviRevokers = winrt::make_self<NavigationViewItemRevokers>();
@@ -1538,19 +1548,22 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // otherwise if prevItem is on left side of nextActualItem, transition is from left
         //           if prevItem is on right side of nextActualItem, transition is from right
         // click on Settings item is considered Default
-        auto recommendedDirection = NavigationRecommendedTransitionDirection::Default;
-        if (IsTopNavigationView())
+        auto recommendedDirection = [this, prevItem, nextItem, isSettingsItem]()
         {
-            if (m_selectionChangeFromOverflowMenu)
+            if (IsTopNavigationView())
             {
-                recommendedDirection = NavigationRecommendedTransitionDirection::FromOverflow;
+                if (m_selectionChangeFromOverflowMenu)
+                {
+                    return NavigationRecommendedTransitionDirection::FromOverflow;
+                }
+                else if (!isSettingsItem && prevItem && nextItem)
+                {
+                    return GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
+                        NavigationViewItemBaseOrSettingsContentFromData(nextItem));
+                }
             }
-            else if (!isSettingsItem && prevItem && nextItem)
-            {
-                recommendedDirection = GetRecommendedTransitionDirection(NavigationViewItemBaseOrSettingsContentFromData(prevItem),
-                    NavigationViewItemBaseOrSettingsContentFromData(nextItem));
-            }
-        }
+            return NavigationRecommendedTransitionDirection::Default;
+        }();
 
         // Bug 17850504, Customer may use NavigationViewItem.IsSelected in ItemInvoke or SelectionChanged Event.
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
@@ -1733,38 +1746,56 @@ void NavigationView::OnNavigationViewItemTapped(const winrt::IInspectable& sende
     }
 }
 
+void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
+{
+    // Because ListViewItem eats the events, we only get these keys on KeyUp.
+    if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
+    {
+        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
+        {
+            HandleKeyEventForNavigationViewItem(nvi, args);
+        }
+    }
+}
+
 void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
 {
-    auto key = args.Key();
-
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
     {
-        if (IsSettingsItem(nvi))
+        HandleKeyEventForNavigationViewItem(nvi, args);
+    }
+}
+
+void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    auto key = args.Key();
+    if (IsSettingsItem(nvi))
+    {
+        // Because ListViewItem eats the events, we only get these keys on KeyDown.
+        if (key == winrt::VirtualKey::Space ||
+            key == winrt::VirtualKey::Enter)
         {
-            // Because ListViewItem eats the events, we only get these keys on KeyDown.
-            if (key == winrt::VirtualKey::Space ||
-                key == winrt::VirtualKey::Enter)
-            {
-                args.Handled(true);
-                OnSettingsInvoked();
-            }
+            args.Handled(true);
+            OnSettingsInvoked();
         }
-        else
+    }
+    else
+    {
+        switch (key)
         {
-            switch (args.Key())
-            {
-            case winrt::VirtualKey::GamepadA:
-            case winrt::VirtualKey::Enter:
-            case winrt::VirtualKey::Space:
-                OnNavigationViewItemInvoked(nvi);
-                break;
-            case winrt::VirtualKey::Home:
-                KeyboardFocusFirstItemFromItem(nvi);
-                break;
-            case winrt::VirtualKey::End:
-                KeyboardFocusLastItemFromItem(nvi);
-                break;
-            }
+        case winrt::VirtualKey::Enter:
+        case winrt::VirtualKey::Space:
+            args.Handled(true);
+            OnNavigationViewItemInvoked(nvi);
+            break;
+        case winrt::VirtualKey::Home:
+            args.Handled(true);
+            KeyboardFocusFirstItemFromItem(nvi);
+            break;
+        case winrt::VirtualKey::End:
+            args.Handled(true);
+            KeyboardFocusLastItemFromItem(nvi);
+            break;
         }
     }
 }
@@ -1787,9 +1818,9 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
         return m_leftNavRepeater.get().TryGetElement(0);
     }();
 
-    if (auto nvibFirst = firstElement.try_as<winrt::NavigationViewItemBase>())
+    if (auto controlFirst = firstElement.try_as<winrt::Control>())
     {
-        nvibFirst.Focus(winrt::FocusState::Keyboard);
+        controlFirst.Focus(winrt::FocusState::Keyboard);
     }
 }
 
@@ -1819,25 +1850,9 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
         auto lastIndex = itemsSourceView.Count() - 1;
         if (auto lastElement = ir.TryGetElement(lastIndex))
         {
-            if (auto nvibLast = lastElement.try_as<winrt::NavigationViewItemBase>())
+            if (auto controlLast = lastElement.try_as<winrt::Control>())
             {
-                nvibLast.Focus(winrt::FocusState::Keyboard);
-            }
-        }
-    }
-}
-
-void NavigationView::OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args)
-{
-    // Because ListViewItem eats the events, we only get these keys on KeyUp.
-    if (args.OriginalKey() == winrt::VirtualKey::GamepadA)
-    {
-        if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
-        {
-            if (IsSettingsItem(nvi))
-            {
-                args.Handled(true);
-                OnSettingsInvoked();
+                controlLast.Focus(winrt::FocusState::Keyboard);
             }
         }
     }
@@ -1851,7 +1866,20 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
         {
             if (nvi.SelectsOnInvoked())
             {
-                OnNavigationViewItemInvoked(nvi);
+                if (IsTopNavigationView())
+                {
+                    if (auto parentIR = GetParentItemsRepeaterForContainer(nvi))
+                    {
+                        if (parentIR != m_topNavRepeaterOverflowView.get())
+                        {
+                            OnNavigationViewItemInvoked(nvi);
+                        }
+                    }
+                }
+                else
+                {
+                    OnNavigationViewItemInvoked(nvi);
+                }
             }
         }
     }
@@ -2141,10 +2169,8 @@ NavigationRecommendedTransitionDirection NavigationView::GetRecommendedTransitio
     auto recommendedTransitionDirection = NavigationRecommendedTransitionDirection::Default;
     if (auto ir = m_topNavRepeater.get())
     {
-        // Currently GetElementIndex throws if container is not in its list. Work around this issue by manually checking whether
-        // passed in item is a settings item.
-        auto prevIndex = (prev && !IsSettingsItem(prev)) ? ir.GetElementIndex(prev.try_as<winrt::UIElement>()) : s_itemNotFound;
-        auto nextIndex = (next && !IsSettingsItem(next)) ? ir.GetElementIndex(next.try_as<winrt::UIElement>()) : s_itemNotFound;
+        auto prevIndex = prev ? ir.GetElementIndex(prev.try_as<winrt::UIElement>()) : s_itemNotFound;
+        auto nextIndex = next ? ir.GetElementIndex(next.try_as<winrt::UIElement>()) : s_itemNotFound;
         if (prevIndex == s_itemNotFound || nextIndex == s_itemNotFound)
         {
             // One item is settings, so have problem to get the index
@@ -2341,16 +2367,8 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
 {
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
-        auto showFocusVisual = ShouldShowFocusVisual();
-
-        if (IsTopNavigationView())
-        {
-            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), showFocusVisual);
-        }
-        else
-        {
-            PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), showFocusVisual);
-        }
+        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), ShouldShowFocusVisual());
+        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), ShouldShowFocusVisual());
     }
 }
 
@@ -3453,11 +3471,11 @@ void NavigationView::UpdateSelectionForMenuItems()
         if (auto menuItems = MenuItems().try_as<winrt::IVector<winrt::IInspectable>>())
         {
             bool foundFirstSelected = false;
-            for (int i = 0; i < static_cast<int>(menuItems.Size()); i++)
+            for (auto menuItem : menuItems)
             {
-                if (auto item = menuItems.GetAt(i).try_as<winrt::NavigationViewItem>())
+                if (auto nvi = menuItem.try_as<winrt::NavigationViewItem>())
                 {
-                    if (item.IsSelected())
+                    if (nvi.IsSelected())
                     {
                         if (!foundFirstSelected)
                         {
@@ -3466,12 +3484,12 @@ void NavigationView::UpdateSelectionForMenuItems()
                                     m_shouldIgnoreNextSelectionChange = false;
                                 });
                             m_shouldIgnoreNextSelectionChange = true;
-                            SelectedItem(item);
+                            SelectedItem(nvi);
                             foundFirstSelected = true;
                         }
                         else
                         {
-                            item.IsSelected(false);
+                            nvi.IsSelected(false);
                         }
                     }
                 }

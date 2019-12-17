@@ -35,7 +35,7 @@ winrt::UIElement NavigationViewItemsFactory::GetElementCore(winrt::ElementFactor
         return args.Data();
     }();
 
-    if (auto newItem = newContent.try_as<winrt::NavigationViewItemBase>())
+    if (auto const newItem = newContent.try_as<winrt::NavigationViewItemBase>())
     {
         return newItem;
     }

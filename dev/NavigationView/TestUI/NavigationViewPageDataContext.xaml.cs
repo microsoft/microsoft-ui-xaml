@@ -22,22 +22,22 @@ namespace MUXControlsTestApp
         {
             this.InitializeComponent();
 
-            //for (int i = 0; i < 8; i++)
-            //{
-            //    var nvi = new NavigationViewItem();
-            //    var itemString = "Item #" + i;
-            //    nvi.Content = itemString;
-            //    nvi.DataContext = itemString + "_DataContext";
-            //    NavView.MenuItems.Add(nvi);
-            //}
+            for (int i = 0; i < 8; i++)
+            {
+                var nvi = new NavigationViewItem();
+                var itemString = "Item #" + i;
+                nvi.Content = itemString;
+                nvi.DataContext = itemString + "_DataContext";
+                NavView.MenuItems.Add(nvi);
+            }
 
-            //NavView.SelectedItem = NavView.MenuItems[0];
+            NavView.SelectedItem = NavView.MenuItems[0];
         }
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
-            //var nvi = args.SelectedItem as NavigationViewItem;
-            //NavViewSelectedDataContext.Text = nvi.DataContext as string;
+            var nvi = args.SelectedItem as NavigationViewItem;
+            NavViewSelectedDataContext.Text = nvi.DataContext as string;
         }
 
         private void GetNavViewActiveVisualStates_Click(object sender, RoutedEventArgs e)
