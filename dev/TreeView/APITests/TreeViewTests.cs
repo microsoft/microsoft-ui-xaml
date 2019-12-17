@@ -250,7 +250,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 stackPanel.Children.Add(inheritedTreeView);
                 stackPanel.Children.Add(inheritedTreeViewList);
                 inheritedTreeViewList.ItemsSource = data;
-                MUXControlsTestApp.App.TestContentRoot = stackPanel;
+                Content = stackPanel;
+                Content.UpdateLayout();
             });
         }
 
