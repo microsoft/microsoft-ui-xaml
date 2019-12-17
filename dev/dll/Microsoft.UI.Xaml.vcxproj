@@ -42,6 +42,7 @@
          -->
     <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
     <CppWinRTOptimized>true</CppWinRTOptimized>
+    <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
