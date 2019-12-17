@@ -203,7 +203,7 @@ void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::Acce
     // If RadioButtons is an AccessKeyScope then we do not want to handle the access
     // key invoked event because the user has (probably) set up access keys for the
     // RadioButton elements.
-    if (!IsAccessKeyScope)
+    if (!IsAccessKeyScope())
     {
         if (m_selectedIndex)
         {
