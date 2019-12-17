@@ -25,6 +25,8 @@ runtimeclass TeachingTipTestHooks
     static MU_XC_NAMESPACE.TeachingTipHeroContentPlacementMode GetEffectiveHeroContentPlacement(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static Double GetVerticalOffset(MU_XC_NAMESPACE.TeachingTip teachingTip);
     static Double GetHorizontalOffset(MU_XC_NAMESPACE.TeachingTip teachingTip);
+    static Windows.UI.Xaml.Visibility GetTitleVisibility(MU_XC_NAMESPACE.TeachingTip teachingTip);
+    static Windows.UI.Xaml.Visibility GetSubtitleVisibility(MU_XC_NAMESPACE.TeachingTip teachingTip);
 
     static Windows.UI.Xaml.Controls.Primitives.Popup GetPopup(MU_XC_NAMESPACE.TeachingTip teachingTip);
 
@@ -33,6 +35,8 @@ runtimeclass TeachingTipTestHooks
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> OffsetChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> EffectivePlacementChanged;
     static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> EffectiveHeroContentPlacementChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> TitleVisibilityChanged;
+    static event Windows.Foundation.TypedEventHandler<MU_XC_NAMESPACE.TeachingTip, Object> SubtitleVisibilityChanged;
 }
 
 }

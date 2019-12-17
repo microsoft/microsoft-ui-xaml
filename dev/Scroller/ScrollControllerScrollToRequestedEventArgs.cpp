@@ -8,7 +8,7 @@
 #include "Scroller.h"
 #include "ScrollControllerScrollToRequestedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ScrollControllerScrollToRequestedEventArgs);
+#include "ScrollControllerScrollToRequestedEventArgs.properties.cpp"
 
 ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEventArgs(
     double offset,

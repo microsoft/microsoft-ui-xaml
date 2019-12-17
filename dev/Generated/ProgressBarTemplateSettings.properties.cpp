@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ProgressBarTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(ProgressBarTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ProgressBarTemplateSettings)
+}
+
+#include "ProgressBarTemplateSettings.g.cpp"
 
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ClipRectProperty{ nullptr };
 GlobalDependencyProperty ProgressBarTemplateSettingsProperties::s_ContainerAnimationEndPositionProperty{ nullptr };

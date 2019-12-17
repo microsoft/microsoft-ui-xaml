@@ -22,5 +22,3 @@ public:
 private:
     winrt::RevealBrush m_revealBrush{ nullptr };
 };
-
-CppWinRTActivatableClassWithBasicFactory(RevealBrushTestApi)

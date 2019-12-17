@@ -5,3 +5,4 @@
 #include "common.h"
 #include "SwipeTestHooksFactory.h"
 
+#include "SwipeTestHooks.properties.cpp"

@@ -6,7 +6,12 @@
 #include "common.h"
 #include "PersonPicture.h"
 
-CppWinRTActivatableClassWithDPFactory(PersonPicture)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(PersonPicture)
+}
+
+#include "PersonPicture.g.cpp"
 
 GlobalDependencyProperty PersonPictureProperties::s_BadgeGlyphProperty{ nullptr };
 GlobalDependencyProperty PersonPictureProperties::s_BadgeImageSourceProperty{ nullptr };

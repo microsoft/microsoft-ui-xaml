@@ -6,7 +6,12 @@
 #include "common.h"
 #include "SplitButton.h"
 
-CppWinRTActivatableClassWithDPFactory(SplitButton)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(SplitButton)
+}
+
+#include "SplitButton.g.cpp"
 
 GlobalDependencyProperty SplitButtonProperties::s_CommandProperty{ nullptr };
 GlobalDependencyProperty SplitButtonProperties::s_CommandParameterProperty{ nullptr };

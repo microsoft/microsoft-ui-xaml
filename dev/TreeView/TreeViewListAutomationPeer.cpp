@@ -7,7 +7,7 @@
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItemDataAutomationPeer.h"
 
-CppWinRTActivatableClassWithBasicFactory(TreeViewListAutomationPeer);
+#include "TreeViewListAutomationPeer.properties.cpp"
 
 TreeViewListAutomationPeer::TreeViewListAutomationPeer(winrt::TreeViewList const& owner)
     : ReferenceTracker(owner)

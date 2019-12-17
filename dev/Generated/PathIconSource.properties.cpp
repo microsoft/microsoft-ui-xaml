@@ -6,7 +6,12 @@
 #include "common.h"
 #include "PathIconSource.h"
 
-CppWinRTActivatableClassWithDPFactory(PathIconSource)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(PathIconSource)
+}
+
+#include "PathIconSource.g.cpp"
 
 GlobalDependencyProperty PathIconSourceProperties::s_DataProperty{ nullptr };
 

@@ -30,4 +30,3 @@ private:
     com_ptr<ProgressBar> GetImpl();
 };
 
-CppWinRTActivatableClassWithBasicFactory(ProgressBarAutomationPeer);

@@ -8,7 +8,7 @@
 #include "NavigationViewList.h"
 #include "NavigationViewItem.h"
 
-CppWinRTActivatableClassWithBasicFactory(NavigationViewList);
+#include "NavigationViewList.properties.cpp"
 
 // IItemsControlOverrides
 

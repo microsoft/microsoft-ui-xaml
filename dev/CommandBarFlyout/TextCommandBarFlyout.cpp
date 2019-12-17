@@ -8,6 +8,8 @@
 #include "ResourceAccessor.h"
 #include "RuntimeProfiler.h"
 
+#include "TextCommandBarFlyout.properties.cpp"
+
 TextCommandBarFlyout::TextCommandBarFlyout()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TextCommandBarFlyout);

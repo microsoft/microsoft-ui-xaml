@@ -4,5 +4,3 @@
 #pragma once
 
 #include "ScrollerTestHooks.h"
-
-CppWinRTActivatableClassWithBasicFactory(ScrollerTestHooks)
