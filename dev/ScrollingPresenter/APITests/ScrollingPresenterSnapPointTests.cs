@@ -18,8 +18,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
-using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
@@ -291,22 +291,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Snap to the first instance of a repeated scroll snap point and ensure it is placed after the Start value.")]
         public void SnapToFirstRepeatedScrollSnapPoint()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Jump to absolute offsets
-            ScrollTo(scroller, 60.0, 0.0, AnimationMode.Disabled, SnapPointsMode.Default);
+            ScrollTo(scrollingPresenter, 60.0, 0.0, AnimationMode.Disabled, SnapPointsMode.Default);
 
             // Add scroll repeated snap point with different offset and start.
             RunOnUIThread.Execute(() =>
@@ -318,18 +318,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     end: 1190,
                     alignment: ScrollSnapPointsAlignment.Near);
 
-                scroller.HorizontalSnapPoints.Add(snapPoint);
+                scrollingPresenter.HorizontalSnapPoints.Add(snapPoint);
             });
 
             // Flick with horizontal offset velocity to naturally land around offset 15.
-            ScrollFrom(scroller, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            ScrollFrom(scrollingPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             RunOnUIThread.Execute(() =>
             {
                 // HorizontalOffset expected to have snapped to first instance of repeated snap point: 50.
-                Verify.AreEqual(50.0, scroller.HorizontalOffset);
-                Verify.AreEqual(0.0, scroller.VerticalOffset);
-                Verify.AreEqual(1.0f, scroller.ZoomFactor);
+                Verify.AreEqual(50.0, scrollingPresenter.HorizontalOffset);
+                Verify.AreEqual(0.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual(1.0f, scrollingPresenter.ZoomFactor);
             });
         }
 
@@ -337,22 +337,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Snap to the first instance of a repeated zoom snap point and ensure it is placed after the Start value.")]
         public void SnapToFirstRepeatedZoomSnapPoint()
         {
-            Scroller scroller = null;
-            Rectangle rectangleScrollerContent = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+            ScrollingPresenter scrollingPresenter = null;
+            Rectangle rectangleScrollingPresenterContent = null;
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollerContent = new Rectangle();
-                scroller = new Scroller();
+                rectangleScrollingPresenterContent = new Rectangle();
+                scrollingPresenter = new ScrollingPresenter();
 
-                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+                SetupDefaultUI(scrollingPresenter, rectangleScrollingPresenterContent, scrollingPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Jump to absolute zoom factor, and center the content in the viewport.
-            ZoomTo(scroller,
+            ZoomTo(scrollingPresenter,
                 zoomFactor: 6.0f,
                 centerPointX: 690.0f,
                 centerPointY: 340.0f,
@@ -368,11 +368,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     start: 1,
                     end: 9);
 
-                scroller.ZoomSnapPoints.Add(snapPoint);
+                scrollingPresenter.ZoomSnapPoints.Add(snapPoint);
             });
 
             // Flick with zoom factor velocity to naturally land around factor 1.5.
-            ZoomFrom(scroller,
+            ZoomFrom(scrollingPresenter,
                 zoomFactorVelocity: -5.0f,
                 inertiaDecayRate: 0.6675f,
                 centerPointX: 150.0f,
@@ -383,9 +383,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 // ZoomFactor expected to have snapped to first instance of repeated snap point: 5.
                 // Scroll offsets do not snap and end close to 2850, 1400 for a centered content.
-                Verify.IsTrue(Math.Abs(scroller.HorizontalOffset - 2850.0) < 1.0);
-                Verify.IsTrue(Math.Abs(scroller.VerticalOffset - 1400.0) < 1.0);
-                Verify.AreEqual(5.0f, scroller.ZoomFactor);
+                Verify.IsTrue(Math.Abs(scrollingPresenter.HorizontalOffset - 2850.0) < 1.0);
+                Verify.IsTrue(Math.Abs(scrollingPresenter.VerticalOffset - 1400.0) < 1.0);
+                Verify.AreEqual(5.0f, scrollingPresenter.ZoomFactor);
             });
         }
     }
