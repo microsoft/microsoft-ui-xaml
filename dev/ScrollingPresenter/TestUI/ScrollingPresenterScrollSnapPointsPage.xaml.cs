@@ -28,7 +28,7 @@ using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Control
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterSnapPointsPage : TestPage
+    public sealed partial class ScrollingPresenterScrollSnapPointsPage : TestPage
     {
         private const int snapPointColumns = 29;
         private const int snapPointColumnWidth = 10;
@@ -36,10 +36,10 @@ namespace MUXControlsTestApp
         private int colorIndex = 0;
         private List<string> fullLogs = new List<string>();
 
-        public ScrollingPresenterSnapPointsPage()
+        public ScrollingPresenterScrollSnapPointsPage()
         {
             this.InitializeComponent();
-            Loaded += ScrollingPresenterSnapPointsPage_Loaded;
+            Loaded += ScrollingPresenterScrollSnapPointsPage_Loaded;
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -53,7 +53,7 @@ namespace MUXControlsTestApp
             base.OnNavigatedFrom(e);
         }
 
-        private void ScrollingPresenterSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollingPresenterScrollSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
         {
             SolidColorBrush brush = new SolidColorBrush(Colors.Red);
             for (int j = 0; j < snapPointColumns; j++)
@@ -187,7 +187,7 @@ namespace MUXControlsTestApp
         }
 #endif
 
-        private void BtnRemove_Click(object sender, RoutedEventArgs e)
+        private void BtnRemoveFirst_Click(object sender, RoutedEventArgs e)
         {
             try
             {

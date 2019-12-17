@@ -35,7 +35,8 @@ namespace MUXControlsTestApp
             navigateToChainingAndRailing.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterChainingAndRailingPage), 0); };
             navigateToStackPanelAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterStackPanelAnchoringPage), 0); };
             navigateToRepeaterAnchoring.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterRepeaterAnchoringPage), 0); };
-            navigateToSnapPoints.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterSnapPointsPage), 0); };
+            navigateToScrollSnapPoints.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterScrollSnapPointsPage), 0); };
+            navigateToZoomSnapPoints.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterZoomSnapPointsPage), 0); };
             navigateToBringIntoView.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterBringIntoViewPage), 0); };
             navigateToManipulationMode.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterManipulationModePage), 0); };
             navigateToAccessibility.Click += delegate { Frame.NavigateWithoutAnimation(typeof(ScrollingPresenterAccessibilityPage), 0); };
