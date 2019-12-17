@@ -20,7 +20,7 @@ winrt::hstring SnapPointBase::GetTargetExpression(winrt::hstring const& target) 
 
 winrt::hstring SnapPointBase::GetIsInertiaFromImpulseExpression(winrt::hstring const& target) const
 {
-    // Returns 'it.IsInertiaFromImpulse' or 'this.Target.IsInertiaFromImpulse' starting with RS5, and 'iIFI' prior to RS5.
+    // Returns 'T.IsInertiaFromImpulse' or 'this.Target.IsInertiaFromImpulse' starting with RS5, and 'iIFI' prior to RS5.
     return SharedHelpers::IsRS5OrHigher() ? StringUtil::FormatString(L"%1!s!.IsInertiaFromImpulse", target.data()) : s_isInertiaFromImpulse.data();
 }
 
@@ -215,7 +215,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateRestingPointExpression(
     winrt::hstring const& scale,
     bool isInertiaFromImpulse)
 {
-    winrt::hstring expression = StringUtil::FormatString(L"%1!s! * %2!s!", s_snapPointValue.data(), scale.data());
+    winrt::hstring expression = StringUtil::FormatString(L"%1!s!*%2!s!", s_snapPointValue.data(), scale.data());
 
     SCROLLER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
@@ -234,7 +234,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
     winrt::hstring const& scale,
     bool isInertiaFromImpulse)
 {
-    wstring_view scaledValue = L"(%1!s! * %2!s!)";
+    wstring_view scaledValue = L"(%1!s!*%2!s!)";
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(L"this.Target");
     winrt::hstring targetExpression = GetTargetExpression(target);
     winrt::hstring scaledMinApplicableRange = StringUtil::FormatString(
@@ -254,7 +254,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
         s_maxImpulseApplicableValue.data(),
         scale.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"%1!s! ? (%2!s! >= %5!s! && %2!s! <= %6!s!) : (%2!s! >= %3!s! && %2!s! <= %4!s!)",
+        L"%1!s!?(%2!s!>=%5!s!&&%2!s!<=%6!s!):(%2!s!>=%3!s!&&%2!s!<= %4!s!)",
         isInertiaFromImpulseExpression.data(),
         targetExpression.data(),
         scaledMinApplicableRange.data(),
@@ -681,18 +681,33 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression
        // Previous snapped value is ignored. Pick the next snapped value if any, else the ignored value.
        (impIgn + interval <= effectiveEnd ? (impIgn + interval) * scale : impIgn * scale)
        :
-       // Pick previous snapped value.
-       prevSnap * scale
+       (
+        prevSnap < first i.e. fracTarget < -0.5
+        ?
+        // Pick next snapped value as previous snapped value is outside applicable zone.
+        nextSnap * scale
+        :
+        // Pick previous snapped value as it is within applicable zone.
+        prevSnap * scale
+       )
       )
       :
-      // Regular mode. Pick previous snapped value.
-      prevSnap * scale
+      // Regular mode.
+      (
+       prevSnap < first i.e. fracTarget < -0.5
+       ?
+       // Pick next snapped value as previous snapped value is outside applicable zone.
+       nextSnap * scale
+       :
+       // Pick previous snapped value as it is within applicable zone.
+       prevSnap * scale
+      )
      )
     */
 
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(s_interactionTracker.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"((Abs(it.%2!s!/it.Scale-((Floor((it.%2!s!/it.Scale-fst)/itv)*itv)+fst))>=Abs(it.%2!s!/it.Scale-((Ceil((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)))&&(((Ceil((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)<=(%1!s!?iEnd:end)))?(%1!s!?(((Ceil((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)==iIgn?((iIgn==fst?fst*it.Scale:(iIgn-itv)*it.Scale)):((Ceil((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)*it.Scale):((Ceil((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)*it.Scale):(%1!s!?(((Floor((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)==iIgn?(iIgn+itv<=(%1!s!?iEnd:end)?(iIgn+itv)*it.Scale:iIgn*it.Scale):((Floor((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)*it.Scale):((Floor((it.%2!s!/it.Scale-fst)/itv)*itv)+fst)*it.Scale)",
+        L"((Abs(T.%2!s!/T.Scale-(Floor((T.%2!s!/T.Scale-P)/V)*V+P))>=Abs(T.%2!s!/T.Scale-(Ceil((T.%2!s!/T.Scale-P)/V)*V+P)))&&((Ceil((T.%2!s!/T.Scale-P)/V)*V+P)<=(%1!s!?iE:E)))?(%1!s!?((Ceil((T.%2!s!/T.Scale-P)/V)*V+P)==M?((M==P?P*T.Scale:(M-V)*T.Scale)):(Ceil((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale):(Ceil((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale):(%1!s!?((Floor((T.%2!s!/T.Scale-P)/V)*V+P)==M?(M+V<=(%1!s!?iE:E)?(M+V)*T.Scale:M*T.Scale):(T.%2!s!/T.Scale<P-0.5*V?(Ceil((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale:(Floor((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale)):(T.%2!s!/T.Scale<P-0.5*V?(Ceil((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale:(Floor((T.%2!s!/T.Scale-P)/V)*V+P)*T.Scale))",
         isInertiaFromImpulseExpression.data(),
         target.data());
 
@@ -753,7 +768,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
 
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(s_interactionTracker.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"((!%1!s! && it.%2!s! / it.Scale >= stt && it.%2!s! / it.Scale <= end) || (%1!s! && it.%2!s! / it.Scale >= iStt && it.%2!s! / it.Scale <= iEnd)) && (((Floor((it.%2!s! / it.Scale - fst) / itv) * itv) + fst + aRg >= it.%2!s! / it.Scale) || (((Ceil((it.%2!s! / it.Scale - fst) / itv) * itv) + fst - aRg <= it.%2!s! / it.Scale) && ((Ceil((it.%2!s! / it.Scale - fst) / itv) * itv) + fst <= (%1!s! ? iEnd : end))))",
+        L"((!%1!s!&&T.%2!s!/T.Scale>=S&&T.%2!s!/T.Scale<=E)||(%1!s!&&T.%2!s!/T.Scale>=iS&&T.%2!s!/T.Scale<=iE))&&(((Floor((T.%2!s!/T.Scale-P)/V)*V)+P+aR>=T.%2!s!/T.Scale)||(((Ceil((T.%2!s!/T.Scale-P)/V)*V)+P-aR<=T.%2!s!/T.Scale)&&((Ceil((T.%2!s!/T.Scale-P)/V)*V)+P<=(%1!s!?iE:E))))",
         isInertiaFromImpulseExpression.data(),
         target.data());
 
@@ -1154,7 +1169,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(L"this.Target");
     winrt::hstring targetExpression = GetTargetExpression(target);
     winrt::hstring expression = StringUtil::FormatString(
-        L"%1!s! ? (%2!s! >= %5!s! && %2!s! <= %6!s!) : (%2!s! >= %3!s! && %2!s! <= %4!s!)",
+        L"%1!s!?(%2!s!>=%5!s!&&%2!s!<=%6!s!):(%2!s!>=%3!s!&&%2!s!<=%4!s!)",
         isInertiaFromImpulseExpression.data(),
         targetExpression.data(),
         s_minApplicableValue.data(),
@@ -1569,18 +1584,33 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(
        // Previous snapped value is ignored. Pick the next snapped value if any, else the ignored value.
        (impIgn + interval <= effectiveEnd ? impIgn + interval : impIgn)
        :
-       // Pick previous snapped value.
-       prevSnap
+       (
+        prevSnap < first i.e. fracTarget < -0.5
+        ?
+        // Pick next snapped value as previous snapped value is outside applicable zone.
+        nextSnap
+        :
+        // Pick previous snapped value as it is within applicable zone.
+        prevSnap
+       )
       )
       :
-      // Regular mode. Pick previous snapped value.
-      prevSnap
+      // Regular mode.
+      (
+       prevSnap < first i.e. fracTarget < -0.5
+       ?
+       // Pick next snapped value as previous snapped value is outside applicable zone.
+       nextSnap
+       :
+       // Pick previous snapped value as it is within applicable zone.
+       prevSnap
+      )
      )
     */
 
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(s_interactionTracker.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"((Abs(it.%2!s!-((Floor((it.%2!s!-fst)/itv)*itv)+fst))>=Abs(it.%2!s!-((Ceil((it.%2!s!-fst)/itv)*itv)+fst)))&&(((Ceil((it.%2!s!-fst)/itv)*itv)+fst)<=(%1!s!?iEnd:end)))?(%1!s!?(((Ceil((it.%2!s!-fst)/itv)*itv)+fst)==iIgn?((iIgn==fst?fst:iIgn-itv)):(Ceil((it.%2!s!-fst)/itv)*itv)+fst):(Ceil((it.%2!s!-fst)/itv)*itv)+fst):(%1!s!?(((Floor((it.%2!s!-fst)/itv)*itv)+fst)==iIgn?(iIgn+itv<=(%1!s!?iEnd:end)?iIgn+itv:iIgn):(Floor((it.%2!s!-fst)/itv)*itv)+fst):(Floor((it.%2!s!-fst)/itv)*itv)+fst)",
+        L"((Abs(T.%2!s!-(Floor((T.%2!s!-P)/V)*V+P))>=Abs(T.%2!s!-(Ceil((T.%2!s!-P)/V)*V+P)))&&(Ceil((T.%2!s!-P)/V)*V+P<=(%1!s!?iE:E)))?(%1!s!?(Ceil((T.%2!s!-P)/V)*V+P==M?(M==P?P:M-V):Ceil((T.%2!s!-P)/V)*V+P):Ceil((T.%2!s!-P)/V)*V+P):(%1!s!?(Floor((T.%2!s!-P)/V)*V+P==M?(M+V<=(%1!s!?iE:E)?(M+V):M):(T.%2!s!<P-0.5*V?Ceil((T.%2!s!-P)/V)*V+P:Floor((T.%2!s!-P)/V)*V+P)):(T.%2!s!<P-0.5*V?Ceil((T.%2!s!-P)/V)*V+P:Floor((T.%2!s!-P)/V)*V+P))",
         isInertiaFromImpulseExpression.data(),
         target.data());
 
@@ -1642,7 +1672,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(
 
     winrt::hstring isInertiaFromImpulseExpression = GetIsInertiaFromImpulseExpression(s_interactionTracker.data());
     winrt::hstring expression = StringUtil::FormatString(
-        L"((!%1!s! && it.%2!s! >= stt && it.%2!s! <= end) || (%1!s! && it.%2!s! >= iStt && it.%2!s! <= iEnd)) && (((Floor((it.%2!s! - fst) / itv) * itv) + fst + aRg >= it.%2!s!) || (((Ceil((it.%2!s! - fst) / itv) * itv) + fst - aRg <= it.%2!s!) && ((Ceil((it.%2!s! - fst) / itv) * itv) + fst <= (%1!s! ? iEnd : end))))",
+        L"((!%1!s!&&T.%2!s!>=S&&T.%2!s!<=E)||(%1!s!&&T.%2!s!>=iS&&T.%2!s!<=iE))&&((Floor((T.%2!s!-P)/V)*V+P+aR>=T.%2!s!)||((Ceil((T.%2!s!-P)/V)*V+P-aR<=T.%2!s!)&&(Ceil((T.%2!s!-P)/V)*V+P<=(%1!s!?iE:E))))",
         isInertiaFromImpulseExpression.data(),
         target.data());
 

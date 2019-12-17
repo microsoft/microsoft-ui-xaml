@@ -9,14 +9,15 @@ Push-Location $PSScriptRoot
 [xml]$customProps = (Get-Content ..\..\version.props)
 $versionMajor = $customProps.GetElementsByTagName("MUXVersionMajor").'#text'
 $versionMinor = $customProps.GetElementsByTagName("MUXVersionMinor").'#text'
+$versionPatch = $customProps.GetElementsByTagName("MUXVersionPatch").'#text'
 
-if ((!$versionMajor) -or (!$versionMinor))
+if ((!$versionMajor) -or (!$versionMinor) -or (!$versionPatch))
 {
-    Write-Error "Expected MUXVersionMajor and MUXVersionMinor tags to be in version.props file"
+    Write-Error "Expected MUXVersionMajor, MUXVersionMinor, and MUXVersionPatch tags to be in version.props file"
     Exit 1
 }
 
-$buildVersion = $versionMajor + "." + $versionMinor + "." + $env:BUILD_BUILDNUMBER
+$buildVersion = "$versionMajor.$versionMinor.$versionPatch.$env:BUILD_BUILDNUMBER"
 
 Write-Host "Build = $buildVersion"
 
