@@ -18,8 +18,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
@@ -306,7 +306,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
             // Jump to absolute offsets
-            ScrollTo(scrollingPresenter, 60.0, 0.0, AnimationMode.Disabled, SnapPointsMode.Default);
+            ScrollTo(scrollingPresenter, 60.0, 0.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default);
 
             // Add scroll repeated snap point with different offset and start.
             RunOnUIThread.Execute(() =>
@@ -356,8 +356,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 zoomFactor: 6.0f,
                 centerPointX: 690.0f,
                 centerPointY: 340.0f,
-                AnimationMode.Disabled,
-                SnapPointsMode.Default);
+                ScrollingAnimationMode.Disabled,
+                ScrollingSnapPointsMode.Default);
 
             // Add zoom repeated snap point with different offset and start.
             RunOnUIThread.Execute(() =>

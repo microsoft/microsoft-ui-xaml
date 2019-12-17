@@ -10,8 +10,8 @@ using Windows.UI.Xaml.Navigation;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
 using RepeatedZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint;
 using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
-using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
+using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
+using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
@@ -172,7 +172,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(AnimationMode.Auto, SnapPointsMode.Default));
+                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -184,7 +184,7 @@ namespace MUXControlsTestApp
         {
             try
             {                
-                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(AnimationMode.Auto, SnapPointsMode.Ignore));
+                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {
