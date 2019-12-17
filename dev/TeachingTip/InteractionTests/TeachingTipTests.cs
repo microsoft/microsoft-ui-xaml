@@ -637,6 +637,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
+        {
+            using (var setup = new TestSetupHelper("TeachingTip Tests"))
+            {
+                elements = new TeachingTipTestPageElements();
+                foreach (TipLocationOptions location in Enum.GetValues(typeof(TipLocationOptions)))
+                {
+                    SetTeachingTipLocation(location);
+                    ScrollTargetIntoView();
+                    OpenTeachingTip();
+                    Verify.AreEqual("Visible", elements.GetTitleVisibilityTextBlock().GetText());
+                    Verify.AreEqual("Visible", elements.GetSubtitleVisibilityTextBlock().GetText());
+                    SetTitle(TitleContentOptions.No);
+                    Verify.AreEqual("Collapsed", elements.GetTitleVisibilityTextBlock().GetText());
+                    Verify.AreEqual("Visible", elements.GetSubtitleVisibilityTextBlock().GetText());
+                    SetSubtitle(SubtitleContentOptions.No);
+                    Verify.AreEqual("Collapsed", elements.GetTitleVisibilityTextBlock().GetText());
+                    Verify.AreEqual("Collapsed", elements.GetSubtitleVisibilityTextBlock().GetText());
+                }
+            }
+        }
 
         private void TestAutoPlacementForWindowOrScreenBounds(Vector4 targetRect, bool forWindowBounds)
         {
@@ -943,6 +965,40 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     break;
             }
             elements.GetSetHeroContentButton().InvokeAndWait();
+        }
+
+        private void SetTitle(TitleContentOptions title)
+        {
+            switch(title)
+            {
+                case TitleContentOptions.Long:
+                    elements.GetTitleComboBox().SelectItemByName("Long text");
+                    break;
+                case TitleContentOptions.Small:
+                    elements.GetTitleComboBox().SelectItemByName("Samell text");
+                    break;
+                case TitleContentOptions.No:
+                    elements.GetTitleComboBox().SelectItemByName("No title");
+                    break;
+            }
+            elements.GetSetTitleButton().InvokeAndWait();
+        }
+
+        private void SetSubtitle(SubtitleContentOptions subtitle)
+        {
+            switch (subtitle)
+            {
+                case SubtitleContentOptions.Long:
+                    elements.GetSubtitleComboBox().SelectItemByName("Long text");
+                    break;
+                case SubtitleContentOptions.Small:
+                    elements.GetSubtitleComboBox().SelectItemByName("Small text");
+                    break;
+                case SubtitleContentOptions.No:
+                    elements.GetSubtitleComboBox().SelectItemByName("No subtitle");
+                    break;
+            }
+            elements.GetSetSubtitleButton().InvokeAndWait();
         }
 
         private void SetTipIsTargeted(bool targeted)

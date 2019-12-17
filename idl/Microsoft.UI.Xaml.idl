@@ -153,20 +153,6 @@ namespace MU_X_XTI_NAMESPACE
     }
 }
 
-namespace MU_PRIVATE_CONTROLS_NAMESPACE
-{
-    // This class is a breadcrumb to help us detect if we're running in a framework package.
-    // The way this works is that our WinMD does not contain this type so attempting to activate it
-    // will fail. However our framework package AppX contains an activatable class registration for
-    // it, so code that tries to activate it will succeed in that context.
-    [WUXC_VERSION_INTERNAL]
-    [webhosthidden]
-    [default_interface]
-    runtimeclass FrameworkPackageDetector
-    {
-    }
-}
-
 namespace MU_XC_NAMESPACE
 {
     [WUXC_VERSION_MUXONLY]
