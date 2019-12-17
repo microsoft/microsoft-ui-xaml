@@ -43,7 +43,7 @@ using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class ScrollerTests
+    public partial class ScrollerTests : ApiTestBase
     {
         private const InteractionState c_defaultState = InteractionState.Idle;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;

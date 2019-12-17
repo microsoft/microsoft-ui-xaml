@@ -28,7 +28,7 @@ using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Sets the Scroller.HorizontalScrollController and Scroller.VerticalScrollController properties.")]

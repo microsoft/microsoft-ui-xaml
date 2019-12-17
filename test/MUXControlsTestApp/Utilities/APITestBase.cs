@@ -52,11 +52,7 @@ namespace MUXControlsTestApp.Utilities
         [TestCleanup]
         public void Cleanup()
         {
-            // Put things back the way we found them.
-            RunOnUIThread.Execute(() =>
-            {
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
+            TestUtilities.ClearVisualTreeRoot();
         }
     }
 }

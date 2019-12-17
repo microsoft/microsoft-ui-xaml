@@ -28,7 +28,7 @@ using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         private enum BiDirectionalAlignment
         {

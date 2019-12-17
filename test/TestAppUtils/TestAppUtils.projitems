@@ -10,7 +10,6 @@
     <Import_RootNamespace>TestAppUtils</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)APITestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DesignModeHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IdleSynchronizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigateToTestCommand.cs" />

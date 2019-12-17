@@ -33,7 +33,7 @@ using ScrollerViewChangeResult = Microsoft.UI.Private.Controls.ScrollerViewChang
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         private const double c_defaultBringIntoViewUIScrollerNonConstrainedSize = 600.0;
         private const double c_defaultBringIntoViewUIScrollerConstrainedSize = 300.0;
