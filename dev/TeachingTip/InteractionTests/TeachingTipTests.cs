@@ -637,7 +637,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        [TestMethod]
+        //[TestMethod] Disabled with issue #1769
         public void SettingTitleOrSubtitleToEmptyStringCollapsesTextBox()
         {
             using (var setup = new TestSetupHelper("TeachingTip Tests"))
