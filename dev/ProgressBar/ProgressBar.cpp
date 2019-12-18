@@ -95,13 +95,10 @@ void ProgressBar::UpdateStates()
     {
         m_shouldUpdateWidthBasedTemplateSettings = true;
         UpdateWidthBasedTemplateSettings();
-
-        SetIsIndeterminate(true);
         winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
     }
     else if (!IsIndeterminate())
     {
-        SetIsIndeterminate(false);
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
     }
 }
@@ -192,18 +189,5 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
         }();
 
         templateSettings->ClipRect(rectangle);
-    }
-}
-
-bool ProgressBar::GetIsIndeterminate()
-{
-    return m_isIndeterminate;
-}
-
-void ProgressBar::SetIsIndeterminate(bool isIndeterminate)
-{
-    if (m_isIndeterminate != isIndeterminate)
-    {
-        m_isIndeterminate = isIndeterminate;
     }
 }

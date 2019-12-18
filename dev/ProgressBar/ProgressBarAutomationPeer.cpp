@@ -18,9 +18,9 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
 {
     if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
     {
-        const bool m_isIndeterminate = winrt::get_self<ProgressBar>(progressBar)->GetIsIndeterminate();
+        const bool isIndeterminate = progressBar.IsIndeterminate();
 
-        if (patternInterface == winrt::PatternInterface::RangeValue && m_isIndeterminate)
+        if (patternInterface == winrt::PatternInterface::RangeValue && isIndeterminate)
         {
             return nullptr;
         }  
@@ -31,17 +31,19 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
 
 winrt::hstring ProgressBarAutomationPeer::GetNameCore()
 {
+    winrt::hstring namestring = __super::GetNameCore();
+
     if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
     {
-        const bool m_isIndeterminate = winrt::get_self<ProgressBar>(progressBar)->GetIsIndeterminate();
+        const bool isIndeterminate = progressBar.IsIndeterminate();
 
-        if (m_isIndeterminate)
+        if (isIndeterminate)
         {
-            return winrt::hstring{ L"Busy Progress Bar" };
+            return winrt::hstring{ namestring + L"Busy" };
         }
     }
 
-    return __super::GetNameCore();
+    return namestring;
 }
 
 winrt::hstring ProgressBarAutomationPeer::GetClassNameCore()
