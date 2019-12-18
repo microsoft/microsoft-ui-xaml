@@ -655,6 +655,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+        [TestMethod]
+        public void AccessKeys()
+        { 
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        SetNumberOfItems(10);
+
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifyFocusedIndex(0);
+                        VerifySelectedIndex(-1);
+
+                        SelectByIndex(3);
+                        VerifySelectedIndex(3);
+                        VerifyFocusedIndex(-1);
+
+                        KeyboardHelper.PressKey(Key.Tab);
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
+                    }
+                }
+            }
+        }
 
         void SetNumberOfColumns(int columns)
         {
@@ -783,6 +821,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Clicking on item 'Radio Button " + index + "'");
             RadioButton item = FindElement.ByName<RadioButton>("Radio Button " + index);
             item.Click();
+        }
+
+        void UseAccessKey()
+        {
+            KeyboardHelper.PressDownModifierKey(ModifierKey.Alt);
+            KeyboardHelper.PressKey(Key.R);
+            KeyboardHelper.ReleaseModifierKey(ModifierKey.Alt);
         }
 
         void TapOnItem(int index, bool useBackup = false)

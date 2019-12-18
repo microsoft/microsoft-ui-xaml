@@ -24,8 +24,10 @@ RadioButtons::RadioButtons()
     // because RadioButton has a key down handler for up and down that gets called before we can intercept. Issue #1634.
     if (auto const thisAsIUIElement7 = this->try_as<winrt::IUIElement7>())
     {
-        PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
+        thisAsIUIElement7.PreviewKeyDown({ this, &RadioButtons::OnChildPreviewKeyDown });
     }
+
+    AccessKeyInvoked({ this, &RadioButtons::OnAccessKeyInvoked });
     GettingFocus({ this, &RadioButtons::OnGettingFocus });
 
     // RadioButtons adds handlers to its child radio button elements' checked and unchecked events.
@@ -193,6 +195,32 @@ void RadioButtons::OnChildPreviewKeyDown(const winrt::IInspectable&, const winrt
         }
         args.Handled(HandleEdgeCaseFocus(true, args.OriginalSource()));
         break;
+    }
+}
+
+void RadioButtons::OnAccessKeyInvoked(const winrt::UIElement&, const winrt::AccessKeyInvokedEventArgs& args)
+{
+    // If RadioButtons is an AccessKeyScope then we do not want to handle the access
+    // key invoked event because the user has (probably) set up access keys for the
+    // RadioButton elements.
+    if (!IsAccessKeyScope())
+    {
+        if (m_selectedIndex)
+        {
+            if (auto const repeater = m_repeater.get())
+            {
+                if (auto const selectedItem = repeater.TryGetElement(m_selectedIndex))
+                {
+                    if (auto const selectedItemAsControl = selectedItem.try_as<winrt::Control>())
+                    {
+                        return args.Handled(selectedItemAsControl.Focus(winrt::FocusState::Programmatic));
+                    }
+                }
+            }
+        }
+        // If we don't have a selected index, focus the RadioButton's which under normal
+        // circumstances will put focus on the first radio button.
+        args.Handled(this->Focus(winrt::FocusState::Programmatic));
     }
 }
 
