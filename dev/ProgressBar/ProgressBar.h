@@ -20,6 +20,7 @@ public:
     ProgressBar();
 
     winrt::AutomationPeer OnCreateAutomationPeer();
+
     // IFrameworkElement
     void OnApplyTemplate();
 
@@ -27,6 +28,11 @@ public:
     void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnShowErrorPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnShowPausedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+
+    bool GetIsIndeterminate();
+    void SetIsIndeterminate(bool isIndeterminate);
+
+    bool m_isIndeterminate{ false };
 
 private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
