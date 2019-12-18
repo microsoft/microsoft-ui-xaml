@@ -12,6 +12,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="40">
             <Button x:Name="NavigationViewPage" AutomationProperties.Name="NavigationView Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Test</Button>
+            <Button x:Name="NavigationViewRS4Page" AutomationProperties.Name="NavigationView Regression Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Regression Test</Button>
             <Button x:Name="NavigationViewPageDataContext" AutomationProperties.Name="NavigationViewPageDataContext" Margin="2" HorizontalAlignment="Stretch">NavigationView DataContext</Button>
             <Button x:Name="NavigationViewTopNavPage" AutomationProperties.Name="NavigationView TopNav Test" Margin="2" HorizontalAlignment="Stretch">NavigationView TopNav Test</Button>
             <Button x:Name="NavigationViewTopNavOnlyPage" AutomationProperties.Name="Top NavigationView Test" Margin="2" HorizontalAlignment="Stretch">Top NavigationView Test</Button>
@@ -20,6 +21,7 @@
             <Button x:Name="NavigateToInitPage" AutomationProperties.Name="NavigationView Init Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Init Test</Button>
             <Button x:Name="NavigateToStretchPage" AutomationProperties.Name="NavigationView Stretch Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Stretch Test</Button>
             <Button x:Name="NavigateToItemTemplatePage" AutomationProperties.Name="NavigationView ItemTemplate Test" Margin="2" HorizontalAlignment="Stretch">NavigationView ItemTemplate Test</Button>
+            <Button x:Name="NavigateToRS3Page" AutomationProperties.Name="NavigationView PreserveRS3 Test" Margin="2" HorizontalAlignment="Stretch">NavigationView PreserveRS3 Test</Button>
             <Button x:Name="NavigateToTopNavPage" AutomationProperties.Name="Top Nav Test" Margin="2" HorizontalAlignment="Stretch">Top Nav Test</Button>
             <Button x:Name="NavigateToAnimationPage" AutomationProperties.Name="Navigation Animation Test" Margin="2" HorizontalAlignment="Stretch">Navigation Animation Test</Button>
             <Button x:Name="NavigateToIsPaneOpenPage" AutomationProperties.Name="Navigation IsPaneOpen Test" Margin="2" HorizontalAlignment="Stretch">Navigation IsPaneOpen Test</Button>

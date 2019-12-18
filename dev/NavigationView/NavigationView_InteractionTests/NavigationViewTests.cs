@@ -2364,7 +2364,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     button.Invoke();
                     waiter.Wait();
                 }
-
                 Verify.AreEqual(invokeResult.Value, "FoundHeaderContent");
             }
         }
@@ -3430,9 +3429,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod]
-        //[TestProperty("TestSuite", "D")]
-        //[TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        [TestProperty("Description", "Ensure that the NavigationView button is rendering as expected if it's targeting RS3")]
         public void VerifyShouldPreserveNavigationViewRS3Behavior()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView PreserveRS3 Test" }))
@@ -3456,9 +3455,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     }
                 }
 
-                Button navButton = new Button(FindElement.ById("TogglePaneButton"));
-                Verify.AreEqual(48, navButton.BoundingRectangle.Width);
-
                 // In RS4 or late application, togglePaneTopPadding is 0 when ExtendViewIntoTitleBar=true, 
                 // but for RS3 application, we expected it be not 0 because apps like Wallpaper make use of it
                 var result = new Edit(FindElement.ById("TestResult"));
@@ -3470,15 +3466,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
                 var togglePaneTopPadding = Convert.ToInt32(result.Value);
                 Verify.AreNotEqual(0, togglePaneTopPadding);
-
-                using (var waiter = new ValueChangedEventWaiter(result))
-                {
-                    Button button = new Button(FindElement.ById("GetToggleButtonRowHeight"));
-                    button.Invoke();
-                    waiter.Wait();
-                }
-                var toggleButtonHeight = Convert.ToInt32(result.Value);
-                Verify.AreEqual(56, toggleButtonHeight);
 
                 // TestFrame is disabled before the testcase. we should enable it and prepare for next test case
                 var testFrame = new CheckBox(FindElement.ById("TestFrameCheckbox"));
