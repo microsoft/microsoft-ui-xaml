@@ -39,6 +39,20 @@
                                                 Duration="0:0:0.25" />
                                         </Storyboard>
                                     </VisualTransition>
+                                    <VisualTransition From="Error" To="Determinate">
+                                        <Storyboard>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                                Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                To="{TemplateBinding Foreground}"
+                                                Duration="0:0:0.25"/>
+                                            <ColorAnimation
+                                                Storyboard.TargetName="ProgressBarRoot"
+                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                To="{TemplateBinding Background}"
+                                                Duration="0:0:0.25"/>
+                                        </Storyboard>
+                                    </VisualTransition>
                                     <VisualTransition From="Indeterminate" To="Determinate">
                                         <Storyboard>
                                             <Storyboard>
@@ -80,11 +94,21 @@
                                 </VisualState>
                                 <VisualState x:Name="Error">
                                     <Storyboard>
-                                        <DoubleAnimation
+                                        <ColorAnimation
                                             Storyboard.TargetName="DeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                            To="{ThemeResource SystemErrorTextColor}"
+                                            Duration="0:0:0.25"/>
+                                        <ColorAnimation
+                                            Storyboard.TargetName="ProgressBarRoot"
+                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                            To="{ThemeResource SystemErrorTextColor}"
+                                            Duration="0:0:0.25"/>
+                                        <DoubleAnimation
+                                            Storyboard.TargetName="ProgressBarRoot"
                                             Storyboard.TargetProperty="Opacity"
-                                            To="0"
-                                            Duration="0:0:0.5" />
+                                            To="0.16"
+                                            Duration="0:0:0.1" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Paused">
