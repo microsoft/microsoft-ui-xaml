@@ -45,9 +45,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         // Isolate this test because other tests might have run in this context and either loaded the brushes 
         // already (thereby invalidating what we're trying to test) or our changes will adversly affect other tests.
+        // Because of the test isolation we cannot use the base classes Content property as it may not be initialized.
         [TestProperty("IsolationLevel", "Method")]
         public void VerifyOverrides()
         {
+            RatingControl ratingControl = null;
+            PersonPicture personPicture = null;
+            Slider slider = null;
+            Grid root = null;
+
             RunOnUIThread.Execute(() =>
             {
                 var appResources = Application.Current.Resources;
@@ -63,32 +69,32 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // 3) Override brush name used by a system control
                 appResources["SliderTrackValueFill"] = new SolidColorBrush(Colors.Purple);
 
-                var root = new Grid
-                {
+                root = new Grid {
                     Background = new SolidColorBrush(Colors.AntiqueWhite),
                 };
-                var slider = new Slider();
-                var ratingControl = new RatingControl() { Value = 2 };
-                var personPicture = new PersonPicture();
 
                 StackPanel panel = new StackPanel { Orientation = Orientation.Vertical };
-                panel.Children.Add(slider);
-            
-                panel.Children.Add(ratingControl);
-                panel.Children.Add(personPicture);
+                panel.Children.Add(slider = new Slider());
+
+                panel.Children.Add(ratingControl = new RatingControl() { Value = 2 });
+                panel.Children.Add(personPicture = new PersonPicture());
 
                 root.Children.Add(panel);
                 // Add an element over top to prevent stray mouse input from interfering.
-                root.Children.Add(new Button
-                {
+                root.Children.Add(new Button {
                     Background = new SolidColorBrush(Color.FromArgb(30, 0, 255, 0)),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch
                 });
 
-                Content = root;
-                Content.UpdateLayout();
+                MUXControlsTestApp.App.TestContentRoot = root;
+            });
+            IdleSynchronizer.TryWait();
 
+            //System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(20)).Wait();
+
+            RunOnUIThread.Execute(() =>
+            {
                 // 1) Verify that overriding WinUI defined brushes in App.Resources works.
                 Verify.AreEqual(Colors.Orange, ((SolidColorBrush)ratingControl.Foreground).Color,
                     "Verify RatingControlCaptionForeground override in Application.Resources gets picked up by WinUI control");
@@ -109,7 +115,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     // Before RS1, we used to reference system brushes directly.
                 }
+
+                Log.Comment("Setting Window.Current.Content = null");
+                MUXControlsTestApp.App.TestContentRoot = null;
             });
+            IdleSynchronizer.TryWait();
         }
 
         [TestMethod]

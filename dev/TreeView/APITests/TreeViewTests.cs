@@ -234,7 +234,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        [TestMethod]
+        //[TestMethod] Disabled with issue number #1775
         public void TreeViewInheritanceTest()
         {
             RunOnUIThread.Execute(() =>
