@@ -1173,6 +1173,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
+                    //TODO: Update RS3 and below tab behavior to match RS4+
+                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                    {
+                        Log.Warning("Test is disabled because the repeater tab behavior is current different rs3 and below.");
+                        return;
+                    }
+
                     SetNavViewWidth(ControlWidth.Wide);
 
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
@@ -1273,6 +1280,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
+                    //TODO: Update RS3 and below tab behavior to match RS4+
+                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4))
+                    {
+                        Log.Warning("Test is disabled because the repeater tab behavior is current different rs3 and below.");
+                        return;
+                    }
+
                     SetNavViewWidth(ControlWidth.Wide);
 
                     Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
@@ -2344,13 +2358,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // App crashes when they have dependency on that visual, but the crash is not directly state that it's a header problem.   
         // NavigationView doesn't use quirk, but we determine the version by themeresource.
         // As a workaround, we 'quirk' it for RS4 or before release. if it's RS4 or before, HeaderVisible is not related to Header().
-        //[TestMethod]
-        //[TestProperty("TestSuite", "C")]
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void HeaderIsVisibleForTargetRS4OrBelowApp()
         {
-            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            if (!(PlatformConfiguration.IsOsVersion(OSVersion.Redstone3) || PlatformConfiguration.IsOsVersion(OSVersion.Redstone4)))
             {
-                Log.Warning("We are running with RS4 resource, not need to run on rs2 or below");
+                Log.Warning("No need to run on rs2 and below or RS5+ (see method comment)");
                 return;
             }
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Regression Test" }))
