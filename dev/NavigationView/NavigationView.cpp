@@ -1043,9 +1043,9 @@ void NavigationView::OnSplitViewPaneClosing(const winrt::DependencyObject& /*sen
     {
         if (auto splitView = m_rootSplitView.get())
         {
-            if (auto paneList = m_leftNavRepeater)
+            if (auto paneList = m_leftNavRepeater.get())
             {
-                if (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline)
+                if (!splitView.IsPaneOpen() && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline))
                 {
                     // See UpdateIsClosedCompact 'RS3+ animation timing enhancement' for explanation:
                     winrt::VisualStateManager::GoToState(*this, L"ListSizeCompact", true /*useTransitions*/);
