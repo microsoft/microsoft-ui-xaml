@@ -26,6 +26,7 @@ using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHeader;
 using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
+using System.Collections.ObjectModel;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -571,6 +572,73 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(
                 root: headerContent,
                 masterFilePrefix: masterFilePrefix);
+        }
+
+        [TestMethod]
+        public void VerifyMenuItemAndContainerMappingMenuItemsSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                MUXControlsTestApp.App.TestContentRoot = navView;
+
+                navView.MenuItemsSource = new ObservableCollection<String> { "Item 1", "Item 2" }; ;
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+
+                MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
+
+                var menuItem = "Item 2";
+                // Get container for item
+                var itemContainer = navView.ContainerFromMenuItem(menuItem) as NavigationViewItem;
+                bool correctContainerReturned = itemContainer != null && (itemContainer.Content as String) == menuItem;
+                Verify.IsTrue(correctContainerReturned, "Correct container should be returned for passed in menu item.");
+
+                // Get item for container
+                var returnedItem = navView.MenuItemFromContainer(itemContainer) as String;
+                bool correctItemReturned = returnedItem != null && returnedItem == menuItem;
+                Verify.IsTrue(correctItemReturned, "Correct item should be returned for passed in container.");
+
+                MUXControlsTestApp.App.TestContentRoot = null;
+            });
+        }
+
+        [TestMethod]
+        public void VerifyMenuItemAndContainerMappingMenuItems()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                MUXControlsTestApp.App.TestContentRoot = navView;
+
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+
+                MUXControlsTestApp.App.TestContentRoot.UpdateLayout();
+
+                // Get container for item
+                var itemContainer = navView.ContainerFromMenuItem(menuItem2) as NavigationViewItem;
+                bool correctContainerReturned = itemContainer != null && itemContainer == menuItem2;
+                Verify.IsTrue(correctContainerReturned, "Correct container should be returned for passed in menu item.");
+
+                // Get item for container
+                var returnedItem = navView.MenuItemFromContainer(menuItem2) as NavigationViewItem;
+                bool correctItemReturned = returnedItem != null && returnedItem == menuItem2;
+                Verify.IsTrue(correctItemReturned, "Correct item should be returned for passed in container.");
+
+                // Try to get an item that is not in the NavigationView
+                NavigationViewItem menuItem3 = new NavigationViewItem();
+                menuItem3.Content = "Item 3";
+                var returnedItemForNonExistentContainer = navView.MenuItemFromContainer(menuItem3);
+                Verify.IsTrue(returnedItemForNonExistentContainer == null, "Returned item should be null.");
+
+                MUXControlsTestApp.App.TestContentRoot = null;
+            });
         }
     }
 }
