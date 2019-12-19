@@ -34,7 +34,7 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterTests : TestsBase
+    public class RepeaterTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateElementToIndexMapping()

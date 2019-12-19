@@ -39,7 +39,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewManagerTests : TestsBase
+    public class ViewManagerTests : ApiTestBase
     {
         [TestMethod]
         public void CanQueryElementFactory()

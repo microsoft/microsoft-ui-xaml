@@ -29,7 +29,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class LocalizationTests
+    public class LocalizationTests : ApiTestBase
     {
         [TestMethod]
         public void VerifyLanguages()

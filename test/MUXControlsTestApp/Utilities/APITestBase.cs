@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using MUXControlsTestApp.Utilities;
 using System;
 using System.Threading;
 using Windows.UI.Xaml;
@@ -17,9 +16,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
+namespace MUXControlsTestApp.Utilities
 {
-    public class TestsBase
+    public class ApiTestBase
     {
         private Border _host;
 
@@ -53,11 +52,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestCleanup]
         public void Cleanup()
         {
-            // Put things back the way we found them.
-            RunOnUIThread.Execute(() =>
-            {
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
+            TestUtilities.ClearVisualTreeRoot();
         }
     }
 }

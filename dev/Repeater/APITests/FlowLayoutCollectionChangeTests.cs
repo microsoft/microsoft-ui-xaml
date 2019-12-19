@@ -36,7 +36,7 @@ using System.Collections.Generic;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class FlowLayoutCollectionChangeTests : TestsBase
+    public class FlowLayoutCollectionChangeTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateInserts()
