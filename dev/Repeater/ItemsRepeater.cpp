@@ -277,8 +277,14 @@ void ItemsRepeater::ClearElementImpl(const winrt::UIElement& element)
 
 int ItemsRepeater::GetElementIndexImpl(const winrt::UIElement& element)
 {
-    auto virtInfo = TryGetVirtualizationInfo(element);
-    return m_viewManager.GetElementIndex(virtInfo);
+    // Verify that element is actually a child of this ItemsRepeater
+    auto const parent = winrt::VisualTreeHelper::GetParent(element);
+    if (parent == *this)
+    {
+        auto virtInfo = TryGetVirtualizationInfo(element);
+        return m_viewManager.GetElementIndex(virtInfo);
+    }
+    return -1;
 }
 
 winrt::UIElement ItemsRepeater::GetElementFromIndexImpl(int index)
