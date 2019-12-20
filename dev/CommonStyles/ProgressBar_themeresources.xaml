@@ -32,6 +32,9 @@
             <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF4617B4" />
             <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF4617B4" />
         </ResourceDictionary>
+        <ResourceDictionary x:Key="Error">
+            <SolidColorBrush x:Key="SystemControlErrorBackgroundBrush" Color="{ThemeResource SystemErrorTextColor}" Opacity="0.16" />
+        </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
     <Style TargetType="ProgressBar" BasedOn="{StaticResource DefaultProgressBarStyle}" />

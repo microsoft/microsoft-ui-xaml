@@ -79,13 +79,18 @@ void ProgressBar::UpdateStates()
 {
     m_shouldUpdateWidthBasedTemplateSettings = false;
 
-    if (ShowError())
+
+    if (ShowError() && IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
+    }
+    else if (ShowError())
     {
         winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
     }
     else if (ShowPaused() && IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true); // Paused-Indeterminate state same visual treatment as Error state
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
     }
     else if (ShowPaused())
     {
@@ -175,6 +180,8 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 
         templateSettings->ContainerAnimationStartPosition2(width * -1); 
         templateSettings->ContainerAnimationEndPosition2(width);
+
+        templateSettings->ContainerAnimationMidPosition(width * -0.2);
 
         const auto rectangle = [width, height, padding = Padding()]()
         {

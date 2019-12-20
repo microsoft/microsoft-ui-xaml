@@ -5,7 +5,12 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
-
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="SystemControlErrorBackgroundBrush" Color="{ThemeResource SystemErrorTextColor}" Opacity="0.16" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    
     <Style TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
@@ -92,6 +97,53 @@
                                         <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
                                     </Storyboard>
                                 </VisualState>
+                                <VisualState x:Name="IndeterminateError">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                            
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="IndeterminateProgressBarIndicator">
+                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1" Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator2"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:2.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="IndeterminateProgressBarIndicator2">
+                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1" Value="0" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1.51" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:2.5" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:3" Value="1" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <ColorAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator2"
+                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemAccentColor}" KeyTime="0:0:2.75" />
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemErrorTextColor}" KeyTime="0:0:3" />
+                                        </ColorAnimationUsingKeyFrames>
+                                        <ColorAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ProgressBarRoot"
+                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)">
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemBaseLowColor}" KeyTime="0:0:2.75" />
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemErrorTextColor}" KeyTime="0:0:3" />
+                                        </ColorAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="ProgressBarRoot"
+                                            Storyboard.TargetProperty="Opacity">
+                                            <LinearDoubleKeyFrame KeyTime="0:0:2.75" Value="0.6" />
+                                            <LinearDoubleKeyFrame KeyTime="0:0:2.85" Value="0.16" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
+                                    </Storyboard>
+                                </VisualState>
                                 <VisualState x:Name="Error">
                                     <Storyboard>
                                         <ColorAnimation
@@ -109,6 +161,41 @@
                                             Storyboard.TargetProperty="Opacity"
                                             To="0.16"
                                             Duration="0:0:0.1" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="IndeterminatePaused">
+                                    <Storyboard>
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="IndeterminateProgressBarIndicator">
+                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1" Value="0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator2"
+                                            Storyboard.TargetProperty="(UIElement.RenderTransform).(CompositeTransform.TranslateX)">
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationEndPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:1.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationStartPosition2}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                            <SplineDoubleKeyFrame KeyTime="0:0:2.5" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ContainerAnimationMidPosition}" KeySpline="0.4, 0.0, 0.6, 1.0" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="Opacity" Storyboard.TargetName="IndeterminateProgressBarIndicator2">
+                                            <DiscreteDoubleKeyFrame KeyTime="0" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1" Value="0" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:1.51" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:2.5" Value="1" />
+                                            <DiscreteDoubleKeyFrame KeyTime="0:0:2.51" Value="{ThemeResource ProgressBarIndicatorPauseOpacity}" />
+                                        </DoubleAnimationUsingKeyFrames>
+                                        <ColorAnimationUsingKeyFrames
+                                            Storyboard.TargetName="IndeterminateProgressBarIndicator2"
+                                            Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)">
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemAccentColor}" KeyTime="0:0:2.5" />
+                                            <LinearColorKeyFrame Value="{ThemeResource SystemBaseMediumLowColor}" KeyTime="0:0:2.75" />
+                                        </ColorAnimationUsingKeyFrames>
+                                        <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="Paused">

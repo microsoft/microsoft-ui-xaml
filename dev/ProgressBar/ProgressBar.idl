@@ -19,6 +19,9 @@ unsealed runtimeclass ProgressBarTemplateSettings : Windows.UI.Xaml.DependencyOb
     Double ContainerAnimationEndPosition2;
     static Windows.UI.Xaml.DependencyProperty ContainerAnimationEndPosition2Property{ get; };
 
+    Double ContainerAnimationMidPosition;
+    static Windows.UI.Xaml.DependencyProperty ContainerAnimationMidPositionProperty{ get; };
+
     Double IndicatorLengthDelta;
     static Windows.UI.Xaml.DependencyProperty IndicatorLengthDeltaProperty{ get; };
 
