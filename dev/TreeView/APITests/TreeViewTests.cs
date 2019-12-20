@@ -234,23 +234,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        //[TestMethod] Disabled with issue number #1775
+        [TestMethod]
         public void TreeViewInheritanceTest()
         {
             RunOnUIThread.Execute(() =>
             {
-                StackPanel stackPanel = new StackPanel();
+                //StackPanel stackPanel = new StackPanel();
                 SpecialTreeView inheritedTreeView = new SpecialTreeView();
-                SpecialTreeViewList inheritedTreeViewList = new SpecialTreeViewList();
-                SpecialTreeViewItem inheritedTreeViewItem = new SpecialTreeViewItem();
-                SpecialTreeViewNode inheritedTreeViewNode = new SpecialTreeViewNode();
-                IList<string> data = Enumerable.Range(0, 5).Select(x => "Item " + x).ToList();
+                //SpecialTreeViewList inheritedTreeViewList = new SpecialTreeViewList();
 
-                Verify.IsNotNull(stackPanel);
-                stackPanel.Children.Add(inheritedTreeView);
-                stackPanel.Children.Add(inheritedTreeViewList);
-                inheritedTreeViewList.ItemsSource = data;
-                Content = stackPanel;
+                IList<string> data = Enumerable.Range(0, 5).Select(x => "Item " + x).ToList();
+                //Verify.IsNotNull(stackPanel);
+                //stackPanel.Children.Add(inheritedTreeView);
+                //stackPanel.Children.Add(inheritedTreeViewList);
+                Content = inheritedTreeView;
+                Content.UpdateLayout();
+
+                inheritedTreeView.ItemsSource = data;
                 Content.UpdateLayout();
             });
         }
