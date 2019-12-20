@@ -2679,6 +2679,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
+                    //TODO: Re-enable for RS2 once repeater behavior is fixed
+                    if (PlatformConfiguration.IsOsVersion(OSVersion.Redstone2))
+                    {
+                        Log.Warning("Test is disabled on RS2 because repeater has a bug where arrow navigation scrolls instead of going to next item.");
+                        return;
+                    }
+
                     SetNavViewHeight(ControlHeight.Small);
 
                     UIObject lastItem = FindElement.ByName("TV");
