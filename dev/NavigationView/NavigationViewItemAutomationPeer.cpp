@@ -183,13 +183,11 @@ bool NavigationViewItemAutomationPeer::IsOnTopNavigationOverflow()
 
 NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationViewRepeaterPosition()
 {
-    NavigationViewRepeaterPosition position = NavigationViewRepeaterPosition::LeftNav;
-    winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>();
-    if (navigationViewItem)
+    if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
     {
-        position = winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Position();
+        return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Position();
     }
-    return position;
+    return NavigationViewRepeaterPosition::LeftNav;
 }
 
 // Get either the position or the size of the set for this particular item in the case of left nav. 

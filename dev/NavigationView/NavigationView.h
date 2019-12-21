@@ -100,7 +100,7 @@ private:
     void UpdateVisualStateForOverflowButton();
     void UpdateLeftNavigationOnlyVisualState(bool useTransitions);
     void UpdateNavigationViewUseSystemVisual();
-    void PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual);
+    static void PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(winrt::ItemsRepeater const& ir, bool showFocusVisual);
     void UpdatePaneShadow();
     void UpdateNavigationViewItemsFactory();
     void SyncItemTemplates();
@@ -259,7 +259,7 @@ private:
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
     bool ShouldShowFocusVisual();
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
-    winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
+    static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
@@ -381,6 +381,6 @@ private:
     // 2 and 3 are internal implementation and will call by ClosePane/OpenPane. the flag is to indicate 1 if it's false
     bool m_isOpenPaneForInteraction{ false };
 
-    int32_t m_indexOflastFocusedItem{ -1 };
+    int32_t m_indexOfLastFocusedItem{ -1 };
 };
 

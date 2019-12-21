@@ -194,7 +194,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
     {
         auto selectedIndex = selectionModel.SelectedIndex();
         // If selectedIndex does not exist, means item is being deselected through API
-        auto isInOverflow = selectedIndex ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
+        auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
         {
             // SelectOverflowItem is moving data in/out of overflow.
@@ -532,7 +532,8 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             auto indexPath = GetIndexPathForContainer(nvib);
             auto indexPathFromModel = m_selectionModel.SelectedIndex();
 
-            if (indexPath.GetSize() > 0 && indexPathFromModel.GetSize() > 0 &&
+            if (indexPathFromModel &&
+                indexPath.GetSize() > 0 && indexPathFromModel.GetSize() > 0 &&
                 indexPath.GetAt(0) == indexPathFromModel.GetAt(0))
             {
                 m_selectionModel.DeselectAt(indexPath);
@@ -1854,7 +1855,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
         {
             if (auto controlLast = lastElement.try_as<winrt::Control>())
             {
-                controlLast.Focus(winrt::FocusState::Keyboard);
+                controlLast.Focus(winrt::FocusState::Programmatic);
             }
         }
     }
@@ -1862,8 +1863,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
 
 void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
-    auto const inputDevice = args.InputDevice();
-    if (inputDevice == winrt::FocusInputDeviceKind::Keyboard)
+    if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
     {
         if (auto const oldFocusedElement = args.OldFocusedElement())
         {
@@ -1879,9 +1879,9 @@ void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, con
             // If focus is coming from outside the root repeater, put focus on last focused item
             if (rootRepeater != oldElementParent)
             {
-                if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOflastFocusedItem))
+                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                 {
-                    if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
                     {
                         if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
                         {
@@ -1900,7 +1900,7 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
     {
         // Store index of last focused item in order to get proper focus behavior.
         // No need to keep track of last focused item if the item is in the overflow menu.
-        auto const indexOfItem = [this, nvi]()
+        m_indexOfLastFocusedItem = [this, nvi]()
         {
             if (IsTopNavigationView())
             {
@@ -1908,7 +1908,6 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
             }
             return m_leftNavRepeater.get().GetElementIndex(nvi);
         }();
-        m_indexOflastFocusedItem = indexOfItem;
 
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
@@ -2032,24 +2031,26 @@ bool NavigationView::BumperNavigation(int offset)
 
             if (index >= 0)
             {
-                auto topNavRepeater = m_topNavRepeater.get();
-                auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
-                index += offset;
-
-                while (index > -1 && index < topPrimaryListSize)
+                if (auto&& topNavRepeater = m_topNavRepeater.get())
                 {
-                    auto newItem = topNavRepeater.TryGetElement(index);
-                    if (auto newNavViewItem = newItem.try_as<winrt::NavigationViewItem>())
-                    {
-                        // This is done to skip Separators or other items that are not NavigationViewItems
-                        if (winrt::get_self<NavigationViewItem>(newNavViewItem)->SelectsOnInvoked())
-                        {
-                            newNavViewItem.IsSelected(true);
-                            return true;
-                        }
-                    }
-
+                    auto topPrimaryListSize = m_topDataProvider.GetPrimaryListSize();
                     index += offset;
+
+                    while (index > -1 && index < topPrimaryListSize)
+                    {
+                        auto newItem = topNavRepeater.TryGetElement(index);
+                        if (auto newNavViewItem = newItem.try_as<winrt::NavigationViewItem>())
+                        {
+                            // This is done to skip Separators or other items that are not NavigationViewItems
+                            if (winrt::get_self<NavigationViewItem>(newNavViewItem)->SelectsOnInvoked())
+                            {
+                                newNavViewItem.IsSelected(true);
+                                return true;
+                            }
+                        }
+
+                        index += offset;
+                    }
                 }
             }
         }
@@ -2060,14 +2061,14 @@ bool NavigationView::BumperNavigation(int offset)
 
 winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObject const& container)
 {
-    if (const auto& nvi = container)
+    if (container)
     {
         if (IsTopNavigationView())
         {
             // Search topnav first, if not found, search overflow
             if (auto ir = m_topNavRepeater.get())
             {
-                if (auto element = nvi.try_as<winrt::UIElement>())
+                if (auto element = container.try_as<winrt::UIElement>())
                 {
                     auto index = ir.GetElementIndex(element);
                     if (index != -1)
@@ -2079,7 +2080,7 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 
             if (auto ir = m_topNavRepeaterOverflowView.get())
             {
-                if (auto element = nvi.try_as<winrt::UIElement>())
+                if (auto element = container.try_as<winrt::UIElement>())
                 {
                     auto index = ir.GetElementIndex(element);
                     if (index != -1)
@@ -2093,7 +2094,7 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
         {
             if (auto ir = m_leftNavRepeater.get())
             {
-                if (auto element = nvi.try_as<winrt::UIElement>())
+                if (auto element = container.try_as<winrt::UIElement>())
                 {
                     int index = ir.GetElementIndex(element);
                     if (index != -1)
@@ -2327,8 +2328,7 @@ void NavigationView::UnselectPrevItem(winrt::IInspectable const& prevItem, winrt
 {
     if (prevItem && prevItem != nextItem)
     {
-        bool setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange;
-        auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse]()
+        auto scopeGuard = gsl::finally([this, setIgnoreNextSelectionChangeToFalse = !m_shouldIgnoreNextSelectionChange]()
             {
                 if (setIgnoreNextSelectionChangeToFalse)
                 {
@@ -3845,26 +3845,29 @@ winrt::IInspectable NavigationView::GetItemFromIndex(const winrt::ItemsRepeater&
 
 winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& indexPath)
 {
-    auto index = indexPath.GetAt(0);
-    if (IsTopNavigationView())
+    if (indexPath && indexPath.GetSize() > 0)
     {
-        // Get the repeater that is presenting this item
-        auto ir = m_topDataProvider.IsItemInPrimaryList(index) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
-
-        // Get the index of the item in the repeater
-        auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
-
-        // Get the container of the item
-        if (auto container = ir.TryGetElement(irIndex))
+        auto index = indexPath.GetAt(0);
+        if (IsTopNavigationView())
         {
-            return container.try_as<winrt::NavigationViewItemBase>();
+            // Get the repeater that is presenting this item
+            auto ir = m_topDataProvider.IsItemInPrimaryList(index) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
+
+            // Get the index of the item in the repeater
+            auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
+
+            // Get the container of the item
+            if (auto container = ir.TryGetElement(irIndex))
+            {
+                return container.try_as<winrt::NavigationViewItemBase>();
+            }
         }
-    }
-    else
-    {
-        if (auto container = m_leftNavRepeater.get().TryGetElement(index))
+        else
         {
-            return container.try_as<winrt::NavigationViewItemBase>();
+            if (auto container = m_leftNavRepeater.get().TryGetElement(index))
+            {
+                return container.try_as<winrt::NavigationViewItemBase>();
+            }
         }
     }
     return nullptr;

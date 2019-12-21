@@ -163,8 +163,10 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
     auto stateName = c_OnLeftNavigation;
 
     bool handled = false;
-    if (position == NavigationViewRepeaterPosition::LeftNav)
+
+    switch (position)
     {
+    case NavigationViewRepeaterPosition::LeftNav:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             // OnLeftNavigationReveal is introduced in RS6. 
@@ -174,9 +176,8 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
                 handled = true;
             }
         }
-    }
-    else if (position == NavigationViewRepeaterPosition::TopPrimary)
-    {
+        break;
+    case NavigationViewRepeaterPosition::TopPrimary:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             stateName = c_OnTopNavigationPrimaryReveal;
@@ -185,10 +186,10 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
         {
             stateName = c_OnTopNavigationPrimary;
         }
-    }
-    else if (position == NavigationViewRepeaterPosition::TopOverflow)
-    {
+        break;
+    case NavigationViewRepeaterPosition::TopOverflow:
         stateName = c_OnTopNavigationOverflow;
+        break;
     }
 
     if (!handled)
