@@ -5,12 +5,7 @@
     xmlns:local="using:Microsoft.UI.Xaml.Controls"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)"
     xmlns:contract7NotPresent="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractNotPresent(Windows.Foundation.UniversalApiContract,7)">
-    <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Default">
-            <SolidColorBrush x:Key="SystemControlErrorBackgroundBrush" Color="{ThemeResource SystemErrorTextColor}" Opacity="0.16" />
-        </ResourceDictionary>
-    </ResourceDictionary.ThemeDictionaries>
-    
+
     <Style TargetType="local:ProgressBar">
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
@@ -133,14 +128,8 @@
                                             Storyboard.TargetName="ProgressBarRoot"
                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame Value="{ThemeResource SystemBaseLowColor}" KeyTime="0:0:2.75" />
-                                            <LinearColorKeyFrame Value="{ThemeResource SystemErrorTextColor}" KeyTime="0:0:3" />
+                                            <LinearColorKeyFrame Value="{StaticResource SystemControlErrorBackgroundBrush}" KeyTime="0:0:3" />
                                         </ColorAnimationUsingKeyFrames>
-                                        <DoubleAnimationUsingKeyFrames
-                                            Storyboard.TargetName="ProgressBarRoot"
-                                            Storyboard.TargetProperty="Opacity">
-                                            <LinearDoubleKeyFrame KeyTime="0:0:2.75" Value="0.6" />
-                                            <LinearDoubleKeyFrame KeyTime="0:0:2.85" Value="0.16" />
-                                        </DoubleAnimationUsingKeyFrames>
                                         <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
                                     </Storyboard>
                                 </VisualState>
@@ -154,13 +143,8 @@
                                         <ColorAnimation
                                             Storyboard.TargetName="ProgressBarRoot"
                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="{ThemeResource SystemErrorTextColor}"
+                                            To="{StaticResource SystemControlErrorBackgroundBrush}"
                                             Duration="0:0:0.25"/>
-                                        <DoubleAnimation
-                                            Storyboard.TargetName="ProgressBarRoot"
-                                            Storyboard.TargetProperty="Opacity"
-                                            To="0.16"
-                                            Duration="0:0:0.1" />
                                     </Storyboard>
                                 </VisualState>
                                 <VisualState x:Name="IndeterminatePaused">
@@ -221,7 +205,7 @@
                             BorderThickness="{TemplateBinding BorderThickness}"
                             contract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                             contract7NotPresent:CornerRadius="{ThemeResource ControlCornerRadius}">
-
+                            
                             <Border Clip="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ClipRect}">
                                 <StackPanel Orientation="Horizontal">
                                     <Rectangle x:Name="DeterminateProgressBarIndicator"
