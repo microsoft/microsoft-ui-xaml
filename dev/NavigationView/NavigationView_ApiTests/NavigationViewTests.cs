@@ -274,7 +274,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     // We only want to open the pane when explicitly set, otherwise it should be closed
                     // since we set the width below the threshold width
-                    Verify.AreEqual((NavigationViewPaneDisplayMode)paneDisplayMode == NavigationViewPaneDisplayMode.Left,navView.IsPaneOpen);
+                    Verify.AreEqual((NavigationViewPaneDisplayMode)paneDisplayMode == NavigationViewPaneDisplayMode.Left, navView.IsPaneOpen);
                 });
             }
         }
