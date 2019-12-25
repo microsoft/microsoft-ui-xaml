@@ -16,46 +16,44 @@
         <muxc:TextCommandBarFlyout x:Name="TextCommandBarSelectionFlyout" />
     </Page.Resources>
 
-    <Grid>
-        <StackPanel>
-            <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" />
-            <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Margin="10" Click="OnClearClipboardContentsClicked" />
-            <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Margin="10" Click="OnCountPopupsClicked" />
-            <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
-            <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
-                <RichTextBlock.Blocks>
-                    <Paragraph>
-                        <Run>This is a very, very long string that cannot possibly fit within the RichTextBlock's bounds, so it overflows.</Run>
-                    </Paragraph>
-                </RichTextBlock.Blocks>
-            </RichTextBlock>
-            <RichTextBlockOverflow x:Name="RichTextBlockOverflow1" AutomationProperties.AutomationId="RichTextBlockOverflow" Margin="10" HorizontalAlignment="Center" />
-            <Button Content="Click for a CommandBarFlyout with many items">
-                <Button.Flyout>
-                    <muxc:CommandBarFlyout>
-                        <AppBarButton Label="Item 1" Icon="Favorite" />
-                        <AppBarButton Label="Item 2" Icon="Favorite" />
-                        <AppBarButton Label="Item 3" Icon="Favorite" />
-                        <AppBarButton Label="Item 4" Icon="Favorite" />
-                        <AppBarButton Label="Item 5" Icon="Favorite" />
-                        <AppBarButton Label="Item 6" Icon="Favorite" />
-                        <AppBarButton Label="Item 7" Icon="Favorite" />
-                        <AppBarButton Label="Item 8" Icon="Favorite" />
-                        <AppBarButton Label="Item 9" Icon="Favorite" />
-                        <AppBarButton Label="Item 10" Icon="Favorite" />
-                        <AppBarButton Label="Item 11" Icon="Favorite" />
-                        <AppBarButton Label="Item 12" Icon="Favorite" />
-                        <AppBarButton Label="Item 13" Icon="Favorite" />
-                        <AppBarButton Label="Item 14" Icon="Favorite" />
-                        <AppBarButton Label="Item 15" Icon="Favorite" />
-                        <AppBarButton Label="Item 16" Icon="Favorite" />
-                        <AppBarButton Label="Item 17" Icon="Favorite" />
-                        <AppBarButton Label="Item 18" Icon="Favorite" />
-                        <AppBarButton Label="Item 19" Icon="Favorite" />
-                        <AppBarButton Label="Item 20" Icon="Favorite" />
-                    </muxc:CommandBarFlyout>
-                </Button.Flyout>
-            </Button>
-        </StackPanel>
-    </Grid>
+    <StackPanel Margin="12">
+        <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" />
+        <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Margin="10" Click="OnClearClipboardContentsClicked" />
+        <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Margin="10" Click="OnCountPopupsClicked" />
+        <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
+        <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
+            <RichTextBlock.Blocks>
+                <Paragraph>
+                    <Run>This is a very, very long string that cannot possibly fit within the RichTextBlock's bounds, so it overflows.</Run>
+                </Paragraph>
+            </RichTextBlock.Blocks>
+        </RichTextBlock>
+        <RichTextBlockOverflow x:Name="RichTextBlockOverflow1" AutomationProperties.AutomationId="RichTextBlockOverflow" Margin="10" HorizontalAlignment="Center" />
+        <Button Content="Click for a CommandBarFlyout with many items">
+            <Button.Flyout>
+                <muxc:CommandBarFlyout>
+                    <AppBarButton Label="Item 1" Icon="Favorite" />
+                    <AppBarButton Label="Item 2" Icon="Favorite" />
+                    <AppBarButton Label="Item 3" Icon="Favorite" />
+                    <AppBarButton Label="Item 4" Icon="Favorite" />
+                    <AppBarButton Label="Item 5" Icon="Favorite" />
+                    <AppBarButton Label="Item 6" Icon="Favorite" />
+                    <AppBarButton Label="Item 7" Icon="Favorite" />
+                    <AppBarButton Label="Item 8" Icon="Favorite" />
+                    <AppBarButton Label="Item 9" Icon="Favorite" />
+                    <AppBarButton Label="Item 10" Icon="Favorite" />
+                    <AppBarButton Label="Item 11" Icon="Favorite" />
+                    <AppBarButton Label="Item 12" Icon="Favorite" />
+                    <AppBarButton Label="Item 13" Icon="Favorite" />
+                    <AppBarButton Label="Item 14" Icon="Favorite" />
+                    <AppBarButton Label="Item 15" Icon="Favorite" />
+                    <AppBarButton Label="Item 16" Icon="Favorite" />
+                    <AppBarButton Label="Item 17" Icon="Favorite" />
+                    <AppBarButton Label="Item 18" Icon="Favorite" />
+                    <AppBarButton Label="Item 19" Icon="Favorite" />
+                    <AppBarButton Label="Item 20" Icon="Favorite" />
+                </muxc:CommandBarFlyout>
+            </Button.Flyout>
+        </Button>
+    </StackPanel>
 </local:TestPage>

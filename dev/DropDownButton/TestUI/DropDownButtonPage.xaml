@@ -17,11 +17,10 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <ScrollViewer Grid.Column="0" Height="Auto">
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Center" Width="Auto" Height="Auto">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Top" Width="Auto" Height="Auto">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock>Click count:</TextBlock>
                     <TextBlock x:Name="ClickCountTextBlock" AutomationProperties.Name="ClickCountTextBlock" Margin="4,0,0,0" Text="0"/>

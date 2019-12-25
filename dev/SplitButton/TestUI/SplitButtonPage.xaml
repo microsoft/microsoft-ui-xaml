@@ -54,13 +54,22 @@
                     </controls:SplitButton.Flyout>
                 </controls:SplitButton>
 
-                <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="400" Height="50">
-                    <controls:SplitButton.Flyout>
-                        <Flyout>
-                            <TextBlock Text="Hello"/>
-                        </Flyout>
-                    </controls:SplitButton.Flyout>
-                </controls:SplitButton>
+                <StackPanel Orientation="Horizontal">
+                    <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (default)" Width="300" Height="50">
+                        <controls:SplitButton.Flyout>
+                            <Flyout>
+                                <TextBlock Text="Hello"/>
+                            </Flyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+                    <controls:SplitButton Margin="8,12,0,0" Content="Reveal SplitButton (default)" Style="{ThemeResource SplitButtonRevealStyle}" Width="300" Height="50">
+                        <controls:SplitButton.Flyout>
+                            <Flyout>
+                                <TextBlock Text="Hello"/>
+                            </Flyout>
+                        </controls:SplitButton.Flyout>
+                    </controls:SplitButton>
+                </StackPanel>
 
                 <controls:SplitButton Margin="0,12,0,0" Content="Test Alignment (topleft)" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Width="400" Height="50">
                     <controls:SplitButton.Flyout>

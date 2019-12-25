@@ -9,8 +9,8 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <DatePicker/>
+    <StackPanel Margin="12" Orientation="Horizontal">
+        <DatePicker Margin="0,23,10,0"/>
         <DatePicker Header="WithHeader"/>
     </StackPanel>
 

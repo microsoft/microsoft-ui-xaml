@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer>
-            <StackPanel Orientation="Vertical" Padding="12" Background="LightGray" MinWidth="250">
+            <StackPanel Orientation="Vertical" Padding="12" Background="{ThemeResource SystemChromeLowColor}" MinWidth="250">
                 <TextBlock Text="Width:"/>
                 <ComboBox x:Name="WidthComboBox" AutomationProperties.Name="WidthComboBox" SelectedIndex="0" HorizontalAlignment="Stretch" SelectionChanged="WidthComboBox_SelectionChanged">
                     <ComboBoxItem Content="Default"/>
@@ -128,7 +128,7 @@
 
                 <muxcontrols:TwoPaneView x:Name="TwoPaneView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="TwoPaneView_SizeChanged">
                     <muxcontrols:TwoPaneView.Pane1>
-                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="AliceBlue" SizeChanged="PaneSizeChanged">
+                        <Grid x:Name="Pane1Content" AutomationProperties.Name="Pane1Content" Background="{ThemeResource SystemChromeDisabledHighColor}" SizeChanged="PaneSizeChanged">
 
                             <Border x:Name="Content1Border" AutomationProperties.Name="Content1Border" BorderBrush="{StaticResource ContentBorderBrush}" BorderThickness="5" Padding="7" MinWidth="250" MinHeight="250">
                                 <Grid>
@@ -151,7 +151,7 @@
                     </muxcontrols:TwoPaneView.Pane1>
 
                     <muxcontrols:TwoPaneView.Pane2>
-                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="LavenderBlush" SizeChanged="PaneSizeChanged">
+                        <Grid x:Name="Pane2Content" AutomationProperties.Name="Pane2Content" Background="{ThemeResource SystemListMediumColor}" SizeChanged="PaneSizeChanged">
                             <Border x:Name="Content2Border" AutomationProperties.Name="Content2Border" BorderBrush="{StaticResource ContentBorderBrush}" BorderThickness="5" Padding="7">
                                 <Grid>
                                     <Grid.RowDefinitions>

@@ -10,7 +10,7 @@
     mc:Ignorable="d"
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12" Orientation="Horizontal">
         <FlipView Width="200" Height="200"
                   contract7Present:CornerRadius="2">
             <Grid Background="Red"/>
@@ -19,7 +19,7 @@
         </FlipView>
         
         <FlipView Width="200" Height="200"
-                  Margin="0, 20, 0, 0"
+                  Margin="20, 0, 0, 0"
                   contract7Present:CornerRadius="2">
             <FlipView.ItemsPanel>
                 <ItemsPanelTemplate>

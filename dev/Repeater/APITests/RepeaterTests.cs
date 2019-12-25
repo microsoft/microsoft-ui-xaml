@@ -201,7 +201,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 // Test is failing in chk configuration due to:
                 // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
                 Log.Warning("Skipping test for Debug builds.");
-                return;
+                //return;
             }
 
             ItemsRepeater rootRepeater = null;
@@ -250,6 +250,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
                 viewChanged.Reset();
+                IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {

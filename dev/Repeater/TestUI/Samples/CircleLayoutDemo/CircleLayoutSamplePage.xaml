@@ -21,11 +21,11 @@
         <local:RadialElementAnimator x:Name="RadialAnimator" />
     </Page.Resources>
 
-    <Grid>
+    <Grid Padding="12">
         <Grid.Background>
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <GradientStop Color="#AEB5C7"/>
-                <GradientStop Color="#D3D9E5" Offset="1"/>
+                <GradientStop Color="{ThemeResource SystemAltHighColor}"/>
+                <GradientStop Color="{ThemeResource SystemChromeMediumColor}" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
 
