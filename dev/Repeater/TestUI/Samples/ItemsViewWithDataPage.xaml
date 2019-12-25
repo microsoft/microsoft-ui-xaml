@@ -18,7 +18,8 @@
 
         <DataTemplate x:Key="RecipeTemplate">
             <UserControl IsTabStop="True" UseSystemFocusVisuals="True">
-                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1" Background="White">
+                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        BorderBrush="LightGray" BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -75,7 +76,8 @@
 
         <DataTemplate x:Key="RecipeTemplateHorizontal">
             <UserControl>
-                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="LightGray" BorderThickness="1" Background="White"  Width="300">
+                <Border x:Name="borderRecipeTemplate" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                        BorderBrush="LightGray" BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}"  Width="300">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -125,7 +127,7 @@
         </DataTemplate>
     </Page.Resources>
 
-    <Grid Background="#eee">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />

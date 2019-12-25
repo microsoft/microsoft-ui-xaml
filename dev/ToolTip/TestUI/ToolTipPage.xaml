@@ -9,8 +9,13 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <ToolTip/>
+    <StackPanel Margin="12">
+        <Button Content="Button with a simple ToolTip." ToolTipService.ToolTip="Simple ToolTip" Margin="0,0,0,16" />
+        <TextBlock Text="TextBlock with an offset ToolTip.">
+            <ToolTipService.ToolTip>
+                <ToolTip Content="Offset ToolTip." VerticalOffset="-80"/>
+            </ToolTipService.ToolTip>
+        </TextBlock>
     </StackPanel>
 
 </local:TestPage>

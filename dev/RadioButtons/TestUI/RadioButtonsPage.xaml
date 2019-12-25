@@ -22,7 +22,7 @@
             <Grid Grid.Column="0" Margin="5" MinWidth="500" MaxWidth="800">
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
-                        <Border x:Name="TestRadioButtonsBorder" BorderBrush="Black" BorderThickness="1">
+                        <Border x:Name="TestRadioButtonsBorder" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                             <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" AccessKey="r" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
                         </Border>
                         <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
@@ -42,7 +42,9 @@
             <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
                 <StackPanel Orientation="Horizontal">
                     <ScrollViewer Margin="5">
-                        <Grid Background="Bisque" MinWidth="300" contract5Available:ColumnSpacing="2" contract5Available:RowSpacing="2">
+                        <Grid Background="{ThemeResource SystemListMediumColor}"
+                                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
+                                MinWidth="300" contract5Available:ColumnSpacing="2" contract5Available:RowSpacing="2">
                             <Grid.RowDefinitions>
                                 <!--0-->
                                 <RowDefinition Height="Auto"/>
@@ -173,7 +175,8 @@
                         
                     </ScrollViewer>
                     <!-- Logging Output -->
-                    <Grid Margin="5" MaxWidth="450" Background="Bisque">
+                    <Grid Margin="5" MaxWidth="450" Background="{ThemeResource SystemListMediumColor}"
+                            BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>

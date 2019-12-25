@@ -31,6 +31,11 @@
             </Style>
         </Grid.Resources>
 
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
         <StackPanel>
             <StackPanel>
                 <Button x:Name="PlayButton" Click="PlayButton_Click">Play forwards from 0 to 1</Button>
@@ -68,6 +73,7 @@
         </StackPanel>
 
         <controls:AnimatedVisualPlayer
+                Grid.Column="1"
                 HorizontalAlignment="Center"
                 x:Name="Player"
                 AutomationProperties.Name="Player"

@@ -17,7 +17,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Padding="12" Background="LightGray" Width="250">
+            <StackPanel Padding="12" Background="{ThemeResource SystemChromeMediumLowColor}" Width="250">
                 <CheckBox x:Name="IsClosableCheckBox" AutomationProperties.Name="IsClosableCheckBox" Checked="IsClosableCheckBox_CheckChanged" Unchecked="IsClosableCheckBox_CheckChanged" IsChecked="True" Content="IsClosable on first tab"/>
                 <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
                 <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>

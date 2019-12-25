@@ -9,7 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Orientation="Vertical" VerticalAlignment="Center">
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        Orientation="Vertical" VerticalAlignment="Center" Margin="12">
       <muxcontrols:RefreshVisualizer x:Name="RefreshVisualizer"/>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
         <Button x:Name="RefreshButton" Content="Refresh" Margin="15"/>

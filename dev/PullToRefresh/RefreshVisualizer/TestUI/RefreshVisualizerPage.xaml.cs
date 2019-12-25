@@ -167,7 +167,6 @@ namespace MUXControlsTestApp
             this.OrientationComboBox.SelectedIndex = (int)this.RefreshVisualizer.Orientation;
             this.OrientationComboBox.SelectionChanged += OrientationComboBox_SelectionChanged;
             this.RefreshVisualizer.Foreground = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0));
-            this.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 255, 0));
         }
 
         private void RefreshVisualizer_RefreshStateChanged(RefreshVisualizer sender, RefreshStateChangedEventArgs args)

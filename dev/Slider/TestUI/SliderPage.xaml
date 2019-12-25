@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
+    <StackPanel Margin="12">
         <Slider/>
         <Slider Header="WithHeader"/>
     </StackPanel>

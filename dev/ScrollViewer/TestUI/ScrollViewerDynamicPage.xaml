@@ -86,7 +86,7 @@
             <Image x:Name="wuxSmallImg" Source="Assets/ingredient8.png" Width="900" Height="900"/>
         </ScrollViewer>
 
-        <Grid x:Name="grdScrollViewerProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="2" Background="LightYellow">
+        <Grid x:Name="grdScrollViewerProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="2" Background="{ThemeResource SystemListLowColor}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -345,7 +345,7 @@
             -->
         </Grid>
 
-        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="2" Background="LightYellow">
+        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="2" Background="{ThemeResource SystemListLowColor}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

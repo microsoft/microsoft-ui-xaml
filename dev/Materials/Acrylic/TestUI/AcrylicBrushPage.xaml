@@ -30,7 +30,7 @@
         </Grid>
 
         <ScrollViewer x:Name="Sidebar" VerticalScrollMode="Auto">
-            <StackPanel>
+            <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                 <StackPanel>
                     <TextBlock FontSize="12" Text="Test Name:"/>
                     <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox" SelectedIndex="0">

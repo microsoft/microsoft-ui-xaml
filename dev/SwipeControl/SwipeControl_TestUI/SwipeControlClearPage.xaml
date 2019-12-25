@@ -47,7 +47,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl LeftItems="{StaticResource DefaultSwipeItemsHorizontal}">
-                            <Grid Background="Red" Width="100" Height="100" />
+                            <Grid Background="#F25022" Width="100" Height="100" />
                         </muxc:SwipeControl>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -56,7 +56,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl TopItems="{StaticResource DefaultSwipeItemsVertical}">
-                            <Grid Background="Green" Width="100" Height="100" />
+                            <Grid Background="#7FBA00" Width="100" Height="100" />
                         </muxc:SwipeControl>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -65,7 +65,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl RightItems="{StaticResource DefaultSwipeItemsHorizontal}">
-                            <Grid Background="Blue" Width="100" Height="100" />
+                            <Grid Background="#00A4EF" Width="100" Height="100" />
                         </muxc:SwipeControl>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -74,7 +74,7 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl BottomItems="{StaticResource DefaultSwipeItemsVertical}">
-                            <Grid Background="Yellow" Width="100" Height="100"/>
+                            <Grid Background="#FFB900" Width="100" Height="100"/>
                         </muxc:SwipeControl>
                     </DataTemplate>
                 </ListView.ItemTemplate>
