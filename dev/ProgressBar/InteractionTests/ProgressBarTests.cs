@@ -101,21 +101,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Updating width of ProgressBar also updates Indicator Width");
                 
-                widthInput.SetValue("150");
+                widthInput.SetValue("200");
                 updateWidthButton.InvokeAndWait();
 
-                Verify.AreEqual((progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Changing value of ProgressBar of different width updates Indicator width");
 
                 changeValueButton.InvokeAndWait();
 
-                Verify.AreEqual((progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Updating Maximum and Minimum also updates Indicator Width");
 
                 minimumInput.SetValue("10");
-                maximumInput.SetValue("15");
+                maximumInput.SetValue("16");
 
                 changeValueButton.InvokeAndWait();
 
