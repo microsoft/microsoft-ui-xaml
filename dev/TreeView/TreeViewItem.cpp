@@ -444,6 +444,11 @@ void TreeViewItem::UpdateSelection(bool isSelected)
                 auto selectedNodes = viewModel->GetSelectedNodes();
                 if (isSelected)
                 {
+                    if (treeView->SelectionMode() == winrt::TreeViewSelectionMode::Single
+                        && selectedNodes.Size() > 0)
+                    {
+                        selectedNodes.Clear();
+                    }
                     selectedNodes.Append(node);
                 }
                 else
