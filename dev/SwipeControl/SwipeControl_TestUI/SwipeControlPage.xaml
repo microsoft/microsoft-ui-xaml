@@ -97,7 +97,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal">
-                <StackPanel x:Name="SwipePanel" Background="AliceBlue" Width="400">
+                <StackPanel x:Name="SwipePanel" Background="{ThemeResource SystemChromeMediumColor}" Width="400">
                     <ListView TabNavigation="local">
                         <!-- Testing commanding, swipe to reveal, and executing -->
                         <!-- Items should be cropped as the height is less than the recommended 40px -->

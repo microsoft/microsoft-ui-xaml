@@ -111,15 +111,18 @@
                 <TextBlock x:Name="ControlWidthText" AutomationProperties.Name="ControlWidthText"/>
                 <TextBlock x:Name="ControlHeightText" AutomationProperties.Name="ControlHeightText"/>
 
-                <muxcontrols:TwoPaneView x:Name="TwoPaneViewSmall" Width="200" Height="200" Margin="0,12,0,0" PanePriority="Pane2" >
-                    <muxcontrols:TwoPaneView.Pane1>
-                        <TextBlock x:Name="SmallContent1" AutomationProperties.Name="SmallContent1" Text="I should NOT be seen"/>
-                    </muxcontrols:TwoPaneView.Pane1>
+                <StackPanel Background="{ThemeResource SystemListMediumColor}" Margin="0,8,0,0">
+                    <TextBlock Text="Small TwoPaneView with pane priority set"/>
+                    <muxcontrols:TwoPaneView x:Name="TwoPaneViewSmall" Width="200" Height="200" Margin="0,12,0,0" PanePriority="Pane2" >
+                        <muxcontrols:TwoPaneView.Pane1>
+                            <TextBlock x:Name="SmallContent1" AutomationProperties.Name="SmallContent1" Text="I should NOT be seen"/>
+                        </muxcontrols:TwoPaneView.Pane1>
 
-                    <muxcontrols:TwoPaneView.Pane2>
-                        <TextBlock x:Name="SmallContent2" AutomationProperties.Name="SmallContent2" Text="I should be seen"/>
-                    </muxcontrols:TwoPaneView.Pane2>
-                </muxcontrols:TwoPaneView>
+                        <muxcontrols:TwoPaneView.Pane2>
+                            <TextBlock x:Name="SmallContent2" AutomationProperties.Name="SmallContent2" Text="I should be seen"/>
+                        </muxcontrols:TwoPaneView.Pane2>
+                    </muxcontrols:TwoPaneView>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
 

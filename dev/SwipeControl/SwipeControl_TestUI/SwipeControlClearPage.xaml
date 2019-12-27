@@ -43,7 +43,7 @@
                 <ColumnDefinition Width="0"></ColumnDefinition>
                 <ColumnDefinition Width="120"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <ListView  Grid.Row="0" Grid.Column="0" x:Name="leftSwipe">
+            <ListView  Grid.Row="0" Grid.Column="0" x:Name="leftSwipe" SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl LeftItems="{StaticResource DefaultSwipeItemsHorizontal}">
@@ -52,7 +52,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ListView Grid.Row="0" Grid.Column="2" x:Name="topSwipe">
+            <ListView Grid.Row="0" Grid.Column="2" x:Name="topSwipe" SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl TopItems="{StaticResource DefaultSwipeItemsVertical}">
@@ -61,7 +61,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ListView Grid.Row="2" Grid.Column="0" x:Name="rightSwipe">
+            <ListView Grid.Row="2" Grid.Column="0" x:Name="rightSwipe" SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl RightItems="{StaticResource DefaultSwipeItemsHorizontal}">
@@ -70,7 +70,7 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
-            <ListView Grid.Row="2" Grid.Column="2" x:Name="bottomSwipe">
+            <ListView Grid.Row="2" Grid.Column="2" x:Name="bottomSwipe" SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <muxc:SwipeControl BottomItems="{StaticResource DefaultSwipeItemsVertical}">
@@ -85,8 +85,8 @@
         </Grid>
 
         <StackPanel Grid.Row="0" Grid.Column="1">
-            <Button Click="AddSwipeItemsButton_Click" x:Name="AddItemsButton" AutomationProperties.Name="AddItemsButton">Add SwipeItems</Button>
-            <Button Click="ClearSwipeItemsButton_Click" x:Name="ClearItemsButton" AutomationProperties.Name="ClearItemsButton">Clear SwipeItems</Button>
+            <Button Click="AddSwipeItemsButton_Click" x:Name="AddItemsButton" AutomationProperties.Name="AddItemsButton" Margin="0,0,0,8">Add SwipeItems</Button>
+            <Button Click="ClearSwipeItemsButton_Click" x:Name="ClearItemsButton" AutomationProperties.Name="ClearItemsButton" Margin="0,0,0,8">Clear SwipeItems</Button>
             <TextBlock x:Name="SwipeItemsChildSum" AutomationProperties.Name="SwipeItemsChildSum" ></TextBlock>
         </StackPanel>
         
