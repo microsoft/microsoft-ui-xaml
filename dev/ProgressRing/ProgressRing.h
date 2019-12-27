@@ -34,12 +34,12 @@ private:
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::PathFigure> m_outlineFigure{ this };
     tracker_ref<winrt::ArcSegment> m_outlineArc{ this };
-    tracker_ref<winrt::PathFigure> m_barFigure{ this };
-    tracker_ref<winrt::ArcSegment> m_barArc{ this };
+    tracker_ref<winrt::PathFigure> m_ringFigure{ this };
+    tracker_ref<winrt::ArcSegment> m_ringArc{ this };
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
     static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
     static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
-    static constexpr wstring_view s_BarFigureName{ L"BarFigurePart" };
-    static constexpr wstring_view s_BarArcName{ L"BarArcPart" };
+    static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
+    static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
 };

@@ -12,7 +12,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
                     <Grid x:Name="LayoutRoot" Background="Transparent">
-                        <!-- Gray outline of progress bar -->
+                        <!-- Gray outline of Progress Ring -->
                         <Path
                             Fill="Transparent"
                             Stroke="{TemplateBinding Background}"
@@ -38,7 +38,7 @@
                                 </PathGeometry>
                             </Path.Data>
                         </Path>
-                        <!-- Progress Bar -->
+                        <!-- Progress Ring -->
                         <Path
                             Fill="Transparent"
                             Stroke="{TemplateBinding Foreground}"
@@ -49,11 +49,11 @@
                                 <PathGeometry>
                                     <PathGeometry.Figures>
                                         <PathFigureCollection>
-                                            <PathFigure x:Name="BarFigurePart">
+                                            <PathFigure x:Name="RingFigurePart">
                                                 <PathFigure.Segments>
                                                     <PathSegmentCollection>
                                                         <ArcSegment
-                                                            x:Name="BarArcPart"
+                                                            x:Name="RingArcPart"
                                                             IsLargeArc="False"
                                                             SweepDirection="Clockwise" />
                                                     </PathSegmentCollection>
