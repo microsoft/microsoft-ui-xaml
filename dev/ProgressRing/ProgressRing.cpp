@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -28,7 +28,7 @@ void ProgressRing::OnApplyTemplate()
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
 
-    auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(L"LottiePlayer", controlProtected);
+    auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
     player.Source(winrt::make<RadialLoading>());
 
     UpdateRing();
@@ -47,6 +47,23 @@ void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, co
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRing();
+}
+
+void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateStates();
+}
+
+void ProgressRing::UpdateStates()
+{
+    if (IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+    }
+    else if (!IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+    }
 }
 
 winrt::Size ProgressRing::ComputeEllipseSize(double thickness, double actualWidth, double actualHeight)

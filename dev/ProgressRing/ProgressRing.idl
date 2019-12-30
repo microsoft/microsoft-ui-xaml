@@ -1,4 +1,4 @@
-namespace MU_XC_NAMESPACE
+﻿namespace MU_XC_NAMESPACE
 {
 
 [WUXC_VERSION_PREVIEW]
@@ -10,7 +10,11 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBa
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double StrokeThickness{ get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsIndeterminate{ get; set; };
+
     static Windows.UI.Xaml.DependencyProperty StrokeThicknessProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
 }
 
 }

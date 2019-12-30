@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -23,11 +23,13 @@ public:
     void OnApplyTemplate();
 
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
+    void UpdateStates();
     void UpdateSegment();
     void UpdateRing();
 
@@ -38,10 +40,15 @@ private:
     tracker_ref<winrt::ArcSegment> m_outlineArc{ this };
     tracker_ref<winrt::PathFigure> m_ringFigure{ this };
     tracker_ref<winrt::ArcSegment> m_ringArc{ this };
+    tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
 
     static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
     static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
     static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
     static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
     static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
+    static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer" };
+    static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
+    static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+    
 };
