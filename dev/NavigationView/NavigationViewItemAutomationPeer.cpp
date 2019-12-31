@@ -56,6 +56,20 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
     return result;
 }
 
+
+winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationControlTypeCore()
+{
+    // To be compliant with MAS 4.1.2, in TopMode
+    // , a NavigationViewItem should report itsself as TabItem
+    if (IsOnTopNavigation()) {
+        return winrt::AutomationControlType::TabItem;
+    }
+    else {
+        return winrt::AutomationControlType::ListItem;
+    }
+}
+
+
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
