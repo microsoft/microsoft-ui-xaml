@@ -2476,6 +2476,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        // test for #1756 https://github.com/microsoft/microsoft-ui-xaml/issues/1756
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectRegressionTest()
+        {
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                ClickButton("AddExtraNodes");
+                ClickButton("LabelItems");
+
+                ClickButton("SelectLastRootNode");
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Node 50", ReadResult());
+
+                UIObject node1 = FindElement.ByName("Node 1");
+                Verify.IsNotNull(node1, "Verifying Node 1 is found");
+                InputHelper.Tap(node1);
+
+                ClickButton("GetSelected");
+                Verify.AreEqual("Selected: Node 1", ReadResult());
+            }
+        }
+
         // Regression test for bug 16833853
         [TestMethod]
         [TestProperty("TestSuite", "B")]

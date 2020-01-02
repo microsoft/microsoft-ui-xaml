@@ -437,29 +437,7 @@ void TreeViewItem::UpdateSelection(bool isSelected)
     {
         if (auto node = TreeNode())
         {
-            auto listControl = treeView->ListControl();
-            auto viewModel = listControl->ListViewModel();
-            if (isSelected != viewModel->IsNodeSelected(node))
-            {
-                auto selectedNodes = viewModel->GetSelectedNodes();
-                if (isSelected)
-                {
-                    if (treeView->SelectionMode() == winrt::TreeViewSelectionMode::Single
-                        && selectedNodes.Size() > 0)
-                    {
-                        selectedNodes.Clear();
-                    }
-                    selectedNodes.Append(node);
-                }
-                else
-                {
-                    unsigned int index;
-                    if (selectedNodes.IndexOf(node, index))
-                    {
-                        selectedNodes.RemoveAt(index);
-                    }
-                }
-            }
+            treeView->UpdateSelection(node, isSelected);
         }
     }
 }
