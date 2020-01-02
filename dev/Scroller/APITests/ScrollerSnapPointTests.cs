@@ -29,7 +29,7 @@ using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Create a bunch of snap points with invalid arguments.")]

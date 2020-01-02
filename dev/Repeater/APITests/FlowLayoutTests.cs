@@ -41,7 +41,7 @@ using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class FlowLayoutTests : TestsBase
+    public class FlowLayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateStackLayout()

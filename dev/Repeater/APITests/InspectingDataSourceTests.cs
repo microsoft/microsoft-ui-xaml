@@ -30,7 +30,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
 
     [TestClass]
-    public class InspectingDataSourceTests: TestsBase
+    public class InspectingDataSourceTests: ApiTestBase
     {
         [TestMethod]
         public void CanCreateFromIBindableIterable()

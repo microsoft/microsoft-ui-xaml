@@ -29,7 +29,7 @@ using SelectionModelChildrenRequestedEventArgs = Microsoft.UI.Xaml.Controls.Sele
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class SelectionModelTests : TestsBase
+    public class SelectionModelTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateOneLevelSingleSelectionNoSource()
