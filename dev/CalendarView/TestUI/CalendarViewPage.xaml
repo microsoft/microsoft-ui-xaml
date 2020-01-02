@@ -19,7 +19,9 @@
             IsGroupLabelVisible="{x:Bind isGroupLabelVisible.IsChecked.Value, Mode=OneWay}"
             IsOutOfScopeEnabled="{x:Bind isOutOfScopeEnabled.IsChecked.Value, Mode=OneWay}" />
 
-        <StackPanel Margin="20,0,0,0">
+        <StackPanel Margin="20,0,0,0" VerticalAlignment="Top" Padding="8"
+                    BorderThickness="1" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}">
+            <TextBlock Text="Options"  Style="{ThemeResource StandardGroupHeader}"/>
             <CheckBox x:Name="isGroupLabelVisible" Content="IsGroupLabelVisible" IsChecked="True" />
             <CheckBox x:Name="isOutOfScopeEnabled" Content="IsOutOfScopeEnabled" IsChecked="True" />
             <ComboBox

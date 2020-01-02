@@ -10,9 +10,10 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <StackPanel Margin="12">
+        <TextBlock Text="Sample AutoSuggestBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <AutoSuggestBox/>
-        <AutoSuggestBox Header="WithHeader"/>
-        <AutoSuggestBox Header="With suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
+        <AutoSuggestBox Header="AutoSuggestBox with header"/>
+        <AutoSuggestBox Header="AutoSuggestBox with suggestions" QuerySubmitted="AutoSuggestBox_QuerySubmitted" />
     </StackPanel>
 
 </local:TestPage>
