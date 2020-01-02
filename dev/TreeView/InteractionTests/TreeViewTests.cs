@@ -2481,21 +2481,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TreeViewTestSuite", "B")]
         public void TreeViewSelectRegressionTest()
         {
-            using (var setup = new TestSetupHelper("TreeView Tests"))
+            // Running 5 times since the the bug doesn't repro consistently.
+            for(int i = 0; i < 5; i++)
             {
-                ClickButton("AddExtraNodes");
-                ClickButton("LabelItems");
+                using (var setup = new TestSetupHelper("TreeView Tests"))
+                {
+                    ClickButton("AddExtraNodes");
+                    ClickButton("LabelItems");
 
-                ClickButton("SelectLastRootNode");
-                ClickButton("GetSelected");
-                Verify.AreEqual("Selected: Node 50", ReadResult());
+                    ClickButton("SelectLastRootNode");
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 50", ReadResult());
 
-                UIObject node1 = FindElement.ByName("Node 1");
-                Verify.IsNotNull(node1, "Verifying Node 1 is found");
-                InputHelper.Tap(node1);
+                    UIObject node1 = FindElement.ByName("Node 1");
+                    Verify.IsNotNull(node1, "Verifying Node 1 is found");
+                    InputHelper.Tap(node1);
 
-                ClickButton("GetSelected");
-                Verify.AreEqual("Selected: Node 1", ReadResult());
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 1", ReadResult());
+                }
             }
         }
 
