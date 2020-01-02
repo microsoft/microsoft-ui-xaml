@@ -213,11 +213,12 @@ winrt::Rect UniformGridLayout::Algorithm_GetExtent(
 
     if (itemsCount > 0)
     {
+        // Only use all of the space if item stretch is fill, otherwise size layout according to items placed
         extent.*MinorSize() =
-            std::isfinite(availableSizeMinor) ?
+            std::isfinite(availableSizeMinor) && m_itemsStretch == winrt::UniformGridLayoutItemsStretch::Fill ?
             availableSizeMinor :
-            std::max(0.0f, itemsCount * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
-        extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
+            std::max(0.0f, itemsPerLine * GetMinorSizeWithSpacing(context) - static_cast<float>(MinItemSpacing()));
+         extent.*MajorSize() = std::max(0.0f, (itemsCount / itemsPerLine) * lineSize - static_cast<float>(LineSpacing()));
 
         if (firstRealized)
         {
