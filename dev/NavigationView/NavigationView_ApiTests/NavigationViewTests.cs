@@ -260,19 +260,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     navView.IsPaneOpen = false;
                     // Set it below threshold width for auto mode
                     navView.Width = navView.CompactModeThresholdWidth - 20;
-                });
 
-                IdleSynchronizer.Wait();
+                    Content.UpdateLayout();
 
-                RunOnUIThread.Execute(() =>
-                {
                     navView.PaneDisplayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
-                });
 
-                IdleSynchronizer.Wait();
+                    Content.UpdateLayout();
 
-                RunOnUIThread.Execute(() =>
-                {
                     // We only want to open the pane when explicitly set, otherwise it should be closed
                     // since we set the width below the threshold width
                     Verify.AreEqual((NavigationViewPaneDisplayMode)paneDisplayMode == NavigationViewPaneDisplayMode.Left, navView.IsPaneOpen);
