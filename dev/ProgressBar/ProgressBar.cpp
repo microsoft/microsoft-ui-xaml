@@ -172,16 +172,16 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
         return std::make_tuple(0.0f, 0.0f);
     }();
 
-    const double indeterminateProgressBarIndicatorWidth = width * 0.4; // Indicator width at 40%
-    const double indeterminateProgressBarIndicatorWidth2 = width * 0.6; // Indicator width at 60%  
+    const double indeterminateProgressBarIndicatorWidth = width * 0.4; // Indicator width at 40% of ProgressBar
+    const double indeterminateProgressBarIndicatorWidth2 = width * 0.6; // Indicator width at 60% of ProgressBar
 
     templateSettings->ContainerAnimationStartPosition(indeterminateProgressBarIndicatorWidth * -1.0); // Position at -100%
     templateSettings->ContainerAnimationEndPosition(indeterminateProgressBarIndicatorWidth * 3.0); // Position at 300%
 
-    templateSettings->ContainerAnimationStartPosition2(indeterminateProgressBarIndicatorWidth2 * -1.7); // Position at -170%
-    templateSettings->ContainerAnimationEndPosition2(indeterminateProgressBarIndicatorWidth2 * 1.5); // Position at 150%
+    templateSettings->ContainerAnimationStartPosition2(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
+    templateSettings->ContainerAnimationEndPosition2(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
 
-    templateSettings->ContainerAnimationMidPosition(width * -0.2);
+    templateSettings->ContainerAnimationMidPosition(width * 0.2);
 
     const auto rectangle = [width, height, padding = Padding()]()
     {
