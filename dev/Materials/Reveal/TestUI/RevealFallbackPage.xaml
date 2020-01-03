@@ -44,16 +44,19 @@
     </Page.Resources>
 
     <StackPanel Orientation="Vertical" Width="800" Height="600" Name="RootCanvas">
+        <TextBlock Text="Testoptions" Style="{ThemeResource StandardGroupHeader}"/>
         <StackPanel Orientation="Horizontal">
-            <StackPanel Orientation="Vertical">
-                <ComboBox x:Name="TestNameComboBox" AutomationProperties.AutomationId="TestNameComboBox">
-                    <ComboBoxItem AutomationProperties.Name="RevealAlwaysUseFallback">RevealAlwaysUseFallback</ComboBoxItem>
-                </ComboBox>
-                <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true" Width="200"/>
-                <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" AutomationProperties.Name="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
-            </StackPanel>
-            <ToggleButton x:Name="AlwaysUseFallbackButton" Content="Force Fallback" Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked" HorizontalAlignment="Center" Margin="5"/>
+            <ComboBox x:Name="TestNameComboBox" Header="Testnames" AutomationProperties.AutomationId="TestNameComboBox">
+                <ComboBoxItem AutomationProperties.Name="RevealAlwaysUseFallback">RevealAlwaysUseFallback</ComboBoxItem>
+            </ComboBox>
+            <ToggleButton x:Name="AlwaysUseFallbackButton" Content="Force Fallback" VerticalAlignment="Bottom"
+                          Checked="AlwaysUseFallbackButton_Checked" Unchecked="AlwaysUseFallbackButton_Unchecked" Margin="8,0,8,0"/>
+            <Button x:Name="RunTestButton" AutomationProperties.AutomationId="RunTestButton" VerticalAlignment="Bottom"
+                    AutomationProperties.Name="RunTestButton" Content="Run Test" Click="RunTestButton_Clicked"/>
         </StackPanel>
+        <TextBlock Text="Test result" Style="{ThemeResource StandardGroupHeader}"/>
+        <TextBox x:Name="TestResult" AutomationProperties.AutomationId="TestResult" IsReadOnly="true"/>
+        <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
         <StackPanel Orientation="Horizontal">
             <StackPanel VerticalAlignment="Center">
                 <Button x:Name="RevealButton" Content="Button" Margin="5" Width="130" />
