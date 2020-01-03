@@ -2950,16 +2950,20 @@ void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode 
     // See #1702 and #1787
     if (!IsTopNavigationView())
     {
-        bool isPaneOpen = IsPaneOpen();
-        if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal && isPaneOpen)
-        {            
-            ClosePane();
-        }
-        else if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal &&
-            !isPaneOpen &&
-            newDisplayMode == winrt::NavigationViewPaneDisplayMode::Left)
+        if (IsPaneOpen())
         {
-            OpenPane();
+            if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal)
+            {
+                ClosePane();
+            }
+        }
+        else
+        {
+            if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal
+                && newDisplayMode == winrt::NavigationViewPaneDisplayMode::Left)
+            {
+                OpenPane();
+            }
         }
     }
 }
