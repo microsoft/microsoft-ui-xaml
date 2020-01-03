@@ -61,9 +61,10 @@
     <FeatureCalendarViewEnabled>false</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
+    <FeatureProgressRingEnabled>false</FeatureProgressRingEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
-  <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'"/>
+  <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />
   <!-- Features to include for official build (should be all features) -->
   <PropertyGroup Condition="$(SolutionName) != 'MUXControlsInnerLoop'">
     <FeatureAnimatedVisualPlayerEnabled>true</FeatureAnimatedVisualPlayerEnabled>
@@ -117,6 +118,7 @@
     <FeatureCalendarViewEnabled>true</FeatureCalendarViewEnabled>
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
+    <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>

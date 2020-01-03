@@ -40,7 +40,6 @@
                                         </Storyboard>
                                     </VisualTransition>
                                 </VisualStateGroup.Transitions>
-
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Updating" />
