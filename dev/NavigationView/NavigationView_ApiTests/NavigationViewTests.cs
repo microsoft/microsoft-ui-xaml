@@ -27,7 +27,6 @@ using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHe
 using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
 using System.Collections.ObjectModel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.UI.Xaml.Automation.Peers;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
