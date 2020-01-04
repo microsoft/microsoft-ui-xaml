@@ -230,7 +230,7 @@
         <Setter Property="FontFamily" Value="Segoe MDL2 Assets"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-        <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}"/>
+        <Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}"/>
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}"/>
         <Setter Property="FocusVisualMargin" Value="-3"/>
         <Setter Property="Template">
