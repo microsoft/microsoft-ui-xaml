@@ -10,19 +10,50 @@
     mc:Ignorable="d">
 
     <ScrollViewer>
-        <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="100">
-            <Button x:Name="AdaptButton" AutomationProperties.Name="AdaptButton" Content="Adapt" Width="200" Margin="2"/>
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="RefreshOnContainerButton" AutomationProperties.Name="RefreshOnContainerButton" Content="Refresh On Container" Width="200" Margin="2"/>
-                <Button x:Name="RefreshOnVisualizerButton" AutomationProperties.Name="RefreshOnVisualizerButton" Content="Refresh On Visualizer" Width="200" Margin="2"/>
+        <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+            
+            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}">
+                <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
+                <Button x:Name="AdaptButton" AutomationProperties.Name="AdaptButton" Content="Adapt" Width="200" Margin="2"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="RefreshOnContainerButton" AutomationProperties.Name="RefreshOnContainerButton" Content="Refresh On Container" Width="200" Margin="2"/>
+                    <Button x:Name="RefreshOnVisualizerButton" AutomationProperties.Name="RefreshOnVisualizerButton" Content="Refresh On Visualizer" Width="200" Margin="2"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="RotateButton" AutomationProperties.Name="RotateButton" Content="Rotate Visualizer Location" Width="200" Margin="2"/>
+                    <Button x:Name="AddOrRemoveRefreshDelay" AutomationProperties.Name="AddOrRemoveRefreshDelay" Content="Add/Remove Refresh Delay" Width="200" Margin="2"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="ChangeAlignment" AutomationProperties.Name="ChangeAlignment" Content="Change Alignment" Width="200" Margin="2"/>
+                    <Button x:Name="ChangeRefreshRequested" AutomationProperties.Name="ChangeRefreshRequested" Content="Change Refresh Requested Handler" Width="200" Margin="2"/>
+                </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="RotateButton" AutomationProperties.Name="RotateButton" Content="Rotate Visualizer Location" Width="200" Margin="2"/>
-                <Button x:Name="AddOrRemoveRefreshDelay" AutomationProperties.Name="AddOrRemoveRefreshDelay" Content="Add/Remove Refresh Delay" Width="200" Margin="2"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="ChangeAlignment" AutomationProperties.Name="ChangeAlignment" Content="Change Alignment" Width="200" Margin="2"/>
-                <Button x:Name="ChangeRefreshRequested" AutomationProperties.Name="ChangeRefreshRequested" Content="Change Refresh Requested Handler" Width="200" Margin="2"/>
+
+            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
+                <TextBlock Text="State" Style="{ThemeResource StandardGroupHeader}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="175"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="State:" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="States" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="0" Margin="4,4,4,4"/>
+                    <Button x:Name="ResetStates" Content="Reset" Grid.Column="2" Grid.Row="0"/>
+                    
+                    <TextBlock Text="Interaction Ratio:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="InteractionRatios" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1" Margin="4,4,4,4"/>
+                    <Button x:Name="ResetInteractionRatios" Content="Reset" Grid.Column="2" Grid.Row="1"/>
+
+                    <TextBlock Text="Refresh Count:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
+                    <TextBox x:Name="RefreshCount" AutomationProperties.Name="RefreshCount" IsReadOnly="True"
+                             Grid.Column="1" Grid.Row="2" Margin="4,4,4,4"/>
+                </Grid>
             </StackPanel>
             <!--Adding a left margin here eliminates a test reliability issue on phone where there is not space to perform the needed gesture-->
             <Grid Height="300">
@@ -32,26 +63,7 @@
                     </Grid>
                 </muxcontrols:RefreshContainer>
             </Grid>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="175"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <TextBlock Text="State:" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center"/>
-                <TextBlock Text="Interaction Ratio:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center"/>
-                <TextBlock Text="Refresh Count:" Grid.Column="0" Grid.Row="2" VerticalAlignment="Center"/>
-                <ComboBox x:Name="States" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="0"/>
-                <ComboBox x:Name="InteractionRatios" HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="1"/>
-                <TextBox x:Name="RefreshCount" AutomationProperties.Name="RefreshCount" IsReadOnly="True" Grid.Column="1" Grid.Row="2"/>
-                <Button x:Name="ResetStates" Content="Reset" Grid.Column="2" Grid.Row="0"/>
-                <Button x:Name="ResetInteractionRatios" Content="Reset" Grid.Column="2" Grid.Row="1"/>
-            </Grid>
+
         </StackPanel>
     </ScrollViewer>
 </local:TestPage>

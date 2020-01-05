@@ -34,7 +34,7 @@
             <Rectangle x:Name="rectAnchorPoint" Width="4" Height="4" Fill="Red"/>
         </Canvas>
 
-        <Grid Grid.Row="1" Grid.Column="1" Margin="1" Background="{ThemeResource SystemListLowColor}">
+        <Grid Grid.Row="1" Grid.Column="1" Margin="1" Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -120,7 +120,7 @@
             <Button x:Name="btnScrollFrom" Content="ScrollFrom" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollFrom_Click"/>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="2" Margin="1">
+        <Grid Grid.Row="1" Grid.Column="2" Margin="1" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -176,7 +176,7 @@
             <Button Grid.Row="12" x:Name="btnExpandMore" Grid.Column="1" Margin="1" HorizontalAlignment="Stretch" Content="4x More" Click="BtnExpandMore_Click"/>
         </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="3" Margin="1" Background="{ThemeResource SystemListLowColor}">
+        <Grid Grid.Row="1" Grid.Column="3" Margin="1" Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

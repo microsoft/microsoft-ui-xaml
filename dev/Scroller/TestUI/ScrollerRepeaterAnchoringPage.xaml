@@ -51,7 +51,7 @@
             <Rectangle x:Name="rectAnchorPoint" Width="4" Height="4" Fill="Red"/>
         </Canvas>
 
-        <Grid Grid.Column="1" Margin="1" Background="LightYellow">
+        <Grid Grid.Column="1" Background="{ThemeResource SystemListLowColor}" Padding="6" Margin="4,0,4,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -167,7 +167,7 @@
             </StackPanel>
         </Grid>
 
-        <Grid Grid.Column="3" Margin="1" Background="LightYellow">
+        <Grid Grid.Column="3" Background="{ThemeResource SystemListLowColor}" Padding="6" Margin="4,0,4,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

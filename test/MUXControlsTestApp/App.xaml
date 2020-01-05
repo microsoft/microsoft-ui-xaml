@@ -30,6 +30,11 @@
                 <Setter Property="AutomationProperties.HeadingLevel" Value="Level2"/>
             </Style>
 
+            <Style x:Key="StandardGroupingStackPanel" TargetType="StackPanel">
+                <Setter Property="BorderBrush" Value="{ThemeResource SystemChromeGrayColor}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="8"/>
+            </Style>
             
         </ResourceDictionary>
     </Application.Resources>

@@ -86,7 +86,8 @@
             <Image x:Name="wuxSmallImg" Source="Assets/ingredient8.png" Width="900" Height="900"/>
         </ScrollViewer>
 
-        <Grid x:Name="grdScrollViewerProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="2" Background="{ThemeResource SystemListLowColor}">
+        <Grid x:Name="grdScrollViewerProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="1" Margin="4,0,4,0"
+              Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -180,7 +181,7 @@
             </ComboBox>
         </Grid>
 
-        <Grid x:Name="grdScrollerClonedProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="2">
+        <Grid x:Name="grdScrollerClonedProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="2" Margin="4,0,4,0" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -345,7 +346,8 @@
             -->
         </Grid>
 
-        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="2" Background="{ThemeResource SystemListLowColor}">
+        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.RowSpan="2" Grid.Column="3" Margin="4,0,4,0"
+              Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -455,7 +457,7 @@
             <Button x:Name="btnGetContentRenderSize" Content="G" Margin="1" Grid.Row="15" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetContentRenderSize_Click"/>
         </Grid>
 
-        <Grid x:Name="grdLogs" Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Margin="2">
+        <Grid x:Name="grdLogs" Grid.Row="1" Grid.RowSpan="2" Grid.Column="4" Margin="4,0,4,0" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
