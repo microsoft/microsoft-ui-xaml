@@ -351,7 +351,7 @@ public:
     }
 };
 
-winrt::IAnimatedVisual RadialLoading::TryCreateAnimatedVisual(
+winrt::IAnimatedVisual ProgressRingLoading::TryCreateAnimatedVisual(
     const winrt::Compositor& compositor,
     winrt::IInspectable& diagnostics)
 {

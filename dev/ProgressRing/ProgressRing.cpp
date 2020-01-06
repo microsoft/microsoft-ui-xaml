@@ -27,10 +27,9 @@ void ProgressRing::OnApplyTemplate()
     m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
+    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
-    auto player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
-    player.Source(winrt::make<RadialLoading>());
-
+    ApplyLottieAnimation();
     UpdateRing();
 }
 
@@ -52,6 +51,14 @@ void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPrope
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateStates();
+}
+
+void ProgressRing::ApplyLottieAnimation()
+{
+    if (auto&& player = m_player.get())
+    {
+        player.Source(winrt::make<ProgressRingLoading>());
+    }
 }
 
 void ProgressRing::UpdateStates()

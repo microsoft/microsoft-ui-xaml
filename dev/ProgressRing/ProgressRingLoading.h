@@ -8,8 +8,8 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-class RadialLoading :
-    public winrt::implements<RadialLoading, winrt::IAnimatedVisualSource>
+class ProgressRingLoading :
+    public winrt::implements<ProgressRingLoading, winrt::IAnimatedVisualSource>
 {
 public:
     winrt::IAnimatedVisual TryCreateAnimatedVisual(
