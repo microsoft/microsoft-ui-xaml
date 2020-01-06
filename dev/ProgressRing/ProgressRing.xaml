@@ -30,10 +30,10 @@
                                             To="1"
                                             Duration="0:0:0.25" />
                                         <DoubleAnimation
-                                                Storyboard.TargetName="DeterminateProgressRingRoot"
-                                                Storyboard.TargetProperty="Opacity"
-                                                To="0"
-                                                Duration="0:0:0.25" />
+                                            Storyboard.TargetName="DeterminateProgressRingRoot"
+                                            Storyboard.TargetProperty="Opacity"
+                                            To="0"
+                                            Duration="0:0:0.25" />
                                     </Storyboard>
                                 </VisualState>
                             </VisualStateGroup>

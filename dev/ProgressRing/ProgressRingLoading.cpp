@@ -23,7 +23,7 @@ static bool IsRuntimeCompatible()
 class ProgressRingAnimatedVisual :
     public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual>
 {
-    static constexpr auto c_durationTicks = 20000000ms;
+    static constexpr auto c_durationTicks = 2000ms;
     winrt::Compositor const _c{ nullptr };
     winrt::ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
     winrt::CubicBezierEasingFunction _cubicBezierEasingFunction{ nullptr };

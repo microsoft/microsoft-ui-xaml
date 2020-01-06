@@ -10,6 +10,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <Page.Resources>
+        <local:NullableBooleanToBooleanConverter x:Key="NullableBooleanToBooleanConverter" />
+    </Page.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
@@ -19,11 +23,15 @@
                 Maximum="100"
                 Minimum="0"
                 StrokeThickness="4"
-                IsIndeterminate="false"
+                IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
 
+            <CheckBox x:Name="ShowIsDeterminateCheckBox" AutomationProperties.Name="ShowIsDeterminateCheckBox" Content="IsDeterminate"/>
+            
             <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Value, Mode=TwoWay}"/>
             <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
+
+            
         </StackPanel>
     </Grid>
 </local:TestPage>
