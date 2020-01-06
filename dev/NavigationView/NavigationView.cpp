@@ -1490,12 +1490,14 @@ bool NavigationView::IsSelectionSuppressed(const winrt::IInspectable& item)
 
 bool NavigationView::ShouldPreserveNavigationViewRS4Behavior()
 {
-    return !SharedHelpers::IsRS5OrHigher();
+    // Since RS5, we support topnav
+    return !m_topNavGrid;
 }
 
 bool NavigationView::ShouldPreserveNavigationViewRS3Behavior()
 {
-    return !SharedHelpers::IsRS4OrHigher();
+    // Since RS4, we support backbutton
+    return !m_backButton;
 }
 
 winrt::UIElement NavigationView::FindSelectionIndicator(const winrt::IInspectable& item)
