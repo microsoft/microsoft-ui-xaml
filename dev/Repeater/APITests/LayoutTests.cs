@@ -192,6 +192,36 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void ValidateStackLayoutDisabledVirtualizationWithItemsRepeater()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                var stackLayout = new StackLayout();
+                stackLayout.DisableVirtualization = true;
+                repeater.Layout = stackLayout;
+                repeater.ItemsSource = Enumerable.Range(0, 10);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+
+                var scrollViewer = new ScrollViewer() {
+                    Content = repeater
+                };
+                scrollViewer.Height = 100;
+                Content = scrollViewer;
+                Content.UpdateLayout();
+
+                for (int i = 0; i < repeater.ItemsSourceView.Count; i++)
+                {
+                    var child = repeater.TryGetElement(i) as Button;
+                    Verify.IsNotNull(child);
+                }
+            });
+        }
+
         private ItemsRepeaterScrollHost CreateAndInitializeRepeater(
            object itemsSource,
            VirtualizingLayout layout,

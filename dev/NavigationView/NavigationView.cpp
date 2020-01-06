@@ -3287,7 +3287,7 @@ void NavigationView::UpdateHeaderVisibility(winrt::NavigationViewDisplayMode dis
     // NavigationView doesn't use quirk, but we determine the version by themeresource.
     // As a workaround, we 'quirk' it for RS4 or before release. if it's RS4 or before, HeaderVisible is not related to Header().
     // If theme resource is RS5 or later, we will not show header if header is null.
-    if (!ShouldPreserveNavigationViewRS4Behavior())
+    if (SharedHelpers::IsRS5OrHigher())
     {
         showHeader = Header() && showHeader;
     }
