@@ -131,7 +131,7 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_0()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         return result;
     }
 
@@ -143,7 +143,7 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateEllipseGeometry();
         result.TrimEnd(0.5F);
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         result.StartAnimation(L"TrimStart", TrimStartScalarAnimation_0_to_0p5());
         auto controller = result.TryGetAnimationController(L"TrimStart");
         controller.Pause();
@@ -158,7 +158,7 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_2()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         result.StartAnimation(L"TrimEnd", TrimEndScalarAnimation_0_to_0p5());
         auto controller = result.TryGetAnimationController(L"TrimEnd");
         controller.Pause();
@@ -217,6 +217,7 @@ class ProgressRingAnimatedVisual :
     winrt::ShapeVisual ShapeVisual()
     {
         auto result = _c.CreateShapeVisual();
+        result.Size({ 100, 100 });
         result.Size({ 100, 100 });
         auto shapes = result.Shapes();
         // SolidLayerRectangle
