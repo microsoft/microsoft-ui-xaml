@@ -193,7 +193,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
-        [TestMethod]
+        //[TestMethod] disabled with issue #1815
         public void VerifyCurrentAnchor()
         {
             if(PlatformConfiguration.IsDebugBuildConfiguration())
