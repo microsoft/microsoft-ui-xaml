@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿ ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
     x:Class="MUXControlsTestApp.RadioButtonsPage"
     x:Name="RadioButtonsTestPage"
@@ -22,7 +22,7 @@
             <Grid Grid.Column="0" Margin="5" MinWidth="500" MaxWidth="800">
                 <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Visible">
                     <StackPanel>
-                        <Border x:Name="TestRadioButtonsBorder" BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                        <Border x:Name="TestRadioButtonsBorder" BorderBrush="Black" BorderThickness="1">
                             <controls:RadioButtons x:Name="TestRadioButtons" AutomationProperties.Name="TestRadioButtons" AccessKey="r" Header="I'm the header" SelectionChanged="TestRadioButtons_SelectionChanged" GotFocus="TestRadioButtons_GotFocus" LostFocus="TestRadioButtons_LostFocus"/>
                         </Border>
                         <controls:RadioButtons x:Name="SecondTestRadioButton" Header="A Second Radio Buttons, 0 selected">
@@ -42,128 +42,87 @@
             <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Hidden" Grid.Column="1">
                 <StackPanel Orientation="Horizontal">
                     <ScrollViewer Margin="5">
-                        <StackPanel Background="{ThemeResource SystemListLowColor}" Padding="6"
-                                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1"
-                                MinWidth="300">
+                        <Grid Background="{ThemeResource SystemChromeGrayColor}" MinWidth="300" contract5Available:ColumnSpacing="2" contract5Available:RowSpacing="2">
+                            <Grid.RowDefinitions>
+                                <!--0-->
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <!--5-->
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <!--10-->
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <!--15-->
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <!--20-->
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                            <StackPanel.Resources>
-                                <Style TargetType="StackPanel">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                    <Setter Property="Margin" Value="0,2,0,2"/>
-                                </Style>
+                            <TextBlock Text="RadioButtons APIs" HorizontalAlignment="Center" Foreground="Red" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <TextBlock Text="MaxColumns:" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <TextBox x:Name="MaxColumnsTextBlock" AutomationProperties.Name="MaxColumnsTextBlock" Text="1" HorizontalAlignment="Right" Grid.Row="2" Grid.Column="0" />
+                            <Button x:Name="SetMaxColumnsButton" AutomationProperties.Name="SetMaxColumnsButton" Content="Set" HorizontalAlignment="Left" Click="SetMaxColumnsButton_Click" Grid.Row="2" Grid.Column="1"/>
+                            <TextBlock Text="Number Of Items:" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <TextBox x:Name="NumberOfItemsTextBlock" AutomationProperties.Name="NumberOfItemsTextBlock" Text="10" HorizontalAlignment="Right" Grid.Row="4" Grid.Column="0" />
+                            <Button x:Name="SetNumberOfItemsButton" AutomationProperties.Name="SetNumberOfItemsButton" Content="Set" HorizontalAlignment="Left" Grid.Row="4" Grid.Column="1" Click="SetNumberOfItemsButton_Click"/>
+                            <TextBlock Text="Source:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="0"/>
+                            <ComboBox x:Name="SourceComboBox" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Row="5" Grid.Column="1" SelectionChanged="SourceComboBoxSelectionChanged" SelectedIndex="0">
+                                <ComboBoxItem x:Name="ItemsComboBoxItem" AutomationProperties.Name="ItemsComboBoxItem" Content="Items"/>
+                                <ComboBoxItem x:Name="ItemsSourceComboBoxItem" AutomationProperties.Name="ItemsSourceComboBoxItem" Content="ItemsSource"/>
+                            </ComboBox>
+                            <TextBlock Text="ItemType:" VerticalAlignment="Center" HorizontalAlignment="Right" Grid.Row="6" Grid.Column="0"/>
+                            <ComboBox x:Name="ItemTypeComboBox" AutomationProperties.Name="ItemTypeComboBox" HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" SelectionChanged="ItemTypeComboBoxSelectionChanged" SelectedIndex="0">
+                                <ComboBoxItem x:Name="StringsComboBoxItem" AutomationProperties.Name="StringsComboBoxItem" Content="Strings"/>
+                                <ComboBoxItem x:Name="RadioButtonElementsComboBoxItem" AutomationProperties.Name="RadioButtonElementsComboBoxItem" Content="RadioButton"/>
+                            </ComboBox>
 
-                                <Style TargetType="Button">
-                                    <Setter Property="Margin" Value="4,0,4,0"/>
-                                </Style>
+                            <TextBlock Text="Select Item:" Grid.Row="7" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            <TextBox x:Name="IndexToSelectTextBlock" AutomationProperties.Name="IndexToSelectTextBlock" Text="0" HorizontalAlignment="Left" Grid.Row="7" Grid.Column="1" />
+                            <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="0" Click="SelectByIndexButton_Click"/>
+                            <Button Content="Select By Item" AutomationProperties.Name="SelectByItemButton" HorizontalAlignment="Center" Grid.Row="8" Grid.Column="1" Click="SelectByItemButton_Click"/>
 
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Margin" Value="0,0,4,0"/>
-                                </Style>
-                            </StackPanel.Resources>
-                            
-                            <TextBlock Text="RadioButtons APIs" HorizontalAlignment="Center" Foreground="Red"/>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="MaxColumns:" />
-                                <TextBox x:Name="MaxColumnsTextBlock" AutomationProperties.Name="MaxColumnsTextBlock"
-                                         Text="1" HorizontalAlignment="Right"/>
-                                <Button x:Name="SetMaxColumnsButton" AutomationProperties.Name="SetMaxColumnsButton" Content="Set"
-                                        HorizontalAlignment="Left" Click="SetMaxColumnsButton_Click"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Number Of Items:"/>
-                                <TextBox x:Name="NumberOfItemsTextBlock" AutomationProperties.Name="NumberOfItemsTextBlock" Text="10" HorizontalAlignment="Right"/>
-                                <Button x:Name="SetNumberOfItemsButton" AutomationProperties.Name="SetNumberOfItemsButton" Content="Set" HorizontalAlignment="Left" Click="SetNumberOfItemsButton_Click"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Source:" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                                <ComboBox x:Name="SourceComboBox" VerticalAlignment="Center" HorizontalAlignment="Left"
-                                          SelectionChanged="SourceComboBoxSelectionChanged" SelectedIndex="0">
-                                    <ComboBoxItem x:Name="ItemsComboBoxItem" AutomationProperties.Name="ItemsComboBoxItem" Content="Items"/>
-                                    <ComboBoxItem x:Name="ItemsSourceComboBoxItem" AutomationProperties.Name="ItemsSourceComboBoxItem" Content="ItemsSource"/>
-                                </ComboBox>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="ItemType:" VerticalAlignment="Center" HorizontalAlignment="Right"
-                                           Grid.Row="6" Grid.Column="0"/>
-                                <ComboBox x:Name="ItemTypeComboBox" AutomationProperties.Name="ItemTypeComboBox"
-                                          HorizontalAlignment="Left" Grid.Row="6" Grid.Column="1" SelectionChanged="ItemTypeComboBoxSelectionChanged" SelectedIndex="0">
-                                    <ComboBoxItem x:Name="StringsComboBoxItem" AutomationProperties.Name="StringsComboBoxItem" Content="Strings"/>
-                                    <ComboBoxItem x:Name="RadioButtonElementsComboBoxItem" AutomationProperties.Name="RadioButtonElementsComboBoxItem" Content="RadioButton"/>
-                                </ComboBox>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Select Item:" HorizontalAlignment="Right"
-                                           VerticalAlignment="Center"/>
-                                <TextBox x:Name="IndexToSelectTextBlock" AutomationProperties.Name="IndexToSelectTextBlock"
-                                         Text="0" HorizontalAlignment="Left"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Button Content="Select By Index" AutomationProperties.Name="SelectByIndexButton" HorizontalAlignment="Center"
-                                        Click="SelectByIndexButton_Click"/>
-                                <Button Content="Select By Item" AutomationProperties.Name="SelectByItemButton" HorizontalAlignment="Center"
-                                        Click="SelectByItemButton_Click"/>
-                            </StackPanel>
-
-                            <TextBlock Text="Add a custom Radio Button" HorizontalAlignment="Center" Foreground="Red"/>
-                            <RadioButton x:Name="DisplayRadioButton"
-                                         HorizontalAlignment="Center"/>
-
-                            <StackPanel Orientation="Horizontal">
-                                <Button x:Name="UpdateDisplayRadioButtonButton"
-                                        HorizontalAlignment="Center" Content="Update" Click="UpdateDisplayRadioButtonButton_Click"/>
-                                <Button x:Name="InsertDisplayRadioButtonButton" AutomationProperties.Name="InsertDisplayRadioButtonButton"
-                                        Grid.Row="11" Grid.Column="1" HorizontalAlignment="Center" Content="Insert" Click="InsertDisplayRadioButtonButton_Click"/>
-                            </StackPanel>
-
-                            <TextBlock x:Name="DisplayRadioButtonErrorMessage" Text="Okay" Foreground="Green"
-                                       HorizontalAlignment="Center"/>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Index:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                <TextBox x:Name="CustomIndexTextBox" AutomationProperties.Name="CustomIndexTextBox" Text="0" HorizontalAlignment="Left"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Content:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                <TextBox x:Name="CustomContentTextBox" AutomationProperties.Name="CustomContentTextBox" Text="Custom" HorizontalAlignment="Left"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Disabled:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="CustomDisabledCheckBox" AutomationProperties.Name="CustomDisabledCheckBox" HorizontalAlignment="Left"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Checked:" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-                                <CheckBox x:Name="CustomCheckedCheckBox" AutomationProperties.Name="CustomCheckedCheckBox" HorizontalAlignment="Left"/>
-
-                            </StackPanel>
-                            <TextBlock Text="TestPage Utilities" HorizontalAlignment="Center" Foreground="Red"/>
-
-                            <StackPanel Orientation="Horizontal">
-                                <TextBox x:Name="BorderWidthTextBox" AutomationProperties.Name="BorderWidthTextBox" Text="inf"
-                                         Grid.Row="18" Grid.Column="0" HorizontalAlignment="Right"/>
-                                <Button x:Name="SetBorderWidthButton" AutomationProperties.Name="SetBorderWidthButton" Content="Set"
-                                        Grid.Row="18" Grid.Column="1" HorizontalAlignment="Left" Click="SetBorderWidthButton_Click"/>
-                            </StackPanel>
-                            
-                            <Button Content="Focus Selected Item" AutomationProperties.Name="FocusSelectedItemButton"
-                                    Click="FocusSelectedItemButton_Clicked" Margin="0,4,0,4"/>
-                            <Button Content="Select 5 then change source" AutomationProperties.Name="Select5ThenChangeSourceButton"
-                                     Click="Select5ThenChangeSourceButton_Clicked" Margin="0,4,0,4"/>
-                            <CheckBox x:Name="AllowInvalidValuesCheckBox" AutomationProperties.Name="AllowInvalidValuesCheckBox" Content="Allow Invalid Values" IsChecked="False" IsEnabled="False"/>
-                        </StackPanel>
+                            <TextBlock Text="Add a custom Radio Button" HorizontalAlignment="Center" Foreground="Red" Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <RadioButton x:Name="DisplayRadioButton" Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Center"/>
+                            <Button x:Name="UpdateDisplayRadioButtonButton" Grid.Row="11" Grid.Column="0" HorizontalAlignment="Center" Content="Update" Click="UpdateDisplayRadioButtonButton_Click"/>
+                            <Button x:Name="InsertDisplayRadioButtonButton" AutomationProperties.Name="InsertDisplayRadioButtonButton" Grid.Row="11" Grid.Column="1" HorizontalAlignment="Center" Content="Insert" Click="InsertDisplayRadioButtonButton_Click"/>
+                            <TextBlock x:Name="DisplayRadioButtonErrorMessage" Text="Okay" Foreground="Green" HorizontalAlignment="Center" Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <TextBlock Text="Index:" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="13" Grid.Column="0"/>
+                            <TextBox x:Name="CustomIndexTextBox" AutomationProperties.Name="CustomIndexTextBox" Text="0" HorizontalAlignment="Left" Grid.Row="13" Grid.Column="1"/>
+                            <TextBlock Text="Content:" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="14" Grid.Column="0"/>
+                            <TextBox x:Name="CustomContentTextBox" AutomationProperties.Name="CustomContentTextBox" Text="Custom" HorizontalAlignment="Left" Grid.Row="14" Grid.Column="1"/>
+                            <TextBlock Text="Disabled:" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="15" Grid.Column="0"/>
+                            <CheckBox x:Name="CustomDisabledCheckBox" AutomationProperties.Name="CustomDisabledCheckBox" HorizontalAlignment="Left" Grid.Row="15" Grid.Column="1"/>
+                            <TextBlock Text="Checked:" HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="16" Grid.Column="0"/>
+                            <CheckBox x:Name="CustomCheckedCheckBox" AutomationProperties.Name="CustomCheckedCheckBox" HorizontalAlignment="Left" Grid.Row="16" Grid.Column="1"/>
+                            <TextBlock Text="TestPage Utilities" HorizontalAlignment="Center" Foreground="Red" Grid.Row="17" Grid.Column="0" Grid.ColumnSpan="2"/>
+                            <TextBox x:Name="BorderWidthTextBox" AutomationProperties.Name="BorderWidthTextBox" Text="inf" Grid.Row="18" Grid.Column="0" HorizontalAlignment="Right"/>
+                            <Button x:Name="SetBorderWidthButton" AutomationProperties.Name="SetBorderWidthButton" Content="Set" Grid.Row="18" Grid.Column="1" HorizontalAlignment="Left" Click="SetBorderWidthButton_Click"/>
+                            <Button Content="Focus Selected Item" AutomationProperties.Name="FocusSelectedItemButton" Grid.Row="19" Grid.Column="0" Grid.ColumnSpan="2" Click="FocusSelectedItemButton_Clicked"/>
+                            <Button Content="Select 5 then change source" AutomationProperties.Name="Select5ThenChangeSourceButton" Grid.Row="20" Grid.Column="0" Grid.ColumnSpan="2" Click="Select5ThenChangeSourceButton_Clicked"/>
+                            <CheckBox x:Name="AllowInvalidValuesCheckBox" AutomationProperties.Name="AllowInvalidValuesCheckBox" Content="Allow Invalid Values" HorizontalAlignment="Center" IsChecked="False" IsEnabled="False" Grid.Row="21" Grid.Column="0" Grid.ColumnSpan="2" />
+                        </Grid>
                     </ScrollViewer>
                     <ScrollViewer Margin="5">
-                        <Grid MinWidth="300" contract5Available:ColumnSpacing="2" Padding="6"
-                                BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                        <Grid MinWidth="300" contract5Available:ColumnSpacing="2">
                             <Grid.RowDefinitions>
                                 <!--0-->
                                 <RowDefinition Height="Auto"/>
@@ -186,7 +145,7 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <TextBlock Foreground="Red" HorizontalAlignment="Center" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0">RadioButtons Outputs</TextBlock>
                             <TextBlock Grid.Column="0" Grid.Row="1">Selected Index:</TextBlock>
                             <TextBlock x:Name="SelectedIndexTextBlock" AutomationProperties.Name="SelectedIndexTextBlock" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Left">-1</TextBlock>
@@ -211,11 +170,10 @@
                             <TextBlock Grid.Column="0" Grid.Row="12"># of larger Columns:</TextBlock>
                             <TextBlock x:Name="LayoutNumberOfLargerColumnsTextBlock" AutomationProperties.Name="LayoutNumberOfLargerColumnsTextBlock" Grid.Row="12" Grid.Column="1" HorizontalAlignment="Left">0</TextBlock>
                         </Grid>
-                        
+
                     </ScrollViewer>
                     <!-- Logging Output -->
-                    <Grid Margin="5" MaxWidth="450" Background="{ThemeResource SystemListLowColor}" Padding="6"
-                            BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
+                    <Grid Margin="5" MaxWidth="450" Background="{ThemeResource SystemChromeGrayColor}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>

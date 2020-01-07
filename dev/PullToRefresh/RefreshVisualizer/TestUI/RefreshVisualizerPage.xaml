@@ -9,35 +9,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-        Orientation="Vertical" VerticalAlignment="Center" Margin="12">
-        
-        <muxcontrols:RefreshVisualizer x:Name="RefreshVisualizer"/>
-        <StackPanel Style="{ThemeResource StandardGroupingStackPanel}">
-            <TextBlock Text="Options/actions" Style="{ThemeResource StandardGroupHeader}"/>
-            <StackPanel Orientation="Horizontal">
-                <ComboBox x:Name="OrientationComboBox" Header="Orientation"/>
-                <Button x:Name="InsertIcon" Content="InsertIcon" Margin="8,4,4,0" VerticalAlignment="Bottom"/>
-                <Button x:Name="InsertGrid" Content="InsertGrid" Margin="4,4,4,0" VerticalAlignment="Bottom"/>
-                <Button x:Name="RefreshButton" Content="Refresh" Margin="4,4,4,0" VerticalAlignment="Bottom"/>
-                <Button x:Name="ChangeBackground" Content="ChangeBackground" Margin="4,4,4,0" VerticalAlignment="Bottom"/>
-                <Button x:Name="ChangeForeground" Content="ChangeForeground" Margin="4,4,4,0" VerticalAlignment="Bottom"/>
-                
-            </StackPanel>
-            <Slider x:Name="MarginSlider" Header="Margin" Minimum="-10" Maximum ="50" TickFrequency="2" TickPlacement="BottomRight"/>
-            <Slider x:Name="MySizeSlider" Header="Size" Minimum="2" Maximum ="50" TickFrequency="2" TickPlacement="BottomRight"/>
-
-        </StackPanel>
-
-        <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,8,0,0">
-            <TextBlock Text="State" Style="{ThemeResource StandardGroupHeader}"/>
-            <Slider x:Name="Slider" Header="Animationprogress"
-                Minimum="0"
-                Maximum="100"
-                TickFrequency="2"
-                TickPlacement="BottomRight" />
-            <TextBox x:Name="StateText" Header="State text"/>
-        </StackPanel>
-
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Orientation="Vertical" VerticalAlignment="Center">
+      <muxcontrols:RefreshVisualizer x:Name="RefreshVisualizer"/>
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+        <Button x:Name="RefreshButton" Content="Refresh" Margin="15"/>
+      </StackPanel>
+      <Slider x:Name="Slider"
+            Minimum="0"
+            Maximum="100"
+            TickFrequency="2"
+            TickPlacement="BottomRight" />
+      <ComboBox x:Name="OrientationComboBox"/>
+      <TextBox x:Name="StateText"/>
+      <Button x:Name="InsertIcon" Content="InsertIcon"/>
+      <Button x:Name="InsertGrid" Content="InsertGrid"/>
+      <Button x:Name="ChangeBackground" Content="ChangeBackground"/>
+      <Button x:Name="ChangeForeground" Content="ChangeForeground"/>
+      <Slider x:Name="MarginSlider" Minimum="-10" Maximum ="50" TickFrequency="2" TickPlacement="BottomRight"/>
+      <Slider x:Name="MySizeSlider" Minimum="2" Maximum ="50" TickFrequency="2" TickPlacement="BottomRight"/>
     </StackPanel>
 </local:TestPage>

@@ -10,9 +10,7 @@
     <Import_RootNamespace>RefreshVizualizer_TestUI</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)RefreshVisualizerPage.xaml.cs">
-      <DependentUpon>RefreshVisualizerPage.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)RefreshVisualizerPage.xaml.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SliderAsRefreshInfoProvider.cs" />
   </ItemGroup>
   <ItemGroup>
