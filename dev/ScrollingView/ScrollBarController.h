@@ -19,13 +19,19 @@ public:
     void SetScrollBar(const winrt::ScrollBar& scrollBar);
 
 #pragma region IScrollController
+#ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     bool AreScrollControllerInteractionsAllowed();
+#endif
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
     bool AreScrollerInteractionsAllowed();
+#endif
+
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
+    bool IsInteractionElementRailEnabled();
+#endif
 
     bool IsInteracting();
-
-    bool IsInteractionElementRailEnabled();
 
     winrt::UIElement InteractionElement();
 
@@ -72,16 +78,20 @@ public:
 #pragma endregion
 
 private:
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     void UpdateAreScrollControllerInteractionsAllowed();
+#endif
 
     void HookScrollBarEvent();
     void UnhookScrollBarEvent();
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
     void HookScrollBarPropertyChanged();
     void UnhookScrollBarPropertyChanged();
 
     void OnScrollBarPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
+#endif
     void OnScroll(
         const winrt::IInspectable& sender,
         const winrt::ScrollEventArgs& args);
@@ -121,9 +131,13 @@ private:
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
     double m_lastOffset{ 0.0 };
-    bool m_areScrollerInteractionsAllowed{ true };
     bool m_isInteracting{ false };
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
+    bool m_areScrollerInteractionsAllowed{ true };
+#endif
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     bool m_areScrollControllerInteractionsAllowed{ false };
+#endif
 
     // Event Sources
     event<winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs>> m_scrollToRequested { };
@@ -134,7 +148,9 @@ private:
     // Event Tokens
     winrt::event_token m_scrollBarScrollToken{};
     winrt::event_token m_visibilityChangedToken{};
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
     winrt::event_token m_scrollBarIsEnabledChangedToken{};
+#endif
 #ifdef _DEBUG
     // For testing purposes only
     winrt::event_token m_scrollBarIndicatorModeChangedToken{};

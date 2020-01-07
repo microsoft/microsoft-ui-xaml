@@ -22,7 +22,9 @@ ScrollBarController::~ScrollBarController()
     SCROLLINGVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     UnhookScrollBarEvent();
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
     UnhookScrollBarPropertyChanged();
+#endif
 }
 
 void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
@@ -34,30 +36,38 @@ void ScrollBarController::SetScrollBar(const winrt::ScrollBar& scrollBar)
     m_scrollBar = scrollBar;
 
     HookScrollBarEvent();
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
     HookScrollBarPropertyChanged();
+#endif
 }
 
 #pragma region IScrollController
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
 bool ScrollBarController::AreScrollControllerInteractionsAllowed()
 {
     return m_areScrollControllerInteractionsAllowed;
 }
+#endif
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
 bool ScrollBarController::AreScrollerInteractionsAllowed()
 {
     return m_areScrollerInteractionsAllowed;
 }
+#endif
 
-bool ScrollBarController::IsInteracting()
-{
-    return m_isInteracting;
-}
-
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
 bool ScrollBarController::IsInteractionElementRailEnabled()
 {
     // Unused because InteractionElement returns null.
     return true;
+}
+#endif
+
+bool ScrollBarController::IsInteracting()
+{
+    return m_isInteracting;
 }
 
 winrt::UIElement ScrollBarController::InteractionElement()
@@ -95,7 +105,9 @@ void ScrollBarController::SetScrollMode(
         TypeLogging::ScrollModeToString(scrollMode).c_str());
     m_scrollMode = scrollMode;
 
+#ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     UpdateAreScrollControllerInteractionsAllowed();
+#endif
 }
 
 void ScrollBarController::SetValues(
@@ -162,9 +174,11 @@ void ScrollBarController::SetValues(
         m_lastScrollBarValue = offset;
     }
 
+#ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
     // on the read-only IScrollController.AreScrollControllerInteractionsAllowed property.
     UpdateAreScrollControllerInteractionsAllowed();
+#endif
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
@@ -271,6 +285,7 @@ void ScrollBarController::InteractionInfoChanged(winrt::event_token const& token
 
 #pragma endregion
 
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
 void ScrollBarController::HookScrollBarPropertyChanged()
 {
     SCROLLINGVIEW_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
@@ -279,7 +294,9 @@ void ScrollBarController::HookScrollBarPropertyChanged()
     MUX_ASSERT(m_scrollBarIndicatorModeChangedToken.value == 0);
     MUX_ASSERT(m_scrollBarVisibilityChangedToken.value == 0);
 #endif //_DEBUG
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
     MUX_ASSERT(m_scrollBarIsEnabledChangedToken.value == 0);
+#endif // USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED || _DEBUG
 
     if (m_scrollBar)
     {
@@ -291,8 +308,10 @@ void ScrollBarController::HookScrollBarPropertyChanged()
             winrt::UIElement::VisibilityProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
 #endif //_DEBUG
 
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
         m_scrollBarIsEnabledChangedToken.value = m_scrollBar.RegisterPropertyChangedCallback(
             winrt::Control::IsEnabledProperty(), { this, &ScrollBarController::OnScrollBarPropertyChanged });
+#endif // USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED || _DEBUG
     }
 }
 
@@ -316,14 +335,18 @@ void ScrollBarController::UnhookScrollBarPropertyChanged()
         }
 #endif //_DEBUG
 
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
         if (m_scrollBarIsEnabledChangedToken.value != 0)
         {
             m_scrollBar.UnregisterPropertyChangedCallback(winrt::Control::IsEnabledProperty(), m_scrollBarIsEnabledChangedToken.value);
             m_scrollBarIsEnabledChangedToken.value = 0;
         }
+#endif // USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED || _DEBUG
     }
 }
+#endif // USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED || _DEBUG
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
 void ScrollBarController::UpdateAreScrollControllerInteractionsAllowed()
 {
     bool oldAreScrollControllerInteractionsAllowed = m_areScrollControllerInteractionsAllowed;
@@ -339,6 +362,7 @@ void ScrollBarController::UpdateAreScrollControllerInteractionsAllowed()
         RaiseInteractionInfoChanged();
     }
 }
+#endif
 
 void ScrollBarController::HookScrollBarEvent()
 {
@@ -363,6 +387,7 @@ void ScrollBarController::UnhookScrollBarEvent()
     }
 }
 
+#if defined(USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED) || defined(_DEBUG)
 void ScrollBarController::OnScrollBarPropertyChanged(
     const winrt::DependencyObject& /*sender*/,
     const winrt::DependencyProperty& args)
@@ -379,9 +404,11 @@ void ScrollBarController::OnScrollBarPropertyChanged(
             L"IsEnabled",
             m_scrollBar.IsEnabled());
 
-        // Potentially changed ScrollBar.Minimum / ScrollBar.Maximum value(s) may have an effect
+#ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
+        // Potentially changed ScrollBar.IsEnabled value may have an effect
         // on the read-only IScrollController.AreScrollControllerInteractionsAllowed property.
         UpdateAreScrollControllerInteractionsAllowed();
+#endif
     }
 #ifdef _DEBUG
     else if (args == winrt::UIElement::VisibilityProperty())
@@ -406,6 +433,7 @@ void ScrollBarController::OnScrollBarPropertyChanged(
     }
 #endif //_DEBUG
 }
+#endif
 
 void ScrollBarController::OnScroll(
     const winrt::IInspectable& /*sender*/,
@@ -441,7 +469,9 @@ void ScrollBarController::OnScroll(
     }
     case winrt::ScrollEventType::EndScroll:
     {
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
         m_areScrollerInteractionsAllowed = true;
+#endif
 
         if (m_isInteracting)
         {
@@ -459,7 +489,9 @@ void ScrollBarController::OnScroll(
     {
         if (scrollEventType == winrt::ScrollEventType::ThumbTrack)
         {
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
             m_areScrollerInteractionsAllowed = false;
+#endif
 
             if (!m_isInteracting)
             {

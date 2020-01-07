@@ -133,12 +133,18 @@ private:
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
 
+    void OnHorizontalScrollControllerIsEnabledChanged(
+        const winrt::IInspectable& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHorizontalScrollControllerPointerEntered(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
     void OnHorizontalScrollControllerPointerExited(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
+    void OnVerticalScrollControllerIsEnabledChanged(
+        const winrt::IInspectable& sender,
+        const winrt::DependencyPropertyChangedEventArgs& args);
     void OnVerticalScrollControllerPointerEntered(
         const winrt::IInspectable& sender,
         const winrt::PointerRoutedEventArgs& args);
@@ -162,6 +168,9 @@ private:
         winrt::UISettingsAutoHideScrollBarsChangedEventArgs const& args);
 
     // Internal event handlers
+    void OnScrollingPresenterSizeChanged(
+        const winrt::IInspectable& sender,
+        const winrt::IInspectable& args);
     void OnScrollingPresenterExtentChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
@@ -177,11 +186,9 @@ private:
     void OnScrollingPresenterViewChanged(
         const winrt::IInspectable& sender,
         const winrt::IInspectable& args);
-#ifdef USE_SCROLLMODE_AUTO
     void OnScrollingPresenterPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);
-#endif
     void OnScrollingPresenterScrollCompleted(
         const winrt::IInspectable& sender,
         const winrt::ScrollingScrollCompletedEventArgs& args);
@@ -219,6 +226,8 @@ private:
     void UpdateVerticalScrollController(
         const winrt::IScrollController& verticalScrollController,
         const winrt::IUIElement& verticalScrollControllerElement);
+    void UpdateAreHorizontalScrollControllerInteractionsAllowed();
+    void UpdateAreVerticalScrollControllerInteractionsAllowed();
     void UpdateScrollControllersSeparator(const winrt::IUIElement& scrollControllersSeparator);
     void UpdateScrollingPresenterHorizontalScrollController(const winrt::IScrollController& horizontalScrollController);
     void UpdateScrollingPresenterVerticalScrollController(const winrt::IScrollController& verticalScrollController);
@@ -284,6 +293,7 @@ private:
     winrt::event_token m_isEnabledChangedToken{};
     winrt::event_token m_unloadedToken{};
 
+    winrt::event_token m_scrollingPresenterSizeChangedToken{};
     winrt::event_token m_scrollingPresenterExtentChangedToken{};
     winrt::event_token m_scrollingPresenterStateChangedToken{};
     winrt::event_token m_scrollingPresenterScrollAnimationStartingToken{};
@@ -293,6 +303,8 @@ private:
     winrt::event_token m_scrollingPresenterZoomCompletedToken{};
     winrt::event_token m_scrollingPresenterBringingIntoViewToken{};
     winrt::event_token m_scrollingPresenterAnchorRequestedToken{};
+    winrt::event_token m_scrollingPresenterHorizontalScrollModeChangedToken{};
+    winrt::event_token m_scrollingPresenterVerticalScrollModeChangedToken{};
 #ifdef USE_SCROLLMODE_AUTO
     winrt::event_token m_scrollingPresenterComputedHorizontalScrollModeChangedToken{};
     winrt::event_token m_scrollingPresenterComputedVerticalScrollModeChangedToken{};
@@ -300,6 +312,8 @@ private:
 
     winrt::event_token m_horizontalScrollControllerInteractionInfoChangedToken{};
     winrt::event_token m_verticalScrollControllerInteractionInfoChangedToken{};
+    winrt::event_token m_horizontalScrollControllerIsEnabledChangedToken{};
+    winrt::event_token m_verticalScrollControllerIsEnabledChangedToken{};
 
     winrt::Windows::UI::Xaml::Media::CompositionTarget::Rendering_revoker m_renderingToken{};
 
@@ -337,6 +351,9 @@ private:
 
     // Indicates whether the NoIndicator visual state has a Storyboard for which a completion event was hooked up.
     bool m_hasNoIndicatorStateStoryboardCompletedHandler{ false };
+
+    bool m_areHorizontalScrollControllerInteractionsAllowed{ false };
+    bool m_areVerticalScrollControllerInteractionsAllowed{ false };
 
     // Set to the values of IScrollController::IsInteracting.
     bool m_isHorizontalScrollControllerInteracting{ false };

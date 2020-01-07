@@ -589,7 +589,9 @@ namespace MUXControlsTestApp
             this.scrollBar = scrollBar;
             this.IsLogging = isLogging;
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
             AreScrollerInteractionsAllowed = true;
+#endif
 
             lstLog = logList;
             LogMessage("ScrollBarController: constructor for Orientation=" + Orientation);
@@ -627,24 +629,23 @@ namespace MUXControlsTestApp
             }
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
         public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
         }
+#endif
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
         public bool AreScrollerInteractionsAllowed
         {
             get;
             private set;
         }
+#endif
 
-        public bool IsInteracting
-        {
-            get;
-            private set;
-        }
-
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
         public bool IsInteractionElementRailEnabled
         {
             get
@@ -652,6 +653,13 @@ namespace MUXControlsTestApp
                 // Unused because InteractionElement returns null.
                 return false;
             }
+        }
+#endif
+
+        public bool IsInteracting
+        {
+            get;
+            private set;
         }
 
         public UIElement InteractionElement
@@ -698,7 +706,9 @@ namespace MUXControlsTestApp
         public void SetScrollMode(ScrollingScrollMode scrollMode)
         {
             LogMessage("ScrollBarController: SetScrollMode for Orientation=" + Orientation + " with scrollMode=" + scrollMode);
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             AreScrollControllerInteractionsAllowed = scrollMode != ScrollingScrollMode.Disabled && IsEnabled;
+#endif
         }
 
         public void SetValues(
@@ -771,7 +781,14 @@ namespace MUXControlsTestApp
             switch (e.ScrollEventType)
             {
                 case ScrollEventType.EndScroll:
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                     AreScrollerInteractionsAllowed = true;
+#endif
+                    if (IsInteracting)
+                    {
+                        IsInteracting = false;
+                        RaiseInteractionInfoChanged();
+                    }
                     break;
                 case ScrollEventType.LargeDecrement:
                 case ScrollEventType.LargeIncrement:
@@ -780,9 +797,19 @@ namespace MUXControlsTestApp
                 case ScrollEventType.ThumbPosition:
                 case ScrollEventType.ThumbTrack:
 
-                    if (e.ScrollEventType == ScrollEventType.ThumbTrack && AreScrollerInteractionsAllowed)
+                    if (e.ScrollEventType == ScrollEventType.ThumbTrack)
                     {
-                        AreScrollerInteractionsAllowed = false;
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
+                        if (AreScrollerInteractionsAllowed)
+                        {
+                            AreScrollerInteractionsAllowed = false;
+                        }
+#endif
+                        if (!IsInteracting)
+                        {
+                            IsInteracting = true;
+                            RaiseInteractionInfoChanged();
+                        }
                     }
 
                     int offsetChangeId = RaiseScrollToRequested(

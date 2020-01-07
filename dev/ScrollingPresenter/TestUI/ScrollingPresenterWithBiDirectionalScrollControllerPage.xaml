@@ -32,8 +32,10 @@
         <StackPanel Grid.Column="2" Margin="2" VerticalAlignment="Top">
             <Button x:Name="btnSetScrollingPresenterScrollControllers" Content="Set ScrollingPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnSetScrollingPresenterScrollControllers_Click"/>
             <Button x:Name="btnResetScrollingPresenterScrollControllers" Content="Reset ScrollingPresenter scroll controllers" Margin="2" HorizontalAlignment="Stretch" Click="BtnResetScrollingPresenterScrollControllers_Click"/>
+            <!-- ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
             <CheckBox x:Name="chkIsBiDirectionalScrollControllerRailing" Content="Is BiDirectionalScrollController Railing?" Margin="2" HorizontalAlignment="Left" 
                       Checked="ChkIsBiDirectionalScrollControllerRailing_Checked" Unchecked="ChkIsBiDirectionalScrollControllerRailing_Unchecked" IsChecked="True"/>
+            -->
         </StackPanel>
 
         <StackPanel Grid.Column="3" Margin="2" VerticalAlignment="Top">

@@ -2459,7 +2459,11 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         if (dimension == ScrollingPresenterDimension::HorizontalScroll)
         {
             orientation = m_horizontalScrollController.get().InteractionElementScrollOrientation();
+#ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
             isRailEnabled = m_horizontalScrollController.get().IsInteractionElementRailEnabled();
+#else
+            isRailEnabled = s_defaultHorizontalScrollRailMode == winrt::ScrollingRailMode::Enabled;
+#endif
 
             if (orientation == winrt::Orientation::Horizontal)
             {
@@ -2475,7 +2479,11 @@ void ScrollingPresenter::SetupScrollControllerVisualInterationSource(
         else
         {
             orientation = m_verticalScrollController.get().InteractionElementScrollOrientation();
+#ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
             isRailEnabled = m_verticalScrollController.get().IsInteractionElementRailEnabled();
+#else
+            isRailEnabled = s_defaultVerticalScrollRailMode == winrt::ScrollingRailMode::Enabled;
+#endif
 
             if (orientation == winrt::Orientation::Horizontal)
             {
@@ -4615,6 +4623,7 @@ void ScrollingPresenter::OnPointerPressed(
     MUX_ASSERT(m_interactionTracker);
     MUX_ASSERT(m_scrollingPresenterVisualInteractionSource);
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
     if (m_horizontalScrollController && !m_horizontalScrollController.get().AreScrollerInteractionsAllowed())
     {
         return;
@@ -4624,6 +4633,17 @@ void ScrollingPresenter::OnPointerPressed(
     {
         return;
     }
+#else
+    if (m_horizontalScrollController && m_horizontalScrollController.get().IsInteracting())
+    {
+        return;
+    }
+
+    if (m_verticalScrollController && m_verticalScrollController.get().IsInteracting())
+    {
+        return;
+    }
+#endif
 
     const winrt::UIElement content = Content();
 #ifdef USE_SCROLLMODE_AUTO
@@ -4766,7 +4786,10 @@ void ScrollingPresenter::OnScrollControllerInteractionRequested(
 }
 
 // Invoked by an IScrollController implementation when one or more of its characteristics has changed:
-// InteractionElement, InteractionElementScrollOrientation or IsInteractionElementRailEnabled.
+// IsInteracting, InteractionElement, InteractionElementScrollOrientation
+// #ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED IsInteractionElementRailEnabled
+// #ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED AreScrollControllerInteractionsAllowed
+// #ifdef USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED AreScrollerInteractionsAllowed
 void ScrollingPresenter::OnScrollControllerInteractionInfoChanged(
     const winrt::IScrollController& sender,
     const winrt::IInspectable& /*args*/)
