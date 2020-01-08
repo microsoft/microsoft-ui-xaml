@@ -191,6 +191,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
+                Log.Comment("Hiding the disabled tab");
+                var disabledTabCheckBox = FindElement.ByName<CheckBox>("IsDisabledTabVisibleCheckBox");
+                Verify.IsNotNull(disabledTabCheckBox);
+                disabledTabCheckBox.Uncheck();
+
+                Log.Comment("Finding the first tab");
                 UIObject firstTab = FindElement.ByName("FirstTab");
                 Button closeButton = FindCloseButton(firstTab);
                 Verify.IsNotNull(closeButton);
