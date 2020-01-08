@@ -143,13 +143,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetSpanningRectsAvailable()
-{
-    static bool s_isApplicationViewGetSpanningRectsAvailable =
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetSpanningRects");
-    return s_isApplicationViewGetSpanningRectsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =

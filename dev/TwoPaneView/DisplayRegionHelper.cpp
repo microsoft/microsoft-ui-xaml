@@ -36,7 +36,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
             info.Regions[0] = m_simulateWide0;
         }
     }
-    else if (SharedHelpers::IsApplicationViewGetSpanningRectsAvailable())
+    else
     {
         // ApplicationView::GetForCurrentView throws on failure; in that case we just won't do anything.
         winrt::ApplicationView view{ nullptr };
@@ -47,7 +47,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
 
         if (view)
         {
-            if (const auto appView = view.as<winrt::IApplicationViewSpanningRects>())
+            if (const auto appView = view.try_as<winrt::IApplicationViewSpanningRects>())
             {
                 winrt::IVectorView<winrt::Rect> rects = appView.GetSpanningRects();
 
