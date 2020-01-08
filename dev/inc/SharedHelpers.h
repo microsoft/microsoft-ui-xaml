@@ -41,7 +41,7 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
+    static bool IsApplicationViewGetSpanningRectsAvailable();
 
     static bool IsControlCornerRadiusAvailable();
 

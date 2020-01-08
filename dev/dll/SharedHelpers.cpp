@@ -143,12 +143,11 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
+bool SharedHelpers::IsApplicationViewGetSpanningRectsAvailable()
 {
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
+    static bool s_isApplicationViewGetSpanningRectsAvailable =
+        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetSpanningRects");
+    return s_isApplicationViewGetSpanningRectsAvailable;
 }
 
 bool SharedHelpers::IsControlCornerRadiusAvailable()
