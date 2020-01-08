@@ -22,6 +22,7 @@
 #include "IndexPath.h"
 #include "InspectingDataSource.h"
 #include "NavigationViewAutomationPeer.h"
+#include "StackLayout.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -299,6 +300,13 @@ void NavigationView::OnApplyTemplate()
     if (auto topNavRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsHost, controlProtected))
     {
         m_topNavRepeater.set(topNavRepeater);
+
+        // API is currently in preview, so setting this via code
+        if (auto stackLayout = topNavRepeater.Layout().try_as<winrt::StackLayout>())
+        {
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            stackLayoutImpl->DisableVirtualization(true);
+        }
 
         m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
         m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });

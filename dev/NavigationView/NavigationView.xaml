@@ -268,7 +268,7 @@
                                                 AutomationProperties.AccessibilityView = "Content"
                                                 x:Name="TopNavMenuItemsHost">
                                                 <local:ItemsRepeater.Layout>
-                                                    <local:StackLayout Orientation="Horizontal" DisableVirtualization="True"/>
+                                                    <local:StackLayout Orientation="Horizontal"/>
                                                 </local:ItemsRepeater.Layout>
                                             </local:ItemsRepeater>
                                         </ScrollViewer>
