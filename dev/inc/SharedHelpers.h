@@ -41,8 +41,6 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
-
     static bool IsControlCornerRadiusAvailable();
 
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);

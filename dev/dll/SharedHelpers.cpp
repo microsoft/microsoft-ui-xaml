@@ -143,14 +143,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
-{
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
