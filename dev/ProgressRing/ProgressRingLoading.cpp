@@ -21,7 +21,7 @@ static bool IsRuntimeCompatible()
 }
 
 class ProgressRingAnimatedVisual :
-    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual>
+    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual, winrt::IClosable>
 {
     static constexpr auto c_durationTicks = 2000ms;
     winrt::Compositor const _c{ nullptr };
@@ -30,6 +30,8 @@ class ProgressRingAnimatedVisual :
     winrt::StepEasingFunction _holdThenStepEasingFunction{ nullptr };
     winrt::ContainerVisual _root{ nullptr };
     winrt::ExpressionAnimation _scalarExpressionAnimation{ nullptr };
+
+    double _strokeThickness{ 2 };
 
     // Layer (Shape): Radial
     // Transforms: Radial
@@ -249,8 +251,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
+        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
 
@@ -265,8 +267,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
+        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
 
@@ -281,8 +283,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
+        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
 
@@ -328,9 +330,10 @@ class ProgressRingAnimatedVisual :
     }
 
 public:
-    ProgressRingAnimatedVisual(winrt::Compositor compositor)
+    ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness)
         : _c(compositor)
     , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+    , _strokeThickness(strokeThickness / 2) 
     {
         Root();
     }
@@ -349,7 +352,20 @@ public:
     {
         return { c_durationTicks };
     }
+
+    void Close()
+    {
+        if (_root)
+        {
+            _root.Close();
+        }
+    }
 };
+
+ProgressRingLoading::ProgressRingLoading(double strokeThickness) : m_strokeThickness(strokeThickness)
+{
+
+}
 
 winrt::IAnimatedVisual ProgressRingLoading::TryCreateAnimatedVisual(
     const winrt::Compositor& compositor,
@@ -360,5 +376,5 @@ winrt::IAnimatedVisual ProgressRingLoading::TryCreateAnimatedVisual(
     {
         return nullptr;
     }
-    return winrt::make<ProgressRingAnimatedVisual>(compositor);
+    return winrt::make<ProgressRingAnimatedVisual>(compositor, m_strokeThickness);
 }

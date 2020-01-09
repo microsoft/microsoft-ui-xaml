@@ -45,6 +45,7 @@ void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, co
 
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    ApplyLottieAnimation();
     UpdateRing();
 }
 
@@ -57,7 +58,7 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        player.Source(winrt::make<ProgressRingLoading>());
+        player.Source(winrt::make<ProgressRingLoading>(StrokeThickness()));
     }
 }
 

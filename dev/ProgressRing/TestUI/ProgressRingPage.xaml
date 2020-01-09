@@ -22,7 +22,7 @@
                 Height="40"
                 Maximum="100"
                 Minimum="0"
-                StrokeThickness="4"
+                StrokeThickness="2"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
 
