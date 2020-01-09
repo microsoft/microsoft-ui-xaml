@@ -66,12 +66,13 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Pivot\TestUI\Pivot_TestUI.projitems" Label="Shared" Condition="$(FeaturePivotEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ScrollBar\TestUI\ScrollBar_TestUI.projitems" Label="Shared" Condition="$(FeatureScrollBarEnabled) == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'"/>
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ContentDialog\TestUI\ContentDialog_TestUI.projitems" Label="Shared" Condition="$(FeatureContentDialogEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\NumberBox\TestUI\NumberBox_TestUI.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\TestUI\CalendarView_TestUI.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\CalendarView\APITests\CalendarView_APITests.projitems" Label="Shared" Condition="$(FeatureCalendarViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\SplitView\TestUI\SplitView_TestUI.projitems" Label="Shared" Condition="$(FeatureSplitViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressBar\TestUI\ProgressBar_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressBarEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ProgressRing\TestUI\ProgressRing_TestUI.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
   <!-- These depend on the type InteractionBase, which is behind the Velocity feature Feature_Xaml2018 in the OS repo.
        We can't compile them without attaching the same feature annotation, and MIDL doesn't let us attach feature attributes
        to non-public types.  So for now we'll just exclude these from the OS repo. -->
