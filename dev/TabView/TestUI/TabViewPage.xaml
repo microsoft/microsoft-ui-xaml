@@ -23,6 +23,7 @@
                 <CheckBox x:Name="HandleTabCloseRequestedCheckBox" AutomationProperties.Name="HandleTabCloseRequestedCheckBox" Content="Handle TabView tab close" IsChecked="True"/>
                 <CheckBox x:Name="HandleTabItemCloseRequestedCheckBox" AutomationProperties.Name="HandleTabItemCloseRequestedCheckBox" Content="Handle TabViewItem close"/>
                 <CheckBox x:Name="IsAddButtonVisibleCheckBox" AutomationProperties.Name="IsAddButtonVisibleCheckBox" Content="Add button visible" IsChecked="{x:Bind Tabs.IsAddTabButtonVisible, Mode=TwoWay}"/>
+                <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
                     <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
@@ -148,6 +149,16 @@
 
                             <StackPanel>
                                 <TextBlock Padding="16">This tab can't be closed.</TextBlock>
+                            </StackPanel>
+                        </controls:TabViewItem>
+
+                        <controls:TabViewItem x:Name="DisabledTab" AutomationProperties.Name="DisabledTab" Header="Disabled" IsEnabled="False">
+                            <controls:TabViewItem.IconSource>
+                                <controls:SymbolIconSource Symbol="Admin"/>
+                            </controls:TabViewItem.IconSource>
+
+                            <StackPanel>
+                                <TextBlock Padding="16">This tab can't be selected.</TextBlock>
                             </StackPanel>
                         </controls:TabViewItem>
 
