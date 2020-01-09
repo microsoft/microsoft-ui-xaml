@@ -92,12 +92,6 @@ class ProgressRingAnimatedVisual :
         return _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0xD3, 0xD3, 0xD3));
     }
 
-    // SolidLayerRectangle
-    winrt::CompositionColorBrush ColorBrush_White()
-    {
-        return _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0xFF, 0xFF, 0xFF));
-    }
-
     // Layer (Shape): Radial
     winrt::CompositionContainerShape ContainerShape_0()
     {
@@ -175,15 +169,6 @@ class ProgressRingAnimatedVisual :
         return result;
     }
 
-    // SolidLayerRectangle
-    // SolidLayerRectangle.RectangleGeometry
-    winrt::CompositionRectangleGeometry Rectangle_960x720()
-    {
-        auto result = _c.CreateRectangleGeometry();
-        result.Size({ 960, 720 });
-        return result;
-    }
-
     // The root of the composition.
     winrt::ContainerVisual Root()
     {
@@ -222,22 +207,10 @@ class ProgressRingAnimatedVisual :
         result.Size({ 100, 100 });
         result.Size({ 100, 100 });
         auto shapes = result.Shapes();
-        // SolidLayerRectangle
-        shapes.Append(SpriteShape_0());
         // Ellipse Path
         shapes.Append(SpriteShape_1());
         // Layer (Shape): Radial
         shapes.Append(ContainerShape_0());
-        return result;
-    }
-
-    // SolidLayerRectangle
-    winrt::CompositionSpriteShape SpriteShape_0()
-    {
-        auto result = _c.CreateSpriteShape();
-        result.TransformMatrix({1, 0, 0, 1, -430, -310});
-        result.FillBrush(ColorBrush_White());
-        result.Geometry(Rectangle_960x720());
         return result;
     }
 
@@ -251,7 +224,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.IsStrokeNonScaling(true);
+        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -267,7 +241,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.IsStrokeNonScaling(true);
+        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -283,7 +258,8 @@ class ProgressRingAnimatedVisual :
         result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(static_cast<float>(_strokeThickness * 2));
+        result.IsStrokeNonScaling(true);
+        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -333,7 +309,7 @@ public:
     ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness)
         : _c(compositor)
     , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
-    , _strokeThickness(strokeThickness / 2) 
+    , _strokeThickness(strokeThickness) 
     {
         Root();
     }

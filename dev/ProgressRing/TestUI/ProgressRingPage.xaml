@@ -18,11 +18,11 @@
         <StackPanel Orientation="Vertical">
             <controls:ProgressRing
                 x:Name="TestProgressRing"
-                Width="40"
-                Height="40"
+                Width="100"
+                Height="100"
                 Maximum="100"
                 Minimum="0"
-                StrokeThickness="2"
+                StrokeThickness="4"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
 
