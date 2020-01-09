@@ -9,14 +9,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <!-- CommandBarFlyouts used for testing -->
         <Grid.Resources>
             <muxc:CommandBarFlyout Placement="Right" x:Name="Flyout1" AutomationProperties.AutomationId="Flyout1" Opened="OnFlyoutOpened" Closed="OnFlyoutClosed">
                 <AppBarButton x:Name="CutButton1" AutomationProperties.AutomationId="CutButton1" Label="Cut" Icon="Cut" Click="OnElementClicked" />
@@ -155,32 +152,20 @@
                 </muxc:CommandBarFlyout.SecondaryCommands>
             </muxc:CommandBarFlyout>
         </Grid.Resources>
-
-        
         <ScrollViewer>
             <StackPanel>
-                <StackPanel.Resources>
-                    <Style TargetType="Button">
-                        <Setter Property="Margin" Value="0,6,0,6"/>
-                    </Style>
-                </StackPanel.Resources>
-                <TextBlock Text="Tests" Style="{ThemeResource StandardGroupHeader}"/>
-                <Button x:Name="FlyoutTarget1" Content="Show CommandBarFlyout" Click="OnFlyoutTarget1Click" />
-                <Button x:Name="FlyoutTarget2" Content="Show expanding CommandBarFlyout" Click="OnFlyoutTarget2Click" />
-                <Button x:Name="FlyoutTarget3" Content="Show tall CommandBarFlyout" Click="OnFlyoutTarget3Click" />
-                <Button x:Name="FlyoutTarget4" Content="Show max-width CommandBarFlyout" Click="OnFlyoutTarget4Click" />
-                <Button x:Name="FlyoutTarget5" Content="Show CommandBarFlyout with sub-menu" Click="OnFlyoutTarget5Click" />
-                <Button x:Name="FlyoutTarget6" Content="Show CommandBarFlyout with no primary commands" Click="OnFlyoutTarget6Click" />
-                <Button x:Name="FlyoutTarget7" Content="Show CommandBarFlyout with non-focusable primary commands" Click="OnFlyoutTarget7Click" />
+                <Button x:Name="FlyoutTarget1" Content="Show CommandBarFlyout" Margin="10" Click="OnFlyoutTarget1Click" />
+                <Button x:Name="FlyoutTarget2" Content="Show expanding CommandBarFlyout" Margin="10" Click="OnFlyoutTarget2Click" />
+                <Button x:Name="FlyoutTarget3" Content="Show tall CommandBarFlyout" Margin="10" Click="OnFlyoutTarget3Click" />
+                <Button x:Name="FlyoutTarget4" Content="Show max-width CommandBarFlyout" Margin="10" Click="OnFlyoutTarget4Click" />
+                <Button x:Name="FlyoutTarget5" Content="Show CommandBarFlyout with sub-menu" Margin="10" Click="OnFlyoutTarget5Click" />
+                <Button x:Name="FlyoutTarget6" Content="Show CommandBarFlyout with no primary commands" Margin="10" Click="OnFlyoutTarget6Click" />
+                <Button x:Name="FlyoutTarget7" Content="Show CommandBarFlyout with non-focusable primary commands" Margin="10" Click="OnFlyoutTarget7Click" />
+                <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Margin="10" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
             </StackPanel>
         </ScrollViewer>
         <StackPanel Grid.Row="1">
-            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
-            <CheckBox x:Name="IsRTLCheckBox" Content="Is Page in RightToLeft FlowDirection?" AutomationProperties.AutomationId="IsRTLCheckBox" Checked="IsRTLCheckBox_Checked" Unchecked="IsRTLCheckBox_Unchecked" />
-        </StackPanel>
-        <StackPanel Grid.Row="2" Margin="0,8,0,0">
-            <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}"/>
-            <TextBox IsReadOnly="True" AcceptsReturn="True" x:Name="StatusReportingTextBox" AutomationProperties.AutomationId="StatusReportingTextBox"/>
+            <TextBox IsReadOnly="True" AcceptsReturn="True" x:Name="StatusReportingTextBox" AutomationProperties.AutomationId="StatusReportingTextBox" Margin="10" />
             <CheckBox x:Name="IsFlyoutOpenCheckBox" AutomationProperties.AutomationId="IsFlyoutOpenCheckBox" Content="Is flyout open" />
         </StackPanel>
     </Grid>

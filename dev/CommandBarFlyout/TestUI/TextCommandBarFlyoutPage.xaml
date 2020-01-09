@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto" />
@@ -20,7 +20,6 @@
                     <muxc:TextCommandBarFlyout x:Name="TextControlContextFlyout" />
                     <muxc:TextCommandBarFlyout x:Name="TextControlSelectionFlyout" />
                 </StackPanel.Resources>
-                <TextBlock Text="Test controls" Style="{ThemeResource StandardGroupHeader}"/>
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -34,23 +33,9 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-
-                    <!-- Sample TextBox-->
                     <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" Text="Lorem ipsum ergo sum" Margin="10" />
-                    <Button x:Name="TextBoxSelectAllButton" AutomationProperties.AutomationId="TextBoxSelectAllButton" Content="Select all" Click="OnTextBoxSelectAllClicked" Grid.Column="1" />
-                    <Button x:Name="TextBlockSelectAllButton" AutomationProperties.AutomationId="TextBlockSelectAllButton" Content="Select all" Click="OnTextBlockSelectAllClicked" Grid.Row="1" Grid.Column="1" />
-
-                    <!-- Sample TextBlock-->
                     <TextBlock x:Name="TextBlock1" AutomationProperties.AutomationId="TextBlock" Text="Lorem ipsum ergo sum" Margin="10" IsTextSelectionEnabled="True" Grid.Row="1" />
-                    <Button x:Name="RichEditBoxSelectAllButton" AutomationProperties.AutomationId="RichEditBoxSelectAllButton" Content="Select all" Click="OnRichEditBoxSelectAllClicked" Grid.Row="2" Grid.Column="1" />
-                    <Button x:Name="RichTextBlockSelectAllButton" AutomationProperties.AutomationId="RichTextBlockSelectAllButton" Content="Select all" Click="OnRichTextBlockSelectAllClicked" Grid.Row="3" Grid.Column="1" />
-
-                    <!-- Sample RichEditBox-->
                     <RichEditBox x:Name="RichEditBox1" AutomationProperties.AutomationId="RichEditBox" Margin="10" Grid.Row="2" />
-                    <Button x:Name="TextBoxClearSelectionButton" AutomationProperties.AutomationId="TextBoxClearSelectionButton" Content="Clear selection" Click="OnTextBoxClearSelectionClicked" Grid.Column="2" />
-                    <Button x:Name="TextBlockClearSelectionButton" AutomationProperties.AutomationId="TextBlockClearSelectionButton" Content="Clear selection" Click="OnTextBlockClearSelectionClicked" Grid.Row="1" Grid.Column="2" />
-
-                    <!-- Sample RichTextBlock-->
                     <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" IsTextSelectionEnabled="True" Grid.Row="3">
                         <Paragraph>
                             <Bold>
@@ -60,41 +45,37 @@
                             </Bold>
                         </Paragraph>
                     </RichTextBlock>
+                    <PasswordBox x:Name="PasswordBox1" AutomationProperties.AutomationId="PasswordBox" Password="Lorem ipsum ergo sum" Margin="10" Grid.Row="4" />
+                    <Button x:Name="TextBoxSelectAllButton" AutomationProperties.AutomationId="TextBoxSelectAllButton" Content="Select all" Click="OnTextBoxSelectAllClicked" Grid.Column="1" />
+                    <Button x:Name="TextBlockSelectAllButton" AutomationProperties.AutomationId="TextBlockSelectAllButton" Content="Select all" Click="OnTextBlockSelectAllClicked" Grid.Row="1" Grid.Column="1" />
+                    <Button x:Name="RichEditBoxSelectAllButton" AutomationProperties.AutomationId="RichEditBoxSelectAllButton" Content="Select all" Click="OnRichEditBoxSelectAllClicked" Grid.Row="2" Grid.Column="1" />
+                    <Button x:Name="RichTextBlockSelectAllButton" AutomationProperties.AutomationId="RichTextBlockSelectAllButton" Content="Select all" Click="OnRichTextBlockSelectAllClicked" Grid.Row="3" Grid.Column="1" />
+                    <Button x:Name="TextBoxClearSelectionButton" AutomationProperties.AutomationId="TextBoxClearSelectionButton" Content="Clear selection" Click="OnTextBoxClearSelectionClicked" Grid.Column="2" />
+                    <Button x:Name="TextBlockClearSelectionButton" AutomationProperties.AutomationId="TextBlockClearSelectionButton" Content="Clear selection" Click="OnTextBlockClearSelectionClicked" Grid.Row="1" Grid.Column="2" />
                     <Button x:Name="RichEditBoxClearSelectionButton" AutomationProperties.AutomationId="RichEditBoxClearSelectionButton" Content="Clear selection" Click="OnRichEditBoxClearSelectionClicked" Grid.Row="2" Grid.Column="2" />
                     <Button x:Name="RichTextBlockClearSelectionButton" AutomationProperties.AutomationId="RichTextBlockClearSelectionButton" Content="Clear selection" Click="OnRichTextBlockClearSelectionClicked" Grid.Row="3" Grid.Column="2" />
-
-                    <PasswordBox x:Name="PasswordBox1" AutomationProperties.AutomationId="PasswordBox" Password="Lorem ipsum ergo sum" Margin="10" Grid.Row="4" />
-
                 </Grid>
-                <StackPanel>
-                    <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
-                    <TextBlock Text="Show TextCommandBarFlyout in transient mode on..." FontSize="16" AutomationProperties.HeadingLevel="Level3"/>
-                    <VariableSizedWrapGrid Orientation="Horizontal">
-                        <Button x:Name="ShowTextControlFlyoutOnTextBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnTextBoxButton" Content="TextBox" Width="150" Margin="0,5,5,5" Click="OnShowTextControlFlyoutOnTextBoxClicked" />
-                        <Button x:Name="ShowTextControlFlyoutOnTextBlockButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnTextBlockButton" Content="TextBlock" Width="150" Margin="0,5,5,5" Click="OnShowTextControlFlyoutOnTextBlockClicked" />
-                        <Button x:Name="ShowTextControlFlyoutOnRichEditBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnRichEditBoxButton" Content="RichEditBox" Width="150" Margin="0,5,5,5" Click="OnShowTextControlFlyoutOnRichEditBoxClicked" />
-                        <Button x:Name="ShowTextControlFlyoutOnRichTextBlockButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnRichTextBlockButton" Content="RichTextBlock" Width="150" Margin="0,5,5,5" Click="OnShowTextControlFlyoutOnRichTextBlockClicked" />
-                        <Button x:Name="ShowTextControlFlyoutOnPasswordBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnPasswordBoxButton" Content="PasswordBox" Width="150" Margin="0,5,5,5" Click="OnShowTextControlFlyoutOnPasswordBoxClicked" />
-                    </VariableSizedWrapGrid>
-                    <TextBlock Text="Show TextControlCommandBarFlyout in standard mode on..."  FontSize="16" AutomationProperties.HeadingLevel="Level3"/>
-                    <VariableSizedWrapGrid Orientation="Horizontal">
-                        <Button x:Name="ShowStandardTextControlFlyoutOnTextBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnTextBoxButton" Content="TextBox" Width="150" Margin="0,5,5,5" Click="OnShowStandardTextControlFlyoutOnTextBoxClicked" />
-                        <Button x:Name="ShowStandardTextControlFlyoutOnTextBlockButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnTextBlockButton" Content="TextBlock" Width="150" Margin="0,5,5,5" Click="OnShowStandardTextControlFlyoutOnTextBlockClicked" />
-                        <Button x:Name="ShowStandardTextControlFlyoutOnRichEditBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnRichEditBoxButton" Content="RichEditBox" Width="150" Margin="0,5,5,5" Click="OnShowStandardTextControlFlyoutOnRichEditBoxClicked" />
-                        <Button x:Name="ShowStandardTextControlFlyoutOnRichTextBlockButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnRichTextBlockButton" Content="RichTextBlock" Width="150" Margin="0,5,5,5" Click="OnShowStandardTextControlFlyoutOnRichTextBlockClicked" />
-                        <Button x:Name="ShowStandardTextControlFlyoutOnPasswordBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnPasswordBoxButton" Content="PasswordBox" Width="150" Margin="0,5,5,5" Click="OnShowStandardTextControlFlyoutOnPasswordBoxClicked" />
+                <TextBlock Text="Show TextCommandBarFlyout in transient mode on..." HorizontalAlignment="Center" />
+                <VariableSizedWrapGrid Orientation="Horizontal">
+                    <Button x:Name="ShowTextControlFlyoutOnTextBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnTextBoxButton" Content="TextBox" Width="150" Margin="5" Click="OnShowTextControlFlyoutOnTextBoxClicked" />
+                    <Button x:Name="ShowTextControlFlyoutOnTextBlockButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnTextBlockButton" Content="TextBlock" Width="150" Margin="5" Click="OnShowTextControlFlyoutOnTextBlockClicked" />
+                    <Button x:Name="ShowTextControlFlyoutOnRichEditBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnRichEditBoxButton" Content="RichEditBox" Width="150" Margin="5" Click="OnShowTextControlFlyoutOnRichEditBoxClicked" />
+                    <Button x:Name="ShowTextControlFlyoutOnRichTextBlockButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnRichTextBlockButton" Content="RichTextBlock" Width="150" Margin="5" Click="OnShowTextControlFlyoutOnRichTextBlockClicked" />
+                    <Button x:Name="ShowTextControlFlyoutOnPasswordBoxButton" AutomationProperties.AutomationId="ShowTextControlFlyoutOnPasswordBoxButton" Content="PasswordBox" Width="150" Margin="5" Click="OnShowTextControlFlyoutOnPasswordBoxClicked" />
                 </VariableSizedWrapGrid>
-                </StackPanel>
-                </StackPanel>
-        </ScrollViewer>
-        <StackPanel Grid.Row="1">
-            <TextBlock Text="Status reporting" Style="{ThemeResource StandardGroupHeader}"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="Show TextControlCommandBarFlyout in standard mode on..." HorizontalAlignment="Center" />
+                <VariableSizedWrapGrid Orientation="Horizontal">
+                    <Button x:Name="ShowStandardTextControlFlyoutOnTextBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnTextBoxButton" Content="TextBox" Width="150" Margin="5" Click="OnShowStandardTextControlFlyoutOnTextBoxClicked" />
+                    <Button x:Name="ShowStandardTextControlFlyoutOnTextBlockButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnTextBlockButton" Content="TextBlock" Width="150" Margin="5" Click="OnShowStandardTextControlFlyoutOnTextBlockClicked" />
+                    <Button x:Name="ShowStandardTextControlFlyoutOnRichEditBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnRichEditBoxButton" Content="RichEditBox" Width="150" Margin="5" Click="OnShowStandardTextControlFlyoutOnRichEditBoxClicked" />
+                    <Button x:Name="ShowStandardTextControlFlyoutOnRichTextBlockButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnRichTextBlockButton" Content="RichTextBlock" Width="150" Margin="5" Click="OnShowStandardTextControlFlyoutOnRichTextBlockClicked" />
+                    <Button x:Name="ShowStandardTextControlFlyoutOnPasswordBoxButton" AutomationProperties.AutomationId="ShowStandardTextControlFlyoutOnPasswordBoxButton" Content="PasswordBox" Width="150" Margin="5" Click="OnShowStandardTextControlFlyoutOnPasswordBoxClicked" />
+                </VariableSizedWrapGrid>
                 <Button x:Name="ClearClipboardContentsButton" AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard contents" Click="OnClearClipboardContentsClicked" />
                 <Button x:Name="SetClipboardContentsButton" AutomationProperties.AutomationId="SetClipboardContentsButton" Content="Set clipboard contents" Click="OnSetClipboardContentsClicked" />
                 <Button x:Name="GetRichEditBoxRtfContentButton" AutomationProperties.AutomationId="GetRichEditBoxRtfContentButton" Content="Get RichEditBox RTF content" Click="OnGetRichEditBoxRtfContentClicked" />
             </StackPanel>
-            <TextBox IsReadOnly="True" AcceptsReturn="True" x:Name="StatusReportingTextBox" AutomationProperties.AutomationId="StatusReportingTextBox"/>
-        </StackPanel>
+        </ScrollViewer>
+        <TextBox Grid.Row="1" IsReadOnly="True" AcceptsReturn="True" x:Name="StatusReportingTextBox" AutomationProperties.AutomationId="StatusReportingTextBox" Margin="10" />
     </Grid>
 </local:TestPage>
