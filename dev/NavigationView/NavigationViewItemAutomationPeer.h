@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -19,6 +19,7 @@ public:
     // IAutomationPeerOverrides 
     winrt::hstring GetNameCore();
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
+    winrt::AutomationControlType GetAutomationControlTypeCore();
 
     // IAutomationPeerOverrides3
     int32_t GetPositionInSetCore();
