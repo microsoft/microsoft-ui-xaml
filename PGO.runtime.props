@@ -10,7 +10,7 @@
         <Content Include="$(PGOFilesDir)\pgort140.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="$(PGOFilesDir)\pgosweep.dll">
+        <Content Include="$(PGOFilesDir)\pgosweep.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
         <Content Include="$(PGOFilesDir)\vcruntime140.dll">

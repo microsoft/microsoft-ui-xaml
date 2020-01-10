@@ -10,6 +10,7 @@
   <Import Project="$(MSBuildProjectDirectory)\..\..\environment.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\ProjectConfigurations.props" />
   <Import Project="$(MSBuildProjectDirectory)\..\..\version.props" />
+  <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{ad0c90b0-4845-4d4b-88f1-86f653f8171b}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
@@ -58,7 +59,6 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
-  <Import Condition="'$(Configuration)' == 'Release'" Project="$(MSBuildProjectDirectory)\..\..\PGO.compile.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -205,6 +205,7 @@
       <!-- Microsoft.winmd will contain the definition of both public, preview and private types. -->
       <WindowsMetadataFile>$(OutDir)\Microsoft.winmd</WindowsMetadataFile>
       <GenerateMapFile>true</GenerateMapFile>
+      <LinkTimeCodeGeneration Condition="'$(Configuration)'=='Release'">UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <AdditionalOptions Condition="'$(Configuration)'=='Release'">/debugtype:cv,fixup %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <ClCompile>
