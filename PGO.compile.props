@@ -1,7 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <PGOBuildMode Condition="'$(PGOBuildMode)'==''">Optimize</PGOBuildMode>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(PGOBuildMode)' == 'Instrument'">
+        <WholeProgramOptimization>PGInstrument</WholeProgramOptimization>
+    </PropertyGroup>
+
     <!-- Enable PGO optimization only for Release builds. -->
-    <ItemDefinitionGroup Condition="'$(Configuration)' == 'Release' and '$(PGOBuildMode)' == 'Instrument'">
+    <ItemDefinitionGroup Condition="'$(PGOBuildMode)' == 'Instrument'">
         <Link>
             <LinkTimeCodeGeneration>PGInstrument</LinkTimeCodeGeneration>
             <AdditionalDependencies Condition="'$(Platform)'=='ARM'">$(VC_ReferencesPath_VC_ARM)\pgort.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -9,5 +17,5 @@
             <AdditionalDependencies Condition="'$(Platform)'=='Win32'">$(VC_ReferencesPath_VC_x86)\pgort.lib;%(AdditionalDependencies)</AdditionalDependencies>
             <AdditionalDependencies Condition="'$(Platform)'=='x64'">$(VC_ReferencesPath_VC_x64)\pgort.lib;%(AdditionalDependencies)</AdditionalDependencies>
         </Link>
-    </ItemDefinitionGroup>   
+    </ItemDefinitionGroup>
 </Project>
