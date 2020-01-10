@@ -7,7 +7,7 @@
 #include "NavigationViewItem.h"
 #include "ItemTemplateWrapper.h"
 
-void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable newValue)
+void NavigationViewItemsFactory::UserElementFactory(winrt::IInspectable const& newValue)
 {
     m_itemTemplateWrapper = newValue.try_as<winrt::IElementFactoryShim>();
     if (!m_itemTemplateWrapper)
