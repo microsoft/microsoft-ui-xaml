@@ -25,10 +25,43 @@
                 StrokeThickness="4"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
+            
+            <Grid Width="200px" HorizontalAlignment="Left">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
+                <TextBox x:Name="MaximumInput" AutomationProperties.Name="MaximumInput" Header="Maximum" PlaceholderText="100" Width="50" HorizontalAlignment="Left" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MaximumInputText" AutomationProperties.Name="MaximumInputText" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Maximum, Mode=TwoWay}"/>
+
+                <TextBox x:Name="MinimumInput" AutomationProperties.Name="MinimumInput" Header="Minimum" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="1" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="MinimumInputText" AutomationProperties.Name="MinimumInputText" Grid.Row="1" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Minimum, Mode=TwoWay}"/>
+
+                <TextBox x:Name="WidthInput" AutomationProperties.Name="WidthInput" Header="Width" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="2" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="WidthInputText" AutomationProperties.Name="WidthInputText" Grid.Row="2" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Width, Mode=TwoWay}"/>
+
+                <TextBox x:Name="StrokeInput" AutomationProperties.Name="StrokeInput" Header="Stroke" PlaceholderText="4" Width="50" HorizontalAlignment="Left" Grid.Row="3" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="StrokeInputText" AutomationProperties.Name="StrokeInputText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Width, Mode=TwoWay}"/>
+
+                <TextBox x:Name="ValueInput" AutomationProperties.Name="ValueInput" Header="Value" PlaceholderText="0" Width="50" HorizontalAlignment="Left" Grid.Row="4" Grid.ColumnSpan="1"/>
+                <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="4" Grid.Column="1" Text="{Binding ElementName=TestProgressBar, Path=Value, Mode=TwoWay}"/>
+            </Grid>
+            
             <CheckBox x:Name="ShowIsDeterminateCheckBox" AutomationProperties.Name="ShowIsDeterminateCheckBox" Content="IsDeterminate"/>
             
-            <TextBlock x:Name="ValueText" AutomationProperties.Name="ValueText" Grid.Row="3" Grid.Column="1" Text="{Binding ElementName=TestProgressRing, Path=Value, Mode=TwoWay}"/>
+            <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
+            <Button x:Name="UpdateWidthButton" AutomationProperties.Name="UpdateWidthButton" Content="Update Width" Click="UpdateWidth_Click"/>
+            <Button x:Name="UpdateStrokeButton" AutomationProperties.Name="UpdateStrokeButton" Content="Update Stroke" Click="UpdateStroke_Click"/>
+            <Button x:Name="UpdateValueButton" AutomationProperties.Name="UpdateValueButton" Content="Update Value" Click="UpdateValue_Click"/>
             <RepeatButton x:Name="ChangeValueButton" AutomationProperties.Name="ChangeValueButton" Content="Hold and Change Value" Click="ChangeValue_Click" />
 
             

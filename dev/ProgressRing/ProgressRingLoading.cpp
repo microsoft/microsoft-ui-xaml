@@ -32,6 +32,7 @@ class ProgressRingAnimatedVisual :
     winrt::ExpressionAnimation _scalarExpressionAnimation{ nullptr };
 
     double _strokeThickness{ 2 };
+    winrt::Size _size;
 
     // Layer (Shape): Radial
     // Transforms: Radial
@@ -205,7 +206,6 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateShapeVisual();
         result.Size({ 100, 100 });
-        result.Size({ 100, 100 });
         auto shapes = result.Shapes();
         // Ellipse Path
         shapes.Append(SpriteShape_1());
@@ -225,7 +225,6 @@ class ProgressRingAnimatedVisual :
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
         result.IsStrokeNonScaling(true);
-        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -242,7 +241,6 @@ class ProgressRingAnimatedVisual :
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
         result.IsStrokeNonScaling(true);
-        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -259,7 +257,6 @@ class ProgressRingAnimatedVisual :
         result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
         result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
         result.IsStrokeNonScaling(true);
-        result.StrokeMiterLimit(4);
         result.StrokeThickness(static_cast<float>(_strokeThickness));
         return result;
     }
@@ -306,10 +303,11 @@ class ProgressRingAnimatedVisual :
     }
 
 public:
-    ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness)
+    ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness, winrt::Size size)
         : _c(compositor)
     , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
-    , _strokeThickness(strokeThickness) 
+    , _strokeThickness(strokeThickness)
+    , _size(size)
     {
         Root();
     }
@@ -338,7 +336,7 @@ public:
     }
 };
 
-ProgressRingLoading::ProgressRingLoading(double strokeThickness) : m_strokeThickness(strokeThickness)
+ProgressRingLoading::ProgressRingLoading(double strokeThickness, winrt::Size size) : m_strokeThickness(strokeThickness), m_size(size)
 {
 
 }
@@ -352,5 +350,5 @@ winrt::IAnimatedVisual ProgressRingLoading::TryCreateAnimatedVisual(
     {
         return nullptr;
     }
-    return winrt::make<ProgressRingAnimatedVisual>(compositor, m_strokeThickness);
+    return winrt::make<ProgressRingAnimatedVisual>(compositor, m_strokeThickness, m_size);
 }

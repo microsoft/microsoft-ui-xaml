@@ -58,7 +58,9 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        player.Source(winrt::make<ProgressRingLoading>(StrokeThickness()));
+        const double thickness = StrokeThickness();
+        const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+        player.Source(winrt::make<ProgressRingLoading>(thickness, size));
     }
 }
 
