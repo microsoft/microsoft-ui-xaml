@@ -1,0 +1,37 @@
+﻿namespace MU_XM_NAMESPACE
+{
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+[MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+[MUX_PROPERTY_CHANGED_CALLBACK_METHODNAME("OnPropertyChanged")]
+[contentproperty("GradientStops")]
+unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositionBrushBase
+{
+    RadialGradientBrush();
+
+    [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
+    Windows.Foundation.Point EllipseCenter { get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
+    Windows.Foundation.Point EllipseRadius { get; set; };
+
+    Windows.Foundation.Point GradientOriginOffset { get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::BrushMappingMode::RelativeToBoundingBox")]
+    Windows.UI.Xaml.Media.BrushMappingMode MappingMode { get; set; };
+
+    [MUX_DEFAULT_VALUE("winrt::Windows::UI::Composition::CompositionColorSpace::Auto")]
+    Windows.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
+
+    [MUX_PROPERTY_CHANGED_CALLBACK(FALSE)]
+    Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Media.GradientStop> GradientStops { get; };
+
+    static Windows.UI.Xaml.DependencyProperty EllipseCenterProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty EllipseRadiusProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty GradientOriginOffsetProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty InterpolationSpaceProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty MappingModeProperty { get; };
+}
+
+}

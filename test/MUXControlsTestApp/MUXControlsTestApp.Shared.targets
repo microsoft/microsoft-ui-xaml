@@ -80,4 +80,5 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\TestUI\SliderInteraction_TestUI.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\ButtonInteraction\APITests\ButtonInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\Interactions\SliderInteraction\APITests\SliderInteraction_APITests.projitems" Label="Shared" Condition="$(FeatureInteractionsEnabled) == 'true' And $(UseInternalSDK) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\RadialGradientBrush\TestUI\RadialGradientBrush_TestUI.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
 </Project>
