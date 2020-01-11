@@ -90,7 +90,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.ExpandedModeThresholdWidth = 600.0;
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
-                navView.Height = 600.0;
+                navView.Height = 200.0;
                 navView.Content = "This test should have enough NavigationViewItems to scroll.";
                 MUXControlsTestApp.App.TestContentRoot = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
