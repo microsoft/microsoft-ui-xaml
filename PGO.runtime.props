@@ -13,7 +13,10 @@
         <Content Include="$(PGOFilesDir)\pgosweep.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="$(PGOFilesDir)\vcruntime140.dll">
+        <Content Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+        <Content Include="$(PGOFilesDir)\vcruntime140_1.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140_1.dll')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
