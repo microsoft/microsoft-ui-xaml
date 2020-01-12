@@ -62,7 +62,7 @@
     <FeatureSplitViewEnabled>false</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>false</FeatureProgressBarEnabled>
     <FeatureProgressRingEnabled>false</FeatureProgressRingEnabled>
-    <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
+    <FeatureRadialGradientBrushEnabled>false</FeatureRadialGradientBrushEnabled>
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />
