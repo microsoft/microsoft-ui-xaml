@@ -23,16 +23,21 @@ public:
     void OnConnected();
     void OnDisconnected();
 
-    void OnPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnEllipseCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnEllipseRadiusPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnGradientOriginOffsetPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnMappingModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnInterpolationSpacePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     bool m_isConnected{};
     winrt::CompositionBrush m_brush{ nullptr };
     winrt::IObservableVector<winrt::GradientStop> m_gradientStops{ nullptr };
 
-    winrt::event_token m_gradientStopsChangedToken{};
-    winrt::event_token m_fallbackColorChangedToken{};
+    winrt::Collections::IObservableVector<winrt::GradientStop>::VectorChanged_revoker m_gradientStopsVectorChangedRevoker{};
+    PropertyChanged_revoker m_fallbackColorChangedRevoker{};
 
+    void OnGradientStopsVectorChanged(winrt::Collections::IObservableVector<winrt::GradientStop> const& sender, winrt::Collections::IVectorChangedEventArgs const& e);
     void OnFallbackColorChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void EnsureCompositionBrush();

@@ -97,7 +97,7 @@ void RadialGradientBrushProperties::OnEllipseCenterPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnEllipseCenterPropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::OnEllipseRadiusPropertyChanged(
@@ -105,7 +105,7 @@ void RadialGradientBrushProperties::OnEllipseRadiusPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnEllipseRadiusPropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::OnGradientOriginOffsetPropertyChanged(
@@ -113,7 +113,7 @@ void RadialGradientBrushProperties::OnGradientOriginOffsetPropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnGradientOriginOffsetPropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::OnInterpolationSpacePropertyChanged(
@@ -121,7 +121,7 @@ void RadialGradientBrushProperties::OnInterpolationSpacePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnInterpolationSpacePropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::OnMappingModePropertyChanged(
@@ -129,7 +129,7 @@ void RadialGradientBrushProperties::OnMappingModePropertyChanged(
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto owner = sender.as<winrt::RadialGradientBrush>();
-    winrt::get_self<RadialGradientBrush>(owner)->OnPropertyChanged(args);
+    winrt::get_self<RadialGradientBrush>(owner)->OnMappingModePropertyChanged(args);
 }
 
 void RadialGradientBrushProperties::EllipseCenter(winrt::Point const& value)
