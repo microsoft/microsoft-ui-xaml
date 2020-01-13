@@ -274,6 +274,7 @@ namespace winrt
     using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
+    using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
@@ -290,6 +291,7 @@ namespace winrt
     using IXamlLightProtected = winrt::Windows::UI::Xaml::Media::IXamlLightProtected;
     using LinearGradientBrush = ::winrt::Windows::UI::Xaml::Media::LinearGradientBrush;
     using LoadedImageSurface = ::winrt::Windows::UI::Xaml::Media::LoadedImageSurface;
+    using PathFigure = winrt::Windows::UI::Xaml::Media::PathFigure;
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;

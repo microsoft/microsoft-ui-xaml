@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TeachingTipTemplateSettings.h"
 
-CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TeachingTipTemplateSettings)
+}
+
+#include "TeachingTipTemplateSettings.g.cpp"
 
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_IconElementProperty{ nullptr };
 GlobalDependencyProperty TeachingTipTemplateSettingsProperties::s_TopLeftHighlightMarginProperty{ nullptr };

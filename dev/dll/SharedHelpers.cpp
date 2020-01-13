@@ -143,14 +143,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
-{
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
@@ -256,15 +248,21 @@ bool SharedHelpers::IsAPIContractV3Available()
     return IsAPIContractVxAvailable<3>();
 }
 
+void* __stdcall winrt_get_activation_factory(std::wstring_view const& name);
+
 bool SharedHelpers::IsInFrameworkPackage()
 {
     static bool isInFrameworkPackage = []() {
         // Special type that we manually list here which is not part of the Nuget dll distribution package. 
         // This is our breadcrumb that we leave to be able to detect at runtime that we're using the framework package.
-        // It's listed only in AppxManifest.xml as an activatable type but it isn't activatable.
-        Microsoft::WRL::Wrappers::HStringReference detectorType(FrameworkPackageDetectorFactory::RuntimeClassName());
-        winrt::com_ptr<IActivationFactory> activationFactory;
-        if (SUCCEEDED(RoGetActivationFactory(detectorType.Get(), __uuidof(IActivationFactory), (void**)winrt::put_abi(activationFactory))))
+        // It's listed only in the Framework packages' AppxManifest.xml as an activatable type but only so
+        // that RoGetActivationFactory will change behavior and call our DllGetActivationFactory. It doesn't
+        // mater what comes back for the activationfactory. If it succeeds it means we're running against
+        // the framework package.
+
+        winrt::hstring typeName{ L"Microsoft.UI.Private.Controls.FrameworkPackageDetector"sv};
+        winrt::IActivationFactory activationFactory;
+        if (SUCCEEDED(WINRT_RoGetActivationFactory(winrt::get_abi(typeName), winrt::guid_of<IActivationFactory>(), winrt::put_abi(activationFactory))))
         {
             return true;
         }
@@ -366,7 +364,7 @@ void SharedHelpers::ScheduleActionAfterWait(
     // The callback that is given to CreateTimer is called off of the UI thread.
     // In order to make this useful by making it so we can interact with XAML objects,
     // we'll use the dispatcher to first post our work to the UI thread before executing it.
-    winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
+    auto timer = winrt::ThreadPoolTimer::CreateTimer(winrt::TimerElapsedHandler(
         [action, dispatcherHelper](auto const&)
         {
             dispatcherHelper.RunAsync(action);
@@ -384,7 +382,7 @@ winrt::InMemoryRandomAccessStream SharedHelpers::CreateStreamFromBytes(const win
     writer.WriteBytes(winrt::array_view<const byte>(bytes));
     SyncWait(writer.StoreAsync());
     SyncWait(writer.FlushAsync());
-    writer.DetachStream();
+    auto detachedStream = writer.DetachStream();
     writer.Close();
 
     stream.Seek(0);

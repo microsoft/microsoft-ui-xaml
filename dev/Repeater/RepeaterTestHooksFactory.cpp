@@ -5,6 +5,8 @@
 #include "common.h"
 #include "RepeaterTestHooksFactory.h"
 
+#include "RepeaterTestHooks.properties.cpp"
+
 RepeaterTestHooks* RepeaterTestHooks::s_testHooks = nullptr;
 
 void RepeaterTestHooks::EnsureHooks()

@@ -7,7 +7,7 @@
 #include "ScrollerTypeLogging.h"
 #include "ZoomOptions.h"
 
-CppWinRTActivatableClassWithBasicFactory(ZoomOptions);
+#include "ZoomOptions.properties.cpp"
 
 ZoomOptions::ZoomOptions(
     winrt::AnimationMode const& animationMode)

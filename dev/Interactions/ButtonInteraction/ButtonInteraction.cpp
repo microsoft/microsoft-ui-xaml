@@ -7,7 +7,7 @@
 #include "ButtonInteraction.h"
 #include "ButtonInteractionInvokedEventArgs.h"
 
-CppWinRTActivatableClassWithBasicFactory(ButtonInteraction);
+#include "ButtonInteraction.properties.cpp"
 
 winrt::ButtonInteractionInvokeMode ButtonInteraction::InvokeMode()
 {
@@ -33,16 +33,6 @@ bool ButtonInteraction::IsHovering()
 bool ButtonInteraction::IsPressing()
 {
     return m_isPressing;
-}
-
-winrt::event_token ButtonInteraction::Invoked(winrt::TypedEventHandler<winrt::ButtonInteraction, winrt::ButtonInteractionInvokedEventArgs> const& value)
-{
-    return m_invokedEventSource.add(value);
-}
-
-void ButtonInteraction::Invoked(winrt::event_token const& token)
-{
-    m_invokedEventSource.remove(token);
 }
 
 winrt::event_token ButtonInteraction::PropertyChanged(winrt::PropertyChangedEventHandler const& value)

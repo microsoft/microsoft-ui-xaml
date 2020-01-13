@@ -43,7 +43,7 @@ using LayoutPanel = Microsoft.UI.Xaml.Controls.LayoutPanel;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class LayoutTests : TestsBase
+    public class LayoutTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateMappingAndAutoRecycling()

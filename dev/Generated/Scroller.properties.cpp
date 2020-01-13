@@ -6,7 +6,12 @@
 #include "common.h"
 #include "Scroller.h"
 
-CppWinRTActivatableClassWithDPFactory(Scroller)
+namespace winrt::Microsoft::UI::Xaml::Controls::Primitives
+{
+    CppWinRTActivatableClassWithDPFactory(Scroller)
+}
+
+#include "Scroller.g.cpp"
 
 GlobalDependencyProperty ScrollerProperties::s_BackgroundProperty{ nullptr };
 GlobalDependencyProperty ScrollerProperties::s_ContentProperty{ nullptr };

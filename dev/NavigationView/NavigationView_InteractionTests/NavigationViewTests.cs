@@ -2574,7 +2574,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // choose 2nd item so if it accidentally succeeds
                 // on firstor last item, we don't get false positives
                 Verify.AreEqual(2, positionInSet, "Position in set");
-                Verify.AreEqual(3, sizeOfSet, "Size of set");
+                Verify.AreEqual(4, sizeOfSet, "Size of set");
 
                 // Perform the test again with an IIterable (IEnumerable in C# projection)
                 Button changeButton = new Button(FindElement.ByName("ChangeToIEnumerableButton"));
@@ -3722,6 +3722,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestProperty("TestSuite", "D")]
         public void EnsureDynamicSizeForPaneHeaderFooterAndCustomContent()
         {
+            if (PlatformConfiguration.IsDebugBuildConfiguration())
+            {
+                // Test is failing in chk configuration due to:
+                // Bug #1734 NavigationViewTests.EnsureDynamicSizeForPaneHeaderFooterAndCustomContent fails in CHK configuration
+                Log.Warning("Skipping test for Debug builds.");
+                return;
+            }
+
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Stretch Test" }))
             {
                 Button navButton = new Button(FindElement.ById("TogglePaneButton"));
@@ -4037,6 +4045,114 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Maximize the window
                 KeyboardHelper.PressKey(Key.Right, ModifierKey.Windows, 1);
                 KeyboardHelper.PressKey(Key.Up, ModifierKey.Windows, 1);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCorrectNumberOfEventsRaised()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                TextBlock itemInvokedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfItemInvokedEventsRaisedTextBlock"));
+                TextBlock selectionChangedCountTextBlock = new TextBlock(FindElement.ByName("NumberOfSelectionChangedEventsRaisedTextBlock"));
+
+                Log.Comment("Verify that only one SelectionChanged event was raised.");
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "1");
+
+                Log.Comment("Invoke MusicItem.");
+                UIObject item1 = FindElement.ByName("Music");
+                item1.Click();
+                Wait.ForIdle();
+
+                Log.Comment("Verify event counts.");
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "1");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "2");
+
+                Log.Comment("Invoke selected item (MusicItem).");
+                item1.Click();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "2");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "2");
+
+                Log.Comment("Clear event counters.");
+                Button resetEventCounters = new Button(FindElement.ByName("ResetEventCounters"));
+                resetEventCounters.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+
+                Log.Comment("Verify that switching pane mode to top does not raise any events.");
+                var flipOrientationButton = new Button(FindElement.ByName("FlipOrientationButton"));
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+
+                Log.Comment("Verify that switching pane mode to auto does not raise any events.");
+                flipOrientationButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(itemInvokedCountTextBlock.GetText(), "0");
+                Verify.AreEqual(selectionChangedCountTextBlock.GetText(), "0");
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyEventsReturnExpectedDataTypesMenuItems()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
+                const string stringType = "System.String";
+
+                var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
+                var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
+                var selectionChangedItemtype = new Edit(FindElement.ById("SelectionChangedItemType"));
+                var selectionChangedItemContainerType = new Edit(FindElement.ById("SelectionChangedItemContainerType"));
+
+                Log.Comment("Click music item");
+                var menuItem = FindElement.ByName("Music");
+                InputHelper.LeftClick(menuItem);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that item invoked returns expected parameters.");
+                Verify.IsTrue(itemInvokedItemType.Value == stringType);
+                Verify.IsTrue(itemInvokedItemContainerType.Value == navigationViewItemType);
+
+                Log.Comment("Verify that selection changed event returns expected parameters");
+                Verify.IsTrue(selectionChangedItemtype.Value == navigationViewItemType);
+                Verify.IsTrue(selectionChangedItemContainerType.Value == navigationViewItemType);
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyEventsReturnExpectedDataTypesMenuItemsSource()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Init Test" }))
+            {
+                const string navigationViewItemType = "Microsoft.UI.Xaml.Controls.NavigationViewItem";
+                const string stringType = "System.String";
+
+                var itemInvokedItemType = new Edit(FindElement.ById("ItemInvokedItemType"));
+                var itemInvokedItemContainerType = new Edit(FindElement.ById("ItemInvokedItemContainerType"));
+                var selectionChangedItemtype = new Edit(FindElement.ById("SelectionChangedItemType"));
+                var selectionChangedItemContainerType = new Edit(FindElement.ById("SelectionChangedItemContainerType"));
+
+                Log.Comment("Click music item");
+                var menuItem = FindElement.ByName("Music");
+                InputHelper.LeftClick(menuItem);
+                Wait.ForIdle();
+
+                Log.Comment("Verify that item invoked returns expected parameters.");
+                Verify.IsTrue(itemInvokedItemType.Value == stringType);
+                Verify.IsTrue(itemInvokedItemContainerType.Value == navigationViewItemType);
+
+                Log.Comment("Verify that selection changed event returns expected parameters");
+                Verify.IsTrue(selectionChangedItemtype.Value == stringType);
+                Verify.IsTrue(selectionChangedItemContainerType.Value == navigationViewItemType);
             }
         }
 

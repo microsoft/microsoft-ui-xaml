@@ -37,7 +37,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 
     [TestClass]
-    public class ItemTemplateTests : TestsBase
+    public class ItemTemplateTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateRecycling()

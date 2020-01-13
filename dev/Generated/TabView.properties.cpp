@@ -6,7 +6,12 @@
 #include "common.h"
 #include "TabView.h"
 
-CppWinRTActivatableClassWithDPFactory(TabView)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(TabView)
+}
+
+#include "TabView.g.cpp"
 
 GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandProperty{ nullptr };
 GlobalDependencyProperty TabViewProperties::s_AddTabButtonCommandParameterProperty{ nullptr };

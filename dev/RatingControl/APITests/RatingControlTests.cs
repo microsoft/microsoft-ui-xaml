@@ -30,7 +30,7 @@ using RatingItemImageInfo = Microsoft.UI.Xaml.Controls.RatingItemImageInfo;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class RatingControlTests
+    public class RatingControlTests : ApiTestBase
     {
         [TestMethod]
         public void VerifyDefaultsAndBasicSetting()

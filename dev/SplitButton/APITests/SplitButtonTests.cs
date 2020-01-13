@@ -23,17 +23,8 @@ using SplitButton = Microsoft.UI.Xaml.Controls.SplitButton;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class SplitButtonTests
+    public class SplitButtonTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() => {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
-
         [TestMethod]
         [Description("Verifies SplitButton default properties.")]
         public void VerifyDefaultsAndBasicSetting()

@@ -936,6 +936,11 @@ namespace MUXControlsTestApp
             }
         }
 
+        private void SelectLastRootNode_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeView.SelectedNode = TestTreeView.RootNodes[TestTreeView.RootNodes.Count-1];
+        }
+
         private void TreeViewLateDataInitTestPage_Click(object sender, RoutedEventArgs e)
         {
             Frame.NavigateWithoutAnimation(typeof(TreeViewLateDataInitTest));

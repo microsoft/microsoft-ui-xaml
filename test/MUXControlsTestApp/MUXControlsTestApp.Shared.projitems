@@ -155,6 +155,7 @@
     <None Include="$(MSBuildThisFileDirectory)\..\..\build\MSTest.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities\APITestBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\ExtendedObservableCollection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities\TopLevelTestPageAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)VisualTreeTestHelper.cs" />

@@ -9,7 +9,7 @@ class ScrollViewer;
 
 using namespace std;
 
-class ScrollBarController final:
+class ScrollBarController:
     public winrt::implements<ScrollBarController, winrt::IScrollController>
 {
 public:

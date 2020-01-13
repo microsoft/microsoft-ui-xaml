@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ButtonInteraction.h"
 
-CppWinRTActivatableClassWithBasicFactory(ButtonInteraction)
+namespace winrt::Microsoft::UI::Private::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(ButtonInteraction)
+}
+
+#include "ButtonInteraction.g.cpp"
 
 
 ButtonInteractionProperties::ButtonInteractionProperties()

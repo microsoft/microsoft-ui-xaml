@@ -32,7 +32,7 @@ using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class LeakTests
+    public class LeakTests : ApiTestBase
     {
         void CheckLeaks(Dictionary<string, WeakReference> objects)
         {
@@ -121,16 +121,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 var eventCycle = new MUXControlsTestApp.EventCycleTest();
-                MUXControlsTestApp.App.TestContentRoot = eventCycle;
+                Content = eventCycle;
                 objects["EventCycle"] = new WeakReference(eventCycle);
-            });
-            IdleSynchronizer.Wait();
-
-            // After templates have been expanded, now remove it. After the dust has settled we expect that things have been GC'd.
-            Log.Comment("After templates have been expanded, now remove it. After the dust has settled we expect that things have been GC'd.");
-            RunOnUIThread.Execute(() =>
-            {
-                MUXControlsTestApp.App.TestContentRoot = null;
+                Content.UpdateLayout();
+                // After templates have been expanded, now remove it. After the dust has settled we expect that things have been GC'd.
+                Log.Comment("After templates have been expanded, now remove it. After the dust has settled we expect that things have been GC'd.");
+                Content = null;
             });
             IdleSynchronizer.Wait();
 
@@ -145,11 +141,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         public void VerifyTreeViewHasNoLeak()
         {
             var objects = new Dictionary<string, WeakReference>();
-            TreeView tree = null;
 
             RunOnUIThread.Execute(() =>
             {
-                tree = new TreeView();
+                var tree = new TreeView();
                 objects["Tree"] = new WeakReference(tree);
 
                 for (int i = 1; i <= 3; i++)
@@ -166,16 +161,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     tree.RootNodes.Add(parentNode);
                 }
 
-                MUXControlsTestApp.App.TestContentRoot = tree;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content = tree;
+                Content.UpdateLayout();
                 objects["TreeViewList"] = new WeakReference(FindVisualChildByName(tree, "ListControl"));
                 tree = null;
-                MUXControlsTestApp.App.TestContentRoot = null;
+                Content = null;
             });
 
             IdleSynchronizer.Wait();

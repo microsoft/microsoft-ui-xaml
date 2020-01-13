@@ -6,7 +6,12 @@
 #include "common.h"
 #include "RadioMenuFlyoutItem.h"
 
-CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(RadioMenuFlyoutItem)
+}
+
+#include "RadioMenuFlyoutItem.g.cpp"
 
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_GroupNameProperty{ nullptr };
 GlobalDependencyProperty RadioMenuFlyoutItemProperties::s_IsCheckedProperty{ nullptr };

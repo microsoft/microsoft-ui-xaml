@@ -142,9 +142,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        //[TestMethod] Crashing tests, issue #1655
+        [TestMethod]
         public void BasicKeyboardTest()
         {
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
             using (var setup = new TestSetupHelper("RadioButtons Tests"))
             {
                 elements = new RadioButtonsTestPageElements();
@@ -527,6 +532,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetItemType(type);
                         SetNumberOfColumns(1);
                         SetNumberOfItems(10);
+                        SetBorderWidthToInf();
 
                         VerifyLayoutData(10, 1, 0);
                         SetNumberOfColumns(3);
@@ -538,10 +544,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         SetNumberOfColumns(10);
                         VerifyLayoutData(1, 10, 0);
                         SetNumberOfColumns(20);
-                        VerifyLayoutData(0, 10, 10);
+                        VerifyLayoutData(1, 10, 0);
 
                         SetNumberOfItems(77);
                         VerifyLayoutData(3, 20, 17);
+
+                        SetBorderWidth(100);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(200);
+                        VerifyLayoutData(77, 1, 0);
+                        SetBorderWidth(300);
+                        VerifyLayoutData(38, 2, 1);
+                        SetBorderWidth(500);
+                        VerifyLayoutData(25, 3, 2);
+                        SetBorderWidth(550);
+                        VerifyLayoutData(19, 4, 1);
                     }
                 }
             }
@@ -638,6 +655,44 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 }
             }
         }
+        [TestMethod]
+        public void AccessKeys()
+        { 
+            if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+            {
+                Log.Warning("This test requires RS3+ keyboarding behavior");
+                return;
+            }
+            using (var setup = new TestSetupHelper("RadioButtons Tests"))
+            {
+                elements = new RadioButtonsTestPageElements();
+                foreach (RadioButtonsSourceLocation location in Enum.GetValues(typeof(RadioButtonsSourceLocation)))
+                {
+                    SetSource(location);
+                    foreach (RadioButtonsSourceType type in Enum.GetValues(typeof(RadioButtonsSourceType)))
+                    {
+                        SetItemType(type);
+                        SetNumberOfItems(10);
+
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifyFocusedIndex(0);
+                        VerifySelectedIndex(-1);
+
+                        SelectByIndex(3);
+                        VerifySelectedIndex(3);
+                        VerifyFocusedIndex(-1);
+
+                        KeyboardHelper.PressKey(Key.Tab);
+                        VerifyRadioButtonsHasFocus(false);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
+                        UseAccessKey();
+                        VerifySelectedFocusedIndex(3);
+                    }
+                }
+            }
+        }
 
         void SetNumberOfColumns(int columns)
         {
@@ -649,6 +704,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             elements.GetNumberOfItemsTextBlock().SetValue(items.ToString());
             elements.GetSetNumberOfItemsButton().Click();
+        }
+
+        void SetBorderWidth(float width)
+        {
+            elements.GetBorderWidthTextBox().SetValue(width.ToString());
+            elements.GetSetBorderWidthButton().Click();
+        }
+
+        void SetBorderWidthToInf()
+        {
+            elements.GetBorderWidthTextBox().SetValue("inf");
+            elements.GetSetBorderWidthButton().Click();
         }
 
         void SetSource(RadioButtonsSourceLocation location)
@@ -754,6 +821,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             Log.Comment("Clicking on item 'Radio Button " + index + "'");
             RadioButton item = FindElement.ByName<RadioButton>("Radio Button " + index);
             item.Click();
+        }
+
+        void UseAccessKey()
+        {
+            KeyboardHelper.PressDownModifierKey(ModifierKey.Alt);
+            KeyboardHelper.PressKey(Key.R);
+            KeyboardHelper.ReleaseModifierKey(ModifierKey.Alt);
         }
 
         void TapOnItem(int index, bool useBackup = false)
