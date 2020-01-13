@@ -3,6 +3,7 @@
     <PropertyGroup>
         <PlatformShortName Condition="'$(PlatformShortName)'==''">$(Platform)</PlatformShortName>
         <PGOFilesDir>$(VCToolsInstallDir)bin\Host$(PlatformShortName)\$(PlatformShortName)</PGOFilesDir>
+        <PGOFilesDir Condition="'$(PlatformShortName)'=='Win32'">$(VCToolsInstallDir)bin\HostX86\x86</PGOFilesDir>
         <PGOFilesDir Condition="'$(PlatformShortName)'=='ARM' or '$(PlatformShortName)'=='ARM64'">$(VCToolsInstallDir)bin\$(PlatformShortName)</PGOFilesDir>
     </PropertyGroup>
 
