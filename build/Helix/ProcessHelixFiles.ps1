@@ -8,6 +8,7 @@ Param(
 
 $helixLinkFile = "$OutPutFolder\LinksToHelixTestFiles.html"
 $visualTreeMasterFolder = "$OutPutFolder\VisualTreeMasters"
+$pgcFolder = "$OutPutFolder\pgc"
 
 function Generate-File-Links
 {
@@ -48,7 +49,7 @@ foreach ($testRun in $testRuns.value)
     $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
     $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
     $isTestRunNameShown = $false
-        
+
     foreach ($testResult in $testResults.value)
     {
         $info = ConvertFrom-Json $testResult.comment
@@ -66,7 +67,9 @@ foreach ($testRun in $testRuns.value)
             $screenShots = $files | where { $_.Name.EndsWith(".jpg") }
             $dumps = $files | where { $_.Name.EndsWith(".dmp") }
             $visualTreeMasters = $files | where { $_.Name.EndsWith(".xml") -And (-Not $_.Name.Contains('testResults')) }
-            if($screenShots.Count+$dumps.Count+$visualTreeMasters.Count -gt 0)
+            $pgcFiles = $files | where { $_.Name.EndsWith(".pgc") }
+
+            if ($screenShots.Count + $dumps.Count + $visualTreeMasters.Count + $pgcFiles.Count -gt 0)
             {
                 if(-Not $isTestRunNameShown)
                 {
@@ -77,21 +80,35 @@ foreach ($testRun in $testRuns.value)
                 Generate-File-Links $screenShots "Screenshots"
                 Generate-File-Links $dumps "CrashDumps"
                 Generate-File-Links $visualTreeMasters "VisualTreeMasters"
-                $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeMasters -NotContains $_) }
+                Generate-File-Links $pgcFiles "PGC files"
+                $misc = $files | where { ($screenShots -NotContains $_) -And ($dumps -NotContains $_) -And ($visualTreeMasters -NotContains $_) -And ($pgcFiles -NotContains $_) }
                 Generate-File-Links $misc "Misc"
 
                 if( -Not (Test-Path $visualTreeMasterFolder) )
                 {
                     New-Item $visualTreeMasterFolder -ItemType Directory
                 }
+
                 foreach($masterFile in $visualTreeMasters)
                 {
                     $destination = "$visualTreeMasterFolder\$($masterFile.Name)"
                     Write-Host "Copying $($masterFile.Name) to $destination"
                     $webClient.DownloadFile($masterFile.Link, $destination)
                 }
+
+                if( -Not (Test-Path $pgcFolder) )
+                {
+                    New-Item $pgcFolder -ItemType Directory
+                }
+
+                foreach($pgcFile in $pgcFiles)
+                {
+                    $destination = "$pgcFolder\$($pgcFile.Name)"
+                    Write-Host "Copying $($pgcFile.Name) to $destination"
+                    $webClient.DownloadFile($pgcFile.Link, $destination)
+                }
             }
-        }        
+        }
     }
 }
 
