@@ -11,17 +11,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="$(PGOFilesDir)\pgort140.dll">
+        <None Include="$(PGOFilesDir)\pgort140.dll">
+            <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="$(PGOFilesDir)\pgosweep.exe">
+        </None>
+        <None Include="$(PGOFilesDir)\pgosweep.exe">
+            <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
+        </None>
+        <None Include="$(PGOFilesDir)\vcruntime140.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140.dll')">
+            <Link>%(Filename)%(Extension)</Link>
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="$(PGOFilesDir)\vcruntime140_1.dll" Condition="Exists('$(PGOFilesDir)\vcruntime140_1.dll')">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
+        </None>
     </ItemGroup>
 </Project>
