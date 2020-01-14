@@ -10,6 +10,7 @@ class NavigationViewItemBase :
     public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
 {
 public:
+
     // Promote all overrides that our derived classes want into virtual so that our shim will call them.
     // IFrameworkElementOverrides
     virtual void OnApplyTemplate()
@@ -40,15 +41,18 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnNavigationViewListPositionChanged() {}
+    virtual void OnNavigationViewRepeaterPositionChanged() {}
 
-    NavigationViewListPosition Position();
-    void Position(NavigationViewListPosition value);
+    NavigationViewRepeaterPosition Position();
+    void Position(NavigationViewRepeaterPosition value);
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
-    winrt::NavigationViewList GetNavigationViewList();
+    void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+protected:
+    winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewListPosition m_position{ NavigationViewListPosition::LeftNav };
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
+
 };

@@ -45,16 +45,30 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
-    winrt::IInspectable result = __super::GetPatternCore(pattern);
-
-    if (!result && pattern == winrt::PatternInterface::Invoke)
+    if (pattern == winrt::PatternInterface::SelectionItem ||
+        pattern == winrt::PatternInterface::Invoke)
     {
-        // The settings item is outside the ListView, so we need to handle its invoke method ourselves.
-        result = *this;
+        return *this;
     }
 
-    return result;
+    return __super::GetPatternCore(pattern);
 }
+
+
+winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationControlTypeCore()
+{
+    // To be compliant with MAS 4.1.2, in DisplayMode 'Top',
+    //  a NavigationViewItem should report itsself as TabItem
+    if (IsOnTopNavigation())
+    {
+        return winrt::AutomationControlType::TabItem;
+    }
+    else
+    {
+        return winrt::AutomationControlType::ListItem;
+    }
+}
+
 
 int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
@@ -111,13 +125,18 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 
 void NavigationViewItemAutomationPeer::Invoke()
 {
-    if (auto navView = GetParentNavigationView())
+    if (auto const navView = GetParentNavigationView())
     {
-        // This method should only be called for the settings item, but let's make sure.
-        winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>();
-        if (navigationViewItem == navView.SettingsItem())
+        if (auto const navigationViewItem = Owner().try_as<winrt::NavigationViewItem>())
         {
-            winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            if (navigationViewItem == navView.SettingsItem())
+            {
+                winrt::get_self<NavigationView>(navView)->OnSettingsInvoked();
+            }
+            else
+            {
+                winrt::get_self<NavigationView>(navView)->OnNavigationViewItemInvoked(navigationViewItem);
+            }
         }
     }
 }
@@ -170,23 +189,21 @@ bool NavigationViewItemAutomationPeer::IsSettingsItem()
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigation()
 {
-    return GetNavigationViewListPosition() != NavigationViewListPosition::LeftNav;
+    return GetNavigationViewRepeaterPosition() != NavigationViewRepeaterPosition::LeftNav;
 }
 
 bool NavigationViewItemAutomationPeer::IsOnTopNavigationOverflow()
 {
-    return GetNavigationViewListPosition() == NavigationViewListPosition::TopOverflow;
+    return GetNavigationViewRepeaterPosition() == NavigationViewRepeaterPosition::TopOverflow;
 }
 
-NavigationViewListPosition NavigationViewItemAutomationPeer::GetNavigationViewListPosition()
+NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationViewRepeaterPosition()
 {
-    NavigationViewListPosition position = NavigationViewListPosition::LeftNav;
-    winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>();
-    if (navigationViewItem)
+    if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
     {
-        position = winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Position();
+        return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Position();
     }
-    return position;
+    return NavigationViewRepeaterPosition::LeftNav;
 }
 
 // Get either the position or the size of the set for this particular item in the case of left nav. 
@@ -197,20 +214,20 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 {
     int returnValue = 0;
     
-    if (auto navview = GetParentNavigationView())
+    if (auto const navview = GetParentNavigationView())
     {
-        if (auto listview = winrt::get_self<NavigationView>(navview)->LeftNavListView())
+        if (auto const repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
         {
-            if (auto parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
+            if (auto const parent = Navigate(winrt::AutomationNavigationDirection::Parent).try_as<winrt::AutomationPeer>())
             {
-                if (auto children = parent.GetChildren())
+                if (auto const children = parent.GetChildren())
                 {
                     int index = 0;
                     bool itemFound = false;
 
                     for (auto const& child : children)
                     {
-                        if (auto dependencyObject = listview.ContainerFromIndex(index))
+                        if (auto dependencyObject = repeater.TryGetElement(index))
                         {
                             if (dependencyObject.try_as<winrt::NavigationViewItemHeader>())
                             {
@@ -261,13 +278,13 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(wi
 {
     int32_t returnValue = 0;
     
-    if (auto navview = GetParentNavigationView())
+    if (auto const navview = GetParentNavigationView())
     {
         bool itemFound = false;
 
         for (auto const& child : navigationViewElements)
         {
-            if (auto childAsNavViewItem = navview.ContainerFromMenuItem(child))
+            if (auto const childAsNavViewItem = navview.ContainerFromMenuItem(child))
             {
                 if (child.try_as<winrt::NavigationViewItemHeader>())
                 {
@@ -280,7 +297,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(wi
                         returnValue = 0;
                     }
                 }
-                else if (auto navviewitem = childAsNavViewItem.try_as<winrt::NavigationViewItem>())
+                else if (auto const navviewitem = childAsNavViewItem.try_as<winrt::NavigationViewItem>())
                 {
                     if (navviewitem.Visibility() == winrt::Visibility::Visible)
                     {
@@ -305,4 +322,49 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(wi
     }
 
     return returnValue;
+}
+
+bool NavigationViewItemAutomationPeer::IsSelected()
+{
+    if (auto const nvi = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        return nvi.IsSelected();
+    }
+    return false;
+}
+
+winrt::IRawElementProviderSimple NavigationViewItemAutomationPeer::SelectionContainer()
+{
+    if (auto const navview = GetParentNavigationView())
+    {
+        if (auto const peer = winrt::FrameworkElementAutomationPeer::CreatePeerForElement(navview))
+        {
+            return ProviderFromPeer(peer);
+        }
+    }
+
+    return nullptr;
+}
+
+void NavigationViewItemAutomationPeer::AddToSelection()
+{
+    ChangeSelection(true);
+}
+
+void NavigationViewItemAutomationPeer::Select()
+{
+    ChangeSelection(true);
+}
+
+void NavigationViewItemAutomationPeer::RemoveFromSelection()
+{
+    ChangeSelection(false);
+}
+
+void NavigationViewItemAutomationPeer::ChangeSelection(bool isSelected)
+{
+    if (auto nvi = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        nvi.IsSelected(isSelected);
+    }
 }

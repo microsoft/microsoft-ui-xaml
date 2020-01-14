@@ -69,6 +69,7 @@ winrt::Size UniformGridLayout::MeasureOverride(
         LineSpacing(),
         m_maximumRowsOrColumns /* maxItemsPerLine */,
         OrientationBasedMeasures::GetScrollOrientation(),
+        false /* disableVirtualization */,
         LayoutId());
 
     // If after Measure the first item is in the realization rect, then we revoke grid state's ownership,

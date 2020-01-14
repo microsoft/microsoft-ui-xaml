@@ -194,7 +194,6 @@ void specialize_guids()
 #endif
 
 #ifdef TWOPANEVIEW_INCLUDED
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TreeViewSelectionMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewPriority>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewTallModeConfiguration>>();

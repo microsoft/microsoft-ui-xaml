@@ -27,6 +27,7 @@ using NavigationViewItemHeader = Microsoft.UI.Xaml.Controls.NavigationViewItemHe
 using NavigationViewItemSeparator = Microsoft.UI.Xaml.Controls.NavigationViewItemSeparator;
 using NavigationViewBackButtonVisible = Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible;
 using System.Collections.ObjectModel;
+using Windows.UI.Xaml.Automation.Peers;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
@@ -90,7 +91,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 navView.ExpandedModeThresholdWidth = 600.0;
                 navView.CompactModeThresholdWidth = 400.0;
                 navView.Width = 800.0;
-                navView.Height = 600.0;
+                navView.Height = 200.0;
                 navView.Content = "This test should have enough NavigationViewItems to scroll.";
                 Content = navView;
                 Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TryEnterFullScreenMode();
@@ -245,6 +246,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Verify.AreEqual(navView.DisplayMode, NavigationViewDisplayMode.Minimal, "Auto Minimal");
             });
+        }
+
+        [TestMethod]
+        public void VerifyPaneDisplayModeChangingPaneAccordingly()
+        {
+            var navView = SetupNavigationView();
+
+            foreach(var paneDisplayMode in Enum.GetValues(typeof(NavigationViewPaneDisplayMode)))
+            {
+                RunOnUIThread.Execute(() =>
+                {
+                    navView.PaneDisplayMode = NavigationViewPaneDisplayMode.LeftMinimal;
+                    navView.IsPaneOpen = false;
+                    // Set it below threshold width for auto mode
+                    navView.Width = navView.CompactModeThresholdWidth - 20;
+
+                    Content.UpdateLayout();
+
+                    navView.PaneDisplayMode = (NavigationViewPaneDisplayMode)paneDisplayMode;
+
+                    Content.UpdateLayout();
+
+                    // We only want to open the pane when explicitly set, otherwise it should be closed
+                    // since we set the width below the threshold width
+                    Verify.AreEqual((NavigationViewPaneDisplayMode)paneDisplayMode == NavigationViewPaneDisplayMode.Left, navView.IsPaneOpen);
+                });
+            }
         }
 
         [TestMethod]
@@ -420,6 +448,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(menuItem2.IsSelected);
                 Verify.IsFalse(menuItem1.IsSelected, "MenuItem1 should have been deselected when MenuItem2 was selected");
                 Verify.AreEqual(navView.SelectedItem, menuItem2);
+            });
+        }
+
+        [TestMethod]
+        public void VerifyNavigationItemUIAType()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var navView = new NavigationView();
+                Content = navView;
+
+                var menuItem1 = new NavigationViewItem();
+                var menuItem2 = new NavigationViewItem();
+                menuItem1.Content = "Item 1";
+                menuItem2.Content = "Item 2";
+
+                navView.MenuItems.Add(menuItem1);
+                navView.MenuItems.Add(menuItem2);
+                navView.Width = 1008; // forces the control into Expanded mode so that the menu renders
+                Content.UpdateLayout();
+
+                Verify.AreEqual(
+                    AutomationControlType.ListItem,
+                    NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
+
+                navView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+                Content.UpdateLayout();
+                Verify.AreEqual(
+                    AutomationControlType.TabItem,
+                    NavigationViewItemAutomationPeer.CreatePeerForElement(menuItem1).GetAutomationControlType());
+
             });
         }
 

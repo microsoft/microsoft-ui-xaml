@@ -1,4 +1,4 @@
-namespace MU_XAP_NAMESPACE
+﻿namespace MU_XAP_NAMESPACE
 {
 
 [WUXC_VERSION_RS3]
@@ -9,5 +9,14 @@ unsealed runtimeclass NavigationViewItemAutomationPeer : Windows.UI.Xaml.Automat
 {
     [method_name("CreateInstanceWithOwner")] NavigationViewItemAutomationPeer(MU_XC_NAMESPACE.NavigationViewItem owner);
 }
+
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass NavigationViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+{
+    NavigationViewAutomationPeer(MU_XC_NAMESPACE.NavigationView owner);
+}
+
 
 }
