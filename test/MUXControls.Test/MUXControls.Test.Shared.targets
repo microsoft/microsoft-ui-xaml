@@ -40,4 +40,5 @@
   <Import Project="..\..\dev\ProgressRing\InteractionTests\ProgressRing_InteractionTests.projitems" Label="Shared" Condition="$(FeatureProgressRingEnabled) == 'true'" />
   <Import Project="..\..\dev\TabView\InteractionTests\TabView_InteractionTests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="..\..\dev\NumberBox\InteractionTests\NumberBox_InteractionTests.projitems" Label="Shared" Condition="$(FeatureNumberBoxEnabled) == 'true'" />
+  <Import Project="..\..\dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.projitems" Label="Shared" Condition="$(FeatureRadialGradientBrushEnabled) == 'true'" />
 </Project>

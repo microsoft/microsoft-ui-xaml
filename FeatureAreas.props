@@ -19,7 +19,6 @@
     <FeatureMaterialsEnabled>productOnly</FeatureMaterialsEnabled>
     <FeatureResourceHelperEnabled>productOnly</FeatureResourceHelperEnabled>
     <FeatureSplitButtonEnabled>productOnly</FeatureSplitButtonEnabled>
-    <FeatureCommonStylesEnabled>productOnly</FeatureCommonStylesEnabled>    
   </PropertyGroup>
   <!-- Import this after inner loop features are declared so that it overrides those properties -->
   <Import Project="InnerLoopAreas.props" Condition="Exists('InnerLoopAreas.props') And $(SolutionName) == 'MUXControlsInnerLoop'" />
@@ -77,6 +76,7 @@
     <FeatureSplitViewEnabled>true</FeatureSplitViewEnabled>
     <FeatureProgressBarEnabled>true</FeatureProgressBarEnabled>
     <FeatureProgressRingEnabled>true</FeatureProgressRingEnabled>
+    <FeatureRadialGradientBrushEnabled>true</FeatureRadialGradientBrushEnabled>
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition="$(FeatureScrollerEnabled) =='true'">$(DefineConstants);FEATURE_SCROLLER_ENABLED</DefineConstants>
