@@ -3,7 +3,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
-  
+
 
 jobs:
 - job: ProcessTestResults
@@ -25,7 +25,7 @@ jobs:
       targetType: filePath
       filePath: build\Helix\UpdateUnreliableTests.ps1
       arguments: -RerunPassesRequiredToAvoidFailure '${{ parameters.rerunPassesRequiredToAvoidFailure }}' -CheckJobAttempt $${{ parameters.checkJobAttempt }}
-      
+
   - task: powershell@2
     displayName: 'OutputTestResults.ps1'
     condition: succeededOrFailed()
@@ -44,7 +44,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFilePath '$(helixOutputFolder)'
+      arguments: -OutputFilePath '$(helixOutputFolder)' -PGCOutputPath '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\POGO'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'

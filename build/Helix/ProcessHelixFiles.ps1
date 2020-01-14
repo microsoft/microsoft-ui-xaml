@@ -3,12 +3,12 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutPutFolder = "HelixOutput"
+    [string]$OutPutFolder = "HelixOutput",
+    [string]$PGCOutputPath
 )
 
 $helixLinkFile = "$OutPutFolder\LinksToHelixTestFiles.html"
 $visualTreeMasterFolder = "$OutPutFolder\VisualTreeMasters"
-$pgcFolder = "$OutPutFolder\pgc"
 
 function Generate-File-Links
 {
@@ -96,14 +96,14 @@ foreach ($testRun in $testRuns.value)
                     $webClient.DownloadFile($masterFile.Link, $destination)
                 }
 
-                if( -Not (Test-Path $pgcFolder) )
+                if( -Not (Test-Path $PGCOutputPath) )
                 {
-                    New-Item $pgcFolder -ItemType Directory
+                    New-Item $PGCOutputPath -ItemType Directory
                 }
 
                 foreach($pgcFile in $pgcFiles)
                 {
-                    $destination = "$pgcFolder\$($pgcFile.Name)"
+                    $destination = "$PGCOutputPath\$($pgcFile.Name)"
                     Write-Host "Copying $($pgcFile.Name) to $destination"
                     $webClient.DownloadFile($pgcFile.Link, $destination)
                 }
