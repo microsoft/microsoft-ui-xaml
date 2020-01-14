@@ -49,6 +49,10 @@ namespace MUXControlsTestApp
                 Frame.NavigateWithoutAnimation(typeof(CollectionChangeDemo));
             };
 
+            sortingAndFilteringDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(SortingAndFilteringPage));
+            };
+
             animationsDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(AnimationsDemoPage));
