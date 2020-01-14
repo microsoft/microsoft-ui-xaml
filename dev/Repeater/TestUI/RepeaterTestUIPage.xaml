@@ -23,6 +23,7 @@
                 <TextBlock Text="ItemsSource Samples" Style="{ThemeResource HeaderTextBlockStyle}"/>
                 <Button x:Name="itemsSourceDemo" AutomationProperties.Name="ItemsSource Demo">ItemsSource Demo</Button>
                 <Button x:Name="collectionChangeDemo" AutomationProperties.Name="Collection Changes Demo" >Collection Changes Demo</Button>
+                <Button x:Name="sortingAndFilteringDemo" AutomationProperties.Name="Sorting and Filtering Demo">Sorting and Filtering</Button>
             </StackPanel>
 
             <StackPanel>

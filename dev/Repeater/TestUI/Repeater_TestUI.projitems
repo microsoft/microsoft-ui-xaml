@@ -15,6 +15,10 @@
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\SortingAndFilteringPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedSamplePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -104,6 +108,9 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)RepeaterTestUIPage.xaml.cs">
       <DependentUpon>RepeaterTestUIPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\SortingAndFilteringPage.xaml.cs">
+      <DependentUpon>SortingAndFilteringPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedLayout.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\VirtualLayoutPages\ActivityFeedSamplePage.xaml.cs">
@@ -207,6 +214,5 @@
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Samples\LayoutSamples\" />
     <Folder Include="$(MSBuildThisFileDirectory)Samples\AnimationSamples\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Samples\ItemsSourceSamples\" />
   </ItemGroup>
 </Project>
