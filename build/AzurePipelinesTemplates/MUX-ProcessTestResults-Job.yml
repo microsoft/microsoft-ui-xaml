@@ -4,7 +4,6 @@ parameters:
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
 
-
 jobs:
 - job: ProcessTestResults
   condition: succeededOrFailed()
@@ -14,6 +13,7 @@ jobs:
   timeoutInMinutes: 120
   variables:
     helixOutputFolder: $(Build.SourcesDirectory)\HelixOutput
+    pgcOutputPath: $(Build.ArtifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\POGO
 
   steps:
   - task: powershell@2
@@ -44,7 +44,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFilePath '$(helixOutputFolder)' -PGCOutputPath '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\POGO'
+      arguments: -OutputFilePath '$(helixOutputFolder)' -PGCOutputPath '$(pgcOutputPath)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'
