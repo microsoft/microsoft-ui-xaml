@@ -1,40 +1,59 @@
 ﻿using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Reflection;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections;
-using System.Collections.Specialized;
-using System.Reflection;
 
 namespace MUXControlsTestApp.Samples
 {
     public sealed partial class SortingAndFilteringPage : Page
     {
         MyCollection SourceForRepeater = new MyCollection(null);
+        private bool IsSortDescending = false;
+        private Type[] AllTypes = typeof(SortingAndFilteringPage).GetTypeInfo().Assembly.GetTypes();
 
         public SortingAndFilteringPage()
         {
             this.InitializeComponent();
 
-            SourceForRepeater.InitializeCollection(typeof(SortingAndFilteringPage).GetTypeInfo().Assembly.GetTypes());
+            SourceForRepeater = new MyCollection(AllTypes);
             repeater.ItemsSource = SourceForRepeater;
         }
 
         private void OnSortAscClick(object sender, RoutedEventArgs e)
         {
-            SourceForRepeater.InitializeCollection(typeof(SortingAndFilteringPage).GetTypeInfo().Assembly.GetTypes().OrderBy(i => i.ToString()));
+            if (IsSortDescending)
+            {
+                IsSortDescending = false;
+                UpdateSortAndFilter();
+            }
         }
 
         private void OnSortDesClick(object sender, RoutedEventArgs e)
         {
-            SourceForRepeater.InitializeCollection(typeof(SortingAndFilteringPage).GetTypeInfo().Assembly.GetTypes().OrderByDescending(i => i.ToString()));
+            if (!IsSortDescending)
+            {
+                IsSortDescending = true;
+                UpdateSortAndFilter();
+            }
         }
 
         private void filterText_TextChanged(object sender, TextChangedEventArgs e)
         {
-            SourceForRepeater.InitializeCollection(typeof(SortingAndFilteringPage).GetTypeInfo().Assembly.GetTypes().Where(i => i.ToString().Contains(filterText.Text)));
+            UpdateSortAndFilter();
+        }
+
+        private void UpdateSortAndFilter()
+        {
+            var filteredTypes = AllTypes.Where(i => i.ToString().ToLower().Contains(filterText.Text.ToLower()));
+            var sortedFilteredTypes = IsSortDescending ?
+                filteredTypes.OrderByDescending(i => i.ToString()) :
+                filteredTypes.OrderBy(i => i.ToString());
+            SourceForRepeater.InitializeCollection(sortedFilteredTypes);
         }
     }
 
