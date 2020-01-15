@@ -13,7 +13,7 @@
                 VerticalAlignment="Stretch"
                 BorderBrush="LightGray"
                 BorderThickness="1"
-                Background="White"
+                Background="{ThemeResource SystemChromeLowColor}"
                 Margin="2">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -38,7 +38,7 @@
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <SplitView OpenPaneLength="400" Background="#eee" DisplayMode="Inline" IsPaneOpen="True">
+        <SplitView OpenPaneLength="400" Background="{ThemeResource SystemChromeLowColor}" DisplayMode="Inline" IsPaneOpen="True">
             <SplitView.Pane>
                 <StackPanel Margin="10">
                     <Button x:Name="goBack" Margin="0 0 0 25">Back</Button>

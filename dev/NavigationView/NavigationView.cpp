@@ -3190,21 +3190,26 @@ void NavigationView::UpdatePaneDisplayMode(winrt::NavigationViewPaneDisplayMode 
 
     UpdatePaneDisplayMode();
 
-    // For better user experience, We help customer to Open/Close Pane automatically when we switch between LeftMinimal <-> other PaneDisplayMode.
+    // For better user experience, We help customer to Open/Close Pane automatically when we switch between LeftMinimal <-> Left.
     // From other navigation PaneDisplayMode to LeftMinimal, we expect pane is closed.
-    // From LeftMinimal to other left PaneDisplayMode other than Auto, we expect Pane is opened.
+    // From LeftMinimal to Left, it is expected the pane is open. For other configurations, this seems counterintuitive.
+    // See #1702 and #1787
     if (!IsTopNavigationView())
     {
-        bool isPaneOpen = IsPaneOpen();
-        if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal && isPaneOpen)
-        {            
-            ClosePane();
-        }
-        else if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal &&
-            !isPaneOpen &&
-            newDisplayMode != winrt::NavigationViewPaneDisplayMode::Auto)
+        if (IsPaneOpen())
         {
-            OpenPane();
+            if (newDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal)
+            {
+                ClosePane();
+            }
+        }
+        else
+        {
+            if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::LeftMinimal
+                && newDisplayMode == winrt::NavigationViewPaneDisplayMode::Left)
+            {
+                OpenPane();
+            }
         }
     }
 }

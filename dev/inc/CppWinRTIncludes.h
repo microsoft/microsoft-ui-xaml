@@ -276,7 +276,7 @@ namespace winrt
     // using namespace ::winrt::Windows::UI::Xaml::Media;
     using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
-    using Brush = winrt::Windows::UI::Xaml::Media::Brush;
+    using BrushMappingMode = winrt::Windows::UI::Xaml::Media::BrushMappingMode;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
@@ -299,7 +299,7 @@ namespace winrt
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
-    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;
+    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;    
 
     // using namespace ::winrt::Windows::UI::Xaml::Media.Animation;
     using IStoryboard = ::winrt::Windows::UI::Xaml::Media::Animation::IStoryboard;

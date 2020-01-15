@@ -58,7 +58,7 @@ $featureAreasProps = $muxControlsDir + "\FeatureAreas.props";
 [xml]$xml = Get-Content $featureAreasProps
 foreach ($group in $xml.Project.PropertyGroup)
 {
-    if ($group.Attributes['Condition'].Value.Contains("SolutionName"))
+    if ($group.Attributes['Condition'].Value -ne $null -and $group.Attributes['Condition'].Value.Contains("(SolutionName) != 'MUXControlsInnerLoop'"))
     {
         $featureEnabledName = "Feature" + $controlName + "Enabled"
         $enabled = $xml.CreateElement($featureEnabledName, $xml.Project.NamespaceURI);

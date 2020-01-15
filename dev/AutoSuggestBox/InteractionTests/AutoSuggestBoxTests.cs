@@ -44,7 +44,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("AutoSuggestBox Tests"))
             {
-                Edit autoSuggestBoxTextBox = new Edit(FindElement.ByNameAndClassName("With suggestions", "TextBox"));
+                Edit autoSuggestBoxTextBox = new Edit(FindElement.ByNameAndClassName("AutoSuggestBox with suggestions", "TextBox"));
                 FocusHelper.SetFocus(autoSuggestBoxTextBox);
                 KeyboardHelper.EnterText(autoSuggestBoxTextBox, "test");
                 KeyboardHelper.PressKey(Key.Enter);

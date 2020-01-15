@@ -9,7 +9,7 @@
         <Grid.Resources>
             <controls:FlowLayout x:Key="flow" MinRowSpacing="5" MinColumnSpacing="5" />
             <controls:StackLayout x:Key="stack"  Spacing="5" />
-        </Grid.Resources>
+        </StackPanel.Resources>
 
         <controls:LayoutPanel >
             <controls:LayoutPanel.Layout>

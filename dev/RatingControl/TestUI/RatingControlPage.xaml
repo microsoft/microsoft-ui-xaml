@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
+    <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <!-- this guy is out of the Scroller because it's where I do panning tests: [and having nested pannable things is NOT WHAT SHOULD BE DONE!] -->
         <muxcontrols:RatingControl x:Name="TestRatingControl" AutomationProperties.Name="TestRatingControl" Loaded="TestRatingControl_Loaded" PlaceholderValue="2.5"/>
         <ScrollViewer Height="500" Grid.Column="0">

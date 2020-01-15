@@ -12,9 +12,10 @@
     <local:TestPage.Resources>
         <ResourceDictionary Source="ms-appx:///Compact.xaml" />
     </local:TestPage.Resources>
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <StackPanel>
-            <Button Content="Toggle Compact In AppLevel For Manual Testing" Click="ToggleCompactInAppLevel_Click"/>
+    <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
+        <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Padding="4" BorderThickness="1" BorderBrush="{ThemeResource SystemChromeGrayColor}">
+            <Button Content="Toggle Compact In AppLevel For Manual Testing" Click="ToggleCompactInAppLevel_Click" Margin="0,0,0,8"/>
             <muxc:NavigationView x:Name="Nav">
                 <muxc:NavigationView.MenuItems>
                     <muxc:NavigationViewItem x:Name="NavItem1" Icon="Accept" Content="OK" />
@@ -33,7 +34,7 @@
             </ComboBox>
             <DatePicker x:Name="DatePicker" Header="DatePicker"/>
             <TimePicker x:Name="TimePicker" Header="TimePicker"/>
-
+        
             <ListView x:Name="ListView">
                 <x:String>Item 1</x:String>
             </ListView>
@@ -48,9 +49,12 @@
                     </muxc:TreeViewNode>
                 </muxc:TreeView.RootNodes>
             </muxc:TreeView>
-            <Button x:Name="RunTest" Content="RunTest" Click="RunTest_Click" />
+        </StackPanel>
+        <TextBlock Text="Validation"  Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="RunTest" Content="RunTest" Click="RunTest_Click" Margin="0,0,8,0"/>
             <TextBox x:Name="CompactTestResult" AutomationProperties.Name="CompactTestResult" Text="Result"/>
         </StackPanel>
-    </Grid>
+    </StackPanel>
 
 </local:TestPage>
