@@ -42,8 +42,11 @@ namespace MUXControlsTestApp.Samples
             int index = 0;
             if (int.TryParse(tb.Text, out index))
             {
-                var anchor = repeater.GetOrCreateElement(index);
-                anchor.StartBringIntoView();
+                if (index >= 0 && index < repeater.ItemsSourceView.Count)
+                {
+                    var anchor = repeater.GetOrCreateElement(index);
+                    anchor.StartBringIntoView();
+                }
             }
         }
     }

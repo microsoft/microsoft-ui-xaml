@@ -6,7 +6,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;
 
 namespace MUXControlsTestApp.Samples.Selection

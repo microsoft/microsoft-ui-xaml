@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.System;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
+using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Automation.Peers;
-using Windows.UI.Xaml.Automation;
-
 using IndexPath = Microsoft.UI.Xaml.Controls.IndexPath;
 using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;

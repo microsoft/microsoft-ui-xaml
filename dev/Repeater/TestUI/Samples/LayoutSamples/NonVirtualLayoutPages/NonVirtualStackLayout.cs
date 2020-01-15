@@ -3,11 +3,8 @@
 
 using System;
 using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-
-using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingLayoutContext;
 using NonVirtualizingLayout = Microsoft.UI.Xaml.Controls.NonVirtualizingLayout;
+using NonVirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.NonVirtualizingLayoutContext;
 
 namespace MUXControlsTestApp.Samples
 {

@@ -5,9 +5,6 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common;
 using System;
 using System.Collections;
 using System.Collections.Specialized;
-using Windows.UI.Xaml.Controls;
-
-using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
 
 namespace MUXControlsTestApp.Samples
 {

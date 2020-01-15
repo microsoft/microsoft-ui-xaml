@@ -1,18 +1,12 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
-using MUXControlsTestApp.Utils;
+using MUXControlsTestApp.Samples.Model;
 using System;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using MUXControlsTestApp.Samples.Model;
-
-using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
-using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
-using ElementFactory = Microsoft.UI.Xaml.Controls.ElementFactory;
 
 namespace MUXControlsTestApp.Samples
 {
@@ -42,8 +36,11 @@ namespace MUXControlsTestApp.Samples
             int index = 0;
             if (int.TryParse(tb.Text, out index))
             {
-                var anchor = repeater.GetOrCreateElement(index);
-                anchor.StartBringIntoView();
+                if (index >= 0 && index < repeater.ItemsSourceView.Count)
+                {
+                    var anchor = repeater.GetOrCreateElement(index);
+                    anchor.StartBringIntoView();
+                }
             }
         }
     }

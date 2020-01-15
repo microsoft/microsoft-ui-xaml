@@ -6,10 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-
-using ItemsSourceView = Microsoft.UI.Xaml.Controls.ItemsSourceView;
-using LayoutContext = Microsoft.UI.Xaml.Controls.LayoutContext;
 using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using VirtualizingLayoutContext = Microsoft.UI.Xaml.Controls.VirtualizingLayoutContext;
 

@@ -4,7 +4,6 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation.Peers;
 using Windows.UI.Xaml.Controls;
-
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;
 using SelectionModelSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionModelSelectionChangedEventArgs;
 

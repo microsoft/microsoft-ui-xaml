@@ -7,10 +7,9 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
-
+using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using ItemsRepeaterElementIndexChangedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementIndexChangedEventArgs;
 using ItemsRepeaterElementPreparedEventArgs = Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs;
-using ItemsRepeater = Microsoft.UI.Xaml.Controls.ItemsRepeater;
 using SelectionModel = Microsoft.UI.Xaml.Controls.SelectionModel;
 
 namespace MUXControlsTestApp.Samples.Selection
