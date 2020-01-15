@@ -33,15 +33,15 @@ class ProgressRingAnimatedVisual :
 
     double _strokeThickness{ 2 };
     winrt::Size _size;
-    winrt::Brush _foreground;
-    winrt::Brush _background;
+    winrt::Color _foreground;
+    winrt::Color _background;
 
     // Layer (Shape): Radial
     // Transforms: Radial
     // Ellipse Path
     winrt::CompositionColorBrush AnimatedColorBrush_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7()
     {
-        auto result = _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7));
+        auto result = _c.CreateColorBrush(_foreground);
         result.StartAnimation(L"Color", ColorAnimation_AlmostDodgerBlue_FF0078D7_to_TransparentAlmostDodgerBlue_000078D7());
         auto controller = result.TryGetAnimationController(L"Color");
         controller.Pause();
@@ -54,7 +54,7 @@ class ProgressRingAnimatedVisual :
     // Ellipse Path
     winrt::CompositionColorBrush AnimatedColorBrush_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7()
     {
-        auto result = _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7));
+        auto result = _c.CreateColorBrush(winrt::Colors::Transparent());
         result.StartAnimation(L"Color", ColorAnimation_TransparentAlmostDodgerBlue_000078D7_to_AlmostDodgerBlue_FF0078D7());
         auto controller = result.TryGetAnimationController(L"Color");
         controller.Pause();
@@ -69,10 +69,10 @@ class ProgressRingAnimatedVisual :
         result.Duration({ c_durationTicks });
         auto test = winrt::CompositionColorSpace::Rgb;
         result.InterpolationColorSpace(test);
-        // AlmostDodgerBlue_FF0078D7
-        result.InsertKeyFrame(0, winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
-        // TransparentAlmostDodgerBlue_000078D7
-        result.InsertKeyFrame(0.5F, winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        // Foreground
+        result.InsertKeyFrame(0, _foreground, _holdThenStepEasingFunction);
+        // Transparent
+        result.InsertKeyFrame(0.5F, winrt::Colors::Transparent(), _holdThenStepEasingFunction);
         return result;
     }
 
@@ -82,17 +82,17 @@ class ProgressRingAnimatedVisual :
         auto result = _c.CreateColorKeyFrameAnimation();
         result.Duration({ c_durationTicks });
         result.InterpolationColorSpace(winrt::CompositionColorSpace::Rgb);
-        // TransparentAlmostDodgerBlue_000078D7
-        result.InsertKeyFrame(0, winrt::ColorHelper::FromArgb(0x00, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
-        // AlmostDodgerBlue_FF0078D7
-        result.InsertKeyFrame(0.5F, winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7), _holdThenStepEasingFunction);
+        // Transparent
+        result.InsertKeyFrame(0, winrt::Colors::Transparent(), _holdThenStepEasingFunction);
+        // Foreground Color
+        result.InsertKeyFrame(0.5F, _foreground, _holdThenStepEasingFunction);
         return result;
     }
 
     // Ellipse Path
     winrt::CompositionColorBrush ColorBrush_LightGray()
     {
-        return _c.CreateColorBrush(winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7));
+        return _c.CreateColorBrush(_background);
     }
 
     // Layer (Shape): Radial
@@ -305,7 +305,7 @@ class ProgressRingAnimatedVisual :
     }
 
 public:
-    ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness, winrt::Size size, winrt::Brush foreground, winrt::Brush background)
+    ProgressRingAnimatedVisual(winrt::Compositor compositor, double strokeThickness, winrt::Size size, winrt::Color foreground, winrt::Color background)
         : _c(compositor)
     , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
     , _strokeThickness(strokeThickness)
@@ -340,7 +340,7 @@ public:
     }
 };
 
-ProgressRingLoading::ProgressRingLoading(double strokeThickness, winrt::Size size, winrt::Brush foreground, winrt::Brush background) : m_strokeThickness(strokeThickness), m_size(size), m_foreground(foreground), m_background(background)
+ProgressRingLoading::ProgressRingLoading(double strokeThickness, winrt::Size size, winrt::Color foreground, winrt::Color background) : m_strokeThickness(strokeThickness), m_size(size), m_foreground(foreground), m_background(background)
 {
 
 }

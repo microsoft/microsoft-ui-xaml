@@ -23,7 +23,7 @@
                 Maximum="100"
                 Minimum="0"
                 StrokeThickness="4"
-                Background="red"
+                Foreground="red"
                 IsIndeterminate="{x:Bind ShowIsDeterminateCheckBox.IsChecked, Converter={StaticResource NullableBooleanToBooleanConverter}, Mode=OneWay}"
                 />
             

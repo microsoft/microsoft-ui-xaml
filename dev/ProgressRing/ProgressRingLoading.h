@@ -14,11 +14,11 @@ class ProgressRingLoading :
 private:
     double m_strokeThickness{ 2 };
     winrt::Size m_size;
-    winrt::Brush m_foreground;
-    winrt::Brush m_background;
+    winrt::Color m_foreground;
+    winrt::Color m_background;
 
 public:
-    ProgressRingLoading(double strokeThickness, winrt::Size size, winrt::Brush foreground, winrt::Brush background);
+    ProgressRingLoading(double strokeThickness, winrt::Size size, winrt::Color foreground, winrt::Color background);
 
     winrt::IAnimatedVisual TryCreateAnimatedVisual(
         const winrt::Compositor& compositor,
