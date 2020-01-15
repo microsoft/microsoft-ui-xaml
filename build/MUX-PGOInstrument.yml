@@ -62,4 +62,5 @@ jobs:
     - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
-    minimumExpectedTestsExecutedCount: 100
+    minimumExpectedTestsExecutedCount: 10
+    pgcOutputPath: $(Build.ArtifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\PGO

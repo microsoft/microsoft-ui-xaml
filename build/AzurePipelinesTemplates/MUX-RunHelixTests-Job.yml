@@ -5,27 +5,22 @@ parameters:
   testSuite: ''
   # If a Pipeline runs this template more than once, this parameter should be unique per build flavor to differentiate the
   # the different test runs:
-  helixType: 'test/devtest' 
+  helixType: 'test/devtest'
   artifactName: 'drop'
   maxParallel: 4
   rerunPassesRequiredToAvoidFailure: 5
   taefQuery: ''
   # if 'useBuildOutputFromBuildId' is set, we will default to using a build from this pipeline:
   useBuildOutputFromPipeline: $(System.DefinitionId)
-  matrix: 
-    Debug_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'debug'
-      # %3b is the escape code for ';' which is used as the delimiter
-      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
+  matrix:
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs4.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -40,13 +35,13 @@ jobs:
   strategy:
     maxParallel: ${{ parameters.maxParallel }}
     matrix: ${{ parameters.matrix }}
-      
+
   steps:
   - task: CmdLine@1
     displayName: 'Display build machine environment variables'
     inputs:
       filename: 'set'
-      
+
   - task: NuGetToolInstaller@0
     displayName: 'Use NuGet 5.2.0'
     inputs:
@@ -60,23 +55,23 @@ jobs:
       nugetConfigPath: nuget.config
       restoreDirectory: packages
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@0
     condition:
       and(succeeded(),eq(variables['useBuildOutputFromBuildId'],''))
-    inputs: 
-      artifactName: ${{ parameters.artifactName }} 
+    inputs:
+      artifactName: ${{ parameters.artifactName }}
       downloadPath: '$(artifactsDir)'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@0
     condition:
       and(succeeded(),ne(variables['useBuildOutputFromBuildId'],''))
-    inputs: 
+    inputs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
       pipeline: ${{ parameters.useBuildOutputFromPipeline }}
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: ${{ parameters.artifactName }} 
+      artifactName: ${{ parameters.artifactName }}
       downloadPath: '$(artifactsDir)'
 
   - task: powershell@2
@@ -85,7 +80,7 @@ jobs:
       targetType: filePath
       filePath: build\Helix\PrepareHelixPayload.ps1
       arguments: -Platform '$(buildPlatform)' -Configuration '$(buildConfiguration)' -ArtifactName '${{ parameters.artifactName }}'
-      
+
   - task: CmdLine@1
     displayName: 'Display Helix payload contents'
     inputs:
@@ -129,7 +124,7 @@ jobs:
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
       artifactName: ${{ parameters.artifactName }}
-      
+
   - task: DotNetCoreCLI@2
     displayName: 'Run tests in Helix'
     env:
