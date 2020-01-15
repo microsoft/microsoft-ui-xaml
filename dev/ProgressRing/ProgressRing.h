@@ -24,10 +24,11 @@ public:
 
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
 private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
-
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void ApplyLottieAnimation();
     void UpdateStates();

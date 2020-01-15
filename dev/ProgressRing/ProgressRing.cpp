@@ -15,6 +15,8 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
 
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
@@ -43,6 +45,16 @@ void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, co
     UpdateSegment();
 }
 
+void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ApplyLottieAnimation();
+}
+
+void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ApplyLottieAnimation();
+}
+
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     ApplyLottieAnimation();
@@ -60,7 +72,9 @@ void ProgressRing::ApplyLottieAnimation()
     {
         const double thickness = StrokeThickness();
         const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
-        player.Source(winrt::make<ProgressRingLoading>(thickness, size));
+        const auto foreground = Foreground();
+        const auto background = Background();
+        player.Source(winrt::make<ProgressRingLoading>(thickness, size, foreground, background));
     }
 }
 
