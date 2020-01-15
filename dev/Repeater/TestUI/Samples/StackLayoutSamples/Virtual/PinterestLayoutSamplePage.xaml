@@ -15,7 +15,7 @@
             </controls:RecyclingElementFactory.RecyclePool>
             <DataTemplate x:Key="item">
                 <UserControl IsTabStop="True" UseSystemFocusVisuals="True" Margin="5" >
-                    <StackPanel BorderThickness="1" Background="LightGray" Margin="5">
+                    <StackPanel BorderThickness="1" Background="{ThemeResource SystemChromeMediumColor}" Margin="5">
                         <Image x:Name="recipeImage" Source="{Binding ImageUri}"  Width="100" Height="100"/>
                         <TextBlock 
                                         x:Name="recipeDescription" 

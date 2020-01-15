@@ -11,52 +11,54 @@
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <StackPanel x:Name="ContentArea" Orientation="Vertical">
-            <Button AutomationProperties.Name="FlyoutButton" Content="Click Me" Margin="12">
-                <Button.Flyout>
-                    <MenuFlyout x:Name="ButtonMenuFlyout">
-                        <MenuFlyoutItem Text="A Normal Item"/>
+        <StackPanel x:Name="ContentArea" Orientation="Horizontal">
+            <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" VerticalAlignment="Top" MinWidth="250">
+                <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
 
-                        <MenuFlyoutSeparator />
+                <Button AutomationProperties.Name="FlyoutButton" Content="Click Me" Margin="12">
+                    <Button.Flyout>
+                        <MenuFlyout x:Name="ButtonMenuFlyout">
+                            <MenuFlyoutItem Text="A Normal Item"/>
 
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="RedItem" Text="Red"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="OrangeItem" Text="Orange"  IsChecked="true"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="YellowItem" Text="Yellow"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="GreenItem" Text="Green"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="BlueItem" Text="Blue"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="IndigoItem" Text="Indigo"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="VioletItem" Text="Violet"/>
+                            <MenuFlyoutSeparator />
 
-                        <MenuFlyoutSeparator />
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="RedItem" Text="Red"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="OrangeItem" Text="Orange"  IsChecked="true"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="YellowItem" Text="Yellow"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="GreenItem" Text="Green"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="BlueItem" Text="Blue"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="IndigoItem" Text="Indigo"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="VioletItem" Text="Violet"/>
 
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="CompactItem" Text="Compact" GroupName="Size" IsChecked="true"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="NormalItem" Text="Normal" GroupName="Size"/>
-                        <controls:RadioMenuFlyoutItem AutomationProperties.Name="ExpandedItem" Text="Expanded" GroupName="Size"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
+                            <MenuFlyoutSeparator />
 
-            <Button Content="I have icons" Margin="12">
-                <Button.Flyout>
-                    <MenuFlyout>
-                        <ToggleMenuFlyoutItem Text="A Toggle Item"/>
-                        <controls:RadioMenuFlyoutItem Text="A Radio Item"/>
-                        <controls:RadioMenuFlyoutItem x:Name="IconRadioMenuFlyoutItem" Text="Radio And Has Icon"/>
-                        <MenuFlyoutItem x:Name="IconMenuFlyoutItem" Text="Just Has Icon"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="CompactItem" Text="Compact" GroupName="Size" IsChecked="true"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="NormalItem" Text="Normal" GroupName="Size"/>
+                            <controls:RadioMenuFlyoutItem AutomationProperties.Name="ExpandedItem" Text="Expanded" GroupName="Size"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
 
-            <Grid x:Name="InfoGrid" Margin="12">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Button Content="I have icons" Margin="12">
+                    <Button.Flyout>
+                        <MenuFlyout>
+                            <ToggleMenuFlyoutItem Text="A Toggle Item"/>
+                            <controls:RadioMenuFlyoutItem Text="A Radio Item"/>
+                            <controls:RadioMenuFlyoutItem x:Name="IconRadioMenuFlyoutItem" Text="Radio And Has Icon"/>
+                            <MenuFlyoutItem x:Name="IconMenuFlyoutItem" Text="Just Has Icon"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
+
+            <StackPanel x:Name="InfoGrid" Margin="12,0,0,0" Style="{ThemeResource StandardGroupingStackPanel}"
+                        MinWidth="250" VerticalAlignment="Top">
+                <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}"/>
 
                 <StackPanel x:Name="ItemNames"/>
 
                 <StackPanel x:Name="ItemStates" Grid.Column="1"/>
-            </Grid>
+            </StackPanel>
 
         </StackPanel>
     </Grid>

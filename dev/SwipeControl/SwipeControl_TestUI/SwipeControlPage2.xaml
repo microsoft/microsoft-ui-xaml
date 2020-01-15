@@ -86,7 +86,7 @@
                 IsEnabled="False"/>
     </StackPanel>
 
-    <ListView x:Name="markupListView" Width="300" Height="500" Grid.Row="1" Margin="1" Background="AliceBlue" VerticalAlignment="Top">
+        <ListView x:Name="markupListView" Width="300" Height="500" Grid.Row="1" Margin="1" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}" BorderThickness="1" VerticalAlignment="Top">
       <ListViewItem x:Name="markupListViewItem1" AutomationProperties.Name="ListViewItem" Height="30">
         <muxc:SwipeControl x:Name="markupSwipeControl">
           <TextBlock Text="SwipeControl 1"/>
@@ -99,8 +99,9 @@
         
     <TextBlock AutomationProperties.Name="TextBlock" x:Name="textBlock" Text="TextBlock" Grid.Row="2" Grid.ColumnSpan="7"/>
 
-    <ScrollViewer x:Name="svSwipeControlProperties" Grid.Row="1" Grid.Column="1" Margin="1" MinWidth="300">
-      <Grid Margin="2" Background="LightYellow">
+        <ScrollViewer x:Name="svSwipeControlProperties" Grid.Row="1" Grid.Column="1" Margin="2,1,2,1" MinWidth="300">
+            <Grid BorderBrush="{ThemeResource SystemChromeDisabledLowColor}" Padding="2"
+                  BorderThickness="1" Background="{ThemeResource SystemListLowColor}">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
@@ -142,8 +143,8 @@
       </Grid>
     </ScrollViewer>
       
-    <ScrollViewer x:Name="svSwipeControlMethods" Grid.Row="1" Grid.Column="2" Margin="1" MinWidth="300">
-      <Grid Margin="2" Background="White">
+    <ScrollViewer x:Name="svSwipeControlMethods" Grid.Row="1" Grid.Column="2" Margin="2,1,2,1" MinWidth="300">
+            <Grid BorderBrush="{ThemeResource SystemChromeDisabledLowColor}" BorderThickness="1" Padding="4">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
@@ -206,7 +207,8 @@
     </ScrollViewer>
 
     <ScrollViewer x:Name="svSwipeItemProperties" Grid.Row="1" Grid.Column="3" Margin="1" MinWidth="300" Visibility="Collapsed">
-      <Grid Margin="2" Background="LightYellow">        <Grid.RowDefinitions>
+      <Grid Margin="2" Background="LightYellow">
+        <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>

@@ -78,7 +78,7 @@
         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
             <StackPanel Orientation="Horizontal">
                 <ScrollViewer HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled">
-                    <Grid Background="Bisque" Margin="5" MinWidth="300">
+                    <Grid Background="{ThemeResource SystemChromeLowColor}" Margin="5" MinWidth="300" Padding="6">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -308,7 +308,7 @@
                 </ScrollViewer>
 
                 <ScrollViewer>
-                    <Grid Margin="5" MinWidth="300">
+                    <Grid Margin="5" MinWidth="300" Padding="6">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -561,7 +561,7 @@
                 </ScrollViewer>
 
                 <!-- Logging Output -->
-                <Grid Background="Bisque" Margin="5" MaxWidth="400">
+                <Grid Background="{ThemeResource SystemChromeLowColor}" Margin="5" MaxWidth="400" Padding="6">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
