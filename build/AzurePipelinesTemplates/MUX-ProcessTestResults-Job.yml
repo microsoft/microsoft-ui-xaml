@@ -3,7 +3,6 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
-  pgcOutputPath: $(Build.ArtifactStagingDirectory)\PGO
 
 jobs:
 - job: ProcessTestResults
@@ -44,7 +43,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: build\Helix\ProcessHelixFiles.ps1
-      arguments: -OutputFilePath '$(helixOutputFolder)' -PGCOutputPath '${{ parameters.pgcOutputPath }}'
+      arguments: -OutputFilePath '$(helixOutputFolder)'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'

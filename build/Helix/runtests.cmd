@@ -12,7 +12,7 @@ FOR %%A IN (MUXControlsTestApp.exe,IXMPTestApp.exe,NugetPackageTestApp.exe,Nuget
   %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpCount /t REG_DWORD /d 10 /f
 )
 
-:: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
+:: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe
 
@@ -33,7 +33,8 @@ move te.wtl te_original.wtl
 
 copy /y te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
 copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
-copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%
+md %HELIX_WORKITEM_UPLOAD_ROOT%\%testnameprefix%
+copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%\%testnameprefix%
 
 set FailedTestQuery=
 for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_original.wtl`) DO (

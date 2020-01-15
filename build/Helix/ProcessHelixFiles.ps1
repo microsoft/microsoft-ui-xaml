@@ -3,12 +3,12 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutPutFolder = "HelixOutput",
-    [string]$PGCOutputPath
+    [string]$OutPutFolder = "HelixOutput"
 )
 
 $helixLinkFile = "$OutPutFolder\LinksToHelixTestFiles.html"
 $visualTreeMasterFolder = "$OutPutFolder\VisualTreeMasters"
+$PGCOutputPath = "$OutPutFolder\PGO"
 
 function Generate-File-Links
 {
@@ -29,6 +29,7 @@ function Generate-File-Links
 
 #Create output directory
 New-Item $OutPutFolder -ItemType Directory
+New-Item $PGCOutputPath -ItemType Directory
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
@@ -94,11 +95,6 @@ foreach ($testRun in $testRuns.value)
                     $destination = "$visualTreeMasterFolder\$($masterFile.Name)"
                     Write-Host "Copying $($masterFile.Name) to $destination"
                     $webClient.DownloadFile($masterFile.Link, $destination)
-                }
-
-                if( -Not (Test-Path $PGCOutputPath) )
-                {
-                    New-Item $PGCOutputPath -ItemType Directory
                 }
 
                 foreach($pgcFile in $pgcFiles)

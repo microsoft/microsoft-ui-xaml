@@ -37,16 +37,6 @@ jobs:
     dependsOn: Build
     prereleaseVersionTag: pgo
 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
-
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -60,8 +50,6 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
     dependsOn:
-    - RunNugetPkgTestsInHelix
     - RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 10
-    pgcOutputPath: $(Build.ArtifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\PGO
