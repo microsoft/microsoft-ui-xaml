@@ -46,6 +46,7 @@ runtimeclass TabViewTabDragCompletedEventArgs
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+[contentproperty("TabItems")]
 unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 {
     TabView();
