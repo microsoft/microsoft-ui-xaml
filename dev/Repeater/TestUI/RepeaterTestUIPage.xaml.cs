@@ -4,12 +4,12 @@
 using MUXControlsTestApp.Samples;
 using System;
 using Windows.UI.Xaml.Controls;
-using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
-using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
-using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 using FlowLayout = Microsoft.UI.Xaml.Controls.FlowLayout;
-using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
+using FlowLayoutLineAlignment = Microsoft.UI.Xaml.Controls.FlowLayoutLineAlignment;
 using StackLayout = Microsoft.UI.Xaml.Controls.StackLayout;
+using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
+using UniformGridLayoutItemsJustification = Microsoft.UI.Xaml.Controls.UniformGridLayoutItemsJustification;
+using VirtualizingLayout = Microsoft.UI.Xaml.Controls.VirtualizingLayout;
 
 namespace MUXControlsTestApp
 {
@@ -47,6 +47,10 @@ namespace MUXControlsTestApp
             collectionChangeDemo.Click += delegate
             {
                 Frame.NavigateWithoutAnimation(typeof(CollectionChangeDemo));
+            };
+
+            sortingAndFilteringDemo.Click += delegate {
+                Frame.NavigateWithoutAnimation(typeof(SortingAndFilteringPage));
             };
 
             animationsDemo.Click += delegate
