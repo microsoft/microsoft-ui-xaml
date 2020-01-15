@@ -24,6 +24,7 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
+    PGOBuildMode: Instrument
 
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
