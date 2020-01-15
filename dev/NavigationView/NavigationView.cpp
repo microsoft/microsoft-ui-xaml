@@ -294,7 +294,6 @@ void NavigationView::OnApplyTemplate()
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
-        leftNavRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -316,7 +315,6 @@ void NavigationView::OnApplyTemplate()
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
-        topNavRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -328,7 +326,6 @@ void NavigationView::OnApplyTemplate()
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
 
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
-        topNavListOverflowRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
@@ -1823,7 +1820,7 @@ void NavigationView::ArrowKeyNavigationPolyfill(const winrt::NavigationViewItem&
 
 bool NavigationView::FocusNextFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
 {
-    if (auto itemsSourceView = ir.ItemsSourceView())
+    if (auto const itemsSourceView = ir.ItemsSourceView())
     {
         for (int i = elementIndex + 1; i < itemsSourceView.Count(); i++)
         {
@@ -1839,7 +1836,7 @@ bool NavigationView::FocusNextFocusableElement(const winrt::ItemsRepeater& ir, c
 
 bool NavigationView::FocusPreviousFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
 {
-    if (auto itemsSourceView = ir.ItemsSourceView())
+    if (auto const itemsSourceView = ir.ItemsSourceView())
     {
         for (int i = elementIndex - 1; i >= 0; i--)
         {

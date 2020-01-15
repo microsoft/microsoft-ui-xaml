@@ -266,6 +266,7 @@
                                                 AutomationProperties.LandmarkType="Navigation"
                                                 AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                 AutomationProperties.AccessibilityView = "Content"
+                                                TabFocusNavigation="Once"
                                                 x:Name="TopNavMenuItemsHost">
                                                 <local:ItemsRepeater.Layout>
                                                     <local:StackLayout Orientation="Horizontal"/>
@@ -294,6 +295,7 @@
                                                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                                                         <local:ItemsRepeater
                                                                     AutomationProperties.AccessibilityView = "Content"
+                                                                    TabFocusNavigation="Once"
                                                                     x:Name="TopNavMenuItemsOverflowHost">
                                                             <local:ItemsRepeater.Layout>
                                                                 <local:StackLayout Orientation="Vertical"/>
@@ -436,6 +438,7 @@
                                                 VerticalScrollBarVisibility="Auto">
                                                 <local:ItemsRepeater 
                                                         x:Name="MenuItemsHost"
+                                                        TabFocusNavigation="Once"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content">
                                                     <local:ItemsRepeater.Layout>
