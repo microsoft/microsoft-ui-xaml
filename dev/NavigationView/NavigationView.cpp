@@ -294,6 +294,7 @@ void NavigationView::OnApplyTemplate()
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         leftNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        leftNavRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -315,6 +316,7 @@ void NavigationView::OnApplyTemplate()
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
         topNavRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        topNavRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     // Change code to NOT do this if we're in left nav mode, to prevent it from being realized:
@@ -326,6 +328,7 @@ void NavigationView::OnApplyTemplate()
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
 
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
+        topNavListOverflowRepeater.TabFocusNavigation(winrt::KeyboardNavigationMode::Once);
     }
 
     if (auto topNavOverflowButton = GetTemplateChildT<winrt::Button>(c_topNavOverflowButton, controlProtected))
@@ -1779,10 +1782,90 @@ void NavigationView::OnNavigationViewItemKeyDown(const winrt::IInspectable& send
     }
 }
 
+void NavigationView::ArrowKeyNavigationPolyfill(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
+{
+    switch (args.Key())
+    {
+    case winrt::VirtualKey::Down:
+        if (auto const ir = GetParentItemsRepeaterForContainer(nvi))
+        {
+            if (ir != m_topNavRepeater.get())
+            {
+                auto const indexOfCurrentElement = GetIndexFromItem(ir, nvi);
+                if (indexOfCurrentElement >= 0)
+                {
+                    if (FocusNextFocusableElement(ir, indexOfCurrentElement))
+                    {
+                        args.Handled(true);
+                    }
+                }
+            }
+        }
+        break;
+    case winrt::VirtualKey::Up:
+        if (auto const ir = GetParentItemsRepeaterForContainer(nvi))
+        {
+            if (ir != m_topNavRepeater.get())
+            {
+                auto const indexOfCurrentElement = GetIndexFromItem(ir, nvi);
+                if (indexOfCurrentElement >= 0)
+                {
+                    if (FocusPreviousFocusableElement(ir, indexOfCurrentElement))
+                    {
+                        args.Handled(true);
+                    }
+                }
+            }
+        }
+        break;
+    }
+}
+
+bool NavigationView::FocusNextFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
+{
+    if (auto itemsSourceView = ir.ItemsSourceView())
+    {
+        for (int i = elementIndex + 1; i < itemsSourceView.Count(); i++)
+        {
+            if (auto const nextElement = ir.TryGetElement(i).try_as<winrt::NavigationViewItem>())
+            {
+                SetFocus(nextElement, winrt::FocusState::Keyboard);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool NavigationView::FocusPreviousFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
+{
+    if (auto itemsSourceView = ir.ItemsSourceView())
+    {
+        for (int i = elementIndex - 1; i >= 0; i--)
+        {
+            if (auto const nextElement = ir.TryGetElement(i).try_as<winrt::NavigationViewItem>())
+            {
+                SetFocus(nextElement, winrt::FocusState::Keyboard);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
 {
     auto key = args.Key();
-    if (IsSettingsItem(nvi))
+    auto const isSettingsItem = IsSettingsItem(nvi);
+
+    // Need to Polyfill XY navigation behavior when running below RS3
+    if (!SharedHelpers::IsRS3OrHigher() && !isSettingsItem)
+    {
+        ArrowKeyNavigationPolyfill(nvi, args);
+    }
+
+
+    if (isSettingsItem)
     {
         // Because ListViewItem eats the events, we only get these keys on KeyDown.
         if (key == winrt::VirtualKey::Space ||
@@ -1833,7 +1916,7 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 
     if (auto controlFirst = firstElement.try_as<winrt::Control>())
     {
-        controlFirst.Focus(winrt::FocusState::Keyboard);
+        SetFocus(controlFirst, winrt::FocusState::Keyboard);
     }
 }
 
@@ -1863,10 +1946,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
         auto lastIndex = itemsSourceView.Count() - 1;
         if (auto lastElement = ir.TryGetElement(lastIndex))
         {
-            if (auto controlLast = lastElement.try_as<winrt::Control>())
-            {
-                controlLast.Focus(winrt::FocusState::Programmatic);
-            }
+            SetFocus(lastElement, winrt::FocusState::Keyboard);
         }
     }
 }
@@ -1889,14 +1969,22 @@ void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, con
             // If focus is coming from outside the root repeater, put focus on last focused item
             if (rootRepeater != oldElementParent)
             {
-                if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
+                if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
                 {
-                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
+                    if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                     {
                         if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
                         {
                             args.Handled(true);
                         }
+                    }
+                    else
+                    {
+                        // Without TrySetNewFocusedElement, we cannot set focus while it is changing.
+                        m_dispatcherHelper.RunAsync([lastFocusedNvi]()
+                            {
+                                SetFocus(lastFocusedNvi, winrt::FocusState::Keyboard);
+                            });
                     }
                 }
             }
