@@ -8,7 +8,6 @@ Param(
 
 $helixLinkFile = "$OutputFilePath\LinksToHelixTestFiles.html"
 $visualTreeMasterFolder = "$OutputFilePath\VisualTreeMasters"
-$PGCOutputPath = "$OutputFilePath\PGO"
 
 function Generate-File-Links
 {
@@ -97,9 +96,10 @@ foreach ($testRun in $testRuns.value)
 
                 foreach($pgcFile in $pgcFiles)
                 {
-                    $archPath = $pgcFile.Name.Split('.')[0]
-                    $fileName = $pgcFile.Name.Remove(0, $archPath.length + 1)
-                    $fullPath = "$PGCOutputPath\$archPath"
+                    $flavorPath = $pgcFile.Name.Split('.')[0]
+                    $archPath = $pgcFile.Name.Split('.')[1]
+                    $fileName = $pgcFile.Name.Remove(0, $flavorPath.length + $archPath.length + 2)
+                    $fullPath = "$OutputFilePath\$flavorPath\$archPath\PGO"
                     $destination = "$fullPath\$fileName"
 
                     Write-Host "Copying $($pgcFile.Name) to $destination"
