@@ -36,8 +36,6 @@ namespace MUXControlsTestApp
 
             if (ApiInformation.IsPropertyPresent("Windows.UI.Xaml.Controls.Grid", "ColumnSpacing"))
             {
-                InfoGrid.ColumnSpacing = 12;
-
                 ItemNames.Spacing = 4;
                 ItemStates.Spacing = 4;
             }

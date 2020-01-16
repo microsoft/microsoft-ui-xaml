@@ -18,7 +18,7 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
     if (m_appliedTemplate)
     {
         static auto groupName = L"NavigationSeparatorLineStates"sv;
-        auto stateName = (Position() != NavigationViewListPosition::TopPrimary) ? L"HorizontalLine"sv : L"VerticalLine"sv;
+        auto stateName = (Position() != NavigationViewRepeaterPosition::TopPrimary) ? L"HorizontalLine"sv : L"VerticalLine"sv;
 
         VisualStateUtil::GotToStateIfGroupExists(*this, groupName, stateName, false /*useTransitions*/);
     }
@@ -34,7 +34,7 @@ void NavigationViewItemSeparator::OnApplyTemplate()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItemSeparator::OnNavigationViewListPositionChanged()
+void NavigationViewItemSeparator::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualState(false /*useTransition*/);
 }

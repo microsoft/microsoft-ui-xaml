@@ -250,6 +250,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
                 viewChanged.Reset();
+                IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {

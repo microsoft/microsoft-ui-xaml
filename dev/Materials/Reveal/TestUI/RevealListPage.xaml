@@ -153,19 +153,25 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
-                <Button x:Name="BorderColorButton" Content="Change Background" Click="OnBorderColorButtonClick" HorizontalAlignment="Center" Margin="5"/>
-                <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="OnBackgroundColorButtonClick" HorizontalAlignment="Center" Margin="5"/>
+            <StackPanel>
+                <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"></TextBlock>
+                <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
+                    <Button x:Name="BorderColorButton" Content="Change Background" Click="OnBorderColorButtonClick" HorizontalAlignment="Center" Margin="0,0,4,0"/>
+                    <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="OnBackgroundColorButtonClick" HorizontalAlignment="Center"/>
+                </StackPanel>
             </StackPanel>
 
-            <SemanticZoom Margin="3" Style="{StaticResource SemanticZoomRevealStyle}" IsZoomOutButtonEnabled="True" Grid.Row="1" >
-                <SemanticZoom.ZoomedInView>
-                    <ListView SelectionMode="None" ItemsSource="{x:Bind ItemSource.View, Mode=OneWay}" ItemTemplateSelector="{StaticResource TemplateList}" ItemContainerStyle="{StaticResource DefaultListViewItemStyle}" />
-                </SemanticZoom.ZoomedInView>
-                <SemanticZoom.ZoomedOutView>
-                    <ListView SelectionMode="None" ItemsSource="{x:Bind ItemSource.View.CollectionGroups}" />
-                </SemanticZoom.ZoomedOutView>
-            </SemanticZoom>
+            <StackPanel Grid.Row="1" >
+                <TextBlock Text="Sample controls" Style="{ThemeResource StandardGroupHeader}"/>
+                <SemanticZoom Margin="3" Style="{StaticResource SemanticZoomRevealStyle}" IsZoomOutButtonEnabled="True" >
+                    <SemanticZoom.ZoomedInView>
+                        <ListView SelectionMode="None" ItemsSource="{x:Bind ItemSource.View, Mode=OneWay}" ItemTemplateSelector="{StaticResource TemplateList}" ItemContainerStyle="{StaticResource DefaultListViewItemStyle}" />
+                    </SemanticZoom.ZoomedInView>
+                    <SemanticZoom.ZoomedOutView>
+                        <ListView SelectionMode="None" ItemsSource="{x:Bind ItemSource.View.CollectionGroups}" />
+                    </SemanticZoom.ZoomedOutView>
+                </SemanticZoom>
+            </StackPanel>
         </Grid>
     </Canvas>
 </local:TestPage>
