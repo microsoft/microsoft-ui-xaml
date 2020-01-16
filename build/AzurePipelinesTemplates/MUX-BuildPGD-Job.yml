@@ -1,0 +1,24 @@
+parameters:
+  dependsOn: ''
+
+jobs:
+- job: BuildPGD
+  dependsOn: ${{ parameters.dependsOn }}
+  pool:
+    vmImage: 'windows-2019'
+  strategy:
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+
+  steps:
+  - template: MUX-GetVCInstallDir-Steps.yml
+
+  - script: |
+      cd '${{ Build.ArtifactStagingDirectory }}\${{ buildConfiguration }}\${{ buildPlatform }}\PGO'
+      "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
+    displayName: 'Merge pgc files into pgd'

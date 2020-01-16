@@ -43,7 +43,10 @@ jobs:
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
-    dependsOn:
-    - RunFrameworkPkgTestsInHelix
+    dependsOn: RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 10
+
+- template: AzurePipelinesTemplates\MUX-BuildPGD-Job.yml
+  parameters:
+    dependsOn: ProcessTestResults
