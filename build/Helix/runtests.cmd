@@ -33,8 +33,8 @@ move te.wtl te_original.wtl
 
 copy /y te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
 copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
-md %HELIX_WORKITEM_UPLOAD_ROOT%\%testnameprefix%
-copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%\%testnameprefix%
+for /f "tokens=* delims=" %a in ('dir /b *.pgc') do ren "%a" "%testnameprefix%.%~na.pgc"
+copy /y *.pgc %HELIX_WORKITEM_UPLOAD_ROOT%
 
 set FailedTestQuery=
 for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputFailedTestQuery.ps1 te_original.wtl`) DO (

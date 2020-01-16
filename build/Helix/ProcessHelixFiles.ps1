@@ -46,7 +46,6 @@ $webClient = New-Object System.Net.WebClient
 
 foreach ($testRun in $testRuns.value)
 {
-    $testRunResultsUri = "$($testRun.url)/results?api-version=5.0"
     $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
     $isTestRunNameShown = $false
 
@@ -98,14 +97,16 @@ foreach ($testRun in $testRuns.value)
 
                 foreach($pgcFile in $pgcFiles)
                 {
-                    $destination = "$PGCOutputPath\$($pgcFile.Name)"
+                    $archPath = $pgcFile.Name.Split('.')[0]
+                    $fileName = $pgcFile.Name.Remove(0, $archPath.length + 1)
+                    $fullPath = "$PGCOutputPath\$archPath"
+                    $destination = "$fullPath\$fileName"
+
                     Write-Host "Copying $($pgcFile.Name) to $destination"
 
-                    $destinationPath = Split-Path "$destination"
-
-                    if (-Not (Test-Path $destinationPath))
+                    if (-Not (Test-Path $fullPath))
                     {
-                        New-Item $destinationPath -ItemType Directory
+                        New-Item $fullPath -ItemType Directory
                     }
 
                     $webClient.DownloadFile($pgcFile.Link, $destination)
