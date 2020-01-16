@@ -41,7 +41,7 @@
                         <!-- Lottie -->
                         <Border x:Name="LottieRoot" Opacity="0">
                             <!--AnimatedVisualPlayer with AutoPlay-->
-                            <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="True"/>
+                            <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="True" Stretch="None"/>
                         </Border>
 
                         <!--ProgressRing-->

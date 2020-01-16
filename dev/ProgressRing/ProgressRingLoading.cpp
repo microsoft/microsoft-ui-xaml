@@ -100,6 +100,7 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateContainerShape();
         result.TransformMatrix({5, 0, 0, 5, 50, 50});
+        result.Offset({ _size.Width / 10.0f - 10.0f, _size.Height / 10.0f - 10.0f });
         auto shapes = result.Shapes();
         shapes.Append(ContainerShape_1());
         return result;
@@ -130,7 +131,9 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_0()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 9, 9 });
+        const float calculatedRadius = std::max(_size.Width / 10.0f - static_cast<float>(_strokeThickness) / 10.0f, 0.0f);
+        result.Center({ _size.Width / 10.0f - 10.0f, _size.Height / 10.0f - 10.0f });
+        result.Radius({ calculatedRadius, calculatedRadius });
         return result;
     }
 
@@ -142,7 +145,8 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateEllipseGeometry();
         result.TrimEnd(0.5F);
-        result.Radius({ 9, 9 });
+        const float calculatedRadius = std::max(_size.Width / 10.0f - static_cast<float>(_strokeThickness) / 10.0f, 0.0f);
+        result.Radius({ calculatedRadius, calculatedRadius });
         result.StartAnimation(L"TrimStart", TrimStartScalarAnimation_0_to_0p5());
         auto controller = result.TryGetAnimationController(L"TrimStart");
         controller.Pause();
@@ -157,7 +161,8 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_2()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 9, 9 });
+        const float calculatedRadius = std::max(_size.Width / 10.0f - static_cast<float>(_strokeThickness) / 10.0f, 0.0f);
+        result.Radius({ calculatedRadius, calculatedRadius });
         result.StartAnimation(L"TrimEnd", TrimEndScalarAnimation_0_to_0p5());
         auto controller = result.TryGetAnimationController(L"TrimEnd");
         controller.Pause();
@@ -180,6 +185,7 @@ class ProgressRingAnimatedVisual :
         propertySet.InsertScalar(L"Progress", 0);
         auto children = result.Children();
         children.InsertAtTop(ShapeVisual());
+        result.RelativeSizeAdjustment({ 1, 1 });
         return result;
     }
 
@@ -207,7 +213,7 @@ class ProgressRingAnimatedVisual :
     winrt::ShapeVisual ShapeVisual()
     {
         auto result = _c.CreateShapeVisual();
-        result.Size({ 100, 100 });
+        result.Size(_size);
         auto shapes = result.Shapes();
         // Ellipse Path
         shapes.Append(SpriteShape_1());
@@ -323,7 +329,7 @@ public:
 
     [[nodiscard]] winrt::float2 Size() const
     {
-        return { 100, 100 };
+        return _size;
     }
 
     [[nodiscard]] std::chrono::milliseconds Duration() const

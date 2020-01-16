@@ -37,6 +37,7 @@ void ProgressRing::OnApplyTemplate()
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    ApplyLottieAnimation();
     UpdateRing();
 }
 
@@ -70,8 +71,8 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        const double thickness = StrokeThickness();
-        const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+        const double thickness = std::max(StrokeThickness() - 0.0, 0.0);
+        const auto size = winrt::Size({ static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
         const auto foreground = Foreground().try_as<winrt::SolidColorBrush>().Color();
         const auto background = Background().try_as<winrt::SolidColorBrush>().Color();
         player.Source(winrt::make<ProgressRingLoading>(thickness, size, foreground, background));
