@@ -35,7 +35,7 @@ private:
     void UpdateSegment();
     void UpdateRing();
 
-    static winrt::Size ComputeEllipseSize(double thickness, double width, double height);
+    static winrt::Size ComputeCircleSize(double thickness, double width);
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::PathFigure> m_outlineFigure{ this };

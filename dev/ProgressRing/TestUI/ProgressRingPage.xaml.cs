@@ -20,6 +20,32 @@ namespace MUXControlsTestApp
         public ProgressRingPage()
         {
             this.InitializeComponent();
+            Loaded += ProgressRingPage_Loaded;
+        }
+
+        private void ProgressRingPage_Loaded(object sender, RoutedEventArgs e)
+        {
+            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
+
+            VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentStateChanged += this.ProgressRingPage_CurrentStateChanged;
+            VisualStateText.Text = VisualStateManager.GetVisualStateGroups(layoutRoot)[0].CurrentState.Name;
+
+            var lottieRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(lottieRoot, 0);
+
+            IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
+
+            Loaded -= ProgressRingPage_Loaded;
+        }
+
+        private void ProgressRingPage_CurrentStateChanged(object sender, VisualStateChangedEventArgs e)
+        {
+            VisualStateText.Text = e.NewState.Name;
+
+            var layoutRoot = (Grid)VisualTreeHelper.GetChild(TestProgressRing, 0);
+            var lottieRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
+            var animatedVisualPlayer = (Microsoft.UI.Xaml.Controls.AnimatedVisualPlayer)VisualTreeHelper.GetChild(lottieRoot, 0);
+            IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
         }
 
         public void UpdateMinMax_Click(object sender, RoutedEventArgs e)

@@ -17,10 +17,6 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualStateGroup.Transitions>
-
-                                </VisualStateGroup.Transitions>
-    
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Indeterminate">

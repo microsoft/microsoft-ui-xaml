@@ -72,11 +72,12 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        const double thickness = std::max(StrokeThickness() - 0.0, 0.0);
-        const auto size = winrt::Size({ static_cast<float>(ActualWidth()), static_cast<float>(ActualHeight()) });
+        // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
+        const float diameter = static_cast<float>(ActualWidth());
+        const auto size = winrt::Size({ diameter, diameter });
         const auto foreground = Foreground().try_as<winrt::SolidColorBrush>().Color();
         const auto background = Background().try_as<winrt::SolidColorBrush>().Color();
-        player.Source(winrt::make<ProgressRingLoading>(thickness, size, foreground, background));
+        player.Source(winrt::make<ProgressRingLoading>(StrokeThickness(), size, foreground, background));
     }
 }
 
@@ -102,13 +103,14 @@ void ProgressRing::UpdateStates()
     }
 }
 
-winrt::Size ProgressRing::ComputeEllipseSize(double thickness, double actualWidth, double actualHeight)
+winrt::Size ProgressRing::ComputeCircleSize(double thickness, double actualWidth)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
-    const double width = std::max((actualWidth - safeThickness) / 2.0, 0.0);
-    const double height = std::max((actualHeight - safeThickness) / 2.0, 0.0);
 
-    return {static_cast<float>(width), static_cast<float>(height)};
+    // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
+    const double diameter = std::max((actualWidth - safeThickness) / 2.0, 0.0);
+
+    return {static_cast<float>(diameter), static_cast<float>(diameter)};
 }
 
 
@@ -133,7 +135,7 @@ void ProgressRing::UpdateSegment()
         }();
 
         const double thickness = StrokeThickness();
-        const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+        const auto size = ComputeCircleSize(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
         const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
@@ -148,7 +150,7 @@ void ProgressRing::UpdateSegment()
 void ProgressRing::UpdateRing()
 {
     const double thickness = StrokeThickness();
-    const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+    const auto size = ComputeCircleSize(thickness, ActualWidth());
 
     const float segmentWidth = size.Width;
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
