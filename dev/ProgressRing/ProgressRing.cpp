@@ -15,6 +15,8 @@ ProgressRing::ProgressRing()
     SetDefaultStyleKey(this);
 
     RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
+    RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
 
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
@@ -27,12 +29,16 @@ void ProgressRing::OnApplyTemplate()
     m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
+    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
+    ApplyLottieAnimation();
     UpdateRing();
+    UpdateStates();
 }
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
+    ApplyLottieAnimation();
     UpdateRing();
 }
 
@@ -41,18 +47,70 @@ void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, co
     UpdateSegment();
 }
 
+void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ApplyLottieAnimation();
+}
+
+void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    ApplyLottieAnimation();
+}
+
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    ApplyLottieAnimation();
     UpdateRing();
 }
 
-winrt::Size ProgressRing::ComputeEllipseSize(double thickness, double actualWidth, double actualHeight)
+void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateStates();
+}
+
+void ProgressRing::ApplyLottieAnimation()
+{
+    if (auto&& player = m_player.get())
+    {
+        // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
+        const float diameter = static_cast<float>(ActualWidth());
+        const auto size = winrt::Size({ diameter, diameter });
+        const auto foreground = Foreground().try_as<winrt::SolidColorBrush>().Color();
+        const auto background = Background().try_as<winrt::SolidColorBrush>().Color();
+        player.Source(winrt::make<ProgressRingLoading>(StrokeThickness(), size, foreground, background));
+    }
+}
+
+void ProgressRing::UpdateStates()
+{
+    if (IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+
+        if (auto&& player = m_player.get())
+        {
+            player.PlayAsync(0, 1, true);
+        }
+    }
+    else if (!IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+
+        if (auto&& player = m_player.get())
+        {
+            player.Stop();
+        }
+    }
+}
+
+winrt::Size ProgressRing::ComputeCircleSize(double thickness, double actualWidth)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
-    const double width = std::max((actualWidth - safeThickness) / 2.0, 0.0);
-    const double height = std::max((actualHeight - safeThickness) / 2.0, 0.0);
 
-    return {static_cast<float>(width), static_cast<float>(height)};
+    // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
+    const double diameter = std::max((actualWidth - safeThickness) / 2.0, 0.0);
+
+    return {static_cast<float>(diameter), static_cast<float>(diameter)};
 }
 
 
@@ -77,7 +135,7 @@ void ProgressRing::UpdateSegment()
         }();
 
         const double thickness = StrokeThickness();
-        const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+        const auto size = ComputeCircleSize(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
         const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
@@ -86,12 +144,13 @@ void ProgressRing::UpdateSegment()
         ringArc.IsLargeArc(angle >= M_PI);
         ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
     }
+
 }
 
 void ProgressRing::UpdateRing()
 {
     const double thickness = StrokeThickness();
-    const auto size = ComputeEllipseSize(thickness, ActualWidth(), ActualHeight());
+    const auto size = ComputeCircleSize(thickness, ActualWidth());
 
     const float segmentWidth = size.Width;
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));

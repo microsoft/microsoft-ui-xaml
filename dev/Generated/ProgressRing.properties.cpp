@@ -13,6 +13,7 @@ namespace winrt::Microsoft::UI::Xaml::Controls
 
 #include "ProgressRing.g.cpp"
 
+GlobalDependencyProperty ProgressRingProperties::s_IsIndeterminateProperty{ nullptr };
 GlobalDependencyProperty ProgressRingProperties::s_StrokeThicknessProperty{ nullptr };
 
 ProgressRingProperties::ProgressRingProperties()
@@ -22,6 +23,17 @@ ProgressRingProperties::ProgressRingProperties()
 
 void ProgressRingProperties::EnsureProperties()
 {
+    if (!s_IsIndeterminateProperty)
+    {
+        s_IsIndeterminateProperty =
+            InitializeDependencyProperty(
+                L"IsIndeterminate",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::ProgressRing>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                winrt::PropertyChangedCallback(&OnIsIndeterminatePropertyChanged));
+    }
     if (!s_StrokeThicknessProperty)
     {
         s_StrokeThicknessProperty =
@@ -37,7 +49,16 @@ void ProgressRingProperties::EnsureProperties()
 
 void ProgressRingProperties::ClearProperties()
 {
+    s_IsIndeterminateProperty = nullptr;
     s_StrokeThicknessProperty = nullptr;
+}
+
+void ProgressRingProperties::OnIsIndeterminatePropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::ProgressRing>();
+    winrt::get_self<ProgressRing>(owner)->OnIsIndeterminatePropertyChanged(args);
 }
 
 void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
@@ -46,6 +67,16 @@ void ProgressRingProperties::OnStrokeThicknessPropertyChanged(
 {
     auto owner = sender.as<winrt::ProgressRing>();
     winrt::get_self<ProgressRing>(owner)->OnStrokeThicknessPropertyChanged(args);
+}
+
+void ProgressRingProperties::IsIndeterminate(bool value)
+{
+    static_cast<ProgressRing*>(this)->SetValue(s_IsIndeterminateProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool ProgressRingProperties::IsIndeterminate()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<ProgressRing*>(this)->GetValue(s_IsIndeterminateProperty));
 }
 
 void ProgressRingProperties::StrokeThickness(double value)
