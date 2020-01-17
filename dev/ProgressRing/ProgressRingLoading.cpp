@@ -6,6 +6,9 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
+// This file has been modified to update animation visuals with inherited visual properties
+
 #include "pch.h"
 #include "common.h"
 #include "ProgressRingLoading.h"
@@ -31,10 +34,10 @@ class ProgressRingAnimatedVisual :
     winrt::ContainerVisual _root{ nullptr };
     winrt::ExpressionAnimation _scalarExpressionAnimation{ nullptr };
 
-    double _strokeThickness{ 2 };
-    winrt::Size _size;
-    winrt::Color _foreground;
-    winrt::Color _background;
+    double _strokeThickness{ 4 };
+    winrt::Size _size{ 40, 40 };
+    winrt::Color _foreground{ winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7) };
+    winrt::Color _background{ winrt::ColorHelper::FromArgb(0xFF, 0xD3, 0xD3, 0xD3) };
 
     // Layer (Shape): Radial
     // Transforms: Radial

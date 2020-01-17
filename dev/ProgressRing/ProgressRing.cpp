@@ -33,6 +33,7 @@ void ProgressRing::OnApplyTemplate()
 
     ApplyLottieAnimation();
     UpdateRing();
+    UpdateStates();
 }
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
@@ -84,10 +85,20 @@ void ProgressRing::UpdateStates()
     if (IsIndeterminate())
     {
         winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+
+        if (auto&& player = m_player.get())
+        {
+            player.PlayAsync(0, 1, true);
+        }
     }
     else if (!IsIndeterminate())
     {
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
+
+        if (auto&& player = m_player.get())
+        {
+            player.Stop();
+        }
     }
 }
 

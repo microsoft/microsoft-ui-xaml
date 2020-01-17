@@ -9,6 +9,7 @@
         <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
         <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
         <Setter Property="StrokeThickness" Value="4" />
+        <Setter Property="Maximum" Value="100" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:ProgressRing">
@@ -41,7 +42,7 @@
                         <!-- Lottie -->
                         <Border x:Name="LottieRoot" Opacity="0">
                             <!--AnimatedVisualPlayer with AutoPlay-->
-                            <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="True" Stretch="None"/>
+                            <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="False" Stretch="None"/>
                         </Border>
 
                         <!--ProgressRing-->
