@@ -45,7 +45,7 @@ PublishFile -IfExists $BuildOutputDir\$Configuration\AnyCPU\MUXControls.ReleaseT
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\pgosweep.exe $FullPublishDir\Test\
 PublishFile -IfExists $FullBuildOutput\NugetPackageTestAppCX\vcruntime140.dll $FullPublishDir\Test\
 # save the pgd file to artifacts, we will need this to merge pgc files and compile the next time around
-PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pgd $FullPublishDir\PGO\
+PublishFile -IfExists $FullBuildOutput\Microsoft.UI.Xaml\Microsoft.UI.Xaml.pgd "$($PublishDir)\PGO\$($Configuration)\$($Platform)"
 
 PublishFile -IfExists $FullBuildOutput\FrameworkPackage\*.* $FullPublishDir\FrameworkPackage
 

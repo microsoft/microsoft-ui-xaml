@@ -6,14 +6,6 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     vmImage: 'windows-2019'
-  strategy:
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
 
   steps:
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
@@ -26,8 +18,21 @@ jobs:
       echo ##vso[task.setvariable variable=VCToolsInstallDir]%VCToolsInstallDir%
     displayName: 'Retrieve VC tools directory'
 
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: drop
+      downloadPath: '$(Build.SourcesDirectory)\Artifacts'
+
   - script: |
-      dir /s $(Build.ArtifactStagingDirectory)
-      cd '$(Build.ArtifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\PGO'
+      dir /s $(Build.SourcesDirectory)\Artifacts\drop\PGO
+      cd '$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x86'
+      "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
+      cd '$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64'
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
     displayName: 'Merge pgc files into pgd'
+
+  - task: PublishBuildArtifacts@1
+    condition: succeededOrFailed()
+    inputs:
+      PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64\microsoft.ui.xaml.pgd
+      artifactName: PGO
