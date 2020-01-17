@@ -25,14 +25,19 @@ jobs:
 
   - script: |
       dir /s $(Build.SourcesDirectory)\Artifacts\drop\PGO
-      cd '$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x86'
+      cd "$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x86"
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
-      cd '$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64'
+      cd "$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64"
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
     displayName: 'Merge pgc files into pgd'
 
-  - task: PublishBuildArtifacts@1
-    condition: succeededOrFailed()
+  - task: CopyFiles@2
     inputs:
-      PathtoPublish: $(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64\microsoft.ui.xaml.pgd
+      sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop\PGO'
+      contents: '**\Microsoft.UI.Xaml.pgd'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: PGO
