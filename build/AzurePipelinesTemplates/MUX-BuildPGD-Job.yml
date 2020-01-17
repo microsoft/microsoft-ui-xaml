@@ -55,16 +55,8 @@ jobs:
   - task: CmdLine@1
     displayName: 'Build NuGet package'
     inputs:
-      workingDirectory: $(nugetPath)
       filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
-      arguments: 'pack MUXPGODatabase.nuspec -properties PROGRAMFILES="%ProgramFiles(x86)%"'
-
-  - task: CopyFiles@2
-    displayName: 'Publish NuGet to artifacts'
-    inputs:
-      sourceFolder: $(nugetPath)
-      contents: MUXPGODatabase.nuget
-      targetFolder: $(Build.ArtifactStagingDirectory)
+      arguments: pack '$(nugetPath)\MUXPGODatabase.nuspec' -BasePath '$(nugetPath)'' -OutputDirectory '$(Build.ArtifactStagingDirectory)'' -properties PROGRAMFILES="%ProgramFiles(x86)%"
 
   - task: PublishBuildArtifacts@1
     inputs:
