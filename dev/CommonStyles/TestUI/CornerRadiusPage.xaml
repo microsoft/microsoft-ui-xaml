@@ -916,8 +916,8 @@
                             contract7Present:CornerRadius="{x:Bind ControlCornerRadius}" />
                     </Grid>
                 </Grid>
-
-        </controls:ScrollingView>
+            </controls:ScrollingView>
+        </Grid>
     </Grid>
 
 </local:TestPage>

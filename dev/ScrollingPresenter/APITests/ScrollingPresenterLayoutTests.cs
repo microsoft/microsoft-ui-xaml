@@ -374,11 +374,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Uses a StackPanel with Stretch alignment as ScrollingPresenter.Content to verify it stretched to the size of the ScrollingPresenter.")]
         public void StretchAlignment()
         {
+            var stackPanel = new StackPanel();
+            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
+
             RunOnUIThread.Execute(() =>
             {
                 var rectangle = new Rectangle();
                 rectangle.Height = c_defaultUIScrollingPresenterContentHeight;
-                var stackPanel = new StackPanel();
                 stackPanel.Children.Add(rectangle);
                 var scrollingPresenter = new ScrollingPresenter();
                 scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
@@ -398,6 +400,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
+            RunOnUIThread.Execute(() =>
+            {
                 Log.Comment("Checking Stretch/Strech alignments");
                 Verify.AreEqual(HorizontalAlignment.Stretch, stackPanel.HorizontalAlignment);
                 Verify.AreEqual(VerticalAlignment.Stretch, stackPanel.VerticalAlignment);
