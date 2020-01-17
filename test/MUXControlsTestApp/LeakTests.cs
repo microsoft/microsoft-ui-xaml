@@ -20,12 +20,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
+using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using RatingControl = Microsoft.UI.Xaml.Controls.RatingControl;
 using ColorPicker = Microsoft.UI.Xaml.Controls.ColorPicker;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using TreeView = Microsoft.UI.Xaml.Controls.TreeView;
 using TreeViewNode = Microsoft.UI.Xaml.Controls.TreeViewNode;
 
@@ -69,13 +69,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 var parallaxView = new ParallaxView();
                 objects["ParallaxView"] = new WeakReference(parallaxView);
 
-                var scrollingPresenter = new ScrollingPresenter();
-                objects["ScrollingPresenter"] = new WeakReference(scrollingPresenter);
+                var scrollPresenter = new ScrollPresenter();
+                objects["ScrollPresenter"] = new WeakReference(scrollPresenter);
 
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
                 {
-                    var scrollingView = new ScrollingView();
-                    objects["ScrollingView"] = new WeakReference(scrollingView);
+                    var scrollView = new ScrollView();
+                    objects["ScrollView"] = new WeakReference(scrollView);
                 }
             });
             IdleSynchronizer.Wait();
