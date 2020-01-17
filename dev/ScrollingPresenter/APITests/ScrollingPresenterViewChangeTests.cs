@@ -37,7 +37,7 @@ using Windows.UI.ViewManagement;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         // Enum used in tests that use InterruptViewChange
         private enum ViewChangeInterruptionKind
@@ -53,15 +53,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxStockZoomFactorChangeDuration = 1000;
 
         private uint viewChangedCount = 0u;
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() =>
-            {
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
 
         [TestMethod]
         [TestProperty("Description", "Changes ScrollingPresenter offsets using ScrollTo, ScrollBy, ScrollFrom and AnimationMode/SnapPointsMode enum values.")]
@@ -561,7 +552,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Resetting window content to unparent ScrollingPresenter");
-                MUXControlsTestApp.App.TestContentRoot = null;
+                Content = null;
             });
 
             WaitForEvent("Waiting for view change completion", scrollingPresenterViewChangeOperationEvent);
@@ -1292,7 +1283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+                Content = scrollingPresenter;
             });
 
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
@@ -1341,7 +1332,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollingPresenterViewChangeOperationEvent);
 
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+                Content = scrollingPresenter;
             });
 
             WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);

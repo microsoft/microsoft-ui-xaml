@@ -11,13 +11,21 @@
 
     <Grid x:Name="LayoutRoot" >
 
-        <StackPanel Margin="50" Background="Silver">
+        <StackPanel Margin="50" Background="{ThemeResource SystemListMediumColor}">
             <StackPanel Orientation="Horizontal">
-                <Button x:Name="SetSmallWidth" AutomationProperties.Name="SetSmallWidth" Content="Small Width" Click="SetSmallWidth_Click" Margin="0,0,12,0"/>
-                <Button x:Name="SetLargeWidth" AutomationProperties.Name="SetLargeWidth" Content="Large Width" Click="SetLargeWidth_Click" Margin="0,0,12,0"/>
-                <Button x:Name="GetWidthsButton" AutomationProperties.Name="GetWidthsButton" Content="Get Widths" Click="GetWidthsButton_Click" Margin="0,0,12,0"/>
-                <TextBlock x:Name="WidthEqualText" AutomationProperties.Name="WidthEqualText" Margin="0,0,12,0"/>
-                <TextBlock x:Name="WidthSizeToContentText" AutomationProperties.Name="WidthSizeToContentText"/>
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
+                    <Button x:Name="SetSmallWidth" AutomationProperties.Name="SetSmallWidth" Width="100"
+                            Content="Small Width" Click="SetSmallWidth_Click" Margin="0,0,12,4"/>
+                    <Button x:Name="SetLargeWidth" AutomationProperties.Name="SetLargeWidth" Width="100"
+                            Content="Large Width" Click="SetLargeWidth_Click" Margin="0,0,12,0"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Reporting" Style="{ThemeResource StandardGroupHeader}"/>
+                    <Button x:Name="GetWidthsButton" AutomationProperties.Name="GetWidthsButton" Content="Get Widths" Click="GetWidthsButton_Click" Margin="0,0,12,0"/>
+                    <TextBlock x:Name="WidthEqualText" AutomationProperties.Name="WidthEqualText" Margin="0,0,12,0"/>
+                    <TextBlock x:Name="WidthSizeToContentText" AutomationProperties.Name="WidthSizeToContentText"/>
+                </StackPanel>
             </StackPanel>
 
             <TextBlock Text="SizeToContent, Auto Column Width" />

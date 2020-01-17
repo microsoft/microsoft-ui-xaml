@@ -65,6 +65,7 @@ winrt::Size StackLayout::MeasureOverride(
         m_itemSpacing,
         MAXUINT /* maxItemsPerLine */,
         GetScrollOrientation(),
+        DisableVirtualization(),
         LayoutId());
     return { desiredSize.Width, desiredSize.Height };
 }

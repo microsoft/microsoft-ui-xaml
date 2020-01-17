@@ -34,7 +34,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
     // Bug 17377723: crash in CControlTemplate::CreateXBindConnector in RS5.
     [TestClass]
-    public class PhasingTests : TestsBase
+    public class PhasingTests : ApiTestBase
     {
         const int expectedLastRealizedIndex = 8;
 

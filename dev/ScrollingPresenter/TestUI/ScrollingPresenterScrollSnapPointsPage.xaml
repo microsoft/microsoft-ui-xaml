@@ -24,11 +24,11 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Border BorderThickness="1" BorderBrush="Black" Grid.Column="0" Grid.RowSpan="2" Width="300" Height="500" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
+        <Border BorderThickness="1" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}" Grid.Column="0" Grid.RowSpan="2" Width="300" Height="500" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10">
             <controlsPrimitives:ScrollingPresenter x:Name="markupScrollingPresenter" AutomationProperties.Name="markupScrollingPresenter" Width="300" Height="500" ZoomMode="Enabled" HorizontalScrollMode="Disabled">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                     <StackPanel x:Name="stackPanel" Width="280" Height="10000" Orientation="Horizontal" HorizontalAlignment="Left"/>
-                    <Grid x:Name="consolidatedView" Width="10" Height="10000" BorderBrush="Black" BorderThickness="1,0,0,0"/>
+                    <Grid x:Name="consolidatedView" Width="10" Height="10000" BorderBrush="{ThemeResource SystemChromeDisabledLowColor}" BorderThickness="1,0,0,0"/>
                 </StackPanel>
             </controlsPrimitives:ScrollingPresenter>
         </Border>

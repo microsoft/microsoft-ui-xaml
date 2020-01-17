@@ -68,6 +68,7 @@
                 <!--Standard NumberBox test UI -->
                 <StackPanel>
                     <controls:NumberBox
+                        MinWidth="150"
                         x:Name="TestNumberBox"
                         AutomationProperties.Name="TestNumberBox"
                         Header="NumberBox"
@@ -96,7 +97,7 @@
                 </StackPanel>
 
                 <!-- NumberBox for nested scrolling bug(s)-->
-                <StackPanel Margin="10,0,0,0">
+                <StackPanel Margin="30,0,0,0">
                     <TextBlock>NumberBox inside ScrollViewer test</TextBlock>
                     <ScrollViewer x:Name="ScrollviewerWithScroll" Height="50"
                                   Width="200"

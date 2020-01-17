@@ -9,9 +9,12 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
-        <TimePicker/>
-        <TimePicker Header="WithHeader"/>
+    <StackPanel Margin="12" VerticalAlignment="Top">
+        <TextBlock Text="Sample TimePicker" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal">
+            <TimePicker Margin="0,23,8,0"/>
+            <TimePicker Header="TimePicker with header"/>
+        </StackPanel>
     </StackPanel>
 
 </local:TestPage>

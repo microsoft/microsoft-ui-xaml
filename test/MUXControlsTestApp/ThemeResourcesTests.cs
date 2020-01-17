@@ -36,7 +36,7 @@ using PersonPicture = Microsoft.UI.Xaml.Controls.PersonPicture;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class ThemeResourcesTests
+    public partial class ThemeResourcesTests : ApiTestBase
     {
         [ClassInitialize]
         [TestProperty("Classification", "Integration")]
@@ -45,6 +45,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         // Isolate this test because other tests might have run in this context and either loaded the brushes 
         // already (thereby invalidating what we're trying to test) or our changes will adversly affect other tests.
+        // Because of the test isolation we cannot use the base classes Content property as it may not be initialized.
         [TestProperty("IsolationLevel", "Method")]
         public void VerifyOverrides()
         {
@@ -68,21 +69,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // 3) Override brush name used by a system control
                 appResources["SliderTrackValueFill"] = new SolidColorBrush(Colors.Purple);
 
-                root = new Grid
-                {
+                root = new Grid {
                     Background = new SolidColorBrush(Colors.AntiqueWhite),
                 };
 
                 StackPanel panel = new StackPanel { Orientation = Orientation.Vertical };
                 panel.Children.Add(slider = new Slider());
-            
+
                 panel.Children.Add(ratingControl = new RatingControl() { Value = 2 });
                 panel.Children.Add(personPicture = new PersonPicture());
 
                 root.Children.Add(panel);
                 // Add an element over top to prevent stray mouse input from interfering.
-                root.Children.Add(new Button
-                {
+                root.Children.Add(new Button {
                     Background = new SolidColorBrush(Color.FromArgb(30, 0, 255, 0)),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch

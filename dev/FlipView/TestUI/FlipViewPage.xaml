@@ -11,24 +11,27 @@
     xmlns:contract7Present="http://schemas.microsoft.com/winfx/2006/xaml/presentation?IsApiContractPresent(Windows.Foundation.UniversalApiContract,7)">
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
-        <FlipView Width="200" Height="200"
-                  contract7Present:CornerRadius="2">
-            <Grid Background="Red"/>
-            <Grid Background="Green"/>
-            <Grid Background="Blue"/>
-        </FlipView>
+        <TextBlock Text="Sample FlipViews" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal">
+            <FlipView Width="200" Height="200" AutomationProperties.Name="Horizontal FlipView"
+                      contract7Present:CornerRadius="2">
+                <Grid Background="Red" AutomationProperties.Name="Red panel"/>
+                <Grid Background="Green" AutomationProperties.Name="Green panel"/>
+                <Grid Background="Blue" AutomationProperties.Name="Blue panel"/>
+            </FlipView>
         
-        <FlipView Width="200" Height="200"
-                  Margin="0, 20, 0, 0"
-                  contract7Present:CornerRadius="2">
-            <FlipView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </FlipView.ItemsPanel>
-            <Grid Background="Red"/>
-            <Grid Background="Green"/>
-            <Grid Background="Blue"/>
-        </FlipView>
+            <FlipView Width="200" Height="200"
+                      Margin="20, 0, 0, 0" AutomationProperties.Name="Vertical FlipView"
+                      contract7Present:CornerRadius="2">
+                <FlipView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </FlipView.ItemsPanel>
+                <Grid Background="Red" AutomationProperties.Name="Red panel"/>
+                <Grid Background="Green" AutomationProperties.Name="Green panel"/>
+                <Grid Background="Blue" AutomationProperties.Name="Blue panel"/>
+            </FlipView>
+        </StackPanel>
     </StackPanel>
 </local:TestPage>

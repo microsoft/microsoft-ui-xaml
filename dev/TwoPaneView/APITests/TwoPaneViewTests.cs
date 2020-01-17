@@ -35,20 +35,10 @@ using TwoPaneViewTallModeConfiguration = Microsoft.UI.Xaml.Controls.TwoPaneViewT
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class TwoPaneViewTests
+    public class TwoPaneViewTests : ApiTestBase
     {
         private const double c_defaultMinWideModeWidth = 641.0;
         private const double c_defaultMinTallModeHeight = 641.0;
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() => {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                // Put things back the way we found them.
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
-        }
 
         [TestMethod]
         [Description("Verifies the TwoPaneView default properties.")]
