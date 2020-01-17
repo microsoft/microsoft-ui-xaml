@@ -98,7 +98,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollFrom(scrollPresenter, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             // Flick with additional offsets velocity and custom scroll inertia decay rate
-            ScrollFrom(scrollPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f , verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
+            ScrollFrom(scrollPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f, verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
 
             // Do it all again while respecting snap points
             ScrollTo(scrollPresenter, 11.0, 22.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
@@ -807,14 +807,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative:  true, waitForFirstCompletion:  true);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative:  true, isSecondZoomRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative:  true, isSecondZoomRelative:  true, waitForFirstCompletion:  true);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative: false, waitForFirstCompletion: true);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative: true, waitForFirstCompletion: true);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: true, isSecondZoomRelative: false, waitForFirstCompletion: true);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: true, isSecondZoomRelative: true, waitForFirstCompletion: true);
             ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative: false, waitForFirstCompletion: false);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative:  true, waitForFirstCompletion: false);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative:  true, isSecondZoomRelative: false, waitForFirstCompletion: false);
-            ConsecutiveZoomFactorJumps(isFirstZoomRelative:  true, isSecondZoomRelative:  true, waitForFirstCompletion: false);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: false, isSecondZoomRelative: true, waitForFirstCompletion: false);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: true, isSecondZoomRelative: false, waitForFirstCompletion: false);
+            ConsecutiveZoomFactorJumps(isFirstZoomRelative: true, isSecondZoomRelative: true, waitForFirstCompletion: false);
         }
 
         private void ConsecutiveZoomFactorJumps(bool isFirstZoomRelative, bool isSecondZoomRelative, bool waitForFirstCompletion)
@@ -950,18 +950,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Performs consecutive non-animated offsets and zoom factor changes.")]
         public void ConsecutiveScrollAndZoomJumps()
         {
-            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative:  true, waitForFirstCompletion:  true);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative:  true, isZoomRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative:  true, isZoomRelative:  true, waitForFirstCompletion:  true);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative: false, waitForFirstCompletion: true);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative: true, waitForFirstCompletion: true);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: true, isZoomRelative: false, waitForFirstCompletion: true);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: true, isZoomRelative: true, waitForFirstCompletion: true);
             ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative: false, waitForFirstCompletion: false);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative:  true, waitForFirstCompletion: false);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative:  true, isZoomRelative: false, waitForFirstCompletion: false);
-            ConsecutiveScrollAndZoomJumps(isScrollRelative:  true, isZoomRelative:  true, waitForFirstCompletion: false);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: false, isZoomRelative: true, waitForFirstCompletion: false);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: true, isZoomRelative: false, waitForFirstCompletion: false);
+            ConsecutiveScrollAndZoomJumps(isScrollRelative: true, isZoomRelative: true, waitForFirstCompletion: false);
         }
 
         private void ConsecutiveScrollAndZoomJumps(bool isScrollRelative, bool isZoomRelative, bool waitForFirstCompletion)
-        { 
+        {
             ScrollPresenter scrollPresenter = null;
             Rectangle rectangleScrollPresenterContent = null;
             AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
@@ -1067,14 +1067,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Performs consecutive non-animated zoom factor and offsets changes.")]
         public void ConsecutiveZoomAndScrollJumps()
         {
-            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative:  true, waitForFirstCompletion:  true);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative:  true, isScrollRelative: false, waitForFirstCompletion:  true);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative:  true, isScrollRelative:  true, waitForFirstCompletion:  true);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative: false, waitForFirstCompletion: true);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative: true, waitForFirstCompletion: true);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: true, isScrollRelative: false, waitForFirstCompletion: true);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: true, isScrollRelative: true, waitForFirstCompletion: true);
             ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative: false, waitForFirstCompletion: false);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative:  true, waitForFirstCompletion: false);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative:  true, isScrollRelative: false, waitForFirstCompletion: false);
-            ConsecutiveZoomAndScrollJumps(isZoomRelative:  true, isScrollRelative:  true, waitForFirstCompletion: false);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: false, isScrollRelative: true, waitForFirstCompletion: false);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: true, isScrollRelative: false, waitForFirstCompletion: false);
+            ConsecutiveZoomAndScrollJumps(isZoomRelative: true, isScrollRelative: true, waitForFirstCompletion: false);
         }
 
         private void ConsecutiveZoomAndScrollJumps(bool isZoomRelative, bool isScrollRelative, bool waitForFirstCompletion)
@@ -1771,7 +1771,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             using (ScrollPresenterTestHooksHelper scrollPresenterTestHooksHelper = new ScrollPresenterTestHooksHelper(
                 enableAnchorNotifications: false,
                 enableInteractionSourcesNotifications: false,
-                enableExpressionAnimationStatusNotifications: true, 
+                enableExpressionAnimationStatusNotifications: true,
                 isAnimationsEnabledOverride: isAnimationsEnabledOverride))
             {
                 AutoResetEvent scrollPresenterViewChangeOperationEvent = new AutoResetEvent(false);
@@ -1900,7 +1900,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 {
                     List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = scrollPresenterTestHooksHelper.GetExpressionAnimationStatusChanges(scrollPresenter);
                     ScrollPresenterTestHooksHelper.LogExpressionAnimationStatusChanges(expressionAnimationStatusChanges);
-                    VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);                    
+                    VerifyExpressionAnimationStatusChangesForTranslationAndZoomFactorSuspension(expressionAnimationStatusChanges);
                 });
             }
         }
@@ -1990,7 +1990,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             operation.Id = scrollPresenter.ZoomTo(
                 zoomFactor,
-                new Vector2(centerPointX, centerPointY), 
+                new Vector2(centerPointX, centerPointY),
                 new ScrollingZoomOptions(animationMode, snapPointsMode)).ZoomFactorChangeId;
 
             if (operation.Id == -1)
@@ -2275,7 +2275,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         case null:
                             return new UISettings().AnimationsEnabled;
-                        default :
+                        default:
                             return isAnimationsEnabledOverride.Value;
                     }
                 case ScrollingAnimationMode.Enabled:

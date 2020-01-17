@@ -494,13 +494,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Warning("Test is momentarily disabled on phone (bug #12074500).");
                 return;
             }
-            
+
             if (PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone5))
             {
                 Log.Warning("This test relies on touch input, the injection of which is only supported in RS5 and up. Test is disabled.");
                 return;
             }
-            
+
             // Allow the test to run a second time pre-RS4 if it failed the first time.
             int additionalAttempts = PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone4) ? 1 : 2;
 
@@ -617,7 +617,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 // Starting with 19H1, the InteractionTracker changes the scale by a factor of 1.1 for each 60 mouse wheel delta.
                 // For earlier versions, a mouse wheel delta of 120 is required for the same 1.1 scale change.
                 InputHelper.RotateWheel(scrollPresenter12UIObject,
-                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int) (-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
+                    PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone5) ? (int)(-mouseWheelDeltaForVelocityUnit / 2) : -mouseWheelDeltaForVelocityUnit);
                 KeyboardHelper.ReleaseModifierKey(ModifierKey.Control);
 
                 Log.Comment("Waiting for scrollPresenter12 pinch completion");
@@ -792,10 +792,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Panning ScrollPresenter close to the Content's end");
                 PrepareForScrollPresenterManipulationStart("scrollPresenter51");
 
-                Point startPoint = isForHorizontalDirection ? 
+                Point startPoint = isForHorizontalDirection ?
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 105, scrollPresenter51UIObject.BoundingRectangle.Top + 100) :
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 100, scrollPresenter51UIObject.BoundingRectangle.Top + 100);
-                Point endPoint = isForHorizontalDirection ? 
+                Point endPoint = isForHorizontalDirection ?
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 50, scrollPresenter51UIObject.BoundingRectangle.Top + 100) :
                         new Point(scrollPresenter51UIObject.BoundingRectangle.Left + 100, scrollPresenter51UIObject.BoundingRectangle.Top + 50);
 
@@ -3091,7 +3091,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             else
             {
                 LogAndClearTraces();
-                string message = unsuccessfulWaits > maxUnsuccessfulWaits ? 
+                string message = unsuccessfulWaits > maxUnsuccessfulWaits ?
                     "Offset has not changed within " + millisecondsIdleStepTimeout + " milliseconds outside of Idle State." :
                     "Idle State was not reached within " + millisecondsTimeout + " milliseconds.";
                 if (failOnError)
@@ -3300,7 +3300,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             int tries = 0;
             do
             {
-                InputHelper.Pan(scrollPresenterUIObject, Math.Max((int) Convert.ToDouble(text.Value) / 2, 25), Direction.South);
+                InputHelper.Pan(scrollPresenterUIObject, Math.Max((int)Convert.ToDouble(text.Value) / 2, 25), Direction.South);
                 WaitForOffsetToSettle(text, millisecondsTimeout: defaultAnimatedViewChangeTimeout, failOnError: false);
                 tries++;
             }
@@ -3312,7 +3312,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             Log.Comment("GatherScrollSnapPointsTestPageElements - entry");
             var elements = new ScrollSnapPointsTestPageElements();
-            
+
             elements.btnAddMISnapPointUIObject = new Button(FindElement.ByName("btnMIAddSnapPoint"));
             elements.txtMISnapPointValueUIObject = new Edit(FindElement.ByName("txtMISnapPointValue"));
             elements.cmbMISnapPointAlignment = new ComboBox(FindElement.ByName("cmbMISnapPointAlignment"));

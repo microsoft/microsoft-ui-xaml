@@ -248,8 +248,8 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
         double viewportAnchorPointVerticalOffset{ 0.0 };
 
         ComputeElementAnchorPoint(
-            isForPreArrange, 
-            &elementAnchorPointHorizontalOffset, 
+            isForPreArrange,
+            &elementAnchorPointHorizontalOffset,
             &elementAnchorPointVerticalOffset);
         ComputeViewportAnchorPoint(
             viewportWidth,
@@ -263,9 +263,9 @@ winrt::Size ScrollPresenter::ComputeViewportToElementAnchorPointsDistance(
 
         // Rounding the distance to 6 precision digits to avoid layout cycles due to float/double conversions.
         winrt::Size viewportToElementAnchorPointsDistance = winrt::Size{
-            isnan(viewportAnchorPointHorizontalOffset) ? 
+            isnan(viewportAnchorPointHorizontalOffset) ?
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointHorizontalOffset - viewportAnchorPointHorizontalOffset) * 1000000) / 1000000),
-            isnan(viewportAnchorPointVerticalOffset) ? 
+            isnan(viewportAnchorPointVerticalOffset) ?
                 FloatUtil::NaN : static_cast<float>(round((elementAnchorPointVerticalOffset - viewportAnchorPointVerticalOffset) * 1000000) / 1000000)
         };
 

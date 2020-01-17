@@ -544,7 +544,7 @@ namespace MUXControlsTestApp
 
             double newScrollPresenterOffset = stackPanel.Orientation == Orientation.Horizontal ? scrollPresenter.HorizontalOffset : scrollPresenter.VerticalOffset;
 
-            if (lstTriggeredOperations.Count > 0 && 
+            if (lstTriggeredOperations.Count > 0 &&
                 ((lastScrollPresenterOffset <= 350.0 && newScrollPresenterOffset > 350.0) || (lastScrollPresenterOffset >= 350.0 && newScrollPresenterOffset < 350.0)))
             {
                 ExecuteTriggerableOperations();

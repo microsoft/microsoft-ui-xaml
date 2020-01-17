@@ -629,8 +629,8 @@ private:
         const winrt::IInspectable& sender,
         const winrt::RoutedEventArgs& args);
     void OnUnloaded(
-        const winrt::IInspectable &sender,
-        const winrt::RoutedEventArgs &args);
+        const winrt::IInspectable& sender,
+        const winrt::RoutedEventArgs& args);
     void OnBringIntoViewRequestedHandler(
         const winrt::IInspectable& sender,
         const winrt::BringIntoViewRequestedEventArgs& args);

@@ -229,7 +229,7 @@ namespace MUXControlsTestApp
         private void BtnOffsetPlus10With_Click(object sender, RoutedEventArgs e)
         {
             try
-            { 
+            {
                 markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
@@ -241,7 +241,7 @@ namespace MUXControlsTestApp
         private void BtnOffsetPlus10Without_Click(object sender, RoutedEventArgs e)
         {
             try
-            {                
+            {
                 markupScrollPresenter.ScrollBy(0.0, 10.0, new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
@@ -273,7 +273,7 @@ namespace MUXControlsTestApp
             }
             if (argsAreValid)
             {
-                for (int i=minColumn; i < snapPointColumns; i++)
+                for (int i = minColumn; i < snapPointColumns; i++)
                 {
                     Grid snapPointColumn = ((Grid)this.stackPanel.Children[i]);
                     bool isOccupied = false;

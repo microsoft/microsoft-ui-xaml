@@ -12,7 +12,7 @@
 
 ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEventArgs(
     double offset,
-    winrt::ScrollingScrollOptions const & options)
+    winrt::ScrollingScrollOptions const& options)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offset);

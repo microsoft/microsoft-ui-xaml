@@ -25,8 +25,8 @@ enum ScrollSnapPointsAlignment
 [marshaling_behavior(agile)]
 [threading(both)]
 unsealed runtimeclass SnapPointBase
-    // All composable classes must derrive from a Windows base class to pass WACK.
-    : Windows.UI.Xaml.DependencyObject
+// All composable classes must derrive from a Windows base class to pass WACK.
+: Windows.UI.Xaml.DependencyObject
 {
 #ifdef ApplicableRangeType
     Double ApplicableRange { get; };

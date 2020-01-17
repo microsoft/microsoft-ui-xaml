@@ -355,7 +355,7 @@ namespace MUXControlsTestApp.Utilities
                     if (OffsetChangeAnimationType != AnimationType.Default)
                     {
                         OperationInfo oi = operations[info.OffsetsChangeId];
-                        float positionTarget = (float) oi.OffsetTarget;
+                        float positionTarget = (float)oi.OffsetTarget;
                         float otherOrientationPosition = orientation == Orientation.Horizontal ? currentPosition.Y : currentPosition.X;
 
                         customKeyFrameAnimation = stockKeyFrameAnimation.Compositor.CreateVector3KeyFrameAnimation();
@@ -527,7 +527,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 // Note: Returning interactionVisual causes flickers when interacting with it (InteractionTracker issue).
                 RaiseLogMessage("CompositionScrollController: get_InteractionElement for Orientation=" + Orientation);
-                return (IsThumbPannable && IsEnabled && interactionFrameworkElement != null && interactionFrameworkElement.Parent != null) ? 
+                return (IsThumbPannable && IsEnabled && interactionFrameworkElement != null && interactionFrameworkElement.Parent != null) ?
                     interactionFrameworkElement.Parent as UIElement : null;
             }
         }
@@ -1020,7 +1020,7 @@ namespace MUXControlsTestApp.Utilities
                 !string.IsNullOrWhiteSpace(offsetPropertyName) &&
                 !string.IsNullOrWhiteSpace(minOffsetPropertyName) &&
                 !string.IsNullOrWhiteSpace(maxOffsetPropertyName))
-            { 
+            {
                 thumbOffsetAnimation = expressionAnimationSources.Compositor.CreateExpressionAnimation();
                 thumbOffsetAnimation.SetReferenceParameter("eas", expressionAnimationSources);
             }
@@ -1078,7 +1078,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("CompositionScrollController: DecrementRepeatButton_Click for Orientation=" + Orientation);
 
             int offsetChangeId =
-                RaiseScrollFromRequested(IsThumbPositionMirrored ? SmallChangeAdditionalVelocity : - SmallChangeAdditionalVelocity, SmallChangeInertiaDecayRate, true /*hookupCompletion*/);
+                RaiseScrollFromRequested(IsThumbPositionMirrored ? SmallChangeAdditionalVelocity : -SmallChangeAdditionalVelocity, SmallChangeInertiaDecayRate, true /*hookupCompletion*/);
         }
 
         private void IncrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -1154,7 +1154,7 @@ namespace MUXControlsTestApp.Utilities
             if (interactionFrameworkElement != null)
             {
                 double parentDim = 0.0;
-                double interactionFrameworkElementDim = 
+                double interactionFrameworkElementDim =
                     Orientation == Orientation.Horizontal ? interactionFrameworkElement.ActualWidth : interactionFrameworkElement.ActualHeight;
                 FrameworkElement parent = interactionFrameworkElement.Parent as FrameworkElement;
                 if (parent != null)

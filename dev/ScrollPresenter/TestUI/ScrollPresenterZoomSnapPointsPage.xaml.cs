@@ -171,7 +171,7 @@ namespace MUXControlsTestApp
         private void BtnZoomFactorPlus1With_Click(object sender, RoutedEventArgs e)
         {
             try
-            { 
+            {
                 markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
@@ -183,7 +183,7 @@ namespace MUXControlsTestApp
         private void BtnZoomFactorPlus1Without_Click(object sender, RoutedEventArgs e)
         {
             try
-            {                
+            {
                 markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)

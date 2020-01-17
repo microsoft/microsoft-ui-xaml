@@ -424,7 +424,7 @@ void ScrollView::OnApplyTemplate()
     winrt::FrameworkElement root = GetTemplateChildT<winrt::FrameworkElement>(s_rootPartName, thisAsControlProtected);
 
     if (root)
-    {        
+    {
         winrt::IVector<winrt::VisualStateGroup> rootVisualStateGroups = winrt::VisualStateManager::GetVisualStateGroups(root);
 
         if (rootVisualStateGroups)
@@ -485,7 +485,7 @@ void ScrollView::OnGotFocus(winrt::RoutedEventArgs const& args)
 
     __super::OnGotFocus(args);
 
-    m_preferMouseIndicators = 
+    m_preferMouseIndicators =
         m_focusInputDeviceKind == winrt::FocusInputDeviceKind::Mouse ||
         m_focusInputDeviceKind == winrt::FocusInputDeviceKind::Pen;
 
@@ -629,7 +629,7 @@ void ScrollView::OnScrollViewPointerPressed(
     {
         return;
     }
-    
+
     if (args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
         const winrt::PointerPoint pointerPoint = args.GetCurrentPoint(nullptr);
@@ -1083,7 +1083,7 @@ void ScrollView::OnCompositionTargetRendering(
         {
             auto& bringIntoViewOperation = *operationsIter;
             operationsIter++;
-            
+
             SCROLLVIEW_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_INT, METH_NAME, this, bringIntoViewOperation->TargetElement(), bringIntoViewOperation->TicksCount());
 
             if (bringIntoViewOperation->HasMaxTicksCount())
@@ -1521,7 +1521,7 @@ void ScrollView::UpdateHorizontalScrollController(
     m_horizontalScrollController.set(horizontalScrollController);
     m_horizontalScrollControllerElement.set(horizontalScrollControllerElement);
     HookHorizontalScrollControllerEvents();
-    UpdateScrollPresenterHorizontalScrollController(horizontalScrollController);    
+    UpdateScrollPresenterHorizontalScrollController(horizontalScrollController);
 }
 
 void ScrollView::UpdateScrollPresenterHorizontalScrollController(const winrt::IScrollController& horizontalScrollController)
@@ -1635,13 +1635,13 @@ bool ScrollView::IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind)
 bool ScrollView::AreAllScrollControllersCollapsed() const
 {
     return (!m_horizontalScrollControllerElement || m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed) &&
-           (!m_verticalScrollControllerElement || m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed);
+        (!m_verticalScrollControllerElement || m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Collapsed);
 }
 
 bool ScrollView::AreBothScrollControllersVisible() const
 {
     return m_horizontalScrollControllerElement && m_horizontalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible &&
-           m_verticalScrollControllerElement && m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible;
+        m_verticalScrollControllerElement && m_verticalScrollControllerElement.get().Visibility() == winrt::Visibility::Visible;
 }
 
 bool ScrollView::AreScrollControllersAutoHiding()
@@ -1912,7 +1912,7 @@ void ScrollView::OnKeyDown(winrt::KeyRoutedEventArgs const& e)
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::KeyRoutedEventArgsToString(e).c_str());
 
     __super::OnKeyDown(e);
-    
+
     m_preferMouseIndicators = false;
 
     if (m_scrollPresenter)
@@ -2081,21 +2081,21 @@ void ScrollView::HandleKeyDownForXYNavigation(winrt::KeyRoutedEventArgs args)
             {
                 focusAsyncOperation.Completed(winrt::AsyncOperationCompletedHandler<winrt::FocusMovementResult>(
                     [strongThis = get_strong(), targetElement = nextElement.try_as<winrt::UIElement>()](winrt::IAsyncOperation<winrt::FocusMovementResult> asyncOperation, winrt::AsyncStatus asyncStatus)
+                {
+                    SCROLLVIEW_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_INT, METH_NAME, strongThis, static_cast<int>(asyncStatus));
+
+                    if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
                     {
-                        SCROLLVIEW_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_INT, METH_NAME, strongThis, static_cast<int>(asyncStatus));
+                        // The focus change request was successful. One or a few ScrollPresenter::BringingIntoView notifications are likely to be raised in the coming ticks.
+                        // For those, the BringIntoViewRequestedEventArgs::AnimationDesired property will be set to True in order to animate to the target element rather than jumping.
+                        SCROLLVIEW_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_PTR, METH_NAME, strongThis, targetElement);
 
-                        if (asyncStatus == winrt::AsyncStatus::Completed && asyncOperation.GetResults())
-                        {
-                            // The focus change request was successful. One or a few ScrollPresenter::BringingIntoView notifications are likely to be raised in the coming ticks.
-                            // For those, the BringIntoViewRequestedEventArgs::AnimationDesired property will be set to True in order to animate to the target element rather than jumping.
-                            SCROLLVIEW_TRACE_VERBOSE(*strongThis, TRACE_MSG_METH_PTR, METH_NAME, strongThis, targetElement);
+                        auto bringIntoViewOperation(std::make_shared<ScrollViewBringIntoViewOperation>(targetElement));
 
-                            auto bringIntoViewOperation(std::make_shared<ScrollViewBringIntoViewOperation>(targetElement));
-
-                            strongThis->m_bringIntoViewOperations.push_back(bringIntoViewOperation);
-                            strongThis->HookCompositionTargetRendering();
-                        }
-                    }));
+                        strongThis->m_bringIntoViewOperations.push_back(bringIntoViewOperation);
+                        strongThis->HookCompositionTargetRendering();
+                    }
+                }));
             }
 
             isHandled = true;
@@ -2172,7 +2172,7 @@ winrt::DependencyObject ScrollView::GetNextFocusCandidate(winrt::FocusNavigation
             MUX_ASSERT(false);
             break;
         }
-        
+
         findNextElementOptions.HintRect(hintRect);
         findNextElementOptions.ExclusionRect(hintRect);
         focusDirection = FocusHelper::GetOppositeDirection(navigationDirection);
@@ -2533,7 +2533,7 @@ winrt::hstring ScrollView::DependencyPropertyToString(const winrt::IDependencyPr
     else if (dependencyProperty == s_VerticalScrollModeProperty)
     {
         return L"VerticalScrollMode";
-    }    
+    }
     else if (dependencyProperty == s_ComputedHorizontalScrollBarVisibilityProperty)
     {
         return L"ComputedHorizontalScrollBarVisibility";

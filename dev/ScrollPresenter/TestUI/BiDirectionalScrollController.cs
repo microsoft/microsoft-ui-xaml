@@ -952,7 +952,7 @@ namespace MUXControlsTestApp.Utilities
             if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
             {
                 operations.Add(
-                    viewChangeId, 
+                    viewChangeId,
                     new OperationInfo(viewChangeId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
             }
         }

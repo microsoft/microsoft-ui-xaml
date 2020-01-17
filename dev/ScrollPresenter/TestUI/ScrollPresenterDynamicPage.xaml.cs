@@ -174,7 +174,8 @@ namespace MUXControlsTestApp
             lgb.GradientStops.Add(gs);
             rectangle = new Rectangle() { Fill = lgb };
             button = new Button() { Content = "Button" };
-            Rectangle viewboxChild = new Rectangle() {
+            Rectangle viewboxChild = new Rectangle()
+            {
                 Fill = lgb,
                 Width = 600,
                 Height = 500
@@ -186,7 +187,9 @@ namespace MUXControlsTestApp
             };
             border = new Border()
             {
-                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(5), Child = borderChild
+                BorderBrush = chartreuseBrush,
+                BorderThickness = new Thickness(5),
+                Child = borderChild
             };
             StackPanel populatedBorderChild = new StackPanel();
             populatedBorderChild.Margin = new Thickness(30);
@@ -213,8 +216,11 @@ namespace MUXControlsTestApp
             }
             populatedBorder = new Border()
             {
-                BorderBrush = chartreuseBrush, BorderThickness = new Thickness(3), Margin = new Thickness(15),
-                Background = new SolidColorBrush(Colors.Beige), Child = populatedBorderChild
+                BorderBrush = chartreuseBrush,
+                BorderThickness = new Thickness(3),
+                Margin = new Thickness(15),
+                Background = new SolidColorBrush(Colors.Beige),
+                Child = populatedBorderChild
             };
             verticalStackPanel = new StackPanel();
             for (int index = 0; index < 10; index++)
@@ -310,7 +316,7 @@ namespace MUXControlsTestApp
 
         private void Content_EffectiveViewportChanged(FrameworkElement sender, EffectiveViewportChangedEventArgs args)
         {
-            AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" + 
+            AppendAsyncEventMessage("Content_EffectiveViewportChanged: BringIntoViewDistance=" +
                 args.BringIntoViewDistanceX + "," + args.BringIntoViewDistanceY + ", EffectiveViewport=" +
                 args.EffectiveViewport.ToString() + ", MaxViewport=" + args.MaxViewport.ToString());
         }
@@ -1794,7 +1800,7 @@ namespace MUXControlsTestApp
                     AppendAsyncEventMessage("Canceling ZoomTo/By Id=" + lastZoomFactorChangeId);
                     scrollPresenter.ZoomBy(
                         0,
-                        Vector2.Zero, 
+                        Vector2.Zero,
                         new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
                 }
             }
@@ -1810,7 +1816,7 @@ namespace MUXControlsTestApp
             try
             {
                 AppendAsyncEventMessage("ZoomAnimationStarting ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", CenterPoint=" + args.CenterPoint + ", SZF=" + args.StartZoomFactor + ", EZF=" + args.EndZoomFactor);
-                
+
                 ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
 
                 if (stockKeyFrameAnimation != null)
@@ -1972,7 +1978,7 @@ namespace MUXControlsTestApp
                         scrollPresenter.HorizontalSnapPoints.Add(snapPoint);
                     }
                 }
-                else if(cmbSnapPointKind.SelectedIndex == 2)
+                else if (cmbSnapPointKind.SelectedIndex == 2)
                 {
                     ZoomSnapPoint snapPoint = new ZoomSnapPoint(
                         Convert.ToSingle(txtIrregularSnapPointValue.Text));
@@ -2039,7 +2045,7 @@ namespace MUXControlsTestApp
                     return;
                 }
 
-                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scrollPresenter.ZoomFactor) ? 
+                ComboBox cmbAnimationMode = (zoomFactor == null || zoomFactor == scrollPresenter.ZoomFactor) ?
                     cmbScrollAnimationMode : cmbZoomAnimationMode;
 
                 switch (((ContentControl)cmbAnimationMode.SelectedItem).Content)
@@ -2150,7 +2156,7 @@ namespace MUXControlsTestApp
             return true;
         }
 
-    private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
+        private void BtnClearSnapPoints_Click(object sender, RoutedEventArgs e)
         {
             try
             {

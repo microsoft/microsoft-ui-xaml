@@ -154,7 +154,7 @@ void ScrollBarController::SetValues(
     m_scrollBar.ViewportSize(viewport);
     m_scrollBar.LargeChange(viewport);
     m_scrollBar.SmallChange(max(1.0, viewport / s_defaultViewportToSmallChangeRatio));
- 
+
     // The ScrollBar Value is only updated when there is no operation in progress.
     if (m_operationsCount == 0 || m_scrollBar.Value() < minOffset || m_scrollBar.Value() > maxOffset)
     {
