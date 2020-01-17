@@ -33,7 +33,7 @@ using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.Scrolli
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         private const double c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize = 600.0;
         private const double c_defaultBringIntoViewUIScrollingPresenterConstrainedSize = 300.0;
@@ -1213,7 +1213,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+                Content = scrollingPresenter;
             }
         }
 
@@ -1271,7 +1271,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollViewer;
+                Content = scrollViewer;
             }
         }
 
@@ -1354,7 +1354,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             };
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = outerScrollingPresenter;
+            Content = outerScrollingPresenter;
         }
 
         private void SetupBringIntoViewUIWithScrollViewerInsideScrollViewer(
@@ -1422,7 +1422,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = outerScrollViewer;
+            Content = outerScrollViewer;
         }
 
         private void AddSnapPoints(ScrollingPresenter scrollingPresenter, StackPanel stackPanel)

@@ -40,6 +40,7 @@ public:
 
     void MoveAllItemsToPrimaryList();
     std::vector<int> ConvertPrimaryIndexToIndex(std::vector<int> const& indexesInPrimary);
+    int ConvertOriginalIndexToIndex(int originalIndex);
     void MoveItemsOutOfPrimaryList(std::vector<int> const& indexes);
     void MoveItemsToPrimaryList(std::vector<int> const& indexes);
     void MoveItemsToList(std::vector<int> const& indexes, NavigationViewSplitVectorID vectorID);
@@ -60,8 +61,6 @@ public:
     bool IsItemInPrimaryList(int index);
     bool HasInvalidWidth(std::vector<int> & items);
     bool IsValidWidthForItem(int index);
-
-    void InvalidWidthCacheIfOverflowItemContentChanged();
 
     // If value is not in the raw data set or can't be move to primarylist, then return false
     bool IsItemSelectableInPrimaryList(const winrt::IInspectable& value);

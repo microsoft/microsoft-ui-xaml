@@ -34,7 +34,7 @@ using Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests.Common.Mocks;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterTests : TestsBase
+    public class RepeaterTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateElementToIndexMapping()
@@ -196,7 +196,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         [TestMethod]
         public void VerifyCurrentAnchor()
         {
-            if(PlatformConfiguration.IsDebugBuildConfiguration())
+            if (PlatformConfiguration.IsDebugBuildConfiguration())
             {
                 // Test is failing in chk configuration due to:
                 // Bug #1726 Test Failure: RepeaterTests.VerifyCurrentAnchor 
@@ -250,6 +250,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 
                 Verify.IsTrue(viewChanged.WaitOne(DefaultWaitTimeInMS));
                 viewChanged.Reset();
+                IdleSynchronizer.Wait();
 
                 RunOnUIThread.Execute(() =>
                 {

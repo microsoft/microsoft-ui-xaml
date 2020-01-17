@@ -39,7 +39,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
         Backspace,
         F10,
         F4,
-        F6
+        F6,
+        R
     }
 
     [Flags]
@@ -72,6 +73,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common
             { Key.F10, "{F10}" },
             { Key.F4, "{F4}" },
             { Key.F6, "{F6}" },
+            { Key.R, "{R}" }
         };
 
         private static string ApplyModifierKey(string keyStrokes, ModifierKey key)

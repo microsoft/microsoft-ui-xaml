@@ -26,7 +26,7 @@ using PersonPicture = Microsoft.UI.Xaml.Controls.PersonPicture;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class PersonPictureTests
+    public class PersonPictureTests : ApiTestBase
     {
         [TestMethod]
         public void VerifyDefaultsAndBasicSetting()
@@ -137,74 +137,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifySmallWidthAndHeightDoNotCrash()
         {
-            PersonPicture personPicture = null;
-
-            RunOnUIThread.Execute(() =>
-            {
-                personPicture = new PersonPicture();
-                MUXControlsTestApp.App.TestContentRoot = personPicture;
-            });
-
-            IdleSynchronizer.Wait();
-
             ManualResetEvent sizeChangedEvent = new ManualResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
+                var personPicture = new PersonPicture();
+                Content = personPicture;
+                Content.UpdateLayout();
                 personPicture.SizeChanged += (sender, args) => sizeChangedEvent.Set();
                 personPicture.Width = 0.4;
                 personPicture.Height = 0.4;
+                Content.UpdateLayout();
             });
-
             sizeChangedEvent.WaitOne();
-            IdleSynchronizer.Wait();
         }
 
         [TestMethod]
         public void VerifyVSMStatesForPhotosAndInitials()
         {
-            PersonPicture personPicture = null;
-            TextBlock initialsTextBlock = null;
-
             RunOnUIThread.Execute(() =>
             {
-                personPicture = new PersonPicture();
-                MUXControlsTestApp.App.TestContentRoot = personPicture;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
-                initialsTextBlock = (TextBlock)VisualTreeUtils.FindVisualChildByName(personPicture, "InitialsTextBlock");
+                var personPicture = new PersonPicture();
+                Content = personPicture;
+                Content.UpdateLayout();
+                var initialsTextBlock = (TextBlock)VisualTreeUtils.FindVisualChildByName(personPicture, "InitialsTextBlock");
                 personPicture.IsGroup = true;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
                 Verify.AreEqual(initialsTextBlock.Text, "\xE716");
 
                 personPicture.IsGroup = false;
                 personPicture.Initials = "JS";
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI");
                 Verify.AreEqual(initialsTextBlock.Text, "JS");
 
                 personPicture.Initials = "";
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
                 Verify.AreEqual(initialsTextBlock.Text, "\xE77B");
 
@@ -212,22 +180,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 // and also goes back to the MDL2 font after setting IsGroup = true.
                 personPicture.FontFamily = new FontFamily("Segoe UI Emoji");
                 personPicture.Initials = "👍";
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe UI Emoji");
                 Verify.AreEqual(initialsTextBlock.Text, "👍");
 
                 personPicture.IsGroup = true;
-            });
-
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
+                Content.UpdateLayout();
                 Verify.AreEqual(initialsTextBlock.FontFamily.Source, "Segoe MDL2 Assets");
                 Verify.AreEqual(initialsTextBlock.Text, "\xE716");
             });

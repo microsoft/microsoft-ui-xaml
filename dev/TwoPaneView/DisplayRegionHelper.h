@@ -9,7 +9,6 @@ struct DisplayRegionHelperInfo
 {
     winrt::TwoPaneViewMode Mode{ winrt::TwoPaneViewMode::SinglePane };
     std::array<winrt::Rect, c_maxRegions> Regions{};
-    uint32_t RegionCount{ 0 };
 };
 
 class DisplayRegionHelper:

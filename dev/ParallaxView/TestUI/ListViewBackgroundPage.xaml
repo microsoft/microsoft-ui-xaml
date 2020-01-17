@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid x:Name="sp" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="40">
+    <Grid x:Name="sp" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -70,7 +70,7 @@
             </Style>
         </Grid.Resources>
         <TextBlock Text="Vertical ListView with parallaxed background Image" Margin="4"/>
-        <Grid Background="Azure" Grid.Row="1">
+        <Grid Grid.Row="1">
             <muxcontrols:ParallaxView AutomationProperties.Name="ParallaxView" Width="600" Margin="25" HorizontalAlignment="Left" 
                 VerticalShift="100" Source="{Binding ElementName=IngredientList}">
                 <Image x:Name="img" AutomationProperties.Name="Image" Source="Assets/ingredient7.png" Opacity="0.5" MinHeight="600"/>

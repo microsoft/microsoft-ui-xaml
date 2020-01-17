@@ -38,7 +38,7 @@ using UniformGridLayout = Microsoft.UI.Xaml.Controls.UniformGridLayout;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         private const double c_defaultAnchoringUIScrollingPresenterNonConstrainedSize = 600.0;
         private const double c_defaultAnchoringUIScrollingPresenterConstrainedSize = 300.0;
@@ -654,7 +654,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             };
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+            Content = scrollingPresenter;
         }
 
         private void InsertStackPanelChild(StackPanel stackPanel, int operationCount, int newIndex, int newCount, string namePrefix = "")
@@ -768,7 +768,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     };
 
                     Log.Comment("Setting window content");
-                    MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+                    Content = scrollingPresenter;
                 });
 
                 WaitForEvent("Waiting for ScrollingPresenter.Loaded event", scrollingPresenterLoadedEvent);
@@ -943,7 +943,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             };
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+            Content = scrollingPresenter;
         }
 
         private class TestDataSource : CustomItemsSourceViewWithUniqueIdMapping

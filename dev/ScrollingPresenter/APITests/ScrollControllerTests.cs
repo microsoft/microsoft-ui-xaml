@@ -28,7 +28,7 @@ using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresen
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Sets the ScrollingPresenter.HorizontalScrollController and ScrollingPresenter.VerticalScrollController properties.")]
@@ -798,7 +798,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = verticalStackPanel;
+            Content = verticalStackPanel;
         }
 
         private void SetupUIWithBiDirectionalScrollController(
@@ -850,7 +850,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = horizontalStackPanel;
+            Content = horizontalStackPanel;
         }
     }
 }
