@@ -56,7 +56,7 @@ jobs:
     displayName: 'Build NuGet package'
     inputs:
       workingDirectory: $(nugetPath)
-      filename: '..\..\NugetWrapper.cmd'
+      filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
       arguments: 'pack MUXPGODatabase.nuspec -properties PROGRAMFILES="%ProgramFiles(x86)%"'
 
   - task: CopyFiles@2
