@@ -27,6 +27,7 @@ jobs:
     displayName: 'Retrieve VC tools directory'
 
   - script: |
+      dir /s $(Build.ArtifactStagingDirectory)
       cd '$(Build.ArtifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\PGO'
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
     displayName: 'Merge pgc files into pgd'
