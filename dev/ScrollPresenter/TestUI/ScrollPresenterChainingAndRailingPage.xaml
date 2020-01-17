@@ -1,0 +1,247 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<local:TestPage
+    x:Class="MUXControlsTestApp.ScrollPresenterChainingAndRailingPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:controlsPrimitives="using:Microsoft.UI.Xaml.Controls.Primitives"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Margin="2">
+            <TextBlock Text="Chaining and Railing." VerticalAlignment="Center"/>
+            <Button x:Name="btnResetViews" AutomationProperties.Name="btnResetViews" Margin="4,0,0,0" VerticalAlignment="Center" Content="Reset views" Click="btnResetViews_Click"/>
+            <TextBox x:Name="txtResetStatus" AutomationProperties.AutomationId="txtResetStatus" Margin="2,0,0,0" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="125"/>
+            <CheckBox x:Name="chkLogScrollPresenterMessages" AutomationProperties.AutomationId="chkLogScrollPresenterMessages" Content="Log ScrollPresenter Messages?" Margin="6,2,2,2" Checked="ChkLogScrollPresenterMessages_Checked" Unchecked="ChkLogScrollPresenterMessages_Unchecked"/>
+            <Button x:Name="btnGetFullLog" Margin="6,2,2,2" AutomationProperties.AutomationId="btnGetFullLog" VerticalAlignment="Center" Content="Get log" Click="btnGetFullLog_Click"/>
+            <Button x:Name="btnClearFullLog" Margin="0,2,2,2" AutomationProperties.AutomationId="btnClearFullLog" VerticalAlignment="Center" Content="Clear log" Click="btnClearFullLog_Click"/>
+            <ComboBox x:Name="cmbFullLog" AutomationProperties.Name="cmbFullLog" Margin="6,2,2,2" VerticalAlignment="Center" Width="175"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" HorizontalAlignment="Left" Background="Black">
+            <TextBlock Text="ScrollPresenter0:" Margin="0,4,0,0" FontWeight="Bold" Foreground="LightBlue"/>
+            <TextBox x:Name="txtScrollPresenter0State" AutomationProperties.AutomationId="txtScrollPresenter0State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="txtScrollPresenter0HSP" AutomationProperties.AutomationId="txtScrollPresenter0HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+                <TextBox x:Name="txtScrollPresenter0VSP" AutomationProperties.AutomationId="txtScrollPresenter0VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+            </StackPanel>
+
+            <TextBlock Text="ScrollPresenter1:" Margin="0,4,0,0" FontWeight="Bold" Foreground="LimeGreen"/>
+            <TextBox x:Name="txtScrollPresenter1State" AutomationProperties.AutomationId="txtScrollPresenter1State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="txtScrollPresenter1HSP" AutomationProperties.AutomationId="txtScrollPresenter1HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+                <TextBox x:Name="txtScrollPresenter1VSP" AutomationProperties.AutomationId="txtScrollPresenter1VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+            </StackPanel>
+
+            <TextBlock Text="ScrollPresenter3:" Margin="0,4,0,0" FontWeight="Bold" Foreground="Lavender"/>
+            <TextBox x:Name="txtScrollPresenter3State" AutomationProperties.AutomationId="txtScrollPresenter3State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="txtScrollPresenter3HSP" AutomationProperties.AutomationId="txtScrollPresenter3HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+                <TextBox x:Name="txtScrollPresenter3VSP" AutomationProperties.AutomationId="txtScrollPresenter3VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+            </StackPanel>
+
+            <TextBlock Text="ScrollViewer2:" Margin="0,4,0,0" FontWeight="Bold" Foreground="Yellow"/>
+            <TextBox x:Name="txtScrollViewer2State" AutomationProperties.AutomationId="txtScrollViewer2State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBox x:Name="txtScrollViewer2HSP" AutomationProperties.AutomationId="txtScrollViewer2HSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+                <TextBox x:Name="txtScrollViewer2VSP" AutomationProperties.AutomationId="txtScrollViewer2VSP" IsReadOnly="True" IsTabStop="False" VerticalAlignment="Center" Width="80"/>
+            </StackPanel>
+        </StackPanel>
+
+        <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter3" AutomationProperties.Name="scrollPresenter3" Background="Violet" 
+            ZoomMode="Enabled" Width="500" Height="600" Grid.Row="1" HorizontalAlignment="Left">
+            <Grid Width="800" Height="900" Background="Lavender">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                <ComboBox x:Name="cmbHorizontalScrollRailingMode3" AutomationProperties.Name="cmbHorizontalScrollRailingMode3" 
+                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                    <ComboBoxItem>Enabled</ComboBoxItem>
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                </ComboBox>
+                <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                <ComboBox x:Name="cmbVerticalScrollRailingMode3" AutomationProperties.Name="cmbVerticalScrollRailingMode3"
+                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                    <ComboBoxItem>Enabled</ComboBoxItem>
+                    <ComboBoxItem>Disabled</ComboBoxItem>
+                </ComboBox>
+
+                <ScrollViewer x:Name="scrollViewer2" AutomationProperties.Name="scrollViewer2" Background="Cornsilk"
+                      ZoomMode="Enabled" Width="400" Height="500" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="2"
+                      HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled"
+                      VerticalScrollBarVisibility="Auto" VerticalScrollMode="Enabled">
+                    <Grid Width="800" Height="800" Background="Yellow">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                        <ComboBox x:Name="cmbHorizontalScrollChainingMode2" AutomationProperties.Name="cmbHorizontalScrollChainingMode2" 
+                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                            <ComboBoxItem>True</ComboBoxItem>
+                            <ComboBoxItem>False</ComboBoxItem>
+                        </ComboBox>
+                        <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                        <ComboBox x:Name="cmbVerticalScrollChainingMode2" AutomationProperties.Name="cmbVerticalScrollChainingMode2"
+                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                            <ComboBoxItem>True</ComboBoxItem>
+                            <ComboBoxItem>False</ComboBoxItem>
+                        </ComboBox>
+                        <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                        <ComboBox x:Name="cmbZoomChainingMode2" AutomationProperties.Name="cmbZoomChainingMode2" SelectedIndex="0"
+                            SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                            <ComboBoxItem>True</ComboBoxItem>
+                            <ComboBoxItem>False</ComboBoxItem>
+                        </ComboBox>
+                        <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                        <ComboBox x:Name="cmbHorizontalScrollRailingMode2" AutomationProperties.Name="cmbHorizontalScrollRailingMode2"
+                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                            <ComboBoxItem>True</ComboBoxItem>
+                            <ComboBoxItem>False</ComboBoxItem>
+                        </ComboBox>
+                        <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                        <ComboBox x:Name="cmbVerticalScrollRailingMode2" AutomationProperties.Name="cmbVerticalScrollRailingMode2"
+                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                            <ComboBoxItem>True</ComboBoxItem>
+                            <ComboBoxItem>False</ComboBoxItem>
+                        </ComboBox>
+
+                        <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter1" AutomationProperties.Name="scrollPresenter1" Background="Lime"
+                            ZoomMode="Enabled" Width="400" Height="400" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5">
+                            <Grid Width="700" Height="700" Background="LimeGreen">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                                <ComboBox x:Name="cmbHorizontalScrollChainingMode1" AutomationProperties.Name="cmbHorizontalScrollChainingMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                                    <ComboBoxItem>Auto</ComboBoxItem>
+                                    <ComboBoxItem>Always</ComboBoxItem>
+                                    <ComboBoxItem>Never</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                                <ComboBox x:Name="cmbVerticalScrollChainingMode1" AutomationProperties.Name="cmbVerticalScrollChainingMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                                    <ComboBoxItem>Auto</ComboBoxItem>
+                                    <ComboBoxItem>Always</ComboBoxItem>
+                                    <ComboBoxItem>Never</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                                <ComboBox x:Name="cmbZoomChainingMode1" AutomationProperties.Name="cmbZoomChainingMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                                    <ComboBoxItem>Auto</ComboBoxItem>
+                                    <ComboBoxItem>Always</ComboBoxItem>
+                                    <ComboBoxItem>Never</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                                <ComboBox x:Name="cmbHorizontalScrollRailingMode1" AutomationProperties.Name="cmbHorizontalScrollRailingMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                                    <ComboBoxItem>Enabled</ComboBoxItem>
+                                    <ComboBoxItem>Disabled</ComboBoxItem>
+                                </ComboBox>
+                                <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                                <ComboBox x:Name="cmbVerticalScrollRailingMode1" AutomationProperties.Name="cmbVerticalScrollRailingMode1"
+                                    SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                                    <ComboBoxItem>Enabled</ComboBoxItem>
+                                    <ComboBoxItem>Disabled</ComboBoxItem>
+                                </ComboBox>
+
+                                <controlsPrimitives:ScrollPresenter x:Name="scrollPresenter0" AutomationProperties.Name="scrollPresenter0" Background="AliceBlue"
+                                    ZoomMode="Enabled" Width="300" Height="300" Grid.Column="1" Grid.ColumnSpan="2" Grid.Row="5">
+                                    <Grid Width="600" Height="600" Background="LightBlue">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="HorizontalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0"/>
+                                        <ComboBox x:Name="cmbHorizontalScrollChainingMode0" AutomationProperties.Name="cmbHorizontalScrollChainingMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="0">
+                                            <ComboBoxItem>Auto</ComboBoxItem>
+                                            <ComboBoxItem>Always</ComboBoxItem>
+                                            <ComboBoxItem>Never</ComboBoxItem>
+                                        </ComboBox>
+                                        <TextBlock Text="VerticalScrollChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1"/>
+                                        <ComboBox x:Name="cmbVerticalScrollChainingMode0" AutomationProperties.Name="cmbVerticalScrollChainingMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="1">
+                                            <ComboBoxItem>Auto</ComboBoxItem>
+                                            <ComboBoxItem>Always</ComboBoxItem>
+                                            <ComboBoxItem>Never</ComboBoxItem>
+                                        </ComboBox>
+                                        <TextBlock Text="ZoomChainingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="2"/>
+                                        <ComboBox x:Name="cmbZoomChainingMode0" AutomationProperties.Name="cmbZoomChainingMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbZoomChainingMode_SelectionChanged" Grid.Column="1" Grid.Row="2">
+                                            <ComboBoxItem>Auto</ComboBoxItem>
+                                            <ComboBoxItem>Always</ComboBoxItem>
+                                            <ComboBoxItem>Never</ComboBoxItem>
+                                        </ComboBox>
+                                        <TextBlock Text="HorizontalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="3"/>
+                                        <ComboBox x:Name="cmbHorizontalScrollRailingMode0" AutomationProperties.Name="cmbHorizontalScrollRailingMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbHorizontalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="3">
+                                            <ComboBoxItem>Enabled</ComboBoxItem>
+                                            <ComboBoxItem>Disabled</ComboBoxItem>
+                                        </ComboBox>
+                                        <TextBlock Text="VerticalScrollRailingMode:" VerticalAlignment="Center" Grid.Column="0" Grid.Row="4"/>
+                                        <ComboBox x:Name="cmbVerticalScrollRailingMode0" AutomationProperties.Name="cmbVerticalScrollRailingMode0"
+                                            SelectedIndex="0" SelectionChanged="CmbVerticalScrollRailingMode_SelectionChanged" Grid.Column="1" Grid.Row="4">
+                                            <ComboBoxItem>Enabled</ComboBoxItem>
+                                            <ComboBoxItem>Disabled</ComboBoxItem>
+                                        </ComboBox>
+                                    </Grid>
+                                </controlsPrimitives:ScrollPresenter>
+                            </Grid>
+                        </controlsPrimitives:ScrollPresenter>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </controlsPrimitives:ScrollPresenter>
+    </Grid>
+</local:TestPage>

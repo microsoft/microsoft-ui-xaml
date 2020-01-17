@@ -29,7 +29,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using ParallaxSourceOffsetKind = Microsoft.UI.Xaml.Controls.ParallaxSourceOffsetKind;
 using ParallaxView = Microsoft.UI.Xaml.Controls.ParallaxView;
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
 using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
@@ -62,13 +62,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private const double c_scrollViewerMaxOverpanRatio = 0.1;  // ScrollViewer's maximum underpan/viewport and overpan/viewport ratio
         private const double c_scrollViewerMaxOverpanRatioWithZoom = 1.0;  // ScrollViewer's maximum underpan/viewport and overpan/viewport ratio when ZoomMode is Enabled
-        private const double c_scrollingPresenterMaxOverpanRatio = 1.0;  // ScrollingPresenter's maximum underpan/viewport and overpan/viewport ratio
-        private const double c_defaultUIScrollingPresenterWidth = 200.0;
-        private const double c_defaultUIScrollingPresenterHeight = 100.0;
-        private const double c_defaultUIScrollingPresenterContentWidth = 1200.0;
-        private const double c_defaultUIScrollingPresenterContentHeight = 600.0;
-        private const double c_defaultUIFinalScrollingPresenterHorizontalOffset = 100.0;
-        private const double c_defaultUIFinalScrollingPresenterVerticalOffset = 50.0;
+        private const double c_scrollPresenterMaxOverpanRatio = 1.0;  // ScrollPresenter's maximum underpan/viewport and overpan/viewport ratio
+        private const double c_defaultUIScrollPresenterWidth = 200.0;
+        private const double c_defaultUIScrollPresenterHeight = 100.0;
+        private const double c_defaultUIScrollPresenterContentWidth = 1200.0;
+        private const double c_defaultUIScrollPresenterContentHeight = 600.0;
+        private const double c_defaultUIFinalScrollPresenterHorizontalOffset = 100.0;
+        private const double c_defaultUIFinalScrollPresenterVerticalOffset = 50.0;
         private const double c_defaultUIScrollViewerWidth = 200.0;
         private const double c_defaultUIScrollViewerHeight = 100.0;
         private const double c_defaultUIScrollViewerContentWidth = 1200.0;
@@ -88,7 +88,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private enum SourceType
         {
             ScrollViewer,
-            ScrollingPresenter,
+            ScrollPresenter,
         }
 
         [TestMethod]
@@ -279,18 +279,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [Description("Parallaxes a Rectangle based on another Rectangle in a ScrollingPresenter.")]
-        public void VerifyBasicParallaxingWithScrollingPresenter()
+        [Description("Parallaxes a Rectangle based on another Rectangle in a ScrollPresenter.")]
+        public void VerifyBasicParallaxingWithScrollPresenter()
         {
             const double expectedHorizontalShift =
-                (c_defaultUIScrollingPresenterWidth * c_scrollingPresenterMaxOverpanRatio + c_defaultUIFinalScrollingPresenterHorizontalOffset) * c_defaultUIHorizontalShift /
-                (c_defaultUIScrollingPresenterWidth * c_scrollingPresenterMaxOverpanRatio * 2.0 + (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth));
+                (c_defaultUIScrollPresenterWidth * c_scrollPresenterMaxOverpanRatio + c_defaultUIFinalScrollPresenterHorizontalOffset) * c_defaultUIHorizontalShift /
+                (c_defaultUIScrollPresenterWidth * c_scrollPresenterMaxOverpanRatio * 2.0 + (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth));
             const double expectedVerticalShift =
-                (c_defaultUIScrollingPresenterHeight * c_scrollingPresenterMaxOverpanRatio + c_defaultUIFinalScrollingPresenterVerticalOffset) * c_defaultUIVerticalShift /
-                (c_defaultUIScrollingPresenterHeight * c_scrollingPresenterMaxOverpanRatio * 2.0 + (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight));
+                (c_defaultUIScrollPresenterHeight * c_scrollPresenterMaxOverpanRatio + c_defaultUIFinalScrollPresenterVerticalOffset) * c_defaultUIVerticalShift /
+                (c_defaultUIScrollPresenterHeight * c_scrollPresenterMaxOverpanRatio * 2.0 + (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight));
 
             VerifyParallaxingWithDefaultSourceUI(
-                sourceType: SourceType.ScrollingPresenter,
+                sourceType: SourceType.ScrollPresenter,
                 horizontalSourceOffsetKind: c_defaultHorizontalSourceOffsetKind,
                 horizontalSourceStartOffset: c_defaultHorizontalSourceStartOffset,
                 horizontalSourceEndOffset: c_defaultHorizontalSourceEndOffset,
@@ -838,20 +838,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [Description("Basic parallaxing of a ParallaxView inside a ScrollingPresenter.")]
-        public void VerifyBasicParallaxingInsideScrollingPresenter()
+        [Description("Basic parallaxing of a ParallaxView inside a ScrollPresenter.")]
+        public void VerifyBasicParallaxingInsideScrollPresenter()
         {
-            VerifyParallaxingWithParallaxViewInsideScrollingPresenter(
-                scrollingPresenterHorizontalOffset: 0.0,
-                scrollingPresenterVerticalOffset: 0.0,
+            VerifyParallaxingWithParallaxViewInsideScrollPresenter(
+                scrollPresenterHorizontalOffset: 0.0,
+                scrollPresenterVerticalOffset: 0.0,
                 expectedHorizontalShift: c_defaultUIHorizontalShift / 4.5,
                 expectedVerticalShift: c_defaultUIVerticalShift / 4.5);
 
-            VerifyParallaxingWithParallaxViewInsideScrollingPresenter(
-                scrollingPresenterHorizontalOffset: c_defaultUIFinalScrollingPresenterHorizontalOffset,
-                scrollingPresenterVerticalOffset: c_defaultUIFinalScrollingPresenterVerticalOffset,
-                expectedHorizontalShift: (c_defaultUIHorizontalShift + c_defaultUIFinalScrollingPresenterHorizontalOffset / 4.0) / 4.5,
-                expectedVerticalShift: (c_defaultUIVerticalShift + c_defaultUIFinalScrollingPresenterVerticalOffset / 4.0) / 4.5);
+            VerifyParallaxingWithParallaxViewInsideScrollPresenter(
+                scrollPresenterHorizontalOffset: c_defaultUIFinalScrollPresenterHorizontalOffset,
+                scrollPresenterVerticalOffset: c_defaultUIFinalScrollPresenterVerticalOffset,
+                expectedHorizontalShift: (c_defaultUIHorizontalShift + c_defaultUIFinalScrollPresenterHorizontalOffset / 4.0) / 4.5,
+                expectedVerticalShift: (c_defaultUIVerticalShift + c_defaultUIFinalScrollPresenterVerticalOffset / 4.0) / 4.5);
         }
 
         [TestMethod]
@@ -996,7 +996,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ParallaxView parallaxView = null;
             Rectangle rectanglePVChild = null;
             ScrollViewer scrollViewer = null;
-            ScrollingPresenter scrollingPresenter = null;
+            ScrollPresenter scrollPresenter = null;
             Rectangle rectangleSVContent = null;
             Visual visualPPChild = null;
             AutoResetEvent parallaxViewLoadedEvent = null;
@@ -1021,9 +1021,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
                 else
                 {
-                    scrollingPresenter = new ScrollingPresenter();
-                    SetupDefaultUIWithScrollingPresenter(
-                        parallaxView, rectanglePVChild, scrollingPresenter, rectangleSVContent,
+                    scrollPresenter = new ScrollPresenter();
+                    SetupDefaultUIWithScrollPresenter(
+                        parallaxView, rectanglePVChild, scrollPresenter, rectangleSVContent,
                         parallaxViewLoadedEvent, sourceLoadedEvent);
                 }
 
@@ -1076,10 +1076,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
             else
             {
-                ChangeScrollingPresenterView(
-                    scrollingPresenter: scrollingPresenter,
-                    horizontalOffset: c_defaultUIFinalScrollingPresenterHorizontalOffset,
-                    verticalOffset: c_defaultUIFinalScrollingPresenterVerticalOffset,
+                ChangeScrollPresenterView(
+                    scrollPresenter: scrollPresenter,
+                    horizontalOffset: c_defaultUIFinalScrollPresenterHorizontalOffset,
+                    verticalOffset: c_defaultUIFinalScrollPresenterVerticalOffset,
                     zoomFactor: 1.0f,
                     disableAnimation: false,
                     visualPPChild: visualPPChild,
@@ -1204,56 +1204,56 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
         }
 
-        private void VerifyParallaxingWithParallaxViewInsideScrollingPresenter(
-            double scrollingPresenterHorizontalOffset,
-            double scrollingPresenterVerticalOffset,
+        private void VerifyParallaxingWithParallaxViewInsideScrollPresenter(
+            double scrollPresenterHorizontalOffset,
+            double scrollPresenterVerticalOffset,
             double expectedHorizontalShift,
             double expectedVerticalShift)
         {
             ParallaxView parallaxView = null;
             Rectangle rectanglePVChild = null;
-            ScrollingPresenter scrollingPresenter = null;
+            ScrollPresenter scrollPresenter = null;
             Visual visualPPChild = null;
             AutoResetEvent parallaxViewLoadedEvent = null;
-            AutoResetEvent scrollingPresenterLoadedEvent = null;
+            AutoResetEvent scrollPresenterLoadedEvent = null;
             float? finalHorizontalShift = 0f;
             float? finalVerticalShift = 0f;
 
             RunOnUIThread.Execute(() =>
             {
                 parallaxViewLoadedEvent = new AutoResetEvent(false);
-                scrollingPresenterLoadedEvent = new AutoResetEvent(false);
-                scrollingPresenter = new ScrollingPresenter();
+                scrollPresenterLoadedEvent = new AutoResetEvent(false);
+                scrollPresenter = new ScrollPresenter();
                 rectanglePVChild = new Rectangle();
                 parallaxView = new ParallaxView();
 
-                SetupUIWithParallaxViewInsideScrollingPresenter(
+                SetupUIWithParallaxViewInsideScrollPresenter(
                     parallaxView,
                     rectanglePVChild,
-                    scrollingPresenter,
+                    scrollPresenter,
                     parallaxViewLoadedEvent,
-                    scrollingPresenterLoadedEvent);
+                    scrollPresenterLoadedEvent);
             });
 
             Log.Comment("Waiting for Loaded events");
             parallaxViewLoadedEvent.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration));
-            scrollingPresenterLoadedEvent.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration));
+            scrollPresenterLoadedEvent.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration));
             Log.Comment("Default UI set up");
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter Actual Size={0}, {1}", scrollingPresenter.ActualWidth, scrollingPresenter.ActualHeight);
+                Log.Comment("scrollPresenter Actual Size={0}, {1}", scrollPresenter.ActualWidth, scrollPresenter.ActualHeight);
                 Log.Comment("parallaxView Actual Size={0}, {1}", parallaxView.ActualWidth, parallaxView.ActualHeight);
                 Log.Comment("rectanglePVChild Actual Size={0}, {1}", rectanglePVChild.ActualWidth, rectanglePVChild.ActualHeight);
 
-                Verify.AreEqual(scrollingPresenter.ActualWidth, c_defaultUIScrollingPresenterWidth);
-                Verify.AreEqual(scrollingPresenter.ActualHeight, c_defaultUIScrollingPresenterHeight);
+                Verify.AreEqual(scrollPresenter.ActualWidth, c_defaultUIScrollPresenterWidth);
+                Verify.AreEqual(scrollPresenter.ActualHeight, c_defaultUIScrollPresenterHeight);
 
-                Verify.AreEqual(parallaxView.ActualWidth, c_defaultUIScrollingPresenterContentWidth);
-                Verify.AreEqual(parallaxView.ActualHeight, c_defaultUIScrollingPresenterContentHeight);
+                Verify.AreEqual(parallaxView.ActualWidth, c_defaultUIScrollPresenterContentWidth);
+                Verify.AreEqual(parallaxView.ActualHeight, c_defaultUIScrollPresenterContentHeight);
                 
-                Verify.AreEqual(rectanglePVChild.ActualWidth, c_defaultUIScrollingPresenterContentWidth + c_defaultUIHorizontalShift);
-                Verify.AreEqual(rectanglePVChild.ActualHeight, c_defaultUIScrollingPresenterContentHeight + c_defaultUIVerticalShift);
+                Verify.AreEqual(rectanglePVChild.ActualWidth, c_defaultUIScrollPresenterContentWidth + c_defaultUIHorizontalShift);
+                Verify.AreEqual(rectanglePVChild.ActualHeight, c_defaultUIScrollPresenterContentHeight + c_defaultUIVerticalShift);
 
                 Log.Comment("Setting up spy property set");
                 visualPPChild = ElementCompositionPreview.GetElementVisual(rectanglePVChild);
@@ -1262,12 +1262,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 CompositionPropertySpy.StartSpyingScalarProperty(visualPPChild, GetVisualVerticalTargetedPropertyName());
             });
 
-            if (scrollingPresenterHorizontalOffset != 0.0 || scrollingPresenterVerticalOffset != 0.0)
+            if (scrollPresenterHorizontalOffset != 0.0 || scrollPresenterVerticalOffset != 0.0)
             {
-                ChangeScrollingPresenterView(
-                    scrollingPresenter: scrollingPresenter,
-                    horizontalOffset: scrollingPresenterHorizontalOffset,
-                    verticalOffset: scrollingPresenterVerticalOffset,
+                ChangeScrollPresenterView(
+                    scrollPresenter: scrollPresenter,
+                    horizontalOffset: scrollPresenterHorizontalOffset,
+                    verticalOffset: scrollPresenterVerticalOffset,
                     zoomFactor: null,
                     disableAnimation: false,
                     visualPPChild: visualPPChild,
@@ -1463,15 +1463,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Content = stackPanel;
         }
 
-        private void SetupDefaultUIWithScrollingPresenter(
+        private void SetupDefaultUIWithScrollPresenter(
             ParallaxView parallaxView,
             Rectangle rectanglePVChild,
-            ScrollingPresenter scrollingPresenter,
-            Rectangle rectangleScrollingPresenterContent,
+            ScrollPresenter scrollPresenter,
+            Rectangle rectangleScrollPresenterContent,
             AutoResetEvent parallaxViewLoadedEvent,
-            AutoResetEvent scrollingPresenterLoadedEvent)
+            AutoResetEvent scrollPresenterLoadedEvent)
         {
-            Log.Comment("Setting up default UI with ParallaxView, ScrollingPresenter and Rectangles");
+            Log.Comment("Setting up default UI with ParallaxView, ScrollPresenter and Rectangles");
 
             LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -1481,29 +1481,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
             twoColorLGB.GradientStops.Add(orangeGS);
 
-            Verify.IsNotNull(rectangleScrollingPresenterContent);
-            rectangleScrollingPresenterContent.Width = c_defaultUIScrollingPresenterContentWidth;
-            rectangleScrollingPresenterContent.Height = c_defaultUIScrollingPresenterContentHeight;
-            rectangleScrollingPresenterContent.Fill = twoColorLGB;
+            Verify.IsNotNull(rectangleScrollPresenterContent);
+            rectangleScrollPresenterContent.Width = c_defaultUIScrollPresenterContentWidth;
+            rectangleScrollPresenterContent.Height = c_defaultUIScrollPresenterContentHeight;
+            rectangleScrollPresenterContent.Fill = twoColorLGB;
 
-            Verify.IsNotNull(scrollingPresenter);
-            if (string.IsNullOrEmpty(scrollingPresenter.Name))
+            Verify.IsNotNull(scrollPresenter);
+            if (string.IsNullOrEmpty(scrollPresenter.Name))
             {
-                scrollingPresenter.Name = "scrollingPresenter";
+                scrollPresenter.Name = "scrollPresenter";
             }
-            scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
-            scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            scrollingPresenter.ZoomMode = ZoomMode.Disabled;
-            scrollingPresenter.Content = rectangleScrollingPresenterContent;
+            scrollPresenter.Width = c_defaultUIScrollPresenterWidth;
+            scrollPresenter.Height = c_defaultUIScrollPresenterHeight;
+            scrollPresenter.ZoomMode = ZoomMode.Disabled;
+            scrollPresenter.Content = rectangleScrollPresenterContent;
 
             Verify.IsNotNull(rectanglePVChild);
-            rectanglePVChild.Width = c_defaultUIScrollingPresenterWidth + c_defaultHorizontalShift;
-            rectanglePVChild.Height = c_defaultUIScrollingPresenterHeight + c_defaultVerticalShift;
+            rectanglePVChild.Width = c_defaultUIScrollPresenterWidth + c_defaultHorizontalShift;
+            rectanglePVChild.Height = c_defaultUIScrollPresenterHeight + c_defaultVerticalShift;
             rectanglePVChild.Fill = twoColorLGB;
 
             Verify.IsNotNull(parallaxView);
-            parallaxView.Width = c_defaultUIScrollingPresenterWidth;
-            parallaxView.Height = c_defaultUIScrollingPresenterHeight;
+            parallaxView.Width = c_defaultUIScrollPresenterWidth;
+            parallaxView.Height = c_defaultUIScrollPresenterHeight;
             parallaxView.Child = rectanglePVChild;
             parallaxView.HorizontalShift = c_defaultUIHorizontalShift;
             parallaxView.VerticalShift = c_defaultUIVerticalShift;
@@ -1511,7 +1511,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             StackPanel stackPanel = new StackPanel();
             Verify.IsNotNull(stackPanel);
             stackPanel.Children.Add(parallaxView);
-            stackPanel.Children.Add(scrollingPresenter);
+            stackPanel.Children.Add(scrollPresenter);
 
             if (parallaxViewLoadedEvent != null)
             {
@@ -1522,13 +1522,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             }
 
-            if (scrollingPresenterLoadedEvent != null)
+            if (scrollPresenterLoadedEvent != null)
             {
-                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("ScrollingPresenter.Loaded event handler");
-                    parallaxView.Source = scrollingPresenter;
-                    scrollingPresenterLoadedEvent.Set();
+                    Log.Comment("ScrollPresenter.Loaded event handler");
+                    parallaxView.Source = scrollPresenter;
+                    scrollPresenterLoadedEvent.Set();
                 };
             }
 
@@ -1536,14 +1536,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Content = stackPanel;
         }
 
-        private void SetupUIWithParallaxViewInsideScrollingPresenter(
+        private void SetupUIWithParallaxViewInsideScrollPresenter(
             ParallaxView parallaxView,
             Rectangle rectanglePVChild,
-            ScrollingPresenter scrollingPresenter,
+            ScrollPresenter scrollPresenter,
             AutoResetEvent parallaxViewLoadedEvent,
-            AutoResetEvent scrollingPresenterLoadedEvent)
+            AutoResetEvent scrollPresenterLoadedEvent)
         {
-            Log.Comment("Setting up UI with ParallaxView inside ScrollingPresenter");
+            Log.Comment("Setting up UI with ParallaxView inside ScrollPresenter");
 
             LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -1553,31 +1553,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
             twoColorLGB.GradientStops.Add(orangeGS);
 
-            Verify.IsNotNull(scrollingPresenter);
-            if (string.IsNullOrEmpty(scrollingPresenter.Name))
+            Verify.IsNotNull(scrollPresenter);
+            if (string.IsNullOrEmpty(scrollPresenter.Name))
             {
-                scrollingPresenter.Name = "scrollingPresenter";
+                scrollPresenter.Name = "scrollPresenter";
             }
-            scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
-            scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            scrollingPresenter.ZoomMode = ZoomMode.Disabled;
+            scrollPresenter.Width = c_defaultUIScrollPresenterWidth;
+            scrollPresenter.Height = c_defaultUIScrollPresenterHeight;
+            scrollPresenter.ZoomMode = ZoomMode.Disabled;
 
-            Grid gridScrollingPresenterContent = new Grid();
-            scrollingPresenter.Content = gridScrollingPresenterContent;
+            Grid gridScrollPresenterContent = new Grid();
+            scrollPresenter.Content = gridScrollPresenterContent;
 
             Verify.IsNotNull(rectanglePVChild);
-            rectanglePVChild.Width = c_defaultUIScrollingPresenterContentWidth + c_defaultUIHorizontalShift;
-            rectanglePVChild.Height = c_defaultUIScrollingPresenterContentHeight + c_defaultUIVerticalShift;
+            rectanglePVChild.Width = c_defaultUIScrollPresenterContentWidth + c_defaultUIHorizontalShift;
+            rectanglePVChild.Height = c_defaultUIScrollPresenterContentHeight + c_defaultUIVerticalShift;
             rectanglePVChild.Fill = twoColorLGB;
 
             Verify.IsNotNull(parallaxView);
-            parallaxView.Width = c_defaultUIScrollingPresenterContentWidth;
-            parallaxView.Height = c_defaultUIScrollingPresenterContentHeight;
+            parallaxView.Width = c_defaultUIScrollPresenterContentWidth;
+            parallaxView.Height = c_defaultUIScrollPresenterContentHeight;
             parallaxView.Child = rectanglePVChild;
             parallaxView.HorizontalShift = c_defaultUIHorizontalShift;
             parallaxView.VerticalShift = c_defaultUIVerticalShift;
 
-            gridScrollingPresenterContent.Children.Add(parallaxView);
+            gridScrollPresenterContent.Children.Add(parallaxView);
 
             if (parallaxViewLoadedEvent != null)
             {
@@ -1588,18 +1588,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
             }
 
-            if (scrollingPresenterLoadedEvent != null)
+            if (scrollPresenterLoadedEvent != null)
             {
-                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("ScrollingPresenter.Loaded event handler");
-                    parallaxView.Source = scrollingPresenter;
-                    scrollingPresenterLoadedEvent.Set();
+                    Log.Comment("ScrollPresenter.Loaded event handler");
+                    parallaxView.Source = scrollPresenter;
+                    scrollPresenterLoadedEvent.Set();
                 };
             }
 
             Log.Comment("Setting window content");
-            Content = scrollingPresenter;
+            Content = scrollPresenter;
         }
 
         private void SetupUIWithParallaxViewInsideScrollViewer(
@@ -1868,8 +1868,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private static void ChangeScrollingPresenterView(
-            ScrollingPresenter scrollingPresenter,
+        private static void ChangeScrollPresenterView(
+            ScrollPresenter scrollPresenter,
             double? horizontalOffset,
             double? verticalOffset,
             float? zoomFactor,
@@ -1879,7 +1879,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ref float? finalVerticalShift)
         {
             bool isPrivateLoggingEnabled = false;
-            AutoResetEvent scrollingPresenterStateChangedEvent = null;
+            AutoResetEvent scrollPresenterStateChangedEvent = null;
             bool spyOnHorizontalShift = visualPPChild != null && finalHorizontalShift != null;
             bool spyOnVerticalShift = visualPPChild != null && finalVerticalShift != null;
             float horizontalShift = 0f;
@@ -1889,19 +1889,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 if (isPrivateLoggingEnabled)
                 {
-                    // Turn on private tracing for ScrollingPresenter control
-                    MUXControlsTestHooks.SetOutputDebugStringLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
-                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                    // Turn on private tracing for ScrollPresenter control
+                    MUXControlsTestHooks.SetOutputDebugStringLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
                 }
 
-                scrollingPresenterStateChangedEvent = new AutoResetEvent(false);
+                scrollPresenterStateChangedEvent = new AutoResetEvent(false);
 
-                scrollingPresenter.ViewChanged += (ScrollingPresenter sender, object e) =>
+                scrollPresenter.ViewChanged += (ScrollPresenter sender, object e) =>
                 {
                     try
                     { 
-                        Log.Comment("ScrollingPresenter.ViewChanged - View=({0}, {1}, {2})", scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
+                        Log.Comment("ScrollPresenter.ViewChanged - View=({0}, {1}, {2})", scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
 
                         CompositionGetValueStatus status;
 
@@ -1919,31 +1919,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("Exception in ScrollingPresenter.ViewChanged: " + ex.ToString());
+                        Log.Error("Exception in ScrollPresenter.ViewChanged: " + ex.ToString());
                     }
                 };
 
-                scrollingPresenter.StateChanged += (ScrollingPresenter sender, object e) =>
+                scrollPresenter.StateChanged += (ScrollPresenter sender, object e) =>
                 {
                     try
                     { 
-                        Log.Comment("ScrollingPresenter.StateChanged - State={0}", scrollingPresenter.State);
-                        if (scrollingPresenter.State == InteractionState.Idle)
+                        Log.Comment("ScrollPresenter.StateChanged - State={0}", scrollPresenter.State);
+                        if (scrollPresenter.State == InteractionState.Idle)
                         {
-                            Log.Comment("ScrollingPresenter - idling notification. Final view: {0}, {1}, {2}", scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
-                            scrollingPresenterStateChangedEvent.Set();
+                            Log.Comment("ScrollPresenter - idling notification. Final view: {0}, {1}, {2}", scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
+                            scrollPresenterStateChangedEvent.Set();
                         }
                     }
                     catch (Exception ex)
                     {
-                        Log.Error("Exception in ScrollingPresenter.StateChanged: " + ex.ToString());
+                        Log.Error("Exception in ScrollPresenter.StateChanged: " + ex.ToString());
                     }
                 };
 
-                Log.Comment("Changing ScrollingPresenter view to ({0}, {1}, {2}) with disableAnimation={3}", horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
-                if (zoomFactor != null && (float)zoomFactor != scrollingPresenter.ZoomFactor)
+                Log.Comment("Changing ScrollPresenter view to ({0}, {1}, {2}) with disableAnimation={3}", horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
+                if (zoomFactor != null && (float)zoomFactor != scrollPresenter.ZoomFactor)
                 {
-                    int viewChangeId = scrollingPresenter.ZoomTo(
+                    int viewChangeId = scrollPresenter.ZoomTo(
                         (float)zoomFactor,
                         Vector2.Zero,
                         new ScrollingZoomOptions(
@@ -1952,12 +1952,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
 
-                if ((horizontalOffset != null && (double)horizontalOffset != scrollingPresenter.HorizontalOffset) || (verticalOffset != null && (double)verticalOffset != scrollingPresenter.VerticalOffset))
+                if ((horizontalOffset != null && (double)horizontalOffset != scrollPresenter.HorizontalOffset) || (verticalOffset != null && (double)verticalOffset != scrollPresenter.VerticalOffset))
                 {
-                    Log.Comment("Invoking ScrollingPresenter.ChangeOffsets");
-                    int viewChangeId = scrollingPresenter.ScrollTo(
-                        horizontalOffset == null ? scrollingPresenter.HorizontalOffset : (double)horizontalOffset,
-                        verticalOffset == null ? scrollingPresenter.VerticalOffset : (double)verticalOffset,
+                    Log.Comment("Invoking ScrollPresenter.ChangeOffsets");
+                    int viewChangeId = scrollPresenter.ScrollTo(
+                        horizontalOffset == null ? scrollPresenter.HorizontalOffset : (double)horizontalOffset,
+                        verticalOffset == null ? scrollPresenter.VerticalOffset : (double)verticalOffset,
                         new ScrollingScrollOptions(
                             disableAnimation ? AnimationMode.Disabled : AnimationMode.Enabled, 
                             SnapPointsMode.Ignore)).OffsetsChangeId;
@@ -1965,8 +1965,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
 
-            Log.Comment("Waiting for scrollingPresenterStateChangedEvent event");
-            scrollingPresenterStateChangedEvent.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration));
+            Log.Comment("Waiting for scrollPresenterStateChangedEvent event");
+            scrollPresenterStateChangedEvent.WaitOne(TimeSpan.FromMilliseconds(c_MaxWaitDuration));
             Log.Comment("First view change completed");
 
             Log.Comment("Waiting for captured properties to be updated");
@@ -2011,9 +2011,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (isPrivateLoggingEnabled)
                     {
-                        // Turn off private tracing for ScrollingPresenter control
-                        MUXControlsTestHooks.SetOutputDebugStringLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
-                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                        // Turn off private tracing for ScrollPresenter control
+                        MUXControlsTestHooks.SetOutputDebugStringLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                        MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
                         MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
                     }
                 });
@@ -2044,7 +2044,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             string msg = args.Message.Substring(0, args.Message.Length - 1);
             string senderName = string.Empty;
-            ScrollingPresenter scr = sender as ScrollingPresenter;
+            ScrollPresenter scr = sender as ScrollPresenter;
 
             if (scr != null)
             {
