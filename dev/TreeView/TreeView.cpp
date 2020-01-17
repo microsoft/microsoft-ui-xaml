@@ -122,6 +122,36 @@ winrt::IVector<winrt::IInspectable> TreeView::SelectedItems()
     return nullptr;
 }
 
+void TreeView::UpdateSelection(winrt::TreeViewNode const& node, bool isSelected)
+{
+    if (auto listControl = ListControl())
+    {
+        if (auto viewModel = listControl->ListViewModel())
+        {
+            if (isSelected != viewModel->IsNodeSelected(node))
+            {
+                auto selectedNodes = viewModel->GetSelectedNodes();
+                if (isSelected)
+                {
+                    if (SelectionMode() == winrt::TreeViewSelectionMode::Single && selectedNodes.Size() > 0)
+                    {
+                        selectedNodes.Clear();
+                    }
+                    selectedNodes.Append(node);
+                }
+                else
+                {
+                    unsigned int index;
+                    if (selectedNodes.IndexOf(node, index))
+                    {
+                        selectedNodes.RemoveAt(index);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void TreeView::Expand(winrt::TreeViewNode const& value)
 {
     auto vm = ListControl()->ListViewModel();

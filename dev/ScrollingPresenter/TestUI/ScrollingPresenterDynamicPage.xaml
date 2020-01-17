@@ -75,7 +75,8 @@
         </controlsPrimitives:ScrollingPresenter>
 
         <ScrollViewer x:Name="svScrollingPresenterProperties" Grid.Row="1" Grid.Column="1">
-            <Grid Margin="2" Background="LightYellow">
+            <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -331,7 +332,8 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="2" Margin="2">
+        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="2" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -457,7 +459,8 @@
         </Grid>
 
         <ScrollViewer x:Name="svScrollingPresenterMethods" Grid.Row="1" Grid.Column="3">
-            <Grid Margin="2" Background="LightYellow">
+            <Grid Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -668,7 +671,8 @@
             </Grid>
         </ScrollViewer>
 
-        <Grid x:Name="grdScrollingPresenterEvents" Grid.Row="1" Grid.Column="4" Margin="2">
+        <Grid x:Name="grdScrollingPresenterEvents" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -690,7 +694,8 @@
             <ListBox x:Name="lstScrollingPresenterEvents" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Auto" Margin="1" Grid.Row="2"/>
         </Grid>
 
-        <Grid x:Name="grdPageMethods" Grid.Row="1" Grid.Column="5" Margin="2" Visibility="Collapsed" Background="LightYellow">
+        <Grid x:Name="grdPageMethods" Grid.Row="1" Grid.Column="5" Visibility="Collapsed" Background="{ThemeResource SystemListLowColor}" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -724,7 +729,8 @@
             <Button x:Name="btnDiscardQueuedOperations" Content="Discard Queued Operations" Margin="2" Grid.Row="11" Click="BtnDiscardQueuedOperations_Click"/>
         </Grid>
 
-        <Grid x:Name="grdScrollingPresenterTestHooks" Grid.Row="1" Grid.Column="6" Margin="2" Visibility="Collapsed">
+        <Grid x:Name="grdScrollingPresenterTestHooks" Grid.Row="1" Grid.Column="6" Margin="4,0,4,0" Padding="6"
+                  BorderBrush="{ThemeResource SystemChromeGrayColor}" BorderThickness="1" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

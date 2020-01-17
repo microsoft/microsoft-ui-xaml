@@ -29,7 +29,7 @@ using XamlControlsXamlMetaDataProvider = Microsoft.UI.Xaml.XamlTypeInfo.XamlCont
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class IconSourceApiTests
+    public class IconSourceApiTests : ApiTestBase
     {
         [TestMethod]
         public void SymbolIconSourceTest()

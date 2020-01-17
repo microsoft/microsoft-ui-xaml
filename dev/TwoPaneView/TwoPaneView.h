@@ -43,6 +43,7 @@ private:
     void OnScrollViewerLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
     void OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnWindowSizeChanged(const winrt::IInspectable& sender, const winrt::WindowSizeChangedEventArgs& args);
 
     void UpdateRowsColumns(ViewMode newMode, DisplayRegionHelperInfo info, winrt::Rect rcControl);
     void UpdateMode();

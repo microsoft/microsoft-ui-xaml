@@ -9,7 +9,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -68,6 +68,7 @@
                     <Button x:Name="ClearNodes" AutomationProperties.Name="ClearNodes" Content="ClearNodes" HorizontalAlignment="Stretch" Margin="1" Click="ClearNodes_Click"/>
                     <Button x:Name="AddRootNode" AutomationProperties.Name="AddRootNode" Content="AddRootNode" HorizontalAlignment="Stretch" Margin="1" Click="AddRootNode_Click"/>
                     <Button x:Name="AddExtraNodes" AutomationProperties.Name="AddExtraNodes" Content="AddExtraNodes" HorizontalAlignment="Stretch" Margin="1" Click="AddExtraNodes_Click"/>
+                    <Button x:Name="SelectLastRootNode" AutomationProperties.Name="SelectLastRootNode" Content="SelectLastRootNode" HorizontalAlignment="Stretch" Margin="1" Click="SelectLastRootNode_Click"/>
                     <Button x:Name="TreeViewLateDataInitTestPage" AutomationProperties.Name="TreeViewLateDataInitTestPage" Content="TreeViewLateDataInitTestPage" HorizontalAlignment="Stretch" Margin="1" Click="TreeViewLateDataInitTestPage_Click"/>
                     <Button x:Name="TreeViewNodeInMarkupTestPage" AutomationProperties.Name="TreeViewNodeInMarkupTestPage" Content="TreeViewNodeInMarkupTestPage" HorizontalAlignment="Stretch" Margin="1" Click="TreeViewNodeInMarkupTestPage_Click"/>
                 </StackPanel>

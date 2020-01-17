@@ -3,6 +3,8 @@
 
 #pragma once
 
+#define WINRT_LEAN_AND_MEAN
+
 #define NOMINMAX
 
 #pragma warning(disable : 6221) // Disable implicit cast warning for C++/WinRT headers (tracked by Bug 17528784: C++/WinRT headers trigger C6221 comparing e.code() to int-typed things)
@@ -193,7 +195,6 @@ void specialize_guids()
 #endif
 
 #ifdef TWOPANEVIEW_INCLUDED
-    winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TreeViewSelectionMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewMode>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewPriority>>();
     winrt::guid_of<struct winrt::Windows::Foundation::IReference<enum winrt::Microsoft::UI::Xaml::Controls::TwoPaneViewTallModeConfiguration>>();

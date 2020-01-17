@@ -10,7 +10,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.Resources>
             <controls:RecyclePool x:Key="recyclePool1"/>
             <controls:RecyclePool x:Key="recyclePool2"/>
@@ -56,7 +56,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <StackPanel VerticalAlignment="Bottom">
+        <StackPanel VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
                 <TextBlock Text="Nesting combination:" Margin="1" VerticalAlignment="Center"/>
                 <ComboBox x:Name="cmbNestingCombination" Margin="1" SelectedIndex="0" SelectionChanged="CmbNestingCombination_SelectionChanged">
@@ -524,7 +524,7 @@
                 Grid.Row="12" Grid.ColumnSpan="2" Click="BtnStartBringIntoView_Click" HorizontalAlignment="Stretch"/>
         </Grid>
 
-        <Grid Grid.Column="2" Margin="1" Background="LightYellow">
+        <Grid Grid.Column="2" Margin="1" Background="{ThemeResource SystemListLowColor}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

@@ -131,6 +131,12 @@ std::vector<int> TopNavigationViewDataProvider::ConvertPrimaryIndexToIndex(std::
     return indexes;
 }
 
+int TopNavigationViewDataProvider::ConvertOriginalIndexToIndex(int originalIndex)
+{
+    auto const vector = GetVector(IsItemInPrimaryList(originalIndex) ? NavigationViewSplitVectorID::PrimaryList : NavigationViewSplitVectorID::OverflowList);
+    return vector->IndexFromIndexInOriginalVector(originalIndex);
+}
+
 void TopNavigationViewDataProvider::MoveItemsOutOfPrimaryList(std::vector<int> const& indexes)
 {
     MoveItemsToList(indexes, NavigationViewSplitVectorID::OverflowList);
@@ -308,31 +314,6 @@ bool TopNavigationViewDataProvider::IsValidWidthForItem(int index)
 {
     auto width = AttachedData(index);
     return IsValidWidth(width);
-}
-
-void TopNavigationViewDataProvider::InvalidWidthCacheIfOverflowItemContentChanged()
-{
-    bool shouldRefreshCache = false;
-    for (int i = 0; i < Size(); i++)
-    {
-        if (!IsItemInPrimaryList(i))
-        {
-            if (auto navItem = GetAt(i).try_as<winrt::NavigationViewItem>())
-            {
-                auto itemPointer = winrt::get_self<NavigationViewItem>(navItem);
-                if (itemPointer->IsContentChangeHandlingDelayedForTopNav())
-                {
-                    itemPointer->ClearIsContentChangeHandlingDelayedForTopNavFlag();
-                    shouldRefreshCache = true;
-                }
-            }
-        }
-    }
-
-    if (shouldRefreshCache)
-    {
-        InvalidWidthCache();
-    }
 }
 
 void TopNavigationViewDataProvider::SetWidthForItem(int index, float width)

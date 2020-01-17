@@ -37,7 +37,7 @@ using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ScrollingViewTests
+    public class ScrollingViewTests : ApiTestBase
     {
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
@@ -69,12 +69,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const double c_defaultUIScrollingViewHeight = 200.0;
 
         private ScrollingViewVisualStateCounts m_scrollingViewVisualStateCounts;
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
 
         [TestMethod]
         [TestProperty("Description", "Verifies the ScrollingView default properties.")]
@@ -187,7 +181,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.IsLessThan(scrollingView.MaxZoomFactor, 8.0 + c_epsilon);
 
                     Log.Comment("Resetting window content and ScrollingView");
-                    MUXControlsTestApp.App.TestContentRoot = null;
+                    Content = null;
                     scrollingView = null;
                 });
 
@@ -243,7 +237,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Verify.AreEqual(scrollingView.ScrollableHeight, c_defaultUIScrollingViewContentHeight - c_defaultUIScrollingViewHeight);
 
                     Log.Comment("Resetting window content and ScrollingView");
-                    MUXControlsTestApp.App.TestContentRoot = null;
+                    Content = null;
                     scrollingView = null;
                 });
 
@@ -383,7 +377,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                             expectedScrollBarsSeparatorCollapsedWithoutAnimationStateCount: 0);
 
                         Log.Comment("Resetting window content");
-                        MUXControlsTestApp.App.TestContentRoot = null;
+                        Content = null;
                         m_scrollingViewVisualStateCounts = null;
                     });
 
@@ -604,11 +598,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Setting window content");
                 if (useParentGrid)
                 {
-                    MUXControlsTestApp.App.TestContentRoot = parentGrid;
+                    Content = parentGrid;
                 }
                 else
                 {
-                    MUXControlsTestApp.App.TestContentRoot = scrollingView;
+                    Content = scrollingView;
                 }
             }
         }

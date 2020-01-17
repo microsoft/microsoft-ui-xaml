@@ -28,7 +28,7 @@ using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMo
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         private enum BiDirectionalAlignment
         {
@@ -304,21 +304,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Log.Comment($"ViewportHeight test case - isScrollingPresenterParentSizeSet: {isScrollingPresenterParentSizeSet}, isScrollingPresenterParentMaxSizeSet: {isScrollingPresenterParentMaxSizeSet}, scrollingPresenterVerticalAlignment: {scrollingPresenterVerticalAlignment}, scrollingPresenterContentHeight: {scrollingPresenterContentHeight}");
 
-            Border border = null;
-            ScrollingPresenter scrollingPresenter = null;
-            StackPanel stackPanel = null;
-            Rectangle rectangle = null;
-            AutoResetEvent borderLoadedEvent = new AutoResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                rectangle = new Rectangle()
+                var rectangle = new Rectangle()
                 {
                     Width = 30,
                     Height = scrollingPresenterContentHeight
                 };
 
-                stackPanel = new StackPanel()
+                var stackPanel = new StackPanel()
                 {
                     BorderThickness = new Thickness(5),
                     Margin = new Thickness(7),
@@ -326,14 +320,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
                 stackPanel.Children.Add(rectangle);
 
-                scrollingPresenter = new ScrollingPresenter()
+                var scrollingPresenter = new ScrollingPresenter()
                 {
                     Content = stackPanel,
                     ContentOrientation = ScrollingContentOrientation.Vertical,
                     VerticalAlignment = scrollingPresenterVerticalAlignment
                 };
 
-                border = new Border()
+                var border = new Border()
                 {
                     BorderThickness = new Thickness(2),
                     Margin = new Thickness(3),
@@ -351,21 +345,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     border.MaxHeight = 200.0;
                 }
 
-                border.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("Border.Loaded event handler");
-                    borderLoadedEvent.Set();
-                };
-
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = border;
-            });
+                Content = border;
+                Content.UpdateLayout();
 
-            WaitForEvent("Waiting for Border.Loaded event", borderLoadedEvent);
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
                 double expectedViewportHeight =
                     rectangle.Height + stackPanel.BorderThickness.Top + stackPanel.BorderThickness.Bottom +
                     stackPanel.Margin.Top + stackPanel.Margin.Bottom;
@@ -391,36 +374,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Uses a StackPanel with Stretch alignment as ScrollingPresenter.Content to verify it stretched to the size of the ScrollingPresenter.")]
         public void StretchAlignment()
         {
-            ScrollingPresenter scrollingPresenter = null;
-            StackPanel stackPanel = null;
-            Rectangle rectangle = null;
-            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                rectangle = new Rectangle();
+                var rectangle = new Rectangle();
                 rectangle.Height = c_defaultUIScrollingPresenterContentHeight;
-                stackPanel = new StackPanel();
+                var stackPanel = new StackPanel();
                 stackPanel.Children.Add(rectangle);
-                scrollingPresenter = new ScrollingPresenter();
+                var scrollingPresenter = new ScrollingPresenter();
                 scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
                 scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
                 scrollingPresenter.Content = stackPanel;
 
-                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("ScrollingPresenter.Loaded event handler");
-                    scrollingPresenterLoadedEvent.Set();
-                };
-
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
-            });
+                Content = scrollingPresenter;
+                Content.UpdateLayout();
 
-            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
 
-            RunOnUIThread.Execute(() =>
-            {
                 Log.Comment("Checking Stretch/Strech alignments");
                 Verify.AreEqual(HorizontalAlignment.Stretch, stackPanel.HorizontalAlignment);
                 Verify.AreEqual(VerticalAlignment.Stretch, stackPanel.VerticalAlignment);

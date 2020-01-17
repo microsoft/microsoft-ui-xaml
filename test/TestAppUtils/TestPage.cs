@@ -79,7 +79,12 @@ namespace MUXControlsTestApp
                 }
 
                 var testFrame = this.Frame as TestFrame;
-                testFrame.ChangeBarVisibility(Visibility.Visible);
+                
+                // Some pages are not a TestFrame, thus this cast may return null
+                if(testFrame != null)
+                {
+                    testFrame.ChangeBarVisibility(Visibility.Visible);
+                }
             }
         }
 

@@ -274,8 +274,9 @@ namespace winrt
     using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
+    using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
-    using Brush = winrt::Windows::UI::Xaml::Media::Brush;
+    using BrushMappingMode = winrt::Windows::UI::Xaml::Media::BrushMappingMode;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
@@ -290,6 +291,7 @@ namespace winrt
     using IXamlLightProtected = winrt::Windows::UI::Xaml::Media::IXamlLightProtected;
     using LinearGradientBrush = ::winrt::Windows::UI::Xaml::Media::LinearGradientBrush;
     using LoadedImageSurface = ::winrt::Windows::UI::Xaml::Media::LoadedImageSurface;
+    using PathFigure = winrt::Windows::UI::Xaml::Media::PathFigure;
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
@@ -297,7 +299,7 @@ namespace winrt
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
-    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;
+    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;    
 
     // using namespace ::winrt::Windows::UI::Xaml::Media.Animation;
     using IStoryboard = ::winrt::Windows::UI::Xaml::Media::Animation::IStoryboard;

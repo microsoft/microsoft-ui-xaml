@@ -72,6 +72,24 @@ namespace MUXControlsTestApp
             }
         }
 
+        public void IsDisabledTabVisibleCheckBox_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            if (Tabs != null && DisabledTab != null)
+            {
+                var isVisible = (bool)IsDisabledTabVisibleCheckBox.IsChecked;
+                if (isVisible && !Tabs.TabItems.Contains(DisabledTab))
+                {
+                    // Let's insert the DisabledTab just after NotCloseableTab
+                    var n = Tabs.TabItems.IndexOf(NotCloseableTab) + 1;
+                    Tabs.TabItems.Insert(n, DisabledTab);
+                }
+                else
+                {
+                    Tabs.TabItems.Remove(DisabledTab);
+                }
+            }
+        }
+
         public void AddButtonClick(object sender, object e)
         {
             if (Tabs != null)
@@ -305,7 +323,8 @@ namespace MUXControlsTestApp
 
         public void SetTabViewWidth_Click(object sender, RoutedEventArgs e)
         {
-            Tabs.Width = 690;
+            // This is the smallest width that fits our content without any scrolling.
+            Tabs.Width = 740;
         }
 
         public void GetScrollButtonsVisible_Click(object sender, RoutedEventArgs e)

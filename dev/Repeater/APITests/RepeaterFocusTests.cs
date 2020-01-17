@@ -33,7 +33,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class RepeaterFocusTests : TestsBase
+    public class RepeaterFocusTests : ApiTestBase
     {
         [TestMethod]
         public void ValidateTabNavigation()

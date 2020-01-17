@@ -42,7 +42,7 @@ using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Control
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ParallaxViewTests
+    public class ParallaxViewTests : ApiTestBase
     {
         private const float c_shiftTolerance = 0.0001f;
         private const int c_MaxWaitDuration = 5000;
@@ -89,16 +89,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             ScrollViewer,
             ScrollingPresenter,
-        }
-
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            RunOnUIThread.Execute(() => {
-                Log.Comment("TestCleanup: Restore TestContentRoot to null");
-                // Put things back the way we found them.
-                MUXControlsTestApp.App.TestContentRoot = null;
-            });
         }
 
         [TestMethod]
@@ -1395,7 +1385,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = stackPanel;
+            Content = stackPanel;
         }
 
         private void SetupDefaultUIWithScrollViewer(
@@ -1470,7 +1460,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = stackPanel;
+            Content = stackPanel;
         }
 
         private void SetupDefaultUIWithScrollingPresenter(
@@ -1543,7 +1533,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = stackPanel;
+            Content = stackPanel;
         }
 
         private void SetupUIWithParallaxViewInsideScrollingPresenter(
@@ -1609,7 +1599,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scrollingPresenter;
+            Content = scrollingPresenter;
         }
 
         private void SetupUIWithParallaxViewInsideScrollViewer(
@@ -1688,7 +1678,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            MUXControlsTestApp.App.TestContentRoot = scrollViewer;
+            Content = scrollViewer;
         }
 
         private void ChangePropertyAfterParallaxViewDisposal(PropertyId propertyToChange)
@@ -1736,7 +1726,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Disposing the ParallaxView");
-                (MUXControlsTestApp.App.TestContentRoot as StackPanel).Children.Remove(parallaxView);
+                (Content as StackPanel).Children.Remove(parallaxView);
                 WeakReference parallaxViewWeakReference = new WeakReference(parallaxView);
                 parallaxView = null;
                 Log.Comment("Garbage-collecting the ParallaxView");
