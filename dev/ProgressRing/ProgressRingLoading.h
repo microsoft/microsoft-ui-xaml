@@ -12,6 +12,7 @@ class ProgressRingLoading :
     public winrt::implements<ProgressRingLoading, winrt::IAnimatedVisualSource>
 {
 private:
+    // This file has been modified to update animation visuals with inherited properties below
     double m_strokeThickness{ 4 };
     winrt::Size m_size{ 40, 40 };
     winrt::Color m_foreground{ winrt::ColorHelper::FromArgb(0xFF, 0x00, 0x78, 0xD7) };
