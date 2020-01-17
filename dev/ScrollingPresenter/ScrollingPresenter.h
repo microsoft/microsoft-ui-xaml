@@ -12,26 +12,26 @@
 #include "ScrollingBringingIntoViewEventArgs.h"
 #include "ScrollingAnchorRequestedEventArgs.h"
 #include "SnapPointWrapper.h"
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "ViewChange.h"
 #include "OffsetsChange.h"
 #include "OffsetsChangeWithAdditionalVelocity.h"
 #include "ZoomFactorChange.h"
 #include "ZoomFactorChangeWithAdditionalVelocity.h"
 
-#include "ScrollingPresenter.g.h"
-#include "ScrollingPresenter.properties.h"
+#include "ScrollPresenter.g.h"
+#include "ScrollPresenter.properties.h"
 
-class ScrollingPresenter :
-    public ReferenceTracker<ScrollingPresenter, DeriveFromPanelHelper_base, winrt::ScrollingPresenter, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
-    public ScrollingPresenterProperties
+class ScrollPresenter :
+    public ReferenceTracker<ScrollPresenter, DeriveFromPanelHelper_base, winrt::ScrollPresenter, winrt::Controls::IScrollAnchorProvider, winrt::IRepeaterScrollingSurface>,
+    public ScrollPresenterProperties
 {
 public:
-    ScrollingPresenter();
-    ~ScrollingPresenter();
+    ScrollPresenter();
+    ~ScrollPresenter();
 
-    // Background property is ambiguous with Panel, lift up ScrollingPresenterProperties::Background to disambiguate.
-    using ScrollingPresenterProperties::Background;
+    // Background property is ambiguous with Panel, lift up ScrollPresenterProperties::Background to disambiguate.
+    using ScrollPresenterProperties::Background;
 
     // Properties of the ExpressionAnimationSources CompositionPropertySet
     static constexpr std::wstring_view s_extentSourcePropertyName{ L"Extent"sv };
@@ -139,7 +139,7 @@ public:
     void CustomAnimationStateEntered(const winrt::InteractionTrackerCustomAnimationStateEnteredArgs& args);
 #pragma endregion
 
-#pragma region IScrollingPresenter
+#pragma region IScrollPresenter
     winrt::CompositionPropertySet ExpressionAnimationSources();
 
     double HorizontalOffset();
@@ -182,7 +182,7 @@ public:
 
 #pragma endregion
 
-    enum class ScrollingPresenterDimension
+    enum class ScrollPresenterDimension
     {
         HorizontalScroll,
         VerticalScroll,
@@ -192,18 +192,18 @@ public:
         ZoomFactor
     };
 
-    // Invoked by both ScrollingPresenter and ScrollViewer controls
+    // Invoked by both ScrollPresenter and ScrollViewer controls
     static bool IsZoomFactorBoundaryValid(double value);
     static void ValidateZoomFactoryBoundary(double value);
 
-    // Invoked by both ScrollingPresenter and ScrollViewer controls
+    // Invoked by both ScrollPresenter and ScrollViewer controls
     static bool IsAnchorRatioValid(double value);
     static void ValidateAnchorRatio(double value);
 
     bool IsElementValidAnchor(
         const winrt::UIElement& element);
 
-    // Invoked by ScrollingPresenterTestHooks
+    // Invoked by ScrollPresenterTestHooks
     float GetContentLayoutOffsetX() const
     {
         return m_contentLayoutOffsetX;
@@ -223,31 +223,31 @@ public:
 
     winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedHorizontalScrollSnapPoints()
     {
-        return GetConsolidatedScrollSnapPoints(ScrollingPresenterDimension::HorizontalScroll);
+        return GetConsolidatedScrollSnapPoints(ScrollPresenterDimension::HorizontalScroll);
     }
 
     winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedVerticalScrollSnapPoints()
     {
-        return GetConsolidatedScrollSnapPoints(ScrollingPresenterDimension::VerticalScroll);
+        return GetConsolidatedScrollSnapPoints(ScrollPresenterDimension::VerticalScroll);
     }
 
-    winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedScrollSnapPoints(ScrollingPresenterDimension dimension);
+    winrt::IVector<winrt::ScrollSnapPointBase> GetConsolidatedScrollSnapPoints(ScrollPresenterDimension dimension);
     winrt::IVector<winrt::ZoomSnapPointBase> GetConsolidatedZoomSnapPoints();
 
     SnapPointWrapper<winrt::ScrollSnapPointBase>* GetHorizontalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
     {
-        return GetScrollSnapPointWrapper(ScrollingPresenterDimension::HorizontalScroll, scrollSnapPoint);
+        return GetScrollSnapPointWrapper(ScrollPresenterDimension::HorizontalScroll, scrollSnapPoint);
     }
 
     SnapPointWrapper<winrt::ScrollSnapPointBase>* GetVerticalSnapPointWrapper(winrt::ScrollSnapPointBase const& scrollSnapPoint)
     {
-        return GetScrollSnapPointWrapper(ScrollingPresenterDimension::VerticalScroll, scrollSnapPoint);
+        return GetScrollSnapPointWrapper(ScrollPresenterDimension::VerticalScroll, scrollSnapPoint);
     }
 
-    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetScrollSnapPointWrapper(ScrollingPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint);
+    SnapPointWrapper<winrt::ScrollSnapPointBase>* GetScrollSnapPointWrapper(ScrollPresenterDimension dimension, winrt::ScrollSnapPointBase const& scrollSnapPoint);
     SnapPointWrapper<winrt::ZoomSnapPointBase>* GetZoomSnapPointWrapper(winrt::ZoomSnapPointBase const& zoomSnapPoint);
 
-    // Invoked when a dependency property of this ScrollingPresenter has changed.
+    // Invoked when a dependency property of this ScrollPresenter has changed.
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -259,7 +259,7 @@ public:
         const winrt::DependencyProperty& args);
 
 #pragma region Automation Peer Helpers
-    // Public methods accessed by the CScrollingPresenterAutomationPeer class
+    // Public methods accessed by the CScrollPresenterAutomationPeer class
     double GetZoomedExtentWidth() const;
     double GetZoomedExtentHeight() const;
 
@@ -290,7 +290,7 @@ private:
         winrt::Rect& finalContentRect,
         bool wasContentArrangeWidthStretched,
         bool wasContentArrangeHeightStretched);
-    float ComputeContentLayoutOffsetDelta(ScrollingPresenterDimension dimension, float unzoomedDelta) const;
+    float ComputeContentLayoutOffsetDelta(ScrollPresenterDimension dimension, float unzoomedDelta) const;
     float ComputeEndOfInertiaZoomFactor() const;
     winrt::float2 ComputeEndOfInertiaPosition();
     void ComputeMinMaxPositions(float zoomFactor, _Out_opt_ winrt::float2* minPosition, _Out_opt_ winrt::float2* maxPosition);
@@ -309,50 +309,50 @@ private:
 
     void EnsureExpressionAnimationSources();
     void EnsureInteractionTracker();
-    void EnsureScrollingPresenterVisualInteractionSource();
+    void EnsureScrollPresenterVisualInteractionSource();
     void EnsureScrollControllerVisualInteractionSource(
         const winrt::Visual& interactionVisual,
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void EnsureScrollControllerExpressionAnimationSources(
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void EnsurePositionBoundariesExpressionAnimations();
     void EnsureTransformExpressionAnimations();
     template <typename T> void SetupSnapPoints(
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     template <typename T> void UpdateSnapPointsRanges(
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
         bool forImpulseOnly);
     template <typename T> void UpdateSnapPointsIgnoredValue(
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     template <typename T> bool UpdateSnapPointsIgnoredValue(
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
         double newIgnoredValue);
     template <typename T> void UpdateSnapPointsInertiaFromImpulse(
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         bool isInertiaFromImpulse);
     void SetupInteractionTrackerBoundaries();
     void SetupInteractionTrackerZoomFactorBoundaries(
         double minZoomFactor, double maxZoomFactor);
-    void SetupScrollingPresenterVisualInteractionSource();
+    void SetupScrollPresenterVisualInteractionSource();
     void SetupScrollControllerVisualInterationSource(
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void SetupScrollControllerVisualInterationSourcePositionModifiers(
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         const winrt::Orientation& orientation);
     void SetupVisualInteractionSourceRailingMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         const winrt::ScrollingRailMode& railingMode);
     void SetupVisualInteractionSourceChainingMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         const winrt::ScrollingChainMode& chainingMode);
     void SetupVisualInteractionSourceMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         const winrt::ScrollingScrollMode& scrollMode);
     void SetupVisualInteractionSourceMode(
         const winrt::VisualInteractionSource& visualInteractionSource,
@@ -360,7 +360,7 @@ private:
 #ifdef IsMouseWheelScrollDisabled
     void SetupVisualInteractionSourcePointerWheelConfig(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        ScrollingPresenterDimension dimension,
+        ScrollPresenterDimension dimension,
         const winrt::ScrollingScrollMode& scrollMode);
 #endif
 #ifdef IsMouseWheelZoomDisabled
@@ -372,7 +372,7 @@ private:
         const winrt::VisualInteractionSource& visualInteractionSource);
     void SetupVisualInteractionSourceCenterPointModifier(
         const winrt::VisualInteractionSource& visualInteractionSource,
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void SetupPositionBoundariesExpressionAnimations(
         const winrt::UIElement& content);
     void SetupTransformExpressionAnimations(
@@ -387,9 +387,9 @@ private:
     void StopTranslationAndZoomFactorExpressionAnimations();
     void StartExpressionAnimationSourcesAnimations();
     void StartScrollControllerExpressionAnimationSourcesAnimations(
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void StopScrollControllerExpressionAnimationSourcesAnimations(
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     void UpdateContent(
         const winrt::UIElement& oldContent,
         const winrt::UIElement& newContent);
@@ -409,21 +409,21 @@ private:
         double viewportHeight);
     void UpdateScrollAutomationPatternProperties();
     void UpdateIsInertiaFromImpulse(bool isInertiaFromImpulse);
-    void UpdateOffset(ScrollingPresenterDimension dimension, double zoomedOffset);
-    void UpdateScrollControllerInteractionsAllowed(ScrollingPresenterDimension dimension);
-    void UpdateScrollControllerValues(ScrollingPresenterDimension dimension);
-    void UpdateVisualInteractionSourceMode(ScrollingPresenterDimension dimension);
+    void UpdateOffset(ScrollPresenterDimension dimension, double zoomedOffset);
+    void UpdateScrollControllerInteractionsAllowed(ScrollPresenterDimension dimension);
+    void UpdateScrollControllerValues(ScrollPresenterDimension dimension);
+    void UpdateVisualInteractionSourceMode(ScrollPresenterDimension dimension);
     void UpdateManipulationRedirectionMode();
     void UpdateDisplayInformation(winrt::DisplayInformation const& displayInformation);
     void OnContentSizeChanged(
         const winrt::UIElement& content);
     void OnViewChanged(bool horizontalOffsetChanged, bool verticalOffsetChanged);
-    void OnContentLayoutOffsetChanged(ScrollingPresenterDimension dimension);
+    void OnContentLayoutOffsetChanged(ScrollPresenterDimension dimension);
 
     void ChangeOffsetsPrivate(
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
-        ScrollingPresenterViewKind offsetsKind,
+        ScrollPresenterViewKind offsetsKind,
         winrt::ScrollingScrollOptions const& options,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         int32_t existingViewChangeId,
@@ -438,7 +438,7 @@ private:
     void ChangeZoomFactorPrivate(
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
-        ScrollingPresenterViewKind zoomFactorKind,
+        ScrollPresenterViewKind zoomFactorKind,
         winrt::ScrollingZoomOptions const& options,
         _Out_opt_ int32_t* viewChangeId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
@@ -484,12 +484,12 @@ private:
     bool InterruptViewChangeWithAnimation(InteractionTrackerAsyncOperationType interactionTrackerAsyncOperationType);
     void CompleteViewChange(
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation,
-        ScrollingPresenterViewChangeResult result);
+        ScrollPresenterViewChangeResult result);
     void CompleteInteractionTrackerOperations(
         int requestId,
-        ScrollingPresenterViewChangeResult operationResult,
-        ScrollingPresenterViewChangeResult priorNonAnimatedOperationsResult,
-        ScrollingPresenterViewChangeResult priorAnimatedOperationsResult,
+        ScrollPresenterViewChangeResult operationResult,
+        ScrollPresenterViewChangeResult priorNonAnimatedOperationsResult,
+        ScrollPresenterViewChangeResult priorAnimatedOperationsResult,
         bool completeNonAnimatedOperation,
         bool completeAnimatedOperation,
         bool completePriorNonAnimatedOperations,
@@ -509,7 +509,7 @@ private:
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationFromKinds(
         bool isOperationTypeForOffsetsChange,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        ScrollingPresenterViewKind const& viewKind,
+        ScrollPresenterViewKind const& viewKind,
         winrt::ScrollingScrollOptions const& options) const;
     std::shared_ptr<InteractionTrackerAsyncOperation> GetInteractionTrackerOperationWithAdditionalVelocity(
         bool isOperationTypeForOffsetsChange,
@@ -521,10 +521,10 @@ private:
         winrt::hstring const& scale) const;
 
 #ifdef USE_SCROLLMODE_AUTO
-    winrt::ScrollingScrollMode GetComputedScrollMode(ScrollingPresenterDimension dimension, bool ignoreZoomMode = false);
+    winrt::ScrollingScrollMode GetComputedScrollMode(ScrollPresenterDimension dimension, bool ignoreZoomMode = false);
 #endif
 #ifdef IsMouseWheelScrollDisabled
-    winrt::ScrollingScrollMode GetComputedMouseWheelScrollMode(ScrollingPresenterDimension dimension);
+    winrt::ScrollingScrollMode GetComputedMouseWheelScrollMode(ScrollPresenterDimension dimension);
 #endif
 #ifdef IsMouseWheelZoomDisabled
     winrt::ScrollingZoomMode GetMouseWheelZoomMode();
@@ -572,7 +572,7 @@ private:
 
     void HookCompositionTargetRendering();
     void HookDpiChangedEvent();
-    void HookScrollingPresenterEvents();
+    void HookScrollPresenterEvents();
     void HookContentPropertyChanged(
         const winrt::UIElement& content);
     void HookHorizontalScrollControllerEvents(
@@ -584,7 +584,7 @@ private:
     void UnhookCompositionTargetRendering();
     void UnhookContentPropertyChanged(
         const winrt::UIElement& content);
-    void UnhookScrollingPresenterEvents();
+    void UnhookScrollPresenterEvents();
     void UnhookHorizontalScrollControllerEvents(
         const winrt::IScrollController& horizontalScrollController);
     void UnhookVerticalScrollControllerEvents(
@@ -609,7 +609,7 @@ private:
         int32_t zoomFactorChangeId);
     void RaiseViewChangeCompleted(
         bool isForScroll,
-        ScrollingPresenterViewChangeResult result,
+        ScrollPresenterViewChangeResult result,
         int32_t viewChangeId);
     bool RaiseBringingIntoView(
         double targetZoomedHorizontalOffset,
@@ -674,7 +674,7 @@ private:
         winrt::IObservableVector<T> const& scrollSnapPoints,
         winrt::IVectorChangedEventArgs const& args,
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet,
-        ScrollingPresenterDimension dimension);
+        ScrollPresenterDimension dimension);
     template <typename T> void SnapPointsVectorItemInsertedHelper(
         std::shared_ptr<SnapPointWrapper<T>> insertedItem,
         std::set<std::shared_ptr<SnapPointWrapper<T>>, SnapPointWrapperComparator<T>>* snapPointsSet);
@@ -764,7 +764,7 @@ private:
 
     static bool IsInteractionTrackerPointerWheelRedirectionEnabled();
     static bool IsVisualTranslationPropertyAvailable();
-    static wstring_view GetVisualTargetedPropertyName(ScrollingPresenterDimension dimension);
+    static wstring_view GetVisualTargetedPropertyName(ScrollPresenterDimension dimension);
 
 #ifdef _DEBUG
     void DumpMinMaxPositions();
@@ -816,7 +816,7 @@ private:
     winrt::CompositionPropertySet m_expressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_horizontalScrollControllerExpressionAnimationSources{ nullptr };
     winrt::CompositionPropertySet m_verticalScrollControllerExpressionAnimationSources{ nullptr };
-    winrt::VisualInteractionSource m_scrollingPresenterVisualInteractionSource{ nullptr };
+    winrt::VisualInteractionSource m_scrollPresenterVisualInteractionSource{ nullptr };
     winrt::VisualInteractionSource m_horizontalScrollControllerVisualInteractionSource{ nullptr };
     winrt::VisualInteractionSource m_verticalScrollControllerVisualInteractionSource{ nullptr };
     winrt::InteractionTracker m_interactionTracker{ nullptr };
@@ -894,7 +894,7 @@ private:
     // Maximum difference for zoom factors to be considered equal. Used for pointer wheel zooming.
     static constexpr float s_zoomFactorEqualityEpsilon{ 0.00001f };
 
-    // Property names being targeted for the ScrollingPresenter.Content's Visual.
+    // Property names being targeted for the ScrollPresenter.Content's Visual.
     // RedStone v1 case:
     static constexpr std::wstring_view s_transformMatrixTranslateXPropertyName{ L"TransformMatrix._41"sv };
     static constexpr std::wstring_view s_transformMatrixTranslateYPropertyName{ L"TransformMatrix._42"sv };

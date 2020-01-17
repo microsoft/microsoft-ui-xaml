@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.g.h"
+#include "ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.g.h"
 
-class ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs :
-    public winrt::implementation::ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgsT<ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs>
+class ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs :
+    public winrt::implementation::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgsT<ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs>
 {
 public:
-    ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs(bool isExpressionAnimationStarted, wstring_view const& propertyName);
+    ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs(bool isExpressionAnimationStarted, wstring_view const& propertyName);
 
-    // IScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs overrides
+    // IScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs overrides
     bool IsExpressionAnimationStarted();
     winrt::hstring PropertyName();
 

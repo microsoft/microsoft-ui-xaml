@@ -4,37 +4,37 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "OffsetsChange.h"
 
 OffsetsChange::OffsetsChange(
     double zoomedHorizontalOffset,
     double zoomedVerticalOffset,
-    ScrollingPresenterViewKind offsetsKind,
+    ScrollPresenterViewKind offsetsKind,
     winrt::IInspectable const& options) :
         m_zoomedHorizontalOffset(zoomedHorizontalOffset),
         m_zoomedVerticalOffset(zoomedVerticalOffset),
         ViewChange(offsetsKind, options)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL_DBL, METH_NAME, this,
         zoomedHorizontalOffset, zoomedVerticalOffset);
 }
 
 OffsetsChange::~OffsetsChange()
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 }
 
 void OffsetsChange::ZoomedHorizontalOffset(double zoomedHorizontalOffset)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedHorizontalOffset);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedHorizontalOffset);
 
     m_zoomedHorizontalOffset = zoomedHorizontalOffset;
 }
 
 void OffsetsChange::ZoomedVerticalOffset(double zoomedVerticalOffset)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedVerticalOffset);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_DBL, METH_NAME, this, zoomedVerticalOffset);
 
     m_zoomedVerticalOffset = zoomedVerticalOffset;
 }

@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs.g.h"
+#include "ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.g.h"
 
-class ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs :
-    public winrt::implementation::ScrollingPresenterTestHooksInteractionSourcesChangedEventArgsT<ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs>
+class ScrollPresenterTestHooksInteractionSourcesChangedEventArgs :
+    public winrt::implementation::ScrollPresenterTestHooksInteractionSourcesChangedEventArgsT<ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>
 {
 public:
-    ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
+    ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources);
 
-    // IScrollingPresenterTestHooksInteractionSourcesChangedEventArgs overrides
+    // IScrollPresenterTestHooksInteractionSourcesChangedEventArgs overrides
     winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection InteractionSources();
         
 private:

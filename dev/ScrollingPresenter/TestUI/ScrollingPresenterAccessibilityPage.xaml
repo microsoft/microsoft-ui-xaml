@@ -18,7 +18,7 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <controlsPrimitives:ScrollingPresenter x:Name="scrollingPresenter" Width="300" Height="500" Background="AliceBlue" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <controlsPrimitives:ScrollingPresenter x:Name="scrollPresenter" Width="300" Height="500" Background="AliceBlue" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Image x:Name="img" Source="Assets/ingredient8.png" Width="900" Height="900"/>
         </controlsPrimitives:ScrollingPresenter>
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
-#include "ScrollingPresenterTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "Utils.h"
 
 namespace TypeLogging
@@ -137,16 +137,16 @@ winrt::hstring SnapPointsModeToString(const winrt::ScrollingSnapPointsMode& snap
     }
 }
 
-winrt::hstring ScrollingPresenterViewKindToString(ScrollingPresenterViewKind viewKind)
+winrt::hstring ScrollPresenterViewKindToString(ScrollPresenterViewKind viewKind)
 {
     switch (viewKind)
     {
-    case ScrollingPresenterViewKind::Absolute:
+    case ScrollPresenterViewKind::Absolute:
         return L"Absolute";
-    case ScrollingPresenterViewKind::RelativeToCurrentView:
+    case ScrollPresenterViewKind::RelativeToCurrentView:
         return L"RelativeToCurrentView";
-#ifdef ScrollingPresenterViewKind_RelativeToEndOfInertiaView
-    case ScrollingPresenterViewKind::RelativeToEndOfInertiaView:
+#ifdef ScrollPresenterViewKind_RelativeToEndOfInertiaView
+    case ScrollPresenterViewKind::RelativeToEndOfInertiaView:
         return L"RelativeToEndOfInertiaView";
 #endif
     default:
@@ -155,15 +155,15 @@ winrt::hstring ScrollingPresenterViewKindToString(ScrollingPresenterViewKind vie
     }
 }
 
-winrt::hstring ScrollingPresenterViewChangeResultToString(ScrollingPresenterViewChangeResult result)
+winrt::hstring ScrollPresenterViewChangeResultToString(ScrollPresenterViewChangeResult result)
 {
     switch (result)
     {
-    case ScrollingPresenterViewChangeResult::Completed:
+    case ScrollPresenterViewChangeResult::Completed:
         return L"Completed";
-    case ScrollingPresenterViewChangeResult::Ignored:
+    case ScrollPresenterViewChangeResult::Ignored:
         return L"Ignored";
-    case ScrollingPresenterViewChangeResult::Interrupted:
+    case ScrollPresenterViewChangeResult::Interrupted:
         return L"Interrupted";
     default:
         MUX_ASSERT(false);

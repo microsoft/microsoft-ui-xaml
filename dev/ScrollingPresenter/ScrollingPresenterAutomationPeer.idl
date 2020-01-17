@@ -3,9 +3,9 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ScrollingPresenterAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
+unsealed runtimeclass ScrollPresenterAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
-    ScrollingPresenterAutomationPeer(MU_XCP_NAMESPACE.ScrollingPresenter owner);
+    ScrollPresenterAutomationPeer(MU_XCP_NAMESPACE.ScrollPresenter owner);
 }
 
 }

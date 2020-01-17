@@ -16,11 +16,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
-using ScrollingPresenterTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooksAnchorEvaluatedEventArgs;
-using ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs;
-using ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollPresenterTestHooksAnchorEvaluatedEventArgs;
+using ScrollPresenterTestHooksInteractionSourcesChangedEventArgs = Microsoft.UI.Private.Controls.ScrollPresenterTestHooksInteractionSourcesChangedEventArgs;
+using ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs = Microsoft.UI.Private.Controls.ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs;
 
 namespace MUXControlsTestApp.Utilities
 {
@@ -37,13 +37,13 @@ namespace MUXControlsTestApp.Utilities
         public string PropertyName { get; set; }
     }
 
-    // Utility class used to turn on ScrollingPresenter test hooks and automatically turn them off when the instance gets disposed.
-    public class ScrollingPresenterTestHooksHelper : IDisposable
+    // Utility class used to turn on ScrollPresenter test hooks and automatically turn them off when the instance gets disposed.
+    public class ScrollPresenterTestHooksHelper : IDisposable
     {
-        Dictionary<ScrollingPresenter, CompositionInteractionSourceCollection> m_interactionSources = null;
-        Dictionary<ScrollingPresenter, List<ExpressionAnimationStatusChange>> m_expressionAnimationStatusChanges = null;
+        Dictionary<ScrollPresenter, CompositionInteractionSourceCollection> m_interactionSources = null;
+        Dictionary<ScrollPresenter, List<ExpressionAnimationStatusChange>> m_expressionAnimationStatusChanges = null;
 
-        public ScrollingPresenterTestHooksHelper(
+        public ScrollPresenterTestHooksHelper(
             bool enableAnchorNotifications = true,
             bool enableInteractionSourcesNotifications = true,
             bool enableExpressionAnimationStatusNotifications = true,
@@ -71,86 +71,86 @@ namespace MUXControlsTestApp.Utilities
                     SetIsAnimationsEnabledOverride(isAnimationsEnabledOverride.Value);
                 }
 
-                m_interactionSources = new Dictionary<ScrollingPresenter, CompositionInteractionSourceCollection>();
-                m_expressionAnimationStatusChanges = new Dictionary<ScrollingPresenter, List<ExpressionAnimationStatusChange>>();
+                m_interactionSources = new Dictionary<ScrollPresenter, CompositionInteractionSourceCollection>();
+                m_expressionAnimationStatusChanges = new Dictionary<ScrollPresenter, List<ExpressionAnimationStatusChange>>();
             });
         }
 
         public void TurnOnAnchorNotifications()
         {
-            if (!ScrollingPresenterTestHooks.AreAnchorNotificationsRaised)
+            if (!ScrollPresenterTestHooks.AreAnchorNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning on anchor notifications.");
-                ScrollingPresenterTestHooks.AreAnchorNotificationsRaised = true;
-                ScrollingPresenterTestHooks.AnchorEvaluated += ScrollingPresenterTestHooks_AnchorEvaluated;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning on anchor notifications.");
+                ScrollPresenterTestHooks.AreAnchorNotificationsRaised = true;
+                ScrollPresenterTestHooks.AnchorEvaluated += ScrollPresenterTestHooks_AnchorEvaluated;
             }
         }
 
         public void TurnOffAnchorNotifications()
         {
-            if (ScrollingPresenterTestHooks.AreAnchorNotificationsRaised)
+            if (ScrollPresenterTestHooks.AreAnchorNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning off anchor notifications.");
-                ScrollingPresenterTestHooks.AreAnchorNotificationsRaised = false;
-                ScrollingPresenterTestHooks.AnchorEvaluated -= ScrollingPresenterTestHooks_AnchorEvaluated;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning off anchor notifications.");
+                ScrollPresenterTestHooks.AreAnchorNotificationsRaised = false;
+                ScrollPresenterTestHooks.AnchorEvaluated -= ScrollPresenterTestHooks_AnchorEvaluated;
             }
         }
 
         public void TurnOnInteractionSourcesNotifications()
         {
-            if (!ScrollingPresenterTestHooks.AreInteractionSourcesNotificationsRaised)
+            if (!ScrollPresenterTestHooks.AreInteractionSourcesNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning on InteractionSources notifications.");
-                ScrollingPresenterTestHooks.AreInteractionSourcesNotificationsRaised = true;
-                ScrollingPresenterTestHooks.InteractionSourcesChanged += ScrollingPresenterTestHooks_InteractionSourcesChanged;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning on InteractionSources notifications.");
+                ScrollPresenterTestHooks.AreInteractionSourcesNotificationsRaised = true;
+                ScrollPresenterTestHooks.InteractionSourcesChanged += ScrollPresenterTestHooks_InteractionSourcesChanged;
             }
         }
 
         public void TurnOffInteractionSourcesNotifications()
         {
-            if (ScrollingPresenterTestHooks.AreInteractionSourcesNotificationsRaised)
+            if (ScrollPresenterTestHooks.AreInteractionSourcesNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning off InteractionSources notifications.");
-                ScrollingPresenterTestHooks.AreInteractionSourcesNotificationsRaised = false;
-                ScrollingPresenterTestHooks.InteractionSourcesChanged -= ScrollingPresenterTestHooks_InteractionSourcesChanged;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning off InteractionSources notifications.");
+                ScrollPresenterTestHooks.AreInteractionSourcesNotificationsRaised = false;
+                ScrollPresenterTestHooks.InteractionSourcesChanged -= ScrollPresenterTestHooks_InteractionSourcesChanged;
             }
         }
 
         public void TurnOnExpressionAnimationStatusNotifications()
         {
-            if (!ScrollingPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised)
+            if (!ScrollPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning on ExpressionAnimation status notifications.");
-                ScrollingPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised = true;
-                ScrollingPresenterTestHooks.ExpressionAnimationStatusChanged += ScrollingPresenterTestHooks_ExpressionAnimationStatusChanged;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning on ExpressionAnimation status notifications.");
+                ScrollPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised = true;
+                ScrollPresenterTestHooks.ExpressionAnimationStatusChanged += ScrollPresenterTestHooks_ExpressionAnimationStatusChanged;
             }
         }
 
         public void TurnOffExpressionAnimationStatusNotifications()
         {
-            if (ScrollingPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised)
+            if (ScrollPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised)
             {
-                Log.Comment("ScrollingPresenterTestHooksHelper: Turning off ExpressionAnimation status notifications.");
-                ScrollingPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised = false;
-                ScrollingPresenterTestHooks.ExpressionAnimationStatusChanged -= ScrollingPresenterTestHooks_ExpressionAnimationStatusChanged;
+                Log.Comment("ScrollPresenterTestHooksHelper: Turning off ExpressionAnimation status notifications.");
+                ScrollPresenterTestHooks.AreExpressionAnimationStatusNotificationsRaised = false;
+                ScrollPresenterTestHooks.ExpressionAnimationStatusChanged -= ScrollPresenterTestHooks_ExpressionAnimationStatusChanged;
             }
         }
 
         public void SetIsAnimationsEnabledOverride(bool isAnimationsEnabledOverride)
         {
-            if (!ScrollingPresenterTestHooks.IsAnimationsEnabledOverride.HasValue || ScrollingPresenterTestHooks.IsAnimationsEnabledOverride.Value != isAnimationsEnabledOverride)
+            if (!ScrollPresenterTestHooks.IsAnimationsEnabledOverride.HasValue || ScrollPresenterTestHooks.IsAnimationsEnabledOverride.Value != isAnimationsEnabledOverride)
             {
-                Log.Comment($"ScrollingPresenterTestHooksHelper: Setting IsAnimationsEnabledOverride to {isAnimationsEnabledOverride}.");
-                ScrollingPresenterTestHooks.IsAnimationsEnabledOverride = isAnimationsEnabledOverride;
+                Log.Comment($"ScrollPresenterTestHooksHelper: Setting IsAnimationsEnabledOverride to {isAnimationsEnabledOverride}.");
+                ScrollPresenterTestHooks.IsAnimationsEnabledOverride = isAnimationsEnabledOverride;
             }
         }
 
         public void ResetIsAnimationsEnabledOverride()
         {
-            if (ScrollingPresenterTestHooks.IsAnimationsEnabledOverride.HasValue)
+            if (ScrollPresenterTestHooks.IsAnimationsEnabledOverride.HasValue)
             {
-                Log.Comment($"ScrollingPresenterTestHooksHelper: Resetting IsAnimationsEnabledOverride from {ScrollingPresenterTestHooks.IsAnimationsEnabledOverride.Value}.");
-                ScrollingPresenterTestHooks.IsAnimationsEnabledOverride = null;
+                Log.Comment($"ScrollPresenterTestHooksHelper: Resetting IsAnimationsEnabledOverride from {ScrollPresenterTestHooks.IsAnimationsEnabledOverride.Value}.");
+                ScrollPresenterTestHooks.IsAnimationsEnabledOverride = null;
             }
         }
 
@@ -168,11 +168,11 @@ namespace MUXControlsTestApp.Utilities
             });
         }
 
-        public CompositionInteractionSourceCollection GetInteractionSources(ScrollingPresenter scrollingPresenter)
+        public CompositionInteractionSourceCollection GetInteractionSources(ScrollPresenter scrollPresenter)
         {
-            if (m_interactionSources.ContainsKey(scrollingPresenter))
+            if (m_interactionSources.ContainsKey(scrollPresenter))
             {
-                return m_interactionSources[scrollingPresenter];
+                return m_interactionSources[scrollPresenter];
             }
             else
             {
@@ -180,11 +180,11 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public List<ExpressionAnimationStatusChange> GetExpressionAnimationStatusChanges(ScrollingPresenter scrollingPresenter)
+        public List<ExpressionAnimationStatusChange> GetExpressionAnimationStatusChanges(ScrollPresenter scrollPresenter)
         {
-            if (m_expressionAnimationStatusChanges.ContainsKey(scrollingPresenter))
+            if (m_expressionAnimationStatusChanges.ContainsKey(scrollPresenter))
             {
-                return m_expressionAnimationStatusChanges[scrollingPresenter];
+                return m_expressionAnimationStatusChanges[scrollPresenter];
             }
             else
             {
@@ -192,11 +192,11 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        public void ResetExpressionAnimationStatusChanges(ScrollingPresenter scrollingPresenter)
+        public void ResetExpressionAnimationStatusChanges(ScrollPresenter scrollPresenter)
         {
-            if (m_expressionAnimationStatusChanges.ContainsKey(scrollingPresenter))
+            if (m_expressionAnimationStatusChanges.ContainsKey(scrollPresenter))
             {
-                m_expressionAnimationStatusChanges.Remove(scrollingPresenter);
+                m_expressionAnimationStatusChanges.Remove(scrollPresenter);
             }
         }
 
@@ -249,14 +249,14 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private void ScrollingPresenterTestHooks_AnchorEvaluated(ScrollingPresenter sender, ScrollingPresenterTestHooksAnchorEvaluatedEventArgs args)
+        private void ScrollPresenterTestHooks_AnchorEvaluated(ScrollPresenter sender, ScrollPresenterTestHooksAnchorEvaluatedEventArgs args)
         {
             string anchorName = (args.AnchorElement is FrameworkElement) ? (args.AnchorElement as FrameworkElement).Name : string.Empty;
 
             Log.Comment("  AnchorEvaluated: s:" + sender.Name + ", a:" + anchorName + ", ap:(" + args.ViewportAnchorPointHorizontalOffset + "," + args.ViewportAnchorPointVerticalOffset + ")");
         }
 
-        private void ScrollingPresenterTestHooks_InteractionSourcesChanged(ScrollingPresenter sender, ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs args)
+        private void ScrollPresenterTestHooks_InteractionSourcesChanged(ScrollPresenter sender, ScrollPresenterTestHooksInteractionSourcesChangedEventArgs args)
         {
             Log.Comment("  InteractionSourcesChanged: s: " + sender.Name);
             if (!m_interactionSources.ContainsKey(sender))
@@ -270,7 +270,7 @@ namespace MUXControlsTestApp.Utilities
             LogInteractionSources(args.InteractionSources);
         }
 
-        private void ScrollingPresenterTestHooks_ExpressionAnimationStatusChanged(ScrollingPresenter sender, ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs args)
+        private void ScrollPresenterTestHooks_ExpressionAnimationStatusChanged(ScrollPresenter sender, ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs args)
         {
             Log.Comment($"  ExpressionAnimationStatusChanged: s: {sender.Name}, IsExpressionAnimationStarted: {args.IsExpressionAnimationStarted}, PropertyName: {args.PropertyName}");
             List<ExpressionAnimationStatusChange> expressionAnimationStatusChanges = null;

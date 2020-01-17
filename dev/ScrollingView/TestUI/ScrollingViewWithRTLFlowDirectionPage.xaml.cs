@@ -5,36 +5,36 @@ using Windows.UI.Xaml;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingViewWithRTLFlowDirectionPage : TestPage
+    public sealed partial class ScrollViewWithRTLFlowDirectionPage : TestPage
     {
-        public ScrollingViewWithRTLFlowDirectionPage()
+        public ScrollViewWithRTLFlowDirectionPage()
         {
             this.InitializeComponent();
         }
 
-        private void ChkScrollingViewFlowDirection_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewFlowDirection_Checked(object sender, RoutedEventArgs e)
         {
-            if (muxScrollingView != null && wuxScrollViewer != null)
+            if (muxScrollView != null && wuxScrollViewer != null)
             {
-                muxScrollingView.FlowDirection = FlowDirection.RightToLeft;
+                muxScrollView.FlowDirection = FlowDirection.RightToLeft;
                 wuxScrollViewer.FlowDirection = FlowDirection.RightToLeft;
             }
         }
 
-        private void ChkScrollingViewFlowDirection_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewFlowDirection_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (muxScrollingView != null && wuxScrollViewer != null)
+            if (muxScrollView != null && wuxScrollViewer != null)
             {
-                muxScrollingView.FlowDirection = FlowDirection.LeftToRight;
+                muxScrollView.FlowDirection = FlowDirection.LeftToRight;
                 wuxScrollViewer.FlowDirection = FlowDirection.LeftToRight;
             }
         }
 
-        private void ChkScrollingViewContentFlowDirection_Checked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewContentFlowDirection_Checked(object sender, RoutedEventArgs e)
         {
-            if (muxScrollingView != null && wuxScrollViewer != null)
+            if (muxScrollView != null && wuxScrollViewer != null)
             {
-                FrameworkElement content = muxScrollingView.Content as FrameworkElement;
+                FrameworkElement content = muxScrollView.Content as FrameworkElement;
 
                 if (content != null)
                 {
@@ -50,11 +50,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkScrollingViewContentFlowDirection_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkScrollViewContentFlowDirection_Unchecked(object sender, RoutedEventArgs e)
         {
-            if (muxScrollingView != null && wuxScrollViewer != null)
+            if (muxScrollView != null && wuxScrollViewer != null)
             {
-                FrameworkElement content = muxScrollingView.Content as FrameworkElement;
+                FrameworkElement content = muxScrollView.Content as FrameworkElement;
 
                 if (content != null)
                 {

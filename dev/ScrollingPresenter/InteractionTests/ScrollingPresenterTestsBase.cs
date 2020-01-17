@@ -23,10 +23,10 @@ using Microsoft.Windows.Apps.Test.Foundation.Waiters;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 {
-    // Base class for ScrollingPresenterTestsWithAutomationPeer and ScrollingPresenterTestsWithInputHelper with common private debugging facilities.
-    public class ScrollingPresenterTestsBase
+    // Base class for ScrollPresenterTestsWithAutomationPeer and ScrollPresenterTestsWithInputHelper with common private debugging facilities.
+    public class ScrollPresenterTestsBase
     {
-        // Sets the MUXControlsTestApp.ScrollingPresenterPage's txtMouseWheelScrollLines text to the provided value for custom mouse wheel scrolling.
+        // Sets the MUXControlsTestApp.ScrollPresenterPage's txtMouseWheelScrollLines text to the provided value for custom mouse wheel scrolling.
         protected void SetMouseWheelScrollLines(int mouseWheelScrollLines)
         {
             Log.Comment("Retrieving txtMouseWheelScrollLines");
@@ -40,26 +40,26 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         // outputDebugStringLevel can be "None", "Info" or "Verbose"
         protected void SetOutputDebugStringLevel(string outputDebugStringLevel)
         {
-            Log.Comment("Retrieving cmbScrollingPresenterOutputDebugStringLevel");
-            ComboBox cmbScrollingPresenterOutputDebugStringLevel = new ComboBox(FindElement.ByName("cmbScrollingPresenterOutputDebugStringLevel"));
-            Verify.IsNotNull(cmbScrollingPresenterOutputDebugStringLevel, "Verifying that cmbScrollingPresenterOutputDebugStringLevel was found");
+            Log.Comment("Retrieving cmbScrollPresenterOutputDebugStringLevel");
+            ComboBox cmbScrollPresenterOutputDebugStringLevel = new ComboBox(FindElement.ByName("cmbScrollPresenterOutputDebugStringLevel"));
+            Verify.IsNotNull(cmbScrollPresenterOutputDebugStringLevel, "Verifying that cmbScrollPresenterOutputDebugStringLevel was found");
 
             Log.Comment("Changing output-debug-string-level selection to " + outputDebugStringLevel);
-            cmbScrollingPresenterOutputDebugStringLevel.SelectItemByName(outputDebugStringLevel);
-            Log.Comment("Selection is now {0}", cmbScrollingPresenterOutputDebugStringLevel.Selection[0].Name);
+            cmbScrollPresenterOutputDebugStringLevel.SelectItemByName(outputDebugStringLevel);
+            Log.Comment("Selection is now {0}", cmbScrollPresenterOutputDebugStringLevel.Selection[0].Name);
         }
 
         protected void SetLoggingLevel(bool isPrivateLoggingEnabled)
         {
-            Log.Comment("Retrieving chkLogScrollingPresenterMessages");
-            CheckBox chkLogScrollingPresenterMessages = new CheckBox(FindElement.ById("chkLogScrollingPresenterMessages"));
-            Verify.IsNotNull(chkLogScrollingPresenterMessages, "Verifying that chkLogScrollingPresenterMessages was found");
+            Log.Comment("Retrieving chkLogScrollPresenterMessages");
+            CheckBox chkLogScrollPresenterMessages = new CheckBox(FindElement.ById("chkLogScrollPresenterMessages"));
+            Verify.IsNotNull(chkLogScrollPresenterMessages, "Verifying that chkLogScrollPresenterMessages was found");
 
-            if (isPrivateLoggingEnabled && chkLogScrollingPresenterMessages.ToggleState != ToggleState.On ||
-                !isPrivateLoggingEnabled && chkLogScrollingPresenterMessages.ToggleState != ToggleState.Off)
+            if (isPrivateLoggingEnabled && chkLogScrollPresenterMessages.ToggleState != ToggleState.On ||
+                !isPrivateLoggingEnabled && chkLogScrollPresenterMessages.ToggleState != ToggleState.Off)
             {
-                Log.Comment("Toggling chkLogScrollingPresenterMessages.IsChecked to " + isPrivateLoggingEnabled);
-                chkLogScrollingPresenterMessages.Toggle();
+                Log.Comment("Toggling chkLogScrollPresenterMessages.IsChecked to " + isPrivateLoggingEnabled);
+                chkLogScrollPresenterMessages.Toggle();
                 Wait.ForIdle();
             }
         }

@@ -4,32 +4,32 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenterTypeLogging.h"
-#include "ScrollingPresenterAutomationPeer.h"
+#include "ScrollPresenterTypeLogging.h"
+#include "ScrollPresenterAutomationPeer.h"
 #include "ResourceAccessor.h"
 #include <UIAutomationCore.h>
 #include <UIAutomationCoreApi.h>
 
-double ScrollingPresenterAutomationPeer::s_minimumPercent{ 0.0 };
-double ScrollingPresenterAutomationPeer::s_maximumPercent{ 100.0 };
-double ScrollingPresenterAutomationPeer::s_noScroll{ -1.0 };
+double ScrollPresenterAutomationPeer::s_minimumPercent{ 0.0 };
+double ScrollPresenterAutomationPeer::s_maximumPercent{ 100.0 };
+double ScrollPresenterAutomationPeer::s_noScroll{ -1.0 };
 
-#include "ScrollingPresenterAutomationPeer.properties.cpp"
+#include "ScrollPresenterAutomationPeer.properties.cpp"
 
-ScrollingPresenterAutomationPeer::ScrollingPresenterAutomationPeer(winrt::ScrollingPresenter const& owner)
+ScrollPresenterAutomationPeer::ScrollPresenterAutomationPeer(winrt::ScrollPresenter const& owner)
     : ReferenceTracker(owner)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);
+    SCROLLPRESENTER_TRACE_VERBOSE(owner, TRACE_MSG_METH_PTR, METH_NAME, this, owner);
 }
 
 // IAutomationPeerOverrides implementation
 
-winrt::AutomationControlType ScrollingPresenterAutomationPeer::GetAutomationControlTypeCore()
+winrt::AutomationControlType ScrollPresenterAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::Pane;
 }
 
-winrt::IInspectable ScrollingPresenterAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
+winrt::IInspectable ScrollPresenterAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
     return GetPatternCoreImpl(patternInterface);
 }
@@ -39,9 +39,9 @@ winrt::IInspectable ScrollingPresenterAutomationPeer::GetPatternCore(winrt::Patt
 // Request to scroll horizontally and vertically by the specified amount.
 // The ability to call this method and simultaneously scroll horizontally
 // and vertically provides simple panning support.
-void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount)
+void ScrollPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizontalAmount, winrt::ScrollAmount const& verticalAmount)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_STR_STR, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::ScrollAmountToString(horizontalAmount).c_str(), TypeLogging::ScrollAmountToString(verticalAmount).c_str());
 
     if (!IsEnabled())
@@ -57,22 +57,22 @@ void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizon
 
     if (!(scrollHorizontally && !isHorizontallyScrollable) && !(scrollVertically && !isVerticallyScrollable))
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter());
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter());
         bool isInvalidOperation = false;
 
         switch (horizontalAmount)
         {
         case winrt::ScrollAmount::LargeDecrement:
-            scrollingPresenter->PageLeft();
+            scrollPresenter->PageLeft();
             break;
         case winrt::ScrollAmount::LargeIncrement:
-            scrollingPresenter->PageRight();
+            scrollPresenter->PageRight();
             break;
         case winrt::ScrollAmount::SmallDecrement:
-            scrollingPresenter->LineLeft();
+            scrollPresenter->LineLeft();
             break;
         case winrt::ScrollAmount::SmallIncrement:
-            scrollingPresenter->LineRight();
+            scrollPresenter->LineRight();
             break;
         case winrt::ScrollAmount::NoAmount:
             break;
@@ -86,16 +86,16 @@ void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizon
             switch (verticalAmount)
             {
             case winrt::ScrollAmount::LargeDecrement:
-                scrollingPresenter->PageUp();
+                scrollPresenter->PageUp();
                 return;
             case winrt::ScrollAmount::SmallDecrement:
-                scrollingPresenter->LineUp();
+                scrollPresenter->LineUp();
                 return;
             case winrt::ScrollAmount::SmallIncrement:
-                scrollingPresenter->LineDown();
+                scrollPresenter->LineDown();
                 return;
             case winrt::ScrollAmount::LargeIncrement:
-                scrollingPresenter->PageDown();
+                scrollPresenter->PageDown();
                 return;
             case winrt::ScrollAmount::NoAmount:
                 return;
@@ -110,9 +110,9 @@ void ScrollingPresenterAutomationPeer::Scroll(winrt::ScrollAmount const& horizon
 // Passing in the value of "-1", represented by the constant "NoScroll", will indicate that scrolling
 // in that direction should be ignored.
 // The ability to call this method and simultaneously scroll horizontally and vertically provides simple panning support.
-void ScrollingPresenterAutomationPeer::SetScrollPercent(double horizontalPercent, double verticalPercent)
+void ScrollPresenterAutomationPeer::SetScrollPercent(double horizontalPercent, double verticalPercent)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalPercent, verticalPercent);
+    SCROLLPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH_DBL_DBL, METH_NAME, this, horizontalPercent, verticalPercent);
 
     if (!IsEnabled())
     {
@@ -141,38 +141,38 @@ void ScrollingPresenterAutomationPeer::SetScrollPercent(double horizontalPercent
         throw winrt::hresult_error(E_INVALIDARG);
     }
 
-    auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter());
+    auto scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter());
 
     if (scrollHorizontally && !scrollVertically)
     {
-        double maxOffset = scrollingPresenter->ScrollableWidth();
+        double maxOffset = scrollPresenter->ScrollableWidth();
 
-        scrollingPresenter->ScrollToHorizontalOffset(maxOffset * horizontalPercent / s_maximumPercent);
+        scrollPresenter->ScrollToHorizontalOffset(maxOffset * horizontalPercent / s_maximumPercent);
     }
     else if (scrollVertically && !scrollHorizontally)
     {
-        double maxOffset = scrollingPresenter->ScrollableHeight();
+        double maxOffset = scrollPresenter->ScrollableHeight();
 
-        scrollingPresenter->ScrollToVerticalOffset(maxOffset * verticalPercent / s_maximumPercent);
+        scrollPresenter->ScrollToVerticalOffset(maxOffset * verticalPercent / s_maximumPercent);
     }
     else
     {
-        double maxHorizontalOffset = scrollingPresenter->ScrollableWidth();
-        double maxVerticalOffset = scrollingPresenter->ScrollableHeight();
+        double maxHorizontalOffset = scrollPresenter->ScrollableWidth();
+        double maxVerticalOffset = scrollPresenter->ScrollableHeight();
 
-        scrollingPresenter->ScrollToOffsets(
+        scrollPresenter->ScrollToOffsets(
             maxHorizontalOffset * horizontalPercent / s_maximumPercent, maxVerticalOffset * verticalPercent / s_maximumPercent);
     }
 }
 
-double ScrollingPresenterAutomationPeer::HorizontalScrollPercent()
+double ScrollPresenterAutomationPeer::HorizontalScrollPercent()
 {
     MUX_ASSERT(m_horizontalScrollPercent == get_HorizontalScrollPercentImpl());
 
     return m_horizontalScrollPercent;
 }
 
-double ScrollingPresenterAutomationPeer::VerticalScrollPercent()
+double ScrollPresenterAutomationPeer::VerticalScrollPercent()
 {
     MUX_ASSERT(m_verticalScrollPercent == get_VerticalScrollPercentImpl());
 
@@ -180,7 +180,7 @@ double ScrollingPresenterAutomationPeer::VerticalScrollPercent()
 }
 
 // Returns the horizontal percentage of the entire extent that is currently viewed.
-double ScrollingPresenterAutomationPeer::HorizontalViewSize()
+double ScrollPresenterAutomationPeer::HorizontalViewSize()
 {
     MUX_ASSERT(m_horizontalViewSize == get_HorizontalViewSizeImpl());
 
@@ -188,21 +188,21 @@ double ScrollingPresenterAutomationPeer::HorizontalViewSize()
 }
 
 // Returns the vertical percentage of the entire extent that is currently viewed.
-double ScrollingPresenterAutomationPeer::VerticalViewSize()
+double ScrollPresenterAutomationPeer::VerticalViewSize()
 {
     MUX_ASSERT(m_verticalViewSize == get_VerticalViewSizeImpl());
 
     return m_verticalViewSize;
 }
 
-bool ScrollingPresenterAutomationPeer::HorizontallyScrollable()
+bool ScrollPresenterAutomationPeer::HorizontallyScrollable()
 {
     MUX_ASSERT(m_horizontallyScrollable == get_HorizontallyScrollableImpl());
     
     return m_horizontallyScrollable;
 }
 
-bool ScrollingPresenterAutomationPeer::VerticallyScrollable()
+bool ScrollPresenterAutomationPeer::VerticallyScrollable()
 {
     MUX_ASSERT(m_verticallyScrollable == get_VerticallyScrollableImpl());
 
@@ -210,9 +210,9 @@ bool ScrollingPresenterAutomationPeer::VerticallyScrollable()
 }
 
 // Raise relevant Scroll Pattern events for UIAutomation clients.
-void ScrollingPresenterAutomationPeer::UpdateScrollPatternProperties()
+void ScrollPresenterAutomationPeer::UpdateScrollPatternProperties()
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(Owner(), TRACE_MSG_METH, METH_NAME, this);
 
     double newHorizontalScrollPercent = get_HorizontalScrollPercentImpl();
     double newVerticalScrollPercent = get_VerticalScrollPercentImpl();
@@ -282,61 +282,61 @@ void ScrollingPresenterAutomationPeer::UpdateScrollPatternProperties()
     }
 }
 
-double ScrollingPresenterAutomationPeer::get_HorizontalScrollPercentImpl()
+double ScrollPresenterAutomationPeer::get_HorizontalScrollPercentImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
     return GetScrollPercent(
-        scrollingPresenter->GetZoomedExtentWidth(),
-        scrollingPresenter->ViewportWidth(),
-        GetScrollingPresenter().HorizontalOffset());
+        scrollPresenter->GetZoomedExtentWidth(),
+        scrollPresenter->ViewportWidth(),
+        GetScrollPresenter().HorizontalOffset());
 }
 
-double ScrollingPresenterAutomationPeer::get_VerticalScrollPercentImpl()
+double ScrollPresenterAutomationPeer::get_VerticalScrollPercentImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
     return GetScrollPercent(
-        scrollingPresenter->GetZoomedExtentHeight(),
-        scrollingPresenter->ViewportHeight(),
-        GetScrollingPresenter().VerticalOffset());
+        scrollPresenter->GetZoomedExtentHeight(),
+        scrollPresenter->ViewportHeight(),
+        GetScrollPresenter().VerticalOffset());
 }
 
 // Returns the horizontal percentage of the entire extent that is currently viewed.
-double ScrollingPresenterAutomationPeer::get_HorizontalViewSizeImpl()
+double ScrollPresenterAutomationPeer::get_HorizontalViewSizeImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
     return GetViewPercent(
-        scrollingPresenter->GetZoomedExtentWidth(),
-        scrollingPresenter->ViewportWidth());
+        scrollPresenter->GetZoomedExtentWidth(),
+        scrollPresenter->ViewportWidth());
 }
 
 // Returns the vertical percentage of the entire extent that is currently viewed.
-double ScrollingPresenterAutomationPeer::get_VerticalViewSizeImpl()
+double ScrollPresenterAutomationPeer::get_VerticalViewSizeImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
     return GetViewPercent(
-        scrollingPresenter->GetZoomedExtentHeight(),
-        scrollingPresenter->ViewportHeight());
+        scrollPresenter->GetZoomedExtentHeight(),
+        scrollPresenter->ViewportHeight());
 }
 
-bool ScrollingPresenterAutomationPeer::get_HorizontallyScrollableImpl()
+bool ScrollPresenterAutomationPeer::get_HorizontallyScrollableImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return scrollingPresenter->ScrollableWidth() > 0.0;
+    return scrollPresenter->ScrollableWidth() > 0.0;
 }
 
-bool ScrollingPresenterAutomationPeer::get_VerticallyScrollableImpl()
+bool ScrollPresenterAutomationPeer::get_VerticallyScrollableImpl()
 {
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(GetScrollingPresenter())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(GetScrollPresenter())->get_strong();
 
-    return scrollingPresenter->ScrollableHeight() > 0.0;
+    return scrollPresenter->ScrollableHeight() > 0.0;
 }
 
-winrt::IInspectable ScrollingPresenterAutomationPeer::GetPatternCoreImpl(winrt::PatternInterface patternInterface)
+winrt::IInspectable ScrollPresenterAutomationPeer::GetPatternCoreImpl(winrt::PatternInterface patternInterface)
 {
     if (patternInterface == winrt::PatternInterface::Scroll)
     {
@@ -346,13 +346,13 @@ winrt::IInspectable ScrollingPresenterAutomationPeer::GetPatternCoreImpl(winrt::
     return __super::GetPatternCore(patternInterface);
 }
 
-winrt::ScrollingPresenter ScrollingPresenterAutomationPeer::GetScrollingPresenter()
+winrt::ScrollPresenter ScrollPresenterAutomationPeer::GetScrollPresenter()
 {
     winrt::UIElement owner = Owner();
-    return owner.as<winrt::ScrollingPresenter>();
+    return owner.as<winrt::ScrollPresenter>();
 }
 
-double ScrollingPresenterAutomationPeer::GetViewPercent(double zoomedExtent, double viewport)
+double ScrollPresenterAutomationPeer::GetViewPercent(double zoomedExtent, double viewport)
 {
     MUX_ASSERT(zoomedExtent >= 0.0);
     MUX_ASSERT(viewport >= 0.0);
@@ -365,7 +365,7 @@ double ScrollingPresenterAutomationPeer::GetViewPercent(double zoomedExtent, dou
     return std::min(s_maximumPercent, (viewport / zoomedExtent * s_maximumPercent));
 }
 
-double ScrollingPresenterAutomationPeer::GetScrollPercent(double zoomedExtent, double viewport, double offset)
+double ScrollPresenterAutomationPeer::GetScrollPercent(double zoomedExtent, double viewport, double offset)
 {
     MUX_ASSERT(zoomedExtent >= 0.0);
     MUX_ASSERT(viewport >= 0.0);

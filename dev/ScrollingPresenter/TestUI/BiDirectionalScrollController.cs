@@ -946,14 +946,14 @@ namespace MUXControlsTestApp.Utilities
             targetThumbVerticalOffset = Math.Min(targetThumbVerticalOffset, maxThumbOffset.Y);
 
             Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
-            Point targetScrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
+            Point targetScrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-            int viewChangeId = RaiseScrollToRequested(targetScrollingPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
+            int viewChangeId = RaiseScrollToRequested(targetScrollPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
             if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
             {
                 operations.Add(
                     viewChangeId, 
-                    new OperationInfo(viewChangeId, new Point(targetScrollingPresenterOffset.X - HorizontalThumbOffset, targetScrollingPresenterOffset.Y - VerticalThumbOffset), targetScrollingPresenterOffset));
+                    new OperationInfo(viewChangeId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
             }
         }
 
@@ -972,10 +972,10 @@ namespace MUXControlsTestApp.Utilities
                 Point targetThumbOffset = new Point(
                     preManipulationThumbOffset.X + e.Cumulative.Translation.X,
                     preManipulationThumbOffset.Y + e.Cumulative.Translation.Y);
-                Point scrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
+                Point scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int viewChangeId = RaiseScrollToRequested(
-                    scrollingPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -1060,9 +1060,9 @@ namespace MUXControlsTestApp.Utilities
             verticalScrollController.UpdateInteractionElementScrollMultiplier();
         }
 
-        private Point ScrollingPresenterOffsetFromThumbOffset(Point thumbOffset)
+        private Point ScrollPresenterOffsetFromThumbOffset(Point thumbOffset)
         {
-            Point scrollingPresenterOffset = new Point();
+            Point scrollPresenterOffset = new Point();
 
             if (Thumb != null)
             {
@@ -1075,13 +1075,13 @@ namespace MUXControlsTestApp.Utilities
                 }
                 if (parentSize.Width != thumbSize.Width || parentSize.Height != thumbSize.Height)
                 {
-                    scrollingPresenterOffset = new Point(
+                    scrollPresenterOffset = new Point(
                         parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) / (parentSize.Width - thumbSize.Width)),
                         parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) / (parentSize.Height - thumbSize.Height)));
                 }
             }
 
-            return scrollingPresenterOffset;
+            return scrollPresenterOffset;
         }
 
         private Point MaxThumbOffset()

@@ -4,18 +4,18 @@
 #include "pch.h"
 #include "common.h"
 #include "InteractionTrackerOwner.h"
-#include "ScrollingPresenter.h"
+#include "ScrollPresenter.h"
 
-InteractionTrackerOwner::InteractionTrackerOwner(const winrt::ScrollingPresenter& scrollingPresenter)
+InteractionTrackerOwner::InteractionTrackerOwner(const winrt::ScrollPresenter& scrollPresenter)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(scrollingPresenter, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
+    SCROLLPRESENTER_TRACE_VERBOSE(scrollPresenter, TRACE_MSG_METH_PTR, METH_NAME, this, scrollPresenter);
 
-    m_owner = scrollingPresenter;
+    m_owner = scrollPresenter;
 }
 
 InteractionTrackerOwner::~InteractionTrackerOwner()
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     m_owner = nullptr;
 }
@@ -31,10 +31,10 @@ void InteractionTrackerOwner::ValuesChanged(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->ValuesChanged(args);
+            scrollPresenter->ValuesChanged(args);
         }
     }
 }
@@ -49,10 +49,10 @@ void InteractionTrackerOwner::RequestIgnored(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->RequestIgnored(args);
+            scrollPresenter->RequestIgnored(args);
         }
     }
 }
@@ -67,10 +67,10 @@ void InteractionTrackerOwner::InteractingStateEntered(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->InteractingStateEntered(args);
+            scrollPresenter->InteractingStateEntered(args);
         }
     }
 }
@@ -85,10 +85,10 @@ void InteractionTrackerOwner::InertiaStateEntered(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->InertiaStateEntered(args);
+            scrollPresenter->InertiaStateEntered(args);
         }
     }
 }
@@ -103,10 +103,10 @@ void InteractionTrackerOwner::IdleStateEntered(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->IdleStateEntered(args);
+            scrollPresenter->IdleStateEntered(args);
         }
     }
 }
@@ -121,10 +121,10 @@ void InteractionTrackerOwner::CustomAnimationStateEntered(
 
     if (auto rawOwner = m_owner.get())
     {
-        auto scrollingPresenter = winrt::get_self<ScrollingPresenter>(rawOwner);
-        if (scrollingPresenter)
+        auto scrollPresenter = winrt::get_self<ScrollPresenter>(rawOwner);
+        if (scrollPresenter)
         {
-            scrollingPresenter->CustomAnimationStateEntered(args);
+            scrollPresenter->CustomAnimationStateEntered(args);
         }
     }
 }

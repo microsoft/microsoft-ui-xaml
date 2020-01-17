@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScrollingPresenter.h"
+#include "ScrollPresenter.h"
 #include "ScrollingScrollCompletedEventArgs.g.h"
 
 class ScrollingScrollCompletedEventArgs :
@@ -12,22 +12,22 @@ class ScrollingScrollCompletedEventArgs :
 public:
     ScrollingScrollCompletedEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ScrollingScrollCompletedEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IScrollingScrollCompletedEventArgs overrides
     winrt::ScrollingScrollInfo ScrollInfo();
-    ScrollingPresenterViewChangeResult Result();
+    ScrollPresenterViewChangeResult Result();
 
     void OffsetsChangeId(int32_t offsetsChangeId);
-    void Result(ScrollingPresenterViewChangeResult result);
+    void Result(ScrollPresenterViewChangeResult result);
 
 private:
     int32_t m_offsetsChangeId{ -1 };
-    ScrollingPresenterViewChangeResult m_result{ ScrollingPresenterViewChangeResult::Completed };
+    ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

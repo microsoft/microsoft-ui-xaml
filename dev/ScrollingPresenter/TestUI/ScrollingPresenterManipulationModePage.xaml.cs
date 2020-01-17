@@ -7,29 +7,29 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterManipulationModePage : TestPage
+    public sealed partial class ScrollPresenterManipulationModePage : TestPage
     {
         private List<string> fullLogs = new List<string>();
 
-        public ScrollingPresenterManipulationModePage()
+        public ScrollPresenterManipulationModePage()
         {
             this.InitializeComponent();
 
-            scrollingPresenter0.StateChanged += ScrollingPresenter_StateChanged;
-            scrollingPresenter1.StateChanged += ScrollingPresenter_StateChanged;
+            scrollPresenter0.StateChanged += ScrollPresenter_StateChanged;
+            scrollPresenter1.StateChanged += ScrollPresenter_StateChanged;
         }
-        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            if (sender == scrollingPresenter0)
-                txtScrollingPresenter0State.Text = "scrollingPresenter0 " + scrollingPresenter0.State.ToString();
-            else if (sender == scrollingPresenter1)
-                txtScrollingPresenter1State.Text = "scrollingPresenter1 " + scrollingPresenter1.State.ToString();
+            if (sender == scrollPresenter0)
+                txtScrollPresenter0State.Text = "scrollPresenter0 " + scrollPresenter0.State.ToString();
+            else if (sender == scrollPresenter1)
+                txtScrollPresenter1State.Text = "scrollPresenter1 " + scrollPresenter1.State.ToString();
         }
 
         private void CmbManipulationMode_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -40,13 +40,13 @@ namespace MUXControlsTestApp
             switch (cmb.Name)
             {
                 case "cmbManipulationModeS1":
-                    scrollingPresenter1.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
+                    scrollPresenter1.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
                     break;
                 case "cmbManipulationModeSP1":
                     stackPanel1.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
                     break;
                 case "cmbManipulationModeS0":
-                    scrollingPresenter0.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
+                    scrollPresenter0.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
                     break;
                 case "cmbManipulationModeSP0":
                     stackPanel0.ManipulationMode = ManipulationModeFromIndex(cmb.SelectedIndex);
@@ -68,18 +68,18 @@ namespace MUXControlsTestApp
             return ManipulationModes.All;
         }
 
-        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //Turn on info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //Turn on info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //Turn off info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //Turn off info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }

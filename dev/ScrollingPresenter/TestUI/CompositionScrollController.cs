@@ -771,10 +771,10 @@ namespace MUXControlsTestApp.Utilities
             if (isThumbDragged)
             {
                 double targetThumbOffset = preManipulationThumbOffset + (Orientation == Orientation.Horizontal ? e.Cumulative.Translation.X : e.Cumulative.Translation.Y);
-                double scrollingPresenterOffset = ScrollingPresenterOffsetFromThumbOffset(targetThumbOffset);
+                double scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
                 int offsetChangeId = RaiseScrollToRequested(
-                    scrollingPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
+                    scrollPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
 
@@ -1147,9 +1147,9 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private double ScrollingPresenterOffsetFromThumbOffset(double thumbOffset)
+        private double ScrollPresenterOffsetFromThumbOffset(double thumbOffset)
         {
-            double scrollingPresenterOffset = 0.0;
+            double scrollPresenterOffset = 0.0;
 
             if (interactionFrameworkElement != null)
             {
@@ -1165,16 +1165,16 @@ namespace MUXControlsTestApp.Utilities
                 {
                     if (IsThumbPositionMirrored)
                     {
-                        scrollingPresenterOffset = (parentDim - interactionFrameworkElementDim - thumbOffset) * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
+                        scrollPresenterOffset = (parentDim - interactionFrameworkElementDim - thumbOffset) * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
                     }
                     else
                     {
-                        scrollingPresenterOffset = thumbOffset * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
+                        scrollPresenterOffset = thumbOffset * (maxOffset - minOffset) / (parentDim - interactionFrameworkElementDim);
                     }
                 }
             }
 
-            return scrollingPresenterOffset;
+            return scrollPresenterOffset;
         }
 
         private void CompositionScrollController_SizeChanged(object sender, SizeChangedEventArgs e)

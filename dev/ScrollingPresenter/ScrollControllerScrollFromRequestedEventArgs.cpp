@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenter.h"
+#include "ScrollPresenter.h"
 #include "ScrollControllerScrollFromRequestedEventArgs.h"
 
 #include "ScrollControllerScrollFromRequestedEventArgs.properties.cpp"
@@ -13,7 +13,7 @@ ScrollControllerScrollFromRequestedEventArgs::ScrollControllerScrollFromRequeste
     float offsetVelocity,
     winrt::IReference<float> inertiaDecayRate)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloatToString(inertiaDecayRate).c_str(), offsetVelocity);
 
     m_offsetVelocity = offsetVelocity;
@@ -37,7 +37,7 @@ winrt::ScrollingScrollInfo ScrollControllerScrollFromRequestedEventArgs::ScrollI
 
 void ScrollControllerScrollFromRequestedEventArgs::ScrollInfo(winrt::ScrollingScrollInfo scrollInfo)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
 
     m_scrollInfo = scrollInfo;
 }

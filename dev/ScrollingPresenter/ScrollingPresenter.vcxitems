@@ -4,22 +4,22 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{359544AA-A8CD-715C-CC36-F770E6E81AA0}</ItemsProjectGuid>
-    <ItemsProjectName>ScrollingPresenter</ItemsProjectName>
+    <ItemsProjectName>ScrollPresenter</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);SCROLLINGPRESENTER_INCLUDED</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SCROLLPRESENTER_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingPresenter.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingPresenterPrimitives.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingPresenterAutomationPeer.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollPresenter.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollPresenterPrimitives.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.h" />
@@ -30,12 +30,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenter.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenter.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingBringingIntoViewEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterSnapPoint.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTrace.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterSnapPoint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTrace.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SnapPointWrapper.h" />
@@ -48,36 +48,36 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChange.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ZoomFactorChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingZoomOptions.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksFactory.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksAnchorEvaluatedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingPresenterTypeLogging.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterTypeLogging.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollingPresenter.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenter.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenter.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingBringingIntoViewEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollAnimationStartingEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterPrivate.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterAnchoring.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterPrivate.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterAnchoring.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomCompletedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomOptions.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksFactory.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksAnchorEvaluatedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingPresenterTypeLogging.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksAnchorEvaluatedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTypeLogging.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerAsyncOperation.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)InteractionTrackerOwner.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)OffsetsChange.cpp" />

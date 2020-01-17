@@ -4,8 +4,8 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenterTypeLogging.h"
-#include "ScrollingPresenter.h"
+#include "ScrollPresenterTypeLogging.h"
+#include "ScrollPresenter.h"
 #include "ScrollControllerScrollToRequestedEventArgs.h"
 
 #include "ScrollControllerScrollToRequestedEventArgs.properties.cpp"
@@ -14,7 +14,7 @@ ScrollControllerScrollToRequestedEventArgs::ScrollControllerScrollToRequestedEve
     double offset,
     winrt::ScrollingScrollOptions const & options)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_DBL, METH_NAME, this,
         TypeLogging::ScrollOptionsToString(options).c_str(), offset);
 
     m_offset = offset;
@@ -38,7 +38,7 @@ winrt::ScrollingScrollInfo ScrollControllerScrollToRequestedEventArgs::ScrollInf
 
 void ScrollControllerScrollToRequestedEventArgs::ScrollInfo(winrt::ScrollingScrollInfo scrollInfo)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
 
     m_scrollInfo = scrollInfo;
 }

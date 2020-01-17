@@ -3,17 +3,17 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs.h"
+#include "ScrollPresenterTestHooksInteractionSourcesChangedEventArgs.h"
 
-ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs::ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs(
+ScrollPresenterTestHooksInteractionSourcesChangedEventArgs::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs(
     const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
 {
     m_interactionSources = interactionSources;
 }
 
-#pragma region IScrollingPresenterTestHooksInteractionSourcesChangedEventArgs
+#pragma region IScrollPresenterTestHooksInteractionSourcesChangedEventArgs
 
-winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs::InteractionSources()
+winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection ScrollPresenterTestHooksInteractionSourcesChangedEventArgs::InteractionSources()
 {
     return m_interactionSources;
 }

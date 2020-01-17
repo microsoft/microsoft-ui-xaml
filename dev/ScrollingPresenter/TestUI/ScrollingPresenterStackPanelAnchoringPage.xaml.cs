@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
@@ -22,15 +22,15 @@ using ScrollingAnchorRequestedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingAn
 using ScrollingScrollAnimationStartingEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollAnimationStartingEventArgs;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 
-using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
-using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
-using ScrollingPresenterTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooksAnchorEvaluatedEventArgs;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
+using ScrollPresenterTestHooksAnchorEvaluatedEventArgs = Microsoft.UI.Private.Controls.ScrollPresenterTestHooksAnchorEvaluatedEventArgs;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterStackPanelAnchoringPage : TestPage
+    public sealed partial class ScrollPresenterStackPanelAnchoringPage : TestPage
     {
         private DispatcherTimer timer = new DispatcherTimer();
         private Object asyncEventReportingLock = new Object();
@@ -43,15 +43,15 @@ namespace MUXControlsTestApp
         private SolidColorBrush blanchedAlmondBrush = new SolidColorBrush(Colors.BlanchedAlmond);
         private SolidColorBrush orangeBrush = new SolidColorBrush(Colors.Orange);
         private int operationCount = 0;
-        private double lastScrollingPresenterOffset = 0.0;
+        private double lastScrollPresenterOffset = 0.0;
 
-        public ScrollingPresenterStackPanelAnchoringPage()
+        public ScrollPresenterStackPanelAnchoringPage()
         {
             InitializeComponent();
 
-            Loaded += ScrollingPresenterStackPanelAnchoringPage_Loaded;
+            Loaded += ScrollPresenterStackPanelAnchoringPage_Loaded;
 
-            scrollingPresenter.SizeChanged += ScrollingPresenter_SizeChanged;
+            scrollPresenter.SizeChanged += ScrollPresenter_SizeChanged;
 
             timer.Interval = new TimeSpan(0, 0, 2 /*sec*/);
             timer.Tick += Timer_Tick;
@@ -61,7 +61,7 @@ namespace MUXControlsTestApp
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
 
             UpdateRaiseAnchorNotifications(raiseAnchorNotifications: false);
@@ -69,13 +69,13 @@ namespace MUXControlsTestApp
             base.OnNavigatedFrom(e);
         }
 
-        private void ScrollingPresenterStackPanelAnchoringPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollPresenterStackPanelAnchoringPage_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (chkLogScrollingPresenterMessages.IsChecked == true)
+                if (chkLogScrollPresenterMessages.IsChecked == true)
                 {
-                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+                    MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
                     MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
                 }
 
@@ -84,27 +84,27 @@ namespace MUXControlsTestApp
                 UpdateHorizontalAnchorRatio();
                 UpdateVerticalAnchorRatio();
 
-                if (chkLogScrollingPresenterEvents.IsChecked == true)
+                if (chkLogScrollPresenterEvents.IsChecked == true)
                 {
-                    scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
-                    scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+                    scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
+                    scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
                 }
-                scrollingPresenter.AnchorRequested += ScrollingPresenter_AnchorRequested;
-                scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
-                scrollingPresenter.ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-                scrollingPresenter.ScrollAnimationStarting += ScrollingPresenter_ScrollAnimationStarting;
+                scrollPresenter.AnchorRequested += ScrollPresenter_AnchorRequested;
+                scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
+                scrollPresenter.ScrollCompleted += ScrollPresenter_ScrollCompleted;
+                scrollPresenter.ScrollAnimationStarting += ScrollPresenter_ScrollAnimationStarting;
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void ScrollingPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ScrollPresenter_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            cnsAnchorPoint.Width = scrollingPresenter.Width;
-            cnsAnchorPoint.Height = scrollingPresenter.Height;
+            cnsAnchorPoint.Width = scrollPresenter.Width;
+            cnsAnchorPoint.Height = scrollPresenter.Height;
         }
 
         private void Timer_Tick(object sender, object e)
@@ -136,7 +136,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -163,7 +163,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -190,7 +190,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -217,7 +217,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -244,7 +244,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -271,7 +271,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -298,7 +298,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -340,7 +340,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -382,7 +382,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -519,61 +519,61 @@ namespace MUXControlsTestApp
             operationCount++;
         }
 
-        private void ScrollingPresenter_ExtentChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ExtentChanged(ScrollPresenter sender, object args)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
                 AppendAsyncEventMessage("ExtentChanged ExtentWidth=" + sender.ExtentWidth.ToString() + ", ExtentHeight=" + sender.ExtentHeight.ToString());
             }
         }
 
-        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
                 AppendAsyncEventMessage("StateChanged " + sender.State.ToString());
             }
         }
 
-        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
                 AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset.ToString() + ", S=" + sender.ZoomFactor.ToString());
             }
 
-            double newScrollingPresenterOffset = stackPanel.Orientation == Orientation.Horizontal ? scrollingPresenter.HorizontalOffset : scrollingPresenter.VerticalOffset;
+            double newScrollPresenterOffset = stackPanel.Orientation == Orientation.Horizontal ? scrollPresenter.HorizontalOffset : scrollPresenter.VerticalOffset;
 
             if (lstTriggeredOperations.Count > 0 && 
-                ((lastScrollingPresenterOffset <= 350.0 && newScrollingPresenterOffset > 350.0) || (lastScrollingPresenterOffset >= 350.0 && newScrollingPresenterOffset < 350.0)))
+                ((lastScrollPresenterOffset <= 350.0 && newScrollPresenterOffset > 350.0) || (lastScrollPresenterOffset >= 350.0 && newScrollPresenterOffset < 350.0)))
             {
                 ExecuteTriggerableOperations();
             }
             else
             {
-                scrollingPresenter.InvalidateArrange();
+                scrollPresenter.InvalidateArrange();
             }
 
-            lastScrollingPresenterOffset = newScrollingPresenterOffset;
+            lastScrollPresenterOffset = newScrollPresenterOffset;
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+        private void ScrollPresenter_ScrollCompleted(ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
-                ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
+                ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
                 AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
             }
         }
 
-        private void ScrollingPresenter_AnchorRequested(ScrollingPresenter sender, ScrollingAnchorRequestedEventArgs args)
+        private void ScrollPresenter_AnchorRequested(ScrollPresenter sender, ScrollingAnchorRequestedEventArgs args)
         {
             try
             {
                 IList<UIElement> anchorCandidates = args.AnchorCandidates;
 
-                if (chkLogScrollingPresenterEvents.IsChecked == true)
+                if (chkLogScrollPresenterEvents.IsChecked == true)
                 {
                     AppendAsyncEventMessage("AnchorRequested anchor=" + (args.AnchorElement == null ? "null" : "non-null") + ", count=" + anchorCandidates.Count);
                 }
@@ -596,7 +596,7 @@ namespace MUXControlsTestApp
                 BtnSetAnchorElement_Click(null, null);
 
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -609,12 +609,12 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollingPresenter.HorizontalAnchorRatio = Convert.ToDouble(txtHorizontalAnchorRatio.Text);
+                scrollPresenter.HorizontalAnchorRatio = Convert.ToDouble(txtHorizontalAnchorRatio.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -627,48 +627,48 @@ namespace MUXControlsTestApp
         {
             try
             {
-                scrollingPresenter.VerticalAnchorRatio = Convert.ToDouble(txtVerticalAnchorRatio.Text);
+                scrollPresenter.VerticalAnchorRatio = Convert.ToDouble(txtVerticalAnchorRatio.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetWidth_Click(object sender, RoutedEventArgs e)
         {
-            txtWidth.Text = scrollingPresenter.Width.ToString();
+            txtWidth.Text = scrollPresenter.Width.ToString();
         }
 
         private void BtnSetWidth_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scrollingPresenter.Width = Convert.ToDouble(txtWidth.Text);
+                scrollPresenter.Width = Convert.ToDouble(txtWidth.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
         private void BtnGetHeight_Click(object sender, RoutedEventArgs e)
         {
-            txtHeight.Text = scrollingPresenter.Height.ToString();
+            txtHeight.Text = scrollPresenter.Height.ToString();
         }
 
         private void BtnSetHeight_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                scrollingPresenter.Height = Convert.ToDouble(txtHeight.Text);
+                scrollPresenter.Height = Convert.ToDouble(txtHeight.Text);
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -683,10 +683,10 @@ namespace MUXControlsTestApp
                     cmbAnchorElement.SelectedIndex = 0;
                     asyncEventMessage += "null";
                 }
-                else if (anchorElement == scrollingPresenter)
+                else if (anchorElement == scrollPresenter)
                 {
                     cmbAnchorElement.SelectedIndex = 1;
-                    asyncEventMessage += "scrollingPresenter";
+                    asyncEventMessage += "scrollPresenter";
                 }
                 else if (anchorElement == tblCollapsedAnchorElement)
                 {
@@ -708,7 +708,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -722,7 +722,7 @@ namespace MUXControlsTestApp
                         anchorElement = null;
                         break;
                     case 1:
-                        anchorElement = scrollingPresenter;
+                        anchorElement = scrollPresenter;
                         break;
                     case 2:
                         anchorElement = tblCollapsedAnchorElement;
@@ -735,12 +735,12 @@ namespace MUXControlsTestApp
                         break;
                 }
 
-                scrollingPresenter.InvalidateArrange();
+                scrollPresenter.InvalidateArrange();
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -752,17 +752,17 @@ namespace MUXControlsTestApp
 
         private void UpdateHorizontalAnchorRatio()
         {
-            txtHorizontalAnchorRatio.Text = scrollingPresenter.HorizontalAnchorRatio.ToString();
+            txtHorizontalAnchorRatio.Text = scrollPresenter.HorizontalAnchorRatio.ToString();
         }
 
         private void UpdateVerticalAnchorRatio()
         {
-            txtVerticalAnchorRatio.Text = scrollingPresenter.VerticalAnchorRatio.ToString();
+            txtVerticalAnchorRatio.Text = scrollPresenter.VerticalAnchorRatio.ToString();
         }
 
         private void BtnInvalidateArrange_Click(object sender, RoutedEventArgs e)
         {
-            scrollingPresenter.InvalidateArrange();
+            scrollPresenter.InvalidateArrange();
         }
 
         private void BtnScrollTo_Click(object sender, RoutedEventArgs e)
@@ -771,7 +771,7 @@ namespace MUXControlsTestApp
             {
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollingPresenter.ScrollTo(
+                int viewChangeId = scrollPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
                     new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
@@ -780,11 +780,11 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void ScrollingPresenter_ScrollAnimationStarting(ScrollingPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
+        private void ScrollPresenter_ScrollAnimationStarting(ScrollPresenter sender, ScrollingScrollAnimationStartingEventArgs args)
         {
             try
             {
@@ -802,7 +802,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -821,7 +821,7 @@ namespace MUXControlsTestApp
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollingPresenter.ScrollFrom(
+                int viewChangeId = scrollPresenter.ScrollFrom(
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
@@ -831,13 +831,13 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
-        private void BtnClearScrollingPresenterEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnClearScrollPresenterEvents_Click(object sender, RoutedEventArgs e)
         {
-            lstScrollingPresenterEvents.Items.Clear();
+            lstScrollPresenterEvents.Items.Clear();
         }
 
         private void BtnClearExceptionReport_Click(object sender, RoutedEventArgs e)
@@ -845,15 +845,15 @@ namespace MUXControlsTestApp
             txtExceptionReport.Text = string.Empty;
         }
 
-        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
@@ -861,18 +861,18 @@ namespace MUXControlsTestApp
         {
             if (raiseAnchorNotifications)
             {
-                if (!ScrollingPresenterTestHooks.AreAnchorNotificationsRaised)
+                if (!ScrollPresenterTestHooks.AreAnchorNotificationsRaised)
                 {
-                    ScrollingPresenterTestHooks.AreAnchorNotificationsRaised = true;
-                    ScrollingPresenterTestHooks.AnchorEvaluated += ScrollingPresenterTestHooks_AnchorEvaluated;
+                    ScrollPresenterTestHooks.AreAnchorNotificationsRaised = true;
+                    ScrollPresenterTestHooks.AnchorEvaluated += ScrollPresenterTestHooks_AnchorEvaluated;
                 }
             }
             else
             {
-                if (ScrollingPresenterTestHooks.AreAnchorNotificationsRaised)
+                if (ScrollPresenterTestHooks.AreAnchorNotificationsRaised)
                 {
-                    ScrollingPresenterTestHooks.AreAnchorNotificationsRaised = false;
-                    ScrollingPresenterTestHooks.AnchorEvaluated -= ScrollingPresenterTestHooks_AnchorEvaluated;
+                    ScrollPresenterTestHooks.AreAnchorNotificationsRaised = false;
+                    ScrollPresenterTestHooks.AnchorEvaluated -= ScrollPresenterTestHooks_AnchorEvaluated;
                 }
 
                 if (currentAnchor != null)
@@ -887,13 +887,13 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Checked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Horizontal;
-            scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
-            scrollingPresenter.Width = 600;
-            scrollingPresenter.Height = 300;
+            scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
+            scrollPresenter.Width = 600;
+            scrollPresenter.Height = 300;
             cnsAnchorPoint.Width = 600;
             cnsAnchorPoint.Height = 300;
-            Grid.SetRow(scrollingPresenter, 0);
-            Grid.SetColumnSpan(scrollingPresenter, 4);
+            Grid.SetRow(scrollPresenter, 0);
+            Grid.SetColumnSpan(scrollPresenter, 4);
             Grid.SetRow(cnsAnchorPoint, 0);
             Grid.SetColumnSpan(cnsAnchorPoint, 4);
 
@@ -907,13 +907,13 @@ namespace MUXControlsTestApp
         private void ChkHorizontalOrientation_Unchecked(object sender, RoutedEventArgs e)
         {
             stackPanel.Orientation = Orientation.Vertical;
-            scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
-            scrollingPresenter.Width = 300;
-            scrollingPresenter.Height = 600;
+            scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
+            scrollPresenter.Width = 300;
+            scrollPresenter.Height = 600;
             cnsAnchorPoint.Width = 300;
             cnsAnchorPoint.Height = 600;
-            Grid.SetRow(scrollingPresenter, 1);
-            Grid.SetColumnSpan(scrollingPresenter, 1);
+            Grid.SetRow(scrollPresenter, 1);
+            Grid.SetColumnSpan(scrollPresenter, 1);
             Grid.SetRow(cnsAnchorPoint, 1);
             Grid.SetColumnSpan(cnsAnchorPoint, 1);
 
@@ -924,16 +924,16 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
-            scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
-            scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
+            scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
+            scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
         }
 
-        private void ChkLogScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
-            scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
+            scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
+            scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
         }
 
         private void MUXControlsTestHooks_LoggingMessage(object sender, MUXControlsTestHooksLoggingMessageEventArgs args)
@@ -968,7 +968,7 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage(asyncEventMessage);
         }
 
-        private void ScrollingPresenterTestHooks_AnchorEvaluated(ScrollingPresenter sender, ScrollingPresenterTestHooksAnchorEvaluatedEventArgs args)
+        private void ScrollPresenterTestHooks_AnchorEvaluated(ScrollPresenter sender, ScrollPresenterTestHooksAnchorEvaluatedEventArgs args)
         {
             string anchorName;
             Border newAnchor = null;
@@ -1019,28 +1019,28 @@ namespace MUXControlsTestApp
 
                 if (double.IsNaN(args.ViewportAnchorPointHorizontalOffset))
                 {
-                    rectAnchorPoint.Width = scrollingPresenter.Width;
+                    rectAnchorPoint.Width = scrollPresenter.Width;
                     Canvas.SetLeft(rectAnchorPoint, 0);
                 }
                 else
                 {
                     rectAnchorPoint.Width = double.IsNaN(args.ViewportAnchorPointVerticalOffset) ? 2 : 4;
-                    Canvas.SetLeft(rectAnchorPoint, args.ViewportAnchorPointHorizontalOffset * scrollingPresenter.ZoomFactor - scrollingPresenter.HorizontalOffset - rectAnchorPoint.Width / 2);
+                    Canvas.SetLeft(rectAnchorPoint, args.ViewportAnchorPointHorizontalOffset * scrollPresenter.ZoomFactor - scrollPresenter.HorizontalOffset - rectAnchorPoint.Width / 2);
                 }
 
                 if (double.IsNaN(args.ViewportAnchorPointVerticalOffset))
                 {
-                    rectAnchorPoint.Height = scrollingPresenter.Height;
+                    rectAnchorPoint.Height = scrollPresenter.Height;
                     Canvas.SetTop(rectAnchorPoint, 0);
                 }
                 else
                 {
                     rectAnchorPoint.Height = double.IsNaN(args.ViewportAnchorPointHorizontalOffset) ? 2 : 4;
-                    Canvas.SetTop(rectAnchorPoint, args.ViewportAnchorPointVerticalOffset * scrollingPresenter.ZoomFactor - scrollingPresenter.VerticalOffset - rectAnchorPoint.Height / 2);
+                    Canvas.SetTop(rectAnchorPoint, args.ViewportAnchorPointVerticalOffset * scrollPresenter.ZoomFactor - scrollPresenter.VerticalOffset - rectAnchorPoint.Height / 2);
                 }
             }
 
-            if (chkLogScrollingPresenterAnchorNotifications.IsChecked == true)
+            if (chkLogScrollPresenterAnchorNotifications.IsChecked == true)
             {
                 AppendAsyncEventMessage("  AnchorEvaluated: s:" + sender.Name + ", a:" + anchorName + ", ap:(" + (int)args.ViewportAnchorPointHorizontalOffset + ", " + (int)args.ViewportAnchorPointVerticalOffset + ")");
             }
@@ -1062,7 +1062,7 @@ namespace MUXControlsTestApp
             {
                 foreach (string asyncEventMessage in lstAsyncEventMessage)
                 {
-                    lstScrollingPresenterEvents.Items.Add(asyncEventMessage);
+                    lstScrollPresenterEvents.Items.Add(asyncEventMessage);
                 }
                 lstAsyncEventMessage.Clear();
             }

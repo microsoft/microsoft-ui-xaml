@@ -3,7 +3,7 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "ScrollingBringingIntoViewEventArgs.h"
 
 winrt::ScrollingSnapPointsMode ScrollingBringingIntoViewEventArgs::SnapPointsMode()

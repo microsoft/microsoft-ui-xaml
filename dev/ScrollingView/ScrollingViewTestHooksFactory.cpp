@@ -3,6 +3,6 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingViewTestHooksFactory.h"
+#include "ScrollViewTestHooksFactory.h"
 
-#include "ScrollingViewTestHooks.properties.cpp"
+#include "ScrollViewTestHooks.properties.cpp"

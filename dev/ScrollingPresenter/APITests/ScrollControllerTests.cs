@@ -24,24 +24,24 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests : ApiTestBase
+    partial class ScrollPresenterTests : ApiTestBase
     {
         [TestMethod]
-        [TestProperty("Description", "Sets the ScrollingPresenter.HorizontalScrollController and ScrollingPresenter.VerticalScrollController properties.")]
+        [TestProperty("Description", "Sets the ScrollPresenter.HorizontalScrollController and ScrollPresenter.VerticalScrollController properties.")]
         public void SettingScrollControllerProperties()
         {
-            ScrollingPresenter scrollingPresenter = null;
+            ScrollPresenter scrollPresenter = null;
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
 
             RunOnUIThread.Execute(() =>
             {
-                scrollingPresenter = new ScrollingPresenter();
-                Verify.IsNotNull(scrollingPresenter);
+                scrollPresenter = new ScrollPresenter();
+                Verify.IsNotNull(scrollPresenter);
 
                 horizontalScrollController = new CompositionScrollController();
                 Verify.IsNotNull(horizontalScrollController);
@@ -49,18 +49,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 verticalScrollController = new CompositionScrollController();
                 Verify.IsNotNull(verticalScrollController);
 
-                Log.Comment("Setting ScrollingPresenter.HorizontalScrollController and ScrollingPresenter.VerticalScrollController properties.");
-                scrollingPresenter.HorizontalScrollController = horizontalScrollController;
-                scrollingPresenter.VerticalScrollController = verticalScrollController;
+                Log.Comment("Setting ScrollPresenter.HorizontalScrollController and ScrollPresenter.VerticalScrollController properties.");
+                scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                scrollPresenter.VerticalScrollController = verticalScrollController;
             });
 
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("Verifying ScrollingPresenter properties.");
-                Verify.AreEqual(scrollingPresenter.HorizontalScrollController, horizontalScrollController);
-                Verify.AreEqual(scrollingPresenter.VerticalScrollController, verticalScrollController);
+                Log.Comment("Verifying ScrollPresenter properties.");
+                Verify.AreEqual(scrollPresenter.HorizontalScrollController, horizontalScrollController);
+                Verify.AreEqual(scrollPresenter.VerticalScrollController, verticalScrollController);
 
                 Verify.IsTrue(horizontalScrollController.AreScrollControllerInteractionsAllowed);
                 Verify.IsTrue(horizontalScrollController.AreScrollerInteractionsAllowed);
@@ -74,7 +74,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view while scroll controllers are attached.")]
+        [TestProperty("Description", "Change ScrollPresenter view while scroll controllers are attached.")]
         public void ChangeOffsetsWhileScrollControllersAreAttached()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -83,16 +83,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 horizontalScrollController = new CompositionScrollController();
                 verticalScrollController = new CompositionScrollController();
 
@@ -108,12 +108,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = horizontalScrollController;
-                scrollingPresenter.VerticalScrollController = verticalScrollController;
+                scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                scrollPresenter.VerticalScrollController = verticalScrollController;
 
                 SetupUIWithScrollControllers(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     horizontalScrollController,
                     verticalScrollController,
                     loadedEvent);
@@ -131,31 +131,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to offsets");
             ScrollTo(
-                scrollingPresenter,
-                (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
-                (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0,
+                scrollPresenter,
+                (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0,
+                (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null, 
-                expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0, 
-                expectedFinalVerticalOffset: (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0, 
+                expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
             ScrollTo(
-                scrollingPresenter,
-                (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
-                (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0,
+                scrollPresenter,
+                (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
+                (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
-                expectedFinalVerticalOffset: (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 2.0f,
                 0.0f,
                 0.0f,
@@ -165,7 +165,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 1.5f,
                 0.0f,
                 0.0f,
@@ -175,7 +175,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view via attached scroll controllers.")]
+        [TestProperty("Description", "Change ScrollPresenter view via attached scroll controllers.")]
         public void ChangeOffsetsWithAttachedScrollControllers()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -184,8 +184,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
@@ -195,8 +195,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 horizontalScrollController = new CompositionScrollController();
                 verticalScrollController = new CompositionScrollController();
 
@@ -212,12 +212,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = horizontalScrollController;
-                scrollingPresenter.VerticalScrollController = verticalScrollController;
+                scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                scrollPresenter.VerticalScrollController = verticalScrollController;
 
                 SetupUIWithScrollControllers(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     horizontalScrollController,
                     verticalScrollController,
                     loadedEvent);
@@ -246,7 +246,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to zoomFactor 0.75");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 0.75f,
                 0.0f,
                 0.0f,
@@ -257,12 +257,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Log.Comment("Jumping to horizontal offset");
                 hOffsetChangeId = horizontalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0,
+                    (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 4.0,
                     ScrollingAnimationMode.Disabled);
 
                 Log.Comment("Jumping to vertical offset");
                 vOffsetChangeId = verticalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0,
+                    (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0,
                     ScrollingAnimationMode.Disabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
@@ -272,17 +272,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 4.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0, scrollPresenter.VerticalOffset);
 
                 Log.Comment("Animating to horizontal offset");
                 hOffsetChangeId = horizontalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0,
+                    (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 2.0,
                     ScrollingAnimationMode.Enabled);
 
                 Log.Comment("Animating to vertical offset");
                 vOffsetChangeId = verticalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0,
+                    (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 2.0,
                     ScrollingAnimationMode.Enabled);
 
                 Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
@@ -294,13 +294,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 2.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 2.0, scrollPresenter.VerticalOffset);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view with additional velocity via attached scroll controllers.")]
+        [TestProperty("Description", "Change ScrollPresenter view with additional velocity via attached scroll controllers.")]
         public void ChangeOffsetsWithAdditionalVelocityAndAttachedScrollControllers()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -309,8 +309,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             CompositionScrollController horizontalScrollController = null;
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
@@ -320,8 +320,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 horizontalScrollController = new CompositionScrollController();
                 verticalScrollController = new CompositionScrollController();
 
@@ -337,12 +337,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = horizontalScrollController;
-                scrollingPresenter.VerticalScrollController = verticalScrollController;
+                scrollPresenter.HorizontalScrollController = horizontalScrollController;
+                scrollPresenter.VerticalScrollController = verticalScrollController;
 
                 SetupUIWithScrollControllers(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     horizontalScrollController,
                     verticalScrollController,
                     loadedEvent);
@@ -366,7 +366,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to zoomFactor 0.75");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 0.75f,
                 0.0f,
                 0.0f,
@@ -390,11 +390,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.IsTrue(scrollingPresenter.HorizontalOffset > 20.0);
-                Verify.IsTrue(scrollingPresenter.VerticalOffset > 20.0);
+                Verify.IsTrue(scrollPresenter.HorizontalOffset > 20.0);
+                Verify.IsTrue(scrollPresenter.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to horizontal offset, with custom inertia decay rate");
                 hOffsetChangeId = horizontalScrollController.ScrollFrom(
@@ -413,11 +413,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.IsTrue(scrollingPresenter.HorizontalOffset < 20.0);
-                Verify.IsTrue(scrollingPresenter.VerticalOffset < 20.0);
+                Verify.IsTrue(scrollPresenter.HorizontalOffset < 20.0);
+                Verify.IsTrue(scrollPresenter.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to horizontal offset, with no inertia decay rate");
                 hOffsetChangeId = horizontalScrollController.ScrollFrom(
@@ -436,16 +436,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.AreEqual(600.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual(250.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual(600.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(250.0, scrollPresenter.VerticalOffset);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view while a bi-directional scroll controller is attached.")]
+        [TestProperty("Description", "Change ScrollPresenter view while a bi-directional scroll controller is attached.")]
         public void ChangeOffsetsWhileBiDirectionalScrollControllerIsAttached()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -454,15 +454,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 biDirectionalScrollController = new BiDirectionalScrollController();
 
                 biDirectionalScrollController.LogMessage += (BiDirectionalScrollController sender, string args) =>
@@ -470,12 +470,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
-                scrollingPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
+                scrollPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
+                scrollPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
 
                 SetupUIWithBiDirectionalScrollController(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     biDirectionalScrollController,
                     loadedEvent);
             });
@@ -491,31 +491,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to offsets");
             ScrollTo(
-                scrollingPresenter,
-                (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
-                (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0,
+                scrollPresenter,
+                (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0,
+                (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0,
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 2.0,
-                expectedFinalVerticalOffset: (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 2.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
             ScrollTo(
-                scrollingPresenter,
-                (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
-                (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0,
+                scrollPresenter,
+                (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
+                (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0,
                 ScrollingAnimationMode.Enabled,
                 ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: false,
                 isAnimationsEnabledOverride: null,
-                expectedFinalHorizontalOffset: (c_defaultUIScrollingPresenterContentWidth - c_defaultUIScrollingPresenterWidth) / 4.0,
-                expectedFinalVerticalOffset: (c_defaultUIScrollingPresenterContentHeight - c_defaultUIScrollingPresenterHeight) / 4.0);
+                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 4.0,
+                expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 4.0);
 
             Log.Comment("Jump to zoomFactor 2.0");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 2.0f,
                 0.0f,
                 0.0f,
@@ -525,7 +525,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Animate to zoomFactor 1.5");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 1.5f,
                 0.0f,
                 0.0f,
@@ -535,7 +535,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view via attached bi-directional scroll controller.")]
+        [TestProperty("Description", "Change ScrollPresenter view via attached bi-directional scroll controller.")]
         public void ChangeOffsetsWithAttachedBiDirectionalScrollController()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -544,16 +544,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 biDirectionalScrollController = new BiDirectionalScrollController();
 
                 biDirectionalScrollController.LogMessage += (BiDirectionalScrollController sender, string args) =>
@@ -561,12 +561,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
-                scrollingPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
+                scrollPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
+                scrollPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
 
                 SetupUIWithBiDirectionalScrollController(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     biDirectionalScrollController,
                     loadedEvent);
 
@@ -588,7 +588,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to zoomFactor 0.75");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 0.75f,
                 0.0f,
                 0.0f,
@@ -599,8 +599,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 Log.Comment("Jumping to offsets");
                 biDirectionalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0,
-                    (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0,
+                    (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 4.0,
+                    (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0,
                     ScrollingAnimationMode.Disabled);
             });
 
@@ -608,13 +608,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 4.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 4.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 4.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0, scrollPresenter.VerticalOffset);
 
                 Log.Comment("Animating to offsets");
                 biDirectionalScrollController.ScrollTo(
-                    (c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0,
-                    (c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0,
+                    (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 2.0,
+                    (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 2.0,
                     ScrollingAnimationMode.Enabled);
 
                 scrollCompletedEvent.Reset();
@@ -624,13 +624,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentWidth * 0.75 - c_defaultUIScrollingPresenterWidth) / 2.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual((c_defaultUIScrollingPresenterContentHeight * 0.75 - c_defaultUIScrollingPresenterHeight) / 2.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 2.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual((c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 2.0, scrollPresenter.VerticalOffset);
             });
         }
 
         [TestMethod]
-        [TestProperty("Description", "Change ScrollingPresenter view with additional velocity via attached bi-directional scroll controller.")]
+        [TestProperty("Description", "Change ScrollPresenter view with additional velocity via attached bi-directional scroll controller.")]
         public void ChangeOffsetsWithAdditionalVelocityAndAttachedBiDirectionalScrollController()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -639,16 +639,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            ScrollingPresenter scrollingPresenter = null;
-            Rectangle rectangleScrollingPresenterContent = null;
+            ScrollPresenter scrollPresenter = null;
+            Rectangle rectangleScrollPresenterContent = null;
             BiDirectionalScrollController biDirectionalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
 
             RunOnUIThread.Execute(() =>
             {
-                rectangleScrollingPresenterContent = new Rectangle();
-                scrollingPresenter = new ScrollingPresenter();
+                rectangleScrollPresenterContent = new Rectangle();
+                scrollPresenter = new ScrollPresenter();
                 biDirectionalScrollController = new BiDirectionalScrollController();
 
                 biDirectionalScrollController.LogMessage += (BiDirectionalScrollController sender, string args) =>
@@ -656,12 +656,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     Log.Comment(args);
                 };
 
-                scrollingPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
-                scrollingPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
+                scrollPresenter.HorizontalScrollController = biDirectionalScrollController.HorizontalScrollController;
+                scrollPresenter.VerticalScrollController = biDirectionalScrollController.VerticalScrollController;
 
                 SetupUIWithBiDirectionalScrollController(
-                    scrollingPresenter,
-                    rectangleScrollingPresenterContent,
+                    scrollPresenter,
+                    rectangleScrollPresenterContent,
                     biDirectionalScrollController,
                     loadedEvent);
 
@@ -683,7 +683,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             Log.Comment("Jump to zoomFactor 0.75");
             ZoomTo(
-                scrollingPresenter,
+                scrollPresenter,
                 0.75f,
                 0.0f,
                 0.0f,
@@ -701,11 +701,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.IsTrue(scrollingPresenter.HorizontalOffset > 20.0);
-                Verify.IsTrue(scrollingPresenter.VerticalOffset > 20.0);
+                Verify.IsTrue(scrollPresenter.HorizontalOffset > 20.0);
+                Verify.IsTrue(scrollPresenter.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to offsets, with custom inertia decay rates");
                 biDirectionalScrollController.ScrollFrom(
@@ -718,11 +718,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.IsTrue(scrollingPresenter.HorizontalOffset < 20.0);
-                Verify.IsTrue(scrollingPresenter.VerticalOffset < 20.0);
+                Verify.IsTrue(scrollPresenter.HorizontalOffset < 20.0);
+                Verify.IsTrue(scrollPresenter.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to offsets, with no inertia decay rates");
                 biDirectionalScrollController.ScrollFrom(
@@ -735,22 +735,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                Log.Comment("scrollingPresenter.HorizontalOffset={0}", scrollingPresenter.HorizontalOffset);
-                Log.Comment("scrollingPresenter.VerticalOffset={0}", scrollingPresenter.VerticalOffset);
+                Log.Comment("scrollPresenter.HorizontalOffset={0}", scrollPresenter.HorizontalOffset);
+                Log.Comment("scrollPresenter.VerticalOffset={0}", scrollPresenter.VerticalOffset);
 
-                Verify.AreEqual(600.0, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual(250.0, scrollingPresenter.VerticalOffset);
+                Verify.AreEqual(600.0, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(250.0, scrollPresenter.VerticalOffset);
             });
         }
 
         private void SetupUIWithScrollControllers(
-            ScrollingPresenter scrollingPresenter,
-            Rectangle rectangleScrollingPresenterContent,
+            ScrollPresenter scrollPresenter,
+            Rectangle rectangleScrollPresenterContent,
             CompositionScrollController horizontalScrollController,
             CompositionScrollController verticalScrollController,
             AutoResetEvent loadedEvent)
         {
-            Log.Comment("Setting up UI with ScrollingPresenter and scroll controlllers" + (rectangleScrollingPresenterContent == null ? "" : " and Rectangle"));
+            Log.Comment("Setting up UI with ScrollPresenter and scroll controlllers" + (rectangleScrollPresenterContent == null ? "" : " and Rectangle"));
 
             LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -760,33 +760,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
             twoColorLGB.GradientStops.Add(orangeGS);
 
-            if (rectangleScrollingPresenterContent != null)
+            if (rectangleScrollPresenterContent != null)
             {
-                rectangleScrollingPresenterContent.Width = c_defaultUIScrollingPresenterContentWidth;
-                rectangleScrollingPresenterContent.Height = c_defaultUIScrollingPresenterContentHeight;
-                rectangleScrollingPresenterContent.Fill = twoColorLGB;
+                rectangleScrollPresenterContent.Width = c_defaultUIScrollPresenterContentWidth;
+                rectangleScrollPresenterContent.Height = c_defaultUIScrollPresenterContentHeight;
+                rectangleScrollPresenterContent.Fill = twoColorLGB;
             }
 
-            Verify.IsNotNull(scrollingPresenter);
-            scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
-            scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            if (rectangleScrollingPresenterContent != null)
+            Verify.IsNotNull(scrollPresenter);
+            scrollPresenter.Width = c_defaultUIScrollPresenterWidth;
+            scrollPresenter.Height = c_defaultUIScrollPresenterHeight;
+            if (rectangleScrollPresenterContent != null)
             {
-                scrollingPresenter.Content = rectangleScrollingPresenterContent;
+                scrollPresenter.Content = rectangleScrollPresenterContent;
             }
 
-            horizontalScrollController.Width = c_defaultUIScrollingPresenterWidth;
+            horizontalScrollController.Width = c_defaultUIScrollPresenterWidth;
             horizontalScrollController.HorizontalAlignment = HorizontalAlignment.Left;
 
             StackPanel horizontalStackPanel = new StackPanel();
             horizontalStackPanel.Orientation = Orientation.Horizontal;
-            horizontalStackPanel.Children.Add(scrollingPresenter);
+            horizontalStackPanel.Children.Add(scrollPresenter);
             horizontalStackPanel.Children.Add(verticalScrollController);
 
             StackPanel verticalStackPanel = new StackPanel();
             verticalStackPanel.Children.Add(horizontalStackPanel);
             verticalStackPanel.Children.Add(horizontalScrollController);
-            verticalStackPanel.Width = c_defaultUIScrollingPresenterWidth + c_defaultUIScrollControllerThickness;
+            verticalStackPanel.Width = c_defaultUIScrollPresenterWidth + c_defaultUIScrollControllerThickness;
 
             if (loadedEvent != null)
             {
@@ -802,12 +802,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         private void SetupUIWithBiDirectionalScrollController(
-            ScrollingPresenter scrollingPresenter,
-            Rectangle rectangleScrollingPresenterContent,
+            ScrollPresenter scrollPresenter,
+            Rectangle rectangleScrollPresenterContent,
             BiDirectionalScrollController biDirectionalScrollController,
             AutoResetEvent loadedEvent)
         {
-            Log.Comment("Setting up UI with ScrollingPresenter and bi-directional scroll controller" + (rectangleScrollingPresenterContent == null ? "" : " and Rectangle"));
+            Log.Comment("Setting up UI with ScrollPresenter and bi-directional scroll controller" + (rectangleScrollPresenterContent == null ? "" : " and Rectangle"));
 
             LinearGradientBrush twoColorLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -817,27 +817,27 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             GradientStop orangeGS = new GradientStop() { Color = Colors.Orange, Offset = 1.0 };
             twoColorLGB.GradientStops.Add(orangeGS);
 
-            if (rectangleScrollingPresenterContent != null)
+            if (rectangleScrollPresenterContent != null)
             {
-                rectangleScrollingPresenterContent.Width = c_defaultUIScrollingPresenterContentWidth;
-                rectangleScrollingPresenterContent.Height = c_defaultUIScrollingPresenterContentHeight;
-                rectangleScrollingPresenterContent.Fill = twoColorLGB;
+                rectangleScrollPresenterContent.Width = c_defaultUIScrollPresenterContentWidth;
+                rectangleScrollPresenterContent.Height = c_defaultUIScrollPresenterContentHeight;
+                rectangleScrollPresenterContent.Fill = twoColorLGB;
             }
 
-            Verify.IsNotNull(scrollingPresenter);
-            scrollingPresenter.Width = c_defaultUIScrollingPresenterWidth;
-            scrollingPresenter.Height = c_defaultUIScrollingPresenterHeight;
-            if (rectangleScrollingPresenterContent != null)
+            Verify.IsNotNull(scrollPresenter);
+            scrollPresenter.Width = c_defaultUIScrollPresenterWidth;
+            scrollPresenter.Height = c_defaultUIScrollPresenterHeight;
+            if (rectangleScrollPresenterContent != null)
             {
-                scrollingPresenter.Content = rectangleScrollingPresenterContent;
+                scrollPresenter.Content = rectangleScrollPresenterContent;
             }
 
-            biDirectionalScrollController.Width = c_defaultUIScrollingPresenterHeight;
-            biDirectionalScrollController.Height = c_defaultUIScrollingPresenterHeight;
+            biDirectionalScrollController.Width = c_defaultUIScrollPresenterHeight;
+            biDirectionalScrollController.Height = c_defaultUIScrollPresenterHeight;
 
             StackPanel horizontalStackPanel = new StackPanel();
             horizontalStackPanel.Orientation = Orientation.Horizontal;
-            horizontalStackPanel.Children.Add(scrollingPresenter);
+            horizontalStackPanel.Children.Add(scrollPresenter);
             horizontalStackPanel.Children.Add(biDirectionalScrollController);
 
             if (loadedEvent != null)

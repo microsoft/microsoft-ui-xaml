@@ -4,15 +4,15 @@
 #include "pch.h"
 #include "common.h"
 #include "Vector.h"
-#include "ScrollingPresenter.h"
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenter.h"
+#include "ScrollPresenterTrace.h"
 #include "ScrollingAnchorRequestedEventArgs.h"
 
-ScrollingAnchorRequestedEventArgs::ScrollingAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter)
+ScrollingAnchorRequestedEventArgs::ScrollingAnchorRequestedEventArgs(const winrt::ScrollPresenter& scrollPresenter)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollingPresenter);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, scrollPresenter);
 
-    m_scrollingPresenter.set(scrollingPresenter);
+    m_scrollPresenter.set(scrollPresenter);
 }
 
 #pragma region IScrollingAnchorRequestedEventArgs
@@ -29,12 +29,12 @@ winrt::UIElement ScrollingAnchorRequestedEventArgs::AnchorElement()
 
 void ScrollingAnchorRequestedEventArgs::AnchorElement(winrt::UIElement const& value)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     const winrt::UIElement& anchorElement{ value };
-    com_ptr<ScrollingPresenter> scrollingPresenter = winrt::get_self<ScrollingPresenter>(m_scrollingPresenter.get())->get_strong();
+    com_ptr<ScrollPresenter> scrollPresenter = winrt::get_self<ScrollPresenter>(m_scrollPresenter.get())->get_strong();
 
-    if (!anchorElement || scrollingPresenter->IsElementValidAnchor(anchorElement))
+    if (!anchorElement || scrollPresenter->IsElementValidAnchor(anchorElement))
     {
         m_anchorElement.set(anchorElement);
     }

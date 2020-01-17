@@ -5,11 +5,11 @@
 
 #include "common.h"
 
-class ScrollingViewBringIntoViewOperation
+class ScrollViewBringIntoViewOperation
 {
 public:
-    ScrollingViewBringIntoViewOperation(winrt::UIElement const& targetElement);
-    ~ScrollingViewBringIntoViewOperation();
+    ScrollViewBringIntoViewOperation(winrt::UIElement const& targetElement);
+    ~ScrollViewBringIntoViewOperation();
 
     bool HasMaxTicksCount() const;
     winrt::UIElement TargetElement() const;
@@ -18,7 +18,7 @@ public:
 
 private:
     // Number of UI thread ticks allowed before this expected bring-into-view operation is no
-    // longer expected and removed from the ScrollingView's m_bringIntoViewOperations list.
+    // longer expected and removed from the ScrollView's m_bringIntoViewOperations list.
     static constexpr int8_t s_maxTicksCount{ 3 };
 
     int8_t m_ticksCount{ 0 };

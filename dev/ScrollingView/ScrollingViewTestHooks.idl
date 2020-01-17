@@ -4,12 +4,12 @@
 [WUXC_VERSION_INTERNAL]
 [default_interface]
 [webhosthidden]
-runtimeclass ScrollingViewTestHooks
+runtimeclass ScrollViewTestHooks
 {
-    static Windows.Foundation.IReference<Boolean> GetAutoHideScrollControllers(MU_XC_NAMESPACE.ScrollingView scrollingView);
-    static void SetAutoHideScrollControllers(MU_XC_NAMESPACE.ScrollingView scrollingView, Windows.Foundation.IReference<Boolean> value);
+    static Windows.Foundation.IReference<Boolean> GetAutoHideScrollControllers(MU_XC_NAMESPACE.ScrollView scrollView);
+    static void SetAutoHideScrollControllers(MU_XC_NAMESPACE.ScrollView scrollView, Windows.Foundation.IReference<Boolean> value);
 
-    static MU_XCP_NAMESPACE.ScrollingPresenter GetScrollingPresenterPart(MU_XC_NAMESPACE.ScrollingView scrollingView);
+    static MU_XCP_NAMESPACE.ScrollPresenter GetScrollPresenterPart(MU_XC_NAMESPACE.ScrollView scrollView);
 }
 
 }

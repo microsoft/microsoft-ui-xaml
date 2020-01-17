@@ -8,8 +8,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 using ScrollingInputKinds = Microsoft.UI.Xaml.Controls.ScrollingInputKinds;
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
-using ScrollingView = Microsoft.UI.Xaml.Controls.ScrollingView;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
+using ScrollView = Microsoft.UI.Xaml.Controls.ScrollView;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingZoomCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingZoomCompletedEventArgs;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
@@ -17,75 +17,75 @@ using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 
-using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
-using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
-using ScrollingViewTestHooks = Microsoft.UI.Private.Controls.ScrollingViewTestHooks;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
+using ScrollViewTestHooks = Microsoft.UI.Private.Controls.ScrollViewTestHooks;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingViewsWithSimpleContentsPage : TestPage
+    public sealed partial class ScrollViewsWithSimpleContentsPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scrollingView52ZoomFactorChangeId = -1;
+        private int scrollView52ZoomFactorChangeId = -1;
 
-        public ScrollingViewsWithSimpleContentsPage()
+        public ScrollViewsWithSimpleContentsPage()
         {
             this.InitializeComponent();
 
-            this.scrollingView51.XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
+            this.scrollView51.XYFocusKeyboardNavigation = XYFocusKeyboardNavigationMode.Enabled;
 
-            Loaded += ScrollingViewsWithSimpleContentsPage_Loaded;
-            KeyDown += ScrollingViewsWithSimpleContentsPage_KeyDown;
+            Loaded += ScrollViewsWithSimpleContentsPage_Loaded;
+            KeyDown += ScrollViewsWithSimpleContentsPage_KeyDown;
         }
 
-        private void ScrollingViewsWithSimpleContentsPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollViewsWithSimpleContentsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView11).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView21).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView31).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView41).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView51).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView11).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView21).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView31).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView41).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView51).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView11).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView21).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView31).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView41).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView51).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView11).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView21).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView31).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView41).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView51).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView11).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView21).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView31).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView41).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView51).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView11).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView21).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView31).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView41).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView51).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView11).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView21).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView31).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView41).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView51).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView11).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView21).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView31).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView41).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView51).ZoomCompleted += ScrollPresenter_ZoomCompleted;
 
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView12).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView22).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView32).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView42).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView52).StateChanged += ScrollingPresenter_StateChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView12).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView22).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView32).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView42).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView52).ViewChanged += ScrollingPresenter_ViewChanged;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView12).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView22).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView32).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView42).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView52).ScrollCompleted += ScrollingPresenter_ScrollCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView12).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView22).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView32).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView42).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
-            ScrollingViewTestHooks.GetScrollingPresenterPart(this.scrollingView52).ZoomCompleted += ScrollingPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView12).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView22).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView32).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView42).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView52).StateChanged += ScrollPresenter_StateChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView12).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView22).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView32).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView42).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView52).ViewChanged += ScrollPresenter_ViewChanged;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView12).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView22).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView32).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView42).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView52).ScrollCompleted += ScrollPresenter_ScrollCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView12).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView22).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView32).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView42).ZoomCompleted += ScrollPresenter_ZoomCompleted;
+            ScrollViewTestHooks.GetScrollPresenterPart(this.scrollView52).ZoomCompleted += ScrollPresenter_ZoomCompleted;
         }
 
-        private void ScrollingViewsWithSimpleContentsPage_KeyDown(object sender, KeyRoutedEventArgs e)
+        private void ScrollViewsWithSimpleContentsPage_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.G)
             {
@@ -97,71 +97,71 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                type: "ScrollingPresenter",
+                type: "ScrollPresenter",
                 isLoggingInfoLevel: true,
                 isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.SetLoggingLevelForType(
-                type: "ScrollingPresenter",
+                type: "ScrollPresenter",
                 isLoggingInfoLevel: true,
                 isLoggingVerboseLevel: true);
 
-            if (chkLogScrollingViewMessages.IsChecked == false)
+            if (chkLogScrollViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                type: "ScrollingPresenter",
+                type: "ScrollPresenter",
                 isLoggingInfoLevel: false,
                 isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.SetLoggingLevelForType(
-                type: "ScrollingPresenter",
+                type: "ScrollPresenter",
                 isLoggingInfoLevel: false,
                 isLoggingVerboseLevel: false);
 
-            if (chkLogScrollingViewMessages.IsChecked == false)
+            if (chkLogScrollViewMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingViewMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollViewMessages_Checked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                type: "ScrollingView",
+                type: "ScrollView",
                 isLoggingInfoLevel: true,
                 isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.SetLoggingLevelForType(
-                type: "ScrollingView",
+                type: "ScrollView",
                 isLoggingInfoLevel: true,
                 isLoggingVerboseLevel: true);
 
-            if (chkLogScrollingPresenterMessages.IsChecked == false)
+            if (chkLogScrollPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingViewMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollViewMessages_Unchecked(object sender, RoutedEventArgs e)
         {
             MUXControlsTestHooks.SetOutputDebugStringLevelForType(
-                type: "ScrollingView",
+                type: "ScrollView",
                 isLoggingInfoLevel: false,
                 isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.SetLoggingLevelForType(
-                type: "ScrollingView",
+                type: "ScrollView",
                 isLoggingInfoLevel: false,
                 isLoggingVerboseLevel: false);
 
-            if (chkLogScrollingPresenterMessages.IsChecked == false)
+            if (chkLogScrollPresenterMessages.IsChecked == false)
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -174,12 +174,12 @@ namespace MUXControlsTestApp
                     senderId = grandParent.Name + senderId;
                 }
             }
-            this.txtScrollingPresenterState.Text = senderId + " " + sender.State.ToString();
+            this.txtScrollPresenterState.Text = senderId + " " + sender.State.ToString();
             this.fullLogs.Add(senderId + " StateChanged S=" + sender.State.ToString());
             chkLogUpdated.IsChecked = false;
         }
 
-        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -187,14 +187,14 @@ namespace MUXControlsTestApp
             {
                 senderId = parent.Name + senderId;
             }
-            this.txtScrollingPresenterHorizontalOffset.Text = sender.HorizontalOffset.ToString();
-            this.txtScrollingPresenterVerticalOffset.Text = sender.VerticalOffset.ToString();
-            this.txtScrollingPresenterZoomFactor.Text = sender.ZoomFactor.ToString();
-            this.fullLogs.Add(senderId + " ViewChanged H=" + this.txtScrollingPresenterHorizontalOffset.Text + ", V=" + this.txtScrollingPresenterVerticalOffset.Text + ", ZF=" + this.txtScrollingPresenterZoomFactor.Text);
+            this.txtScrollPresenterHorizontalOffset.Text = sender.HorizontalOffset.ToString();
+            this.txtScrollPresenterVerticalOffset.Text = sender.VerticalOffset.ToString();
+            this.txtScrollPresenterZoomFactor.Text = sender.ZoomFactor.ToString();
+            this.fullLogs.Add(senderId + " ViewChanged H=" + this.txtScrollPresenterHorizontalOffset.Text + ", V=" + this.txtScrollPresenterVerticalOffset.Text + ", ZF=" + this.txtScrollPresenterZoomFactor.Text);
             chkLogUpdated.IsChecked = false;
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+        private void ScrollPresenter_ScrollCompleted(ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -203,13 +203,13 @@ namespace MUXControlsTestApp
                 senderId = parent.Name + senderId;
             }
 
-            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
+            ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
             this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
         }
 
-        private void ScrollingPresenter_ZoomCompleted(ScrollingPresenter sender, ScrollingZoomCompletedEventArgs args)
+        private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             string senderId = "." + sender.Name;
             FrameworkElement parent = VisualTreeHelper.GetParent(sender) as FrameworkElement;
@@ -218,55 +218,55 @@ namespace MUXControlsTestApp
                 senderId = parent.Name + senderId;
             }
 
-            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetZoomCompletedResult(args);
+            ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
             this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
 
-            if (args.ZoomInfo.ZoomFactorChangeId == scrollingView52ZoomFactorChangeId)
+            if (args.ZoomInfo.ZoomFactorChangeId == scrollView52ZoomFactorChangeId)
             {
                 this.txtResetStatus.Text = "Views reset";
-                scrollingView52ZoomFactorChangeId = -1;
+                scrollView52ZoomFactorChangeId = -1;
             }
         }
 
-        private void CmbShowScrollingView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbShowScrollView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (this.scrollingView11 != null)
+            if (this.scrollView11 != null)
             {
-                if (cmbShowScrollingView.SelectedIndex == 0)
+                if (cmbShowScrollView.SelectedIndex == 0)
                 {
-                    this.scrollingView11.Visibility = Visibility.Visible;
-                    this.scrollingView21.Visibility = Visibility.Visible;
-                    this.scrollingView31.Visibility = Visibility.Visible;
-                    this.scrollingView41.Visibility = Visibility.Visible;
-                    this.scrollingView51.Visibility = Visibility.Visible;
-                    this.scrollingView12.Visibility = Visibility.Visible;
-                    this.scrollingView22.Visibility = Visibility.Visible;
-                    this.scrollingView32.Visibility = Visibility.Visible;
-                    this.scrollingView42.Visibility = Visibility.Visible;
-                    this.scrollingView52.Visibility = Visibility.Visible;
+                    this.scrollView11.Visibility = Visibility.Visible;
+                    this.scrollView21.Visibility = Visibility.Visible;
+                    this.scrollView31.Visibility = Visibility.Visible;
+                    this.scrollView41.Visibility = Visibility.Visible;
+                    this.scrollView51.Visibility = Visibility.Visible;
+                    this.scrollView12.Visibility = Visibility.Visible;
+                    this.scrollView22.Visibility = Visibility.Visible;
+                    this.scrollView32.Visibility = Visibility.Visible;
+                    this.scrollView42.Visibility = Visibility.Visible;
+                    this.scrollView52.Visibility = Visibility.Visible;
 
-                    this.scrollingView11.Width = double.NaN;
-                    this.scrollingView21.Width = double.NaN;
-                    this.scrollingView31.Width = double.NaN;
-                    this.scrollingView41.Width = double.NaN;
-                    this.scrollingView51.Width = double.NaN;
-                    this.scrollingView12.Width = double.NaN;
-                    this.scrollingView22.Width = double.NaN;
-                    this.scrollingView32.Width = double.NaN;
-                    this.scrollingView42.Width = double.NaN;
-                    this.scrollingView52.Width = double.NaN;
-                    this.scrollingView11.Height = double.NaN;
-                    this.scrollingView21.Height = double.NaN;
-                    this.scrollingView31.Height = double.NaN;
-                    this.scrollingView41.Height = double.NaN;
-                    this.scrollingView51.Height = double.NaN;
-                    this.scrollingView12.Height = double.NaN;
-                    this.scrollingView22.Height = double.NaN;
-                    this.scrollingView32.Height = double.NaN;
-                    this.scrollingView42.Height = double.NaN;
-                    this.scrollingView52.Height = double.NaN;
+                    this.scrollView11.Width = double.NaN;
+                    this.scrollView21.Width = double.NaN;
+                    this.scrollView31.Width = double.NaN;
+                    this.scrollView41.Width = double.NaN;
+                    this.scrollView51.Width = double.NaN;
+                    this.scrollView12.Width = double.NaN;
+                    this.scrollView22.Width = double.NaN;
+                    this.scrollView32.Width = double.NaN;
+                    this.scrollView42.Width = double.NaN;
+                    this.scrollView52.Width = double.NaN;
+                    this.scrollView11.Height = double.NaN;
+                    this.scrollView21.Height = double.NaN;
+                    this.scrollView31.Height = double.NaN;
+                    this.scrollView41.Height = double.NaN;
+                    this.scrollView51.Height = double.NaN;
+                    this.scrollView12.Height = double.NaN;
+                    this.scrollView22.Height = double.NaN;
+                    this.scrollView32.Height = double.NaN;
+                    this.scrollView42.Height = double.NaN;
+                    this.scrollView52.Height = double.NaN;
 
                     for (int rowIndex = 2; rowIndex < 4; rowIndex++)
                         this.rootGrid.RowDefinitions[rowIndex].Height = new GridLength(1, GridUnitType.Star);
@@ -279,16 +279,16 @@ namespace MUXControlsTestApp
                 }
                 else
                 {
-                    this.scrollingView11.Visibility = Visibility.Collapsed;
-                    this.scrollingView21.Visibility = Visibility.Collapsed;
-                    this.scrollingView31.Visibility = Visibility.Collapsed;
-                    this.scrollingView41.Visibility = Visibility.Collapsed;
-                    this.scrollingView51.Visibility = Visibility.Collapsed;
-                    this.scrollingView12.Visibility = Visibility.Collapsed;
-                    this.scrollingView22.Visibility = Visibility.Collapsed;
-                    this.scrollingView32.Visibility = Visibility.Collapsed;
-                    this.scrollingView42.Visibility = Visibility.Collapsed;
-                    this.scrollingView52.Visibility = Visibility.Collapsed;
+                    this.scrollView11.Visibility = Visibility.Collapsed;
+                    this.scrollView21.Visibility = Visibility.Collapsed;
+                    this.scrollView31.Visibility = Visibility.Collapsed;
+                    this.scrollView41.Visibility = Visibility.Collapsed;
+                    this.scrollView51.Visibility = Visibility.Collapsed;
+                    this.scrollView12.Visibility = Visibility.Collapsed;
+                    this.scrollView22.Visibility = Visibility.Collapsed;
+                    this.scrollView32.Visibility = Visibility.Collapsed;
+                    this.scrollView42.Visibility = Visibility.Collapsed;
+                    this.scrollView52.Visibility = Visibility.Collapsed;
 
                     for (int rowIndex = 2; rowIndex < 4; rowIndex++)
                         this.rootGrid.RowDefinitions[rowIndex].Height = GridLength.Auto;
@@ -298,17 +298,17 @@ namespace MUXControlsTestApp
 
                     cmbIgnoredInputKind.IsEnabled = true;
 
-                    ScrollingView scrollingView = SelectedScrollingView;
+                    ScrollView scrollView = SelectedScrollView;
 
-                    scrollingView.Visibility = Visibility.Visible;
-                    scrollingView.Width = 300;
-                    scrollingView.Height = 400;
+                    scrollView.Visibility = Visibility.Visible;
+                    scrollView.Width = 300;
+                    scrollView.Height = 400;
 
-                    txtScrollingPresenterHorizontalOffset.Text = scrollingView.HorizontalOffset.ToString();
-                    txtScrollingPresenterVerticalOffset.Text = scrollingView.VerticalOffset.ToString();
-                    txtScrollingPresenterZoomFactor.Text = scrollingView.ZoomFactor.ToString();
+                    txtScrollPresenterHorizontalOffset.Text = scrollView.HorizontalOffset.ToString();
+                    txtScrollPresenterVerticalOffset.Text = scrollView.VerticalOffset.ToString();
+                    txtScrollPresenterZoomFactor.Text = scrollView.ZoomFactor.ToString();
 
-                    switch (scrollingView.IgnoredInputKind)
+                    switch (scrollView.IgnoredInputKind)
                     {
                         case ScrollingInputKinds.None:
                             cmbIgnoredInputKind.SelectedIndex = 1;
@@ -342,7 +342,7 @@ namespace MUXControlsTestApp
         private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ScrollingInputKinds ignoredInputKind;
-            ScrollingView scrollingView = SelectedScrollingView;
+            ScrollView scrollView = SelectedScrollView;
 
             switch (cmbIgnoredInputKind.SelectedIndex)
             {
@@ -371,7 +371,7 @@ namespace MUXControlsTestApp
                     break;
             }
 
-            scrollingView.IgnoredInputKind = ignoredInputKind;
+            scrollView.IgnoredInputKind = ignoredInputKind;
         }
 
         private void btnGetFullLog_Click(object sender, RoutedEventArgs e)
@@ -387,16 +387,16 @@ namespace MUXControlsTestApp
         private void btnResetViews_Click(object sender, RoutedEventArgs e)
         {
             this.txtResetStatus.Text = "Resetting views ...";
-            ResetView(this.scrollingView11);
-            ResetView(this.scrollingView21);
-            ResetView(this.scrollingView31);
-            ResetView(this.scrollingView41);
-            ResetView(this.scrollingView51);
-            ResetView(this.scrollingView12);
-            ResetView(this.scrollingView22);
-            ResetView(this.scrollingView32);
-            ResetView(this.scrollingView42);
-            ResetView(this.scrollingView52);
+            ResetView(this.scrollView11);
+            ResetView(this.scrollView21);
+            ResetView(this.scrollView31);
+            ResetView(this.scrollView41);
+            ResetView(this.scrollView51);
+            ResetView(this.scrollView12);
+            ResetView(this.scrollView22);
+            ResetView(this.scrollView32);
+            ResetView(this.scrollView42);
+            ResetView(this.scrollView52);
         }
 
         private void GetFullLog()
@@ -436,64 +436,64 @@ namespace MUXControlsTestApp
             fullLogs.Add((args.IsVerboseLevel ? "Verbose: " : "Info: ") + senderName + "m:" + msg);
         }
 
-        private void ResetView(ScrollingView scrollingView)
+        private void ResetView(ScrollView scrollView)
         {
-            ScrollingPresenter scrollingPresenter = ScrollingViewTestHooks.GetScrollingPresenterPart(scrollingView);
-            string scrollingPresenterId = (VisualTreeHelper.GetParent(scrollingPresenter) as FrameworkElement).Name + "." + scrollingPresenter.Name;
+            ScrollPresenter scrollPresenter = ScrollViewTestHooks.GetScrollPresenterPart(scrollView);
+            string scrollPresenterId = (VisualTreeHelper.GetParent(scrollPresenter) as FrameworkElement).Name + "." + scrollPresenter.Name;
 
-            int viewChangeId = scrollingPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
-            this.fullLogs.Add(scrollingPresenterId + " ScrollTo requested. Id=" + viewChangeId);
+            int viewChangeId = scrollPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
+            this.fullLogs.Add(scrollPresenterId + " ScrollTo requested. Id=" + viewChangeId);
 
-            viewChangeId = scrollingPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
-            this.fullLogs.Add(scrollingPresenterId + " ZoomTo requested. Id=" + viewChangeId);
+            viewChangeId = scrollPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
+            this.fullLogs.Add(scrollPresenterId + " ZoomTo requested. Id=" + viewChangeId);
 
             chkLogUpdated.IsChecked = false;
 
-            if (scrollingView == this.scrollingView52)
-                scrollingView52ZoomFactorChangeId = viewChangeId;
+            if (scrollView == this.scrollView52)
+                scrollView52ZoomFactorChangeId = viewChangeId;
         }
 
-        private ScrollingView SelectedScrollingView
+        private ScrollView SelectedScrollView
         {
             get
             {
-                ScrollingView scrollingView = null;
+                ScrollView scrollView = null;
 
-                switch (cmbShowScrollingView.SelectedIndex)
+                switch (cmbShowScrollView.SelectedIndex)
                 {
                     case 1:
-                        scrollingView = this.scrollingView11;
+                        scrollView = this.scrollView11;
                         break;
                     case 2:
-                        scrollingView = this.scrollingView21;
+                        scrollView = this.scrollView21;
                         break;
                     case 3:
-                        scrollingView = this.scrollingView31;
+                        scrollView = this.scrollView31;
                         break;
                     case 4:
-                        scrollingView = this.scrollingView41;
+                        scrollView = this.scrollView41;
                         break;
                     case 5:
-                        scrollingView = this.scrollingView51;
+                        scrollView = this.scrollView51;
                         break;
                     case 6:
-                        scrollingView = this.scrollingView12;
+                        scrollView = this.scrollView12;
                         break;
                     case 7:
-                        scrollingView = this.scrollingView22;
+                        scrollView = this.scrollView22;
                         break;
                     case 8:
-                        scrollingView = this.scrollingView32;
+                        scrollView = this.scrollView32;
                         break;
                     case 9:
-                        scrollingView = this.scrollingView42;
+                        scrollView = this.scrollView42;
                         break;
                     case 10:
-                        scrollingView = this.scrollingView52;
+                        scrollView = this.scrollView52;
                         break;
                 }
 
-                return scrollingView;
+                return scrollView;
             }
         }
     }

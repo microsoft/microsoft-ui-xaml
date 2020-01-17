@@ -3,134 +3,134 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingPresenterTestHooksFactory.h"
+#include "ScrollPresenterTestHooksFactory.h"
 #include "Vector.h"
 
-com_ptr<ScrollingPresenterTestHooks> ScrollingPresenterTestHooks::s_testHooks{};
+com_ptr<ScrollPresenterTestHooks> ScrollPresenterTestHooks::s_testHooks{};
 
-ScrollingPresenterTestHooks::ScrollingPresenterTestHooks()
+ScrollPresenterTestHooks::ScrollPresenterTestHooks()
 {
-    m_mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? ScrollingPresenter::s_mouseWheelInertiaDecayRate : ScrollingPresenter::s_mouseWheelInertiaDecayRateRS1;
+    m_mouseWheelInertiaDecayRate = SharedHelpers::IsRS2OrHigher() ? ScrollPresenter::s_mouseWheelInertiaDecayRate : ScrollPresenter::s_mouseWheelInertiaDecayRateRS1;
 }
 
-com_ptr<ScrollingPresenterTestHooks> ScrollingPresenterTestHooks::EnsureGlobalTestHooks() 
+com_ptr<ScrollPresenterTestHooks> ScrollPresenterTestHooks::EnsureGlobalTestHooks() 
 {
     static bool s_initialized = []() {
-        s_testHooks = winrt::make_self<ScrollingPresenterTestHooks>();
+        s_testHooks = winrt::make_self<ScrollPresenterTestHooks>();
         return true;
     }();
     return s_testHooks;
 }
 
-bool ScrollingPresenterTestHooks::AreAnchorNotificationsRaised()
+bool ScrollPresenterTestHooks::AreAnchorNotificationsRaised()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_areAnchorNotificationsRaised;
 }
 
-void ScrollingPresenterTestHooks::AreAnchorNotificationsRaised(bool areAnchorNotificationsRaised)
+void ScrollPresenterTestHooks::AreAnchorNotificationsRaised(bool areAnchorNotificationsRaised)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_areAnchorNotificationsRaised = areAnchorNotificationsRaised;
 }
 
-bool ScrollingPresenterTestHooks::AreInteractionSourcesNotificationsRaised()
+bool ScrollPresenterTestHooks::AreInteractionSourcesNotificationsRaised()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_areInteractionSourcesNotificationsRaised;
 }
 
-void ScrollingPresenterTestHooks::AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised)
+void ScrollPresenterTestHooks::AreInteractionSourcesNotificationsRaised(bool areInteractionSourcesNotificationsRaised)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_areInteractionSourcesNotificationsRaised = areInteractionSourcesNotificationsRaised;
 }
 
-bool ScrollingPresenterTestHooks::AreExpressionAnimationStatusNotificationsRaised()
+bool ScrollPresenterTestHooks::AreExpressionAnimationStatusNotificationsRaised()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_areExpressionAnimationStatusNotificationsRaised;
 }
 
-void ScrollingPresenterTestHooks::AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised)
+void ScrollPresenterTestHooks::AreExpressionAnimationStatusNotificationsRaised(bool areExpressionAnimationStatusNotificationsRaised)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_areExpressionAnimationStatusNotificationsRaised = areExpressionAnimationStatusNotificationsRaised;
 }
 
-bool ScrollingPresenterTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled()
+bool ScrollPresenterTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
-void ScrollingPresenterTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled)
+void ScrollPresenterTestHooks::IsInteractionTrackerPointerWheelRedirectionEnabled(bool isInteractionTrackerPointerWheelRedirectionEnabled)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_isInteractionTrackerPointerWheelRedirectionEnabled = isInteractionTrackerPointerWheelRedirectionEnabled;
 }
 
-winrt::IReference<bool> ScrollingPresenterTestHooks::IsAnimationsEnabledOverride()
+winrt::IReference<bool> ScrollPresenterTestHooks::IsAnimationsEnabledOverride()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_isAnimationsEnabledOverride;
 }
 
-void ScrollingPresenterTestHooks::IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride)
+void ScrollPresenterTestHooks::IsAnimationsEnabledOverride(winrt::IReference<bool> isAnimationsEnabledOverride)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_isAnimationsEnabledOverride = isAnimationsEnabledOverride;
 }
 
-int ScrollingPresenterTestHooks::MouseWheelDeltaForVelocityUnit()
+int ScrollPresenterTestHooks::MouseWheelDeltaForVelocityUnit()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_mouseWheelDeltaForVelocityUnit;
 }
 
-void ScrollingPresenterTestHooks::MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit)
+void ScrollPresenterTestHooks::MouseWheelDeltaForVelocityUnit(int mouseWheelDeltaForVelocityUnit)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_mouseWheelDeltaForVelocityUnit = mouseWheelDeltaForVelocityUnit;
 }
 
-int ScrollingPresenterTestHooks::MouseWheelScrollLines()
+int ScrollPresenterTestHooks::MouseWheelScrollLines()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_mouseWheelScrollLines;
 }
 
-void ScrollingPresenterTestHooks::MouseWheelScrollLines(int mouseWheelScrollLines)
+void ScrollPresenterTestHooks::MouseWheelScrollLines(int mouseWheelScrollLines)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_mouseWheelScrollLines = mouseWheelScrollLines;
 }
 
-int ScrollingPresenterTestHooks::MouseWheelScrollChars()
+int ScrollPresenterTestHooks::MouseWheelScrollChars()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_mouseWheelScrollChars;
 }
 
-void ScrollingPresenterTestHooks::MouseWheelScrollChars(int mouseWheelScrollChars)
+void ScrollPresenterTestHooks::MouseWheelScrollChars(int mouseWheelScrollChars)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_mouseWheelScrollChars = mouseWheelScrollChars;
 }
 
-float ScrollingPresenterTestHooks::MouseWheelInertiaDecayRate()
+float ScrollPresenterTestHooks::MouseWheelInertiaDecayRate()
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_mouseWheelInertiaDecayRate;
 }
 
-void ScrollingPresenterTestHooks::MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayRate)
+void ScrollPresenterTestHooks::MouseWheelInertiaDecayRate(float mouseWheelInertiaDecayRate)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_mouseWheelInertiaDecayRate = mouseWheelInertiaDecayRate;
 }
 
-void ScrollingPresenterTestHooks::GetOffsetsChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
+void ScrollPresenterTestHooks::GetOffsetsChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_offsetsChangeMsPerUnit;
@@ -138,7 +138,7 @@ void ScrollingPresenterTestHooks::GetOffsetsChangeVelocityParameters(int& millis
     maxMilliseconds = hooks->m_offsetsChangeMaxMs;
 }
 
-void ScrollingPresenterTestHooks::SetOffsetsChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds)
+void ScrollPresenterTestHooks::SetOffsetsChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_offsetsChangeMsPerUnit = millisecondsPerUnit;
@@ -146,7 +146,7 @@ void ScrollingPresenterTestHooks::SetOffsetsChangeVelocityParameters(int millise
     hooks->m_offsetsChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollingPresenterTestHooks::GetZoomFactorChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
+void ScrollPresenterTestHooks::GetZoomFactorChangeVelocityParameters(int& millisecondsPerUnit, int& minMilliseconds, int& maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     millisecondsPerUnit = hooks->m_zoomFactorChangeMsPerUnit;
@@ -154,7 +154,7 @@ void ScrollingPresenterTestHooks::GetZoomFactorChangeVelocityParameters(int& mil
     maxMilliseconds = hooks->m_zoomFactorChangeMaxMs;
 }
 
-void ScrollingPresenterTestHooks::SetZoomFactorChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds)
+void ScrollPresenterTestHooks::SetZoomFactorChangeVelocityParameters(int millisecondsPerUnit, int minMilliseconds, int maxMilliseconds)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_zoomFactorChangeMsPerUnit = millisecondsPerUnit;
@@ -162,11 +162,11 @@ void ScrollingPresenterTestHooks::SetZoomFactorChangeVelocityParameters(int mill
     hooks->m_zoomFactorChangeMaxMs = maxMilliseconds;
 }
 
-void ScrollingPresenterTestHooks::GetContentLayoutOffsetX(const winrt::ScrollingPresenter& scrollingPresenter, float& contentLayoutOffsetX)
+void ScrollPresenterTestHooks::GetContentLayoutOffsetX(const winrt::ScrollPresenter& scrollPresenter, float& contentLayoutOffsetX)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        contentLayoutOffsetX = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetContentLayoutOffsetX();
+        contentLayoutOffsetX = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetContentLayoutOffsetX();
     }
     else
     {
@@ -174,19 +174,19 @@ void ScrollingPresenterTestHooks::GetContentLayoutOffsetX(const winrt::Scrolling
     }
 }
 
-void ScrollingPresenterTestHooks::SetContentLayoutOffsetX(const winrt::ScrollingPresenter& scrollingPresenter, float contentLayoutOffsetX)
+void ScrollPresenterTestHooks::SetContentLayoutOffsetX(const winrt::ScrollPresenter& scrollPresenter, float contentLayoutOffsetX)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        winrt::get_self<ScrollingPresenter>(scrollingPresenter)->SetContentLayoutOffsetX(contentLayoutOffsetX);
+        winrt::get_self<ScrollPresenter>(scrollPresenter)->SetContentLayoutOffsetX(contentLayoutOffsetX);
     }
 }
 
-void ScrollingPresenterTestHooks::GetContentLayoutOffsetY(const winrt::ScrollingPresenter& scrollingPresenter, float& contentLayoutOffsetY)
+void ScrollPresenterTestHooks::GetContentLayoutOffsetY(const winrt::ScrollPresenter& scrollPresenter, float& contentLayoutOffsetY)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        contentLayoutOffsetY = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetContentLayoutOffsetY();
+        contentLayoutOffsetY = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetContentLayoutOffsetY();
     }
     else
     {
@@ -194,63 +194,63 @@ void ScrollingPresenterTestHooks::GetContentLayoutOffsetY(const winrt::Scrolling
     }
 }
 
-void ScrollingPresenterTestHooks::SetContentLayoutOffsetY(const winrt::ScrollingPresenter& scrollingPresenter, float contentLayoutOffsetY)
+void ScrollPresenterTestHooks::SetContentLayoutOffsetY(const winrt::ScrollPresenter& scrollPresenter, float contentLayoutOffsetY)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        winrt::get_self<ScrollingPresenter>(scrollingPresenter)->SetContentLayoutOffsetY(contentLayoutOffsetY);
+        winrt::get_self<ScrollPresenter>(scrollPresenter)->SetContentLayoutOffsetY(contentLayoutOffsetY);
     }
 }
 
-winrt::float2 ScrollingPresenterTestHooks::GetArrangeRenderSizesDelta(const winrt::ScrollingPresenter& scrollingPresenter)
+winrt::float2 ScrollPresenterTestHooks::GetArrangeRenderSizesDelta(const winrt::ScrollPresenter& scrollPresenter)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetArrangeRenderSizesDelta();
-    }
-    return winrt::float2{ 0.0f, 0.0f };
-}
-
-winrt::float2 ScrollingPresenterTestHooks::GetMinPosition(const winrt::ScrollingPresenter& scrollingPresenter)
-{
-    if (scrollingPresenter)
-    {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetMinPosition();
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetArrangeRenderSizesDelta();
     }
     return winrt::float2{ 0.0f, 0.0f };
 }
 
-winrt::float2 ScrollingPresenterTestHooks::GetMaxPosition(const winrt::ScrollingPresenter& scrollingPresenter)
+winrt::float2 ScrollPresenterTestHooks::GetMinPosition(const winrt::ScrollPresenter& scrollPresenter)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetMaxPosition();
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetMinPosition();
     }
     return winrt::float2{ 0.0f, 0.0f };
 }
 
-winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs)
+winrt::float2 ScrollPresenterTestHooks::GetMaxPosition(const winrt::ScrollPresenter& scrollPresenter)
+{
+    if (scrollPresenter)
+    {
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetMaxPosition();
+    }
+    return winrt::float2{ 0.0f, 0.0f };
+}
+
+winrt::ScrollPresenterViewChangeResult ScrollPresenterTestHooks::GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs)
 {
     if (scrollCompletedEventArgs)
     {
-        ScrollingPresenterViewChangeResult result = winrt::get_self<ScrollingScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
+        ScrollPresenterViewChangeResult result = winrt::get_self<ScrollingScrollCompletedEventArgs>(scrollCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
-    return winrt::ScrollingPresenterViewChangeResult::Completed;
+    return winrt::ScrollPresenterViewChangeResult::Completed;
 }
 
-winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs)
+winrt::ScrollPresenterViewChangeResult ScrollPresenterTestHooks::GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs)
 {
     if (zoomCompletedEventArgs)
     {
-        ScrollingPresenterViewChangeResult result = winrt::get_self<ScrollingZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
+        ScrollPresenterViewChangeResult result = winrt::get_self<ScrollingZoomCompletedEventArgs>(zoomCompletedEventArgs)->Result();
         return TestHooksViewChangeResult(result);
     }
-    return winrt::ScrollingPresenterViewChangeResult::Completed;
+    return winrt::ScrollPresenterViewChangeResult::Completed;
 }
 
-void ScrollingPresenterTestHooks::NotifyAnchorEvaluated(
-    const winrt::ScrollingPresenter& sender,
+void ScrollPresenterTestHooks::NotifyAnchorEvaluated(
+    const winrt::ScrollPresenter& sender,
     const winrt::UIElement& anchorElement,
     double viewportAnchorPointHorizontalOffset,
     double viewportAnchorPointVerticalOffset)
@@ -258,79 +258,79 @@ void ScrollingPresenterTestHooks::NotifyAnchorEvaluated(
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_anchorEvaluatedEventSource)
     {
-        auto anchorEvaluatedEventArgs = winrt::make<ScrollingPresenterTestHooksAnchorEvaluatedEventArgs>(
+        auto anchorEvaluatedEventArgs = winrt::make<ScrollPresenterTestHooksAnchorEvaluatedEventArgs>(
             anchorElement, viewportAnchorPointHorizontalOffset, viewportAnchorPointVerticalOffset);
 
         hooks->m_anchorEvaluatedEventSource(sender, anchorEvaluatedEventArgs);
     }
 }
 
-winrt::event_token ScrollingPresenterTestHooks::AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksAnchorEvaluatedEventArgs> const& value)
+winrt::event_token ScrollPresenterTestHooks::AnchorEvaluated(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksAnchorEvaluatedEventArgs> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_anchorEvaluatedEventSource.add(value);
 }
 
-void ScrollingPresenterTestHooks::AnchorEvaluated(winrt::event_token const& token)
+void ScrollPresenterTestHooks::AnchorEvaluated(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_anchorEvaluatedEventSource.remove(token);
 }
 
-void ScrollingPresenterTestHooks::NotifyInteractionSourcesChanged(
-    const winrt::ScrollingPresenter& sender,
+void ScrollPresenterTestHooks::NotifyInteractionSourcesChanged(
+    const winrt::ScrollPresenter& sender,
     const winrt::Windows::UI::Composition::Interactions::CompositionInteractionSourceCollection& interactionSources)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_interactionSourcesChangedEventSource)
     {
-        auto interactionSourcesChangedEventArgs = winrt::make<ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs>(
+        auto interactionSourcesChangedEventArgs = winrt::make<ScrollPresenterTestHooksInteractionSourcesChangedEventArgs>(
             interactionSources);
 
         hooks->m_interactionSourcesChangedEventSource(sender, interactionSourcesChangedEventArgs);
     }
 }
 
-winrt::event_token ScrollingPresenterTestHooks::InteractionSourcesChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksInteractionSourcesChangedEventArgs> const& value)
+winrt::event_token ScrollPresenterTestHooks::InteractionSourcesChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksInteractionSourcesChangedEventArgs> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_interactionSourcesChangedEventSource.add(value);
 }
 
-void ScrollingPresenterTestHooks::InteractionSourcesChanged(winrt::event_token const& token)
+void ScrollPresenterTestHooks::InteractionSourcesChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_interactionSourcesChangedEventSource.remove(token);
 }
 
-void ScrollingPresenterTestHooks::NotifyExpressionAnimationStatusChanged(
-    const winrt::ScrollingPresenter& sender,
+void ScrollPresenterTestHooks::NotifyExpressionAnimationStatusChanged(
+    const winrt::ScrollPresenter& sender,
     bool isExpressionAnimationStarted,
     wstring_view const& propertyName)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_expressionAnimationStatusChangedEventSource)
     {
-        auto expressionAnimationStatusChangedEventArgs = winrt::make<ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs>(
+        auto expressionAnimationStatusChangedEventArgs = winrt::make<ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs>(
             isExpressionAnimationStarted, propertyName);
 
         hooks->m_expressionAnimationStatusChangedEventSource(sender, expressionAnimationStatusChangedEventArgs);
     }
 }
 
-winrt::event_token ScrollingPresenterTestHooks::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
+winrt::event_token ScrollPresenterTestHooks::ExpressionAnimationStatusChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_expressionAnimationStatusChangedEventSource.add(value);
 }
 
-void ScrollingPresenterTestHooks::ExpressionAnimationStatusChanged(winrt::event_token const& token)
+void ScrollPresenterTestHooks::ExpressionAnimationStatusChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_expressionAnimationStatusChangedEventSource.remove(token);
 }
 
-void ScrollingPresenterTestHooks::NotifyContentLayoutOffsetXChanged(const winrt::ScrollingPresenter& sender)
+void ScrollPresenterTestHooks::NotifyContentLayoutOffsetXChanged(const winrt::ScrollPresenter& sender)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_contentLayoutOffsetXChangedEventSource)
@@ -339,19 +339,19 @@ void ScrollingPresenterTestHooks::NotifyContentLayoutOffsetXChanged(const winrt:
     }
 }
 
-winrt::event_token ScrollingPresenterTestHooks::ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value)
+winrt::event_token ScrollPresenterTestHooks::ContentLayoutOffsetXChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::IInspectable> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_contentLayoutOffsetXChangedEventSource.add(value);
 }
 
-void ScrollingPresenterTestHooks::ContentLayoutOffsetXChanged(winrt::event_token const& token)
+void ScrollPresenterTestHooks::ContentLayoutOffsetXChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_contentLayoutOffsetXChangedEventSource.remove(token);
 }
 
-void ScrollingPresenterTestHooks::NotifyContentLayoutOffsetYChanged(const winrt::ScrollingPresenter& sender)
+void ScrollPresenterTestHooks::NotifyContentLayoutOffsetYChanged(const winrt::ScrollPresenter& sender)
 {
     auto hooks = EnsureGlobalTestHooks();
     if (hooks->m_contentLayoutOffsetYChangedEventSource)
@@ -360,23 +360,23 @@ void ScrollingPresenterTestHooks::NotifyContentLayoutOffsetYChanged(const winrt:
     }
 }
 
-winrt::event_token ScrollingPresenterTestHooks::ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::ScrollingPresenter, winrt::IInspectable> const& value)
+winrt::event_token ScrollPresenterTestHooks::ContentLayoutOffsetYChanged(winrt::TypedEventHandler<winrt::ScrollPresenter, winrt::IInspectable> const& value)
 {
     auto hooks = EnsureGlobalTestHooks();
     return hooks->m_contentLayoutOffsetYChangedEventSource.add(value);
 }
 
-void ScrollingPresenterTestHooks::ContentLayoutOffsetYChanged(winrt::event_token const& token)
+void ScrollPresenterTestHooks::ContentLayoutOffsetYChanged(winrt::event_token const& token)
 {
     auto hooks = EnsureGlobalTestHooks();
     hooks->m_contentLayoutOffsetYChangedEventSource.remove(token);
 }
 
-winrt::IVector<winrt::ScrollSnapPointBase> ScrollingPresenterTestHooks::GetConsolidatedHorizontalScrollSnapPoints(const winrt::ScrollingPresenter& scrollingPresenter)
+winrt::IVector<winrt::ScrollSnapPointBase> ScrollPresenterTestHooks::GetConsolidatedHorizontalScrollSnapPoints(const winrt::ScrollPresenter& scrollPresenter)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetConsolidatedHorizontalScrollSnapPoints();
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetConsolidatedHorizontalScrollSnapPoints();
     }
     else
     {
@@ -384,11 +384,11 @@ winrt::IVector<winrt::ScrollSnapPointBase> ScrollingPresenterTestHooks::GetConso
     }
 }
 
-winrt::IVector<winrt::ScrollSnapPointBase> ScrollingPresenterTestHooks::GetConsolidatedVerticalScrollSnapPoints(const winrt::ScrollingPresenter& scrollingPresenter)
+winrt::IVector<winrt::ScrollSnapPointBase> ScrollPresenterTestHooks::GetConsolidatedVerticalScrollSnapPoints(const winrt::ScrollPresenter& scrollPresenter)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetConsolidatedVerticalScrollSnapPoints();
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetConsolidatedVerticalScrollSnapPoints();
     }
     else
     {
@@ -396,11 +396,11 @@ winrt::IVector<winrt::ScrollSnapPointBase> ScrollingPresenterTestHooks::GetConso
     }
 }
 
-winrt::IVector<winrt::ZoomSnapPointBase> ScrollingPresenterTestHooks::GetConsolidatedZoomSnapPoints(const winrt::ScrollingPresenter& scrollingPresenter)
+winrt::IVector<winrt::ZoomSnapPointBase> ScrollPresenterTestHooks::GetConsolidatedZoomSnapPoints(const winrt::ScrollPresenter& scrollPresenter)
 {
-    if (scrollingPresenter)
+    if (scrollPresenter)
     {
-        return winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetConsolidatedZoomSnapPoints();
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetConsolidatedZoomSnapPoints();
     }
     else
     {
@@ -408,13 +408,13 @@ winrt::IVector<winrt::ZoomSnapPointBase> ScrollingPresenterTestHooks::GetConsoli
     }
 }
 
-winrt::float2 ScrollingPresenterTestHooks::GetHorizontalSnapPointActualApplicableZone(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+winrt::float2 ScrollPresenterTestHooks::GetHorizontalSnapPointActualApplicableZone(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ScrollSnapPointBase& scrollSnapPoint)
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -425,13 +425,13 @@ winrt::float2 ScrollingPresenterTestHooks::GetHorizontalSnapPointActualApplicabl
     }
 }
 
-winrt::float2 ScrollingPresenterTestHooks::GetVerticalSnapPointActualApplicableZone(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+winrt::float2 ScrollPresenterTestHooks::GetVerticalSnapPointActualApplicableZone(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ScrollSnapPointBase& scrollSnapPoint)
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -442,13 +442,13 @@ winrt::float2 ScrollingPresenterTestHooks::GetVerticalSnapPointActualApplicableZ
     }
 }
 
-winrt::float2 ScrollingPresenterTestHooks::GetZoomSnapPointActualApplicableZone(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+winrt::float2 ScrollPresenterTestHooks::GetZoomSnapPointActualApplicableZone(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ZoomSnapPointBase& zoomSnapPoint)
 {
     if (zoomSnapPoint)
     {
-        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
         auto zone = snapPointWrapper->ActualApplicableZone();
 
         return winrt::float2{ static_cast<float>(std::get<0>(zone)), static_cast<float>(std::get<1>(zone)) };
@@ -459,13 +459,13 @@ winrt::float2 ScrollingPresenterTestHooks::GetZoomSnapPointActualApplicableZone(
     }
 }
 
-int ScrollingPresenterTestHooks::GetHorizontalSnapPointCombinationCount(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+int ScrollPresenterTestHooks::GetHorizontalSnapPointCombinationCount(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ScrollSnapPointBase& scrollSnapPoint)
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
+        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetHorizontalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -475,13 +475,13 @@ int ScrollingPresenterTestHooks::GetHorizontalSnapPointCombinationCount(
     }
 }
 
-int ScrollingPresenterTestHooks::GetVerticalSnapPointCombinationCount(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+int ScrollPresenterTestHooks::GetVerticalSnapPointCombinationCount(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ScrollSnapPointBase& scrollSnapPoint)
 {
     if (scrollSnapPoint)
     {
-        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
+        SnapPointWrapper<winrt::ScrollSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetVerticalSnapPointWrapper(scrollSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -491,13 +491,13 @@ int ScrollingPresenterTestHooks::GetVerticalSnapPointCombinationCount(
     }
 }
 
-int ScrollingPresenterTestHooks::GetZoomSnapPointCombinationCount(
-    const winrt::ScrollingPresenter& scrollingPresenter,
+int ScrollPresenterTestHooks::GetZoomSnapPointCombinationCount(
+    const winrt::ScrollPresenter& scrollPresenter,
     const winrt::ZoomSnapPointBase& zoomSnapPoint)
 {
     if (zoomSnapPoint)
     {
-        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollingPresenter>(scrollingPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
+        SnapPointWrapper<winrt::ZoomSnapPointBase>* snapPointWrapper = winrt::get_self<ScrollPresenter>(scrollPresenter)->GetZoomSnapPointWrapper(zoomSnapPoint);
 
         return snapPointWrapper->CombinationCount();
     }
@@ -507,7 +507,7 @@ int ScrollingPresenterTestHooks::GetZoomSnapPointCombinationCount(
     }
 }
 
-winrt::Color ScrollingPresenterTestHooks::GetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint)
+winrt::Color ScrollPresenterTestHooks::GetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint)
 {
 
 #ifdef _DEBUG
@@ -519,7 +519,7 @@ winrt::Color ScrollingPresenterTestHooks::GetSnapPointVisualizationColor(const w
     return winrt::Colors::Black();
 }
 
-void ScrollingPresenterTestHooks::SetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint, const winrt::Color& color)
+void ScrollPresenterTestHooks::SetSnapPointVisualizationColor(const winrt::SnapPointBase& snapPoint, const winrt::Color& color)
 {
 #ifdef _DEBUG
     if (snapPoint)
@@ -529,15 +529,15 @@ void ScrollingPresenterTestHooks::SetSnapPointVisualizationColor(const winrt::Sn
 #endif // _DEBUG
 }
 
-winrt::ScrollingPresenterViewChangeResult ScrollingPresenterTestHooks::TestHooksViewChangeResult(ScrollingPresenterViewChangeResult result)
+winrt::ScrollPresenterViewChangeResult ScrollPresenterTestHooks::TestHooksViewChangeResult(ScrollPresenterViewChangeResult result)
 {
     switch (result)
     {
-    case ScrollingPresenterViewChangeResult::Ignored:
-        return winrt::ScrollingPresenterViewChangeResult::Ignored;
-    case ScrollingPresenterViewChangeResult::Interrupted:
-        return winrt::ScrollingPresenterViewChangeResult::Interrupted;
+    case ScrollPresenterViewChangeResult::Ignored:
+        return winrt::ScrollPresenterViewChangeResult::Ignored;
+    case ScrollPresenterViewChangeResult::Interrupted:
+        return winrt::ScrollPresenterViewChangeResult::Interrupted;
     default:
-        return winrt::ScrollingPresenterViewChangeResult::Completed;
+        return winrt::ScrollPresenterViewChangeResult::Completed;
     }
 }

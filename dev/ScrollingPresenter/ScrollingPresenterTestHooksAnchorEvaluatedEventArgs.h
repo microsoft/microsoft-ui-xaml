@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include "ScrollingPresenterTestHooksAnchorEvaluatedEventArgs.g.h"
+#include "ScrollPresenterTestHooksAnchorEvaluatedEventArgs.g.h"
 
-class ScrollingPresenterTestHooksAnchorEvaluatedEventArgs :
-    public winrt::implementation::ScrollingPresenterTestHooksAnchorEvaluatedEventArgsT<ScrollingPresenterTestHooksAnchorEvaluatedEventArgs>
+class ScrollPresenterTestHooksAnchorEvaluatedEventArgs :
+    public winrt::implementation::ScrollPresenterTestHooksAnchorEvaluatedEventArgsT<ScrollPresenterTestHooksAnchorEvaluatedEventArgs>
 {
 public:
-    ScrollingPresenterTestHooksAnchorEvaluatedEventArgs(const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAanchorPointVerticalOffset);
+    ScrollPresenterTestHooksAnchorEvaluatedEventArgs(const winrt::UIElement& anchorElement, double viewportAnchorPointHorizontalOffset, double viewportAanchorPointVerticalOffset);
 
-    // IScrollingPresenterTestHooksAnchorEvaluatedEventArgs overrides
+    // IScrollPresenterTestHooksAnchorEvaluatedEventArgs overrides
     winrt::UIElement AnchorElement();
     double ViewportAnchorPointHorizontalOffset();
     double ViewportAnchorPointVerticalOffset();

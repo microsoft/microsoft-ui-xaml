@@ -11,10 +11,10 @@ class ScrollingAnchorRequestedEventArgs :
 public:
     ~ScrollingAnchorRequestedEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollingAnchorRequestedEventArgs(const winrt::ScrollingPresenter& scrollingPresenter);
+    ScrollingAnchorRequestedEventArgs(const winrt::ScrollPresenter& scrollPresenter);
 
 #pragma region IScrollingAnchorRequestedEventArgs
     winrt::IVector<winrt::UIElement> AnchorCandidates();
@@ -31,5 +31,5 @@ public:
 private:
     tracker_ref<winrt::IVector<winrt::UIElement>> m_anchorCandidates{ this };
     tracker_ref<winrt::UIElement> m_anchorElement{ this };
-    tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
+    tracker_ref<winrt::ScrollPresenter> m_scrollPresenter{ this };
 };

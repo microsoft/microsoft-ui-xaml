@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScrollingPresenter.h"
+#include "ScrollPresenter.h"
 #include "ScrollingScrollOptions.g.h"
 
 class ScrollingScrollOptions :
@@ -15,7 +15,7 @@ public:
 
     ~ScrollingScrollOptions()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     static constexpr winrt::ScrollingAnimationMode s_defaultAnimationMode{ winrt::ScrollingAnimationMode::Auto };

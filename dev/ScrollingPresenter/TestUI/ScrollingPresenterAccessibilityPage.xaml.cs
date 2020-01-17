@@ -7,11 +7,11 @@ using Windows.UI.Xaml.Automation.Provider;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterAccessibilityPage : TestPage
+    public sealed partial class ScrollPresenterAccessibilityPage : TestPage
     {
-        private IScrollProvider scrollingPresenterAutomationPeer;
+        private IScrollProvider scrollPresenterAutomationPeer;
 
-        public ScrollingPresenterAccessibilityPage()
+        public ScrollPresenterAccessibilityPage()
         {
             this.InitializeComponent();
         }
@@ -20,19 +20,19 @@ namespace MUXControlsTestApp
         {
             EnsureAutomationPeer();
 
-            if (scrollingPresenterAutomationPeer != null)
+            if (scrollPresenterAutomationPeer != null)
             {
-                scrollingPresenterAutomationPeer.SetScrollPercent(
-                    Math.Min(100.0, scrollingPresenterAutomationPeer.HorizontalScrollPercent + 10.0),
-                    Math.Min(100.0, scrollingPresenterAutomationPeer.VerticalScrollPercent + 15.0));
+                scrollPresenterAutomationPeer.SetScrollPercent(
+                    Math.Min(100.0, scrollPresenterAutomationPeer.HorizontalScrollPercent + 10.0),
+                    Math.Min(100.0, scrollPresenterAutomationPeer.VerticalScrollPercent + 15.0));
             }
         }
 
         private void EnsureAutomationPeer()
         {
-            if (scrollingPresenterAutomationPeer == null)
+            if (scrollPresenterAutomationPeer == null)
             {
-                scrollingPresenterAutomationPeer = FrameworkElementAutomationPeer.CreatePeerForElement(scrollingPresenter) as IScrollProvider;
+                scrollPresenterAutomationPeer = FrameworkElementAutomationPeer.CreatePeerForElement(scrollPresenter) as IScrollProvider;
             }
         }
     }

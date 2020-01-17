@@ -20,7 +20,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
@@ -28,20 +28,20 @@ using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMo
 using ScrollingContentOrientation = Microsoft.UI.Xaml.Controls.ScrollingContentOrientation;
 using ScrollingScrollCompletedEventArgs = Microsoft.UI.Xaml.Controls.ScrollingScrollCompletedEventArgs;
 using ScrollingBringingIntoViewEventArgs = Microsoft.UI.Xaml.Controls.ScrollingBringingIntoViewEventArgs;
-using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
-using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests : ApiTestBase
+    partial class ScrollPresenterTests : ApiTestBase
     {
-        private const double c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize = 600.0;
-        private const double c_defaultBringIntoViewUIScrollingPresenterConstrainedSize = 300.0;
+        private const double c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize = 600.0;
+        private const double c_defaultBringIntoViewUIScrollPresenterConstrainedSize = 300.0;
         private const int c_defaultBringIntoViewUIStackPanelChildrenCount = 16;
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewFromNearEdge()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view.")]
+        public void BringElementIntoHorizontalScrollPresenterViewFromNearEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -53,8 +53,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with snap points.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithSnapPoints()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with snap points.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithSnapPoints()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -75,8 +75,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view.")]
-        public void BringElementIntoVerticalScrollingPresenterViewFromNearEdge()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view.")]
+        public void BringElementIntoVerticalScrollPresenterViewFromNearEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -88,8 +88,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with snap points.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithSnapPoints()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with snap points.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithSnapPoints()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -110,8 +110,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, starting from the maximum offset.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewFromFarEdge()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, starting from the maximum offset.")]
+        public void BringElementIntoHorizontalScrollPresenterViewFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -130,8 +130,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, starting from the maximum offset.")]
-        public void BringElementIntoVerticalScrollingPresenterViewFromFarEdge()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, starting from the maximum offset.")]
+        public void BringElementIntoVerticalScrollPresenterViewFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -150,8 +150,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with left alignment.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithNearAlignment()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with left alignment.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithNearAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -167,8 +167,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with center alignment.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithMiddleAlignment()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with center alignment.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithMiddleAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -184,8 +184,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with right alignment.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithFarAlignment()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with right alignment.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithFarAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -201,8 +201,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with left alignment.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithNearAlignment()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with left alignment.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithNearAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -218,8 +218,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with center alignment.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithMiddleAlignment()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with center alignment.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithMiddleAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -235,8 +235,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with right alignment.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithFarAlignment()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with right alignment.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithFarAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -252,8 +252,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with a shift.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithOffset()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with a shift.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -269,8 +269,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with a shift.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithOffset()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with a shift.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -286,8 +286,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a horizontal ScrollingPresenter into view, with a shift, starting from the maximum offset.")]
-        public void BringElementIntoHorizontalScrollingPresenterViewWithOffsetFromFarEdge()
+        [TestProperty("Description", "Brings an element within a horizontal ScrollPresenter into view, with a shift, starting from the maximum offset.")]
+        public void BringElementIntoHorizontalScrollPresenterViewWithOffsetFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -306,8 +306,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a vertical ScrollingPresenter into view, with a shift, starting from the maximum offset.")]
-        public void BringElementIntoVerticalScrollingPresenterViewWithOffsetFromFarEdge()
+        [TestProperty("Description", "Brings an element within a vertical ScrollPresenter into view, with a shift, starting from the maximum offset.")]
+        public void BringElementIntoVerticalScrollPresenterViewWithOffsetFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -326,7 +326,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a ScrollingPresenter into view, with a TargetRect.")]
+        [TestProperty("Description", "Brings an element within a ScrollPresenter into view, with a TargetRect.")]
         public void BringElementIntoViewWithTargetRect()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -351,7 +351,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings an element within a ScrollingPresenter into view, with a TargetRect and VerticalOffset.")]
+        [TestProperty("Description", "Brings an element within a ScrollPresenter into view, with a TargetRect and VerticalOffset.")]
         public void BringElementIntoViewWithAdjustmentInBringingIntoViewHandler()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -382,8 +382,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view.")]
-        public void BringNestedElementIntoHorizontalScrollingPresenterView()
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view.")]
+        public void BringNestedElementIntoHorizontalScrollPresenterView()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -391,7 +391,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Horizontal,
                 1056.0 /*expectedOuterHorizontalOffset*/,
                 0.0 /*expectedOuterVerticalOffset*/,
@@ -400,8 +400,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside vertical ScrollingPresenters into view.")]
-        public void BringNestedElementIntoVerticalScrollingPresenterView()
+        [TestProperty("Description", "Brings a nested element inside vertical ScrollPresenters into view.")]
+        public void BringNestedElementIntoVerticalScrollPresenterView()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -409,7 +409,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Vertical,
                 0.0 /*expectedOuterHorizontalOffset*/,
                 1056.0 /*expectedOuterVerticalOffset*/,
@@ -454,8 +454,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view, starting from the maximum offsets.")]
-        public void BringNestedElementIntoHorizontalScrollingPresenterViewFromFarEdge()
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view, starting from the maximum offsets.")]
+        public void BringNestedElementIntoHorizontalScrollPresenterViewFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -463,7 +463,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Horizontal,
                 528.0 /*expectedOuterHorizontalOffset*/,
                 0.0 /*expectedOuterVerticalOffset*/,
@@ -479,8 +479,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside vertical ScrollingPresenters into view, starting from the maximum offsets.")]
-        public void BringNestedElementIntoVerticalScrollingPresenterViewFromFarEdge()
+        [TestProperty("Description", "Brings a nested element inside vertical ScrollPresenters into view, starting from the maximum offsets.")]
+        public void BringNestedElementIntoVerticalScrollPresenterViewFromFarEdge()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -488,7 +488,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Vertical,
                 0.0 /*expectedOuterHorizontalOffset*/,
                 528.0 /*expectedOuterVerticalOffset*/,
@@ -504,8 +504,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view, with left alignment.")]
-        public void BringNestedElementIntoHorizontalScrollingPresenterViewWithNearAlignment()
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view, with left alignment.")]
+        public void BringNestedElementIntoHorizontalScrollPresenterViewWithNearAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -520,7 +520,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 options = new BringIntoViewOptions() { HorizontalAlignmentRatio = 0.0 };
             });
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Horizontal,
                 1107.0 /*expectedOuterHorizontalOffset*/,
                 0.0 /*expectedOuterVerticalOffset*/,
@@ -530,8 +530,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view, with snap points.")]
-        public void BringNestedElementIntoHorizontalScrollingPresenterViewWithSnapPoints()
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view, with snap points.")]
+        public void BringNestedElementIntoHorizontalScrollPresenterViewWithSnapPoints()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -539,7 +539,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 orientation: Orientation.Horizontal,
                 expectedOuterHorizontalOffset: 1008.0,
                 expectedOuterVerticalOffset: 0.0,
@@ -556,8 +556,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside vertical ScrollingPresenters into view, with center alignment.")]
-        public void BringNestedElementIntoVerticalScrollingPresenterViewWithMiddleAlignment()
+        [TestProperty("Description", "Brings a nested element inside vertical ScrollPresenters into view, with center alignment.")]
+        public void BringNestedElementIntoVerticalScrollPresenterViewWithMiddleAlignment()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -572,7 +572,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 options = new BringIntoViewOptions() { VerticalAlignmentRatio = 0.5 };
             });
 
-            BringElementInNestedScrollingPresentersIntoView(
+            BringElementInNestedScrollPresentersIntoView(
                 Orientation.Vertical,
                 0.0 /*expectedOuterHorizontalOffset*/,
                 1056.0 /*expectedOuterVerticalOffset*/,
@@ -634,8 +634,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view, with offset.")]
-        public void BringNestedElementIntoHorizontalScrollingPresenterViewWithOffset()
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view, with offset.")]
+        public void BringNestedElementIntoHorizontalScrollPresenterViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -643,7 +643,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollPresenter"))
             {
                 BringIntoViewOptions options = null;
 
@@ -652,7 +652,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     options = new BringIntoViewOptions() { HorizontalOffset = -20.0 };
                 });
 
-                BringElementInNestedScrollingPresentersIntoView(
+                BringElementInNestedScrollPresentersIntoView(
                     Orientation.Horizontal,
                     1056.0 /*expectedOuterHorizontalOffset*/,
                     0.0 /*expectedOuterVerticalOffset*/,
@@ -663,8 +663,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside vertical ScrollingPresenters into view, with offset.")]
-        public void BringNestedElementIntoVerticalScrollingPresenterViewWithOffset()
+        [TestProperty("Description", "Brings a nested element inside vertical ScrollPresenters into view, with offset.")]
+        public void BringNestedElementIntoVerticalScrollPresenterViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
             {
@@ -672,7 +672,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 return;
             }
 
-            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollingPresenter"))
+            using (PrivateLoggingHelper privateLoggingHelper = new PrivateLoggingHelper("ScrollPresenter"))
             {
                 BringIntoViewOptions options = null;
 
@@ -681,7 +681,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     options = new BringIntoViewOptions() { VerticalOffset = -20.0 };
                 });
 
-                BringElementInNestedScrollingPresentersIntoView(
+                BringElementInNestedScrollPresentersIntoView(
                     Orientation.Vertical,
                     0.0 /*expectedOuterHorizontalOffset*/,
                     1056.0 /*expectedOuterVerticalOffset*/,
@@ -692,7 +692,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside horizontal ScrollingPresenters into view, with offset.")]
+        [TestProperty("Description", "Brings a nested element inside horizontal ScrollPresenters into view, with offset.")]
         public void BringNestedElementIntoHorizontalScrollViewerViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -718,7 +718,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Brings a nested element inside vertical ScrollingPresenters into view, with offset.")]
+        [TestProperty("Description", "Brings a nested element inside vertical ScrollPresenters into view, with offset.")]
         public void BringNestedElementIntoVerticalScrollViewerViewWithOffset()
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThan(OSVersion.Redstone3))
@@ -808,57 +808,57 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             bool applyOptionsInBringingIntoViewHandler = false,
             bool applySnapPointsInBringingIntoViewHandler = false)
         {
-            ScrollingPresenter scrollingPresenter = null;
-            AutoResetEvent scrollingPresenterLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent scrollingPresenterViewChangedEvent = new AutoResetEvent(false);
+            ScrollPresenter scrollPresenter = null;
+            AutoResetEvent scrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent scrollPresenterViewChangedEvent = new AutoResetEvent(false);
             AutoResetEvent bringIntoViewCompletedEvent = new AutoResetEvent(false);
             int bringIntoViewChangeId = -1;
 
             RunOnUIThread.Execute(() =>
             {
-                scrollingPresenter = new ScrollingPresenter();
+                scrollPresenter = new ScrollPresenter();
 
-                SetupDefaultBringIntoViewUI(orientation, scrollingPresenter, scrollingPresenterLoadedEvent);
+                SetupDefaultBringIntoViewUI(orientation, scrollPresenter, scrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Loaded event", scrollingPresenterLoadedEvent);
+            WaitForEvent("Waiting for Loaded event", scrollPresenterLoadedEvent);
 
             if (originalZoomFactor != 1.0f)
             {
-                ZoomTo(scrollingPresenter, originalZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+                ZoomTo(scrollPresenter, originalZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalHorizontalOffset != 0 || originalVerticalOffset != 0)
             {
-                ScrollTo(scrollingPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(scrollPresenter, originalHorizontalOffset, originalVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
             {
-                scrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
+                scrollPresenter.ViewChanged += delegate (ScrollPresenter sender, object args)
                 {
                     Log.Comment("ViewChanged - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
                         sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    scrollingPresenterViewChangedEvent.Set();
+                    scrollPresenterViewChangedEvent.Set();
                 };
 
-                scrollingPresenter.ScrollCompleted += delegate (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+                scrollPresenter.ScrollCompleted += delegate (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
                 {
-                    ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
-                    Log.Comment("ScrollingPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
+                    Log.Comment("ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
                     if (bringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         bringIntoViewCompletedEvent.Set();
                 };
 
-                scrollingPresenter.BringingIntoView += (ScrollingPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
+                scrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("ScrollingPresenter.BringingIntoView ScrollingPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
+                    Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
                         sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
                     bringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
 
                     if (applyOptionsInBringingIntoViewHandler && options != null)
                     {
-                        Log.Comment("ScrollingPresenter.BringingIntoView - Applying custom options");
+                        Log.Comment("ScrollPresenter.BringingIntoView - Applying custom options");
                         args.RequestEventArgs.AnimationDesired = options.AnimationDesired;
                         args.RequestEventArgs.HorizontalOffset = options.HorizontalOffset;
                         args.RequestEventArgs.VerticalOffset = options.VerticalOffset;
@@ -870,13 +870,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     if (applySnapPointsInBringingIntoViewHandler)
                     {
-                        Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
-                        AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
+                        Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
+                        AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
                         args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
-                UIElement targetElement = ((scrollingPresenter.Content as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((scrollPresenter.Content as Border).Child as StackPanel).Children[12];
                 BringIntoViewOptions startingOptions = null;
 
                 if (options == null)
@@ -899,21 +899,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
 
-            WaitForEvent("Waiting for ScrollingPresenter.ViewChanged event", scrollingPresenterViewChangedEvent);
+            WaitForEvent("Waiting for ScrollPresenter.ViewChanged event", scrollPresenterViewChangedEvent);
             WaitForEvent("Waiting for bring-into-view operation completion event", bringIntoViewCompletedEvent);
             IdleSynchronizer.Wait();
 
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    scrollingPresenter.HorizontalOffset, scrollingPresenter.VerticalOffset, scrollingPresenter.ZoomFactor);
-                Verify.AreEqual(expectedHorizontalOffset, scrollingPresenter.HorizontalOffset);
-                Verify.AreEqual(expectedVerticalOffset, scrollingPresenter.VerticalOffset);
-                Verify.AreEqual(originalZoomFactor, scrollingPresenter.ZoomFactor);
+                    scrollPresenter.HorizontalOffset, scrollPresenter.VerticalOffset, scrollPresenter.ZoomFactor);
+                Verify.AreEqual(expectedHorizontalOffset, scrollPresenter.HorizontalOffset);
+                Verify.AreEqual(expectedVerticalOffset, scrollPresenter.VerticalOffset);
+                Verify.AreEqual(originalZoomFactor, scrollPresenter.ZoomFactor);
             });
         }
 
-        private void BringElementInNestedScrollingPresentersIntoView(
+        private void BringElementInNestedScrollPresentersIntoView(
             Orientation orientation,
             double expectedOuterHorizontalOffset,
             double expectedOuterVerticalOffset,
@@ -928,12 +928,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float originalInnerZoomFactor = 1.0f,
             bool applySnapPointsInBringingIntoViewHandler = false)
         {
-            ScrollingPresenter outerScrollingPresenter = null;
-            ScrollingPresenter innerScrollingPresenter = null;
-            AutoResetEvent outerScrollingPresenterLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent innerScrollingPresenterLoadedEvent = new AutoResetEvent(false);
-            AutoResetEvent outerScrollingPresenterViewChangedEvent = new AutoResetEvent(false);
-            AutoResetEvent innerScrollingPresenterViewChangedEvent = new AutoResetEvent(false);
+            ScrollPresenter outerScrollPresenter = null;
+            ScrollPresenter innerScrollPresenter = null;
+            AutoResetEvent outerScrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent innerScrollPresenterLoadedEvent = new AutoResetEvent(false);
+            AutoResetEvent outerScrollPresenterViewChangedEvent = new AutoResetEvent(false);
+            AutoResetEvent innerScrollPresenterViewChangedEvent = new AutoResetEvent(false);
             AutoResetEvent outerBringIntoViewCompletedEvent = new AutoResetEvent(false);
             AutoResetEvent innerBringIntoViewCompletedEvent = new AutoResetEvent(false);
             int outerBringIntoViewChangeId = -1;
@@ -941,97 +941,97 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             RunOnUIThread.Execute(() =>
             {
-                outerScrollingPresenter = new ScrollingPresenter();
-                innerScrollingPresenter = new ScrollingPresenter();
+                outerScrollPresenter = new ScrollPresenter();
+                innerScrollPresenter = new ScrollPresenter();
 
-                SetupBringIntoViewUIWithScrollingPresenterInsideScrollingPresenter(orientation, outerScrollingPresenter, innerScrollingPresenter, outerScrollingPresenterLoadedEvent, innerScrollingPresenterLoadedEvent);
+                SetupBringIntoViewUIWithScrollPresenterInsideScrollPresenter(orientation, outerScrollPresenter, innerScrollPresenter, outerScrollPresenterLoadedEvent, innerScrollPresenterLoadedEvent);
             });
 
-            WaitForEvent("Waiting for Inner Loaded event", innerScrollingPresenterLoadedEvent);
-            WaitForEvent("Waiting for Outer Loaded event", outerScrollingPresenterLoadedEvent);
+            WaitForEvent("Waiting for Inner Loaded event", innerScrollPresenterLoadedEvent);
+            WaitForEvent("Waiting for Outer Loaded event", outerScrollPresenterLoadedEvent);
 
             if (originalOuterZoomFactor != 1.0f)
             {
-                ZoomTo(outerScrollingPresenter, originalOuterZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+                ZoomTo(outerScrollPresenter, originalOuterZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalOuterHorizontalOffset != 0 || originalOuterVerticalOffset != 0)
             {
-                ScrollTo(outerScrollingPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(outerScrollPresenter, originalOuterHorizontalOffset, originalOuterVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalOuterZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             if (originalInnerZoomFactor != 1.0f)
             {
-                ZoomTo(innerScrollingPresenter, originalInnerZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
+                ZoomTo(innerScrollPresenter, originalInnerZoomFactor, 0.0f, 0.0f, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore);
             }
 
             if (originalInnerHorizontalOffset != 0 || originalInnerVerticalOffset != 0)
             {
-                ScrollTo(innerScrollingPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
+                ScrollTo(innerScrollPresenter, originalInnerHorizontalOffset, originalInnerVerticalOffset, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore, originalInnerZoomFactor == 1.0f /*hookViewChanged*/);
             }
 
             RunOnUIThread.Execute(() =>
             {
-                innerScrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
+                innerScrollPresenter.ViewChanged += delegate (ScrollPresenter sender, object args)
                 {
-                    Log.Comment("Inner ViewChanged ScrollingPresenter={0} - HorizontalOffset={1}, VerticalOffset={2}, ZoomFactor={3}",
+                    Log.Comment("Inner ViewChanged ScrollPresenter={0} - HorizontalOffset={1}, VerticalOffset={2}, ZoomFactor={3}",
                         sender.Name, sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    innerScrollingPresenterViewChangedEvent.Set();
+                    innerScrollPresenterViewChangedEvent.Set();
                 };
 
-                innerScrollingPresenter.ScrollCompleted += delegate (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+                innerScrollPresenter.ScrollCompleted += delegate (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
                 {
-                    ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
+                    ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                    Log.Comment("Inner ScrollingPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    Log.Comment("Inner ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
                     if (innerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         innerBringIntoViewCompletedEvent.Set();
                 };
 
-                innerScrollingPresenter.BringingIntoView += (ScrollingPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
+                innerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Inner ScrollingPresenter.BringingIntoView ScrollingPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
+                    Log.Comment("Inner ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
                         sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
                     innerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
 
                     if (applySnapPointsInBringingIntoViewHandler)
                     {
-                        Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
-                        AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
+                        Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
+                        AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
                         args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
-                outerScrollingPresenter.ViewChanged += delegate (ScrollingPresenter sender, object args)
+                outerScrollPresenter.ViewChanged += delegate (ScrollPresenter sender, object args)
                 {
-                    Log.Comment("Outer ViewChanged ScrollingPresenter={0} - HorizontalOffset={1}, VerticalOffset={2}, ZoomFactor={3}",
+                    Log.Comment("Outer ViewChanged ScrollPresenter={0} - HorizontalOffset={1}, VerticalOffset={2}, ZoomFactor={3}",
                         sender.Name, sender.HorizontalOffset, sender.VerticalOffset, sender.ZoomFactor);
-                    outerScrollingPresenterViewChangedEvent.Set();
+                    outerScrollPresenterViewChangedEvent.Set();
                 };
 
-                outerScrollingPresenter.ScrollCompleted += delegate (ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+                outerScrollPresenter.ScrollCompleted += delegate (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
                 {
-                    ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
-                    Log.Comment("Outer ScrollingPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
+                    ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
+                    Log.Comment("Outer ScrollPresenter bring-into-view OffsetsChangeId={0} completed with Result={1}", args.ScrollInfo.OffsetsChangeId, result);
                     if (outerBringIntoViewChangeId == args.ScrollInfo.OffsetsChangeId)
                         outerBringIntoViewCompletedEvent.Set();
                 };
 
-                outerScrollingPresenter.BringingIntoView += (ScrollingPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
+                outerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
                 {
-                    Log.Comment("Outer ScrollingPresenter.BringingIntoView ScrollingPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
+                    Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
                         sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
                     outerBringIntoViewChangeId = args.ScrollInfo.OffsetsChangeId;
 
                     if (applySnapPointsInBringingIntoViewHandler)
                     {
-                        Log.Comment("ScrollingPresenter.BringingIntoView - Applying mandatory snap points");
-                        AddSnapPoints(scrollingPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
+                        Log.Comment("ScrollPresenter.BringingIntoView - Applying mandatory snap points");
+                        AddSnapPoints(scrollPresenter: sender, stackPanel: (sender.Content as Border).Child as StackPanel);
                         args.SnapPointsMode = ScrollingSnapPointsMode.Default;
                     }
                 };
 
-                UIElement targetElement = ((innerScrollingPresenter.Content as Border).Child as StackPanel).Children[12];
+                UIElement targetElement = ((innerScrollPresenter.Content as Border).Child as StackPanel).Children[12];
 
                 if (options == null)
                 {
@@ -1043,8 +1043,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 }
             });
 
-            WaitForEvent("Waiting for inner ScrollingPresenter.ViewChanged event", innerScrollingPresenterViewChangedEvent);
-            WaitForEvent("Waiting for outer ScrollingPresenter.ViewChanged event", outerScrollingPresenterViewChangedEvent);
+            WaitForEvent("Waiting for inner ScrollPresenter.ViewChanged event", innerScrollPresenterViewChangedEvent);
+            WaitForEvent("Waiting for outer ScrollPresenter.ViewChanged event", outerScrollPresenterViewChangedEvent);
             WaitForEvent("Waiting for inner bring-into-view operation completion event", innerBringIntoViewCompletedEvent);
             WaitForEvent("Waiting for outer bring-into-view operation completion event", outerBringIntoViewCompletedEvent);
             IdleSynchronizer.Wait();
@@ -1052,17 +1052,17 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Final inner view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    innerScrollingPresenter.HorizontalOffset, innerScrollingPresenter.VerticalOffset, innerScrollingPresenter.ZoomFactor);
+                    innerScrollPresenter.HorizontalOffset, innerScrollPresenter.VerticalOffset, innerScrollPresenter.ZoomFactor);
                 Log.Comment("Final outer view - HorizontalOffset={0}, VerticalOffset={1}, ZoomFactor={2}",
-                    outerScrollingPresenter.HorizontalOffset, outerScrollingPresenter.VerticalOffset, outerScrollingPresenter.ZoomFactor);
+                    outerScrollPresenter.HorizontalOffset, outerScrollPresenter.VerticalOffset, outerScrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(expectedInnerHorizontalOffset, innerScrollingPresenter.HorizontalOffset);
-                Verify.AreEqual(expectedInnerVerticalOffset, innerScrollingPresenter.VerticalOffset);
-                Verify.AreEqual(originalInnerZoomFactor, innerScrollingPresenter.ZoomFactor);
+                Verify.AreEqual(expectedInnerHorizontalOffset, innerScrollPresenter.HorizontalOffset);
+                Verify.AreEqual(expectedInnerVerticalOffset, innerScrollPresenter.VerticalOffset);
+                Verify.AreEqual(originalInnerZoomFactor, innerScrollPresenter.ZoomFactor);
 
-                Verify.AreEqual(expectedOuterHorizontalOffset, outerScrollingPresenter.HorizontalOffset);
-                Verify.AreEqual(expectedOuterVerticalOffset, outerScrollingPresenter.VerticalOffset);
-                Verify.AreEqual(originalOuterZoomFactor, outerScrollingPresenter.ZoomFactor);
+                Verify.AreEqual(expectedOuterHorizontalOffset, outerScrollPresenter.HorizontalOffset);
+                Verify.AreEqual(expectedOuterVerticalOffset, outerScrollPresenter.VerticalOffset);
+                Verify.AreEqual(originalOuterZoomFactor, outerScrollPresenter.ZoomFactor);
             });
         }
 
@@ -1147,11 +1147,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
         private void SetupDefaultBringIntoViewUI(
             Orientation orientation,
-            ScrollingPresenter scrollingPresenter,
-            AutoResetEvent scrollingPresenterLoadedEvent,
+            ScrollPresenter scrollPresenter,
+            AutoResetEvent scrollPresenterLoadedEvent,
             bool setAsContentRoot = true)
         {
-            Log.Comment("Setting up default bring-into-view UI with ScrollingPresenter");
+            Log.Comment("Setting up default bring-into-view UI with ScrollPresenter");
 
             StackPanel stackPanel = new StackPanel();
             stackPanel.Name = "stackPanel";
@@ -1166,37 +1166,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             border.Background = new SolidColorBrush(Colors.Beige);
             border.Child = stackPanel;
 
-            Verify.IsNotNull(scrollingPresenter);
-            scrollingPresenter.Name = "scrollingPresenter";
+            Verify.IsNotNull(scrollPresenter);
+            scrollPresenter.Name = "scrollPresenter";
             if (orientation == Orientation.Vertical)
             {
-                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
-                scrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
-                scrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
+                scrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
+                scrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
-                scrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
-                scrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
-                scrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
+                scrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
+                scrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
+                scrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
-            scrollingPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
-            scrollingPresenter.Content = border;
+            scrollPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
+            scrollPresenter.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount /*newCount*/);
 
-            if (scrollingPresenterLoadedEvent != null)
+            if (scrollPresenterLoadedEvent != null)
             {
-                scrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
+                scrollPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("ScrollingPresenter.Loaded event handler");
-                    scrollingPresenterLoadedEvent.Set();
+                    Log.Comment("ScrollPresenter.Loaded event handler");
+                    scrollPresenterLoadedEvent.Set();
                 };
             }
 
-            scrollingPresenter.BringingIntoView += (ScrollingPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
+            scrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("ScrollingPresenter.BringingIntoView ScrollingPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
+                Log.Comment("ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}",
                     sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}",
                     args.RequestEventArgs.AnimationDesired,
@@ -1213,7 +1213,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                Content = scrollingPresenter;
+                Content = scrollPresenter;
             }
         }
 
@@ -1244,15 +1244,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
                 scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-                scrollViewer.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
-                scrollViewer.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
+                scrollViewer.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
+                scrollViewer.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
                 scrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
                 scrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-                scrollViewer.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
-                scrollViewer.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
+                scrollViewer.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
+                scrollViewer.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
             scrollViewer.Background = new SolidColorBrush(Colors.AliceBlue);
             scrollViewer.Content = border;
@@ -1275,23 +1275,23 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private void SetupBringIntoViewUIWithScrollingPresenterInsideScrollingPresenter(
+        private void SetupBringIntoViewUIWithScrollPresenterInsideScrollPresenter(
             Orientation orientation,
-            ScrollingPresenter outerScrollingPresenter,
-            ScrollingPresenter innerScrollingPresenter,
-            AutoResetEvent outerScrollingPresenterLoadedEvent,
-            AutoResetEvent innerScrollingPresenterLoadedEvent)
+            ScrollPresenter outerScrollPresenter,
+            ScrollPresenter innerScrollPresenter,
+            AutoResetEvent outerScrollPresenterLoadedEvent,
+            AutoResetEvent innerScrollPresenterLoadedEvent)
         {
-            Log.Comment("Setting up bring-into-view UI with ScrollingPresenter inside ScrollingPresenter");
+            Log.Comment("Setting up bring-into-view UI with ScrollPresenter inside ScrollPresenter");
 
-            Log.Comment("Setting up inner ScrollingPresenter");
+            Log.Comment("Setting up inner ScrollPresenter");
             SetupDefaultBringIntoViewUI(
                 orientation,
-                innerScrollingPresenter,
-                innerScrollingPresenterLoadedEvent,
+                innerScrollPresenter,
+                innerScrollPresenterLoadedEvent,
                 false /*setAsContentRoot*/);
 
-            Log.Comment("Setting up outer ScrollingPresenter");
+            Log.Comment("Setting up outer ScrollPresenter");
             StackPanel stackPanel = new StackPanel();
             stackPanel.Name = "outerStackPanel";
             stackPanel.Orientation = orientation;
@@ -1305,41 +1305,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             border.Background = new SolidColorBrush(Colors.Beige);
             border.Child = stackPanel;
 
-            Verify.IsNotNull(outerScrollingPresenter);
-            outerScrollingPresenter.Name = "outerScrollingPresenter";
+            Verify.IsNotNull(outerScrollPresenter);
+            outerScrollPresenter.Name = "outerScrollPresenter";
             if (orientation == Orientation.Vertical)
             {
-                outerScrollingPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
-                outerScrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
-                outerScrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
+                outerScrollPresenter.ContentOrientation = ScrollingContentOrientation.Vertical;
+                outerScrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
+                outerScrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
-                outerScrollingPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
-                outerScrollingPresenter.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
-                outerScrollingPresenter.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
+                outerScrollPresenter.ContentOrientation = ScrollingContentOrientation.Horizontal;
+                outerScrollPresenter.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
+                outerScrollPresenter.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
-            outerScrollingPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
-            outerScrollingPresenter.Content = border;
+            outerScrollPresenter.Background = new SolidColorBrush(Colors.AliceBlue);
+            outerScrollPresenter.Content = border;
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, 0 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount / 2 /*newCount*/, "outer" /*namePrefix*/);
 
-            stackPanel.Children.Add(innerScrollingPresenter);
+            stackPanel.Children.Add(innerScrollPresenter);
 
             InsertStackPanelChild(stackPanel, 0 /*operationCount*/, c_defaultBringIntoViewUIStackPanelChildrenCount / 2 + 1 /*newIndex*/, c_defaultBringIntoViewUIStackPanelChildrenCount / 2 /*newCount*/, "outer" /*namePrefix*/);
 
-            if (outerScrollingPresenterLoadedEvent != null)
+            if (outerScrollPresenterLoadedEvent != null)
             {
-                outerScrollingPresenter.Loaded += (object sender, RoutedEventArgs e) =>
+                outerScrollPresenter.Loaded += (object sender, RoutedEventArgs e) =>
                 {
-                    Log.Comment("Outer ScrollingPresenter.Loaded event handler");
-                    outerScrollingPresenterLoadedEvent.Set();
+                    Log.Comment("Outer ScrollPresenter.Loaded event handler");
+                    outerScrollPresenterLoadedEvent.Set();
                 };
             }
 
-            outerScrollingPresenter.BringingIntoView += (ScrollingPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
+            outerScrollPresenter.BringingIntoView += (ScrollPresenter sender, ScrollingBringingIntoViewEventArgs args) =>
             {
-                Log.Comment("Outer ScrollingPresenter.BringingIntoView ScrollingPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
+                Log.Comment("Outer ScrollPresenter.BringingIntoView ScrollPresenter={0} - TargetHorizontalOffset={1}, TargetVerticalOffset={2}, OffsetsChangeId={3}, SnapPointsMode={4}",
                     sender.Name, args.TargetHorizontalOffset, args.TargetVerticalOffset, args.ScrollInfo.OffsetsChangeId, args.SnapPointsMode);
                 Log.Comment("RequestEventArgs - AnimationDesired={0}, Handled={1}, HorizontalAlignmentRatio={2}, VerticalAlignmentRatio={3}",
                     args.RequestEventArgs.AnimationDesired,
@@ -1354,7 +1354,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             };
 
             Log.Comment("Setting window content");
-            Content = outerScrollingPresenter;
+            Content = outerScrollPresenter;
         }
 
         private void SetupBringIntoViewUIWithScrollViewerInsideScrollViewer(
@@ -1393,15 +1393,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 outerScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled;
                 outerScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
-                outerScrollViewer.Width = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
-                outerScrollViewer.Height = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
+                outerScrollViewer.Width = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
+                outerScrollViewer.Height = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
             }
             else
             {
                 outerScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled;
                 outerScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto;
-                outerScrollViewer.Width = c_defaultBringIntoViewUIScrollingPresenterNonConstrainedSize;
-                outerScrollViewer.Height = c_defaultBringIntoViewUIScrollingPresenterConstrainedSize;
+                outerScrollViewer.Width = c_defaultBringIntoViewUIScrollPresenterNonConstrainedSize;
+                outerScrollViewer.Height = c_defaultBringIntoViewUIScrollPresenterConstrainedSize;
             }
             outerScrollViewer.Background = new SolidColorBrush(Colors.AliceBlue);
             outerScrollViewer.Content = border;
@@ -1425,33 +1425,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             Content = outerScrollViewer;
         }
 
-        private void AddSnapPoints(ScrollingPresenter scrollingPresenter, StackPanel stackPanel)
+        private void AddSnapPoints(ScrollPresenter scrollPresenter, StackPanel stackPanel)
         {
-            Verify.IsNotNull(scrollingPresenter);
+            Verify.IsNotNull(scrollPresenter);
 
             if (stackPanel == null || stackPanel.Children.Count == 0)
             {
                 return;
             }
 
-            Log.Comment("Populating snap points for " + scrollingPresenter.Name + ":");
+            Log.Comment("Populating snap points for " + scrollPresenter.Name + ":");
 
             ScrollSnapPoint scrollSnapPoint;
-            GeneralTransform gt = stackPanel.TransformToVisual(scrollingPresenter.Content);
+            GeneralTransform gt = stackPanel.TransformToVisual(scrollPresenter.Content);
             Point stackPanelOriginPoint = new Point();
             stackPanelOriginPoint = gt.TransformPoint(stackPanelOriginPoint);
 
             if (stackPanel.Orientation == Orientation.Horizontal)
             {
                 scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.X, ScrollSnapPointsAlignment.Near);
-                Log.Comment("Adding horizontal snap point to " + scrollingPresenter.Name + " at value " + stackPanelOriginPoint.X);
-                scrollingPresenter.HorizontalSnapPoints.Add(scrollSnapPoint);
+                Log.Comment("Adding horizontal snap point to " + scrollPresenter.Name + " at value " + stackPanelOriginPoint.X);
+                scrollPresenter.HorizontalSnapPoints.Add(scrollSnapPoint);
             }
             else
             {
                 scrollSnapPoint = new ScrollSnapPoint(stackPanelOriginPoint.Y, ScrollSnapPointsAlignment.Near);
-                Log.Comment("Adding vertical snap point to " + scrollingPresenter.Name + " at value " + stackPanelOriginPoint.Y);
-                scrollingPresenter.VerticalSnapPoints.Add(scrollSnapPoint);
+                Log.Comment("Adding vertical snap point to " + scrollPresenter.Name + " at value " + stackPanelOriginPoint.Y);
+                scrollPresenter.VerticalSnapPoints.Add(scrollSnapPoint);
             }
 
             foreach (UIElement child in stackPanel.Children)
@@ -1470,11 +1470,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     if (stackPanel.Orientation == Orientation.Horizontal)
                     {
                         snapPointValue = margin.Right + childAsFE.ActualWidth + childOriginPoint.X;
-                        if (snapPointValue <= scrollingPresenter.ScrollableWidth)
+                        if (snapPointValue <= scrollPresenter.ScrollableWidth)
                         {
                             scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
-                            Log.Comment("Adding horizontal snap point to " + scrollingPresenter.Name + " at value " + snapPointValue);
-                            scrollingPresenter.HorizontalSnapPoints.Add(scrollSnapPoint);
+                            Log.Comment("Adding horizontal snap point to " + scrollPresenter.Name + " at value " + snapPointValue);
+                            scrollPresenter.HorizontalSnapPoints.Add(scrollSnapPoint);
                         }
                         else
                         {
@@ -1484,11 +1484,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     else
                     {
                         snapPointValue = margin.Bottom + childAsFE.ActualHeight + childOriginPoint.Y;
-                        if (snapPointValue <= scrollingPresenter.ScrollableHeight)
+                        if (snapPointValue <= scrollPresenter.ScrollableHeight)
                         {
                             scrollSnapPoint = new ScrollSnapPoint(snapPointValue, ScrollSnapPointsAlignment.Near);
-                            Log.Comment("Adding vertical snap point to " + scrollingPresenter.Name + " at value " + snapPointValue);
-                            scrollingPresenter.VerticalSnapPoints.Add(scrollSnapPoint);
+                            Log.Comment("Adding vertical snap point to " + scrollPresenter.Name + " at value " + snapPointValue);
+                            scrollPresenter.VerticalSnapPoints.Add(scrollSnapPoint);
                         }
                         else
                         {
@@ -1497,7 +1497,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     }
                 }
 
-                AddSnapPoints(scrollingPresenter, child as StackPanel);
+                AddSnapPoints(scrollPresenter, child as StackPanel);
             }
         }
     }

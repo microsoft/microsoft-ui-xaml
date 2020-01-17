@@ -10,7 +10,7 @@ winrt::ScrollingScrollInfo ScrollingScrollCompletedEventArgs::ScrollInfo()
     return winrt::ScrollingScrollInfo{ m_offsetsChangeId };
 }
 
-ScrollingPresenterViewChangeResult ScrollingScrollCompletedEventArgs::Result()
+ScrollPresenterViewChangeResult ScrollingScrollCompletedEventArgs::Result()
 {
     return m_result;
 }
@@ -20,7 +20,7 @@ void ScrollingScrollCompletedEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
     m_offsetsChangeId = offsetsChangeId;
 }
 
-void ScrollingScrollCompletedEventArgs::Result(ScrollingPresenterViewChangeResult result)
+void ScrollingScrollCompletedEventArgs::Result(ScrollPresenterViewChangeResult result)
 {
     m_result = result;
 }

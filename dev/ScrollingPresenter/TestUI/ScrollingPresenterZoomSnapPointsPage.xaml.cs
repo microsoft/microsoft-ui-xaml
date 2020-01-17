@@ -9,7 +9,7 @@ using Windows.UI.Xaml.Navigation;
 
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
 using RepeatedZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint;
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingZoomOptions = Microsoft.UI.Xaml.Controls.ScrollingZoomOptions;
@@ -19,43 +19,43 @@ using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Control
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterZoomSnapPointsPage : TestPage
+    public sealed partial class ScrollPresenterZoomSnapPointsPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
 
-        public ScrollingPresenterZoomSnapPointsPage()
+        public ScrollPresenterZoomSnapPointsPage()
         {
             this.InitializeComponent();
-            Loaded += ScrollingPresenterZoomSnapPointsPage_Loaded;
+            Loaded += ScrollPresenterZoomSnapPointsPage_Loaded;
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
         {
-            if (chkLogScrollingPresenterMessages.IsChecked == true)
+            if (chkLogScrollPresenterMessages.IsChecked == true)
             {
-                MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+                MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
                 MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
             }
 
             base.OnNavigatedFrom(e);
         }
 
-        private void ScrollingPresenterZoomSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
+        private void ScrollPresenterZoomSnapPointsPage_Loaded(object sender, RoutedEventArgs e)
         {
-            this.markupScrollingPresenter.ViewChanged += MarkupScrollingPresenter_ViewChanged;
-            this.markupScrollingPresenter.StateChanged += MarkupScrollingPresenter_StateChanged;
+            this.markupScrollPresenter.ViewChanged += MarkupScrollPresenter_ViewChanged;
+            this.markupScrollPresenter.StateChanged += MarkupScrollPresenter_StateChanged;
         }
 
-        private void MarkupScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
+        private void MarkupScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
-            this.txtScrollingPresenterHorizontalOffset.Text = this.markupScrollingPresenter.HorizontalOffset.ToString();
-            this.txtScrollingPresenterVerticalOffset.Text = this.markupScrollingPresenter.VerticalOffset.ToString();
-            this.txtScrollingPresenterZoomFactor.Text = this.markupScrollingPresenter.ZoomFactor.ToString();
+            this.txtScrollPresenterHorizontalOffset.Text = this.markupScrollPresenter.HorizontalOffset.ToString();
+            this.txtScrollPresenterVerticalOffset.Text = this.markupScrollPresenter.VerticalOffset.ToString();
+            this.txtScrollPresenterZoomFactor.Text = this.markupScrollPresenter.ZoomFactor.ToString();
         }
 
-        private void MarkupScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
+        private void MarkupScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            this.txtScrollingPresenterState.Text = this.markupScrollingPresenter.State.ToString();
+            this.txtScrollPresenterState.Text = this.markupScrollPresenter.State.ToString();
         }
 
         private void BtnMIAddSnapPoint_Click(object sender, RoutedEventArgs e)
@@ -64,7 +64,7 @@ namespace MUXControlsTestApp
             {
                 double value = Convert.ToDouble(txtMISnapPointValue.Text);
                 ZoomSnapPoint newSnapPoint = new ZoomSnapPoint(value);
-                markupScrollingPresenter.ZoomSnapPoints.Add(newSnapPoint);
+                markupScrollPresenter.ZoomSnapPoints.Add(newSnapPoint);
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace MUXControlsTestApp
                 double value = Convert.ToDouble(txtOISnapPointValue.Text);
                 double range = Convert.ToDouble(txtOIApplicableRange.Text);
                 ZoomSnapPoint newSnapPoint = new ZoomSnapPoint(value, range);
-                markupScrollingPresenter.ZoomSnapPoints.Add(newSnapPoint);
+                markupScrollPresenter.ZoomSnapPoints.Add(newSnapPoint);
             }
             catch (Exception ex)
             {
@@ -100,7 +100,7 @@ namespace MUXControlsTestApp
                 double start = Convert.ToDouble(txtMRSnapPointStart.Text);
                 double end = Convert.ToDouble(txtMRSnapPointEnd.Text);
                 RepeatedZoomSnapPoint newSnapPoint = new RepeatedZoomSnapPoint(offset, interval, start, end);
-                markupScrollingPresenter.ZoomSnapPoints.Add(newSnapPoint);
+                markupScrollPresenter.ZoomSnapPoints.Add(newSnapPoint);
             }
             catch (Exception ex)
             {
@@ -121,7 +121,7 @@ namespace MUXControlsTestApp
                 double end = Convert.ToDouble(txtORSnapPointEnd.Text);
 
                 RepeatedZoomSnapPoint newSnapPoint = new RepeatedZoomSnapPoint(offset, interval, start, end, range);
-                markupScrollingPresenter.ZoomSnapPoints.Add(newSnapPoint);
+                markupScrollPresenter.ZoomSnapPoints.Add(newSnapPoint);
             }
             catch (Exception ex)
             {
@@ -135,7 +135,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                markupScrollingPresenter.ZoomSnapPoints.RemoveAt(0);
+                markupScrollPresenter.ZoomSnapPoints.RemoveAt(0);
             }
             catch (Exception ex)
             {
@@ -147,7 +147,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                markupScrollingPresenter.ZoomSnapPoints.Clear();
+                markupScrollPresenter.ZoomSnapPoints.Clear();
             }
             catch (Exception ex)
             {
@@ -155,12 +155,12 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollingPresenterZoomFactorChange_Click(object sender, RoutedEventArgs e)
+        private void BtnScrollPresenterZoomFactorChange_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                float changeAmount = Convert.ToSingle(txtScrollingPresenterZoomFactorChange.Text);
-                markupScrollingPresenter.ZoomFrom(changeAmount + 0.05f, null, null);
+                float changeAmount = Convert.ToSingle(txtScrollPresenterZoomFactorChange.Text);
+                markupScrollPresenter.ZoomFrom(changeAmount + 0.05f, null, null);
             }
             catch (Exception ex)
             {
@@ -172,7 +172,7 @@ namespace MUXControlsTestApp
         {
             try
             { 
-                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
+                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Default));
             }
             catch (Exception ex)
             {
@@ -184,7 +184,7 @@ namespace MUXControlsTestApp
         {
             try
             {                
-                markupScrollingPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
+                markupScrollPresenter.ZoomBy(1.0f, null, new ScrollingZoomOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
             }
             catch (Exception ex)
             {
@@ -197,18 +197,18 @@ namespace MUXControlsTestApp
             txtExceptionReport.Text = string.Empty;
         }
 
-        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //Turn on info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //Turn on info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //Turn off info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //Turn off info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }

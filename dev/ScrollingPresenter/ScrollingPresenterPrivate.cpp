@@ -4,54 +4,54 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenter.h"
+#include "ScrollPresenter.h"
 #include "DoubleUtil.h"
 
-bool ScrollingPresenter::IsHorizontallyScrollable()
+bool ScrollPresenter::IsHorizontallyScrollable()
 {
     return m_contentOrientation != winrt::ScrollingContentOrientation::Vertical;
 }
 
-bool ScrollingPresenter::IsVerticallyScrollable()
+bool ScrollPresenter::IsVerticallyScrollable()
 {
     return m_contentOrientation != winrt::ScrollingContentOrientation::Horizontal;
 }
 
-winrt::event_token ScrollingPresenter::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
+winrt::event_token ScrollPresenter::ViewportChanged(winrt::ViewportChangedEventHandler const& value)
 {
     return m_viewportChanged.add(value);
 }
 
-void ScrollingPresenter::ViewportChanged(winrt::event_token const& token)
+void ScrollPresenter::ViewportChanged(winrt::event_token const& token)
 {
     m_viewportChanged.remove(token);
 }
 
-winrt::event_token ScrollingPresenter::PostArrange(winrt::PostArrangeEventHandler const& value)
+winrt::event_token ScrollPresenter::PostArrange(winrt::PostArrangeEventHandler const& value)
 {
     return m_postArrange.add(value);
 }
 
-void ScrollingPresenter::PostArrange(winrt::event_token const& token)
+void ScrollPresenter::PostArrange(winrt::event_token const& token)
 {
     m_postArrange.remove(token);
 }
 
-winrt::event_token ScrollingPresenter::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
+winrt::event_token ScrollPresenter::ConfigurationChanged(winrt::ConfigurationChangedEventHandler const& value)
 {
     return m_configurationChanged.add(value);
 }
 
-void ScrollingPresenter::ConfigurationChanged(winrt::event_token const& token)
+void ScrollPresenter::ConfigurationChanged(winrt::event_token const& token)
 {
     m_configurationChanged.remove(token);
 }
 
-winrt::Rect ScrollingPresenter::GetRelativeViewport(
+winrt::Rect ScrollPresenter::GetRelativeViewport(
     winrt::UIElement const& child)
 {
     // The commented out code is expected to work but somehow the child.TransformToVisual(*this)
-    // transform returns unexpected values shortly after a ScrollingPresenter.Content layout offset change.
+    // transform returns unexpected values shortly after a ScrollPresenter.Content layout offset change.
     // Bug 14999031 is tracking this issue. For now the m_contentLayoutOffsetX/Y, m_zoomedHorizontalOffset,
     // m_zoomedVerticalOffset usage below mitigates the problem.
 
@@ -73,17 +73,17 @@ winrt::Rect ScrollingPresenter::GetRelativeViewport(
         (minPosition.y - m_contentLayoutOffsetY + static_cast<float>(m_zoomedVerticalOffset) - elementOffset.Y) / m_zoomFactor,
         viewportWidth, viewportHeight };
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR_STR, METH_NAME, this, child, TypeLogging::RectToString(result).c_str());
 
     return result;
 }
 
-winrt::UIElement ScrollingPresenter::CurrentAnchor()
+winrt::UIElement ScrollPresenter::CurrentAnchor()
 {
     return AnchorElement();
 }
 
-winrt::UIElement ScrollingPresenter::AnchorElement()
+winrt::UIElement ScrollPresenter::AnchorElement()
 {
     bool isAnchoringElementHorizontally = false;
     bool isAnchoringElementVertically = false;
@@ -96,14 +96,14 @@ winrt::UIElement ScrollingPresenter::AnchorElement()
     }
 
     auto value = m_anchorElement.get();
-    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, value);
 
     return value;
 }
 
-void ScrollingPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollPresenter::RegisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {
@@ -130,9 +130,9 @@ void ScrollingPresenter::RegisterAnchorCandidate(winrt::UIElement const& element
     }
 }
 
-void ScrollingPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
+void ScrollPresenter::UnregisterAnchorCandidate(winrt::UIElement const& element)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
+    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, element);
 
     if (!element)
     {

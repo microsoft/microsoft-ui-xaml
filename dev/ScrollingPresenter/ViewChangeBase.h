@@ -3,7 +3,7 @@
 
 #pragma once
 
-enum class ScrollingPresenterViewChangeResult
+enum class ScrollPresenterViewChangeResult
 {
     Completed = 0,
     Interrupted = 1,

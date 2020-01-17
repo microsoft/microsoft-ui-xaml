@@ -4,53 +4,53 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{755F5DA9-087C-55A0-98D2-B884881C3ED0}</ItemsProjectGuid>
-    <ItemsProjectName>ScrollingView</ItemsProjectName>
+    <ItemsProjectName>ScrollView</ItemsProjectName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>      
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);SCROLLINGVIEW_INCLUDED</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);SCROLLVIEW_INCLUDED</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollingView.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollView.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollBarController.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingView.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingViewBringIntoViewOperation.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingViewTestHooks.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingViewTestHooksFactory.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollView.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewOperation.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollBarController.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingView.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingViewBringIntoViewOperation.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingViewTrace.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingViewTestHooks.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollingViewTestHooksFactory.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollView.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewBringIntoViewOperation.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTrace.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollViewTestHooksFactory.h" />
   </ItemGroup>
   <ItemGroup >
-    <Page Include="$(MSBuildThisFileDirectory)ScrollingView.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollingView_rs1_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs1_themeresources.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollingView_rs3_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs3_themeresources.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS3</Version>
       <Type>ThemeResources</Type>
       <FileType>Document</FileType>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)ScrollingView_rs4_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)ScrollView_rs4_themeresources.xaml">
       <IsPublic>false</IsPublic>
       <Version>RS4</Version>
       <Type>ThemeResources</Type>
@@ -58,7 +58,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingView.idl" />
-    <Midl Include="$(MSBuildThisFileDirectory)ScrollingViewTestHooks.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollView.idl" />
+    <Midl Include="$(MSBuildThisFileDirectory)ScrollViewTestHooks.idl" />
   </ItemGroup>
 </Project>

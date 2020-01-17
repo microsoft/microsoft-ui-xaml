@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ResourceAccessor.h"
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "ScrollingScrollAnimationStartingEventArgs.h"
 
 winrt::CompositionAnimation ScrollingScrollAnimationStartingEventArgs::Animation()
@@ -14,7 +14,7 @@ winrt::CompositionAnimation ScrollingScrollAnimationStartingEventArgs::Animation
 
 void ScrollingScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnimation const& value)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_PTR, METH_NAME, this, value);
     if (!value)
     {
         throw winrt::hresult_invalid_argument(L"Animation cannot be set to null.");

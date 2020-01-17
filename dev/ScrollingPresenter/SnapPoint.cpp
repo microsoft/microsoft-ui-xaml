@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "TypeLogging.h"
-#include "ScrollingPresenterTypeLogging.h"
+#include "ScrollPresenterTypeLogging.h"
 #include "SnapPoint.h"
 
 // Required for Modern Idl bug, should never be called.
@@ -122,7 +122,7 @@ void SnapPointBase::SetBooleanParameter(
     wstring_view const& booleanName,
     bool booleanValue) const
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, booleanName, booleanValue);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_INT, METH_NAME, this, booleanName, booleanValue);
 
     expressionAnimation.SetBooleanParameter(booleanName, booleanValue);
 }
@@ -132,7 +132,7 @@ void SnapPointBase::SetScalarParameter(
     wstring_view const& scalarName,
     float scalarValue) const
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this, scalarName, scalarValue);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR_FLT, METH_NAME, this, scalarName, scalarValue);
 
     expressionAnimation.SetScalarParameter(scalarName, scalarValue);
 }
@@ -217,7 +217,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateRestingPointExpression(
 {
     winrt::hstring expression = StringUtil::FormatString(L"%1!s!*%2!s!", s_snapPointValue.data(), scale.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -262,7 +262,7 @@ winrt::ExpressionAnimation ScrollSnapPoint::CreateConditionalExpression(
         scaledMinImpulseApplicableRange.data(),
         scaledMaxImpulseApplicableRange.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -711,7 +711,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateRestingPointExpression
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -772,7 +772,7 @@ winrt::ExpressionAnimation RepeatedScrollSnapPoint::CreateConditionalExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1144,7 +1144,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateRestingPointExpression(
     winrt::hstring const& scale,
     bool isInertiaFromImpulse)
 {
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(s_snapPointValue);
 
@@ -1177,7 +1177,7 @@ winrt::ExpressionAnimation ZoomSnapPoint::CreateConditionalExpression(
         s_minImpulseApplicableValue.data(),
         s_maxImpulseApplicableValue.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1614,7 +1614,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateRestingPointExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto restingPointExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 
@@ -1676,7 +1676,7 @@ winrt::ExpressionAnimation RepeatedZoomSnapPoint::CreateConditionalExpression(
         isInertiaFromImpulseExpression.data(),
         target.data());
 
-    SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_STR, METH_NAME, this, expression.c_str());
 
     auto conditionExpressionAnimation = interactionTracker.Compositor().CreateExpressionAnimation(expression);
 

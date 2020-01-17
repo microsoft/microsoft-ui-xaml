@@ -3,26 +3,26 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingViewTestHooksFactory.h"
+#include "ScrollViewTestHooksFactory.h"
 
-com_ptr<ScrollingViewTestHooks> ScrollingViewTestHooks::s_testHooks{};
+com_ptr<ScrollViewTestHooks> ScrollViewTestHooks::s_testHooks{};
 
-com_ptr<ScrollingViewTestHooks> ScrollingViewTestHooks::EnsureGlobalTestHooks()
+com_ptr<ScrollViewTestHooks> ScrollViewTestHooks::EnsureGlobalTestHooks()
 {
     static bool s_initialized = []()
     {
-        s_testHooks = winrt::make_self<ScrollingViewTestHooks>();
+        s_testHooks = winrt::make_self<ScrollViewTestHooks>();
         return true;
     }();
     return s_testHooks;
 }
 
-winrt::IReference<bool> ScrollingViewTestHooks::GetAutoHideScrollControllers(const winrt::ScrollingView& scrollingView)
+winrt::IReference<bool> ScrollViewTestHooks::GetAutoHideScrollControllers(const winrt::ScrollView& scrollView)
 {
-    if (scrollingView && s_testHooks)
+    if (scrollView && s_testHooks)
     {
         auto hooks = EnsureGlobalTestHooks();
-        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollingView);
+        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
 
         if (iterator != hooks->m_autoHideScrollControllersMap.end())
         {
@@ -33,12 +33,12 @@ winrt::IReference<bool> ScrollingViewTestHooks::GetAutoHideScrollControllers(con
     return nullptr;
 }
 
-void ScrollingViewTestHooks::SetAutoHideScrollControllers(const winrt::ScrollingView& scrollingView, winrt::IReference<bool> value)
+void ScrollViewTestHooks::SetAutoHideScrollControllers(const winrt::ScrollView& scrollView, winrt::IReference<bool> value)
 {
-    if (scrollingView && (s_testHooks || value))
+    if (scrollView && (s_testHooks || value))
     {
         auto hooks = EnsureGlobalTestHooks();
-        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollingView);
+        auto iterator = hooks->m_autoHideScrollControllersMap.find(scrollView);
 
         if (iterator != hooks->m_autoHideScrollControllersMap.end())
         {
@@ -53,18 +53,18 @@ void ScrollingViewTestHooks::SetAutoHideScrollControllers(const winrt::Scrolling
         }
         else if (value)
         {
-            hooks->m_autoHideScrollControllersMap.emplace(scrollingView, value);
+            hooks->m_autoHideScrollControllersMap.emplace(scrollView, value);
         }
 
-        winrt::get_self<ScrollingView>(scrollingView)->ScrollControllersAutoHidingChanged();
+        winrt::get_self<ScrollView>(scrollView)->ScrollControllersAutoHidingChanged();
     }
 }
 
-winrt::ScrollingPresenter ScrollingViewTestHooks::GetScrollingPresenterPart(const winrt::ScrollingView& scrollingView)
+winrt::ScrollPresenter ScrollViewTestHooks::GetScrollPresenterPart(const winrt::ScrollView& scrollView)
 {
-    if (scrollingView)
+    if (scrollView)
     {
-        return winrt::get_self<ScrollingView>(scrollingView)->GetScrollingPresenterPart();
+        return winrt::get_self<ScrollView>(scrollView)->GetScrollPresenterPart();
     }
 
     return nullptr;

@@ -11,12 +11,12 @@ class ScrollingZoomAnimationStartingEventArgs :
 public:
     ScrollingZoomAnimationStartingEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ScrollingZoomAnimationStartingEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IScrollingZoomAnimationStartingEventArgs overrides

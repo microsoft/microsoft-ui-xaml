@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "ScrollingPresenterTrace.h"
+#include "ScrollPresenterTrace.h"
 #include "ScrollingScrollAnimationStartingEventArgs.g.h"
 
 class ScrollingScrollAnimationStartingEventArgs :
@@ -12,12 +12,12 @@ class ScrollingScrollAnimationStartingEventArgs :
 public:
     ScrollingScrollAnimationStartingEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ScrollingScrollAnimationStartingEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     // IScrollingScrollAnimationStartingEventArgs overrides

@@ -3,23 +3,23 @@
 
 #include "pch.h"
 #include "common.h"
-#include "ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h"
+#include "ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.h"
 
-ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs::ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs(
+ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs::ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs(
     bool isExpressionAnimationStarted, wstring_view const& propertyName)
 {
     m_isExpressionAnimationStarted = isExpressionAnimationStarted;
     m_propertyName = propertyName.data();
 }
 
-#pragma region IScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs
+#pragma region IScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs
 
-bool ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs::IsExpressionAnimationStarted()
+bool ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs::IsExpressionAnimationStarted()
 {
     return m_isExpressionAnimationStarted;
 }
 
-winrt::hstring ScrollingPresenterTestHooksExpressionAnimationStatusChangedEventArgs::PropertyName()
+winrt::hstring ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs::PropertyName()
 {
     return m_propertyName;
 }
