@@ -1784,41 +1784,52 @@ void NavigationView::ArrowKeyNavigationPolyfill(const winrt::NavigationViewItem&
     switch (args.Key())
     {
     case winrt::VirtualKey::Down:
-        if (auto const ir = GetParentItemsRepeaterForContainer(nvi))
+        if (auto nextFocusibleElement = FindNextFocusableElement(nvi, Direction::Down))
         {
-            if (ir != m_topNavRepeater.get())
+            if (SetFocus(nextFocusibleElement, winrt::FocusState::Keyboard))
             {
-                auto const indexOfCurrentElement = GetIndexFromItem(ir, nvi);
-                if (indexOfCurrentElement >= 0)
-                {
-                    if (FocusNextFocusableElement(ir, indexOfCurrentElement))
-                    {
-                        args.Handled(true);
-                    }
-                }
+                args.Handled(true);
             }
         }
         break;
     case winrt::VirtualKey::Up:
-        if (auto const ir = GetParentItemsRepeaterForContainer(nvi))
+        if (auto nextFocusibleElement = FindNextFocusableElement(nvi, Direction::Up))
         {
-            if (ir != m_topNavRepeater.get())
+            if (SetFocus(nextFocusibleElement, winrt::FocusState::Keyboard))
             {
-                auto const indexOfCurrentElement = GetIndexFromItem(ir, nvi);
-                if (indexOfCurrentElement >= 0)
-                {
-                    if (FocusPreviousFocusableElement(ir, indexOfCurrentElement))
-                    {
-                        args.Handled(true);
-                    }
-                }
+                args.Handled(true);
             }
         }
         break;
     }
 }
 
-bool NavigationView::FocusNextFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
+winrt::NavigationViewItem NavigationView::FindNextFocusableElement(const winrt::NavigationViewItem& nvi, Direction direction)
+{
+    if (auto const ir = GetParentItemsRepeaterForContainer(nvi))
+    {
+        // Don't need to polyfill behavior for the horizonal top navigation repeater because it
+        // it can never scroll.
+        if (ir != m_topNavRepeater.get())
+        {
+            auto const indexOfCurrentElement = GetIndexFromItem(ir, nvi);
+            if (indexOfCurrentElement >= 0)
+            {
+                if (direction == Direction::Down)
+                {
+                    return FindNextFocusableElementDown(ir, indexOfCurrentElement);
+                }
+                else
+                {
+                    return FindNextFocusableElementUp(ir, indexOfCurrentElement);
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+winrt::NavigationViewItem NavigationView::FindNextFocusableElementDown(const winrt::ItemsRepeater& ir, int elementIndex)
 {
     if (auto const itemsSourceView = ir.ItemsSourceView())
     {
@@ -1826,15 +1837,14 @@ bool NavigationView::FocusNextFocusableElement(const winrt::ItemsRepeater& ir, c
         {
             if (auto const nextElement = ir.TryGetElement(i).try_as<winrt::NavigationViewItem>())
             {
-                SetFocus(nextElement, winrt::FocusState::Keyboard);
-                return true;
+                return nextElement;
             }
         }
     }
-    return false;
+    return nullptr;
 }
 
-bool NavigationView::FocusPreviousFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex)
+winrt::NavigationViewItem NavigationView::FindNextFocusableElementUp(const winrt::ItemsRepeater& ir, int elementIndex)
 {
     if (auto const itemsSourceView = ir.ItemsSourceView())
     {
@@ -1842,20 +1852,21 @@ bool NavigationView::FocusPreviousFocusableElement(const winrt::ItemsRepeater& i
         {
             if (auto const nextElement = ir.TryGetElement(i).try_as<winrt::NavigationViewItem>())
             {
-                SetFocus(nextElement, winrt::FocusState::Keyboard);
-                return true;
+                return nextElement;
             }
         }
     }
-    return false;
+    return nullptr;
 }
 
 void NavigationView::HandleKeyEventForNavigationViewItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args)
 {
-    auto key = args.Key();
+    auto const key = args.Key();
     auto const isSettingsItem = IsSettingsItem(nvi);
 
-    // Need to Polyfill XY navigation behavior when running below RS3
+    // Need to polyfill XY navigation behavior when running below RS3.
+    // This is due to the arrow key presses being handled by scrollviewer
+    // and resulting in scrolling instead of navigating to the next item.
     if (!SharedHelpers::IsRS3OrHigher() && !isSettingsItem)
     {
         ArrowKeyNavigationPolyfill(nvi, args);

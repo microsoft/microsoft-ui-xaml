@@ -82,6 +82,12 @@ public:
     winrt::NavigationViewItem GetSelectedContainer();
 
 private:
+    enum class Direction
+    {
+        Down,
+        Up
+    };
+
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
@@ -115,8 +121,9 @@ private:
     bool IsSettingsItem(winrt::IInspectable const& item);
     void HandleKeyEventForNavigationViewItem(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
     void ArrowKeyNavigationPolyfill(const winrt::NavigationViewItem& nvi, const winrt::KeyRoutedEventArgs& args);
-    bool FocusNextFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex);
-    bool FocusPreviousFocusableElement(const winrt::ItemsRepeater& ir, const int elementIndex);
+    winrt::NavigationViewItem FindNextFocusableElement(const winrt::NavigationViewItem& nvi, const Direction direction);
+    winrt::NavigationViewItem FindNextFocusableElementDown(const winrt::ItemsRepeater& ir, int elementIndex);
+    winrt::NavigationViewItem FindNextFocusableElementUp(const winrt::ItemsRepeater& ir, int elementIndex);
 
     // This property is attached to the NavigationViewItems that are being
     // displayed by the repeaters in this control. It is used to keep track of the
