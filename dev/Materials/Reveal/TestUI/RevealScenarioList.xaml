@@ -89,6 +89,7 @@
         </VisualStateManager.VisualStateGroups>
 
         <StackPanel Margin="24">
+            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
             <ComboBox Header="Page Background" ItemsSource="{x:Bind backgroundTypeSource}" SelectionChanged="BackgroundComboBoxChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="local:RevealBackgroundItem">
@@ -97,6 +98,7 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
+            <TextBlock Text="Sample ListView" Style="{ThemeResource StandardGroupHeader}"/>
             <ListView Name="RevealList"
                     ItemsSource="{x:Bind listSource}"
                     ItemTemplate="{StaticResource ImageTextItem}"/>

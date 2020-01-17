@@ -28,15 +28,18 @@
     </Page.Resources>
 
     <Canvas Name="RootCanvas">
-        <Grid Width="800">
+        <Grid Width="800" Margin="12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
-            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+            <TextBlock Text="Options" Style="{ThemeResource StandardGroupHeader}"/>
+            <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="1">
                 <Button x:Name="BorderColorButton" Content="Change Background" Click="BorderColorButton_Click" HorizontalAlignment="Center" Margin="5"/>
                 <Button x:Name="BackgroundColorButton" Content="Change Theme" Click="BackgroundColorButton_Click" HorizontalAlignment="Center" Margin="5"/>
                 <ComboBox x:Name="StyleChooser" Margin="5" SelectedIndex="0" SelectionChanged="StyleChooser_SelectionChanged">
@@ -53,7 +56,8 @@
                 </ComboBox>
                 <CheckBox x:Name="MakeListDrag" Content="Can Drag?"/>
             </StackPanel>
-            <ListView x:Name="RevealList" Grid.Column="0" Grid.Row="1" CanDragItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" AllowDrop="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" CanReorderItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}">
+            <TextBlock Text="Sample control" Style="{ThemeResource StandardGroupHeader}" Grid.Row="2"/>
+            <ListView x:Name="RevealList" Grid.Column="0" Grid.Row="3" CanDragItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" AllowDrop="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}" CanReorderItems="{x:Bind MakeListDrag.IsChecked.Value, Mode=OneWay}">
             </ListView>
         </Grid>
     </Canvas>

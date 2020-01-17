@@ -29,7 +29,7 @@ using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPrese
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollingPresenterTests
+    partial class ScrollingPresenterTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Create a bunch of snap points with invalid arguments.")]

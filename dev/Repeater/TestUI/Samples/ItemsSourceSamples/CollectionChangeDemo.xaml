@@ -1,0 +1,72 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.Samples.CollectionChangeDemo"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:utils="using:MUXControlsTestApp.Utils">
+
+    <Page.Resources>
+        <controls:RecyclePool x:Key="RecyclePool" />
+        <controls:RecyclingElementFactory x:Name="elementFactory"  RecyclePool="{StaticResource RecyclePool}">
+            <DataTemplate x:Key="Item" x:DataType="x:String">
+                <Button Content="{x:Bind}" Width="100" Height="100"  Click="OnItemClicked"/>
+            </DataTemplate>
+        </controls:RecyclingElementFactory>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="goBackButton">Back</Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>OldStartingIndex:</TextBlock>
+                <TextBox x:Name="oldStartIndex" Text="0" />
+                <TextBlock>OldCount:</TextBlock>
+                <TextBox x:Name="oldCount" Text="0"/>
+                <TextBlock>NewStartingIndex:</TextBlock>
+                <TextBox x:Name="newStartIndex" Text="0" />
+                <TextBlock>NewCount:</TextBlock>
+                <TextBox x:Name="newCount" Text="0" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <ToggleButton x:Name="resetMode">ResetMode</ToggleButton>
+                <Button x:Name="insertButton">Insert</Button>
+                <Button x:Name="removeButton">Remove</Button>
+                <Button x:Name="replaceButton">Replace</Button>
+                <Button x:Name="resetButton">Reset</Button>
+            </StackPanel>
+        </StackPanel>
+
+        <controls:ItemsRepeaterScrollHost x:Name="tracker" Grid.Row="1" >
+            <ScrollViewer x:Name="scrollViewer">
+                <controls:ItemsRepeater x:Name="repeater">
+                    <controls:ItemsRepeater.Layout>
+                        <controls:UniformGridLayout MinItemWidth="150" MinItemHeight="150" MinRowSpacing="10" MinColumnSpacing="10" />
+                    </controls:ItemsRepeater.Layout>
+                    <controls:ItemsRepeater.Animator>
+                        <utils:DefaultElementAnimator />
+                    </controls:ItemsRepeater.Animator>
+                </controls:ItemsRepeater>
+            </ScrollViewer>
+        </controls:ItemsRepeaterScrollHost>
+        
+        <controls:ItemsRepeater ItemsSource="{x:Bind ResettingListItems}" Grid.Row="2" x:Name="ResettingCollectionRepeater">
+            <controls:ItemsRepeater.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="300" HorizontalAlignment="Left">
+                        <Button Width="140" Height="40" HorizontalAlignment="Right" AutomationProperties.Name="{Binding}"
+                                Click="ResettingCollectionRemoveItemButton_ItemClick" Content="{Binding}"/>
+                    </Grid>
+                </DataTemplate>
+            </controls:ItemsRepeater.ItemTemplate>
+        </controls:ItemsRepeater>
+    </Grid>
+</Page>

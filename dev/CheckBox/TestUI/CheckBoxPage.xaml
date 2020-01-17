@@ -9,7 +9,8 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <StackPanel>
+    <StackPanel Margin="12">
+        <TextBlock Text="Sample CheckBoxes" Style="{ThemeResource StandardGroupHeader}"/>
         <CheckBox Content="Two-state CheckBox"/>
         <CheckBox Content="Three-state CheckBox" IsThreeState="True"/>
         <CheckBox Content="Disabled CheckBox Unchecked" IsEnabled="False"/>

@@ -143,14 +143,6 @@ bool SharedHelpers::IsFrameworkElementInvalidateViewportAvailable()
     return s_isFrameworkElementInvalidateViewportAvailable;
 }
 
-bool SharedHelpers::IsApplicationViewGetDisplayRegionsAvailable()
-{
-    static bool s_isApplicationViewGetDisplayRegionsAvailable =
-        Is19H1OrHigher() ||
-        winrt::ApiInformation::IsMethodPresent(L"Windows.UI.ViewManagement.ApplicationView", L"GetDisplayRegions");
-    return s_isApplicationViewGetDisplayRegionsAvailable;
-}
-
 bool SharedHelpers::IsControlCornerRadiusAvailable()
 {
     static bool s_isControlCornerRadiusAvailable =
@@ -203,6 +195,12 @@ bool SharedHelpers::IsIsLoadedAvailable()
     static bool s_isAvailable =
         IsRS5OrHigher() ||
         winrt::ApiInformation::IsPropertyPresent(L"Windows.UI.Xaml.FrameworkElement", L"IsLoaded");
+    return s_isAvailable;
+}
+
+bool SharedHelpers::IsCompositionRadialGradientBrushAvailable()
+{
+    static bool s_isAvailable = winrt::ApiInformation::IsTypePresent(L"Windows.UI.Composition.CompositionRadialGradientBrush");
     return s_isAvailable;
 }
 

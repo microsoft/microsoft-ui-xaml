@@ -141,7 +141,8 @@
             <Image x:Name="img" Source="Assets/ingredient8.png" Width="900" Height="900"/>
         </controls:ScrollingView>
 
-        <Grid x:Name="grdScrollingViewProperties" Grid.Row="1" Grid.Column="1" Margin="2" Background="LightYellow">
+        <Grid x:Name="grdScrollingViewProperties" Grid.Row="1" Grid.Column="1" Margin="4,0,4,0"
+              Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -198,7 +199,7 @@
             <CheckBox x:Name="chkIsTabStop" Content="IsTabStop?" Grid.Row="7" Grid.ColumnSpan="4" Checked="ChkIsTabStop_Checked" Unchecked="ChkIsTabStop_Unchecked"/>
         </Grid>
 
-        <Grid x:Name="grdScrollingPresenterAttachedProperties" Grid.Row="1" Grid.Column="2" Margin="2">
+        <Grid x:Name="grdScrollingPresenterAttachedProperties" Grid.Row="1" Grid.Column="2" Margin="4,0,4,0" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -250,7 +251,8 @@
             <Button x:Name="btnSetZoomMode" Content="S" Margin="1" Grid.Row="5" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetZoomMode_Click"/>
         </Grid>
 
-        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="3" Margin="2" Background="LightYellow">
+        <Grid x:Name="grdContentProperties" Grid.Row="1" Grid.Column="3" Margin="4,0,4,0"
+              Background="{ThemeResource SystemListLowColor}" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -287,7 +289,7 @@
             <CheckBox x:Name="chkIsContentTabStop" Content="IsTabStop?" Grid.Row="5" Grid.ColumnSpan="4" Checked="ChkIsContentTabStop_Checked" Unchecked="ChkIsContentTabStop_Unchecked"/>
         </Grid>
 
-        <Grid x:Name="grdLogs" Grid.Row="1" Grid.Column="4" Margin="2">
+        <Grid x:Name="grdLogs" Grid.Row="1" Grid.Column="4" Margin="4,0,4,0" Padding="6">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

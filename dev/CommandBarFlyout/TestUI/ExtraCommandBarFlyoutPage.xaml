@@ -16,12 +16,11 @@
         <muxc:TextCommandBarFlyout x:Name="TextCommandBarSelectionFlyout" />
     </Page.Resources>
 
-    <Grid>
-        <StackPanel>
-            <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" />
-            <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Margin="10" Click="OnClearClipboardContentsClicked" />
-            <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Margin="10" Click="OnCountPopupsClicked" />
-            <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
+    <StackPanel Margin="12">
+        <TextBlock Text="Demo controls" Style="{ThemeResource StandardGroupHeader}"/>
+        <StackPanel Orientation="Horizontal">
+            <TextBox x:Name="TextBox1" AutomationProperties.AutomationId="TextBox" ContextFlyout="{x:Bind TextCommandBarContextFlyout}"
+                     MinWidth="200" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" />
             <RichTextBlock x:Name="RichTextBlock1" AutomationProperties.AutomationId="RichTextBlock" Margin="10" OverflowContentTarget="{x:Bind RichTextBlockOverflow1}" ContextFlyout="{x:Bind TextCommandBarContextFlyout}" SelectionFlyout="{x:Bind TextCommandBarSelectionFlyout}" Width="100" Height="50" HorizontalAlignment="Center">
                 <RichTextBlock.Blocks>
                     <Paragraph>
@@ -57,5 +56,13 @@
                 </Button.Flyout>
             </Button>
         </StackPanel>
-    </Grid>
+        <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}" Margin="0,24,0,8"/>
+        <Button AutomationProperties.AutomationId="ClearClipboardContentsButton" Content="Clear clipboard" Click="OnClearClipboardContentsClicked" />
+
+        <TextBlock Text="Status" Style="{ThemeResource StandardGroupHeader}" Margin="0,24,0,8"/>
+        <StackPanel Orientation="Horizontal">
+            <Button AutomationProperties.AutomationId="CountPopupsButton" Content="Count popups" Click="OnCountPopupsClicked" Margin="0,0,8,0"/>
+            <TextBox x:Name="PopupCountTextBox" AutomationProperties.AutomationId="PopupCountTextBox" IsReadOnly="True" />
+        </StackPanel>
+    </StackPanel>
 </local:TestPage>

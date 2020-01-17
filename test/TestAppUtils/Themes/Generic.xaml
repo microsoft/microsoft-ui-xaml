@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -16,6 +16,7 @@
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="utils:TestFrame">
@@ -27,7 +28,7 @@
                                 <RowDefinition />
                             </Grid.RowDefinitions>
 
-                            <Grid x:Name="TestFrameBar" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <Grid x:Name="TestFrameBar" VerticalAlignment="Top" HorizontalAlignment="Stretch" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition />
@@ -35,7 +36,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Orientation="Horizontal">
-                                    <Button x:Name="BackButton"
+                                    <Button x:Name="BackButton" Margin="0,0,4,0"
                                         Style="{ThemeResource AccentButtonStyle}"
                                         AutomationProperties.AutomationId="__BackButton" 
                                         Width="48"
@@ -43,6 +44,7 @@
                                         <SymbolIcon Symbol="Back"/>
                                     </Button>
                                     <Button x:Name="ToggleThemeButton"
+                                        VerticalAlignment="Stretch"
                                         Style="{ThemeResource AccentButtonStyle}"
                                         AutomationProperties.AutomationId="__ToggleThemeButton" 
                                         Content="Toggle theme">

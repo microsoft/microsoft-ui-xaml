@@ -29,7 +29,7 @@ using Microsoft.UI.Private.Controls;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class TeachingTipTests
+    public class TeachingTipTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("TestPass:IncludeOnlyOn", "Desktop")] // TeachingTip doesn't appear to show up correctly in OneCore.
@@ -141,7 +141,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 teachingTip.Content = contentGrid;
                 teachingTip.IconSource = (IconSource)iconSource;
                 teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = teachingTip;
+                Content = teachingTip;
             });
 
             IdleSynchronizer.Wait();
@@ -160,7 +160,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 teachingTip.Content = contentGrid;
                 teachingTip.HeroContent = heroGrid;
                 teachingTip.Loaded += (object sender, RoutedEventArgs args) => { loadedEvent.Set(); };
-                MUXControlsTestApp.App.TestContentRoot = teachingTip;
+                Content = teachingTip;
             });
 
             IdleSynchronizer.Wait();
