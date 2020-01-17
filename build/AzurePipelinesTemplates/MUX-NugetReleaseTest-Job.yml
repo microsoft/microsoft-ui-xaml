@@ -14,9 +14,6 @@ parameters:
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'Release'
-    Release_arm:
-      buildPlatform: 'arm'
-      buildConfiguration: 'Release'
 
 jobs:
 - job: ${{ parameters.buildJobName }}

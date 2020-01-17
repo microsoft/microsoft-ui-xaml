@@ -6,6 +6,10 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     vmImage: 'windows-2019'
+  variables:
+    artifactsPath: $(Build.SourcesDirectory)\Artifacts
+    pgoArtifactsPath: $(artifactsPath)\drop\PGO\Release
+    nugetPath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\NuSpecs
 
   steps:
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
@@ -21,20 +25,45 @@ jobs:
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: drop
-      downloadPath: '$(Build.SourcesDirectory)\Artifacts'
+      downloadPath: $(artifactsPath)
 
   - script: |
-      dir /s $(Build.SourcesDirectory)\Artifacts\drop\PGO
-      cd "$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x86"
+      pushd x86
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
-      cd "$(Build.SourcesDirectory)\Artifacts\drop\PGO\Release\x64"
+      popd
+
+      pushd x64
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc microsoft.ui.xaml.pgd
+      popd
     displayName: 'Merge pgc files into pgd'
+    workingDirectory: $(pgoArtifactsPath)
 
   - task: CopyFiles@2
+    displayName: 'Publish merged pgd to artifacts'
     inputs:
-      sourceFolder: '$(Build.SourcesDirectory)\Artifacts\drop\PGO'
+      sourceFolder: $(pgoArtifactsPath)
       contents: '**\Microsoft.UI.Xaml.pgd'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+
+  - task: CopyFiles@2
+    displayName: 'Copy pgd files for NuGet'
+    inputs:
+      sourceFolder: $(pgoArtifactsPath)
+      contents: '**\Microsoft.UI.Xaml.pgd'
+      targetFolder: $(nugetPath)\tools
+
+  - task: CmdLine@1
+    displayName: 'Build NuGet package'
+    inputs:
+      workingDirectory: $(nugetPath)
+      filename: '..\..\NugetWrapper.cmd'
+      arguments: 'pack MUXPGODatabase.nuspec -properties PROGRAMFILES="%ProgramFiles(x86)%"'
+
+  - task: CopyFiles@2
+    displayName: 'Publish NuGet to artifacts'
+    inputs:
+      sourceFolder: $(nugetPath)
+      contents: MUXPGODatabase.nuget
       targetFolder: $(Build.ArtifactStagingDirectory)
 
   - task: PublishBuildArtifacts@1
