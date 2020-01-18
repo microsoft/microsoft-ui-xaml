@@ -205,7 +205,7 @@ namespace MUXControlsTestApp
 
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            this.fullLogs.Add(senderId + " ScrollCompleted. OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
         }
 
@@ -220,10 +220,10 @@ namespace MUXControlsTestApp
 
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            this.fullLogs.Add(senderId + " ZoomCompleted. ZoomFactorChangeId=" + args.ZoomInfo + ", Result=" + result);
             chkLogUpdated.IsChecked = false;
 
-            if (args.ZoomInfo.ZoomFactorChangeId == scrollView52ZoomFactorChangeId)
+            if (args.ZoomInfo == scrollView52ZoomFactorChangeId)
             {
                 this.txtResetStatus.Text = "Views reset";
                 scrollView52ZoomFactorChangeId = -1;
@@ -441,10 +441,10 @@ namespace MUXControlsTestApp
             ScrollPresenter scrollPresenter = ScrollViewTestHooks.GetScrollPresenterPart(scrollView);
             string scrollPresenterId = (VisualTreeHelper.GetParent(scrollPresenter) as FrameworkElement).Name + "." + scrollPresenter.Name;
 
-            int viewChangeId = scrollPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
+            int viewChangeId = scrollPresenter.ScrollTo(0.0, 0.0, new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             this.fullLogs.Add(scrollPresenterId + " ScrollTo requested. Id=" + viewChangeId);
 
-            viewChangeId = scrollPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
+            viewChangeId = scrollPresenter.ZoomTo(1.0f, System.Numerics.Vector2.Zero, new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             this.fullLogs.Add(scrollPresenterId + " ZoomTo requested. Id=" + viewChangeId);
 
             chkLogUpdated.IsChecked = false;

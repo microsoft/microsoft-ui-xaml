@@ -25,7 +25,7 @@ public:
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
-    winrt::ScrollingScrollInfo ScrollInfo();
+    int ScrollInfo();
     bool Cancel();
     void Cancel(bool value); 
 

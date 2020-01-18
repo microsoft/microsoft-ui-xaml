@@ -37,9 +37,9 @@ void ScrollingZoomAnimationStartingEventArgs::Animation(winrt::CompositionAnimat
     m_animation = value;
 }
 
-winrt::ScrollingZoomInfo ScrollingZoomAnimationStartingEventArgs::ZoomInfo()
+int ScrollingZoomAnimationStartingEventArgs::ZoomInfo()
 {
-    return winrt::ScrollingZoomInfo{ m_zoomFactorChangeId };
+    return m_zoomFactorChangeId;
 }
 
 void ScrollingZoomAnimationStartingEventArgs::SetZoomFactorChangeId(int32_t zoomFactorChangeId)

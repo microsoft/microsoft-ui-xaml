@@ -1948,7 +1948,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         Vector2.Zero,
                         new ScrollingZoomOptions(
                             disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
-                            ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
+                            ScrollingSnapPointsMode.Ignore));
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
 
@@ -1960,7 +1960,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         verticalOffset == null ? scrollPresenter.VerticalOffset : (double)verticalOffset,
                         new ScrollingScrollOptions(
                             disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
-                            ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
+                            ScrollingSnapPointsMode.Ignore));
                     Verify.IsGreaterThan(viewChangeId, 0);
                 }
             });

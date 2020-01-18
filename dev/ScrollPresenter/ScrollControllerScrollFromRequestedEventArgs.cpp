@@ -30,14 +30,14 @@ winrt::IReference<float> ScrollControllerScrollFromRequestedEventArgs::InertiaDe
     return m_inertiaDecayRate;
 }
 
-winrt::ScrollingScrollInfo ScrollControllerScrollFromRequestedEventArgs::ScrollInfo() const
+int ScrollControllerScrollFromRequestedEventArgs::ScrollInfo() const
 {
     return m_scrollInfo;
 }
 
-void ScrollControllerScrollFromRequestedEventArgs::ScrollInfo(winrt::ScrollingScrollInfo scrollInfo)
+void ScrollControllerScrollFromRequestedEventArgs::ScrollInfo(int scrollInfo)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo.OffsetsChangeId);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo);
 
     m_scrollInfo = scrollInfo;
 }

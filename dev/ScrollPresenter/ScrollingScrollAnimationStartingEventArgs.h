@@ -23,7 +23,7 @@ public:
     // IScrollingScrollAnimationStartingEventArgs overrides
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    winrt::ScrollingScrollInfo ScrollInfo();
+    int ScrollInfo();
     winrt::float2 StartPosition();
     winrt::float2 EndPosition();
 

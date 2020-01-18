@@ -21,7 +21,7 @@ public:
     }
 
     // IScrollingScrollCompletedEventArgs overrides
-    winrt::ScrollingScrollInfo ScrollInfo();
+    int ScrollInfo();
     ScrollPresenterViewChangeResult Result();
 
     void OffsetsChangeId(int32_t offsetsChangeId);

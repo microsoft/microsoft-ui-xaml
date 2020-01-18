@@ -88,8 +88,8 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-    static const winrt::ScrollingScrollInfo s_noOpScrollInfo;
-    static const winrt::ScrollingZoomInfo s_noOpZoomInfo;
+    static const int s_noOpScrollInfo;
+    static const int s_noOpZoomInfo;
 
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
@@ -169,16 +169,16 @@ public:
 
     winrt::IVector<winrt::ZoomSnapPointBase> ZoomSnapPoints();
 
-    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset);
-    winrt::ScrollingScrollInfo ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
-    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    winrt::ScrollingScrollInfo ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    winrt::ScrollingScrollInfo ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ScrollingZoomInfo ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    winrt::ScrollingZoomInfo ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    winrt::ScrollingZoomInfo ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int ScrollTo(double horizontalOffset, double verticalOffset);
+    int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
+    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
+    int ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
 #pragma endregion
 

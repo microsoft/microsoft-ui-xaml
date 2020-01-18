@@ -154,7 +154,7 @@ runtimeclass ScrollControllerScrollToRequestedEventArgs
 
     Double Offset { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollInfo { get; set; };
+    Int32 ScrollInfo { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -165,7 +165,7 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
 
     Double OffsetDelta { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollInfo { get; set; };
+    Int32 ScrollInfo { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -176,7 +176,7 @@ runtimeclass ScrollControllerScrollFromRequestedEventArgs
 
     Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollInfo { get; set; };
+    Int32 ScrollInfo { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -208,8 +208,8 @@ interface IScrollController
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
-    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(MU_XC_NAMESPACE.ScrollingScrollInfo scrollInfo, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void NotifyScrollCompleted(MU_XC_NAMESPACE.ScrollingScrollInfo scrollInfo);
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 scrollInfo, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void NotifyScrollCompleted(Int32 scrollInfo);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
@@ -283,45 +283,45 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
     Windows.Foundation.Collections.IVector<ScrollSnapPointBase> VerticalSnapPoints { get; };
     Windows.Foundation.Collections.IVector<ZoomSnapPointBase> ZoomSnapPoints { get; };
     [method_name("ScrollTo")]
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset);
     [method_name("ScrollToWithOptions")]
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
     [method_name("ScrollBy")]
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta);
     [method_name("ScrollByWithOptions")]
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollFrom(
+    Int32 ScrollFrom(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
-    MU_XC_NAMESPACE.ScrollingZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomToWithOptions")]
-    MU_XC_NAMESPACE.ScrollingZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         MU_XC_NAMESPACE.ScrollingZoomOptions options);
     [method_name("ZoomBy")]
-    MU_XC_NAMESPACE.ScrollingZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomByWithOptions")]
-    MU_XC_NAMESPACE.ScrollingZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         MU_XC_NAMESPACE.ScrollingZoomOptions options);
-    MU_XC_NAMESPACE.ScrollingZoomInfo ZoomFrom(
+    Int32 ZoomFrom(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);

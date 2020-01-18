@@ -81,7 +81,7 @@ namespace MUXControlsTestApp
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
-            if (args.ZoomInfo.ZoomFactorChangeId == scrollPresenter3ZoomFactorChangeId)
+            if (args.ZoomInfo == scrollPresenter3ZoomFactorChangeId)
                 this.txtResetStatus.Text = "Views reset";
         }
 
@@ -283,7 +283,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scrollPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
-                    new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
+                    new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
                 if (this.scrollPresenter3 == scrollPresenter)
                     scrollPresenter3ZoomFactorChangeId = viewChangeId;

@@ -54,12 +54,12 @@ public:
         double viewport);
 
     winrt::CompositionAnimation GetScrollAnimation(
-        winrt::ScrollingScrollInfo info,
+        int info,
         winrt::float2 const& currentPosition,
         winrt::CompositionAnimation const& defaultAnimation);
 
     void NotifyScrollCompleted(
-        winrt::ScrollingScrollInfo info);
+        int info);
 
     winrt::event_token ScrollToRequested(winrt::TypedEventHandler<winrt::IScrollController, winrt::ScrollControllerScrollToRequestedEventArgs> const& value);
     void ScrollToRequested(winrt::event_token const& token);

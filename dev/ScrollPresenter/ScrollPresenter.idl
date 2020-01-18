@@ -3,20 +3,6 @@
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-struct ScrollingScrollInfo
-{ 
-    Int32 OffsetsChangeId;
-};
-
-[WUXC_VERSION_MUXONLY]
-[webhosthidden]
-struct ScrollingZoomInfo
-{
-    Int32 ZoomFactorChangeId;
-};
-
-[WUXC_VERSION_MUXONLY]
-[webhosthidden]
 enum ScrollingContentOrientation
 {
     Vertical = 0,
@@ -135,7 +121,7 @@ runtimeclass ScrollingScrollAnimationStartingEventArgs
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
     Windows.Foundation.Numerics.Vector2 EndPosition { get; };
-    ScrollingScrollInfo ScrollInfo { get; };
+    Int32 ScrollInfo { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -146,21 +132,21 @@ runtimeclass ScrollingZoomAnimationStartingEventArgs
     Single StartZoomFactor { get; };
     Single EndZoomFactor { get; };
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
-    ScrollingZoomInfo ZoomInfo { get; };
+    Int32 ZoomInfo { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingScrollCompletedEventArgs
 {
-    ScrollingScrollInfo ScrollInfo { get; };
+    Int32 ScrollInfo { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingZoomCompletedEventArgs
 {
-    ScrollingZoomInfo ZoomInfo { get; };
+    Int32 ZoomInfo { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -171,7 +157,7 @@ runtimeclass ScrollingBringingIntoViewEventArgs
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
     Double TargetHorizontalOffset { get; };
     Double TargetVerticalOffset { get; };
-    ScrollingScrollInfo ScrollInfo { get; };
+    Int32 ScrollInfo { get; };
     Boolean Cancel { get; set; };
 }
 

@@ -580,7 +580,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. OffsetsChangeId=" + args.OffsetsChangeId);
+                    Log.Comment("ChangeOffset completed. OffsetsChangeId=" + args);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();
@@ -675,7 +675,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ScrollFrom completed. OffsetsChangeId=" + args.OffsetsChangeId);
+                    Log.Comment("ScrollFrom completed. OffsetsChangeId=" + args);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();

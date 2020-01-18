@@ -31,9 +31,9 @@ double ScrollingBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-winrt::ScrollingScrollInfo ScrollingBringingIntoViewEventArgs::ScrollInfo()
+int ScrollingBringingIntoViewEventArgs::ScrollInfo()
 {
-    return winrt::ScrollingScrollInfo{ m_offsetsChangeId };
+    return m_offsetsChangeId;
 }
 
 bool ScrollingBringingIntoViewEventArgs::Cancel()

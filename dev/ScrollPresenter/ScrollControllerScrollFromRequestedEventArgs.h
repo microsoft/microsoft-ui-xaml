@@ -20,11 +20,11 @@ public:
 
     float OffsetVelocity() const;
     winrt::IReference<float> InertiaDecayRate() const;
-    winrt::ScrollingScrollInfo ScrollInfo() const;
-    void ScrollInfo(winrt::ScrollingScrollInfo scrollInfo);
+    int ScrollInfo() const;
+    void ScrollInfo(int scrollInfo);
 
 private:
     float m_offsetVelocity{ 0.0f };
     winrt::IReference<float> m_inertiaDecayRate{};
-    winrt::ScrollingScrollInfo m_scrollInfo{ -1 };
+    int m_scrollInfo{ -1 };
 };
