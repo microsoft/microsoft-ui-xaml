@@ -25,7 +25,7 @@ public:
     float EndZoomFactor();
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    winrt::ScrollingZoomInfo ZoomInfo();
+    int ZoomInfo();
 
     void SetZoomFactorChangeId(int32_t zoomFactorChangeId);
     winrt::CompositionAnimation GetAnimation() const;

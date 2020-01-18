@@ -17,7 +17,6 @@ using IScrollController = Microsoft.UI.Xaml.Controls.Primitives.IScrollControlle
 using ScrollingAnimationMode = Microsoft.UI.Xaml.Controls.ScrollingAnimationMode;
 using ScrollingSnapPointsMode = Microsoft.UI.Xaml.Controls.ScrollingSnapPointsMode;
 using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
-using ScrollingScrollInfo = Microsoft.UI.Xaml.Controls.ScrollingScrollInfo;
 using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions;
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
@@ -306,24 +305,24 @@ namespace MUXControlsTestApp.Utilities
             }
 
             public CompositionAnimation GetScrollAnimation(
-                ScrollingScrollInfo info,
+                int info,
                 Vector2 currentPosition,
                 CompositionAnimation defaultAnimation)
             {
                 RaiseLogMessage(
                     "UniScrollController: GetScrollAnimation for Orientation=" + Orientation +
-                    " with OffsetsChangeId=" + info.OffsetsChangeId + ", currentPosition=" + currentPosition);
+                    " with OffsetsChangeId=" + info + ", currentPosition=" + currentPosition);
                 return defaultAnimation;
             }
 
             public void NotifyScrollCompleted(
-                ScrollingScrollInfo info)
+                int info)
             {
                 RaiseLogMessage(
                     "UniScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
-                    " with OffsetsChangeId=" + info.OffsetsChangeId);
+                    " with OffsetsChangeId=" + info);
 
-                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info.OffsetsChangeId));
+                ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info));
             }
 
             internal bool UpdateAreScrollControllerInteractionsAllowed()
@@ -388,7 +387,7 @@ namespace MUXControlsTestApp.Utilities
                             offset,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
-                    return e.ScrollInfo.OffsetsChangeId;
+                    return e.ScrollInfo;
                 }
                 return -1;
             }
@@ -406,7 +405,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetDelta,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
-                    return e.ScrollInfo.OffsetsChangeId;
+                    return e.ScrollInfo;
                 }
                 return -1;
             }
@@ -423,7 +422,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetVelocity,
                             inertiaDecayRate);
                     ScrollFromRequested(this, e);
-                    return e.ScrollInfo.OffsetsChangeId;
+                    return e.ScrollInfo;
                 }
                 return -1;
             }

@@ -80,45 +80,45 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
     void RegisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     void UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement element);
     [method_name("ScrollTo")]
-    ScrollingScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset);
     [method_name("ScrollToWithOptions")]
-    ScrollingScrollInfo ScrollTo(
+    Int32 ScrollTo(
         Double horizontalOffset,
         Double verticalOffset,
         ScrollingScrollOptions options);
     [method_name("ScrollBy")]
-    ScrollingScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta);
     [method_name("ScrollByWithOptions")]
-    ScrollingScrollInfo ScrollBy(
+    Int32 ScrollBy(
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         ScrollingScrollOptions options);
-    ScrollingScrollInfo ScrollFrom(
+    Int32 ScrollFrom(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
-    ScrollingZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomToWithOptions")]
-    ScrollingZoomInfo ZoomTo(
+    Int32 ZoomTo(
         Single zoomFactor,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         ScrollingZoomOptions options);
     [method_name("ZoomBy")]
-    ScrollingZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint);
     [method_name("ZoomByWithOptions")]
-    ScrollingZoomInfo ZoomBy(
+    Int32 ZoomBy(
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         ScrollingZoomOptions options);
-    ScrollingZoomInfo ZoomFrom(
+    Int32 ZoomFrom(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);

@@ -117,16 +117,16 @@ namespace MUXControlsTestApp
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+            this.fullLogs.Add(sender.Name + " ScrollCompleted OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
         }
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-            this.fullLogs.Add(sender.Name + " ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo.ZoomFactorChangeId + ", Result=" + result);
+            this.fullLogs.Add(sender.Name + " ZoomCompleted ZoomFactorChangeId=" + args.ZoomInfo + ", Result=" + result);
 
-            if (this.scrollPresenter52ZoomFactorChangeId == args.ZoomInfo.ZoomFactorChangeId)
+            if (this.scrollPresenter52ZoomFactorChangeId == args.ZoomInfo)
             {
                 this.txtResetStatus.Text = "Views reset";
             }
@@ -335,13 +335,13 @@ namespace MUXControlsTestApp
             int viewChangeId = scrollPresenter.ScrollTo(
                 0.0,
                 0.0,
-                new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
+                new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             this.fullLogs.Add(scrollPresenter.Name + " ScrollTo requested. Id=" + viewChangeId);
 
             viewChangeId = scrollPresenter.ZoomTo(
                 1.0f,
                 System.Numerics.Vector2.Zero,
-                new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).ZoomFactorChangeId;
+                new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
             this.fullLogs.Add(scrollPresenter.Name + " ZoomTo requested. Id=" + viewChangeId);
             if (this.scrollPresenter52 == scrollPresenter)
             {

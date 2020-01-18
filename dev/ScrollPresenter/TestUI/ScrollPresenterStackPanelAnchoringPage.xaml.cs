@@ -563,7 +563,7 @@ namespace MUXControlsTestApp
             {
                 ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId + ", Result=" + result);
+                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
             }
         }
 
@@ -774,7 +774,7 @@ namespace MUXControlsTestApp
                 int viewChangeId = scrollPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
-                    new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
+                    new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
                 AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
             }
             catch (Exception ex)
@@ -788,7 +788,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo.OffsetsChangeId);
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo);
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -825,7 +825,7 @@ namespace MUXControlsTestApp
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
-                    inertiaDecayRate).OffsetsChangeId;
+                    inertiaDecayRate);
                 AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeId);
             }
             catch (Exception ex)

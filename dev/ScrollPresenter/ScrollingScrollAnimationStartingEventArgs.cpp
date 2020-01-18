@@ -22,9 +22,9 @@ void ScrollingScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnim
     m_animation = value;
 }
 
-winrt::ScrollingScrollInfo ScrollingScrollAnimationStartingEventArgs::ScrollInfo()
+int ScrollingScrollAnimationStartingEventArgs::ScrollInfo()
 {
-    return winrt::ScrollingScrollInfo{ m_offsetsChangeId };
+    return m_offsetsChangeId;
 }
 
 winrt::float2 ScrollingScrollAnimationStartingEventArgs::StartPosition()

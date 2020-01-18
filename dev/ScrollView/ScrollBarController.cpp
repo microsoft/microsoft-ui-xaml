@@ -168,25 +168,25 @@ void ScrollBarController::SetValues(
 }
 
 winrt::CompositionAnimation ScrollBarController::GetScrollAnimation(
-    winrt::ScrollingScrollInfo info,
+    int info,
     winrt::float2 const& currentPosition,
     winrt::CompositionAnimation const& defaultAnimation)
 {
-    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info.OffsetsChangeId);
+    SCROLLVIEW_TRACE_INFO(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, info);
 
     // Using the consumer's default animation.
     return nullptr;
 }
 
 void ScrollBarController::NotifyScrollCompleted(
-    winrt::ScrollingScrollInfo info)
+    int info)
 {
     SCROLLVIEW_TRACE_INFO(
         nullptr,
         TRACE_MSG_METH_INT,
         METH_NAME,
         this,
-        info.OffsetsChangeId);
+        info);
 
     MUX_ASSERT(m_operationsCount > 0);
     m_operationsCount--;
@@ -550,7 +550,7 @@ bool ScrollBarController::RaiseScrollToRequested(
 
     m_scrollToRequested(*this, *scrollToRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
+    int32_t offsetChangeId = scrollToRequestedEventArgs.as<winrt::ScrollControllerScrollToRequestedEventArgs>().ScrollInfo();
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollTo)
@@ -583,7 +583,7 @@ bool ScrollBarController::RaiseScrollByRequested(
 
     m_scrollByRequested(*this, *scrollByRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
+    int32_t offsetChangeId = scrollByRequestedEventArgs.as<winrt::ScrollControllerScrollByRequestedEventArgs>().ScrollInfo();
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollBy)
@@ -623,7 +623,7 @@ bool ScrollBarController::RaiseScrollFromRequested(
 
     m_scrollFromRequested(*this, *scrollFromRequestedEventArgs);
 
-    int32_t offsetChangeId = scrollFromRequestedEventArgs.as<winrt::ScrollControllerScrollFromRequestedEventArgs>().ScrollInfo().OffsetsChangeId;
+    int32_t offsetChangeId = scrollFromRequestedEventArgs.as<winrt::ScrollControllerScrollFromRequestedEventArgs>().ScrollInfo();
 
     // Only increment m_operationsCount when the returned OffsetsChangeId represents a new request that was not coalesced with a pending request. 
     if (offsetChangeId != -1 && offsetChangeId != m_lastOffsetChangeIdForScrollFrom)
