@@ -53,10 +53,16 @@ jobs:
       targetFolder: $(nugetPath)\tools
 
   - task: CmdLine@1
+    displayName: 'dir'
+    inputs:
+      filename: 'dir'
+      arguments: /s
+
+  - task: CmdLine@1
     displayName: 'Build NuGet package'
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
-      arguments: pack '$(nugetPath)\MUXPGODatabase.nuspec' -BasePath '$(nugetPath)'' -OutputDirectory '$(Build.ArtifactStagingDirectory)'' -properties PROGRAMFILES="%ProgramFiles(x86)%"
+      arguments: pack "$(nugetPath)\MUXPGODatabase.nuspec" -BasePath "$(nugetPath)" -OutputDirectory "$(Build.ArtifactStagingDirectory)" -properties PROGRAMFILES="%ProgramFiles(x86)%"
 
   - task: PublishBuildArtifacts@1
     inputs:
