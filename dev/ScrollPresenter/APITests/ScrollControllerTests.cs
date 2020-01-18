@@ -28,7 +28,7 @@ using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollPresenterTests : ApiTestBase
+    partial class ScrollPresenterTests
     {
         [TestMethod]
         [TestProperty("Description", "Sets the ScrollPresenter.HorizontalScrollController and ScrollPresenter.VerticalScrollController properties.")]
@@ -62,12 +62,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scrollPresenter.HorizontalScrollController, horizontalScrollController);
                 Verify.AreEqual(scrollPresenter.VerticalScrollController, verticalScrollController);
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
                 Verify.IsTrue(horizontalScrollController.AreScrollControllerInteractionsAllowed);
+#endif
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                 Verify.IsTrue(horizontalScrollController.AreScrollerInteractionsAllowed);
+#endif
                 Verify.IsFalse(horizontalScrollController.IsInteracting);
                 Verify.IsNull(horizontalScrollController.InteractionElement);
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
                 Verify.IsTrue(verticalScrollController.AreScrollControllerInteractionsAllowed);
+#endif
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                 Verify.IsTrue(verticalScrollController.AreScrollerInteractionsAllowed);
+#endif
                 Verify.IsFalse(verticalScrollController.IsInteracting);
                 Verify.IsNull(verticalScrollController.InteractionElement);
             });
@@ -137,8 +145,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 ScrollingAnimationMode.Disabled,
                 ScrollingSnapPointsMode.Ignore,
                 hookViewChanged: true,
-                isAnimationsEnabledOverride: null, 
-                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0, 
+                isAnimationsEnabledOverride: null,
+                expectedFinalHorizontalOffset: (c_defaultUIScrollPresenterContentWidth - c_defaultUIScrollPresenterWidth) / 2.0,
                 expectedFinalVerticalOffset: (c_defaultUIScrollPresenterContentHeight - c_defaultUIScrollPresenterHeight) / 2.0);
 
             Log.Comment("Animate to offsets");
@@ -798,7 +806,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            Content = verticalStackPanel;
+            MUXControlsTestApp.App.TestContentRoot = verticalStackPanel;
         }
 
         private void SetupUIWithBiDirectionalScrollController(
@@ -850,7 +858,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
 
             Log.Comment("Setting window content");
-            Content = horizontalStackPanel;
+            MUXControlsTestApp.App.TestContentRoot = horizontalStackPanel;
         }
     }
 }

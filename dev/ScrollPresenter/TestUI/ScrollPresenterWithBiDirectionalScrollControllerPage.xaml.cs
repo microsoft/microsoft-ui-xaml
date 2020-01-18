@@ -26,6 +26,7 @@ namespace MUXControlsTestApp
             scrollPresenter.VerticalScrollController = null;
         }
 
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
         private void ChkIsBiDirectionalScrollControllerRailing_Checked(object sender, RoutedEventArgs e)
         {
             biDirectionalScrollController.IsRailing = true;
@@ -35,6 +36,7 @@ namespace MUXControlsTestApp
         {
             biDirectionalScrollController.IsRailing = false;
         }
+#endif
 
         private void BiDirectionalScrollController_LogMessage(BiDirectionalScrollController sender, string args)
         {

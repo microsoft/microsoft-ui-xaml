@@ -86,7 +86,6 @@ namespace MUXControlsTestApp.Utilities
         private Visual interactionVisual = null;
         private Orientation orientation = Orientation.Vertical;
         private ScrollingScrollMode scrollMode = ScrollingScrollMode.Disabled;
-        private bool isThumbDragged = false;
         private bool isThumbPannable = true;
         private bool isThumbPositionMirrored = false;
         private double minOffset = 0.0;
@@ -107,12 +106,16 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("CompositionScrollController: CompositionScrollController()");
 
             this.DefaultStyleKey = typeof(CompositionScrollController);
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
             AreScrollerInteractionsAllowed = true;
+#endif
             IsAnimatingThumbOffset = true;
             OffsetChangeAnimationType = AnimationType.Default;
             StockOffsetChangeDuration = TimeSpan.MinValue;
             OverriddenOffsetChangeDuration = TimeSpan.MinValue;
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             IsEnabledChanged += CompositionScrollController_IsEnabledChanged;
+#endif
             SizeChanged += CompositionScrollController_SizeChanged;
         }
 
@@ -282,7 +285,9 @@ namespace MUXControlsTestApp.Utilities
                 "CompositionScrollController: SetScrollMode for Orientation=" + Orientation +
                 " with scrollMode=" + scrollMode);
             this.scrollMode = scrollMode;
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             UpdateAreScrollControllerInteractionsAllowed();
+#endif
         }
 
         public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -493,25 +498,23 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
         public bool AreScrollControllerInteractionsAllowed
         {
             get;
             private set;
         }
+#endif
 
-
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
         public bool AreScrollerInteractionsAllowed
         {
             get;
             private set;
         }
+#endif
 
-        public bool IsInteracting
-        {
-            get;
-            private set;
-        }
-
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
         public bool IsInteractionElementRailEnabled
         {
             get
@@ -519,6 +522,13 @@ namespace MUXControlsTestApp.Utilities
                 RaiseLogMessage("CompositionScrollController: get_IsInteractionElementRailEnabled for Orientation=" + Orientation);
                 return true;
             }
+        }
+#endif
+
+        public bool IsInteracting
+        {
+            get;
+            private set;
         }
 
         public UIElement InteractionElement
@@ -752,15 +762,22 @@ namespace MUXControlsTestApp.Utilities
                     RaiseInteractionRequested(e.GetCurrentPoint(null));
                     break;
                 case Windows.Devices.Input.PointerDeviceType.Mouse:
-                    isThumbDragged = true;
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                     AreScrollerInteractionsAllowed = false;
+#endif
+
+                    if (!IsInteracting)
+                    {
+                        IsInteracting = true;
+                        RaiseInteractionInfoChanged();
+                    }
                     break;
             }
         }
 
         private void InteractionFrameworkElement_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
         {
-            if (isThumbDragged)
+            if (IsInteracting)
             {
                 preManipulationThumbOffset = Orientation == Orientation.Horizontal ? HorizontalThumbOffset : VerticalThumbOffset;
             }
@@ -768,7 +785,7 @@ namespace MUXControlsTestApp.Utilities
 
         private void InteractionFrameworkElement_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (isThumbDragged)
+            if (IsInteracting)
             {
                 double targetThumbOffset = preManipulationThumbOffset + (Orientation == Orientation.Horizontal ? e.Cumulative.Translation.X : e.Cumulative.Translation.Y);
                 double scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
@@ -780,10 +797,14 @@ namespace MUXControlsTestApp.Utilities
 
         private void InteractionFrameworkElement_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (isThumbDragged)
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
+            AreScrollerInteractionsAllowed = true;
+#endif
+
+            if (IsInteracting)
             {
-                isThumbDragged = false;
-                AreScrollerInteractionsAllowed = true;
+                IsInteracting = false;
+                RaiseInteractionInfoChanged();
             }
         }
 
@@ -824,6 +845,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
         private bool UpdateAreScrollControllerInteractionsAllowed()
         {
             bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
@@ -837,6 +859,7 @@ namespace MUXControlsTestApp.Utilities
             }
             return false;
         }
+#endif
 
         private void UpdateOrientation()
         {
@@ -1183,6 +1206,7 @@ namespace MUXControlsTestApp.Utilities
             UpdateInteractionFrameworkElementOffset();
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
         private void CompositionScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("CompositionScrollController: IsEnabledChanged for Orientation=" + Orientation + ", IsEnabled=" + IsEnabled);
@@ -1191,6 +1215,7 @@ namespace MUXControlsTestApp.Utilities
                 RaiseInteractionInfoChanged();
             }
         }
+#endif
 
         private void Parent_PointerPressed(object sender, PointerRoutedEventArgs e)
         {

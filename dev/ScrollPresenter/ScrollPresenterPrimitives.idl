@@ -193,10 +193,16 @@ runtimeclass ScrollControllerInteractionRequestedEventArgs
 [webhosthidden]
 interface IScrollController
 {
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
     Boolean AreScrollControllerInteractionsAllowed { get; };
+#endif
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
     Boolean AreScrollerInteractionsAllowed { get; };
+#endif
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
+    Boolean IsInteractionElementRailEnabled{ get; };
+#endif
     Boolean IsInteracting { get; };
-    Boolean IsInteractionElementRailEnabled { get; };
     Windows.UI.Xaml.UIElement InteractionElement { get; };
     Windows.UI.Xaml.Controls.Orientation InteractionElementScrollOrientation { get; };
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);

@@ -75,12 +75,15 @@ namespace MUXControlsTestApp.Utilities
                 Viewport = 0.0;
             }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             public bool AreScrollControllerInteractionsAllowed
             {
                 get;
                 private set;
             }
+#endif
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
             public bool AreScrollerInteractionsAllowed
             {
                 get
@@ -89,6 +92,18 @@ namespace MUXControlsTestApp.Utilities
                     return Owner.AreScrollerInteractionsAllowed;
                 }
             }
+#endif
+
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
+            public bool IsInteractionElementRailEnabled
+            {
+                get
+                {
+                    RaiseLogMessage("UniScrollController: get_IsInteractionElementRailEnabled for Orientation=" + Orientation);
+                    return Owner.IsRailing;
+                }
+            }
+#endif
 
             public bool IsInteracting
             {
@@ -96,15 +111,6 @@ namespace MUXControlsTestApp.Utilities
                 {
                     RaiseLogMessage("UniScrollController: get_IsInteracting for Orientation=" + Orientation);
                     return Owner.IsInteracting;
-                }
-            }
-
-            public bool IsInteractionElementRailEnabled
-            {
-                get
-                {
-                    RaiseLogMessage("UniScrollController: get_IsInteractionElementRailEnabled for Orientation=" + Orientation);
-                    return Owner.IsRailing;
                 }
             }
 
@@ -247,7 +253,9 @@ namespace MUXControlsTestApp.Utilities
                     "UniScrollController: SetScrollMode for Orientation=" + Orientation +
                     " with scrollMode=" + scrollMode);
                 ScrollMode = scrollMode;
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
                 UpdateAreScrollControllerInteractionsAllowed();
+#endif
             }
 
             public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
@@ -326,6 +334,7 @@ namespace MUXControlsTestApp.Utilities
                 ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info.OffsetsChangeId));
             }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             internal bool UpdateAreScrollControllerInteractionsAllowed()
             {
                 bool oldAreScrollControllerInteractionsAllowed = AreScrollControllerInteractionsAllowed;
@@ -339,6 +348,7 @@ namespace MUXControlsTestApp.Utilities
                 }
                 return false;
             }
+#endif
 
             internal void UpdateInteractionElementScrollMultiplier()
             {
@@ -516,8 +526,9 @@ namespace MUXControlsTestApp.Utilities
         private RepeatButton horizontalIncrementRepeatButton = null;
         private RepeatButton verticalDecrementRepeatButton = null;
         private RepeatButton verticalIncrementRepeatButton = null;
-        private bool isThumbDragged = false;
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
         private bool isRailing = true;
+#endif
         private Point preManipulationThumbOffset;
 
         public event TypedEventHandler<BiDirectionalScrollController, string> LogMessage;
@@ -526,17 +537,22 @@ namespace MUXControlsTestApp.Utilities
         public BiDirectionalScrollController()
         {
             this.DefaultStyleKey = typeof(BiDirectionalScrollController);
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
             AreScrollerInteractionsAllowed = true;
+#endif
             this.horizontalScrollController = new UniScrollController(this, Orientation.Horizontal);
             this.verticalScrollController = new UniScrollController(this, Orientation.Vertical);
 
             this.horizontalScrollController.ScrollCompleted += UniScrollController_ScrollCompleted;
             this.verticalScrollController.ScrollCompleted += UniScrollController_ScrollCompleted;
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
             IsEnabledChanged += BiDirectionalScrollController_IsEnabledChanged;
+#endif
             SizeChanged += BiDirectionalScrollController_SizeChanged;
         }
 
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
         public bool IsRailing
         {
             get
@@ -562,6 +578,7 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
         }
+#endif
 
         public IScrollController HorizontalScrollController
         {
@@ -624,7 +641,9 @@ namespace MUXControlsTestApp.Utilities
             if (Thumb != null)
             {
                 Thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+#if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
                 if (IsRailing)
+#endif
                 {
                     Thumb.ManipulationMode |= ManipulationModes.TranslateRailsX | ManipulationModes.TranslateRailsY;
                 }
@@ -648,11 +667,13 @@ namespace MUXControlsTestApp.Utilities
             return (Thumb != null && Thumb.Parent != null) ? Thumb.Parent as UIElement : null;
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
         internal bool AreScrollerInteractionsAllowed
         {
             get;
             private set;
         }
+#endif
 
         internal bool IsInteracting
         {
@@ -924,8 +945,15 @@ namespace MUXControlsTestApp.Utilities
                     RaiseInteractionRequested(e.GetCurrentPoint(null));
                     break;
                 case Windows.Devices.Input.PointerDeviceType.Mouse:
-                    isThumbDragged = true;
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                     AreScrollerInteractionsAllowed = false;
+#endif
+
+                    if (!IsInteracting)
+                    {
+                        IsInteracting = true;
+                        RaiseInteractionInfoChanged();
+                    }
                     break;
             }
         }
@@ -959,7 +987,7 @@ namespace MUXControlsTestApp.Utilities
 
         private void Thumb_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
         {
-            if (isThumbDragged)
+            if (IsInteracting)
             {
                 preManipulationThumbOffset = new Point(HorizontalThumbOffset, VerticalThumbOffset);
             }
@@ -967,7 +995,7 @@ namespace MUXControlsTestApp.Utilities
 
         private void Thumb_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (isThumbDragged)
+            if (IsInteracting)
             {
                 Point targetThumbOffset = new Point(
                     preManipulationThumbOffset.X + e.Cumulative.Translation.X,
@@ -981,13 +1009,18 @@ namespace MUXControlsTestApp.Utilities
 
         private void Thumb_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            if (isThumbDragged)
+#if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
+            AreScrollerInteractionsAllowed = true;
+#endif
+
+            if (IsInteracting)
             {
-                isThumbDragged = false;
-                AreScrollerInteractionsAllowed = true;
+                IsInteracting = false;
+                RaiseInteractionInfoChanged();
             }
         }
 
+#if USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED
         private void BiDirectionalScrollController_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             RaiseLogMessage("BiDirectionalScrollController: IsEnabledChanged with IsEnabled=" + IsEnabled);
@@ -997,7 +1030,7 @@ namespace MUXControlsTestApp.Utilities
                 RaiseInteractionInfoChanged();
             }
         }
-
+#endif
         private void BiDirectionalScrollController_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateThumbSize();
