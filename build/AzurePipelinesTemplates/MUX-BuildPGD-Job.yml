@@ -5,8 +5,7 @@ jobs:
 - job: BuildPGD
   dependsOn: ${{ parameters.dependsOn }}
   pool:
-#    vmImage: 'windows-2019'
-    name: Package ES Lab E
+    vmImage: 'windows-2019'
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoArtifactsPath: $(artifactsPath)\drop\PGO\Release
