@@ -630,6 +630,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_TestUI"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_InteractionTests", "dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.shproj", "{74D18B1B-5F6B-4534-945B-131E8E3206FB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{9841F48D-CE7E-42C3-906F-45FE295F3074}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -1667,6 +1669,7 @@ Global
 		{8B056B8F-C1AB-4A80-BD17-DEACE9897E6A} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{AE308818-AF18-48BA-BF33-89779083D297} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{74D18B1B-5F6B-4534-945B-131E8E3206FB} = {0115F80C-AB97-412D-85D9-33A5188F8907}
+		{9841F48D-CE7E-42C3-906F-45FE295F3074} = {19693508-50A7-4C98-BCCB-327ED07C0F4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
