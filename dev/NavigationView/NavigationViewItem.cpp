@@ -151,6 +151,22 @@ void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyCh
     UpdateVisualStateNoTransition();
 }
 
+void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+
+void NavigationViewItem::OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+
+void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+
+void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
 {
     auto stateName = showIcon ? (showContent ? L"IconOnLeft": L"IconOnly") : L"ContentOnly"; 

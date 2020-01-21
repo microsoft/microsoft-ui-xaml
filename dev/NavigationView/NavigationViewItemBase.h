@@ -5,9 +5,12 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
+#include "NavigationViewItemBaseTemplateSettings.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
 

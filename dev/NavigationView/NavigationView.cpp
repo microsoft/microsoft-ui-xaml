@@ -3936,3 +3936,11 @@ winrt::NavigationViewItem NavigationView::GetSelectedContainer()
     }
     return nullptr;
 }
+
+void NavigationView::Expand(const winrt::NavigationViewItem& item)
+{
+}
+
+void NavigationView::Collapse(const winrt::NavigationViewItem& item)
+{
+}

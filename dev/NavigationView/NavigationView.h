@@ -81,6 +81,10 @@ public:
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
 
+    // Hierarchical APIs
+    void Expand(const winrt::NavigationViewItem& item);
+    void Collapse(const winrt::NavigationViewItem& item);
+
 private:
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
