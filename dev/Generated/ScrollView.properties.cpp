@@ -22,7 +22,7 @@ GlobalDependencyProperty ScrollViewProperties::s_HorizontalScrollBarVisibilityPr
 GlobalDependencyProperty ScrollViewProperties::s_HorizontalScrollChainModeProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_HorizontalScrollModeProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_HorizontalScrollRailModeProperty{ nullptr };
-GlobalDependencyProperty ScrollViewProperties::s_IgnoredInputKindProperty{ nullptr };
+GlobalDependencyProperty ScrollViewProperties::s_IgnoredInputKindsProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_MaxZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_MinZoomFactorProperty{ nullptr };
 GlobalDependencyProperty ScrollViewProperties::s_ScrollPresenterProperty{ nullptr };
@@ -149,16 +149,16 @@ void ScrollViewProperties::EnsureProperties()
                 ValueHelper<winrt::ScrollingRailMode>::BoxValueIfNecessary(ScrollView::s_defaultHorizontalScrollRailMode),
                 winrt::PropertyChangedCallback(&OnHorizontalScrollRailModePropertyChanged));
     }
-    if (!s_IgnoredInputKindProperty)
+    if (!s_IgnoredInputKindsProperty)
     {
-        s_IgnoredInputKindProperty =
+        s_IgnoredInputKindsProperty =
             InitializeDependencyProperty(
-                L"IgnoredInputKind",
+                L"IgnoredInputKinds",
                 winrt::name_of<winrt::ScrollingInputKinds>(),
                 winrt::name_of<winrt::ScrollView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(ScrollView::s_defaultIgnoredInputKind),
-                winrt::PropertyChangedCallback(&OnIgnoredInputKindPropertyChanged));
+                ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(ScrollView::s_defaultIgnoredInputKinds),
+                winrt::PropertyChangedCallback(&OnIgnoredInputKindsPropertyChanged));
     }
     if (!s_MaxZoomFactorProperty)
     {
@@ -283,7 +283,7 @@ void ScrollViewProperties::ClearProperties()
     s_HorizontalScrollChainModeProperty = nullptr;
     s_HorizontalScrollModeProperty = nullptr;
     s_HorizontalScrollRailModeProperty = nullptr;
-    s_IgnoredInputKindProperty = nullptr;
+    s_IgnoredInputKindsProperty = nullptr;
     s_MaxZoomFactorProperty = nullptr;
     s_MinZoomFactorProperty = nullptr;
     s_ScrollPresenterProperty = nullptr;
@@ -378,7 +378,7 @@ void ScrollViewProperties::OnHorizontalScrollRailModePropertyChanged(
     winrt::get_self<ScrollView>(owner)->OnPropertyChanged(args);
 }
 
-void ScrollViewProperties::OnIgnoredInputKindPropertyChanged(
+void ScrollViewProperties::OnIgnoredInputKindsPropertyChanged(
     winrt::DependencyObject const& sender,
     winrt::DependencyPropertyChangedEventArgs const& args)
 {
@@ -588,14 +588,14 @@ winrt::ScrollingRailMode ScrollViewProperties::HorizontalScrollRailMode()
     return ValueHelper<winrt::ScrollingRailMode>::CastOrUnbox(static_cast<ScrollView*>(this)->GetValue(s_HorizontalScrollRailModeProperty));
 }
 
-void ScrollViewProperties::IgnoredInputKind(winrt::ScrollingInputKinds const& value)
+void ScrollViewProperties::IgnoredInputKinds(winrt::ScrollingInputKinds const& value)
 {
-    static_cast<ScrollView*>(this)->SetValue(s_IgnoredInputKindProperty, ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(value));
+    static_cast<ScrollView*>(this)->SetValue(s_IgnoredInputKindsProperty, ValueHelper<winrt::ScrollingInputKinds>::BoxValueIfNecessary(value));
 }
 
-winrt::ScrollingInputKinds ScrollViewProperties::IgnoredInputKind()
+winrt::ScrollingInputKinds ScrollViewProperties::IgnoredInputKinds()
 {
-    return ValueHelper<winrt::ScrollingInputKinds>::CastOrUnbox(static_cast<ScrollView*>(this)->GetValue(s_IgnoredInputKindProperty));
+    return ValueHelper<winrt::ScrollingInputKinds>::CastOrUnbox(static_cast<ScrollView*>(this)->GetValue(s_IgnoredInputKindsProperty));
 }
 
 void ScrollViewProperties::MaxZoomFactor(double value)

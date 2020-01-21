@@ -36,8 +36,8 @@ public:
     void HorizontalScrollRailMode(winrt::ScrollingRailMode const& value);
     winrt::ScrollingRailMode HorizontalScrollRailMode();
 
-    void IgnoredInputKind(winrt::ScrollingInputKinds const& value);
-    winrt::ScrollingInputKinds IgnoredInputKind();
+    void IgnoredInputKinds(winrt::ScrollingInputKinds const& value);
+    winrt::ScrollingInputKinds IgnoredInputKinds();
 
     void MaxZoomFactor(double value);
     double MaxZoomFactor();
@@ -75,7 +75,7 @@ public:
     static winrt::DependencyProperty HorizontalScrollChainModeProperty() { return s_HorizontalScrollChainModeProperty; }
     static winrt::DependencyProperty HorizontalScrollModeProperty() { return s_HorizontalScrollModeProperty; }
     static winrt::DependencyProperty HorizontalScrollRailModeProperty() { return s_HorizontalScrollRailModeProperty; }
-    static winrt::DependencyProperty IgnoredInputKindProperty() { return s_IgnoredInputKindProperty; }
+    static winrt::DependencyProperty IgnoredInputKindsProperty() { return s_IgnoredInputKindsProperty; }
     static winrt::DependencyProperty MaxZoomFactorProperty() { return s_MaxZoomFactorProperty; }
     static winrt::DependencyProperty MinZoomFactorProperty() { return s_MinZoomFactorProperty; }
     static winrt::DependencyProperty ScrollPresenterProperty() { return s_ScrollPresenterProperty; }
@@ -96,7 +96,7 @@ public:
     static GlobalDependencyProperty s_HorizontalScrollChainModeProperty;
     static GlobalDependencyProperty s_HorizontalScrollModeProperty;
     static GlobalDependencyProperty s_HorizontalScrollRailModeProperty;
-    static GlobalDependencyProperty s_IgnoredInputKindProperty;
+    static GlobalDependencyProperty s_IgnoredInputKindsProperty;
     static GlobalDependencyProperty s_MaxZoomFactorProperty;
     static GlobalDependencyProperty s_MinZoomFactorProperty;
     static GlobalDependencyProperty s_ScrollPresenterProperty;
@@ -176,7 +176,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnIgnoredInputKindPropertyChanged(
+    static void OnIgnoredInputKindsPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

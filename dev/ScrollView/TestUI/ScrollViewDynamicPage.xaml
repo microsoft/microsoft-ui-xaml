@@ -290,8 +290,8 @@
             <Button x:Name="btnGetZoomChainMode" Content="G" Margin="1" Grid.Row="10" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetZoomChainMode_Click"/>
             <Button x:Name="btnSetZoomChainMode" Content="S" Margin="1" Grid.Row="10" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetZoomChainMode_Click"/>
 
-            <TextBlock Text="IgnoredInputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-            <ComboBox x:Name="cmbIgnoredInputKind" Width="105" Margin="1" Grid.Row="11" Grid.Column="1" VerticalAlignment="Center">
+            <TextBlock Text="IgnoredInputKinds:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="cmbIgnoredInputKinds" Width="105" Margin="1" Grid.Row="11" Grid.Column="1" VerticalAlignment="Center">
                 <ComboBoxItem>None</ComboBoxItem>
                 <ComboBoxItem>Touch</ComboBoxItem>
                 <ComboBoxItem>Pen</ComboBoxItem>
@@ -300,8 +300,8 @@
                 <ComboBoxItem>Gamepad</ComboBoxItem>
                 <ComboBoxItem>All</ComboBoxItem>
             </ComboBox>
-            <Button x:Name="btnGetIgnoredInputKind" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIgnoredInputKind_Click"/>
-            <Button x:Name="btnSetIgnoredInputKind" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIgnoredInputKind_Click"/>
+            <Button x:Name="btnGetIgnoredInputKinds" Content="G" Margin="1" Grid.Row="11" Grid.Column="2" VerticalAlignment="Center" Click="BtnGetIgnoredInputKinds_Click"/>
+            <Button x:Name="btnSetIgnoredInputKinds" Content="S" Margin="1" Grid.Row="11" Grid.Column="3" VerticalAlignment="Center" Click="BtnSetIgnoredInputKinds_Click"/>
 
             <TextBlock Text="MinZoomFactor:" Grid.Row="12" Grid.Column="0" VerticalAlignment="Center"/>
             <TextBox x:Name="txtMinZoomFactor" Width="105" Margin="1" Grid.Row="12" Grid.Column="1" VerticalAlignment="Center"/>

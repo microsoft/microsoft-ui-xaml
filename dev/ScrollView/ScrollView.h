@@ -39,7 +39,7 @@ public:
     static const int s_noOpZoomInfo;
     static const winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
     static const winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
-    static const winrt::ScrollingInputKinds s_defaultIgnoredInputKind{ winrt::ScrollingInputKinds::None };
+    static const winrt::ScrollingInputKinds s_defaultIgnoredInputKinds{ winrt::ScrollingInputKinds::None };
     static const winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::Vertical };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
     static constexpr double s_defaultMaxZoomFactor{ 10.0 };
@@ -62,8 +62,8 @@ public:
 
     winrt::ScrollingInteractionState State();
 
-    winrt::ScrollingInputKinds IgnoredInputKind();
-    void IgnoredInputKind(winrt::ScrollingInputKinds const& value);
+    winrt::ScrollingInputKinds IgnoredInputKinds();
+    void IgnoredInputKinds(winrt::ScrollingInputKinds const& value);
 
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);

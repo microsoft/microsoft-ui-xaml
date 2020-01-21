@@ -42,7 +42,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private const int c_MaxWaitDuration = 5000;
         private const double c_epsilon = 0.0000001;
 
-        private const ScrollingInputKinds c_defaultIgnoredInputKind = ScrollingInputKinds.None;
+        private const ScrollingInputKinds c_defaultIgnoredInputKinds = ScrollingInputKinds.None;
         private const ScrollingChainMode c_defaultHorizontalScrollChainMode = ScrollingChainMode.Auto;
         private const ScrollingChainMode c_defaultVerticalScrollChainMode = ScrollingChainMode.Auto;
         private const ScrollingRailMode c_defaultHorizontalScrollRailMode = ScrollingRailMode.Enabled;
@@ -92,7 +92,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual(scrollView.ComputedHorizontalScrollMode, c_defaultComputedHorizontalScrollMode);
                 Verify.AreEqual(scrollView.ComputedVerticalScrollMode, c_defaultComputedVerticalScrollMode);
 #endif
-                Verify.AreEqual(scrollView.IgnoredInputKind, c_defaultIgnoredInputKind);
+                Verify.AreEqual(scrollView.IgnoredInputKinds, c_defaultIgnoredInputKinds);
                 Verify.AreEqual(scrollView.ContentOrientation, c_defaultContentOrientation);
                 Verify.AreEqual(scrollView.HorizontalScrollChainMode, c_defaultHorizontalScrollChainMode);
                 Verify.AreEqual(scrollView.VerticalScrollChainMode, c_defaultVerticalScrollChainMode);
@@ -147,7 +147,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 RunOnUIThread.Execute(() =>
                 {
                     Log.Comment("Setting ScrollPresenter-cloned properties to non-default values");
-                    scrollView.IgnoredInputKind = ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen;
+                    scrollView.IgnoredInputKinds = ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen;
                     scrollView.ContentOrientation = ScrollingContentOrientation.Horizontal;
                     scrollView.HorizontalScrollChainMode = ScrollingChainMode.Always;
                     scrollView.VerticalScrollChainMode = ScrollingChainMode.Never;
@@ -161,7 +161,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scrollView.MaxZoomFactor = 8.0;
 
                     Log.Comment("Verifying ScrollPresenter-cloned non-default properties");
-                    Verify.AreEqual(scrollView.IgnoredInputKind, ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen);
+                    Verify.AreEqual(scrollView.IgnoredInputKinds, ScrollingInputKinds.MouseWheel | ScrollingInputKinds.Pen);
                     Verify.AreEqual(scrollView.ContentOrientation, ScrollingContentOrientation.Horizontal);
                     Verify.AreEqual(scrollView.HorizontalScrollChainMode, ScrollingChainMode.Always);
                     Verify.AreEqual(scrollView.VerticalScrollChainMode, ScrollingChainMode.Never);
