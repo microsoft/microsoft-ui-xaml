@@ -360,6 +360,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         [MUX_DEFAULT_VALUE("false")]
         Boolean IsChildSelected{ get; set; };
 
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Windows.Foundation.Collections.IVector<Object> MenuItems{ get; };
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         Object MenuItemsSource{ get; set; };

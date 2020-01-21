@@ -163,6 +163,10 @@ void NavigationViewItem::OnIsExpandedPropertyChanged(const winrt::DependencyProp
 {
 }
 
+void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+}
+
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
 }
