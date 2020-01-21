@@ -21,7 +21,7 @@
         <Setter Property="VerticalScrollRailMode" Value="Enabled"/>
         <Setter Property="ZoomChainMode" Value="Auto"/>
         <Setter Property="ZoomMode" Value="Disabled"/>
-        <Setter Property="IgnoredInputKind" Value="None"/>
+        <Setter Property="IgnoredInputKinds" Value="None"/>
         <Setter Property="MinZoomFactor" Value="0.1"/>
         <Setter Property="MaxZoomFactor" Value="10.0"/>
         <Setter Property="HorizontalAnchorRatio" Value="0.0"/>
@@ -212,7 +212,7 @@
                             VerticalScrollRailMode="{TemplateBinding VerticalScrollRailMode}"
                             ZoomChainMode="{TemplateBinding ZoomChainMode}"
                             ZoomMode="{TemplateBinding ZoomMode}"
-                            IgnoredInputKind="{TemplateBinding IgnoredInputKind}"
+                            IgnoredInputKinds="{TemplateBinding IgnoredInputKinds}"
                             MinZoomFactor="{TemplateBinding MinZoomFactor}"
                             MaxZoomFactor="{TemplateBinding MaxZoomFactor}"
                             HorizontalAnchorRatio="{TemplateBinding HorizontalAnchorRatio}"

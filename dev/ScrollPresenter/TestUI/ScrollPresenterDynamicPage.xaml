@@ -188,9 +188,9 @@
                     <ComboBoxItem>Never</ComboBoxItem>
                 </ComboBox>
 
-                <TextBlock Text="IgnoredInputKind:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
-                <ComboBox x:Name="cmbIgnoredInputKind" Margin="1" Grid.Row="11" Grid.Column="1" 
-                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbIgnoredInputKind_SelectionChanged">
+                <TextBlock Text="IgnoredInputKinds:" Grid.Row="11" Grid.Column="0" VerticalAlignment="Center"/>
+                <ComboBox x:Name="cmbIgnoredInputKinds" Margin="1" Grid.Row="11" Grid.Column="1" 
+                      HorizontalAlignment="Stretch" VerticalAlignment="Center" SelectionChanged="CmbIgnoredInputKinds_SelectionChanged">
                     <ComboBoxItem>None</ComboBoxItem>
                     <ComboBoxItem>Touch</ComboBoxItem>
                     <ComboBoxItem>Pen</ComboBoxItem>

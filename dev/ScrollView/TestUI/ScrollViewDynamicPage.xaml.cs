@@ -149,9 +149,9 @@ namespace MUXControlsTestApp
             UpdateZoomChainMode();
         }
 
-        private void BtnGetIgnoredInputKind_Click(object sender, RoutedEventArgs e)
+        private void BtnGetIgnoredInputKinds_Click(object sender, RoutedEventArgs e)
         {
-            UpdateIgnoredInputKind();
+            UpdateIgnoredInputKinds();
         }
 
         private void BtnGetMinZoomFactor_Click(object sender, RoutedEventArgs e)
@@ -320,38 +320,38 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnSetIgnoredInputKind_Click(object sender, RoutedEventArgs e)
+        private void BtnSetIgnoredInputKinds_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                ScrollingInputKinds ignoredInputKind;
+                ScrollingInputKinds ignoredInputKinds;
 
-                switch (cmbIgnoredInputKind.SelectedIndex)
+                switch (cmbIgnoredInputKinds.SelectedIndex)
                 {
                     case 0:
-                        ignoredInputKind = ScrollingInputKinds.None;
+                        ignoredInputKinds = ScrollingInputKinds.None;
                         break;
                     case 1:
-                        ignoredInputKind = ScrollingInputKinds.Touch;
+                        ignoredInputKinds = ScrollingInputKinds.Touch;
                         break;
                     case 2:
-                        ignoredInputKind = ScrollingInputKinds.Pen;
+                        ignoredInputKinds = ScrollingInputKinds.Pen;
                         break;
                     case 3:
-                        ignoredInputKind = ScrollingInputKinds.MouseWheel;
+                        ignoredInputKinds = ScrollingInputKinds.MouseWheel;
                         break;
                     case 4:
-                        ignoredInputKind = ScrollingInputKinds.Keyboard;
+                        ignoredInputKinds = ScrollingInputKinds.Keyboard;
                         break;
                     case 5:
-                        ignoredInputKind = ScrollingInputKinds.Gamepad;
+                        ignoredInputKinds = ScrollingInputKinds.Gamepad;
                         break;
                     default:
-                        ignoredInputKind = ScrollingInputKinds.All;
+                        ignoredInputKinds = ScrollingInputKinds.All;
                         break;
                 }
 
-                scrollView.IgnoredInputKind = ignoredInputKind;
+                scrollView.IgnoredInputKinds = ignoredInputKinds;
             }
             catch (Exception ex)
             {
@@ -1439,35 +1439,35 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void UpdateIgnoredInputKind()
+        private void UpdateIgnoredInputKinds()
         {
             try
             {
-                switch (scrollView.IgnoredInputKind)
+                switch (scrollView.IgnoredInputKinds)
                 {
                     case ScrollingInputKinds.None:
-                        cmbIgnoredInputKind.SelectedIndex = 0;
+                        cmbIgnoredInputKinds.SelectedIndex = 0;
                         break;
                     case ScrollingInputKinds.Touch:
-                        cmbIgnoredInputKind.SelectedIndex = 1;
+                        cmbIgnoredInputKinds.SelectedIndex = 1;
                         break;
                     case ScrollingInputKinds.Pen:
-                        cmbIgnoredInputKind.SelectedIndex = 2;
+                        cmbIgnoredInputKinds.SelectedIndex = 2;
                         break;
                     case ScrollingInputKinds.MouseWheel:
-                        cmbIgnoredInputKind.SelectedIndex = 3;
+                        cmbIgnoredInputKinds.SelectedIndex = 3;
                         break;
                     case ScrollingInputKinds.Keyboard:
-                        cmbIgnoredInputKind.SelectedIndex = 4;
+                        cmbIgnoredInputKinds.SelectedIndex = 4;
                         break;
                     case ScrollingInputKinds.Gamepad:
-                        cmbIgnoredInputKind.SelectedIndex = 5;
+                        cmbIgnoredInputKinds.SelectedIndex = 5;
                         break;
                     case ScrollingInputKinds.All:
-                        cmbIgnoredInputKind.SelectedIndex = 6;
+                        cmbIgnoredInputKinds.SelectedIndex = 6;
                         break;
                     default:
-                        lstLogs.Items.Add("Unexpected IgnoredInputKind value.");
+                        lstLogs.Items.Add("Unexpected IgnoredInputKinds value.");
                         break;
                 }
             }
@@ -1708,7 +1708,7 @@ namespace MUXControlsTestApp
                 UpdateVerticalScrollRailMode();
                 UpdateZoomMode();
                 UpdateZoomChainMode();
-                UpdateIgnoredInputKind();
+                UpdateIgnoredInputKinds();
                 UpdateMinZoomFactor();
                 UpdateMaxZoomFactor();
 

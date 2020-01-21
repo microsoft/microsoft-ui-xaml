@@ -58,7 +58,7 @@ public:
 #endif
     static constexpr winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
     static constexpr winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
-    static constexpr winrt::ScrollingInputKinds s_defaultIgnoredInputKind{ winrt::ScrollingInputKinds::None };
+    static constexpr winrt::ScrollingInputKinds s_defaultIgnoredInputKinds{ winrt::ScrollingInputKinds::None };
     static constexpr winrt::ScrollingContentOrientation s_defaultContentOrientation{ winrt::ScrollingContentOrientation::Both };
     static constexpr bool s_defaultAnchorAtExtent{ true };
     static constexpr double s_defaultMinZoomFactor{ 0.1 };
@@ -158,8 +158,8 @@ public:
     winrt::IScrollController VerticalScrollController();
     void VerticalScrollController(winrt::IScrollController const& value);
 
-    winrt::ScrollingInputKinds IgnoredInputKind();
-    void IgnoredInputKind(winrt::ScrollingInputKinds const& value);
+    winrt::ScrollingInputKinds IgnoredInputKinds();
+    void IgnoredInputKinds(winrt::ScrollingInputKinds const& value);
 
     winrt::ScrollingInteractionState State();
 

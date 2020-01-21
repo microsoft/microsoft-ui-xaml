@@ -151,11 +151,11 @@ winrt::ScrollingInteractionState ScrollView::State()
     return winrt::ScrollingInteractionState::Idle;
 }
 
-winrt::ScrollingInputKinds ScrollView::IgnoredInputKind()
+winrt::ScrollingInputKinds ScrollView::IgnoredInputKinds()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
-    // Check if the boxed IgnoredInputKind is an IReference<int> first in which case we unbox as int.
-    auto boxedKind = GetValue(s_IgnoredInputKindProperty);
+    // Check if the boxed IgnoredInputKinds is an IReference<int> first in which case we unbox as int.
+    auto boxedKind = GetValue(s_IgnoredInputKindsProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
         return winrt::ScrollingInputKinds{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
@@ -164,10 +164,10 @@ winrt::ScrollingInputKinds ScrollView::IgnoredInputKind()
     return auto_unbox(boxedKind);
 }
 
-void ScrollView::IgnoredInputKind(winrt::ScrollingInputKinds const& value)
+void ScrollView::IgnoredInputKinds(winrt::ScrollingInputKinds const& value)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, TypeLogging::InputKindToString(value).c_str());
-    SetValue(s_IgnoredInputKindProperty, box_value(value));
+    SetValue(s_IgnoredInputKindsProperty, box_value(value));
 }
 
 void ScrollView::RegisterAnchorCandidate(winrt::UIElement const& element)
@@ -1804,7 +1804,7 @@ void ScrollView::UpdateScrollControllersVisibility(
 
 bool ScrollView::IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind)
 {
-    return (IgnoredInputKind() & inputKind) == inputKind;
+    return (IgnoredInputKinds() & inputKind) == inputKind;
 }
 
 bool ScrollView::AreAllScrollControllersCollapsed() const
@@ -2731,9 +2731,9 @@ winrt::hstring ScrollView::DependencyPropertyToString(const winrt::IDependencyPr
     {
         return L"ZoomMode";
     }
-    else if (dependencyProperty == s_IgnoredInputKindProperty)
+    else if (dependencyProperty == s_IgnoredInputKindsProperty)
     {
-        return L"IgnoredInputKind";
+        return L"IgnoredInputKinds";
     }
     else if (dependencyProperty == s_MinZoomFactorProperty)
     {

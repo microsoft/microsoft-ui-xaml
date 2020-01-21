@@ -530,61 +530,61 @@ namespace MUXControlsTestApp
             cmbZoomChainMode.SelectedIndex = (int)scrollPresenter.ZoomChainMode;
         }
 
-        private void CmbIgnoredInputKind_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbIgnoredInputKinds_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (scrollPresenter != null)
             {
-                switch (cmbIgnoredInputKind.SelectedIndex)
+                switch (cmbIgnoredInputKinds.SelectedIndex)
                 {
                     case 0:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.None;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.None;
                         break;
                     case 1:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.Touch;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Touch;
                         break;
                     case 2:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.Pen;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Pen;
                         break;
                     case 3:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.MouseWheel;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.MouseWheel;
                         break;
                     case 4:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.Keyboard;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Keyboard;
                         break;
                     case 5:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.Gamepad;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.Gamepad;
                         break;
                     case 6:
-                        scrollPresenter.IgnoredInputKind = ScrollingInputKinds.All;
+                        scrollPresenter.IgnoredInputKinds = ScrollingInputKinds.All;
                         break;
                 }
             }
         }
 
-        private void UpdateCmbIgnoredInputKind()
+        private void UpdateCmbIgnoredInputKinds()
         {
-            switch (scrollPresenter.IgnoredInputKind)
+            switch (scrollPresenter.IgnoredInputKinds)
             {
                 case ScrollingInputKinds.None:
-                    cmbIgnoredInputKind.SelectedIndex = 0;
+                    cmbIgnoredInputKinds.SelectedIndex = 0;
                     break;
                 case ScrollingInputKinds.Touch:
-                    cmbIgnoredInputKind.SelectedIndex = 1;
+                    cmbIgnoredInputKinds.SelectedIndex = 1;
                     break;
                 case ScrollingInputKinds.Pen:
-                    cmbIgnoredInputKind.SelectedIndex = 2;
+                    cmbIgnoredInputKinds.SelectedIndex = 2;
                     break;
                 case ScrollingInputKinds.MouseWheel:
-                    cmbIgnoredInputKind.SelectedIndex = 3;
+                    cmbIgnoredInputKinds.SelectedIndex = 3;
                     break;
                 case ScrollingInputKinds.Keyboard:
-                    cmbIgnoredInputKind.SelectedIndex = 4;
+                    cmbIgnoredInputKinds.SelectedIndex = 4;
                     break;
                 case ScrollingInputKinds.Gamepad:
-                    cmbIgnoredInputKind.SelectedIndex = 5;
+                    cmbIgnoredInputKinds.SelectedIndex = 5;
                     break;
                 case ScrollingInputKinds.All:
-                    cmbIgnoredInputKind.SelectedIndex = 6;
+                    cmbIgnoredInputKinds.SelectedIndex = 6;
                     break;
             }
         }
@@ -2507,7 +2507,7 @@ namespace MUXControlsTestApp
                 UpdateCmbVerticalScrollRailMode();
                 UpdateCmbZoomMode();
                 UpdateCmbZoomChainMode();
-                UpdateCmbIgnoredInputKind();
+                UpdateCmbIgnoredInputKinds();
                 UpdateCmbContentHorizontalAlignment();
                 UpdateCmbContentVerticalAlignment();
                 UpdateCmbScrollPresenterManipulationMode();

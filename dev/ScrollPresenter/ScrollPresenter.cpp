@@ -361,11 +361,11 @@ void ScrollPresenter::VerticalScrollController(winrt::IScrollController const& v
     }
 }
 
-winrt::ScrollingInputKinds ScrollPresenter::IgnoredInputKind()
+winrt::ScrollingInputKinds ScrollPresenter::IgnoredInputKinds()
 {
     // Workaround for Bug 17377013: XamlCompiler codegen for Enum CreateFromString always returns boxed int which is wrong for [flags] enums (should be uint)
-    // Check if the boxed IgnoredInputKind is an IReference<int> first in which case we unbox as int.
-    auto boxedKind = GetValue(s_IgnoredInputKindProperty);
+    // Check if the boxed IgnoredInputKinds is an IReference<int> first in which case we unbox as int.
+    auto boxedKind = GetValue(s_IgnoredInputKindsProperty);
     if (auto boxedInt = boxedKind.try_as<winrt::IReference<int32_t>>())
     {
         return winrt::ScrollingInputKinds{ static_cast<uint32_t>(unbox_value<int32_t>(boxedInt)) };
@@ -374,9 +374,9 @@ winrt::ScrollingInputKinds ScrollPresenter::IgnoredInputKind()
     return auto_unbox(boxedKind);
 }
 
-void ScrollPresenter::IgnoredInputKind(winrt::ScrollingInputKinds const& value)
+void ScrollPresenter::IgnoredInputKinds(winrt::ScrollingInputKinds const& value)
 {
-    SetValue(s_IgnoredInputKindProperty, box_value(value));
+    SetValue(s_IgnoredInputKindsProperty, box_value(value));
 }
 
 winrt::ScrollingInteractionState ScrollPresenter::State()
@@ -4085,7 +4085,7 @@ void ScrollPresenter::OnPropertyChanged(
             }
 #endif
         }
-        else if (dependencyProperty == s_IgnoredInputKindProperty)
+        else if (dependencyProperty == s_IgnoredInputKindsProperty)
         {
             UpdateManipulationRedirectionMode();
         }
@@ -7475,7 +7475,7 @@ bool ScrollPresenter::IsLoadedAndSetUp() const
 
 bool ScrollPresenter::IsInputKindIgnored(winrt::ScrollingInputKinds const& inputKind)
 {
-    return (IgnoredInputKind() & inputKind) == inputKind;
+    return (IgnoredInputKinds() & inputKind) == inputKind;
 }
 
 void ScrollPresenter::HookCompositionTargetRendering()
@@ -8035,9 +8035,9 @@ winrt::hstring ScrollPresenter::DependencyPropertyToString(const winrt::IDepende
     {
         return L"ZoomMode";
     }
-    else if (dependencyProperty == s_IgnoredInputKindProperty)
+    else if (dependencyProperty == s_IgnoredInputKindsProperty)
     {
-        return L"IgnoredInputKind";
+        return L"IgnoredInputKinds";
     }
     else if (dependencyProperty == s_MinZoomFactorProperty)
     {
