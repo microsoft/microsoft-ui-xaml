@@ -127,7 +127,7 @@
                                             Storyboard.TargetName="ProgressBarRoot"
                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)">
                                             <LinearColorKeyFrame Value="{ThemeResource SystemBaseLowColor}" KeyTime="0:0:2.75" />
-                                            <LinearColorKeyFrame Value="{StaticResource SystemControlErrorBackgroundBrush}" KeyTime="0:0:3" />
+                                            <LinearColorKeyFrame Value="{StaticResource SystemControlErrorBackgroundColor}" KeyTime="0:0:3" />
                                         </ColorAnimationUsingKeyFrames>
                                         <FadeOutThemeAnimation TargetName="DeterminateProgressBarIndicator" />
                                     </Storyboard>
@@ -142,7 +142,7 @@
                                         <ColorAnimation
                                             Storyboard.TargetName="ProgressBarRoot"
                                             Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                            To="{StaticResource SystemControlErrorBackgroundBrush}"
+                                            To="{StaticResource SystemControlErrorBackgroundColor}"
                                             Duration="0:0:0.25"/>
                                     </Storyboard>
                                 </VisualState>

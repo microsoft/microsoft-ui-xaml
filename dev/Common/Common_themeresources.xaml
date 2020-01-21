@@ -13,7 +13,6 @@
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
-            <Color x:Key="SystemErrorTextColor">#FFF000</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
@@ -21,7 +20,6 @@
             <Thickness x:Key="TextControlBorderThemeThickness">1</Thickness>
             <Thickness x:Key="TextControlBorderThemeThicknessFocused">2</Thickness>
             <Thickness x:Key="TextControlThemePadding">10,6,6,5</Thickness>
-            <Color x:Key="SystemErrorTextColor">#C50500</Color>
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="SystemControlTransparentBrush" Color="Transparent" />
