@@ -21,6 +21,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewItemPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\NavigationViewTemplateSettings.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewAutomationPeer.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemBaseTemplateSettings.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenterTemplateSettings.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)NavigationViewTemplateSettings.cpp" />
@@ -39,7 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewAutomationPeer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewCollapsedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewExpandingEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewHelper.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemBaseTemplateSettings.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenterTemplateSettings.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemRevokers.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemsFactory.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)NavigationViewItemPresenter.h" />

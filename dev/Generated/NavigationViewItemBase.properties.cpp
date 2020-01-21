@@ -8,9 +8,44 @@
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
-    CppWinRTActivatableClassWithBasicFactory(NavigationViewItemBase)
+    CppWinRTActivatableClassWithDPFactory(NavigationViewItemBase)
 }
 
 #include "NavigationViewItemBase.g.cpp"
 
+GlobalDependencyProperty NavigationViewItemBaseProperties::s_NavigationViewItemBaseTemplateSettingsProperty{ nullptr };
 
+NavigationViewItemBaseProperties::NavigationViewItemBaseProperties()
+{
+    EnsureProperties();
+}
+
+void NavigationViewItemBaseProperties::EnsureProperties()
+{
+    if (!s_NavigationViewItemBaseTemplateSettingsProperty)
+    {
+        s_NavigationViewItemBaseTemplateSettingsProperty =
+            InitializeDependencyProperty(
+                L"NavigationViewItemBaseTemplateSettings",
+                winrt::name_of<winrt::NavigationViewItemBaseTemplateSettings>(),
+                winrt::name_of<winrt::NavigationViewItemBase>(),
+                false /* isAttached */,
+                ValueHelper<winrt::NavigationViewItemBaseTemplateSettings>::BoxedDefaultValue(),
+                nullptr);
+    }
+}
+
+void NavigationViewItemBaseProperties::ClearProperties()
+{
+    s_NavigationViewItemBaseTemplateSettingsProperty = nullptr;
+}
+
+void NavigationViewItemBaseProperties::NavigationViewItemBaseTemplateSettings(winrt::NavigationViewItemBaseTemplateSettings const& value)
+{
+    static_cast<NavigationViewItemBase*>(this)->SetValue(s_NavigationViewItemBaseTemplateSettingsProperty, ValueHelper<winrt::NavigationViewItemBaseTemplateSettings>::BoxValueIfNecessary(value));
+}
+
+winrt::NavigationViewItemBaseTemplateSettings NavigationViewItemBaseProperties::NavigationViewItemBaseTemplateSettings()
+{
+    return ValueHelper<winrt::NavigationViewItemBaseTemplateSettings>::CastOrUnbox(static_cast<NavigationViewItemBase*>(this)->GetValue(s_NavigationViewItemBaseTemplateSettingsProperty));
+}
