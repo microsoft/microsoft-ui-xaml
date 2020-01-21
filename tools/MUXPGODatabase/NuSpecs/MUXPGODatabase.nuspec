@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>MUXPGODatabase</id>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <title>MUXPGODatabase</title>
     <authors>Microsoft</authors>
     <owners>Microsoft</owners>
