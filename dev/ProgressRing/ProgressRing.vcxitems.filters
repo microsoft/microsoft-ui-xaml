@@ -3,15 +3,11 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingLoading.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingLoading.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingLoading.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingLoading.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
@@ -19,10 +15,5 @@
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="AnimatedVisuals">
-      <UniqueIdentifier>{6a682cc3-dea0-4870-afca-7fbaa7948f99}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>
