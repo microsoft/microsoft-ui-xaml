@@ -58,14 +58,21 @@ jobs:
       filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
       arguments: pack "$(nugetPath)\MUXPGODatabase.nuspec" -BasePath "$(nugetPath)" -OutputDirectory "$(Build.ArtifactStagingDirectory)" -properties PROGRAMFILES="%ProgramFiles(x86)%"
 
-  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
-    displayName: 'NuGet push'
-    inputs:
-      command: push
-      publishVstsFeed: https://microsoft.pkgs.visualstudio.com/DefaultCollection/_packaging/DEPControls/nuget/v3/index.json
-      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
-
   - task: PublishBuildArtifacts@1
     inputs:
       pathToPublish: $(Build.ArtifactStagingDirectory)
       artifactName: PGO
+
+  - task: CmdLine@1
+    displayName: 'Publish NuGet package'
+    inputs:
+      filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
+      arguments: push $(Build.ArtifactStagingDirectory)\*.nupkg -Source https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json -apikey VSTS -NonInteractive
+
+  - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
+    displayName: 'NuGet push'
+    inputs:
+      command: push
+      publishVstsFeed: https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json
+      packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
+
