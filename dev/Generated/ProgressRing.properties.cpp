@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ProgressRing.h"
 
-CppWinRTActivatableClassWithDPFactory(ProgressRing)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(ProgressRing)
+}
+
+#include "ProgressRing.g.cpp"
 
 GlobalDependencyProperty ProgressRingProperties::s_StrokeThicknessProperty{ nullptr };
 
