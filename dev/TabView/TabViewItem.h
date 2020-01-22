@@ -65,6 +65,7 @@ public:
     void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
     void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);
     void OnTabViewSelectionChanged(const winrt::IInspectable& sender, const winrt::TabViewSelectionChangedEventArgs& args);
+    void HandleSelectionChanged();
 
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;

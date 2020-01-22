@@ -65,6 +65,7 @@ void TabViewItem::OnApplyTemplate()
         m_tabViewSelectionChangedRevoker = tabView.SelectionChanged(winrt::auto_revoke, { this, &TabViewItem::OnTabViewSelectionChanged });
     }
 
+    UpdateVisualState(true);
     UpdateCloseButton();
 }
 
@@ -137,6 +138,7 @@ void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyCha
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
+    UpdateVisualState(true);
     UpdateShadow();
 }
 
@@ -285,6 +287,7 @@ void TabViewItem::UpdateVisualState(bool useTransitions)
     auto enabledStateValue = L"Enabled";
     bool isSelected = IsSelected();
     auto selectedStateValue = L"Normal";
+
     if (IsEnabled())
     {
         if (isSelected)
@@ -359,11 +362,21 @@ int TabViewItem::RepeatedIndex()
 void TabViewItem::RepeatedIndex(int index)
 {
     m_repeatedIndex = index;
+    HandleSelectionChanged();
 }
 
 void TabViewItem::OnTabViewSelectionChanged(const winrt::IInspectable& sender, const winrt::TabViewSelectionChangedEventArgs& args)
 {
-    IsSelected(args.SelectedIndex() == RepeatedIndex());
+    HandleSelectionChanged();
+}
+
+void TabViewItem::HandleSelectionChanged()
+{
+    //IsSelected(args.SelectedIndex() == RepeatedIndex());
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    {
+        IsSelected(tabView.SelectedIndex() == RepeatedIndex());
+    }
 
     UpdateVisualState(true);
 }

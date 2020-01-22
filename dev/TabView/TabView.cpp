@@ -101,6 +101,15 @@ void TabView::OnApplyTemplate()
         auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(L"TabItemsRepeater", controlProtected);
         if (repeater)
         {
+            if (TabItemsSource())
+            {
+                repeater.ItemsSource(TabItemsSource());
+            }
+            else
+            {
+                repeater.ItemsSource(TabItems());
+            }
+
             m_repeaterLoadedRevoker = repeater.Loaded(winrt::auto_revoke, { this, &TabView::OnRepeaterLoaded });
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { this, &TabView::OnRepeaterElementPrepared });
             m_repeaterElementIndexChangedRevoker = repeater.ElementIndexChanged(winrt::auto_revoke, { this, &TabView::OnRepeaterElementIndexChanged });
@@ -245,16 +254,6 @@ void TabView::OnRepeaterLoaded(const winrt::IInspectable&, const winrt::RoutedEv
 {
     if (auto repeater = m_itemsRepeater.get())
     {
-        if (TabItemsSource())
-        {
-            repeater.ItemsSource(TabItemsSource());
-        }
-        else
-        {
-            repeater.ItemsSource(TabItems());
-        }
-
-
         m_selectionModel.Source(repeater.ItemsSourceView());
         m_collectionChangedRevoker = repeater.ItemsSourceView().CollectionChanged(winrt::auto_revoke, { this, &TabView::OnItemsChanged });
 
@@ -367,29 +366,7 @@ void TabView::OnItemsChanged(const winrt::IInspectable& dataSource, const winrt:
 
 void TabView::OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args)
 {
-    /*WCHAR strOut[1024];
-    auto index = sender.SelectedIndex().GetAt(0);
-    StringCchPrintf(strOut, ARRAYSIZE(strOut), L"SelectedIndex: %d\n", index);
-    OutputDebugString(strOut);*/
-
-    auto item = sender.SelectedItem();
-    if (item)
-    {
-        OutputDebugString(L"SelectedItem exists\n");
-    }
-    else
-    {
-        if (auto repeater = m_itemsRepeater.get())
-        {
-            if (sender.SelectedIndex())
-            {
-                auto index = sender.SelectedIndex().GetAt(0);
-                item = repeater.TryGetElement(index);
-            }
-        }
-    }
-
-    SelectedItem(item);
+    SelectedItem(sender.SelectedItem());
     if (sender.SelectedIndex())
     {
         SelectedIndex(sender.SelectedIndex().GetAt(0));
@@ -471,49 +448,49 @@ void TabView::UpdateTabContent()
 {
     if (auto tabContentPresenter = m_tabContentPresenter.get())
     {
-        if (!SelectedItem())
+        auto selectedItem = ContainerFromIndex(SelectedIndex()).try_as<winrt::TabViewItem>();
+
+        //if (!SelectedItem())
+        if (!selectedItem)
         {
+            OutputDebugString(L"Did not find container\n");
             tabContentPresenter.Content(nullptr);
             tabContentPresenter.ContentTemplate(nullptr);
             tabContentPresenter.ContentTemplateSelector(nullptr);
         }
         else
         {
-            auto tvi = ContainerFromItem(SelectedItem()).try_as<winrt::TabViewItem>();
-
-            if (tvi)
+            OutputDebugString(L"Found container\n");
+            // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
+            // We should move the focus to the new tab content.
+            // The new tab content is not available at the time of the LosingFocus event, so we need to
+            // move focus later.
+            bool shouldMoveFocusToNewTab = false;
+            auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
             {
-                // If the focus was in the old tab content, we will lose focus when it is removed from the visual tree.
-                // We should move the focus to the new tab content.
-                // The new tab content is not available at the time of the LosingFocus event, so we need to
-                // move focus later.
-                bool shouldMoveFocusToNewTab = false;
-                auto revoker = tabContentPresenter.LosingFocus(winrt::auto_revoke, [&shouldMoveFocusToNewTab](const winrt::IInspectable&, const winrt::LosingFocusEventArgs& args)
+                shouldMoveFocusToNewTab = true;
+            });
+
+            tabContentPresenter.Content(selectedItem.Content());
+            tabContentPresenter.ContentTemplate(selectedItem.ContentTemplate());
+            tabContentPresenter.ContentTemplateSelector(selectedItem.ContentTemplateSelector());
+
+            // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
+            // into the live visual tree.
+            tabContentPresenter.UpdateLayout();
+
+            if (shouldMoveFocusToNewTab)
+            {
+                auto focusable = winrt::FocusManager::FindFirstFocusableElement(tabContentPresenter);
+                if (!focusable)
                 {
-                    shouldMoveFocusToNewTab = true;
-                });
+                    // If there is nothing focusable in the new tab, just move focus to the TabViewItem itself.
+                    focusable = selectedItem;
+                }
 
-                tabContentPresenter.Content(tvi.Content());
-                tabContentPresenter.ContentTemplate(tvi.ContentTemplate());
-                tabContentPresenter.ContentTemplateSelector(tvi.ContentTemplateSelector());
-
-                // It is not ideal to call UpdateLayout here, but it is necessary to ensure that the ContentPresenter has expanded its content
-                // into the live visual tree.
-                tabContentPresenter.UpdateLayout();
-
-                if (shouldMoveFocusToNewTab)
+                if (focusable)
                 {
-                    auto focusable = winrt::FocusManager::FindFirstFocusableElement(tabContentPresenter);
-                    if (!focusable)
-                    {
-                        // If there is nothing focusable in the new tab, just move focus to the TabViewItem itself.
-                        focusable = tvi;
-                    }
-
-                    if (focusable)
-                    {
-                        SetFocus(focusable, winrt::FocusState::Programmatic);
-                    }
+                    SetFocus(focusable, winrt::FocusState::Programmatic);
                 }
             }
         }
