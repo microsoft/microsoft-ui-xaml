@@ -36,10 +36,6 @@
                             <x:Double>1.0</x:Double>
                             <x:Double>2.0</x:Double>
                         </controls:RadioButtons>
-
-                        <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
-                        <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set ... meep morp" />
-
                     </StackPanel>
                 </ScrollViewer>
             </Grid>
