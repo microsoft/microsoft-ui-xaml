@@ -27,12 +27,12 @@ namespace MUXControlsTestApp.Utilities
 {
     public class CompositionScrollControllerOffsetChangeCompletedEventArgs
     {
-        internal CompositionScrollControllerOffsetChangeCompletedEventArgs(int offsetChangeId)
+        internal CompositionScrollControllerOffsetChangeCompletedEventArgs(int offsetChangeCorrelationId)
         {
-            OffsetChangeId = offsetChangeId;
+            OffsetChangeCorrelationId = offsetChangeCorrelationId;
         }
 
-        public int OffsetChangeId
+        public int OffsetChangeCorrelationId
         {
             get;
             set;
@@ -70,7 +70,7 @@ namespace MUXControlsTestApp.Utilities
         }
 
         private List<string> lstAsyncEventMessage = new List<string>();
-        private List<int> lstOffsetChangeIds = new List<int>();
+        private List<int> lstOffsetChangeCorrelationIds = new List<int>();
         private List<int> lstScrollFromIds = new List<int>();
         private Dictionary<int, OperationInfo> operations = new Dictionary<int, OperationInfo>();
         private FrameworkElement interactionFrameworkElement = null;
@@ -341,7 +341,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage(
                 "CompositionScrollController: GetScrollAnimation for Orientation=" + Orientation +
-                " with OffsetsChangeId=" + info + ", currentPosition=" + currentPosition);
+                " with OffsetsChangeCorrelationId=" + info + ", currentPosition=" + currentPosition);
 
             try
             {
@@ -456,39 +456,39 @@ namespace MUXControlsTestApp.Utilities
         public void NotifyScrollCompleted(
             int info)
         {
-            int offsetChangeId = info;
+            int offsetChangeCorrelationId = info;
 
             RaiseLogMessage(
                 "CompositionScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
-                " with offsetChangeId=" + offsetChangeId);
+                " with offsetChangeCorrelationId=" + offsetChangeCorrelationId);
 
-            if (lstOffsetChangeIds.Contains(offsetChangeId))
+            if (lstOffsetChangeCorrelationIds.Contains(offsetChangeCorrelationId))
             {
-                lstOffsetChangeIds.Remove(offsetChangeId);
+                lstOffsetChangeCorrelationIds.Remove(offsetChangeCorrelationId);
 
                 double relativeOffsetChange = 0.0;
 
-                if (operations.ContainsKey(offsetChangeId))
+                if (operations.ContainsKey(offsetChangeCorrelationId))
                 {
-                    OperationInfo oi = operations[offsetChangeId];
+                    OperationInfo oi = operations[offsetChangeCorrelationId];
                     relativeOffsetChange = oi.RelativeOffsetChange;
-                    operations.Remove(offsetChangeId);
+                    operations.Remove(offsetChangeCorrelationId);
                 }
 
-                RaiseLogMessage("CompositionScrollController: ScrollTo/By completed. Id=" + offsetChangeId);
+                RaiseLogMessage("CompositionScrollController: ScrollTo/By completed. Id=" + offsetChangeCorrelationId);
             }
-            else if (lstScrollFromIds.Contains(offsetChangeId))
+            else if (lstScrollFromIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollFromIds.Add(offsetChangeId);
+                lstScrollFromIds.Add(offsetChangeCorrelationId);
 
-                RaiseLogMessage("CompositionScrollController: ScrollFromRequest completed. Id=" + offsetChangeId);
+                RaiseLogMessage("CompositionScrollController: ScrollFromRequest completed. Id=" + offsetChangeCorrelationId);
             }
 
             if (OffsetChangeCompleted != null)
             {
                 RaiseLogMessage(
                     "CompositionScrollController: NotifyScrollCompleted raising OffsetChangeCompleted event.");
-                OffsetChangeCompleted(this, new CompositionScrollControllerOffsetChangeCompletedEventArgs(offsetChangeId));
+                OffsetChangeCompleted(this, new CompositionScrollControllerOffsetChangeCompletedEventArgs(offsetChangeCorrelationId));
             }
         }
 
@@ -657,16 +657,16 @@ namespace MUXControlsTestApp.Utilities
                             offset,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
-                    if (e.ScrollInfo != -1)
+                    if (e.CorrelationId != -1)
                     {
-                        RaiseLogMessage("CompositionScrollController: ScrollToRequest started. OffsetsChangeId=" + e.ScrollInfo);
+                        RaiseLogMessage("CompositionScrollController: ScrollToRequest started. OffsetsChangeCorrelationId=" + e.CorrelationId);
 
-                        if (hookupCompletion && !lstOffsetChangeIds.Contains(e.ScrollInfo))
+                        if (hookupCompletion && !lstOffsetChangeCorrelationIds.Contains(e.CorrelationId))
                         {
-                            lstOffsetChangeIds.Add(e.ScrollInfo);
+                            lstOffsetChangeCorrelationIds.Add(e.CorrelationId);
                         }
                     }
-                    return e.ScrollInfo;
+                    return e.CorrelationId;
                 }
             }
             catch (Exception ex)
@@ -693,16 +693,16 @@ namespace MUXControlsTestApp.Utilities
                             offsetDelta,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
-                    if (e.ScrollInfo != -1)
+                    if (e.CorrelationId != -1)
                     {
-                        RaiseLogMessage("CompositionScrollController: ScrollByRequest started. OffsetsChangeId=" + e.ScrollInfo);
+                        RaiseLogMessage("CompositionScrollController: ScrollByRequest started. OffsetsChangeCorrelationId=" + e.CorrelationId);
 
-                        if (hookupCompletion && !lstOffsetChangeIds.Contains(e.ScrollInfo))
+                        if (hookupCompletion && !lstOffsetChangeCorrelationIds.Contains(e.CorrelationId))
                         {
-                            lstOffsetChangeIds.Add(e.ScrollInfo);
+                            lstOffsetChangeCorrelationIds.Add(e.CorrelationId);
                         }
                     }
-                    return e.ScrollInfo;
+                    return e.CorrelationId;
                 }
             }
             catch (Exception ex)
@@ -725,16 +725,16 @@ namespace MUXControlsTestApp.Utilities
                         offsetVelocity,
                         inertiaDecayRate);
                 ScrollFromRequested(this, e);
-                if (e.ScrollInfo != -1)
+                if (e.CorrelationId != -1)
                 {
-                    RaiseLogMessage("CompositionScrollController: ScrollFromRequest started. OffsetsChangeId=" + e.ScrollInfo);
+                    RaiseLogMessage("CompositionScrollController: ScrollFromRequest started. OffsetsChangeCorrelationId=" + e.CorrelationId);
 
-                    if (hookupCompletion && !lstScrollFromIds.Contains(e.ScrollInfo))
+                    if (hookupCompletion && !lstScrollFromIds.Contains(e.CorrelationId))
                     {
-                        lstScrollFromIds.Add(e.ScrollInfo);
+                        lstScrollFromIds.Add(e.CorrelationId);
                     }
                 }
-                return e.ScrollInfo;
+                return e.CorrelationId;
             }
             return -1;
         }
@@ -772,7 +772,7 @@ namespace MUXControlsTestApp.Utilities
                 double targetThumbOffset = preManipulationThumbOffset + (Orientation == Orientation.Horizontal ? e.Cumulative.Translation.X : e.Cumulative.Translation.Y);
                 double scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-                int offsetChangeId = RaiseScrollToRequested(
+                int offsetChangeCorrelationId = RaiseScrollToRequested(
                     scrollPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
@@ -1076,7 +1076,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("CompositionScrollController: DecrementRepeatButton_Click for Orientation=" + Orientation);
 
-            int offsetChangeId =
+            int offsetChangeCorrelationId =
                 RaiseScrollFromRequested(IsThumbPositionMirrored ? SmallChangeAdditionalVelocity : -SmallChangeAdditionalVelocity, SmallChangeInertiaDecayRate, true /*hookupCompletion*/);
         }
 
@@ -1084,7 +1084,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("CompositionScrollController: IncrementRepeatButton_Click for Orientation=" + Orientation);
 
-            int offsetChangeId =
+            int offsetChangeCorrelationId =
                 RaiseScrollFromRequested(IsThumbPositionMirrored ? -SmallChangeAdditionalVelocity : SmallChangeAdditionalVelocity, SmallChangeInertiaDecayRate, true /*hookupCompletion*/);
         }
 
@@ -1247,11 +1247,11 @@ namespace MUXControlsTestApp.Utilities
             relativeOffsetChange = newOffsetTarget - offsetTarget;
             offsetTarget = newOffsetTarget;
 
-            int offsetChangeId = RaiseScrollToRequested(
+            int offsetChangeCorrelationId = RaiseScrollToRequested(
                 offsetTarget, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
-            if (offsetChangeId != -1 && !operations.ContainsKey(offsetChangeId))
+            if (offsetChangeCorrelationId != -1 && !operations.ContainsKey(offsetChangeCorrelationId))
             {
-                operations.Add(offsetChangeId, new OperationInfo(offsetChangeId, relativeOffsetChange, offsetTarget));
+                operations.Add(offsetChangeCorrelationId, new OperationInfo(offsetChangeCorrelationId, relativeOffsetChange, offsetTarget));
             }
         }
     }

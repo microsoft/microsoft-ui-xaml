@@ -21,13 +21,13 @@ public:
     }
 
     // IScrollingScrollCompletedEventArgs overrides
-    int ScrollInfo();
+    int CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
-    void OffsetsChangeId(int32_t offsetsChangeId);
+    void OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId);
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_offsetsChangeId{ -1 };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
     ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

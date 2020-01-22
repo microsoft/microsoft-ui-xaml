@@ -407,7 +407,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     scrollPresenter.ScrollAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ScrollAnimationStarting - OffsetsChangeId={0}", args.ScrollInfo);
+                        Log.Comment("ScrollAnimationStarting - OffsetsChangeCorrelationId={0}", args.CorrelationId);
                         Verify.IsNotNull(args.Animation);
                         Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -480,7 +480,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     scrollPresenter.ZoomAnimationStarting += (sender, args) =>
                     {
-                        Log.Comment("ZoomAnimationStarting - ZoomFactorChangeId={0}", args.ZoomInfo);
+                        Log.Comment("ZoomAnimationStarting - ZoomFactorChangeCorrelationId={0}", args.CorrelationId);
                         Verify.IsNotNull(args.Animation);
                         ScalarKeyFrameAnimation stockKeyFrameAnimation = args.Animation as ScalarKeyFrameAnimation;
                         Verify.IsNotNull(stockKeyFrameAnimation);
@@ -1650,11 +1650,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.ScrollInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                        Log.Comment("ScrollCompleted: ScrollTo OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
+                        Log.Comment("ScrollCompleted: ScrollTo OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -1693,11 +1693,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.ScrollInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                        Log.Comment("ScrollCompleted: ScrollBy OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
+                        Log.Comment("ScrollCompleted: ScrollBy OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -1742,11 +1742,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ScrollCompleted += (ScrollPresenter sender, ScrollingScrollCompletedEventArgs args) =>
                 {
-                    if (args.ScrollInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                        Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
+                        Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -2001,11 +2001,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.ZoomInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-                        Log.Comment("ZoomCompleted: ZoomTo ZoomFactorChangeId=" + args.ZoomInfo + ", Result=" + result);
+                        Log.Comment("ZoomCompleted: ZoomTo ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -2045,11 +2045,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.ZoomInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-                        Log.Comment("ZoomCompleted: ZoomBy ZoomFactorChangeId=" + args.ZoomInfo + ", Result=" + result);
+                        Log.Comment("ZoomCompleted: ZoomBy ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -2086,11 +2086,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             {
                 scrollPresenter.ZoomCompleted += (ScrollPresenter sender, ScrollingZoomCompletedEventArgs args) =>
                 {
-                    if (args.ZoomInfo == operation.Id)
+                    if (args.CorrelationId == operation.Id)
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-                        Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeId=" + args.ZoomInfo + ", Result=" + result);
+                        Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");

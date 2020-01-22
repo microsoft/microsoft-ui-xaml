@@ -121,7 +121,7 @@ runtimeclass ScrollingScrollAnimationStartingEventArgs
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
     Windows.Foundation.Numerics.Vector2 StartPosition { get; };
     Windows.Foundation.Numerics.Vector2 EndPosition { get; };
-    Int32 ScrollInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -132,21 +132,21 @@ runtimeclass ScrollingZoomAnimationStartingEventArgs
     Single StartZoomFactor { get; };
     Single EndZoomFactor { get; };
     Windows.UI.Composition.CompositionAnimation Animation { get; set; };
-    Int32 ZoomInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingScrollCompletedEventArgs
 {
-    Int32 ScrollInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass ScrollingZoomCompletedEventArgs
 {
-    Int32 ZoomInfo { get; };
+    Int32 CorrelationId { get; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -157,7 +157,7 @@ runtimeclass ScrollingBringingIntoViewEventArgs
     Windows.UI.Xaml.BringIntoViewRequestedEventArgs RequestEventArgs { get; };
     Double TargetHorizontalOffset { get; };
     Double TargetVerticalOffset { get; };
-    Int32 ScrollInfo { get; };
+    Int32 CorrelationId { get; };
     Boolean Cancel { get; set; };
 }
 

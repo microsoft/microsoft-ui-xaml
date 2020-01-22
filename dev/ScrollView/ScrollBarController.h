@@ -115,9 +115,9 @@ private:
 
     winrt::ScrollBar m_scrollBar;
     winrt::ScrollingScrollMode m_scrollMode{ winrt::ScrollingScrollMode::Disabled };
-    int32_t m_lastOffsetChangeIdForScrollTo{ -1 };
-    int32_t m_lastOffsetChangeIdForScrollBy{ -1 };
-    int32_t m_lastOffsetChangeIdForScrollFrom{ -1 };
+    int32_t m_lastOffsetChangeCorrelationIdForScrollTo{ -1 };
+    int32_t m_lastOffsetChangeCorrelationIdForScrollBy{ -1 };
+    int32_t m_lastOffsetChangeCorrelationIdForScrollFrom{ -1 };
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
     double m_lastOffset{ 0.0 };

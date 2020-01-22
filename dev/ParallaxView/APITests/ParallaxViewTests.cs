@@ -1943,25 +1943,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Changing ScrollPresenter view to ({0}, {1}, {2}) with disableAnimation={3}", horizontalOffset, verticalOffset, zoomFactor, disableAnimation);
                 if (zoomFactor != null && (float)zoomFactor != scrollPresenter.ZoomFactor)
                 {
-                    int viewChangeId = scrollPresenter.ZoomTo(
+                    int viewChangeCorrelationId = scrollPresenter.ZoomTo(
                         (float)zoomFactor,
                         Vector2.Zero,
                         new ScrollingZoomOptions(
                             disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
                             ScrollingSnapPointsMode.Ignore));
-                    Verify.IsGreaterThan(viewChangeId, 0);
+                    Verify.IsGreaterThan(viewChangeCorrelationId, 0);
                 }
 
                 if ((horizontalOffset != null && (double)horizontalOffset != scrollPresenter.HorizontalOffset) || (verticalOffset != null && (double)verticalOffset != scrollPresenter.VerticalOffset))
                 {
                     Log.Comment("Invoking ScrollPresenter.ChangeOffsets");
-                    int viewChangeId = scrollPresenter.ScrollTo(
+                    int viewChangeCorrelationId = scrollPresenter.ScrollTo(
                         horizontalOffset == null ? scrollPresenter.HorizontalOffset : (double)horizontalOffset,
                         verticalOffset == null ? scrollPresenter.VerticalOffset : (double)verticalOffset,
                         new ScrollingScrollOptions(
                             disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
                             ScrollingSnapPointsMode.Ignore));
-                    Verify.IsGreaterThan(viewChangeId, 0);
+                    Verify.IsGreaterThan(viewChangeCorrelationId, 0);
                 }
             });
 

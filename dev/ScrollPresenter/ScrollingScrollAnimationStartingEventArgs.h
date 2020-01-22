@@ -23,11 +23,11 @@ public:
     // IScrollingScrollAnimationStartingEventArgs overrides
     winrt::CompositionAnimation Animation();
     void Animation(winrt::CompositionAnimation const& value);
-    int ScrollInfo();
+    int CorrelationId();
     winrt::float2 StartPosition();
     winrt::float2 EndPosition();
 
-    void SetOffsetsChangeId(int32_t offsetsChangeId);
+    void SetOffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId);
     winrt::CompositionAnimation GetAnimation() const;
     void SetAnimation(const winrt::CompositionAnimation& animation);
     void SetStartPosition(const winrt::float2& startPosition);
@@ -35,7 +35,7 @@ public:
 
 private:
     winrt::CompositionAnimation m_animation{ nullptr };
-    int32_t m_offsetsChangeId{ -1 };
+    int32_t m_offsetsChangeCorrelationId{ -1 };
     winrt::float2 m_startPosition{ 0.0f, 0.0f };
     winrt::float2 m_endPosition{ 0.0f, 0.0f };
 };

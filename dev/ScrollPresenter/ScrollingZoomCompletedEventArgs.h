@@ -21,13 +21,13 @@ public:
     }
 
     // IScrollingZoomCompletedEventArgs overrides
-    int ZoomInfo();
+    int CorrelationId();
     ScrollPresenterViewChangeResult Result();
 
-    void ZoomFactorChangeId(int32_t zoomFactorChangeId);
+    void ZoomFactorChangeCorrelationId(int32_t zoomFactorChangeCorrelationId);
     void Result(ScrollPresenterViewChangeResult result);
 
 private:
-    int32_t m_zoomFactorChangeId{ -1 };
+    int32_t m_zoomFactorChangeCorrelationId{ -1 };
     ScrollPresenterViewChangeResult m_result{ ScrollPresenterViewChangeResult::Completed };
 };

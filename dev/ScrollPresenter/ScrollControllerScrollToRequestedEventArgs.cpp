@@ -31,14 +31,14 @@ winrt::ScrollingScrollOptions ScrollControllerScrollToRequestedEventArgs::Option
     return m_options;
 }
 
-int ScrollControllerScrollToRequestedEventArgs::ScrollInfo() const
+int ScrollControllerScrollToRequestedEventArgs::CorrelationId() const
 {
-    return m_scrollInfo;
+    return m_correlationId;
 }
 
-void ScrollControllerScrollToRequestedEventArgs::ScrollInfo(int scrollInfo)
+void ScrollControllerScrollToRequestedEventArgs::CorrelationId(int correlationId)
 {
-    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, scrollInfo);
+    SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 
-    m_scrollInfo = scrollInfo;
+    m_correlationId = correlationId;
 }

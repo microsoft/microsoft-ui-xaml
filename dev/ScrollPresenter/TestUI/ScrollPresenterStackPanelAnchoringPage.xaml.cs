@@ -563,7 +563,7 @@ namespace MUXControlsTestApp
             {
                 ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
+                AppendAsyncEventMessage("ScrollCompleted OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
             }
         }
 
@@ -771,11 +771,11 @@ namespace MUXControlsTestApp
             {
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollPresenter.ScrollTo(
+                int viewChangeCorrelationId = scrollPresenter.ScrollTo(
                     chkHorizontalOrientation.IsChecked == true ? Convert.ToDouble(txtCOAO.Text) : 0,
                     chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToDouble(txtCOAO.Text),
                     new ScrollingScrollOptions(ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore));
-                AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeId);
+                AppendAsyncEventMessage("Invoked ScrollTo Id=" + viewChangeCorrelationId);
             }
             catch (Exception ex)
             {
@@ -788,7 +788,7 @@ namespace MUXControlsTestApp
         {
             try
             {
-                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeId=" + args.ScrollInfo);
+                AppendAsyncEventMessage("ScrollAnimationStarting OffsetsChangeCorrelationId=" + args.CorrelationId);
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
 
@@ -821,12 +821,12 @@ namespace MUXControlsTestApp
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeId = scrollPresenter.ScrollFrom(
+                int viewChangeCorrelationId = scrollPresenter.ScrollFrom(
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
                     inertiaDecayRate);
-                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeId);
+                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeCorrelationId);
             }
             catch (Exception ex)
             {

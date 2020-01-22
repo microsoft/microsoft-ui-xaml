@@ -127,7 +127,7 @@ namespace MUXControlsTestApp
         {
             string asyncEventMessage = "BringingIntoView ScrollPresenter=" + sender.Name;
             asyncEventMessage += ", TargetHorizontalOffset=" + args.TargetHorizontalOffset + ", TargetVerticalOffset=" + args.TargetVerticalOffset;
-            asyncEventMessage += ", OffsetsChangeId=" + args.ScrollInfo;
+            asyncEventMessage += ", OffsetsChangeCorrelationId=" + args.CorrelationId;
             asyncEventMessage += ", SnapPointsMode=" + args.SnapPointsMode;
             asyncEventMessage += ", RequestEventArgs.AnimationDesired=" + args.RequestEventArgs.AnimationDesired + ", RequestEventArgs.Handled=" + args.RequestEventArgs.Handled;
             asyncEventMessage += ", RequestEventArgs.HorizontalAlignmentRatio=" + args.RequestEventArgs.HorizontalAlignmentRatio + ", RequestEventArgs.VerticalAlignmentRatio=" + args.RequestEventArgs.VerticalAlignmentRatio;
@@ -154,7 +154,7 @@ namespace MUXControlsTestApp
             {
                 if (chkLogBringIntoViewRequestedEvents.IsChecked == true)
                 {
-                    AppendAsyncEventMessage("ScrollAnimationStarting ScrollPresenter=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo);
+                    AppendAsyncEventMessage("ScrollAnimationStarting ScrollPresenter=" + sender.Name + ", OffsetsChangeCorrelationId=" + args.CorrelationId);
                 }
 
                 Vector3KeyFrameAnimation stockKeyFrameAnimation = args.Animation as Vector3KeyFrameAnimation;
@@ -225,7 +225,7 @@ namespace MUXControlsTestApp
         {
             ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            AppendAsyncEventMessage("ScrollCompleted ScrollPresenter=" + sender.Name + ", OffsetsChangeId=" + args.ScrollInfo + ", Result=" + result);
+            AppendAsyncEventMessage("ScrollCompleted ScrollPresenter=" + sender.Name + ", OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
         }
 
         private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
