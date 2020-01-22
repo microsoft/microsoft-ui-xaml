@@ -3,18 +3,18 @@
 
 #pragma once
 
-#include "ScrollControllerScrollFromRequestedEventArgs.g.h"
+#include "ScrollControllerAddScrollVelocityRequestedEventArgs.g.h"
 
-class ScrollControllerScrollFromRequestedEventArgs :
-    public winrt::implementation::ScrollControllerScrollFromRequestedEventArgsT<ScrollControllerScrollFromRequestedEventArgs>
+class ScrollControllerAddScrollVelocityRequestedEventArgs :
+    public winrt::implementation::ScrollControllerAddScrollVelocityRequestedEventArgsT<ScrollControllerAddScrollVelocityRequestedEventArgs>
 {
 public:
-    ~ScrollControllerScrollFromRequestedEventArgs()
+    ~ScrollControllerAddScrollVelocityRequestedEventArgs()
     {
         SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
-    ScrollControllerScrollFromRequestedEventArgs(
+    ScrollControllerAddScrollVelocityRequestedEventArgs(
         float offsetVelocity,
         winrt::IReference<float> inertiaDecayRate);
 

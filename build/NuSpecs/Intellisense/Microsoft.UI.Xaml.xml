@@ -2363,7 +2363,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <param name="info" />
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollByRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollFromRequested" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AddScrollVelocityRequested" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollToRequested" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet,System.String,System.String,System.String,System.String)">
       <param name="propertySet" />
@@ -2440,14 +2440,14 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Info" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.OffsetDelta" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Options" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
       <param name="offsetVelocity" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.InertiaDecayRate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.Info" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.OffsetVelocity" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.InertiaDecayRate" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.Info" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.OffsetVelocity" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="offset" />
@@ -2529,7 +2529,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <param name="options" />
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollCompleted" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AddZoomVelocity(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="offsetsVelocity" />
       <param name="inertiaDecayRate" />
     </member>
@@ -3207,7 +3207,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Identifies the ScrollPresenter dependency property.</summary>
       <returns>The identifier for the ScrollPresenter dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.AddZoomVelocity(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="offsetsVelocity" />
       <param name="inertiaDecayRate" />
     </member>

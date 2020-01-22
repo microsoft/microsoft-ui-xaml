@@ -21,7 +21,7 @@ using ScrollingScrollOptions = Microsoft.UI.Xaml.Controls.ScrollingScrollOptions
 using ScrollControllerInteractionRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerInteractionRequestedEventArgs;
 using ScrollControllerScrollToRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs;
 using ScrollControllerScrollByRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs;
-using ScrollControllerScrollFromRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs;
+using ScrollControllerAddScrollVelocityRequestedEventArgs = Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs;
 
 namespace MUXControlsTestApp.Utilities
 {
@@ -61,7 +61,7 @@ namespace MUXControlsTestApp.Utilities
             public event TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
             public event TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
-            public event TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
+            public event TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
             public event TypedEventHandler<IScrollController, UniScrollControllerScrollingScrollCompletedEventArgs> ScrollCompleted;
 
             public UniScrollController(BiDirectionalScrollController owner, Orientation orientation)
@@ -410,18 +410,18 @@ namespace MUXControlsTestApp.Utilities
                 return -1;
             }
 
-            internal int RaiseScrollFromRequested(
+            internal int RaiseAddScrollVelocityRequested(
                 float offsetVelocity, float? inertiaDecayRate)
             {
-                RaiseLogMessage("UniScrollController: RaiseScrollFromRequested for Orientation=" + Orientation + " with offsetVelocity=" + offsetVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
+                RaiseLogMessage("UniScrollController: RaiseAddScrollVelocityRequested for Orientation=" + Orientation + " with offsetVelocity=" + offsetVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
 
-                if (ScrollFromRequested != null)
+                if (AddScrollVelocityRequested != null)
                 {
-                    ScrollControllerScrollFromRequestedEventArgs e =
-                        new ScrollControllerScrollFromRequestedEventArgs(
+                    ScrollControllerAddScrollVelocityRequestedEventArgs e =
+                        new ScrollControllerAddScrollVelocityRequestedEventArgs(
                             offsetVelocity,
                             inertiaDecayRate);
-                    ScrollFromRequested(this, e);
+                    AddScrollVelocityRequested(this, e);
                     return e.CorrelationId;
                 }
                 return -1;
@@ -503,7 +503,7 @@ namespace MUXControlsTestApp.Utilities
         private List<int> lstViewChangeCorrelationIds = new List<int>();
         private List<int> lstScrollToIds = new List<int>();
         private List<int> lstScrollByIds = new List<int>();
-        private List<int> lstScrollFromIds = new List<int>();
+        private List<int> lstAddScrollVelocityIds = new List<int>();
         private Dictionary<int, OperationInfo> operations = new Dictionary<int, OperationInfo>();
         private UniScrollController horizontalScrollController = null;
         private UniScrollController verticalScrollController = null;
@@ -596,9 +596,9 @@ namespace MUXControlsTestApp.Utilities
             return viewChangeCorrelationId;
         }
 
-        public int ScrollFrom(Vector2 offsetVelocity, Vector2? inertiaDecayRate)
+        public int AddScrollVelocity(Vector2 offsetVelocity, Vector2? inertiaDecayRate)
         {
-            int viewChangeCorrelationId = RaiseScrollFromRequested(
+            int viewChangeCorrelationId = RaiseAddScrollVelocityRequested(
                 offsetVelocity, inertiaDecayRate, false /*hookupCompletion*/);
             lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
             return viewChangeCorrelationId;
@@ -852,7 +852,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: BiDecrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(-SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void BiIncrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -860,7 +860,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: BiIncrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void HorizontalIncrementVerticalDecrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -868,7 +868,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: HorizontalIncrementVerticalDecrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(SmallChangeAdditionalVelocity, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void HorizontalDecrementVerticalIncrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -876,7 +876,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: HorizontalDecrementVerticalIncrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(-SmallChangeAdditionalVelocity, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void HorizontalDecrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -884,7 +884,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: HorizontalDecrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(-SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void HorizontalIncrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -892,7 +892,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: HorizontalIncrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void VerticalDecrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -900,7 +900,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: VerticalDecrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(0, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(0, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void VerticalIncrementRepeatButton_Click(object sender, RoutedEventArgs e)
@@ -908,7 +908,7 @@ namespace MUXControlsTestApp.Utilities
             RaiseLogMessage("BiDirectionalScrollController: VerticalIncrementRepeatButton_Click");
 
             int viewChangeCorrelationId =
-                RaiseScrollFromRequested(new Vector2(0, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
+                RaiseAddScrollVelocityRequested(new Vector2(0, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
         private void Thumb_PointerPressed(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
@@ -1136,11 +1136,11 @@ namespace MUXControlsTestApp.Utilities
 
                 RaiseLogMessage("BiDirectionalScrollController: ScrollByRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
             }
-            else if (lstScrollFromIds.Contains(args.OffsetChangeCorrelationId))
+            else if (lstAddScrollVelocityIds.Contains(args.OffsetChangeCorrelationId))
             {
-                lstScrollFromIds.Remove(args.OffsetChangeCorrelationId);
+                lstAddScrollVelocityIds.Remove(args.OffsetChangeCorrelationId);
 
-                RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
+                RaiseLogMessage("BiDirectionalScrollController: AddScrollVelocityRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
             }
 
             if (lstViewChangeCorrelationIds.Contains(args.OffsetChangeCorrelationId))
@@ -1265,30 +1265,30 @@ namespace MUXControlsTestApp.Utilities
             return offsetChangeCorrelationId;
         }
 
-        private int RaiseScrollFromRequested(
+        private int RaiseAddScrollVelocityRequested(
             Vector2 additionalVelocity, Vector2? inertiaDecayRate, bool hookupCompletion)
         {
-            RaiseLogMessage("BiDirectionalScrollController: RaiseScrollFromRequested with additionalVelocity=" + additionalVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
+            RaiseLogMessage("BiDirectionalScrollController: RaiseAddScrollVelocityRequested with additionalVelocity=" + additionalVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
 
             int horizontalOffsetChangeCorrelationId = -1;
             int verticalOffsetChangeCorrelationId = -1;
 
             if (additionalVelocity.X != 0.0f)
             {
-                horizontalOffsetChangeCorrelationId = horizontalScrollController.RaiseScrollFromRequested(
+                horizontalOffsetChangeCorrelationId = horizontalScrollController.RaiseAddScrollVelocityRequested(
                     additionalVelocity.X, inertiaDecayRate == null ? (float?)null : inertiaDecayRate.Value.X);
 
                 if (horizontalOffsetChangeCorrelationId != -1)
-                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + horizontalOffsetChangeCorrelationId);
+                    RaiseLogMessage("BiDirectionalScrollController: AddScrollVelocityRequest started. Id=" + horizontalOffsetChangeCorrelationId);
             }
 
             if (additionalVelocity.Y != 0.0f)
             {
-                verticalOffsetChangeCorrelationId = verticalScrollController.RaiseScrollFromRequested(
+                verticalOffsetChangeCorrelationId = verticalScrollController.RaiseAddScrollVelocityRequested(
                     additionalVelocity.Y, inertiaDecayRate == null ? (float?)null : inertiaDecayRate.Value.Y);
 
                 if (verticalOffsetChangeCorrelationId != -1)
-                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + verticalOffsetChangeCorrelationId);
+                    RaiseLogMessage("BiDirectionalScrollController: AddScrollVelocityRequest started. Id=" + verticalOffsetChangeCorrelationId);
             }
 
             int offsetChangeCorrelationId = -1;
@@ -1299,7 +1299,7 @@ namespace MUXControlsTestApp.Utilities
             }
             else if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId != verticalOffsetChangeCorrelationId)
             {
-                RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest operations do not match.");
+                RaiseLogMessage("BiDirectionalScrollController: AddScrollVelocityRequest operations do not match.");
             }
             else if (horizontalOffsetChangeCorrelationId != -1)
             {
@@ -1311,12 +1311,12 @@ namespace MUXControlsTestApp.Utilities
             }
             else
             {
-                RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest operations are null.");
+                RaiseLogMessage("BiDirectionalScrollController: AddScrollVelocityRequest operations are null.");
             }
 
-            if (hookupCompletion && offsetChangeCorrelationId != -1 && !lstScrollFromIds.Contains(offsetChangeCorrelationId))
+            if (hookupCompletion && offsetChangeCorrelationId != -1 && !lstAddScrollVelocityIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollFromIds.Add(offsetChangeCorrelationId);
+                lstAddScrollVelocityIds.Add(offsetChangeCorrelationId);
             }
 
             return offsetChangeCorrelationId;

@@ -71,12 +71,12 @@ public:
     int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
     int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
     int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
     int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
     int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
     int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
     // Invoked by ScrollViewTestHooks
@@ -345,11 +345,11 @@ private:
     bool m_isPointerOverHorizontalScrollController{ false };
     bool m_isPointerOverVerticalScrollController{ false };
 
-    int m_verticalScrollFromDirection{ 0 };
-    int m_verticalScrollFromOffsetChangeCorrelationId{ -1 };
+    int m_verticalAddScrollVelocityDirection{ 0 };
+    int m_verticalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
 
-    int m_horizontalScrollFromDirection{ 0 };
-    int m_horizontalScrollFromOffsetChangeCorrelationId{ -1 };
+    int m_horizontalAddScrollVelocityDirection{ 0 };
+    int m_horizontalAddScrollVelocityOffsetChangeCorrelationId{ -1 };
 
     // List of temporary ScrollViewBringIntoViewOperation instances used to track expected
     // ScrollPresenter::BringingIntoView occurrences due to navigation.

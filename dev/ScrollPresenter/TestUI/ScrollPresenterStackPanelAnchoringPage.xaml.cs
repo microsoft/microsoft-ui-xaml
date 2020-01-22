@@ -806,7 +806,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -821,12 +821,12 @@ namespace MUXControlsTestApp
 
                 txtStockOffsetsChangeDuration.Text = string.Empty;
 
-                int viewChangeCorrelationId = scrollPresenter.ScrollFrom(
+                int viewChangeCorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(
                         chkHorizontalOrientation.IsChecked == true ? Convert.ToSingle(txtCOWAVAV.Text) : 0,
                         chkHorizontalOrientation.IsChecked == true ? 0 : Convert.ToSingle(txtCOWAVAV.Text)),
                     inertiaDecayRate);
-                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + viewChangeCorrelationId);
+                AppendAsyncEventMessage("Invoked AddScrollVelocity Id=" + viewChangeCorrelationId);
             }
             catch (Exception ex)
             {

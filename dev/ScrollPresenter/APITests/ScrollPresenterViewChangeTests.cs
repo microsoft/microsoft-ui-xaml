@@ -55,7 +55,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         private uint viewChangedCount = 0u;
 
         [TestMethod]
-        [TestProperty("Description", "Changes ScrollPresenter offsets using ScrollTo, ScrollBy, ScrollFrom and AnimationMode/SnapPointsMode enum values.")]
+        [TestProperty("Description", "Changes ScrollPresenter offsets using ScrollTo, ScrollBy, AddScrollVelocity and AnimationMode/SnapPointsMode enum values.")]
         public void BasicOffsetChanges()
         {
             ScrollPresenter scrollPresenter = null;
@@ -95,10 +95,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ScrollBy(scrollPresenter, 80.0, -200.0, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional offsets velocity
-            ScrollFrom(scrollPresenter, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            AddScrollVelocity(scrollPresenter, -65.0f, 80.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             // Flick with additional offsets velocity and custom scroll inertia decay rate
-            ScrollFrom(scrollPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f, verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
+            AddScrollVelocity(scrollPresenter, 65.0f, -80.0f, horizontalInertiaDecayRate: 0.7f, verticalInertiaDecayRate: 0.8f, hookViewChanged: false);
 
             // Do it all again while respecting snap points
             ScrollTo(scrollPresenter, 11.0, 22.0, ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Default, hookViewChanged: false);
@@ -108,7 +108,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         }
 
         [TestMethod]
-        [TestProperty("Description", "Changes ScrollPresenter zoomFactor using ZoomTo, ZoomBy, ZoomFrom and AnimationMode enum values.")]
+        [TestProperty("Description", "Changes ScrollPresenter zoomFactor using ZoomTo, ZoomBy, AddZoomVelocity and AnimationMode enum values.")]
         public void BasicZoomFactorChanges()
         {
             ScrollPresenter scrollPresenter = null;
@@ -148,10 +148,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             ZoomBy(scrollPresenter, 2.0f, 200.0f, 100.0f, ScrollingAnimationMode.Auto, ScrollingSnapPointsMode.Ignore, hookViewChanged: false);
 
             // Flick with additional zoomFactor velocity
-            ZoomFrom(scrollPresenter, 2.0f, inertiaDecayRate: null, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
+            AddZoomVelocity(scrollPresenter, 2.0f, inertiaDecayRate: null, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
 
             // Flick with additional zoomFactor velocity and custom zoomFactor inertia decay rate
-            ZoomFrom(scrollPresenter, -2.0f, inertiaDecayRate: 0.75f, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
+            AddZoomVelocity(scrollPresenter, -2.0f, inertiaDecayRate: 0.75f, centerPointX: -50.0f, centerPointY: 800.0f, hookViewChanged: false);
         }
 
         [TestMethod]
@@ -1539,7 +1539,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private void ScrollFrom(
+        private void AddScrollVelocity(
             ScrollPresenter scrollPresenter,
             float horizontalVelocity,
             float verticalVelocity,
@@ -1579,7 +1579,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Original HorizontalOffset={originalHorizontalOffset}, VerticalOffset={originalVerticalOffset}, ZoomFactor={originalZoomFactor}");
 
-                    operation = StartScrollFrom(
+                    operation = StartAddScrollVelocity(
                         scrollPresenter,
                         horizontalVelocity,
                         verticalVelocity,
@@ -1709,7 +1709,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollPresenterOperation StartScrollFrom(
+        private ScrollPresenterOperation StartAddScrollVelocity(
             ScrollPresenter scrollPresenter,
             float horizontalVelocity,
             float verticalVelocity,
@@ -1717,7 +1717,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float? verticalInertiaDecayRate,
             AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
-            Log.Comment("ScrollFrom - horizontalVelocity={0}, verticalVelocity={1}, horizontalInertiaDecayRate={2}, verticalInertiaDecayRate={3}",
+            Log.Comment("AddScrollVelocity - horizontalVelocity={0}, verticalVelocity={1}, horizontalInertiaDecayRate={2}, verticalInertiaDecayRate={3}",
                 horizontalVelocity, verticalVelocity, horizontalInertiaDecayRate, verticalInertiaDecayRate);
 
             Vector2? inertiaDecayRate = null;
@@ -1730,7 +1730,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ScrollFrom(
+            operation.Id = scrollPresenter.AddScrollVelocity(
                     new Vector2(horizontalVelocity, verticalVelocity),
                     inertiaDecayRate);
 
@@ -1746,7 +1746,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-                        Log.Comment("ScrollCompleted: ScrollFrom OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
+                        Log.Comment("ScrollCompleted: AddScrollVelocity OffsetsChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");
@@ -1905,7 +1905,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private void ZoomFrom(
+        private void AddZoomVelocity(
             ScrollPresenter scrollPresenter,
             float zoomFactorVelocity,
             float? inertiaDecayRate,
@@ -1936,7 +1936,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                     Log.Comment($"Original HorizontalOffset={scrollPresenter.HorizontalOffset}, VerticalOffset={scrollPresenter.VerticalOffset}, ZoomFactor={originalZoomFactor}");
 
-                    operation = StartZoomFrom(
+                    operation = StartAddZoomVelocity(
                         scrollPresenter,
                         zoomFactorVelocity,
                         inertiaDecayRate,
@@ -2061,7 +2061,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return operation;
         }
 
-        private ScrollPresenterOperation StartZoomFrom(
+        private ScrollPresenterOperation StartAddZoomVelocity(
             ScrollPresenter scrollPresenter,
             float zoomFactorVelocity,
             float? inertiaDecayRate,
@@ -2069,13 +2069,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             float centerPointY,
             AutoResetEvent scrollPresenterViewChangeOperationEvent)
         {
-            Log.Comment("ZoomFrom - zoomFactorVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
+            Log.Comment("AddZoomVelocity - zoomFactorVelocity={0}, inertiaDecayRate={1}, centerPoint=({2},{3})",
                 zoomFactorVelocity, inertiaDecayRate, centerPointX, centerPointY);
 
             viewChangedCount = 0u;
             ScrollPresenterOperation operation = new ScrollPresenterOperation();
 
-            operation.Id = scrollPresenter.ZoomFrom(
+            operation.Id = scrollPresenter.AddZoomVelocity(
                 zoomFactorVelocity, new Vector2(centerPointX, centerPointY), inertiaDecayRate);
 
             if (operation.Id == -1)
@@ -2090,7 +2090,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     {
                         ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetZoomCompletedResult(args);
 
-                        Log.Comment("ZoomCompleted: ZoomFrom ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
+                        Log.Comment("ZoomCompleted: AddZoomVelocity ZoomFactorChangeCorrelationId=" + args.CorrelationId + ", Result=" + result);
                         operation.Result = result;
 
                         Log.Comment("Setting completion event");

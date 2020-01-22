@@ -97,7 +97,7 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         ScrollingScrollOptions options);
-    Int32 ScrollFrom(
+    Int32 AddScrollVelocity(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
@@ -118,7 +118,7 @@ unsealed runtimeclass ScrollView : Windows.UI.Xaml.Controls.Control
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         ScrollingZoomOptions options);
-    Int32 ZoomFrom(
+    Int32 AddZoomVelocity(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);

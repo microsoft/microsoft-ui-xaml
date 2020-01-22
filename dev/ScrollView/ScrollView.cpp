@@ -252,14 +252,14 @@ int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelt
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+int ScrollView::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
 
     if (auto scrollPresenter = m_scrollPresenter.get())
     {
-        return scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
+        return scrollPresenter.AddScrollVelocity(offsetsVelocity, inertiaDecayRate);
     }
 
     return s_noOpCorrelationId;
@@ -322,7 +322,7 @@ int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> c
     return s_noOpCorrelationId;
 }
 
-int ScrollView::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+int ScrollView::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
 {
     SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -331,7 +331,7 @@ int ScrollView::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::floa
 
     if (auto scrollPresenter = m_scrollPresenter.get())
     {
-        return scrollPresenter.ZoomFrom(zoomFactorVelocity, centerPoint, inertiaDecayRate);
+        return scrollPresenter.AddZoomVelocity(zoomFactorVelocity, centerPoint, inertiaDecayRate);
     }
 
     return s_noOpCorrelationId;
@@ -997,13 +997,13 @@ void ScrollView::OnScrollPresenterScrollCompleted(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollingScrollCompletedEventArgs& args)
 {
-    if (args.CorrelationId() == m_horizontalScrollFromOffsetChangeCorrelationId)
+    if (args.CorrelationId() == m_horizontalAddScrollVelocityOffsetChangeCorrelationId)
     {
-        m_horizontalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
+        m_horizontalAddScrollVelocityOffsetChangeCorrelationId = s_noOpCorrelationId;
     }
-    else if (args.CorrelationId() == m_verticalScrollFromOffsetChangeCorrelationId)
+    else if (args.CorrelationId() == m_verticalAddScrollVelocityOffsetChangeCorrelationId)
     {
-        m_verticalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
+        m_verticalAddScrollVelocityOffsetChangeCorrelationId = s_noOpCorrelationId;
     }
 
     if (m_scrollCompletedEventSource)
@@ -2304,10 +2304,10 @@ void ScrollView::DoScroll(double offset, winrt::Orientation orientation)
 
             // If there is already a scroll animation running for a previous key press, we want to take that into account
             // for calculating the baseline velocity. 
-            auto previousScrollViewChangeCorrelationId = isVertical ? m_verticalScrollFromOffsetChangeCorrelationId : m_horizontalScrollFromOffsetChangeCorrelationId;
+            auto previousScrollViewChangeCorrelationId = isVertical ? m_verticalAddScrollVelocityOffsetChangeCorrelationId : m_horizontalAddScrollVelocityOffsetChangeCorrelationId;
             if (previousScrollViewChangeCorrelationId != s_noOpCorrelationId)
             {
-                auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollFromDirection : m_horizontalScrollFromDirection;
+                auto directionOfPreviousScrollOperation = isVertical ? m_verticalAddScrollVelocityDirection : m_horizontalAddScrollVelocityDirection;
                 if (directionOfPreviousScrollOperation == 1)
                 {
                     baselineVelocity -= minVelocity;
@@ -2323,29 +2323,29 @@ void ScrollView::DoScroll(double offset, winrt::Orientation orientation)
             if (isVertical)
             {
                 winrt::float2 offsetsVelocity(0.0f, velocity);
-                m_verticalScrollFromOffsetChangeCorrelationId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
-                m_verticalScrollFromDirection = scrollDir;
+                m_verticalAddScrollVelocityOffsetChangeCorrelationId = scrollPresenter.AddScrollVelocity(offsetsVelocity, inertiaDecayRate);
+                m_verticalAddScrollVelocityDirection = scrollDir;
             }
             else
             {
                 winrt::float2 offsetsVelocity(velocity, 0.0f);
-                m_horizontalScrollFromOffsetChangeCorrelationId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
-                m_horizontalScrollFromDirection = scrollDir;
+                m_horizontalAddScrollVelocityOffsetChangeCorrelationId = scrollPresenter.AddScrollVelocity(offsetsVelocity, inertiaDecayRate);
+                m_horizontalAddScrollVelocityDirection = scrollDir;
             }
         }
         else
         {
             if (isVertical)
             {
-                // Any horizontal ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
-                m_verticalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
+                // Any horizontal AddScrollVelocity animation recently launched should be ignored by a potential subsequent AddScrollVelocity call.
+                m_verticalAddScrollVelocityOffsetChangeCorrelationId = s_noOpCorrelationId;
 
                 scrollPresenter.ScrollBy(0.0 /*horizontalOffsetDelta*/, offset /*verticalOffsetDelta*/);
             }
             else
             {
-                // Any vertical ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
-                m_horizontalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
+                // Any vertical AddScrollVelocity animation recently launched should be ignored by a potential subsequent AddScrollVelocity call.
+                m_horizontalAddScrollVelocityOffsetChangeCorrelationId = s_noOpCorrelationId;
 
                 scrollPresenter.ScrollBy(offset /*horizontalOffsetDelta*/, 0.0 /*verticalOffsetDelta*/);
             }

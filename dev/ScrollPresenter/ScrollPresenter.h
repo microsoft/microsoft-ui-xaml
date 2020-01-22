@@ -172,12 +172,12 @@ public:
     int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
     int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
     int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
     int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
     int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
     int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
     int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 
 #pragma endregion
 
@@ -652,9 +652,9 @@ private:
     void OnScrollControllerScrollByRequested(
         const winrt::IScrollController& sender,
         const winrt::ScrollControllerScrollByRequestedEventArgs& args);
-    void OnScrollControllerScrollFromRequested(
+    void OnScrollControllerAddScrollVelocityRequested(
         const winrt::IScrollController& sender,
-        const winrt::ScrollControllerScrollFromRequestedEventArgs& args);
+        const winrt::ScrollControllerAddScrollVelocityRequestedEventArgs& args);
 
     void OnHorizontalSnapPointsVectorChanged(
         const winrt::IObservableVector<winrt::ScrollSnapPointBase>& sender,
@@ -860,13 +860,13 @@ private:
 
     winrt::IScrollController::ScrollToRequested_revoker m_horizontalScrollControllerScrollToRequestedRevoker{};
     winrt::IScrollController::ScrollByRequested_revoker m_horizontalScrollControllerScrollByRequestedRevoker{};
-    winrt::IScrollController::ScrollFromRequested_revoker m_horizontalScrollControllerScrollFromRequestedRevoker{};
+    winrt::IScrollController::AddScrollVelocityRequested_revoker m_horizontalScrollControllerAddScrollVelocityRequestedRevoker{};
     winrt::IScrollController::InteractionRequested_revoker m_horizontalScrollControllerInteractionRequestedRevoker{};
     winrt::IScrollController::InteractionInfoChanged_revoker m_horizontalScrollControllerInteractionInfoChangedRevoker{};
 
     winrt::IScrollController::ScrollToRequested_revoker m_verticalScrollControllerScrollToRequestedRevoker{};
     winrt::IScrollController::ScrollByRequested_revoker m_verticalScrollControllerScrollByRequestedRevoker{};
-    winrt::IScrollController::ScrollFromRequested_revoker m_verticalScrollControllerScrollFromRequestedRevoker{};
+    winrt::IScrollController::AddScrollVelocityRequested_revoker m_verticalScrollControllerAddScrollVelocityRequestedRevoker{};
     winrt::IScrollController::InteractionRequested_revoker m_verticalScrollControllerInteractionRequestedRevoker{};
     winrt::IScrollController::InteractionInfoChanged_revoker m_verticalScrollControllerInteractionInfoChangedRevoker{};
 
