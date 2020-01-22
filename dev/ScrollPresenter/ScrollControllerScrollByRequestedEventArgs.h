@@ -20,11 +20,11 @@ public:
 
     double OffsetDelta() const;
     winrt::ScrollingScrollOptions Options() const;
-    int ScrollInfo() const;
-    void ScrollInfo(int scrollInfo);
+    int CorrelationId() const;
+    void CorrelationId(int correlationId);
 
 private:
     double m_offsetDelta{ 0.0 };
     winrt::ScrollingScrollOptions m_options{ nullptr };
-    int m_scrollInfo{ -1 };
+    int m_correlationId{ -1 };
 };

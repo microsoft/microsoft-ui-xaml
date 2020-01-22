@@ -35,8 +35,7 @@ public:
     static const winrt::ScrollingScrollMode s_defaultHorizontalScrollMode{ winrt::ScrollingScrollMode::Enabled };
     static const winrt::ScrollingScrollMode s_defaultVerticalScrollMode{ winrt::ScrollingScrollMode::Enabled };
 #endif
-    static const int s_noOpScrollInfo;
-    static const int s_noOpZoomInfo;
+    static const int s_noOpCorrelationId;
     static const winrt::ScrollingChainMode s_defaultZoomChainMode{ winrt::ScrollingChainMode::Auto };
     static const winrt::ScrollingZoomMode s_defaultZoomMode{ winrt::ScrollingZoomMode::Disabled };
     static const winrt::ScrollingInputKinds s_defaultIgnoredInputKinds{ winrt::ScrollingInputKinds::None };
@@ -364,10 +363,10 @@ private:
     bool m_isPointerOverVerticalScrollController{ false };
 
     int m_verticalScrollFromDirection{ 0 };
-    int m_verticalScrollFromOffsetChangeId{ -1 };
+    int m_verticalScrollFromOffsetChangeCorrelationId{ -1 };
 
     int m_horizontalScrollFromDirection{ 0 };
-    int m_horizontalScrollFromOffsetChangeId{ -1 };
+    int m_horizontalScrollFromOffsetChangeCorrelationId{ -1 };
 
     // List of temporary ScrollViewBringIntoViewOperation instances used to track expected
     // ScrollPresenter::BringingIntoView occurrences due to navigation.

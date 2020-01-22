@@ -88,8 +88,7 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-    static const int s_noOpScrollInfo;
-    static const int s_noOpZoomInfo;
+    static const int s_noOpCorrelationId;
 
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
@@ -426,28 +425,28 @@ private:
         ScrollPresenterViewKind offsetsKind,
         winrt::ScrollingScrollOptions const& options,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        int32_t existingViewChangeId,
-        _Out_opt_ int32_t* viewChangeId);
+        int32_t existingViewChangeCorrelationId,
+        _Out_opt_ int32_t* viewChangeCorrelationId);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
         winrt::float2 offsetsVelocity,
         winrt::float2 anticipatedOffsetsChange,
         winrt::IReference<winrt::float2> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        _Out_opt_ int32_t* viewChangeId);
+        _Out_opt_ int32_t* viewChangeCorrelationId);
 
     void ChangeZoomFactorPrivate(
         float zoomFactor,
         winrt::IReference<winrt::float2> centerPoint,
         ScrollPresenterViewKind zoomFactorKind,
         winrt::ScrollingZoomOptions const& options,
-        _Out_opt_ int32_t* viewChangeId);
+        _Out_opt_ int32_t* viewChangeCorrelationId);
     void ChangeZoomFactorWithAdditionalVelocityPrivate(
         float zoomFactorVelocity,
         float anticipatedZoomFactorChange,
         winrt::IReference<winrt::float2> centerPoint,
         winrt::IReference<float> inertiaDecayRate,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        _Out_opt_ int32_t* viewChangeId);
+        _Out_opt_ int32_t* viewChangeCorrelationId);
 
     void ProcessPointerWheelScroll(
         bool isHorizontalMouseWheel,
@@ -466,7 +465,7 @@ private:
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<OffsetsChange> offsetsChange,
-        int32_t offsetsChangeId,
+        int32_t offsetsChangeCorrelationId,
         bool isForAsyncOperation);
     void ProcessOffsetsChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
@@ -475,7 +474,7 @@ private:
         std::shared_ptr<InteractionTrackerAsyncOperation> interactionTrackerAsyncOperation);
     void ProcessZoomFactorChange(
         std::shared_ptr<ZoomFactorChange> zoomFactorChange,
-        int32_t zoomFactorChangeId);
+        int32_t zoomFactorChangeCorrelationId);
     void ProcessZoomFactorChange(
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         std::shared_ptr<ZoomFactorChangeWithAdditionalVelocity> zoomFactorChangeWithAdditionalVelocity);
@@ -555,12 +554,12 @@ private:
         double zoomedHorizontalOffset,
         double zoomedVerticalOffset,
         InteractionTrackerAsyncOperationTrigger operationTrigger,
-        int32_t offsetsChangeId);
+        int32_t offsetsChangeCorrelationId);
     winrt::CompositionAnimation GetZoomFactorAnimation(
         float zoomFactor,
         const winrt::float2& centerPoint,
-        int32_t zoomFactorChangeId);
-    int GetNextViewChangeId();
+        int32_t zoomFactorChangeCorrelationId);
+    int GetNextViewChangeCorrelationId();
 
     bool IsInertiaFromImpulse() const;
     bool IsLoadedAndSetUp() const;
@@ -601,21 +600,21 @@ private:
         const winrt::Vector3KeyFrameAnimation& positionAnimation,
         const winrt::float2& currentPosition,
         const winrt::float2& endPosition,
-        int32_t offsetsChangeId);
+        int32_t offsetsChangeCorrelationId);
     winrt::CompositionAnimation RaiseZoomAnimationStarting(
         const winrt::ScalarKeyFrameAnimation& zoomFactorAnimation,
         const float endZoomFactor,
         const winrt::float2& centerPoint,
-        int32_t zoomFactorChangeId);
+        int32_t zoomFactorChangeCorrelationId);
     void RaiseViewChangeCompleted(
         bool isForScroll,
         ScrollPresenterViewChangeResult result,
-        int32_t viewChangeId);
+        int32_t viewChangeCorrelationId);
     bool RaiseBringingIntoView(
         double targetZoomedHorizontalOffset,
         double targetZoomedVerticalOffset,
         const winrt::BringIntoViewRequestedEventArgs& requestEventArgs,
-        int32_t offsetsChangeId,
+        int32_t offsetsChangeCorrelationId,
         _Inout_ winrt::ScrollingSnapPointsMode* snapPointsMode);
 
     // Event handlers
@@ -771,7 +770,7 @@ private:
 #endif // _DEBUG
 
 private:
-    int m_latestViewChangeId{ 0 };
+    int m_latestViewChangeCorrelationId{ 0 };
     int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };

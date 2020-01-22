@@ -23,7 +23,7 @@ namespace MUXControlsTestApp
     public sealed partial class ScrollPresenterChainingAndRailingPage : TestPage
     {
         private List<string> fullLogs = new List<string>();
-        private int scrollPresenter3ZoomFactorChangeId = -1;
+        private int scrollPresenter3ZoomFactorChangeCorrelationId = -1;
 
         public ScrollPresenterChainingAndRailingPage()
         {
@@ -81,7 +81,7 @@ namespace MUXControlsTestApp
 
         private void ScrollPresenter_ZoomCompleted(ScrollPresenter sender, ScrollingZoomCompletedEventArgs args)
         {
-            if (args.ZoomInfo == scrollPresenter3ZoomFactorChangeId)
+            if (args.CorrelationId == scrollPresenter3ZoomFactorChangeCorrelationId)
                 this.txtResetStatus.Text = "Views reset";
         }
 
@@ -280,13 +280,13 @@ namespace MUXControlsTestApp
                     0.0,
                     new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
-                int viewChangeId = scrollPresenter.ZoomTo(
+                int viewChangeCorrelationId = scrollPresenter.ZoomTo(
                     1.0f,
                     System.Numerics.Vector2.Zero,
                     new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
 
                 if (this.scrollPresenter3 == scrollPresenter)
-                    scrollPresenter3ZoomFactorChangeId = viewChangeId;
+                    scrollPresenter3ZoomFactorChangeCorrelationId = viewChangeCorrelationId;
             }
             else
             {

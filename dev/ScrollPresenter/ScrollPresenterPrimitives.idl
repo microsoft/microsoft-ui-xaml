@@ -154,7 +154,7 @@ runtimeclass ScrollControllerScrollToRequestedEventArgs
 
     Double Offset { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    Int32 ScrollInfo { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -165,7 +165,7 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
 
     Double OffsetDelta { get; };
     MU_XC_NAMESPACE.ScrollingScrollOptions Options { get; };
-    Int32 ScrollInfo { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -176,7 +176,7 @@ runtimeclass ScrollControllerScrollFromRequestedEventArgs
 
     Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
-    Int32 ScrollInfo { get; set; };
+    Int32 CorrelationId { get; set; };
 }
 
 [WUXC_VERSION_MUXONLY]
@@ -208,8 +208,8 @@ interface IScrollController
     void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
     void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
-    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 scrollInfo, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
-    void NotifyScrollCompleted(Int32 scrollInfo);
+    Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 correlationId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
+    void NotifyScrollCompleted(Int32 correlationId);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;

@@ -16,8 +16,7 @@
 bool ScrollViewTrace::s_IsDebugOutputEnabled{ false };
 bool ScrollViewTrace::s_IsVerboseDebugOutputEnabled{ false };
 
-const int ScrollView::s_noOpScrollInfo{ -1 };
-const int ScrollView::s_noOpZoomInfo{ -1 };
+const int ScrollView::s_noOpCorrelationId{ -1 };
 
 ScrollView::ScrollView()
 {
@@ -212,7 +211,7 @@ int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset)
         return scrollPresenter.ScrollTo(horizontalOffset, verticalOffset);
     }
 
-    return s_noOpScrollInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options)
@@ -225,7 +224,7 @@ int ScrollView::ScrollTo(double horizontalOffset, double verticalOffset, winrt::
         return scrollPresenter.ScrollTo(horizontalOffset, verticalOffset, options);
     }
 
-    return s_noOpScrollInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta)
@@ -237,7 +236,7 @@ int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelt
         return scrollPresenter.ScrollBy(horizontalOffsetDelta, verticalOffsetDelta);
     }
 
-    return s_noOpScrollInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options)
@@ -250,7 +249,7 @@ int ScrollView::ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelt
         return scrollPresenter.ScrollBy(horizontalOffsetDelta, verticalOffsetDelta, options);
     }
 
-    return s_noOpScrollInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
@@ -263,7 +262,7 @@ int ScrollView::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winr
         return scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
     }
 
-    return s_noOpScrollInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint)
@@ -276,7 +275,7 @@ int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> center
         return scrollPresenter.ZoomTo(zoomFactor, centerPoint);
     }
 
-    return s_noOpZoomInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
@@ -291,7 +290,7 @@ int ScrollView::ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> center
         return scrollPresenter.ZoomTo(zoomFactor, centerPoint, options);
     }
 
-    return s_noOpZoomInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint)
@@ -305,7 +304,7 @@ int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> c
         return scrollPresenter.ZoomBy(zoomFactorDelta, centerPoint);
     }
 
-    return s_noOpZoomInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options)
@@ -320,7 +319,7 @@ int ScrollView::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> c
         return scrollPresenter.ZoomBy(zoomFactorDelta, centerPoint, options);
     }
 
-    return s_noOpZoomInfo;
+    return s_noOpCorrelationId;
 }
 
 int ScrollView::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
@@ -335,7 +334,7 @@ int ScrollView::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::floa
         return scrollPresenter.ZoomFrom(zoomFactorVelocity, centerPoint, inertiaDecayRate);
     }
 
-    return s_noOpZoomInfo;
+    return s_noOpCorrelationId;
 }
 
 #pragma endregion
@@ -1038,13 +1037,13 @@ void ScrollView::OnScrollPresenterScrollCompleted(
     const winrt::IInspectable& /*sender*/,
     const winrt::ScrollingScrollCompletedEventArgs& args)
 {
-    if (args.ScrollInfo() == m_horizontalScrollFromOffsetChangeId)
+    if (args.CorrelationId() == m_horizontalScrollFromOffsetChangeCorrelationId)
     {
-        m_horizontalScrollFromOffsetChangeId = -1;
+        m_horizontalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
     }
-    else if (args.ScrollInfo() == m_verticalScrollFromOffsetChangeId)
+    else if (args.CorrelationId() == m_verticalScrollFromOffsetChangeCorrelationId)
     {
-        m_verticalScrollFromOffsetChangeId = -1;
+        m_verticalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
     }
 
     if (m_scrollCompletedEventSource)
@@ -2480,8 +2479,8 @@ void ScrollView::DoScroll(double offset, winrt::Orientation orientation)
 
             // If there is already a scroll animation running for a previous key press, we want to take that into account
             // for calculating the baseline velocity. 
-            auto previousScrollViewChangeId = isVertical ? m_verticalScrollFromOffsetChangeId : m_horizontalScrollFromOffsetChangeId;
-            if (previousScrollViewChangeId != -1)
+            auto previousScrollViewChangeCorrelationId = isVertical ? m_verticalScrollFromOffsetChangeCorrelationId : m_horizontalScrollFromOffsetChangeCorrelationId;
+            if (previousScrollViewChangeCorrelationId != s_noOpCorrelationId)
             {
                 auto directionOfPreviousScrollOperation = isVertical ? m_verticalScrollFromDirection : m_horizontalScrollFromDirection;
                 if (directionOfPreviousScrollOperation == 1)
@@ -2499,13 +2498,13 @@ void ScrollView::DoScroll(double offset, winrt::Orientation orientation)
             if (isVertical)
             {
                 winrt::float2 offsetsVelocity(0.0f, velocity);
-                m_verticalScrollFromOffsetChangeId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
+                m_verticalScrollFromOffsetChangeCorrelationId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
                 m_verticalScrollFromDirection = scrollDir;
             }
             else
             {
                 winrt::float2 offsetsVelocity(velocity, 0.0f);
-                m_horizontalScrollFromOffsetChangeId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
+                m_horizontalScrollFromOffsetChangeCorrelationId = scrollPresenter.ScrollFrom(offsetsVelocity, inertiaDecayRate);
                 m_horizontalScrollFromDirection = scrollDir;
             }
         }
@@ -2514,14 +2513,14 @@ void ScrollView::DoScroll(double offset, winrt::Orientation orientation)
             if (isVertical)
             {
                 // Any horizontal ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
-                m_verticalScrollFromOffsetChangeId = -1;
+                m_verticalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
 
                 scrollPresenter.ScrollBy(0.0 /*horizontalOffsetDelta*/, offset /*verticalOffsetDelta*/);
             }
             else
             {
                 // Any vertical ScrollFrom animation recently launched should be ignored by a potential subsequent ScrollFrom call.
-                m_horizontalScrollFromOffsetChangeId = -1;
+                m_horizontalScrollFromOffsetChangeCorrelationId = s_noOpCorrelationId;
 
                 scrollPresenter.ScrollBy(offset /*horizontalOffsetDelta*/, 0.0 /*verticalOffsetDelta*/);
             }

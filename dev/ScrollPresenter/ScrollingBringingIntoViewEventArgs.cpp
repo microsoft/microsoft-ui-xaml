@@ -31,9 +31,9 @@ double ScrollingBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-int ScrollingBringingIntoViewEventArgs::ScrollInfo()
+int ScrollingBringingIntoViewEventArgs::CorrelationId()
 {
-    return m_offsetsChangeId;
+    return m_offsetsChangeCorrelationId;
 }
 
 bool ScrollingBringingIntoViewEventArgs::Cancel()
@@ -46,9 +46,9 @@ void ScrollingBringingIntoViewEventArgs::Cancel(bool value)
     m_cancel = value;
 }
 
-void ScrollingBringingIntoViewEventArgs::OffsetsChangeId(int32_t offsetsChangeId)
+void ScrollingBringingIntoViewEventArgs::OffsetsChangeCorrelationId(int32_t offsetsChangeCorrelationId)
 {
-    m_offsetsChangeId = offsetsChangeId;
+    m_offsetsChangeCorrelationId = offsetsChangeCorrelationId;
 }
 
 void ScrollingBringingIntoViewEventArgs::RequestEventArgs(const winrt::BringIntoViewRequestedEventArgs& requestEventArgs)

@@ -198,8 +198,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
-            int hOffsetChangeId = -1;
-            int vOffsetChangeId = -1;
+            int hOffsetChangeCorrelationId = -1;
+            int vOffsetChangeCorrelationId = -1;
 
             RunOnUIThread.Execute(() =>
             {
@@ -232,7 +232,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeId=" + args.OffsetChangeId);
+                    Log.Comment("ChangeOffset completed (horizontal). OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();
@@ -240,7 +240,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 verticalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeId=" + args.OffsetChangeId);
+                    Log.Comment("ChangeOffset completed (vertical). OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
                 };
             });
 
@@ -264,16 +264,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Jumping to horizontal offset");
-                hOffsetChangeId = horizontalScrollController.ScrollTo(
+                hOffsetChangeCorrelationId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 4.0,
                     ScrollingAnimationMode.Disabled);
 
                 Log.Comment("Jumping to vertical offset");
-                vOffsetChangeId = verticalScrollController.ScrollTo(
+                vOffsetChangeCorrelationId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0,
                     ScrollingAnimationMode.Disabled);
 
-                Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
+                Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
             });
 
             WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
@@ -284,16 +284,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual((c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 4.0, scrollPresenter.VerticalOffset);
 
                 Log.Comment("Animating to horizontal offset");
-                hOffsetChangeId = horizontalScrollController.ScrollTo(
+                hOffsetChangeCorrelationId = horizontalScrollController.ScrollTo(
                     (c_defaultUIScrollPresenterContentWidth * 0.75 - c_defaultUIScrollPresenterWidth) / 2.0,
                     ScrollingAnimationMode.Enabled);
 
                 Log.Comment("Animating to vertical offset");
-                vOffsetChangeId = verticalScrollController.ScrollTo(
+                vOffsetChangeCorrelationId = verticalScrollController.ScrollTo(
                     (c_defaultUIScrollPresenterContentHeight * 0.75 - c_defaultUIScrollPresenterHeight) / 2.0,
                     ScrollingAnimationMode.Enabled);
 
-                Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
+                Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
 
                 scrollCompletedEvent.Reset();
             });
@@ -323,8 +323,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             CompositionScrollController verticalScrollController = null;
             AutoResetEvent loadedEvent = new AutoResetEvent(false);
             AutoResetEvent scrollCompletedEvent = new AutoResetEvent(false);
-            int hOffsetChangeId = -1;
-            int vOffsetChangeId = -1;
+            int hOffsetChangeCorrelationId = -1;
+            int vOffsetChangeCorrelationId = -1;
 
             RunOnUIThread.Execute(() =>
             {
@@ -357,7 +357,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 horizontalScrollController.OffsetChangeCompleted += (CompositionScrollController sender, CompositionScrollControllerOffsetChangeCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. OffsetChangeId=" + args.OffsetChangeId);
+                    Log.Comment("ChangeOffset completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();
@@ -384,14 +384,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Adding velocity to horizontal offset, with default inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
                     100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with default inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
                     100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
-                Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
+                Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
             });
 
             WaitForEvent("Waiting for operation completion", scrollCompletedEvent);
@@ -405,14 +405,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to horizontal offset, with custom inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
                     -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding negative velocity to vertical offset, with custom inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
                     -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
-                Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
+                Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
 
                 scrollCompletedEvent.Reset();
             });
@@ -428,14 +428,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to horizontal offset, with no inertia decay rate");
-                hOffsetChangeId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
                     200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with no inertia decay rate");
-                vOffsetChangeId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
                     200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
-                Verify.AreEqual(hOffsetChangeId, vOffsetChangeId);
+                Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
 
                 scrollCompletedEvent.Reset();
             });
@@ -580,7 +580,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ChangeOffset completed. OffsetsChangeId=" + args);
+                    Log.Comment("ChangeOffset completed. OffsetsChangeCorrelationId=" + args);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();
@@ -675,7 +675,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ScrollFrom completed. OffsetsChangeId=" + args);
+                    Log.Comment("ScrollFrom completed. OffsetsChangeCorrelationId=" + args);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();

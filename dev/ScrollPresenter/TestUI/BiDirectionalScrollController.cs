@@ -27,12 +27,12 @@ namespace MUXControlsTestApp.Utilities
 {
     public class BiDirectionalScrollControllerScrollingScrollCompletedEventArgs
     {
-        internal BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(int offsetsChangeId)
+        internal BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(int offsetsChangeCorrelationId)
         {
-            OffsetsChangeId = offsetsChangeId;
+            OffsetsChangeCorrelationId = offsetsChangeCorrelationId;
         }
 
-        public int OffsetsChangeId
+        public int OffsetsChangeCorrelationId
         {
             get;
             set;
@@ -43,12 +43,12 @@ namespace MUXControlsTestApp.Utilities
     {
         private class UniScrollControllerScrollingScrollCompletedEventArgs
         {
-            public UniScrollControllerScrollingScrollCompletedEventArgs(int offsetChangeId)
+            public UniScrollControllerScrollingScrollCompletedEventArgs(int offsetChangeCorrelationId)
             {
-                OffsetChangeId = offsetChangeId;
+                OffsetChangeCorrelationId = offsetChangeCorrelationId;
             }
 
-            public int OffsetChangeId
+            public int OffsetChangeCorrelationId
             {
                 get;
                 set;
@@ -319,7 +319,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 RaiseLogMessage(
                     "UniScrollController: GetScrollAnimation for Orientation=" + Orientation +
-                    " with OffsetsChangeId=" + info + ", currentPosition=" + currentPosition);
+                    " with OffsetsChangeCorrelationId=" + info + ", currentPosition=" + currentPosition);
                 return defaultAnimation;
             }
 
@@ -328,7 +328,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 RaiseLogMessage(
                     "UniScrollController: NotifyScrollCompleted for Orientation=" + Orientation +
-                    " with OffsetsChangeId=" + info);
+                    " with OffsetsChangeCorrelationId=" + info);
 
                 ScrollCompleted?.Invoke(this, new UniScrollControllerScrollingScrollCompletedEventArgs(info));
             }
@@ -397,7 +397,7 @@ namespace MUXControlsTestApp.Utilities
                             offset,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollToRequested(this, e);
-                    return e.ScrollInfo;
+                    return e.CorrelationId;
                 }
                 return -1;
             }
@@ -415,7 +415,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetDelta,
                             new ScrollingScrollOptions(animationMode, ScrollingSnapPointsMode.Ignore));
                     ScrollByRequested(this, e);
-                    return e.ScrollInfo;
+                    return e.CorrelationId;
                 }
                 return -1;
             }
@@ -432,7 +432,7 @@ namespace MUXControlsTestApp.Utilities
                             offsetVelocity,
                             inertiaDecayRate);
                     ScrollFromRequested(this, e);
-                    return e.ScrollInfo;
+                    return e.CorrelationId;
                 }
                 return -1;
             }
@@ -510,7 +510,7 @@ namespace MUXControlsTestApp.Utilities
         private const float SmallChangeInertiaDecayRate = 0.975f;
 
         private List<string> lstAsyncEventMessage = new List<string>();
-        private List<int> lstViewChangeIds = new List<int>();
+        private List<int> lstViewChangeCorrelationIds = new List<int>();
         private List<int> lstScrollToIds = new List<int>();
         private List<int> lstScrollByIds = new List<int>();
         private List<int> lstScrollFromIds = new List<int>();
@@ -597,28 +597,28 @@ namespace MUXControlsTestApp.Utilities
 
         public int ScrollTo(double horizontalOffset, double verticalOffset, ScrollingAnimationMode animationMode)
         {
-            int viewChangeId = RaiseScrollToRequested(
+            int viewChangeCorrelationId = RaiseScrollToRequested(
                 new Point(horizontalOffset, verticalOffset),
                 animationMode, false /*hookupCompletion*/);
-            lstViewChangeIds.Add(viewChangeId);
-            return viewChangeId;
+            lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
+            return viewChangeCorrelationId;
         }
 
         public int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, ScrollingAnimationMode animationMode)
         {
-            int viewChangeId = RaiseScrollByRequested(
+            int viewChangeCorrelationId = RaiseScrollByRequested(
                 new Point(horizontalOffsetDelta, verticalOffsetDelta),
                 animationMode, false /*hookupCompletion*/);
-            lstViewChangeIds.Add(viewChangeId);
-            return viewChangeId;
+            lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
+            return viewChangeCorrelationId;
         }
 
         public int ScrollFrom(Vector2 offsetVelocity, Vector2? inertiaDecayRate)
         {
-            int viewChangeId = RaiseScrollFromRequested(
+            int viewChangeCorrelationId = RaiseScrollFromRequested(
                 offsetVelocity, inertiaDecayRate, false /*hookupCompletion*/);
-            lstViewChangeIds.Add(viewChangeId);
-            return viewChangeId;
+            lstViewChangeCorrelationIds.Add(viewChangeCorrelationId);
+            return viewChangeCorrelationId;
         }
 
         protected override void OnApplyTemplate()
@@ -872,7 +872,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: BiDecrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -880,7 +880,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: BiIncrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -888,7 +888,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: HorizontalIncrementVerticalDecrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -896,7 +896,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: HorizontalDecrementVerticalIncrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -904,7 +904,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: HorizontalDecrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(-SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -912,7 +912,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: HorizontalIncrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(SmallChangeAdditionalVelocity, 0), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -920,7 +920,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: VerticalDecrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(0, -SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -928,7 +928,7 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: VerticalIncrementRepeatButton_Click");
 
-            int viewChangeId =
+            int viewChangeCorrelationId =
                 RaiseScrollFromRequested(new Vector2(0, SmallChangeAdditionalVelocity), new Vector2(SmallChangeInertiaDecayRate), true /*hookupCompletion*/);
         }
 
@@ -975,12 +975,12 @@ namespace MUXControlsTestApp.Utilities
             Point targetThumbOffset = new Point(targetThumbHorizontalOffset, targetThumbVerticalOffset);
             Point targetScrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-            int viewChangeId = RaiseScrollToRequested(targetScrollPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
-            if (viewChangeId != -1 && !operations.ContainsKey(viewChangeId))
+            int viewChangeCorrelationId = RaiseScrollToRequested(targetScrollPresenterOffset, ScrollingAnimationMode.Auto, true /*hookupCompletion*/);
+            if (viewChangeCorrelationId != -1 && !operations.ContainsKey(viewChangeCorrelationId))
             {
                 operations.Add(
-                    viewChangeId,
-                    new OperationInfo(viewChangeId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
+                    viewChangeCorrelationId,
+                    new OperationInfo(viewChangeCorrelationId, new Point(targetScrollPresenterOffset.X - HorizontalThumbOffset, targetScrollPresenterOffset.Y - VerticalThumbOffset), targetScrollPresenterOffset));
             }
         }
 
@@ -1001,7 +1001,7 @@ namespace MUXControlsTestApp.Utilities
                     preManipulationThumbOffset.Y + e.Cumulative.Translation.Y);
                 Point scrollPresenterOffset = ScrollPresenterOffsetFromThumbOffset(targetThumbOffset);
 
-                int viewChangeId = RaiseScrollToRequested(
+                int viewChangeCorrelationId = RaiseScrollToRequested(
                     scrollPresenterOffset, ScrollingAnimationMode.Disabled, true /*hookupCompletion*/);
             }
         }
@@ -1139,48 +1139,48 @@ namespace MUXControlsTestApp.Utilities
 
         private void UniScrollController_ScrollCompleted(IScrollController sender, UniScrollControllerScrollingScrollCompletedEventArgs args)
         {
-            if (lstScrollToIds.Contains(args.OffsetChangeId))
+            if (lstScrollToIds.Contains(args.OffsetChangeCorrelationId))
             {
-                lstScrollToIds.Remove(args.OffsetChangeId);
+                lstScrollToIds.Remove(args.OffsetChangeCorrelationId);
 
                 Point relativeOffsetChange;
 
-                if (operations.ContainsKey(args.OffsetChangeId))
+                if (operations.ContainsKey(args.OffsetChangeCorrelationId))
                 {
-                    OperationInfo oi = operations[args.OffsetChangeId];
+                    OperationInfo oi = operations[args.OffsetChangeCorrelationId];
                     relativeOffsetChange = oi.RelativeOffsetChange;
-                    operations.Remove(args.OffsetChangeId);
+                    operations.Remove(args.OffsetChangeCorrelationId);
                 }
 
-                RaiseLogMessage("BiDirectionalScrollController: ScrollToRequest completed. OffsetChangeId=" + args.OffsetChangeId);
+                RaiseLogMessage("BiDirectionalScrollController: ScrollToRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
             }
-            else if (lstScrollByIds.Contains(args.OffsetChangeId))
+            else if (lstScrollByIds.Contains(args.OffsetChangeCorrelationId))
             {
-                lstScrollByIds.Remove(args.OffsetChangeId);
+                lstScrollByIds.Remove(args.OffsetChangeCorrelationId);
 
                 Point relativeOffsetChange;
 
-                if (operations.ContainsKey(args.OffsetChangeId))
+                if (operations.ContainsKey(args.OffsetChangeCorrelationId))
                 {
-                    OperationInfo oi = operations[args.OffsetChangeId];
+                    OperationInfo oi = operations[args.OffsetChangeCorrelationId];
                     relativeOffsetChange = oi.RelativeOffsetChange;
-                    operations.Remove(args.OffsetChangeId);
+                    operations.Remove(args.OffsetChangeCorrelationId);
                 }
 
-                RaiseLogMessage("BiDirectionalScrollController: ScrollByRequest completed. OffsetChangeId=" + args.OffsetChangeId);
+                RaiseLogMessage("BiDirectionalScrollController: ScrollByRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
             }
-            else if (lstScrollFromIds.Contains(args.OffsetChangeId))
+            else if (lstScrollFromIds.Contains(args.OffsetChangeCorrelationId))
             {
-                lstScrollFromIds.Remove(args.OffsetChangeId);
+                lstScrollFromIds.Remove(args.OffsetChangeCorrelationId);
 
-                RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest completed. OffsetChangeId=" + args.OffsetChangeId);
+                RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest completed. OffsetChangeCorrelationId=" + args.OffsetChangeCorrelationId);
             }
 
-            if (lstViewChangeIds.Contains(args.OffsetChangeId))
+            if (lstViewChangeCorrelationIds.Contains(args.OffsetChangeCorrelationId))
             {
-                lstViewChangeIds.Remove(args.OffsetChangeId);
+                lstViewChangeCorrelationIds.Remove(args.OffsetChangeCorrelationId);
 
-                RaiseScrollCompleted(args.OffsetChangeId);
+                RaiseScrollCompleted(args.OffsetChangeCorrelationId);
             }
         }
 
@@ -1205,47 +1205,47 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: RaiseScrollToRequested with offset=" + offset + ", animationMode=" + animationMode);
 
-            int horizontalOffsetChangeId = horizontalScrollController.RaiseScrollToRequested(
+            int horizontalOffsetChangeCorrelationId = horizontalScrollController.RaiseScrollToRequested(
                 offset.X, animationMode);
 
-            if (horizontalOffsetChangeId != -1)
-                RaiseLogMessage("BiDirectionalScrollController: Horizontal ScrollToRequest started. Id=" + horizontalOffsetChangeId);
+            if (horizontalOffsetChangeCorrelationId != -1)
+                RaiseLogMessage("BiDirectionalScrollController: Horizontal ScrollToRequest started. Id=" + horizontalOffsetChangeCorrelationId);
 
-            int verticalOffsetChangeId = verticalScrollController.RaiseScrollToRequested(
+            int verticalOffsetChangeCorrelationId = verticalScrollController.RaiseScrollToRequested(
                 offset.Y, animationMode);
 
-            if (verticalOffsetChangeId != -1)
-                RaiseLogMessage("BiDirectionalScrollController: Vertical ScrollToRequest started. Id=" + verticalOffsetChangeId);
+            if (verticalOffsetChangeCorrelationId != -1)
+                RaiseLogMessage("BiDirectionalScrollController: Vertical ScrollToRequest started. Id=" + verticalOffsetChangeCorrelationId);
 
-            int offsetChangeId = -1;
+            int offsetChangeCorrelationId = -1;
 
-            if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId == verticalOffsetChangeId)
+            if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId == verticalOffsetChangeCorrelationId)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId != verticalOffsetChangeId)
+            else if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId != verticalOffsetChangeCorrelationId)
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollToRequest Ids do not match.");
             }
-            else if (horizontalOffsetChangeId != -1)
+            else if (horizontalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (verticalOffsetChangeId != -1)
+            else if (verticalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = verticalOffsetChangeId;
+                offsetChangeCorrelationId = verticalOffsetChangeCorrelationId;
             }
             else
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollToRequest Ids are -1.");
             }
 
-            if (hookupCompletion && offsetChangeId != -1 && !lstScrollToIds.Contains(offsetChangeId))
+            if (hookupCompletion && offsetChangeCorrelationId != -1 && !lstScrollToIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollToIds.Add(offsetChangeId);
+                lstScrollToIds.Add(offsetChangeCorrelationId);
             }
 
-            return offsetChangeId;
+            return offsetChangeCorrelationId;
         }
 
         private int RaiseScrollByRequested(
@@ -1255,47 +1255,47 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: RaiseScrollByRequested with offsetDelta=" + offsetDelta + ", animationMode=" + animationMode);
 
-            int horizontalOffsetChangeId = horizontalScrollController.RaiseScrollByRequested(
+            int horizontalOffsetChangeCorrelationId = horizontalScrollController.RaiseScrollByRequested(
                 offsetDelta.X, animationMode);
 
-            if (horizontalOffsetChangeId != -1)
-                RaiseLogMessage("BiDirectionalScrollController: Horizontal ScrollByRequest started. Id=" + horizontalOffsetChangeId);
+            if (horizontalOffsetChangeCorrelationId != -1)
+                RaiseLogMessage("BiDirectionalScrollController: Horizontal ScrollByRequest started. Id=" + horizontalOffsetChangeCorrelationId);
 
-            int verticalOffsetChangeId = verticalScrollController.RaiseScrollByRequested(
+            int verticalOffsetChangeCorrelationId = verticalScrollController.RaiseScrollByRequested(
                 offsetDelta.Y, animationMode);
 
-            if (verticalOffsetChangeId != -1)
-                RaiseLogMessage("BiDirectionalScrollController: Vertical ScrollByRequest started. Id=" + verticalOffsetChangeId);
+            if (verticalOffsetChangeCorrelationId != -1)
+                RaiseLogMessage("BiDirectionalScrollController: Vertical ScrollByRequest started. Id=" + verticalOffsetChangeCorrelationId);
 
-            int offsetChangeId = -1;
+            int offsetChangeCorrelationId = -1;
 
-            if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId == verticalOffsetChangeId)
+            if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId == verticalOffsetChangeCorrelationId)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId != verticalOffsetChangeId)
+            else if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId != verticalOffsetChangeCorrelationId)
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollByRequest Ids do not match.");
             }
-            else if (horizontalOffsetChangeId != -1)
+            else if (horizontalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (verticalOffsetChangeId != -1)
+            else if (verticalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = verticalOffsetChangeId;
+                offsetChangeCorrelationId = verticalOffsetChangeCorrelationId;
             }
             else
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollByRequest Ids are -1.");
             }
 
-            if (hookupCompletion && offsetChangeId != -1 && !lstScrollByIds.Contains(offsetChangeId))
+            if (hookupCompletion && offsetChangeCorrelationId != -1 && !lstScrollByIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollByIds.Add(offsetChangeId);
+                lstScrollByIds.Add(offsetChangeCorrelationId);
             }
 
-            return offsetChangeId;
+            return offsetChangeCorrelationId;
         }
 
         private int RaiseScrollFromRequested(
@@ -1303,56 +1303,56 @@ namespace MUXControlsTestApp.Utilities
         {
             RaiseLogMessage("BiDirectionalScrollController: RaiseScrollFromRequested with additionalVelocity=" + additionalVelocity + ", inertiaDecayRate=" + inertiaDecayRate);
 
-            int horizontalOffsetChangeId = -1;
-            int verticalOffsetChangeId = -1;
+            int horizontalOffsetChangeCorrelationId = -1;
+            int verticalOffsetChangeCorrelationId = -1;
 
             if (additionalVelocity.X != 0.0f)
             {
-                horizontalOffsetChangeId = horizontalScrollController.RaiseScrollFromRequested(
+                horizontalOffsetChangeCorrelationId = horizontalScrollController.RaiseScrollFromRequested(
                     additionalVelocity.X, inertiaDecayRate == null ? (float?)null : inertiaDecayRate.Value.X);
 
-                if (horizontalOffsetChangeId != -1)
-                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + horizontalOffsetChangeId);
+                if (horizontalOffsetChangeCorrelationId != -1)
+                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + horizontalOffsetChangeCorrelationId);
             }
 
             if (additionalVelocity.Y != 0.0f)
             {
-                verticalOffsetChangeId = verticalScrollController.RaiseScrollFromRequested(
+                verticalOffsetChangeCorrelationId = verticalScrollController.RaiseScrollFromRequested(
                     additionalVelocity.Y, inertiaDecayRate == null ? (float?)null : inertiaDecayRate.Value.Y);
 
-                if (verticalOffsetChangeId != -1)
-                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + verticalOffsetChangeId);
+                if (verticalOffsetChangeCorrelationId != -1)
+                    RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest started. Id=" + verticalOffsetChangeCorrelationId);
             }
 
-            int offsetChangeId = -1;
+            int offsetChangeCorrelationId = -1;
 
-            if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId == verticalOffsetChangeId)
+            if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId == verticalOffsetChangeCorrelationId)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (horizontalOffsetChangeId != -1 && verticalOffsetChangeId != -1 && horizontalOffsetChangeId != verticalOffsetChangeId)
+            else if (horizontalOffsetChangeCorrelationId != -1 && verticalOffsetChangeCorrelationId != -1 && horizontalOffsetChangeCorrelationId != verticalOffsetChangeCorrelationId)
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest operations do not match.");
             }
-            else if (horizontalOffsetChangeId != -1)
+            else if (horizontalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = horizontalOffsetChangeId;
+                offsetChangeCorrelationId = horizontalOffsetChangeCorrelationId;
             }
-            else if (verticalOffsetChangeId != -1)
+            else if (verticalOffsetChangeCorrelationId != -1)
             {
-                offsetChangeId = verticalOffsetChangeId;
+                offsetChangeCorrelationId = verticalOffsetChangeCorrelationId;
             }
             else
             {
                 RaiseLogMessage("BiDirectionalScrollController: ScrollFromRequest operations are null.");
             }
 
-            if (hookupCompletion && offsetChangeId != -1 && !lstScrollFromIds.Contains(offsetChangeId))
+            if (hookupCompletion && offsetChangeCorrelationId != -1 && !lstScrollFromIds.Contains(offsetChangeCorrelationId))
             {
-                lstScrollFromIds.Add(offsetChangeId);
+                lstScrollFromIds.Add(offsetChangeCorrelationId);
             }
 
-            return offsetChangeId;
+            return offsetChangeCorrelationId;
         }
 
         internal int OperationsCount
@@ -1394,11 +1394,11 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        private void RaiseScrollCompleted(int viewChangeId)
+        private void RaiseScrollCompleted(int viewChangeCorrelationId)
         {
             if (ScrollCompleted != null)
             {
-                BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args = new BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(viewChangeId);
+                BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args = new BiDirectionalScrollControllerScrollingScrollCompletedEventArgs(viewChangeCorrelationId);
 
                 ScrollCompleted(this, args);
             }
