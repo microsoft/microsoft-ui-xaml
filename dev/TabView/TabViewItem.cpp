@@ -16,8 +16,6 @@ TabViewItem::TabViewItem()
     SetDefaultStyleKey(this);
 
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
-
-    RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
 }
 
 void TabViewItem::OnApplyTemplate()
@@ -64,14 +62,10 @@ void TabViewItem::OnApplyTemplate()
 
         m_tabDragStartingRevoker = tabView.TabDragStarting(winrt::auto_revoke, { this, &TabViewItem::OnTabDragStarting });
         m_tabDragCompletedRevoker = tabView.TabDragCompleted(winrt::auto_revoke, { this, &TabViewItem::OnTabDragCompleted });
+        m_tabViewSelectionChangedRevoker = tabView.SelectionChanged(winrt::auto_revoke, { this, &TabViewItem::OnTabViewSelectionChanged });
     }
 
     UpdateCloseButton();
-}
-
-void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
-{
-    UpdateShadow();
 }
 
 void TabViewItem::UpdateShadow()
@@ -106,7 +100,6 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
     return winrt::make<TabViewItemAutomationPeer>(*this);
 }
 
-
 void TabViewItem::UpdateCloseButton()
 {
     if (auto && closeButton = m_closeButton.get())
@@ -140,6 +133,11 @@ void TabViewItem::OnCloseButtonClick(const winrt::IInspectable&, const winrt::Ro
 void TabViewItem::OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     UpdateCloseButton();
+}
+
+void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateShadow();
 }
 
 void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -179,7 +177,7 @@ void TabViewItem::OnHeaderPropertyChanged(const winrt::DependencyPropertyChanged
 
 void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 {
-    if (IsSelected() && args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
+    /*### unncessary now? if (IsSelected() && args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Mouse)
     {
         auto pointerPoint = args.GetCurrentPoint(*this);
         if (pointerPoint.Properties().IsLeftButtonPressed())
@@ -191,9 +189,19 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
                 return;
             }
         }
+    }*/
+
+    //m_selectionModel.Select(RepeatedIndex());
+    // ### should we be saving this???
+    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    {
+        tabView.SelectedIndex(RepeatedIndex());
     }
 
-    __super::OnPointerPressed(args);
+    auto pointerProperties = args.GetCurrentPoint(*this).Properties();
+    m_isPressed = pointerProperties.IsLeftButtonPressed() || pointerProperties.IsRightButtonPressed();
+
+    UpdateVisualState(true);
 
     if (args.GetCurrentPoint(nullptr).Properties().PointerUpdateKind() == winrt::PointerUpdateKind::MiddleButtonPressed)
     {
@@ -207,7 +215,8 @@ void TabViewItem::OnPointerPressed(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerReleased(args);
+    m_isPressed = false;
+    UpdateVisualState(true);
 
     if (m_hasPointerCapture)
     {
@@ -230,7 +239,8 @@ void TabViewItem::OnPointerReleased(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerEntered(args);
+    m_isPointerOver = true;
+    UpdateVisualState(true);
 
     if (m_hasPointerCapture)
     {
@@ -240,14 +250,17 @@ void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerExited(args);
+    m_isPointerOver = false;
+    UpdateVisualState(true);
 
     m_isMiddlePointerButtonPressed = false;
 }
 
 void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerCanceled(args);
+    m_isPressed = false;
+    m_isPointerOver = false;
+    UpdateVisualState(true);
 
     if (m_hasPointerCapture)
     {
@@ -258,10 +271,64 @@ void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)
 
 void TabViewItem::OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args)
 {
-    __super::OnPointerCaptureLost(args);
+    m_isPressed = false;
+    m_isPointerOver = false;
+    UpdateVisualState(true);
 
     m_hasPointerCapture = false;
     m_isMiddlePointerButtonPressed = false;
+}
+
+void TabViewItem::UpdateVisualState(bool useTransitions)
+{
+    // DisabledStates and CommonStates
+    auto enabledStateValue = L"Enabled";
+    bool isSelected = IsSelected();
+    auto selectedStateValue = L"Normal";
+    if (IsEnabled())
+    {
+        if (isSelected)
+        {
+            if (m_isPressed)
+            {
+                selectedStateValue = L"PressedSelected";
+            }
+            else if (m_isPointerOver)
+            {
+                selectedStateValue = L"PointerOverSelected";
+            }
+            else
+            {
+                selectedStateValue = L"Selected";
+            }
+        }
+        else if (m_isPointerOver)
+        {
+            if (m_isPressed)
+            {
+                selectedStateValue = L"Pressed";
+            }
+            else
+            {
+                selectedStateValue = L"PointerOver";
+            }
+        }
+        else if (m_isPressed)
+        {
+            selectedStateValue = L"Pressed";
+        }
+    }
+    else
+    {
+        enabledStateValue = L"Disabled";
+        if (isSelected)
+        {
+            selectedStateValue = L"Selected";
+        }
+    }
+
+    winrt::VisualStateManager::GoToState(*this, enabledStateValue, true);
+    winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
 }
 
 void TabViewItem::OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -282,4 +349,21 @@ void TabViewItem::OnIconSourceChanged()
         templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
+}
+
+int TabViewItem::RepeatedIndex()
+{
+    return m_repeatedIndex;
+}
+
+void TabViewItem::RepeatedIndex(int index)
+{
+    m_repeatedIndex = index;
+}
+
+void TabViewItem::OnTabViewSelectionChanged(const winrt::IInspectable& sender, const winrt::TabViewSelectionChangedEventArgs& args)
+{
+    IsSelected(args.SelectedIndex() == RepeatedIndex());
+
+    UpdateVisualState(true);
 }

@@ -42,8 +42,8 @@ void TabViewListView::OnItemsChanged(winrt::IInspectable const& item)
 
     if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
     {
-        auto internalTabView = winrt::get_self<TabView>(tabView);
-        internalTabView->OnItemsChanged(item);
+        //auto internalTabView = winrt::get_self<TabView>(tabView);
+        //internalTabView->OnItemsChanged(item);
     }
 }
 

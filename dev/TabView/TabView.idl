@@ -11,6 +11,13 @@ enum TabViewWidthMode
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
+runtimeclass TabViewSelectionChangedEventArgs
+{
+    Int32 SelectedIndex { get; };
+}
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
 runtimeclass TabViewTabCloseRequestedEventArgs
 {
     Object Item { get; };
@@ -97,7 +104,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     Windows.UI.Xaml.DependencyObject ContainerFromItem(Object item);
     Windows.UI.Xaml.DependencyObject ContainerFromIndex(Int32 index);
 
-    event Windows.UI.Xaml.Controls.SelectionChangedEventHandler SelectionChanged;
+    event Windows.Foundation.TypedEventHandler<TabView, TabViewSelectionChangedEventArgs> SelectionChanged;
 
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabDragStartingEventArgs> TabDragStarting;
     event Windows.Foundation.TypedEventHandler<TabView, TabViewTabDragCompletedEventArgs> TabDragCompleted;
@@ -126,7 +133,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
+unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ContentControl
 {
     TabViewItem();
 
@@ -142,6 +149,10 @@ unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Boolean IsClosable{ get; set; };
 
+    [MUX_DEFAULT_VALUE("false")]
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    Boolean IsSelected{ get; set; };
+
     TabViewItemTemplateSettings TabViewTemplateSettings{ get; };
 
     event Windows.Foundation.TypedEventHandler<TabViewItem, TabViewTabCloseRequestedEventArgs> CloseRequested;
@@ -150,6 +161,7 @@ unsealed runtimeclass TabViewItem : Windows.UI.Xaml.Controls.ListViewItem
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IconSourceProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty IsClosableProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsSelectedProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabViewTemplateSettingsProperty{ get; };
 }
 
@@ -190,7 +202,7 @@ unsealed runtimeclass TabViewAutomationPeer : Windows.UI.Xaml.Automation.Peers.F
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-unsealed runtimeclass TabViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.ListViewItemAutomationPeer
+unsealed runtimeclass TabViewItemAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     TabViewItemAutomationPeer(MU_XC_NAMESPACE.TabViewItem owner);
 }

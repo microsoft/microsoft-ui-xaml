@@ -46,7 +46,7 @@
                             <Grid x:Name="ShadowReceiver"
                                 Grid.ColumnSpan="4"/>
 
-                            <primitives:TabViewListView
+                            <!--<primitives:TabViewListView
                                 Grid.Column="1"
                                 x:Name="TabListView"
                                 CanReorderItems="{TemplateBinding CanReorderTabs}"
@@ -54,7 +54,28 @@
                                 AllowDrop="{TemplateBinding AllowDropTabs}"
                                 ItemsSource="{TemplateBinding TabItemsSource}"
                                 ItemTemplate="{TemplateBinding TabItemTemplate}"
-                                ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}"/>
+                                ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}"/>-->
+                            
+                            <local:ItemsRepeaterScrollHost Grid.Column="1">
+                                <ScrollViewer x:Name="ScrollViewer"  Style="{StaticResource TabScrollViewerStyle}">
+                                    <Grid x:Name="RepeaterGrid"
+                                        Padding="{ThemeResource TabViewHeaderPadding}"
+                                        AllowDrop="True">
+                                        
+                                        <local:ItemsRepeater
+                                            x:Name="TabItemsRepeater"
+                                            ItemTemplate="{TemplateBinding TabItemTemplate}"
+                                            Background="Red" 
+                                            VerticalAlignment="Top"
+                                            TabFocusNavigation="Local">
+                                            
+                                            <local:ItemsRepeater.Layout>
+                                                <local:StackLayout Orientation="Horizontal" />
+                                            </local:ItemsRepeater.Layout>
+                                        </local:ItemsRepeater>
+                                    </Grid>
+                                </ScrollViewer>
+                            </local:ItemsRepeaterScrollHost>
 
                             <Button
                                 Grid.Column="2"

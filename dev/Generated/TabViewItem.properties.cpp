@@ -17,6 +17,7 @@ GlobalDependencyProperty TabViewItemProperties::s_HeaderProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_HeaderTemplateProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_IconSourceProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_IsClosableProperty{ nullptr };
+GlobalDependencyProperty TabViewItemProperties::s_IsSelectedProperty{ nullptr };
 GlobalDependencyProperty TabViewItemProperties::s_TabViewTemplateSettingsProperty{ nullptr };
 
 TabViewItemProperties::TabViewItemProperties()
@@ -71,6 +72,17 @@ void TabViewItemProperties::EnsureProperties()
                 ValueHelper<bool>::BoxValueIfNecessary(true),
                 winrt::PropertyChangedCallback(&OnIsClosablePropertyChanged));
     }
+    if (!s_IsSelectedProperty)
+    {
+        s_IsSelectedProperty =
+            InitializeDependencyProperty(
+                L"IsSelected",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::TabViewItem>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxValueIfNecessary(false),
+                winrt::PropertyChangedCallback(&OnIsSelectedPropertyChanged));
+    }
     if (!s_TabViewTemplateSettingsProperty)
     {
         s_TabViewTemplateSettingsProperty =
@@ -90,6 +102,7 @@ void TabViewItemProperties::ClearProperties()
     s_HeaderTemplateProperty = nullptr;
     s_IconSourceProperty = nullptr;
     s_IsClosableProperty = nullptr;
+    s_IsSelectedProperty = nullptr;
     s_TabViewTemplateSettingsProperty = nullptr;
 }
 
@@ -115,6 +128,14 @@ void TabViewItemProperties::OnIsClosablePropertyChanged(
 {
     auto owner = sender.as<winrt::TabViewItem>();
     winrt::get_self<TabViewItem>(owner)->OnIsClosablePropertyChanged(args);
+}
+
+void TabViewItemProperties::OnIsSelectedPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::TabViewItem>();
+    winrt::get_self<TabViewItem>(owner)->OnIsSelectedPropertyChanged(args);
 }
 
 void TabViewItemProperties::Header(winrt::IInspectable const& value)
@@ -155,6 +176,16 @@ void TabViewItemProperties::IsClosable(bool value)
 bool TabViewItemProperties::IsClosable()
 {
     return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsClosableProperty));
+}
+
+void TabViewItemProperties::IsSelected(bool value)
+{
+    static_cast<TabViewItem*>(this)->SetValue(s_IsSelectedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool TabViewItemProperties::IsSelected()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<TabViewItem*>(this)->GetValue(s_IsSelectedProperty));
 }
 
 void TabViewItemProperties::TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value)

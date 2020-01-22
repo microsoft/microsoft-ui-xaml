@@ -8,6 +8,7 @@
 
 #include "TabView.g.h"
 #include "TabView.properties.h"
+#include "TabViewSelectionChangedEventArgs.g.h"
 #include "TabViewTabCloseRequestedEventArgs.g.h"
 #include "TabViewTabDroppedOutsideEventArgs.g.h"
 #include "TabViewTabDragStartingEventArgs.g.h"
@@ -16,6 +17,18 @@
 
 static constexpr double c_tabShadowDepth = 16.0;
 static constexpr wstring_view c_tabViewShadowDepthName{ L"TabViewShadowDepth"sv };
+
+class TabViewSelectionChangedEventArgs :
+    public winrt::implementation::TabViewSelectionChangedEventArgsT<TabViewSelectionChangedEventArgs>
+{
+public:
+    TabViewSelectionChangedEventArgs(int index) : m_index(index) {}
+
+    int SelectedIndex() { return m_index; }
+
+private:
+    int m_index;
+};
 
 class TabViewTabCloseRequestedEventArgs :
     public winrt::implementation::TabViewTabCloseRequestedEventArgsT<TabViewTabCloseRequestedEventArgs>
@@ -106,8 +119,10 @@ public:
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);
+    void OnItemsChanged(const winrt::IInspectable& dataSource, const winrt::NotifyCollectionChangedEventArgs& args);
 
-    void OnItemsChanged(winrt::IInspectable const& item);
+    //void OnItemsChanged(winrt::IInspectable const& item);
     void UpdateTabContent();
 
     void RequestCloseTab(winrt::TabViewItem const& item);
@@ -121,6 +136,12 @@ private:
     void OnScrollDecreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnScrollIncreaseClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnItemsPresenterSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+
+    void OnRepeaterLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnRepeaterElementPrepared(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
+    void OnRepeaterElementIndexChanged(const winrt::ItemsRepeater& sender, const winrt::ItemsRepeaterElementIndexChangedEventArgs& args);
+    //void OnSelectionChanged(const winrt::SelectionModel& sender, const winrt::SelectionModelSelectionChangedEventArgs& args);
+    //void OnItemsChanged(const winrt::IInspectable& dataSource, const winrt::NotifyCollectionChangedEventArgs& args);
 
     void OnListViewLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnListViewSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
@@ -153,6 +174,7 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_addButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_rightContentColumn{ this };
 
+    tracker_ref<winrt::ItemsRepeater> m_itemsRepeater{ this };
     tracker_ref<winrt::ListView> m_listView{ this };
     tracker_ref<winrt::ContentPresenter> m_tabContentPresenter{ this };
     tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
@@ -163,9 +185,15 @@ private:
 
     tracker_ref<winrt::Grid> m_shadowReceiver{ this };
 
+    winrt::ItemsRepeater::Loaded_revoker m_repeaterLoadedRevoker{};
+    winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementIndexChanged_revoker m_repeaterElementIndexChangedRevoker{};
+    winrt::ItemsSourceView::CollectionChanged_revoker m_collectionChangedRevoker{};
+
     winrt::ListView::Loaded_revoker m_listViewLoadedRevoker{};
     winrt::Selector::SelectionChanged_revoker m_listViewSelectionChangedRevoker{};
     winrt::UIElement::GettingFocus_revoker m_listViewGettingFocusRevoker{};
+    winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
 
     winrt::ListView::DragItemsStarting_revoker m_listViewDragItemsStartingRevoker{};
     winrt::ListView::DragItemsCompleted_revoker m_listViewDragItemsCompletedRevoker{};
@@ -184,4 +212,6 @@ private:
     DispatcherHelper m_dispatcherHelper{ *this };
 
     winrt::Size previousAvailableSize{};
+
+    winrt::SelectionModel m_selectionModel{};
 };

@@ -22,6 +22,7 @@ using Windows.Devices.PointOfService;
 using Windows.ApplicationModel.DataTransfer;
 using MUXControlsTestApp.Utilities;
 using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Controls;
 
 namespace MUXControlsTestApp
 {
@@ -197,7 +198,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void TabViewSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void TabViewSelectionChanged(object sender, TabViewSelectionChangedEventArgs e)
         {
             SelectedIndexTextBlock.Text = Tabs.SelectedIndex.ToString();
         }

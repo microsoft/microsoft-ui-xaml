@@ -27,6 +27,7 @@ public:
     winrt::AutomationPeer OnCreateAutomationPeer();
 
     void OnIsClosablePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIconSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -38,6 +39,11 @@ public:
     void OnPointerCaptureLost(winrt::PointerRoutedEventArgs const& args);
 
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
+
+    int RepeatedIndex();
+    void RepeatedIndex(int index);
+
+    void UpdateVisualState(bool useTransitions);
 
  private:
     tracker_ref<winrt::Button> m_closeButton{ this };
@@ -52,18 +58,22 @@ public:
     winrt::ButtonBase::Click_revoker m_closeButtonClickRevoker{};
     winrt::TabView::TabDragStarting_revoker m_tabDragStartingRevoker{};
     winrt::TabView::TabDragCompleted_revoker m_tabDragCompletedRevoker{};
+    winrt::TabView::SelectionChanged_revoker m_tabViewSelectionChangedRevoker{};
 
     void OnCloseButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
 
-    void OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
-
     void OnTabDragStarting(const winrt::IInspectable& sender, const winrt::TabViewTabDragStartingEventArgs& args);
     void OnTabDragCompleted(const winrt::IInspectable& sender, const winrt::TabViewTabDragCompletedEventArgs& args);
+    void OnTabViewSelectionChanged(const winrt::IInspectable& sender, const winrt::TabViewSelectionChangedEventArgs& args);
 
     bool m_hasPointerCapture = false;
     bool m_isMiddlePointerButtonPressed = false;
     bool m_isDragging = false;
+    bool m_isPressed{ false };
+    bool m_isPointerOver{ false };
 
     void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
+
+    int m_repeatedIndex{ -1 };
 };

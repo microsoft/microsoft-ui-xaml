@@ -461,7 +461,7 @@ void TabViewProperties::AddTabButtonClick(winrt::event_token const& token)
     m_addTabButtonClickEventSource.remove(token);
 }
 
-winrt::event_token TabViewProperties::SelectionChanged(winrt::SelectionChangedEventHandler const& value)
+winrt::event_token TabViewProperties::SelectionChanged(winrt::TypedEventHandler<winrt::TabView, winrt::TabViewSelectionChangedEventArgs> const& value)
 {
     return m_selectionChangedEventSource.add(value);
 }

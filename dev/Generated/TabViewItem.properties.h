@@ -21,6 +21,9 @@ public:
     void IsClosable(bool value);
     bool IsClosable();
 
+    void IsSelected(bool value);
+    bool IsSelected();
+
     void TabViewTemplateSettings(winrt::TabViewItemTemplateSettings const& value);
     winrt::TabViewItemTemplateSettings TabViewTemplateSettings();
 
@@ -28,12 +31,14 @@ public:
     static winrt::DependencyProperty HeaderTemplateProperty() { return s_HeaderTemplateProperty; }
     static winrt::DependencyProperty IconSourceProperty() { return s_IconSourceProperty; }
     static winrt::DependencyProperty IsClosableProperty() { return s_IsClosableProperty; }
+    static winrt::DependencyProperty IsSelectedProperty() { return s_IsSelectedProperty; }
     static winrt::DependencyProperty TabViewTemplateSettingsProperty() { return s_TabViewTemplateSettingsProperty; }
 
     static GlobalDependencyProperty s_HeaderProperty;
     static GlobalDependencyProperty s_HeaderTemplateProperty;
     static GlobalDependencyProperty s_IconSourceProperty;
     static GlobalDependencyProperty s_IsClosableProperty;
+    static GlobalDependencyProperty s_IsSelectedProperty;
     static GlobalDependencyProperty s_TabViewTemplateSettingsProperty;
 
     winrt::event_token CloseRequested(winrt::TypedEventHandler<winrt::TabViewItem, winrt::TabViewTabCloseRequestedEventArgs> const& value);
@@ -53,6 +58,10 @@ public:
         winrt::DependencyPropertyChangedEventArgs const& args);
 
     static void OnIsClosablePropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
+    static void OnIsSelectedPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };
