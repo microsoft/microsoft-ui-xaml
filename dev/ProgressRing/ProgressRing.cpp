@@ -72,12 +72,38 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
+        const float strokeThickness = static_cast<float>(StrokeThickness());
+        // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
         const float diameter = static_cast<float>(ActualWidth());
         const auto size = winrt::Size({ diameter, diameter });
-        const auto foreground = Foreground().try_as<winrt::SolidColorBrush>().Color();
-        const auto background = Background().try_as<winrt::SolidColorBrush>().Color();
-        player.Source(winrt::make<ProgressRingLoading>(StrokeThickness(), size, foreground, background));
+
+        const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]()
+        {
+            if (foreground)
+            {
+                return foreground.Color();
+            }
+            else
+            {
+                // Default color fallback if Foreground() Brush does not contain SolidColorBrush with Color property.
+                return SharedHelpers::FindResource(s_DefaultForegroundThemeResourceName, winrt::Application::Current().Resources()).as<winrt::SolidColorBrush>().Color();
+            }
+        }();
+
+        const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]()
+        {
+            if (background)
+            {
+                return background.Color();
+            }
+            else
+            {
+                // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
+                return SharedHelpers::FindResource(s_DefaultBackgroundThemeResourceName, winrt::Application::Current().Resources()).as<winrt::SolidColorBrush>().Color();
+            }
+        }();
+     
+        player.Source(winrt::make<ProgressRingLoading>(strokeThickness, size, foregroundColor, backgroundColor));
     }
 }
 
@@ -89,10 +115,10 @@ void ProgressRing::UpdateStates()
 
         if (auto&& player = m_player.get())
         {
-            player.PlayAsync(0, 1, true);
+            const auto _ = player.PlayAsync(0, 1, true);
         }
     }
-    else if (!IsIndeterminate())
+    else
     {
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
 
@@ -107,10 +133,10 @@ winrt::Size ProgressRing::ComputeCircleSize(double thickness, double actualWidth
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
 
-    // ProgressRing only accounts for ActualWidth to ensure that it is always a circle
-    const double diameter = std::max((actualWidth - safeThickness) / 2.0, 0.0);
+    // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
+    const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
 
-    return {static_cast<float>(diameter), static_cast<float>(diameter)};
+    return {static_cast<float>(radius), static_cast<float>(radius)};
 }
 
 
@@ -128,7 +154,7 @@ void ProgressRing::UpdateSegment()
 
                 const double normalizedRange = (range == 0.0) ? 0.0 : (delta / range);
                 // normalizedRange offsets calculation to display a full ring when value = 100%
-                // std::nextafter is set as a float as winrt::Point takes floats 
+                // std::nextafter is set as a float as winrt::Point takes floats.
                 return std::min(normalizedRange, static_cast<double>(std::nextafterf(1.0, 0.0)));
             }();
             return 2 * M_PI * normalizedRange;
@@ -144,7 +170,6 @@ void ProgressRing::UpdateSegment()
         ringArc.IsLargeArc(angle >= M_PI);
         ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
     }
-
 }
 
 void ProgressRing::UpdateRing()

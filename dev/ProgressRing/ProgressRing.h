@@ -52,5 +52,7 @@ private:
     static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer" };
     static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
     static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+    static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush" };
+    static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
     
 };
