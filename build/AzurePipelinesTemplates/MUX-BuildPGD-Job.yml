@@ -67,6 +67,6 @@ jobs:
     displayName: 'NuGet push'
     inputs:
       command: push
-      publishVstsFeed: https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v3/index.json
+      publishVstsFeed: d62f8eac-f05c-4c25-bccb-21f98b95c95f
       packagesToPush: $(Build.ArtifactStagingDirectory)/*.nupkg
 
