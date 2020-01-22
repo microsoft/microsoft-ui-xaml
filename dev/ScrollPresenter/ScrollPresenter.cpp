@@ -494,7 +494,7 @@ int ScrollPresenter::ScrollBy(double horizontalOffsetDelta, double verticalOffse
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::ScrollFrom(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
+int ScrollPresenter::AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR, METH_NAME, this,
         TypeLogging::Float2ToString(offsetsVelocity).c_str(), TypeLogging::NullableFloat2ToString(inertiaDecayRate).c_str());
@@ -578,7 +578,7 @@ int ScrollPresenter::ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::floa
     return viewChangeCorrelationId;
 }
 
-int ScrollPresenter::ZoomFrom(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
+int ScrollPresenter::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate)
 {
     SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR_STR_FLT, METH_NAME, this,
         TypeLogging::NullableFloat2ToString(centerPoint).c_str(),
@@ -4963,11 +4963,11 @@ void ScrollPresenter::OnScrollControllerScrollByRequested(
     }
 }
 
-// Invoked when a IScrollController::ScrollFromRequested event is raised in order to perform the
-// equivalent of a ScrollPresenter::ScrollFrom operation.
-void ScrollPresenter::OnScrollControllerScrollFromRequested(
+// Invoked when a IScrollController::AddScrollVelocityRequested event is raised in order to perform the
+// equivalent of a ScrollPresenter::AddScrollVelocity operation.
+void ScrollPresenter::OnScrollControllerAddScrollVelocityRequested(
     const winrt::IScrollController& sender,
-    const winrt::ScrollControllerScrollFromRequestedEventArgs& args)
+    const winrt::ScrollControllerAddScrollVelocityRequestedEventArgs& args)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_PTR, METH_NAME, this, sender);
 
@@ -7647,9 +7647,9 @@ void ScrollPresenter::HookHorizontalScrollControllerEvents(
         m_horizontalScrollControllerScrollByRequestedRevoker = horizontalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerScrollByRequested });
     }
 
-    if (!m_horizontalScrollControllerScrollFromRequestedRevoker)
+    if (!m_horizontalScrollControllerAddScrollVelocityRequestedRevoker)
     {
-        m_horizontalScrollControllerScrollFromRequestedRevoker = horizontalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerScrollFromRequested });
+        m_horizontalScrollControllerAddScrollVelocityRequestedRevoker = horizontalScrollController.AddScrollVelocityRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerAddScrollVelocityRequested });
     }
 }
 
@@ -7679,9 +7679,9 @@ void ScrollPresenter::HookVerticalScrollControllerEvents(
         m_verticalScrollControllerScrollByRequestedRevoker = verticalScrollController.ScrollByRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerScrollByRequested });
     }
 
-    if (!m_verticalScrollControllerScrollFromRequestedRevoker)
+    if (!m_verticalScrollControllerAddScrollVelocityRequestedRevoker)
     {
-        m_verticalScrollControllerScrollFromRequestedRevoker = verticalScrollController.ScrollFromRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerScrollFromRequested });
+        m_verticalScrollControllerAddScrollVelocityRequestedRevoker = verticalScrollController.AddScrollVelocityRequested(winrt::auto_revoke, { this, &ScrollPresenter::OnScrollControllerAddScrollVelocityRequested });
     }
 }
 
@@ -7693,7 +7693,7 @@ void ScrollPresenter::UnhookHorizontalScrollControllerEvents(
     m_horizontalScrollControllerInteractionInfoChangedRevoker.revoke();
     m_verticalScrollControllerScrollToRequestedRevoker.revoke();
     m_verticalScrollControllerScrollByRequestedRevoker.revoke();
-    m_horizontalScrollControllerScrollFromRequestedRevoker.revoke();
+    m_horizontalScrollControllerAddScrollVelocityRequestedRevoker.revoke();
 }
 
 void ScrollPresenter::UnhookVerticalScrollControllerEvents(
@@ -7704,7 +7704,7 @@ void ScrollPresenter::UnhookVerticalScrollControllerEvents(
     m_verticalScrollControllerInteractionInfoChangedRevoker.revoke();
     m_verticalScrollControllerScrollToRequestedRevoker.revoke();
     m_verticalScrollControllerScrollByRequestedRevoker.revoke();
-    m_verticalScrollControllerScrollFromRequestedRevoker.revoke();
+    m_verticalScrollControllerAddScrollVelocityRequestedRevoker.revoke();
 }
 
 void ScrollPresenter::RaiseInteractionSourcesChanged()

@@ -322,7 +322,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Flick with horizontal offset velocity to naturally land around offset 15.
-            ScrollFrom(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+            AddScrollVelocity(scrollPresenter, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
 
             RunOnUIThread.Execute(() =>
             {
@@ -372,7 +372,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             });
 
             // Flick with zoom factor velocity to naturally land around factor 1.5.
-            ZoomFrom(scrollPresenter,
+            AddZoomVelocity(scrollPresenter,
                 zoomFactorVelocity: -5.0f,
                 inertiaDecayRate: 0.6675f,
                 centerPointX: 150.0f,

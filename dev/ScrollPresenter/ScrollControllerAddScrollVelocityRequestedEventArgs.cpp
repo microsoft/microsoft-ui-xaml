@@ -5,11 +5,11 @@
 #include "common.h"
 #include "TypeLogging.h"
 #include "ScrollPresenter.h"
-#include "ScrollControllerScrollFromRequestedEventArgs.h"
+#include "ScrollControllerAddScrollVelocityRequestedEventArgs.h"
 
-#include "ScrollControllerScrollFromRequestedEventArgs.properties.cpp"
+#include "ScrollControllerAddScrollVelocityRequestedEventArgs.properties.cpp"
 
-ScrollControllerScrollFromRequestedEventArgs::ScrollControllerScrollFromRequestedEventArgs(
+ScrollControllerAddScrollVelocityRequestedEventArgs::ScrollControllerAddScrollVelocityRequestedEventArgs(
     float offsetVelocity,
     winrt::IReference<float> inertiaDecayRate)
 {
@@ -20,22 +20,22 @@ ScrollControllerScrollFromRequestedEventArgs::ScrollControllerScrollFromRequeste
     m_inertiaDecayRate = inertiaDecayRate;
 }
 
-float ScrollControllerScrollFromRequestedEventArgs::OffsetVelocity() const
+float ScrollControllerAddScrollVelocityRequestedEventArgs::OffsetVelocity() const
 {
     return m_offsetVelocity;
 }
 
-winrt::IReference<float> ScrollControllerScrollFromRequestedEventArgs::InertiaDecayRate() const
+winrt::IReference<float> ScrollControllerAddScrollVelocityRequestedEventArgs::InertiaDecayRate() const
 {
     return m_inertiaDecayRate;
 }
 
-int ScrollControllerScrollFromRequestedEventArgs::CorrelationId() const
+int ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId() const
 {
     return m_correlationId;
 }
 
-void ScrollControllerScrollFromRequestedEventArgs::CorrelationId(int correlationId)
+void ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId(int correlationId)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 

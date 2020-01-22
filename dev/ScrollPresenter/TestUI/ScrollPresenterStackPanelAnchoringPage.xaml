@@ -112,12 +112,12 @@
             </StackPanel>
             <Button x:Name="btnScrollTo" Content="ScrollTo" Grid.ColumnSpan="4" Grid.Row="12" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollTo_Click"/>
 
-            <TextBlock Text="ScrollFrom Options" Grid.Row="13" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
+            <TextBlock Text="AddScrollVelocity Options" Grid.Row="13" Grid.ColumnSpan="4" Margin="0,4,0,0"/>
             <TextBlock Text="Velocity:" Grid.Column="0" Grid.Row="14" VerticalAlignment="Center"/>
             <TextBox x:Name="txtCOWAVAV" Text="0" Grid.Column="1" Grid.Row="14" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
             <TextBlock Text="InertiaDecayRate:" Grid.Column="0" Grid.Row="15" VerticalAlignment="Center"/>
             <TextBox x:Name="txtCOWAVAIDR" Text="null" Grid.Column="1" Grid.Row="15" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="1"/>
-            <Button x:Name="btnScrollFrom" Content="ScrollFrom" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnScrollFrom_Click"/>
+            <Button x:Name="btnAddScrollVelocity" Content="AddScrollVelocity" Grid.ColumnSpan="4" Grid.Row="16" Margin="1" HorizontalAlignment="Stretch" Click="BtnAddScrollVelocity_Click"/>
         </Grid>
 
         <Grid Grid.Row="1" Grid.Column="2" Margin="1" Padding="6">

@@ -160,7 +160,7 @@ namespace MUXControlsTestApp
             try
             {
                 float changeAmount = Convert.ToSingle(txtScrollPresenterZoomFactorChange.Text);
-                markupScrollPresenter.ZoomFrom(changeAmount + 0.05f, null, null);
+                markupScrollPresenter.AddZoomVelocity(changeAmount + 0.05f, null, null);
             }
             catch (Exception ex)
             {

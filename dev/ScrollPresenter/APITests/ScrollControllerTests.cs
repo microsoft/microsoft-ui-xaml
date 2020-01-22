@@ -384,11 +384,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Adding velocity to horizontal offset, with default inertia decay rate");
-                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.AddScrollVelocity(
                     100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with default inertia decay rate");
-                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.AddScrollVelocity(
                     100.0f /*offsetVelocity*/, null /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
@@ -405,11 +405,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to horizontal offset, with custom inertia decay rate");
-                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.AddScrollVelocity(
                     -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding negative velocity to vertical offset, with custom inertia decay rate");
-                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.AddScrollVelocity(
                     -50.0f /*offsetVelocity*/, 0.9f /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
@@ -428,11 +428,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to horizontal offset, with no inertia decay rate");
-                hOffsetChangeCorrelationId = horizontalScrollController.ScrollFrom(
+                hOffsetChangeCorrelationId = horizontalScrollController.AddScrollVelocity(
                     200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
                 Log.Comment("Adding velocity to vertical offset, with no inertia decay rate");
-                vOffsetChangeCorrelationId = verticalScrollController.ScrollFrom(
+                vOffsetChangeCorrelationId = verticalScrollController.AddScrollVelocity(
                     200.0f /*offsetVelocity*/, 0.0f /*inertiaDecayRate*/);
 
                 Verify.AreEqual(hOffsetChangeCorrelationId, vOffsetChangeCorrelationId);
@@ -675,7 +675,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
                 biDirectionalScrollController.ScrollCompleted += (BiDirectionalScrollController sender, BiDirectionalScrollControllerScrollingScrollCompletedEventArgs args) =>
                 {
-                    Log.Comment("ScrollFrom completed. OffsetsChangeCorrelationId=" + args);
+                    Log.Comment("AddScrollVelocity completed. OffsetsChangeCorrelationId=" + args);
 
                     Log.Comment("Setting completion event");
                     scrollCompletedEvent.Set();
@@ -701,7 +701,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 Log.Comment("Adding velocity to offsets, with default inertia decay rates");
-                biDirectionalScrollController.ScrollFrom(
+                biDirectionalScrollController.AddScrollVelocity(
                     new Vector2(100.0f) /*offsetsVelocity*/, null /*inertiaDecayRate*/);
             });
 
@@ -716,7 +716,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset > 20.0);
 
                 Log.Comment("Adding negative velocity to offsets, with custom inertia decay rates");
-                biDirectionalScrollController.ScrollFrom(
+                biDirectionalScrollController.AddScrollVelocity(
                     new Vector2(-50.0f) /*offsetsVelocity*/, new Vector2(0.9f) /*inertiaDecayRate*/);
 
                 scrollCompletedEvent.Reset();
@@ -733,7 +733,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.IsTrue(scrollPresenter.VerticalOffset < 20.0);
 
                 Log.Comment("Adding velocity to offsets, with no inertia decay rates");
-                biDirectionalScrollController.ScrollFrom(
+                biDirectionalScrollController.AddScrollVelocity(
                     new Vector2(200.0f) /*offsetsVelocity*/, new Vector2(0.0f) /*inertiaDecayRate*/);
 
                 scrollCompletedEvent.Reset();

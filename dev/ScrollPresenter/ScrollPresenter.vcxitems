@@ -28,7 +28,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)OffsetsChangeWithAdditionalVelocity.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerAddScrollVelocityRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenter.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.h" />
@@ -58,7 +58,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ScrollPresenter.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerInteractionRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollByRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollFromRequestedEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerAddScrollVelocityRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollControllerScrollToRequestedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenter.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterAutomationPeer.cpp" />

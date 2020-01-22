@@ -218,7 +218,7 @@ namespace MUXControlsTestApp
             try
             {
                 double changeAmount = Convert.ToDouble(txtScrollPresenterOffsetChange.Text);
-                markupScrollPresenter.ScrollFrom(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
+                markupScrollPresenter.AddScrollVelocity(new Vector2(0.0f, (float)((changeAmount * 3) + 30)), null);
             }
             catch (Exception ex)
             {

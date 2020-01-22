@@ -1617,7 +1617,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1632,10 +1632,10 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastOffsetsChangeWithAdditionalVelocityId = scrollPresenter.ScrollFrom(
+                lastOffsetsChangeWithAdditionalVelocityId = scrollPresenter.AddScrollVelocity(
                     new Vector2(Convert.ToSingle(txtScrollHorizontalVelocity.Text), Convert.ToSingle(txtScrollVerticalVelocity.Text)),
                     inertiaDecayRate);
-                AppendAsyncEventMessage("Invoked ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                AppendAsyncEventMessage("Invoked AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityId);
             }
             catch (Exception ex)
             {
@@ -1644,13 +1644,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelScrollFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnCancelAddScrollVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (lastOffsetsChangeWithAdditionalVelocityId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ScrollFrom Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityId);
                     scrollPresenter.ScrollBy(
                         0,
                         0,
@@ -1894,7 +1894,7 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnZoomFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnAddZoomVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -1902,11 +1902,11 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastZoomFactorChangeWithAdditionalVelocityId = scrollPresenter.ZoomFrom(
-                    Convert.ToSingle(txtZoomFromVelocity.Text),
-                    (txtZoomFromCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomFromCenterPoint.Text),
-                    (txtZoomFromInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtZoomFromInertiaDecayRate.Text));
-                AppendAsyncEventMessage("Invoked ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                lastZoomFactorChangeWithAdditionalVelocityId = scrollPresenter.AddZoomVelocity(
+                    Convert.ToSingle(txtAddZoomVelocityVelocity.Text),
+                    (txtAddZoomVelocityCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtAddZoomVelocityCenterPoint.Text),
+                    (txtAddZoomVelocityInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtAddZoomVelocityInertiaDecayRate.Text));
+                AppendAsyncEventMessage("Invoked AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
             }
             catch (Exception ex)
             {
@@ -1915,13 +1915,13 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnCancelZoomFrom_Click(object sender, RoutedEventArgs e)
+        private void BtnCancelAddZoomVelocity_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (lastZoomFactorChangeWithAdditionalVelocityId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ZoomFrom Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
                     scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero,

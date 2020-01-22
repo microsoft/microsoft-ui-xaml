@@ -170,9 +170,9 @@ runtimeclass ScrollControllerScrollByRequestedEventArgs
 
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
-runtimeclass ScrollControllerScrollFromRequestedEventArgs
+runtimeclass ScrollControllerAddScrollVelocityRequestedEventArgs
 {
-    ScrollControllerScrollFromRequestedEventArgs(Single offsetVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
+    ScrollControllerAddScrollVelocityRequestedEventArgs(Single offsetVelocity, Windows.Foundation.IReference<Single> inertiaDecayRate);
 
     Single OffsetVelocity { get; };
     Windows.Foundation.IReference<Single> InertiaDecayRate { get; };
@@ -212,7 +212,7 @@ interface IScrollController
     void NotifyScrollCompleted(Int32 correlationId);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollByRequestedEventArgs> ScrollByRequested;
-    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollFromRequestedEventArgs> ScrollFromRequested;
+    event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerAddScrollVelocityRequestedEventArgs> AddScrollVelocityRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerInteractionRequestedEventArgs> InteractionRequested;
     event Windows.Foundation.TypedEventHandler<IScrollController, Object> InteractionInfoChanged;
 }
@@ -300,7 +300,7 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
-    Int32 ScrollFrom(
+    Int32 AddScrollVelocity(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
     [method_name("ZoomTo")]
@@ -321,7 +321,7 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
         Single zoomFactorDelta,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         MU_XC_NAMESPACE.ScrollingZoomOptions options);
-    Int32 ZoomFrom(
+    Int32 AddZoomVelocity(
         Single zoomFactorVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> centerPoint,
         Windows.Foundation.IReference<Single> inertiaDecayRate);
