@@ -1,4 +1,16 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+parameters:
+  matrix:
+    Release_x86:
+      buildPlatform: 'x86'
+      buildConfiguration: 'Release'
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+    Release_x64:
+      buildPlatform: 'x64'
+      buildConfiguration: 'Release'
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+
 jobs:
 - job: Build
   pool:
@@ -6,20 +18,12 @@ jobs:
   timeoutInMinutes: 120
   strategy:
     maxParallel: 10
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-
+    matrix: ${{ parameters.matrix }}
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
     PGOBuildMode: Instrument
-
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
@@ -40,22 +44,8 @@ jobs:
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
-    matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-    test_matrix:
-      Release_x86:
-        buildPlatform: 'x86'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
-      Release_x64:
-        buildPlatform: 'x64'
-        buildConfiguration: 'Release'
-        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+    matrix: ${{ parameters.matrix }}
+    test_matrix: ${{ parameters.matrix }}
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
@@ -63,6 +53,11 @@ jobs:
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 10
 
-- template: AzurePipelinesTemplates\MUX-BuildPGD-Job.yml
+- template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
   parameters:
     dependsOn: ProcessTestResults
+    matrix: ${{ parameters.matrix }}
+
+- template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
+  parameters:
+    dependsOn: MergePGD
