@@ -10,6 +10,7 @@
 #include "Utils.h"
 
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
+static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
@@ -24,6 +25,9 @@ void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
 NavigationViewItem::NavigationViewItem()
 {
     SetDefaultStyleKey(this);
+
+    auto items = winrt::make<Vector<winrt::IInspectable>>();
+    SetValue(s_MenuItemsProperty, items);
 }
 
 void NavigationViewItem::OnApplyTemplate()
@@ -54,12 +58,39 @@ void NavigationViewItem::OnApplyTemplate()
         UpdateIsClosedCompact();
     }
 
+    // Retrieve reference to NavigationView
+    if (auto nvImpl = winrt::get_self<NavigationView>(GetNavigationView()))
+    {
+        if (auto repeater = GetTemplateChildT<winrt::ItemsRepeater>(c_repeater, controlProtected))
+        {
+            m_repeater.set(repeater);
+
+            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::RepeaterElementPrepared });
+            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::RepeaterElementClearing });
+
+            repeater.ItemTemplate(*(nvImpl->m_navigationViewItemsFactory));
+        }
+
+        UpdateRepeaterItemsSource();
+    }
+
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
 }
+
+void NavigationViewItem::UpdateRepeaterItemsSource()
+{
+    if (auto menuItems = MenuItems())
+    {
+        if (auto repeater = m_repeater.get())
+        {
+            repeater.ItemsSource(menuItems);
+        }
+    }
+ }
 
 winrt::UIElement NavigationViewItem::GetSelectionIndicator()
 {

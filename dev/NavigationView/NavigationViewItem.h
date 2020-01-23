@@ -82,13 +82,23 @@ private:
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
     PropertyChanged_revoker m_splitViewCompactPaneLengthChangedRevoker{};
 
-    tracker_ref<winrt::ToolTip> m_toolTip{ this };
     NavigationViewItemHelper<NavigationViewItem> m_helper{ this };
+
+    bool m_isClosedCompact{ false };
+    bool m_appliedTemplate{ false };
+    bool m_hasKeyboardFocus{ false };
+
+    // Visual components
+    tracker_ref<winrt::ToolTip> m_toolTip{ this };
     tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
     tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
 
-    bool m_isClosedCompact{ false };
+    // Event tokens 
+    winrt::ItemsRepeater::ElementPrepared_revoker m_repeaterElementPreparedRevoker{};
+    winrt::ItemsRepeater::ElementClearing_revoker m_repeaterElementClearingRevoker{};
 
-    bool m_appliedTemplate{ false };
-    bool m_hasKeyboardFocus{ false };
+    // Visual Components
+    tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
+
+    void UpdateRepeaterItemsSource();
 };
