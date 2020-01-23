@@ -1,16 +1,5 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
-parameters:
-  matrix:
-    Release_x86:
-      buildPlatform: 'x86'
-      buildConfiguration: 'Release'
-      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
-    Release_x64:
-      buildPlatform: 'x64'
-      buildConfiguration: 'Release'
-      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
-
 jobs:
 - job: Build
   pool:
@@ -44,8 +33,22 @@ jobs:
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
-    matrix: ${{ parameters.matrix }}
-    test_matrix: ${{ parameters.matrix }}
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+    test_matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
@@ -56,7 +59,13 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
   parameters:
     dependsOn: ProcessTestResults
-    matrix: ${{ parameters.matrix }}
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
 
 - template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
   parameters:
