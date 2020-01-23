@@ -7,6 +7,7 @@ parameters:
   pkgArtifactPath: ''
   nugetConfigPath: test\MUXControlsReleaseTest\nuget.config
   helixType: 'test/nuget'
+  test_matrix: ''
   matrix:
     Debug_x86:
       buildPlatform: 'x86'
@@ -121,5 +122,5 @@ jobs:
       helixType: ${{ parameters.helixType }}
       artifactName: ${{ parameters.buildArtifactName }}
       rerunPassesRequiredToAvoidFailure: 5
-      ${{if parameters.test_matrix }}:
-      matrix: ${{ parameters.test_matrix }}
+      ${{if ne(parameters.test_matrix, '') }}:
+        matrix: ${{ parameters.test_matrix }}
