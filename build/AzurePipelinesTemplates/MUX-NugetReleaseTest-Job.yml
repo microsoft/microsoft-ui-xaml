@@ -122,4 +122,4 @@ jobs:
       artifactName: ${{ parameters.buildArtifactName }}
       rerunPassesRequiredToAvoidFailure: 5
       ${{if parameters.test_matrix }}:
-      matrix: ${{if parameters.matrix }}
+      matrix: ${{ parameters.test_matrix }}
