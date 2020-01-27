@@ -17,8 +17,7 @@ parameters:
       buildPlatform: 'x86'
       buildConfiguration: 'debug'
       # %3b is the escape code for ';' which is used as the delimiter
-      # temporarily disabling windows.10.amd64.clientrs5.open.xaml. See #1892
-      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml'
+      helixTargetQueues: 'windows.10.amd64.clientrs2.open.xaml%3bwindows.10.amd64.clientrs5.open.xaml'
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
