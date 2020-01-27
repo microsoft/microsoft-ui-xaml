@@ -527,18 +527,38 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
-                    <Grid>
-                        <Grid.RowDefinitions>
+                    <!--<Grid>-->
+
+
+                        <!--<Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                        </Grid.RowDefinitions>-->
+                        <primitives:NavigationViewItemPresenter
+                            Grid.Row="0"
+                            x:Name="NavigationViewItemPresenter"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            Style="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}"
+                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
-                                <VisualState x:Name="OnLeftNavigation">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
-                                    </VisualState.Setters>
-                                </VisualState>
+                                <VisualState x:Name="OnLeftNavigation"/>
                                 <VisualState x:Name="OnLeftNavigationReveal">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
@@ -561,29 +581,9 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <primitives:NavigationViewItemPresenter
-                            Grid.Row="0"
-                            x:Name="NavigationViewItemPresenter"
-                            Icon="{TemplateBinding Icon}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Margin="{TemplateBinding Margin}"
-                            Padding="{TemplateBinding Padding}"
-                            Foreground="{TemplateBinding Foreground}"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
-                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                            Content="{TemplateBinding Content}"
-                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsTabStop="False">
-                        </primitives:NavigationViewItemPresenter>
-                        <local:ItemsRepeater
+
+                    </primitives:NavigationViewItemPresenter>
+                        <!--<local:ItemsRepeater
                                 Grid.Row="1"
                                 Margin="10,0,0,0"
                                 Visibility="Visible"
@@ -591,8 +591,8 @@
                             <local:ItemsRepeater.Layout>
                                 <local:StackLayout Orientation="Vertical"/>
                             </local:ItemsRepeater.Layout>
-                        </local:ItemsRepeater>
-                    </Grid>
+                        </local:ItemsRepeater>-->
+                    <!--</Grid>-->
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

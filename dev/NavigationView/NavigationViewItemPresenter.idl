@@ -27,4 +27,11 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
     }
 }
 
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterVisualStateManager : Windows.UI.Xaml.VisualStateManager
+{
+    NavigationViewItemPresenterVisualStateManager();
+}
+
 }

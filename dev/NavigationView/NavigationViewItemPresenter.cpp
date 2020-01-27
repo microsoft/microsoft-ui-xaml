@@ -7,6 +7,7 @@
 #include "NavigationViewItemPresenterTemplateSettings.h"
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
+#include "NavigationViewItemPresenterVisualStateManager.h"
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
@@ -21,6 +22,15 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+
+
+    winrt::IControlProtected controlProtected = *this;
+    if (auto layoutRootGrid = GetTemplateChildT<winrt::Grid>(L"LayoutRoot", controlProtected))
+    {
+        auto nvipvsm = winrt::make_self<NavigationViewItemPresenterVisualStateManager>();
+        layoutRootGrid.SetValue(winrt::VisualStateManager::CustomVisualStateManagerProperty(), *nvipvsm);
+    }
+
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
