@@ -9,6 +9,7 @@
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "Utils.h"
+#include "winnls.h"
 
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
@@ -35,11 +36,7 @@ NumberBox::NumberBox()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_NumberBox);
 
-    // Default values for the number formatter
-    const auto formatter = winrt::DecimalFormatter();
-    formatter.IntegerDigits(1);
-    formatter.FractionDigits(0);
-    NumberFormatter(formatter);
+    NumberFormatter(GetRegionalSettingsAwareDecimalFormatter());
 
     PointerWheelChanged({ this, &NumberBox::OnNumberBoxScroll });
 
@@ -47,6 +44,40 @@ NumberBox::NumberBox()
     LostFocus({ this, &NumberBox::OnNumberBoxLostFocus });
 
     SetDefaultStyleKey(this);
+}
+
+// This was largely copied from Calculator's GetRegionalSettingsAwareDecimalFormatter()
+winrt::DecimalFormatter NumberBox::GetRegionalSettingsAwareDecimalFormatter()
+{
+    std::vector<winrt::hstring> languageList;
+
+    WCHAR currentLocale[LOCALE_NAME_MAX_LENGTH] = {};
+    if (GetUserDefaultLocaleName(currentLocale, LOCALE_NAME_MAX_LENGTH) != 0)
+    {
+        // GetUserDefaultLocaleName may return an invalid bcp47 language tag with trailing non-BCP47 friendly characters,
+        // which if present would start with an underscore, for example sort order
+        // (see https://msdn.microsoft.com/en-us/library/windows/desktop/dd373814(v=vs.85).aspx).
+        // Therefore, if there is an underscore in the locale name, trim all characters from the underscore onwards.
+        WCHAR* underscore = wcschr(currentLocale, L'_');
+        if (underscore != nullptr)
+        {
+            *underscore = L'\0';
+        }
+
+        if (winrt::Language::IsWellFormed(currentLocale))
+        {
+            languageList.push_back(winrt::hstring(currentLocale));
+        }
+    }
+
+    const auto formatter = (languageList.size() == 1)
+        ? winrt::DecimalFormatter(languageList, winrt::GlobalizationPreferences::HomeGeographicRegion())
+        : winrt::DecimalFormatter();
+
+    formatter.IntegerDigits(1);
+    formatter.FractionDigits(0);
+
+    return formatter;
 }
 
 winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()

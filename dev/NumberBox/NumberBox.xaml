@@ -79,24 +79,41 @@
                             </ResourceDictionary>
                         </Grid.Resources>
 
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBox x:Name="InputBox"
+                        <ContentPresenter x:Name="HeaderContentPresenter"
+                            Grid.Row="0"
                             Grid.Column="0"
-                            Header="{TemplateBinding Header}"
-                            HeaderTemplate="{TemplateBinding HeaderTemplate}"
+                            Grid.ColumnSpan="3"
+                            Content="{TemplateBinding Header}"
+                            ContentTemplate="{TemplateBinding HeaderTemplate}"
+                            FontWeight="Normal"
+                            Foreground="{ThemeResource TextControlHeaderForeground}"
+                            Margin="{ThemeResource TextBoxTopHeaderMargin}"
+                            TextWrapping="Wrap"
+                            VerticalAlignment="Top"/>
+
+                        <TextBox x:Name="InputBox"
+                            Grid.Row="1"
+                            Grid.Column="0"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
                             TextReadingOrder="{TemplateBinding TextReadingOrder}"
-                            PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"
-                            contract7Present:Description="{TemplateBinding Description}"/>
+                            PreventKeyboardDisplayOnProgrammaticFocus="{TemplateBinding PreventKeyboardDisplayOnProgrammaticFocus}"/>
 
                         <Popup x:Name="UpDownPopup"
+                            Grid.Row="1"
                             Grid.Column="1"
                             VerticalOffset="{ThemeResource NumberBoxPopupVerticalOffset}"
                             HorizontalOffset="{ThemeResource NumberBoxPopupHorizonalOffset}"
@@ -127,6 +144,7 @@
                         </Popup>
 
                         <RepeatButton x:Name="UpSpinButton"
+                            Grid.Row="1"
                             Grid.Column="1"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
@@ -135,12 +153,21 @@
                             contract7Present:CornerRadius="0"/>
 
                         <RepeatButton x:Name="DownSpinButton"
+                            Grid.Row="1"
                             Grid.Column="2"
                             Visibility="Collapsed"
                             FontSize="{TemplateBinding FontSize}"
                             Content="&#xE70D;"
                             Style="{StaticResource NumberBoxSpinButtonStyle}"
                             contract7Present:CornerRadius="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource RightCornerRadiusFilterConverter}}" />
+
+                        <ContentPresenter x:Name="DescriptionPresenter"
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="3"
+                            Content="{TemplateBinding Description}"
+                            Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
+                            AutomationProperties.AccessibilityView="Raw"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
@@ -151,8 +178,7 @@
         <Style.Setters>
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="MinWidth" Value="34"/>
-            <Setter Property="Height" Value="{ThemeResource TextControlThemeMinHeight}"/>
-            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
             <Setter Property="Background" Value="{ThemeResource TextControlBackground}"/>
             <Setter Property="BorderBrush" Value="{ThemeResource TextControlBorderBrush}"/>
             <Setter Property="BorderThickness" Value="{ThemeResource NumberBoxSpinButtonBorderThickness}"/>

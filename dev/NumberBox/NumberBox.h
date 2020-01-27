@@ -55,6 +55,7 @@ public:
     void ValidateNumberFormatter(winrt::INumberFormatter2 value);
 
 private:
+    winrt::DecimalFormatter GetRegionalSettingsAwareDecimalFormatter();
 
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
