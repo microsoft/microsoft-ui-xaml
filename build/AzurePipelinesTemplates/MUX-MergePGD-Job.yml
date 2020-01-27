@@ -11,6 +11,8 @@ jobs:
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoIntermediates: $(artifactsPath)\drop\PGO\${{ parameters.buildConfiguration }}
+  strategy:
+    matrix: ${{ parameters.matrix }}
 
   steps:
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
@@ -29,7 +31,10 @@ jobs:
       downloadPath: $(artifactsPath)
 
   - script: |
+      echo ${{ parameters.buildConfiguration }}
+      echo ${{ parameters.buildPlatform }}
       cd ${{ parameters.buildPlatform }}
+      cd
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc ${{ parameters.pgdFile }}
     displayName: 'Merge pgc files into pgd'
     workingDirectory: $(pgoIntermediates)
