@@ -39,6 +39,9 @@ function UninstallApps {
     }
 }
 
+Write-Host "List all installed apps:"
+Get-AppxPackage
+
 Write-Host "Uninstall AppX packages that are known to cause issues with our tests"
 UninstallApps("*Skype*", "*Windows.Photos*")
 
@@ -52,3 +55,6 @@ Write-Host "Uninstall MUX Framework package that may have been left over from pr
 $versionMajor = $versionData.GetElementsByTagName("MUXVersionMajor").'#text'
 $versionMinor = $versionData.GetElementsByTagName("MUXVersionMinor").'#text'
 UninstallApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
+
+Write-Host "List all installed apps:"
+Get-AppxPackage
