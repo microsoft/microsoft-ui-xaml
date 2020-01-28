@@ -41,7 +41,7 @@
     <CppWinRTParameters>-ignore_velocity</CppWinRTParameters>
     <CppWinRTOptimized>true</CppWinRTOptimized>
     <CppWinRTHeapEnforcement>true</CppWinRTHeapEnforcement>
-    <PGODatabaseVersion>2.0.0</PGODatabaseVersion>
+    <PGODatabaseVersion>0.0.3</PGODatabaseVersion>
   </PropertyGroup>
   <!-- <PropertyGroup Condition="'$(Use64BitLinker)' == 'true' AND '$(BuildingWithBuildExe)' != 'true'">
       <LinkToolPath>$(OSBuildToolsRoot)\vc\HostX64\$(BuildArchName)</LinkToolPath>
