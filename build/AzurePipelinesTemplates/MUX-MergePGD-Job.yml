@@ -40,7 +40,7 @@ jobs:
     displayName: 'Copy merged pgd to artifact staging'
     inputs:
       sourceFolder: $(pgoIntermediates)
-      contents: '**\$(buildPlatform)\${{ parameters.pgdFile }}''
+      contents: '**\$(buildPlatform)\${{ parameters.pgdFile }}'
       targetFolder: $(Build.ArtifactStagingDirectory)
 
   - task: PublishBuildArtifacts@1
