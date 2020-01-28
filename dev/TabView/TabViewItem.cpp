@@ -52,7 +52,7 @@ void TabViewItem::OnApplyTemplate()
                 shadow.Receivers().Append(internalTabView->GetShadowReceiver());
                 m_shadow = shadow;
 
-                double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_tabViewShadowDepthName, winrt::Application::Current().Resources(), box_value(c_tabShadowDepth)));
+                double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
 
                 auto currentTranslation = Translation();
                 auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
