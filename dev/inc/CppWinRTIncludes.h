@@ -371,7 +371,7 @@ namespace winrt
     // using namespace winrt::Windows::UI::Xaml
     using IElementFactoryGetArgs = winrt::Windows::UI::Xaml::IElementFactoryGetArgs;
     using IElementFactoryRecycleArgs = winrt::Windows::UI::Xaml::IElementFactoryRecycleArgs;
-
+    
 
 #ifdef REPEATER_INCLUDED
     using ElementFactoryGetArgs = winrt::Microsoft::UI::Xaml::Controls::ElementFactoryGetArgs;

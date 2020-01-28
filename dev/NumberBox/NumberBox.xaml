@@ -92,8 +92,6 @@
                         </Grid.ColumnDefinitions>
 
                         <ContentPresenter x:Name="HeaderContentPresenter"
-                            Grid.Row="0"
-                            Grid.Column="0"
                             Grid.ColumnSpan="3"
                             Content="{TemplateBinding Header}"
                             ContentTemplate="{TemplateBinding HeaderTemplate}"
@@ -105,7 +103,6 @@
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"
-                            Grid.Column="0"
                             PlaceholderText="{TemplateBinding PlaceholderText}"
                             contract7Present:SelectionFlyout="{TemplateBinding SelectionFlyout}"
                             SelectionHighlightColor="{TemplateBinding SelectionHighlightColor}"
@@ -133,7 +130,6 @@
 
                                 <RepeatButton x:Name="PopupUpSpinButton"
                                     Style="{StaticResource NumberBoxPopupSpinButtonStyle}"
-                                    Grid.Row="0"
                                     Content="&#xE70E;"/>
 
                                 <RepeatButton x:Name="PopupDownSpinButton"
@@ -163,7 +159,6 @@
 
                         <ContentPresenter x:Name="DescriptionPresenter"
                             Grid.Row="2"
-                            Grid.Column="0"
                             Grid.ColumnSpan="3"
                             Content="{TemplateBinding Description}"
                             Foreground="{ThemeResource SystemControlDescriptionTextForegroundBrush}"
