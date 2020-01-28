@@ -125,7 +125,7 @@ public:
     //void OnItemsChanged(winrt::IInspectable const& item);
     void UpdateTabContent();
 
-    void RequestCloseTab(winrt::TabViewItem const& item);
+    void RequestCloseTab(int index, winrt::TabViewItem const& item);
 
     winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
 

@@ -16,6 +16,7 @@ runtimeclass TabViewSelectionChangedEventArgs
     Int32 SelectedIndex { get; };
 }
 
+// ### maybe change to index/Item. Maybe Tab shouldn't be a thing you get anymore.
 [WUXC_VERSION_MUXONLY]
 [webhosthidden]
 runtimeclass TabViewTabCloseRequestedEventArgs

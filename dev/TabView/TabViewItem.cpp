@@ -115,7 +115,7 @@ void TabViewItem::RequestClose()
     {
         if (auto internalTabView = winrt::get_self<TabView>(tabView))
         {
-            internalTabView->RequestCloseTab(*this);
+            internalTabView->RequestCloseTab(m_repeatedIndex, *this);
         }
     }
 }
@@ -285,8 +285,8 @@ void TabViewItem::UpdateVisualState(bool useTransitions)
 {
     // DisabledStates and CommonStates
     auto enabledStateValue = L"Enabled";
-    bool isSelected = IsSelected();
     auto selectedStateValue = L"Normal";
+    bool isSelected = IsSelected();
 
     if (IsEnabled())
     {
