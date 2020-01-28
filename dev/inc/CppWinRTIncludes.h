@@ -281,6 +281,7 @@ namespace winrt
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
     using Geometry = winrt::Windows::UI::Xaml::Media::Geometry;
+    using GradientSpreadMethod = winrt::Windows::UI::Xaml::Media::GradientSpreadMethod;
     using GradientStop = ::winrt::Windows::UI::Xaml::Media::GradientStop;
     using ImageBrush = ::winrt::Windows::UI::Xaml::Media::ImageBrush;
     using ImageSource = ::winrt::Windows::UI::Xaml::Media::ImageSource;
