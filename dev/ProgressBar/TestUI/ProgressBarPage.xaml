@@ -26,7 +26,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
+
         <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal">
             <TextBlock Text="Sample Progressbar" Style="{ThemeResource StandardGroupHeader}"/>
             <FontIcon Glyph="&#xF0AF;" Margin="4,0,40,3" FontSize="14" VerticalAlignment="Center"/>
@@ -97,7 +97,7 @@
                 <CheckBox x:Name="ShowErrorCheckBox" AutomationProperties.Name="ShowErrorCheckBox"  Content="ShowError"/>
                 <CheckBox x:Name="ShowIsDeterminateCheckBox" AutomationProperties.Name="ShowIsDeterminateCheckBox" Content="IsDeterminate"/>
             </StackPanel>
-            
+
             <StackPanel Style="{ThemeResource StandardGroupingStackPanel}" Margin="0,16,0,0">
                 <TextBlock Text="Actions" Style="{ThemeResource StandardGroupHeader}"/>
                 <Button x:Name="UpdateMinMaxButton" AutomationProperties.Name="UpdateMinMaxButton" Content="Update Min and Max" Click="UpdateMinMax_Click"/>
