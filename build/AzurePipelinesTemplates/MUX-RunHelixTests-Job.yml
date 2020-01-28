@@ -21,7 +21,8 @@ parameters:
     Release_x86:
       buildPlatform: 'x86'
       buildConfiguration: 'release'
-      helixTargetQueues: 'windows.10.amd64.clientrs3.open.xaml%3bwindows.10.amd64.client19h1.open.xaml'
+      # temporarily disabling windows.10.amd64.clientrs3.open.xaml See #1892
+      helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
     Release_x64:
       buildPlatform: 'x64'
       buildConfiguration: 'release'
