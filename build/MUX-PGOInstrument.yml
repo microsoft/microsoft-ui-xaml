@@ -1,4 +1,5 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
 jobs:
 - job: Build
   pool:
@@ -13,21 +14,13 @@ jobs:
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
-      Release_Arm:
-        buildPlatform: 'arm'
-        buildConfiguration: 'Release'
-      Release_Arm64:
-        buildPlatform: 'arm64'
-        buildConfiguration: 'Release'
-
   variables:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
+    PGOBuildMode: Instrument
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 # Create Nuget Package
@@ -36,17 +29,7 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: Build
     prereleaseVersionTag: pgo
- 
-# Build solution that depends on nuget package
-- template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
-  parameters:
-    buildJobName: 'BuildNugetPkgTests'
-    buildArtifactName: 'NugetPkgTestsDrop'
-    runTestJobName: 'RunNugetPkgTestsInHelix'
-    helixType: 'test/nuget'
-    dependsOn: CreateNugetPackage
-    pkgArtifactPath: '$(artifactDownloadPath)\drop'
-   
+
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -56,10 +39,40 @@ jobs:
     helixType: 'test/frpkg'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop\FrameworkPackage'
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+    test_matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+        helixTargetQueues: 'windows.10.amd64.client19h1.open.xaml'
 
 - template: AzurePipelinesTemplates\MUX-ProcessTestResults-Job.yml
   parameters:
-    dependsOn:
-    - RunNugetPkgTestsInHelix
-    - RunFrameworkPkgTestsInHelix
+    dependsOn: RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
+    minimumExpectedTestsExecutedCount: 10
+
+- template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
+  parameters:
+    dependsOn: ProcessTestResults
+    matrix:
+      Release_x86:
+        buildPlatform: 'x86'
+        buildConfiguration: 'Release'
+      Release_x64:
+        buildPlatform: 'x64'
+        buildConfiguration: 'Release'
+
+- template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
+  parameters:
+    dependsOn: MergePGD
