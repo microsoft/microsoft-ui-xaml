@@ -39,7 +39,9 @@ void ProgressBar::OnApplyTemplate()
     // any of them not to be found, since devs can replace the template with their own.
 
     m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(s_LayoutRootName, controlProtected));
-    m_progressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(s_ProgressBarIndicatorName, controlProtected));
+    m_determinateProgressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(s_DeterminateProgressBarIndicatorName, controlProtected));
+    m_indeterminateProgressBarIndicator.set(GetTemplateChildT<winrt::Rectangle>(s_IndeterminateProgressBarIndicatorName, controlProtected));
+    m_indeterminateProgressBarIndicator2.set(GetTemplateChildT<winrt::Rectangle>(s_IndeterminateProgressBarIndicator2Name, controlProtected));
 
     UpdateStates();
 }
@@ -75,15 +77,17 @@ void ProgressBar::OnShowErrorPropertyChanged(const winrt::DependencyPropertyChan
 
 void ProgressBar::UpdateStates()
 {
-    m_shouldUpdateWidthBasedTemplateSettings = false;
-
-    if (ShowError())
+    if (ShowError() && IsIndeterminate())
+    {
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminateErrorStateName, true);
+    }
+    else if (ShowError())
     {
         winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true);
     }
     else if (ShowPaused() && IsIndeterminate())
     {
-        winrt::VisualStateManager::GoToState(*this, s_ErrorStateName, true); // Paused-Indeterminate state same visual treatment as Error state
+        winrt::VisualStateManager::GoToState(*this, s_IndeterminatePausedStateName, true);
     }
     else if (ShowPaused())
     {
@@ -91,7 +95,6 @@ void ProgressBar::UpdateStates()
     }
     else if (IsIndeterminate())
     {
-        m_shouldUpdateWidthBasedTemplateSettings = true;
         UpdateWidthBasedTemplateSettings();
         winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
     }
@@ -107,10 +110,10 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
     if (auto&& progressBar = m_layoutRoot.get())
     {
-        if (auto&& progressBarIndicator = m_progressBarIndicator.get())
+        if (auto&& determinateProgressBarIndicator = m_determinateProgressBarIndicator.get())
         {
             const double progressBarWidth = progressBar.ActualWidth();
-            const double prevIndicatorWidth = progressBarIndicator.ActualWidth();
+            const double prevIndicatorWidth = determinateProgressBarIndicator.ActualWidth();
             const double maximum = Maximum();
             const double minimum = Minimum();
             const auto padding = Padding();
@@ -121,7 +124,19 @@ void ProgressBar::SetProgressBarIndicatorWidth()
 
             if (IsIndeterminate())
             {
-                progressBarIndicator.Width(progressBarWidth * 0.4);
+                determinateProgressBarIndicator.Width(0);
+
+                if (auto&& indeterminateProgressBarIndicator = m_indeterminateProgressBarIndicator.get())
+                {
+                    indeterminateProgressBarIndicator.Width(progressBarWidth * 0.4); // 40% of ProgressBar Width
+                }
+
+                if (auto&& indeterminateProgressBarIndicator2 = m_indeterminateProgressBarIndicator2.get())
+                {
+                    indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
+                }
+
+                return;
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
             {
@@ -130,11 +145,11 @@ void ProgressBar::SetProgressBarIndicatorWidth()
                 const double indicatorWidth = increment * (Value() - minimum);
                 const double widthDelta = indicatorWidth - prevIndicatorWidth;
                 templateSettings->IndicatorLengthDelta(-widthDelta);
-                progressBarIndicator.Width(indicatorWidth);
+                determinateProgressBarIndicator.Width(indicatorWidth);
             }
             else
             {
-                progressBarIndicator.Width(0); // Error
+                determinateProgressBarIndicator.Width(0); // Error
             }
            
             UpdateStates(); // Reverts back to previous state
@@ -146,36 +161,39 @@ void ProgressBar::UpdateWidthBasedTemplateSettings()
 {
     const auto templateSettings = winrt::get_self<::ProgressBarTemplateSettings>(TemplateSettings());
 
-    if (auto&& progressBarIndicator = m_progressBarIndicator.get())
+    const auto [width, height] = [progressBar = m_layoutRoot.get()]()
     {
-        const auto [width, height] = [progressBar = m_layoutRoot.get()]()
+        if (progressBar)
         {
-            if (progressBar)
-            {
-                const float width = static_cast<float>(progressBar.ActualWidth());
-                const float height = static_cast<float>(progressBar.ActualHeight());
-                return std::make_tuple(width, height);
-            }
-            return std::make_tuple(0.0f, 0.0f);
-        }();
+            const float width = static_cast<float>(progressBar.ActualWidth());
+            const float height = static_cast<float>(progressBar.ActualHeight());
+            return std::make_tuple(width, height);
+        }
+        return std::make_tuple(0.0f, 0.0f);
+    }();
 
-        const double indicatorWidthMultiplier = -0.4;
+    const double indeterminateProgressBarIndicatorWidth = width * 0.4; // Indicator width at 40% of ProgressBar
+    const double indeterminateProgressBarIndicatorWidth2 = width * 0.6; // Indicator width at 60% of ProgressBar
 
-        templateSettings->ContainerAnimationStartPosition(width * indicatorWidthMultiplier);
-        templateSettings->ContainerAnimationEndPosition(width);
+    templateSettings->ContainerAnimationStartPosition(indeterminateProgressBarIndicatorWidth * -1.0); // Position at -100%
+    templateSettings->ContainerAnimationEndPosition(indeterminateProgressBarIndicatorWidth * 3.0); // Position at 300%
 
-        const auto rectangle = [width, height, padding = Padding()]()
-        {
-            const auto returnValue = winrt::RectangleGeometry();
-            returnValue.Rect({
-                static_cast<float>(padding.Left),
-                static_cast<float>(padding.Top),
-                width - static_cast<float>(padding.Right + padding.Left),
-                height - static_cast<float>(padding.Bottom + padding.Top)
-                });
-            return returnValue;
-        }();
+    templateSettings->ContainerAnimationStartPosition2(indeterminateProgressBarIndicatorWidth2 * -1.5); // Position at -150%
+    templateSettings->ContainerAnimationEndPosition2(indeterminateProgressBarIndicatorWidth2 * 1.66); // Position at 166%
 
-        templateSettings->ClipRect(rectangle);
-    }
+    templateSettings->ContainerAnimationMidPosition(width * 0.2);
+
+    const auto rectangle = [width, height, padding = Padding()]()
+    {
+        const auto returnValue = winrt::RectangleGeometry();
+        returnValue.Rect({
+            static_cast<float>(padding.Left),
+            static_cast<float>(padding.Top),
+            width - static_cast<float>(padding.Right + padding.Left),
+            height - static_cast<float>(padding.Bottom + padding.Top)
+            });
+        return returnValue;
+    }();
+
+    templateSettings->ClipRect(rectangle);
 }
