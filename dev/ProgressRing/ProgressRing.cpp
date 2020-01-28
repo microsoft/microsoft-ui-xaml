@@ -8,6 +8,19 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
+winrt::Size ComputeCircleSize(double thickness, double actualWidth);
+
+static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
+static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
+static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
+static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
+static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
+static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer" };
+static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
+static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
+static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush" };
+static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
+
 ProgressRing::ProgressRing()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_ProgressRing);
@@ -86,7 +99,7 @@ void ProgressRing::ApplyLottieAnimation()
             else
             {
                 // Default color fallback if Foreground() Brush does not contain SolidColorBrush with Color property.
-                return SharedHelpers::FindResource(s_DefaultForegroundThemeResourceName, winrt::Application::Current().Resources()).as<winrt::SolidColorBrush>().Color();
+                return SharedHelpers::FindInApplicationResources(s_DefaultForegroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
             }
         }();
 
@@ -99,7 +112,7 @@ void ProgressRing::ApplyLottieAnimation()
             else
             {
                 // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
-                return SharedHelpers::FindResource(s_DefaultBackgroundThemeResourceName, winrt::Application::Current().Resources()).as<winrt::SolidColorBrush>().Color();
+                return SharedHelpers::FindInApplicationResources(s_DefaultForegroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
             }
         }();
      
@@ -128,17 +141,6 @@ void ProgressRing::UpdateStates()
         }
     }
 }
-
-winrt::Size ProgressRing::ComputeCircleSize(double thickness, double actualWidth)
-{
-    const double safeThickness = std::max(thickness, static_cast<double>(0.0));
-
-    // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
-    const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
-
-    return {static_cast<float>(radius), static_cast<float>(radius)};
-}
-
 
 void ProgressRing::UpdateSegment()
 {
@@ -202,4 +204,14 @@ void ProgressRing::UpdateRing()
     }
 
     UpdateSegment();
+}
+
+winrt::Size ComputeCircleSize(double thickness, double actualWidth)
+{
+    const double safeThickness = std::max(thickness, static_cast<double>(0.0));
+
+    // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
+    const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
+
+    return { static_cast<float>(radius), static_cast<float>(radius) };
 }

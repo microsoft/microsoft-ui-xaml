@@ -114,7 +114,7 @@ void NumberBox::OnApplyTemplate()
                 popupRoot.Shadow(winrt::ThemeShadow{});
                 auto&& translation = popupRoot.Translation();
 
-                const double shadowDepth = unbox_value<double>(SharedHelpers::FindResource(c_numberBoxPopupShadowDepthName, winrt::Application::Current().Resources(), box_value(c_popupShadowDepth)));
+                const double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_numberBoxPopupShadowDepthName, box_value(c_popupShadowDepth)));
 
                 popupRoot.Translation({ translation.x, translation.y, (float)shadowDepth });
             }
