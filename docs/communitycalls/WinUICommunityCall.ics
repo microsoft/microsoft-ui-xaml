@@ -20,19 +20,19 @@ END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20200129T174037Z
+CREATED:20200129T205041Z
 DESCRIPTION:The WinUI community call is your monthly opportunity to learn a
 	bout native UX development for Windows with WinUI. \nIn these calls we’l
 	l discuss the WinUI roadmap\, our status and your feedback.\n \nhttps://gi
 	thub.com/microsoft/microsoft-ui-xaml\n \n_________________________________
 	______________________________________________ \n \nWatch here: https://ww
 	w.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA\n \n
-DTEND;TZID="GMT Standard Time":20191103T180000
+DTEND;TZID="GMT Standard Time":20191120T180000
 DTSTAMP:20191024T211746Z
-DTSTART;TZID="GMT Standard Time":20191103T170000
-LAST-MODIFIED:20200129T174037Z
+DTSTART;TZID="GMT Standard Time":20191120T170000
+LAST-MODIFIED:20200129T205041Z
 PRIORITY:5
-RRULE:FREQ=MONTHLY;BYMONTHDAY=3
+RRULE:FREQ=MONTHLY;BYDAY=WE;BYSETPOS=3
 SEQUENCE:0
 SUMMARY;LANGUAGE=en-gb:WinUI community call
 TRANSP:TRANSPARENT
