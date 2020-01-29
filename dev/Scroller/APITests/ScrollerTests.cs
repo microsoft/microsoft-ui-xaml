@@ -43,7 +43,7 @@ using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public partial class ScrollerTests
+    public partial class ScrollerTests : ApiTestBase
     {
         private const InteractionState c_defaultState = InteractionState.Idle;
         private const ChainingMode c_defaultHorizontalScrollChainingMode = ChainingMode.Auto;
@@ -790,9 +790,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Warning("Skipped ValidateXYFocusNavigation because XYFocus support for third party scrollers is only available in RS4+.");
                 return;
             }
-
-            Button innerCenterButton = null;
-
             RunOnUIThread.Execute(() =>
             {
                 var rootPanel = (Grid)XamlReader.Load(TestUtilities.ProcessTestXamlForRepo(
@@ -819,13 +816,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                         </controlsPrimitives:Scroller>
                     </Grid>"));
 
-                innerCenterButton = (Button)rootPanel.FindName("innerCenterButton");
-                MUXControlsTestApp.App.TestContentRoot = rootPanel;
-            });
-            IdleSynchronizer.Wait();
+                var innerCenterButton = (Button)rootPanel.FindName("innerCenterButton");
+                Content = rootPanel;
+                Content.UpdateLayout();
 
-            RunOnUIThread.Execute(() =>
-            {
                 Log.Comment("Ensure inner center button has keyboard focus.");
                 innerCenterButton.Focus(FocusState.Keyboard);
                 Verify.AreEqual(innerCenterButton, FocusManager.GetFocusedElement());
@@ -928,7 +922,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             if (setAsContentRoot)
             {
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scroller;
+                Content = scroller;
             }
         }
 

@@ -50,7 +50,7 @@
         </ItemsPanelTemplate>
     </Page.Resources>
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -65,10 +65,10 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Vertical" Grid.Column="1">
-                <TextBlock HorizontalAlignment="Center" Text="System Control Reveal Brushes" Margin="0,5" FontSize="22"/>
+                <TextBlock HorizontalAlignment="Center" Text="Test results" Style="{ThemeResource StandardGroupHeader}"/>
                 <StackPanel Orientation="Horizontal">
                     <Button x:Name="CheckBrushes" AutomationProperties.Name="CheckBrushes" Content="Check Brush Resources" Click="OnCheckBrushResourcesClicked"/>
-                    <TextBox x:Name="CheckBrushesResult" AutomationProperties.Name="CheckBrushesResult" IsReadOnly="true" Width="200" FontSize="7"/>
+                    <TextBox x:Name="CheckBrushesResult" AutomationProperties.Name="CheckBrushesResult" IsReadOnly="true" MaxWidth="500" FontSize="7"/>
                     <Grid x:Name="ResourceRootLightRS1" RequestedTheme="Light">
                         <Grid.Resources>
                             <ResourceDictionary x:Name="RS1RevealThemeResourcesLight" Source="ms-appx:///RevealBrush_rs1_themeresources.xaml"/>
@@ -96,63 +96,78 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel Orientation="Horizontal">
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"/>
-                </Grid.Background>
-                <TextBlock Text="Light3"/>
-            </Grid>
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorLight2}"/>
-                </Grid.Background>
-                <TextBlock Text="Light2"/>
-            </Grid>
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorLight1}"/>
-                </Grid.Background>
-                <TextBlock Text="Light1"/>
-            </Grid>
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColor}"/>
-                </Grid.Background>
-                <TextBlock Text="Accent"/>
-            </Grid>
+        <StackPanel Grid.Row="1">
+            <StackPanel.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Width" Value="100"/>
+                    <Setter Property="Height" Value="50"/>
+                </Style>
+            </StackPanel.Resources>
+            <TextBlock Text="Accentcolor list" Style="{ThemeResource StandardGroupHeader}"/>
+            <StackPanel Orientation="Horizontal">
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorLight3}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Light3"/>
+                </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorLight2}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Light2"/>
+                </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorLight1}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Light1"/>
+                </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColor}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Accent"/>
+                </Grid>
 
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorDark1}"/>
-                </Grid.Background>
-                <TextBlock Text="Dark1"/>
-            </Grid>
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorDark2}"/>
-                </Grid.Background>
-                <TextBlock Text="Dark2"/>
-            </Grid>
-            <Grid>
-                <Grid.Background>
-                    <SolidColorBrush Color="{ThemeResource SystemAccentColorDark3}"/>
-                </Grid.Background>
-                <TextBlock Text="Dark3"/>
-            </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorDark1}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Dark1"/>
+                </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorDark2}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Dark2"/>
+                </Grid>
+                <Grid>
+                    <Grid.Background>
+                        <SolidColorBrush Color="{ThemeResource SystemAccentColorDark3}"/>
+                    </Grid.Background>
+                    <TextBlock Text="Dark3"/>
+                </Grid>
+            </StackPanel>
 
         </StackPanel>
 
         <ScrollViewer Grid.Row="2">
-            <ItemsControl Name="BackgroundList" ItemsSource="{x:Bind RevealBackgroundBrushes}" 
-                  ItemsPanel="{StaticResource WrapGrid}"
-                  ItemTemplate="{StaticResource BackgroundBrushDataTemplate}" Margin="20" />
+            <StackPanel>
+                <TextBlock Text="Reveal background brushes samples" Style="{ThemeResource StandardGroupHeader}"/>
+                <ItemsControl Name="BackgroundList" ItemsSource="{x:Bind RevealBackgroundBrushes}" 
+                      ItemsPanel="{StaticResource WrapGrid}"
+                      ItemTemplate="{StaticResource BackgroundBrushDataTemplate}" Margin="20" />
+            </StackPanel>
         </ScrollViewer>
 
         <ScrollViewer Grid.Row="3">
-            <ItemsControl Name="BorderList" ItemsSource="{x:Bind RevealBorderBrushes}" 
-                      ItemsPanel="{StaticResource WrapGrid}"
-                      ItemTemplate="{StaticResource BorderBrushDataTemplate}" Margin="20" />
+            <StackPanel>
+                <TextBlock Text="Reveal border brushes samples" Style="{ThemeResource StandardGroupHeader}"/>
+                <ItemsControl Name="BorderList" ItemsSource="{x:Bind RevealBorderBrushes}" 
+                          ItemsPanel="{StaticResource WrapGrid}"
+                          ItemTemplate="{StaticResource BorderBrushDataTemplate}" Margin="20" />
+            </StackPanel>
         </ScrollViewer>
 
     </Grid>

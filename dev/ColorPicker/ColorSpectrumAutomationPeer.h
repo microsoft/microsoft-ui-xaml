@@ -33,5 +33,3 @@ public:
 private:
     static winrt::hstring GetValueString(winrt::Color color, winrt::float4 hsvColor);
 };
-
-CppWinRTActivatableClassWithBasicFactory(ColorSpectrumAutomationPeer)

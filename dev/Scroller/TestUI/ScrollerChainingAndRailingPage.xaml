@@ -29,7 +29,7 @@
             <ComboBox x:Name="cmbFullLog" AutomationProperties.Name="cmbFullLog" Margin="6,2,2,2" VerticalAlignment="Center" Width="175"/>
         </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" HorizontalAlignment="Left" Background="Black">
+        <StackPanel Grid.Row="1" Grid.Column="1" Margin="4" HorizontalAlignment="Left">
             <TextBlock Text="Scroller0:" Margin="0,4,0,0" FontWeight="Bold" Foreground="LightBlue"/>
             <TextBox x:Name="txtScroller0State" AutomationProperties.AutomationId="txtScroller0State" IsTabStop="False" VerticalAlignment="Center" Width="160"/>
             <StackPanel Orientation="Horizontal">

@@ -191,6 +191,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TabView Tests"))
             {
+                Log.Comment("Hiding the disabled tab");
+                var disabledTabCheckBox = FindElement.ByName<CheckBox>("IsDisabledTabVisibleCheckBox");
+                Verify.IsNotNull(disabledTabCheckBox);
+                disabledTabCheckBox.Uncheck();
+
+                Log.Comment("Finding the first tab");
                 UIObject firstTab = FindElement.ByName("FirstTab");
                 Button closeButton = FindCloseButton(firstTab);
                 Verify.IsNotNull(closeButton);
@@ -492,6 +498,53 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("The tooltip should not update if the header changes.");
                 PressButtonAndVerifyText("GetTab1ToolTipButton", "Tab1ToolTipTextBlock", "Custom");
+            }
+        }
+
+        [TestMethod]
+        public void CloseButtonDoesNotShowWhenVisibilityIsToggled()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                // Wait for the test page's timer to set visibility to the close button to visible
+                Wait.ForMilliseconds(2);
+                Wait.ForIdle();
+
+                UIObject notCloseableTab = FindElement.ByName("NotCloseableTab");
+                var closeButton = FindCloseButton(notCloseableTab);
+                Verify.IsNull(closeButton);
+            }
+        }
+
+        [TestMethod]
+        public void SizingTest()
+        {
+            using (var setup = new TestSetupHelper("TabView Tests"))
+            {
+                Button sizingPageButton = FindElement.ByName<Button>("TabViewSizingPageButton");
+                sizingPageButton.InvokeAndWait();
+                Wait.ForMilliseconds(200);
+                ElementCache.Refresh();
+
+                Button setSmallWidthButton = FindElement.ByName<Button>("SetSmallWidth");
+                setSmallWidthButton.InvokeAndWait();
+
+                Button getWidthsButton = FindElement.ByName<Button>("GetWidthsButton");
+                getWidthsButton.InvokeAndWait();
+
+                TextBlock widthEqualText = FindElement.ByName<TextBlock>("WidthEqualText");
+                TextBlock widthSizeToContentText = FindElement.ByName<TextBlock>("WidthSizeToContentText");
+
+                Verify.AreEqual("400", widthEqualText.DocumentText);
+                Verify.AreEqual("400", widthSizeToContentText.DocumentText);
+
+                Button setLargeWidthButton = FindElement.ByName<Button>("SetLargeWidth");
+                setLargeWidthButton.InvokeAndWait();
+
+                getWidthsButton.InvokeAndWait();
+
+                Verify.AreEqual("700", widthEqualText.DocumentText);
+                Verify.AreEqual("700", widthSizeToContentText.DocumentText);
             }
         }
 

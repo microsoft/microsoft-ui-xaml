@@ -39,40 +39,41 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
-    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnPlaceholderTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnBasicValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnHyperScrollEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnValuePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMinimumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMaximumPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSmallChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnLargeChangePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsWrapEnabledPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     void OnNumberFormatterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void ValidateNumberFormatter(winrt::INumberFormatter2 value);
 
 private:
 
-    void OnTextBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinDownClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
     void OnSpinUpClick(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnNumberBoxKeyDown(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
     void OnNumberBoxKeyUp(winrt::IInspectable const& sender, winrt::KeyRoutedEventArgs const& args);
     void OnNumberBoxGotFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
-    void OnScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
+    void OnNumberBoxLostFocus(winrt::IInspectable const& sender, winrt::RoutedEventArgs const& args);
+    void OnNumberBoxScroll(winrt::IInspectable const& sender, winrt::PointerRoutedEventArgs const& args);
 
     void ValidateInput();
     void CoerceMinimum();
     void CoerceMaximum();
     void CoerceValue();
     void UpdateTextToValue();
+    void UpdateValueToText();
 
-    void SetSpinButtonVisualState();
-    void StepValue(bool isPositive);
-    void StepValueUp() { StepValue(true); }
-    void StepValueDown() { StepValue(false); }
+    void UpdateSpinButtonPlacement();
+    void UpdateSpinButtonEnabled();
+    void StepValue(double change);
 
     bool IsInBounds(double value);
 
@@ -82,9 +83,13 @@ private:
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
     winrt::RepeatButton::Click_revoker m_downButtonClickRevoker{};
-    winrt::TextBox::LostFocus_revoker m_textBoxLostFocusRevoker{};
+    winrt::TextBox::PreviewKeyDown_revoker m_textBoxPreviewKeyDownRevoker{};
+    winrt::TextBox::KeyDown_revoker m_textBoxKeyDownRevoker{};
     winrt::TextBox::KeyUp_revoker m_textBoxKeyUpRevoker{};
+    winrt::RepeatButton::Click_revoker m_popupUpButtonClickRevoker{};
+    winrt::RepeatButton::Click_revoker m_popupDownButtonClickRevoker{};
 };

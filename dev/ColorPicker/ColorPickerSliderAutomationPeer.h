@@ -27,4 +27,3 @@ private:
     winrt::hstring GetValueString(winrt::Color color, int value);
 };
 
-CppWinRTActivatableClassWithBasicFactory(ColorPickerSliderAutomationPeer)

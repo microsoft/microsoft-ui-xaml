@@ -6,7 +6,7 @@
 #include "Vector.h"
 #include "TreeViewDragItemsStartingEventArgs.h"
 
-void TreeViewDragItemsStartingEventArgs::DragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args)
+TreeViewDragItemsStartingEventArgs::TreeViewDragItemsStartingEventArgs(const winrt::DragItemsStartingEventArgs& args)
 {
     m_dragItemsStartingEventArgs = args;
 }

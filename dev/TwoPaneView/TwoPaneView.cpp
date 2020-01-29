@@ -26,6 +26,7 @@ TwoPaneView::TwoPaneView()
     SetDefaultStyleKey(this);
 
     SizeChanged({ this, &TwoPaneView::OnSizeChanged });
+    winrt::Window::Current().SizeChanged({ this, &TwoPaneView::OnWindowSizeChanged });
 
     EnsureProperties();
 }
@@ -97,6 +98,11 @@ void TwoPaneView::OnScrollViewerLoaded(const winrt::IInspectable& sender, const 
             }
         }
     }
+}
+
+void TwoPaneView::OnWindowSizeChanged(const winrt::IInspectable& sender, const winrt::WindowSizeChangedEventArgs& args)
+{
+    UpdateMode();
 }
 
 void TwoPaneView::OnSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args)

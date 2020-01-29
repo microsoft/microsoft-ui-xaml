@@ -1898,7 +1898,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 ClickButton("SetupDragDropHandlersForApiTest");
                 UIObject dragUIObject = LabelFirstItem();
                 InputHelper.DragDistance(dragUIObject, dragUIObject.BoundingRectangle.Height, Direction.South);
-                Verify.AreEqual("DragItemsStarting:Root->DragItemsCompleted:Root", ReadResult());
+                Verify.AreEqual("DragItemsStarting:Root\nDragItemsCompleted:Root", ReadResult());
             }
         }
 
@@ -1918,8 +1918,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         private void TreeViewDragMultipleItemsTest(bool isContentMode = false)
         {
-            if (IsPhoneDevice() || IsLowerThanRS2() ||
-              (isContentMode && IsLowerThanRS5()))
+            // InputHelper.DragToTarget() does not work properly on lower versions
+            if (IsLowerThanRS5())
             {
                 return;
             }
@@ -1951,8 +1951,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 UIObject dragUIObject = FindElement.ByName("Root.0");
                 Verify.IsNotNull(dragUIObject, "Verifying Root.0 is found");
-                InputHelper.DragDistance(dragUIObject, dragUIObject.BoundingRectangle.Height / 2, Direction.South);
-                Verify.AreEqual("DragItemsStarting:Root.0|Root.1->DragItemsCompleted:Root.0|Root.1", ReadResult());
+                UIObject dropUIObject = FindElement.ByName("Root.2");
+                Verify.IsNotNull(dropUIObject, "Verifying Root.2 is found");
+                InputHelper.DragToTarget(dragUIObject, dropUIObject);
+                Verify.AreEqual("DragItemsStarting:Root.0|Root.1\nDragItemsCompleted:Root.0|Root.1\nNewParent: Root.2", ReadResult());
             }
         }
 
@@ -2471,6 +2473,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 ClickButton("GetSelected");
                 Verify.AreEqual("Selected: Root.0", ReadResult());
+            }
+        }
+
+        // test for #1756 https://github.com/microsoft/microsoft-ui-xaml/issues/1756
+        [TestMethod]
+        [TestProperty("TreeViewTestSuite", "B")]
+        public void TreeViewSelectRegressionTest()
+        {
+            // Running 5 times since the the bug doesn't repro consistently.
+            for(int i = 0; i < 5; i++)
+            {
+                using (var setup = new TestSetupHelper("TreeView Tests"))
+                {
+                    ClickButton("AddExtraNodes");
+                    ClickButton("LabelItems");
+
+                    ClickButton("SelectLastRootNode");
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 50", ReadResult());
+
+                    UIObject node1 = FindElement.ByName("Node 1");
+                    Verify.IsNotNull(node1, "Verifying Node 1 is found");
+                    InputHelper.Tap(node1);
+
+                    ClickButton("GetSelected");
+                    Verify.AreEqual("Selected: Node 1", ReadResult());
+                }
             }
         }
 

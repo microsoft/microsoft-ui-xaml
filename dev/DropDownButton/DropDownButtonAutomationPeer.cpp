@@ -8,6 +8,9 @@
 #include "DropDownButtonAutomationPeer.h"
 #include "Utils.h"
 
+
+#include "DropDownButtonAutomationPeer.properties.cpp"
+
 DropDownButtonAutomationPeer::DropDownButtonAutomationPeer(winrt::DropDownButton const& owner)
     : ReferenceTracker(owner)
 {

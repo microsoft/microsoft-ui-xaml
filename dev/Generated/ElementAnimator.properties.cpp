@@ -6,7 +6,12 @@
 #include "common.h"
 #include "ElementAnimator.h"
 
-CppWinRTActivatableClassWithBasicFactory(ElementAnimator)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithBasicFactory(ElementAnimator)
+}
+
+#include "ElementAnimator.g.cpp"
 
 
 ElementAnimatorProperties::ElementAnimatorProperties()

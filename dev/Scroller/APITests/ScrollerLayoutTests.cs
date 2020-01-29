@@ -28,7 +28,7 @@ using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         private enum BiDirectionalAlignment
         {
@@ -304,21 +304,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         {
             Log.Comment($"ViewportHeight test case - isScrollerParentSizeSet: {isScrollerParentSizeSet}, isScrollerParentMaxSizeSet: {isScrollerParentMaxSizeSet}, scrollerVerticalAlignment: {scrollerVerticalAlignment}, scrollerContentHeight: {scrollerContentHeight}");
 
-            Border border = null;
-            Scroller scroller = null;
-            StackPanel stackPanel = null;
-            Rectangle rectangle = null;
-            AutoResetEvent borderLoadedEvent = new AutoResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                rectangle = new Rectangle()
+                var rectangle = new Rectangle()
                 {
                     Width = 30,
                     Height = scrollerContentHeight
                 };
 
-                stackPanel = new StackPanel()
+                var stackPanel = new StackPanel()
                 {
                     BorderThickness = new Thickness(5),
                     Margin = new Thickness(7),
@@ -326,14 +320,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 };
                 stackPanel.Children.Add(rectangle);
 
-                scroller = new Scroller()
+                var scroller = new Scroller()
                 {
                     Content = stackPanel,
                     ContentOrientation = ContentOrientation.Vertical,
                     VerticalAlignment = scrollerVerticalAlignment
                 };
 
-                border = new Border()
+                var border = new Border()
                 {
                     BorderThickness = new Thickness(2),
                     Margin = new Thickness(3),
@@ -351,21 +345,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     border.MaxHeight = 200.0;
                 }
 
-                border.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("Border.Loaded event handler");
-                    borderLoadedEvent.Set();
-                };
-
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = border;
-            });
+                Content = border;
+                Content.UpdateLayout();
 
-            WaitForEvent("Waiting for Border.Loaded event", borderLoadedEvent);
-            IdleSynchronizer.Wait();
-
-            RunOnUIThread.Execute(() =>
-            {
                 double expectedViewportHeight =
                     rectangle.Height + stackPanel.BorderThickness.Top + stackPanel.BorderThickness.Bottom +
                     stackPanel.Margin.Top + stackPanel.Margin.Bottom;
@@ -391,36 +374,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestProperty("Description", "Uses a StackPanel with Stretch alignment as Scroller.Content to verify it stretched to the size of the Scroller.")]
         public void StretchAlignment()
         {
-            Scroller scroller = null;
-            StackPanel stackPanel = null;
-            Rectangle rectangle = null;
-            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
-
             RunOnUIThread.Execute(() =>
             {
-                rectangle = new Rectangle();
+                var rectangle = new Rectangle();
                 rectangle.Height = c_defaultUIScrollerContentHeight;
-                stackPanel = new StackPanel();
+                var stackPanel = new StackPanel();
                 stackPanel.Children.Add(rectangle);
-                scroller = new Scroller();
+                var scroller = new Scroller();
                 scroller.Width = c_defaultUIScrollerWidth;
                 scroller.Height = c_defaultUIScrollerHeight;
                 scroller.Content = stackPanel;
 
-                scroller.Loaded += (object sender, RoutedEventArgs e) =>
-                {
-                    Log.Comment("Scroller.Loaded event handler");
-                    scrollerLoadedEvent.Set();
-                };
-
                 Log.Comment("Setting window content");
-                MUXControlsTestApp.App.TestContentRoot = scroller;
-            });
+                Content = scroller;
+                Content.UpdateLayout();
 
-            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
-
-            RunOnUIThread.Execute(() =>
-            {
                 Log.Comment("Checking Stretch/Strech alignments");
                 Verify.AreEqual(HorizontalAlignment.Stretch, stackPanel.HorizontalAlignment);
                 Verify.AreEqual(VerticalAlignment.Stretch, stackPanel.VerticalAlignment);
@@ -543,7 +511,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller = new Scroller();
                 scroller.Content = imageScrollerContent;
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
             });
 
             WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
@@ -893,7 +861,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                     scroller.Content = imageScrollerContent;
                     scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                    SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
 
                 // Constraining the Image height and making the Scroller smaller than the Image
                 imageScrollerContent.Width = c_imageWidth;
@@ -961,7 +929,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 scroller.Content = imageScrollerContent;
                 scroller.Background = new Media.SolidColorBrush(Colors.Chartreuse);
 
-                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent: scrollerLoadedEvent);
+                SetupDefaultUI(scroller, rectangleScrollerContent: null, scrollerLoadedEvent);
 
                 // Constraining the Image height and making the Scroller smaller than the Image
                 imageScrollerContent.Width = c_imageWidth;

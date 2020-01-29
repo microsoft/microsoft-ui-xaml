@@ -87,6 +87,11 @@ runtimeclass TreeViewDragItemsCompletedEventArgs
 {
     Windows.ApplicationModel.DataTransfer.DataPackageOperation DropResult{ get; };
     Windows.Foundation.Collections.IVectorView<Object> Items{ get; };
+
+    [WUXC_VERSION_MUXONLY]
+    {
+        Object NewParentItem{ get; };
+    }
 }
 
 [WUXC_VERSION_RS4]

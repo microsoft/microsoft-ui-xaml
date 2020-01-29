@@ -3,6 +3,15 @@
 
 #pragma once
 
+// After updating to VS 16.4.3 the updated compiler contains a bug that is hit by C++/WinRT resulting in crashes
+// at runtime.
+// See https://github.com/microsoft/cppwinrt/issues/486
+// The workaround from the cppwinrt team is to define '__INTELLISENSE__', which allows us to avoid the compiler issue.
+// Once the underlying issue has been resolved, we should remove this workaround.
+// Tracked by: #1877 - Remove "#define __INTELLISENSE__" from CppWinRTIncludes.h once underlying issue with cppwinrt/msvc has been resolved 
+// Also remove the corresponding #undef at the bottom of this file.
+#define __INTELLISENSE__
+
 #include <winrt\base.h>
 #include <winrt\Windows.Foundation.h>
 #include <winrt\Windows.Foundation.Collections.h>
@@ -188,6 +197,7 @@ namespace winrt
     using ContentControl = winrt::Windows::UI::Xaml::Controls::ContentControl;
     using ContentPresenter = winrt::Windows::UI::Xaml::Controls::ContentPresenter;
     using Control = ::winrt::Windows::UI::Xaml::Controls::Control;
+    using IControl = ::winrt::Windows::UI::Xaml::Controls::IControl;
     using DataTemplateSelector = winrt::Windows::UI::Xaml::Controls::DataTemplateSelector;
     using DisabledFormattingAccelerators = winrt::Windows::UI::Xaml::Controls::DisabledFormattingAccelerators;
     using DragItemsCompletedEventArgs = winrt::Windows::UI::Xaml::Controls::DragItemsCompletedEventArgs;
@@ -240,6 +250,7 @@ namespace winrt
     using Panel = winrt::Windows::UI::Xaml::Controls::Panel;
     using PasswordBox = winrt::Windows::UI::Xaml::Controls::PasswordBox;
     using PathIcon = winrt::Windows::UI::Xaml::Controls::PathIcon;
+    using RadioButton = winrt::Windows::UI::Xaml::Controls::RadioButton;
     using RichEditBox = winrt::Windows::UI::Xaml::Controls::RichEditBox;
     using RichTextBlock = winrt::Windows::UI::Xaml::Controls::RichTextBlock;
     using RichTextBlockOverflow = winrt::Windows::UI::Xaml::Controls::RichTextBlockOverflow;
@@ -272,8 +283,9 @@ namespace winrt
     using WebView = winrt::Windows::UI::Xaml::Controls::WebView;
 
     // using namespace ::winrt::Windows::UI::Xaml::Media;
+    using ArcSegment = winrt::Windows::UI::Xaml::Media::ArcSegment;
     using Brush = winrt::Windows::UI::Xaml::Media::Brush;
-    using Brush = winrt::Windows::UI::Xaml::Media::Brush;
+    using BrushMappingMode = winrt::Windows::UI::Xaml::Media::BrushMappingMode;
     using ElementCompositeMode = winrt::Windows::UI::Xaml::Media::ElementCompositeMode;
     using FontFamily = winrt::Windows::UI::Xaml::Media::FontFamily;
     using GeneralTransform = winrt::Windows::UI::Xaml::Media::GeneralTransform;
@@ -288,6 +300,7 @@ namespace winrt
     using IXamlLightProtected = winrt::Windows::UI::Xaml::Media::IXamlLightProtected;
     using LinearGradientBrush = ::winrt::Windows::UI::Xaml::Media::LinearGradientBrush;
     using LoadedImageSurface = ::winrt::Windows::UI::Xaml::Media::LoadedImageSurface;
+    using PathFigure = winrt::Windows::UI::Xaml::Media::PathFigure;
     using RectangleGeometry = winrt::Windows::UI::Xaml::Media::RectangleGeometry;
     using SolidColorBrush = ::winrt::Windows::UI::Xaml::Media::SolidColorBrush;
     using Stretch = winrt::Windows::UI::Xaml::Media::Stretch;
@@ -295,7 +308,7 @@ namespace winrt
     using TranslateTransform = winrt::Windows::UI::Xaml::Media::TranslateTransform;
     using VisualTreeHelper = winrt::Windows::UI::Xaml::Media::VisualTreeHelper;
     using XamlCompositionBrushBase = ::winrt::Windows::UI::Xaml::Media::XamlCompositionBrushBase;
-    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;
+    using XamlLight = winrt::Windows::UI::Xaml::Media::XamlLight;    
 
     // using namespace ::winrt::Windows::UI::Xaml::Media.Animation;
     using IStoryboard = ::winrt::Windows::UI::Xaml::Media::Animation::IStoryboard;
@@ -329,6 +342,7 @@ namespace winrt
     using Selector = winrt::Windows::UI::Xaml::Controls::Primitives::Selector;
     using SelectorItem = winrt::Windows::UI::Xaml::Controls::Primitives::SelectorItem;
     using ToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::ToggleButton;
+    using IToggleButton = winrt::Windows::UI::Xaml::Controls::Primitives::IToggleButton;
 
     // using namespace winrt::Windows::UI::Xaml::Automation::Peers;
     using AccessibilityView = winrt::Windows::UI::Xaml::Automation::Peers::AccessibilityView;
@@ -370,3 +384,5 @@ namespace winrt
     using IElementFactory = winrt::IInspectable;
 #endif
 }
+
+#undef __INTELLISENSE__

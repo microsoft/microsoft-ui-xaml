@@ -41,8 +41,6 @@ public:
 
     static bool IsFrameworkElementInvalidateViewportAvailable();
 
-    static bool IsApplicationViewGetDisplayRegionsAvailable();
-
     static bool IsControlCornerRadiusAvailable();
 
     static bool IsTranslationFacadeAvailable(const winrt::UIElement& element);
@@ -56,6 +54,8 @@ public:
     static bool IsThemeShadowAvailable();
 
     static bool IsIsLoadedAvailable();
+
+    static bool IsCompositionRadialGradientBrushAvailable();
 
     // Actual OS version checks
     static bool IsAPIContractV9Available(); // 19H2
@@ -191,6 +191,15 @@ public:
         {
             return winrt::VisualTreeHelper::GetParent(frameworkElement) != nullptr;
         }
+    }
+
+    static bool IsTrue(winrt::IReference<bool> const& nullableBool)
+    {
+        if (nullableBool)
+        {
+            return nullableBool.GetBoolean();
+        }
+        return false;
     }
 
     template<typename AncestorType>

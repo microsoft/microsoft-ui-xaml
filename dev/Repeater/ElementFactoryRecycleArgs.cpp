@@ -5,6 +5,8 @@
 #include "common.h"
 #include "ElementFactoryRecycleArgs.h"
 
+#include "ElementFactoryRecycleArgs.properties.cpp"
+
 #pragma region IElementFactoryRecycleArgs
 
 winrt::UIElement ElementFactoryRecycleArgs::Element()

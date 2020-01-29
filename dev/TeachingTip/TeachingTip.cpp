@@ -26,12 +26,6 @@ winrt::AutomationPeer TeachingTip::OnCreateAutomationPeer()
     return winrt::make<TeachingTipAutomationPeer>(*this);
 }
 
-void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const& , winrt::RoutedEventArgs const&)
-{
-    IsOpen(false);
-    ClosePopup();
-}
-
 void TeachingTip::OnApplyTemplate()
 {
     m_acceleratorKeyActivatedRevoker.revoke();
@@ -56,6 +50,8 @@ void TeachingTip::OnApplyTemplate()
     m_closeButton.set(GetTemplateChildT<winrt::Button>(s_closeButtonName, controlProtected));
     m_tailEdgeBorder.set(GetTemplateChildT<winrt::Grid>(s_tailEdgeBorderName, controlProtected));
     m_tailPolygon.set(GetTemplateChildT<winrt::Polygon>(s_tailPolygonName, controlProtected));
+    m_titleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_titleTextBoxName, controlProtected));
+    m_subtitleTextBox.set(GetTemplateChildT<winrt::UIElement>(s_subtitleTextBoxName, controlProtected));
 
     if (auto&& container = m_container.get())
     {
@@ -177,8 +173,43 @@ void TeachingTip::OnPropertyChanged(const winrt::DependencyPropertyChangedEventA
     else if (property == s_TitleProperty)
     {
         SetPopupAutomationProperties();
+        if (ToggleVisibilityForEmptyContent(m_titleTextBox.get(), Title()))
+        {
+            TeachingTipTestHooks::NotifyTitleVisibilityChanged(*this);
+        }
+    }
+    else if (property == s_SubtitleProperty)
+    {
+        if (ToggleVisibilityForEmptyContent(m_subtitleTextBox.get(), Subtitle()))
+        {
+            TeachingTipTestHooks::NotifySubtitleVisibilityChanged(*this);
+        }
     }
 
+}
+
+bool TeachingTip::ToggleVisibilityForEmptyContent(const winrt::UIElement& element, const winrt::hstring& content)
+{
+    if (element)
+    {
+        if (content != L"")
+        {
+            if (element.Visibility() == winrt::Visibility::Collapsed)
+            {
+                element.Visibility(winrt::Visibility::Visible);
+                return true;
+            }
+        }
+        else
+        {
+            if (element.Visibility() == winrt::Visibility::Visible)
+            {
+                element.Visibility(winrt::Visibility::Collapsed);
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void TeachingTip::OnContentChanged(const winrt::IInspectable& oldContent, const winrt::IInspectable& newContent)
@@ -1219,6 +1250,12 @@ void TeachingTip::OnPopupClosed(const winrt::IInspectable&, const winrt::IInspec
     }
 }
 
+void TeachingTip::ClosePopupOnUnloadEvent(winrt::IInspectable const&, winrt::RoutedEventArgs const&)
+{
+    IsOpen(false);
+    ClosePopup();
+}
+
 void TeachingTip::OnLightDismissIndicatorPopupClosed(const winrt::IInspectable&, const winrt::IInspectable&)
 {
     if (IsOpen())
@@ -1235,7 +1272,7 @@ void TeachingTip::RaiseClosingEvent(bool attachDeferralCompletedHandler)
 
     if (attachDeferralCompletedHandler)
     {
-        winrt::DeferralCompletedHandler instance{ [strongThis = get_strong(), args]()
+        winrt::Deferral instance{ [strongThis = get_strong(), args]()
             {
                 strongThis->CheckThread();
                 if (!args->Cancel())
@@ -1362,17 +1399,27 @@ void TeachingTip::RevokeViewportChangedEvent()
 
 void TeachingTip::WindowSizeChanged(const winrt::CoreWindow&, const winrt::WindowSizeChangedEventArgs&)
 {
-    RepositionPopup();
+    // Reposition popup when target/window has finished determining sizes
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong()](){
+            strongThis->RepositionPopup();
+        }
+    );
 }
 
 void TeachingTip::XamlRootChanged(const winrt::XamlRoot& xamlRoot, const winrt::XamlRootChangedEventArgs&)
 {
-    auto xamlRootSize = xamlRoot.Size();
-    if (xamlRootSize != m_currentXamlRootSize)
-    {
-        m_currentXamlRootSize = xamlRootSize;
-        RepositionPopup();
-    }
+    // Reposition popup when target has finished determining its own position.
+    SharedHelpers::QueueCallbackForCompositionRendering(
+        [strongThis = get_strong(),xamlRootSize = xamlRoot.Size()](){
+            if (xamlRootSize != strongThis->m_currentXamlRootSize)
+            {
+                strongThis->m_currentXamlRootSize = xamlRootSize;
+                strongThis->RepositionPopup();
+            }
+        }
+    );
+
 }
 
 void TeachingTip::RepositionPopup()
@@ -2308,6 +2355,24 @@ double TeachingTip::GetVerticalOffset()
         return popup.VerticalOffset();
     }
     return 0.0;
+}
+
+winrt::Visibility TeachingTip::GetTitleVisibility()
+{
+    if (auto&& titleTextBox = m_titleTextBox.get())
+    {
+        return titleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
+}
+
+winrt::Visibility TeachingTip::GetSubtitleVisibility()
+{
+    if (auto&& subtitleTextBox = m_subtitleTextBox.get())
+    {
+        return subtitleTextBox.Visibility();
+    }
+    return winrt::Visibility::Collapsed;
 }
 
 void TeachingTip::UpdatePopupRequestedTheme()

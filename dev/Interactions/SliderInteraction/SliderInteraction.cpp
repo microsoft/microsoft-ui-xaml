@@ -6,7 +6,7 @@
 
 #include "SliderInteraction.h"
 
-CppWinRTActivatableClassWithBasicFactory(SliderInteraction)
+#include "SliderInteraction.properties.cpp"
 
 winrt::Orientation SliderInteraction::Orientation()
 {

@@ -10,6 +10,8 @@
 #include "RevealBrush.h"
 #endif
 
+#include "XamlControlsXamlMetaDataProvider.g.cpp"
+
 bool MUXControlsFactory::s_initialized{ false };
 
 void MUXControlsFactory::EnsureInitialized()

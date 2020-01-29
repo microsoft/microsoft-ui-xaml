@@ -9,7 +9,7 @@
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItem.h"
 
-CppWinRTActivatableClassWithBasicFactory(TreeViewList);
+#include "TreeViewList.properties.cpp"
 
 TreeViewList::TreeViewList()
 {
@@ -170,122 +170,129 @@ void TreeViewList::MoveNodeInto(winrt::TreeViewNode const& node, winrt::TreeView
 
 void TreeViewList::OnDragOver(winrt::DragEventArgs const& args)
 {
-    args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
-    winrt::IInsertionPanel insertionPanel = ItemsPanelRoot().as<winrt::IInsertionPanel>();
-
-    // reorder is only supported with panels that implement IInsertionPanel
-    if (insertionPanel && m_draggedTreeViewNode && CanReorderItems())
+    if (!args.Handled())
     {
-        int aboveIndex = -1;
-        int belowIndex = -1;
-        auto itemsSource = ListViewModel();
-        int size = itemsSource->Size();
-        auto point = args.GetPosition(insertionPanel.as<winrt::UIElement>());
-        insertionPanel.GetInsertionIndexes(point, aboveIndex, belowIndex);
+        args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
+        winrt::IInsertionPanel insertionPanel = ItemsPanelRoot().as<winrt::IInsertionPanel>();
 
-        // a value of -1 means we're inserting at the end of the list or before the last item
-        if (belowIndex == -1)
+        // reorder is only supported with panels that implement IInsertionPanel
+        if (insertionPanel && m_draggedTreeViewNode && CanReorderItems())
         {
-            // this allows the next part of this code to test if we're dropping before or after the last item
-            belowIndex = static_cast<int>(size - 1);
-        }
+            int aboveIndex = -1;
+            int belowIndex = -1;
+            auto itemsSource = ListViewModel();
+            int size = itemsSource->Size();
+            auto point = args.GetPosition(insertionPanel.as<winrt::UIElement>());
+            insertionPanel.GetInsertionIndexes(point, aboveIndex, belowIndex);
 
-        // if we have an insertion point
-        // a value of 0 means we're inserting at the beginning
-        // a value greater than size - 1 means we're inserting at the end as items are collapsing
-        if (belowIndex > static_cast<int>(size - 1))
-        {
-            // don't go out of bounds
-            // since items might be collapsing as we're dragging
-            m_emptySlotIndex = static_cast<int>(size - 1);
-        }
-        else if (belowIndex > 0 && m_draggedTreeViewNode)
-        {
-            m_emptySlotIndex = -1;
-            unsigned int draggedIndex;
-            winrt::TreeViewNode tvi = m_draggedTreeViewNode.get();
-            if (ListViewModel()->IndexOfNode(tvi, draggedIndex))
+            // a value of -1 means we're inserting at the end of the list or before the last item
+            if (belowIndex == -1)
             {
-                const int indexToUse = (static_cast<int>(draggedIndex) < belowIndex) ? belowIndex : (belowIndex - 1);
-                if (auto item = ContainerFromIndex(indexToUse))
-                {
-                    auto treeViewItem = item.as<winrt::TreeViewItem>();
-                    auto pointInsideItem = args.GetPosition(treeViewItem.as<winrt::UIElement>());
-
-                    // if the point is in the top half of the item
-                    // we need to insert before that item
-                    if (pointInsideItem.Y < treeViewItem.ActualHeight() / 2)
-                    {
-                        m_emptySlotIndex = belowIndex - 1;
-                    }
-                    else
-                    {
-                        m_emptySlotIndex = belowIndex;
-                    }
-                }
+                // this allows the next part of this code to test if we're dropping before or after the last item
+                belowIndex = static_cast<int>(size - 1);
             }
-        }
-        else
-        {
-            // top of the list
-            m_emptySlotIndex = 0;
-        }
 
-        bool allowReorder = true;
-        if (IsFlatIndexValid(m_emptySlotIndex))
-        {
-            auto insertAtNode = NodeAtFlatIndex(m_emptySlotIndex);
-            if (IsMultiselect())
+            // if we have an insertion point
+            // a value of 0 means we're inserting at the beginning
+            // a value greater than size - 1 means we're inserting at the end as items are collapsing
+            if (belowIndex > static_cast<int>(size - 1))
             {
-                // If insertAtNode is in the selected items, then we do not want to allow a dropping.
-                auto selectedItems = ListViewModel()->GetSelectedNodes();
-                for (unsigned int i = 0; i < selectedItems.Size(); i++)
+                // don't go out of bounds
+                // since items might be collapsing as we're dragging
+                m_emptySlotIndex = static_cast<int>(size - 1);
+            }
+            else if (belowIndex > 0 && m_draggedTreeViewNode)
+            {
+                m_emptySlotIndex = -1;
+                unsigned int draggedIndex;
+                winrt::TreeViewNode tvi = m_draggedTreeViewNode.get();
+                if (ListViewModel()->IndexOfNode(tvi, draggedIndex))
                 {
-                    auto selectedNode = selectedItems.GetAt(i);
-                    if (selectedNode == insertAtNode)
+                    const int indexToUse = (static_cast<int>(draggedIndex) < belowIndex) ? belowIndex : (belowIndex - 1);
+                    if (auto item = ContainerFromIndex(indexToUse))
                     {
-                        allowReorder = false;
-                        break;
+                        auto treeViewItem = item.as<winrt::TreeViewItem>();
+                        auto pointInsideItem = args.GetPosition(treeViewItem.as<winrt::UIElement>());
+
+                        // if the point is in the top half of the item
+                        // we need to insert before that item
+                        if (pointInsideItem.Y < treeViewItem.ActualHeight() / 2)
+                        {
+                            m_emptySlotIndex = belowIndex - 1;
+                        }
+                        else
+                        {
+                            m_emptySlotIndex = belowIndex;
+                        }
                     }
                 }
             }
             else
             {
-                if (m_draggedTreeViewNode && insertAtNode && insertAtNode.Parent())
+                // top of the list
+                m_emptySlotIndex = 0;
+            }
+
+            bool allowReorder = true;
+            if (IsFlatIndexValid(m_emptySlotIndex))
+            {
+                auto insertAtNode = NodeAtFlatIndex(m_emptySlotIndex);
+                if (IsMultiselect())
                 {
-                    auto insertContainer = ContainerFromNode(insertAtNode.Parent());
-                    if (insertContainer)
+                    // If insertAtNode is in the selected items, then we do not want to allow a dropping.
+                    auto selectedItems = ListViewModel()->GetSelectedNodes();
+                    for (unsigned int i = 0; i < selectedItems.Size(); i++)
                     {
-                        allowReorder = insertContainer.as<winrt::TreeViewItem>().AllowDrop();
+                        auto selectedNode = selectedItems.GetAt(i);
+                        if (selectedNode == insertAtNode)
+                        {
+                            allowReorder = false;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (m_draggedTreeViewNode && insertAtNode && insertAtNode.Parent())
+                    {
+                        auto insertContainer = ContainerFromNode(insertAtNode.Parent());
+                        if (insertContainer)
+                        {
+                            allowReorder = insertContainer.as<winrt::TreeViewItem>().AllowDrop();
+                        }
                     }
                 }
             }
-        }
-        else
-        {
-            // m_emptySlotIndex does not exist in the ViewModel - don't allow the reorder.
-            allowReorder = false;
+            else
+            {
+                // m_emptySlotIndex does not exist in the ViewModel - don't allow the reorder.
+                allowReorder = false;
+            }
+
+            if (allowReorder)
+            {
+                args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move);
+            }
+            else
+            {
+                m_emptySlotIndex = -1;
+                args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
+                args.Handled(true);
+            }
         }
 
-        if (allowReorder)
-        {
-            args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::Move);
-        }
-        else
-        {
-            m_emptySlotIndex = -1;
-            args.AcceptedOperation(winrt::Windows::ApplicationModel::DataTransfer::DataPackageOperation::None);
-            args.Handled(true);
-        }
+        UpdateDropTargetDropEffect(false, false, nullptr);
     }
 
-    UpdateDropTargetDropEffect(false, false, nullptr);
     __super::OnDragOver(args);
 }
 
 void TreeViewList::OnDragEnter(winrt::DragEventArgs const& args)
 {
-    UpdateDropTargetDropEffect(false, false, nullptr);
+    if (!args.Handled())
+    {
+        UpdateDropTargetDropEffect(false, false, nullptr);
+    }
     __super::OnDragEnter(args);
 }
 
@@ -293,7 +300,10 @@ void TreeViewList::OnDragLeave(winrt::DragEventArgs const& args)
 {
     m_emptySlotIndex = -1;
     __super::OnDragLeave(args);
-    UpdateDropTargetDropEffect(false, true, nullptr);
+    if (!args.Handled())
+    {
+        UpdateDropTargetDropEffect(false, true, nullptr);
+    }
 }
 
 // IItemsControlOverrides

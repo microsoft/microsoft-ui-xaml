@@ -10,7 +10,7 @@
 #include "RepeaterAutomationPeer.h"
 #include "ItemsRepeater.h"
 
-CppWinRTActivatableClassWithBasicFactory(RepeaterAutomationPeer)
+#include "RepeaterAutomationPeer.properties.cpp"
 
 RepeaterAutomationPeer::RepeaterAutomationPeer(winrt::ItemsRepeater const& owner) :
     ReferenceTracker(owner)

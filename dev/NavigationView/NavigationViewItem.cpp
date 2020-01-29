@@ -9,7 +9,6 @@
 #include "NavigationViewItemAutomationPeer.h"
 #include "Utils.h"
 
-
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -17,7 +16,7 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
     UpdateVisualState(false /*useTransition*/);
 }
 
-void NavigationViewItem::OnNavigationViewListPositionChanged()
+void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualStateNoTransition();
 }
@@ -158,14 +157,16 @@ void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool 
     winrt::VisualStateManager::GoToState(*this, stateName, false /*useTransitions*/);
 }
 
-void NavigationViewItem::UpdateVisualStateForNavigationViewListPositionChange()
+void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
 {
     auto position = Position();
     auto stateName = c_OnLeftNavigation;
 
     bool handled = false;
-    if (position == NavigationViewListPosition::LeftNav)
+
+    switch (position)
     {
+    case NavigationViewRepeaterPosition::LeftNav:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             // OnLeftNavigationReveal is introduced in RS6. 
@@ -175,9 +176,8 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewListPositionChange()
                 handled = true;
             }
         }
-    }
-    else if (position == NavigationViewListPosition::TopPrimary)
-    {
+        break;
+    case NavigationViewRepeaterPosition::TopPrimary:
         if (SharedHelpers::IsRS4OrHigher() && winrt::Application::Current().FocusVisualKind() == winrt::FocusVisualKind::Reveal)
         {
             stateName = c_OnTopNavigationPrimaryReveal;
@@ -186,10 +186,10 @@ void NavigationViewItem::UpdateVisualStateForNavigationViewListPositionChange()
         {
             stateName = c_OnTopNavigationPrimary;
         }
-    }
-    else if (position == NavigationViewListPosition::TopOverflow)
-    {
+        break;
+    case NavigationViewRepeaterPosition::TopOverflow:
         stateName = c_OnTopNavigationOverflow;
+        break;
     }
 
     if (!handled)
@@ -239,7 +239,7 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
     if (!m_appliedTemplate)
         return;
 
-    UpdateVisualStateForNavigationViewListPositionChange();
+    UpdateVisualStateForNavigationViewPositionChange();
 
     bool shouldShowIcon = ShouldShowIcon();
     bool shouldShowContent = ShouldShowContent();
@@ -278,12 +278,12 @@ bool NavigationViewItem::ShouldShowContent()
 
 bool NavigationViewItem::IsOnLeftNav()
 {
-    return Position() == NavigationViewListPosition::LeftNav;
+    return Position() == NavigationViewRepeaterPosition::LeftNav;
 }
 
 bool NavigationViewItem::IsOnTopPrimary()
 {
-    return Position() == NavigationViewListPosition::TopPrimary;
+    return Position() == NavigationViewRepeaterPosition::TopPrimary;
 }
 
 NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
@@ -309,18 +309,12 @@ void NavigationViewItem::OnContentChanged(winrt::IInspectable const& oldContent,
     SuggestedToolTipChanged(newContent);
     UpdateVisualStateNoTransition();
 
-    // Two ways are used to notify the content change on TopNav and asking for a layout update:
-    //  1. The NavigationViewItem can't find its parent NavigationView, just mark it. Possibly NavigationViewItem is moved to overflow but menu is not opened.
-    //  2. NavigationViewItem request update by NavigationView::TopNavigationViewItemContentChanged.
     if (!IsOnLeftNav())
     {
+        // Content has changed for the item, so we want to trigger a re-measure
         if (auto navView = GetNavigationView())
         {
             winrt::get_self<NavigationView>(navView)->TopNavigationViewItemContentChanged();
-        } 
-        else
-        {
-            m_isContentChangeHandlingDelayedForTopNav = true;
         }
     }
 }

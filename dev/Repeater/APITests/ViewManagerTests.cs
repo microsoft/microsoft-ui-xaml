@@ -39,7 +39,7 @@ using ItemsRepeaterScrollHost = Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHo
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
 {
     [TestClass]
-    public class ViewManagerTests : TestsBase
+    public class ViewManagerTests : ApiTestBase
     {
         [TestMethod]
         public void CanQueryElementFactory()
@@ -583,6 +583,78 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(range[1], clearedElements[1]);
                 Verify.IsNull(repeater.TryGetElement(0));
                 Verify.IsNull(repeater.TryGetElement(1));
+            });
+        }
+
+        [TestMethod]
+        public void ValidateDataContextDoesNotGetOverwritten()
+        {
+            const string c_element1DataContext = "Element1_DataContext";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new List<Button>()
+                {
+                    new Button()
+                    {
+                            Content = "Element1_Content",
+                            DataContext = c_element1DataContext
+                    }
+                };
+
+                var elementFactory = new DataAsElementElementFactory();
+
+                var repeater = new ItemsRepeater() {
+                    ItemsSource = data,
+                    ItemTemplate = elementFactory
+                };
+
+                Content = repeater;
+
+                Content.UpdateLayout();
+
+                // Verify that DataContext is still the same
+                var firstElement = repeater.TryGetElement(0) as Button;
+                var retrievedDataContextItem1 = firstElement.DataContext as string;
+                Verify.IsTrue(retrievedDataContextItem1 == c_element1DataContext);
+
+            });
+        }
+
+        [TestMethod]
+        public void ValidateDataContextGetsPropagated()
+        {
+            const string c_element1DataContext = "Element1_DataContext";
+
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new List<Button>()
+                {
+                    new Button()
+                    {
+                            Content = "Element1_Content",
+                            DataContext = c_element1DataContext
+                    }
+                };
+
+                var elementFactory = new ElementFromElementElementFactory();
+
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = data,
+                    ItemTemplate = elementFactory
+                };
+
+                Content = repeater;
+
+                Content.UpdateLayout();
+
+                // Verify that DataContext of data has propagated to the container
+                var firstElement = repeater.TryGetElement(0) as Button;
+                var retrievedDataContextItem1 = firstElement.DataContext as string;
+                Verify.IsTrue(data[0] == firstElement.Content);
+                Verify.IsTrue(retrievedDataContextItem1 == c_element1DataContext);
+
             });
         }
 

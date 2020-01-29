@@ -6,7 +6,12 @@
 #include "common.h"
 #include "MenuBarItem.h"
 
-CppWinRTActivatableClassWithDPFactory(MenuBarItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(MenuBarItem)
+}
+
+#include "MenuBarItem.g.cpp"
 
 GlobalDependencyProperty MenuBarItemProperties::s_ItemsProperty{ nullptr };
 GlobalDependencyProperty MenuBarItemProperties::s_TitleProperty{ nullptr };

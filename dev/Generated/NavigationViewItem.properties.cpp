@@ -6,7 +6,12 @@
 #include "common.h"
 #include "NavigationViewItem.h"
 
-CppWinRTActivatableClassWithDPFactory(NavigationViewItem)
+namespace winrt::Microsoft::UI::Xaml::Controls
+{
+    CppWinRTActivatableClassWithDPFactory(NavigationViewItem)
+}
+
+#include "NavigationViewItem.g.cpp"
 
 GlobalDependencyProperty NavigationViewItemProperties::s_CompactPaneLengthProperty{ nullptr };
 GlobalDependencyProperty NavigationViewItemProperties::s_IconProperty{ nullptr };

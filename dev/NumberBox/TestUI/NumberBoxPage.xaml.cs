@@ -30,11 +30,14 @@ namespace MUXControlsTestApp
                 }
                 else if (SpinModeComboBox.SelectedIndex == 1)
                 {
+                    TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact;
+                }
+                else if (SpinModeComboBox.SelectedIndex == 2)
+                {
                     TestNumberBox.SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline;
                 }
             }
         }
-
 
         private void Validation_Changed(object sender, RoutedEventArgs e)
         {
@@ -42,11 +45,11 @@ namespace MUXControlsTestApp
             {
                 if (ValidationComboBox.SelectedIndex == 0)
                 {
-                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.InvalidInputOverwritten;
+                    TestNumberBox.ValidationMode = NumberBoxValidationMode.InvalidInputOverwritten;
                 }
                 else if (ValidationComboBox.SelectedIndex == 1)
                 {
-                    TestNumberBox.BasicValidationMode = NumberBoxBasicValidationMode.Disabled;
+                    TestNumberBox.ValidationMode = NumberBoxValidationMode.Disabled;
                 }
             }
         }
@@ -81,7 +84,7 @@ namespace MUXControlsTestApp
 
         private void NumberBoxValueChanged(object sender, NumberBoxValueChangedEventArgs e)
         {
-            if (TestNumberBox != null)
+            if (TestNumberBox != null && NewValueTextBox != null && OldValueTextBox != null)
             {
                 NewValueTextBox.Text = e.NewValue.ToString();
                 OldValueTextBox.Text = e.OldValue.ToString();
@@ -115,6 +118,11 @@ namespace MUXControlsTestApp
         private void TextPropertyChanged(DependencyObject o, DependencyProperty p)
         {
             TextTextBox.Text = TestNumberBox.Text;
+        }
+
+        private void ScrollviewerWithScroll_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            VerticalOffsetDisplayBlock.Text = (sender as Windows.UI.Xaml.Controls.ScrollViewer).VerticalOffset.ToString();
         }
     }
 }

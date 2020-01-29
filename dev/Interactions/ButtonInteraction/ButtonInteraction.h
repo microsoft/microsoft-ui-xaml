@@ -4,9 +4,11 @@
 #pragma once
 
 #include "ButtonInteraction.g.h"
+#include "ButtonInteraction.properties.h"
 
 class ButtonInteraction :
-    public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>
+    public ReferenceTracker<ButtonInteraction, winrt::implementation::ButtonInteractionT>,
+    public ButtonInteractionProperties
 {
 public:
     // IButtonInteraction
@@ -15,9 +17,6 @@ public:
 
     bool IsHovering();
     bool IsPressing();
-
-    winrt::event_token Invoked(winrt::TypedEventHandler<winrt::ButtonInteraction, winrt::ButtonInteractionInvokedEventArgs> const& value);
-    void Invoked(winrt::event_token const& token);
 
     // INotifyPropertyChanged
     winrt::event_token PropertyChanged(winrt::PropertyChangedEventHandler const& value);
@@ -46,6 +45,5 @@ private:
     bool m_isPressing{ false };
     bool m_hasPointerCapture{ false };
 
-    event_source<winrt::TypedEventHandler<winrt::ButtonInteraction, winrt::ButtonInteractionInvokedEventArgs>> m_invokedEventSource{ this };
     event_source<winrt::PropertyChangedEventHandler> m_propertyChangedEventSource{ this };
 };

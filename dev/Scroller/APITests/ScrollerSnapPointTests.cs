@@ -4,8 +4,8 @@
 using MUXControlsTestApp.Utilities;
 using System;
 using System.Numerics;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
+using System.Threading;
+using Windows.UI.Xaml.Shapes;
 using Common;
 
 #if USING_TAEF
@@ -18,15 +18,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
 
 using Scroller = Microsoft.UI.Xaml.Controls.Primitives.Scroller;
+using AnimationMode = Microsoft.UI.Xaml.Controls.AnimationMode;
+using SnapPointsMode = Microsoft.UI.Xaml.Controls.SnapPointsMode;
 using ScrollSnapPointsAlignment = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPointsAlignment;
 using ScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ScrollSnapPoint;
 using RepeatedScrollSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedScrollSnapPoint;
+using RepeatedZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.RepeatedZoomSnapPoint;
 using ZoomSnapPoint = Microsoft.UI.Xaml.Controls.Primitives.ZoomSnapPoint;
 using ScrollerTestHooks = Microsoft.UI.Private.Controls.ScrollerTestHooks;
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
-    partial class ScrollerTests
+    partial class ScrollerTests : ApiTestBase
     {
         [TestMethod]
         [TestProperty("Description", "Create a bunch of snap points with invalid arguments.")]
@@ -281,6 +284,108 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Log.Comment("Expecting different combination counts for ScrollSnapPoint in two horizontal collections");
                 Verify.AreEqual<int>(0, combinationCount11);
                 Verify.AreEqual<int>(1, combinationCount31);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Snap to the first instance of a repeated scroll snap point and ensure it is placed after the Start value.")]
+        public void SnapToFirstRepeatedScrollSnapPoint()
+        {
+            Scroller scroller = null;
+            Rectangle rectangleScrollerContent = null;
+            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollerContent = new Rectangle();
+                scroller = new Scroller();
+
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+
+            // Jump to absolute offsets
+            ScrollTo(scroller, 60.0, 0.0, AnimationMode.Disabled, SnapPointsMode.Default);
+
+            // Add scroll repeated snap point with different offset and start.
+            RunOnUIThread.Execute(() =>
+            {
+                RepeatedScrollSnapPoint snapPoint = new RepeatedScrollSnapPoint(
+                    offset: 50,
+                    interval: 60,
+                    start: 10,
+                    end: 1190,
+                    alignment: ScrollSnapPointsAlignment.Near);
+
+                scroller.HorizontalSnapPoints.Add(snapPoint);
+            });
+
+            // Flick with horizontal offset velocity to naturally land around offset 15.
+            ScrollFrom(scroller, horizontalVelocity: -165.0f, verticalVelocity: 0.0f, horizontalInertiaDecayRate: null, verticalInertiaDecayRate: null, hookViewChanged: false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // HorizontalOffset expected to have snapped to first instance of repeated snap point: 50.
+                Verify.AreEqual(50.0, scroller.HorizontalOffset);
+                Verify.AreEqual(0.0, scroller.VerticalOffset);
+                Verify.AreEqual(1.0f, scroller.ZoomFactor);
+            });
+        }
+
+        [TestMethod]
+        [TestProperty("Description", "Snap to the first instance of a repeated zoom snap point and ensure it is placed after the Start value.")]
+        public void SnapToFirstRepeatedZoomSnapPoint()
+        {
+            Scroller scroller = null;
+            Rectangle rectangleScrollerContent = null;
+            AutoResetEvent scrollerLoadedEvent = new AutoResetEvent(false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                rectangleScrollerContent = new Rectangle();
+                scroller = new Scroller();
+
+                SetupDefaultUI(scroller, rectangleScrollerContent, scrollerLoadedEvent);
+            });
+
+            WaitForEvent("Waiting for Loaded event", scrollerLoadedEvent);
+
+            // Jump to absolute zoom factor, and center the content in the viewport.
+            ZoomTo(scroller,
+                zoomFactor: 6.0f,
+                centerPointX: 690.0f,
+                centerPointY: 340.0f,
+                AnimationMode.Disabled,
+                SnapPointsMode.Default);
+
+            // Add zoom repeated snap point with different offset and start.
+            RunOnUIThread.Execute(() =>
+            {
+                RepeatedZoomSnapPoint snapPoint = new RepeatedZoomSnapPoint(
+                    offset: 5,
+                    interval: 6,
+                    start: 1,
+                    end: 9);
+
+                scroller.ZoomSnapPoints.Add(snapPoint);
+            });
+
+            // Flick with zoom factor velocity to naturally land around factor 1.5.
+            ZoomFrom(scroller,
+                zoomFactorVelocity: -5.0f,
+                inertiaDecayRate: 0.6675f,
+                centerPointX: 150.0f,
+                centerPointY: 100.0f,
+                hookViewChanged: false);
+
+            RunOnUIThread.Execute(() =>
+            {
+                // ZoomFactor expected to have snapped to first instance of repeated snap point: 5.
+                // Scroll offsets do not snap and end close to 2850, 1400 for a centered content.
+                Verify.IsTrue(Math.Abs(scroller.HorizontalOffset - 2850.0) < 1.0);
+                Verify.IsTrue(Math.Abs(scroller.VerticalOffset - 1400.0) < 1.0);
+                Verify.AreEqual(5.0f, scroller.ZoomFactor);
             });
         }
     }

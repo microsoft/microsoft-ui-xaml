@@ -20,14 +20,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
     [TestClass]
-    public class ComboBoxTests
+    public class ComboBoxTests : ApiTestBase
     {
-        [TestCleanup]
-        public void TestCleanup()
-        {
-            TestUtilities.ClearVisualTreeRoot();
-        }
-
         [TestMethod]
         public void VerifyComboBoxOverlayCornerRadius()
         {
@@ -100,7 +94,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
         [TestMethod]
         public void VerifyVisualTree()
         {
-            var comboBox = SetupComboBox();
+            var comboBox = SetupComboBox(useContent: false);
             RunOnUIThread.Execute(() =>
             {
                 comboBox.IsDropDownOpen = true;
@@ -110,7 +104,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             VisualTreeTestHelper.VerifyVisualTree(root: comboBox, masterFilePrefix: "ComboBox");
         }
 
-        private ComboBox SetupComboBox()
+        private ComboBox SetupComboBox(bool useContent = true)
         {
             ComboBox comboBox = null;
             RunOnUIThread.Execute(() =>
@@ -122,8 +116,16 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 comboBox.Items.Add("Item 4");
                 comboBox.Items.Add("Item 5");
                 comboBox.Items.Add("Item 6");
+                if (useContent)
+                {
+                    Content = comboBox;
+                    Content.UpdateLayout();
+                }
             });
-            TestUtilities.SetAsVisualTreeRoot(comboBox);
+            if(!useContent)
+            {
+                TestUtilities.SetAsVisualTreeRoot(comboBox);
+            }
             Verify.IsNotNull(comboBox);
             return comboBox;
         }

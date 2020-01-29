@@ -6,3 +6,5 @@
 #include "common.h"
 
 #include "ScrollViewerIRefreshInfoProviderAdapterFactory.h"
+
+#include "ScrollViewerIRefreshInfoProviderAdapter.properties.cpp"

@@ -8,7 +8,7 @@
 #include "NonVirtualizingLayout.h"
 #include "RuntimeProfiler.h"
 
-CppWinRTActivatableClassWithBasicFactory(NonVirtualizingLayout)
+#include "NonVirtualizingLayout.properties.cpp"
 
 #pragma region INonVirtualizingLayoutOverrides
 
@@ -27,12 +27,12 @@ void NonVirtualizingLayout::UninitializeForContextCore(winrt::LayoutContext cons
 
 }
 
-winrt::Size NonVirtualizingLayout::MeasureOverride(winrt::LayoutContext const& context, winrt::Size const& availableSize)
+winrt::Size NonVirtualizingLayout::MeasureOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& availableSize)
 {
     throw winrt::hresult_not_implemented();
 }
 
-winrt::Size NonVirtualizingLayout::ArrangeOverride(winrt::LayoutContext const& context, winrt::Size const& finalSize)
+winrt::Size NonVirtualizingLayout::ArrangeOverride(winrt::NonVirtualizingLayoutContext const& context, winrt::Size const& finalSize)
 {
     throw winrt::hresult_not_implemented();
 }
