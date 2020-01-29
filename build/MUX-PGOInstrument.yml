@@ -1,5 +1,10 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
+variables:
+  module: Microsoft.UI.Xaml
+  pgdFile: $(module).pgd
+  pgoArtifact: PGO
+
 jobs:
 - job: Build
   pool:
@@ -22,6 +27,16 @@ jobs:
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: $(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\$(module)
+      contents: $(pgdFile)
+      targetFolder: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)\$(buildPlatform)
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish pgd files'
+    inputs:
+      PathtoPublish: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)
+      artifactName: $(pgoArtifact)
 
 # Create Nuget Package
 - template: AzurePipelinesTemplates\MUX-CreateNugetPackage-Job.yml
@@ -61,10 +76,13 @@ jobs:
     dependsOn: RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 10
+    pgoArtifact: $(pgoArtifact)
 
 - template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
   parameters:
     dependsOn: ProcessTestResults
+    pgdFile: $(pgdFile)
+    pgoArtifact: $(pgoArtifact)
     matrix:
       Release_x86:
         buildPlatform: 'x86'
@@ -76,3 +94,5 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-BuildAndPublishPGONuGet-Job.yml
   parameters:
     dependsOn: MergePGD
+    pgdFile: $(pgdFile)
+    pgoArtifact: $(pgoArtifact)

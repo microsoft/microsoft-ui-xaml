@@ -10,7 +10,7 @@ jobs:
     vmImage: 'windows-2019'
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
-    pgoIntermediates: $(artifactsPath)\drop\PGO\$(buildConfiguration)
+    pgoArtifactsPath: $(artifactsPath)\${{ parameters.pgoArtifact }}
   strategy:
     matrix: ${{ parameters.matrix }}
 
@@ -27,19 +27,19 @@ jobs:
 
   - task: DownloadBuildArtifacts@0
     inputs:
-      artifactName: drop
+      artifactName: ${{ parameters.pgoArtifact }}
       downloadPath: $(artifactsPath)
 
   - script: |
       cd $(buildPlatform)
       "%VCToolsInstallDir%\bin\hostx64\x64\pgomgr.exe" /merge *.pgc ${{ parameters.pgdFile }}
     displayName: 'Merge pgc files into pgd'
-    workingDirectory: $(pgoIntermediates)
+    workingDirectory: $(pgoArtifactsPath)
 
   - task: CopyFiles@2
     displayName: 'Copy merged pgd to artifact staging'
     inputs:
-      sourceFolder: $(pgoIntermediates)
+      sourceFolder: $(pgoArtifactsPath)
       contents: '**\$(buildPlatform)\${{ parameters.pgdFile }}'
       targetFolder: $(Build.ArtifactStagingDirectory)
 

@@ -3,11 +3,11 @@ Param(
     [string]$CollectionUri = $env:SYSTEM_COLLECTIONURI,
     [string]$TeamProject = $env:SYSTEM_TEAMPROJECT,
     [string]$BuildUri = $env:BUILD_BUILDURI,
-    [string]$OutputFilePath = "HelixOutput"
+    [string]$OutputFolder = "HelixOutput"
 )
 
-$helixLinkFile = "$OutputFilePath\LinksToHelixTestFiles.html"
-$visualTreeMasterFolder = "$OutputFilePath\VisualTreeMasters"
+$helixLinkFile = "$OutputFolder\LinksToHelixTestFiles.html"
+$visualTreeMasterFolder = "$OutputFolder\VisualTreeMasters"
 
 function Generate-File-Links
 {
@@ -27,7 +27,7 @@ function Generate-File-Links
 }
 
 #Create output directory
-New-Item $OutputFilePath -ItemType Directory
+New-Item $OutputFolder -ItemType Directory
 
 $azureDevOpsRestApiHeaders = @{
     "Accept"="application/json"
@@ -47,7 +47,7 @@ foreach ($testRun in $testRuns.value)
 {
     $testResults = Invoke-RestMethod -Uri "$($testRun.url)/results?api-version=5.0" -Method Get -Headers $azureDevOpsRestApiHeaders
     $isTestRunNameShown = $false
-        
+
     foreach ($testResult in $testResults.value)
     {
         $info = ConvertFrom-Json $testResult.comment
@@ -97,7 +97,7 @@ foreach ($testRun in $testRuns.value)
                     $flavorPath = $pgcFile.Name.Split('.')[0]
                     $archPath = $pgcFile.Name.Split('.')[1]
                     $fileName = $pgcFile.Name.Remove(0, $flavorPath.length + $archPath.length + 2)
-                    $fullPath = "$OutputFilePath\PGO\$flavorPath\$archPath"
+                    $fullPath = "$OutputFolder\PGO\$flavorPath\$archPath"
                     $destination = "$fullPath\$fileName"
 
                     Write-Host "Copying $($pgcFile.Name) to $destination"
