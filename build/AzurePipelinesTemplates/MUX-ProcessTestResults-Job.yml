@@ -3,7 +3,7 @@ parameters:
   rerunPassesRequiredToAvoidFailure: 5
   minimumExpectedTestsExecutedCount: 3000
   checkJobAttempt: false
-
+  pgoArtifact: ''
 
 jobs:
 - job: ProcessTestResults
@@ -46,9 +46,21 @@ jobs:
       filePath: build\Helix\ProcessHelixFiles.ps1
       arguments: -OutputFolder '$(helixOutputFolder)'
 
+  - ${{if ne(parameters.pgoArtifact, '') }}:
+    - script: move /y $(helixOutputFolder)\PGO $(Build.ArtifactStagingDirectory)
+      displayName: 'Move pgc files to PGO artifact'
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Helix files'
     condition: succeededOrFailed()
     inputs:
       PathtoPublish: $(helixOutputFolder)
       artifactName: drop
+
+  - ${{if ne(parameters.pgoArtifact, '') }}:
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish pgc files'
+      condition: succeededOrFailed()
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)
+        artifactName: ${{ parameters.pgoArtifact }}

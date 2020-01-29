@@ -76,6 +76,7 @@ jobs:
     dependsOn: RunFrameworkPkgTestsInHelix
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: 10
+    pgoArtifact: $(pgoArtifact)
 
 - template: AzurePipelinesTemplates\MUX-MergePGD-Job.yml
   parameters:
