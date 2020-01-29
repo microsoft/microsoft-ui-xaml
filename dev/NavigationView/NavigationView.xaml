@@ -512,7 +512,7 @@
     <!--Note: Even though UseSystemFocusVisuals is set to True here in the Style, and because
     bindings in Styles are only evaluated once, we were unable to bring a TemplateSettings.UseSystemFocusVisuals
     to handle the removal of the focus rect when SelectionFollowsFocus is enabled. Therefore, that has
-    been done in code and it's updated whenever SelectionFollowsFocus is changed.-->
+    been done in code and it's updated whenever SelectionFollowsFocus is changed.--><!--
     <Style TargetType="local:NavigationViewItem">
         <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
         <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
@@ -527,35 +527,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
-                    <!--<Grid>-->
-
-
-                        <!--<Grid.RowDefinitions>
+                    <Grid x:Name="NVIRootGrid">
+                        <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>-->
-                        <primitives:NavigationViewItemPresenter
-                            Grid.Row="0"
-                            x:Name="NavigationViewItemPresenter"
-                            Icon="{TemplateBinding Icon}"
-                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Margin="{TemplateBinding Margin}"
-                            Padding="{TemplateBinding Padding}"
-                            Foreground="{TemplateBinding Foreground}"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
-                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                            Content="{TemplateBinding Content}"
-                            Style="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}"
-                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                            IsTabStop="False">
+                        </Grid.RowDefinitions>
+
+                        --><!--<VisualStateManager.CustomVisualStateManager>
+                            <primitives:NavigationViewItemPresenterVisualStateManager/>
+                        </VisualStateManager.CustomVisualStateManager>--><!--
+
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
                                 <VisualState x:Name="OnLeftNavigation"/>
@@ -580,10 +561,51 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            
+                            <VisualStateGroup x:Name="PointerStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="PointerOver"/>
+                                <VisualState x:Name="Pressed"/>
+                                <VisualState x:Name="Selected"/>
+                                <VisualState x:Name="PointerOverSelected"/>
+                                <VisualState x:Name="PressedSelected"/>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="DisabledStates">
+                                <VisualState x:Name="Enabled"/>
+                                <VisualState x:Name="Disabled"/>
+                            </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="IconStates">
+                                <VisualState x:Name="IconVisible" />
+                                <VisualState x:Name="IconCollapsed" />
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                    </primitives:NavigationViewItemPresenter>
-                        <!--<local:ItemsRepeater
+                        <primitives:NavigationViewItemPresenter
+                            Grid.Row="0"
+                            x:Name="NavigationViewItemPresenter"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            Style="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}"
+                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False">
+                        </primitives:NavigationViewItemPresenter>
+                        <local:ItemsRepeater
                                 Grid.Row="1"
                                 Margin="10,0,0,0"
                                 Visibility="Visible"
@@ -591,8 +613,139 @@
                             <local:ItemsRepeater.Layout>
                                 <local:StackLayout Orientation="Vertical"/>
                             </local:ItemsRepeater.Layout>
-                        </local:ItemsRepeater>-->
-                    <!--</Grid>-->
+                        </local:ItemsRepeater>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
+    <!--Note: Even though UseSystemFocusVisuals is set to True here in the Style, and because
+    bindings in Styles are only evaluated once, we were unable to bring a TemplateSettings.UseSystemFocusVisuals
+    to handle the removal of the focus rect when SelectionFollowsFocus is enabled. Therefore, that has
+    been done in code and it's updated whenever SelectionFollowsFocus is changed.--><!--
+    <Style TargetType="local:NavigationViewItem">
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
+        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:NavigationViewItem">
+                    <Grid x:Name="NVIRootGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <local:NavigationViewItem
+                            Grid.Row="0"
+                            x:Name="NavigationViewItemCore"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            Style="{StaticResource NavigationViewItemCore}"
+                            IsTabStop="False">
+                        </local:NavigationViewItem>
+                        <local:ItemsRepeater
+                                Grid.Row="1"
+                                Margin="10,0,0,0"
+                                Visibility="Visible"
+                                x:Name="NavigationViewItemMenuItemsHost">
+                            <local:ItemsRepeater.Layout>
+                                <local:StackLayout Orientation="Vertical"/>
+                            </local:ItemsRepeater.Layout>
+                        </local:ItemsRepeater>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>-->
+
+    <!--Note: Even though UseSystemFocusVisuals is set to True here in the Style, and because
+    bindings in Styles are only evaluated once, we were unable to bring a TemplateSettings.UseSystemFocusVisuals
+    to handle the removal of the focus rect when SelectionFollowsFocus is enabled. Therefore, that has
+    been done in code and it's updated whenever SelectionFollowsFocus is changed.-->
+    <Style TargetType="local:NavigationViewItem">
+        <Setter Property="Foreground" Value="{ThemeResource NavigationViewItemForeground}" />
+        <Setter Property="Background" Value="{ThemeResource NavigationViewItemBackground}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource NavigationViewItemBorderBrush}" />
+        <Setter Property="BorderThickness" Value="{StaticResource NavigationViewItemBorderThickness}" />
+        <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <contract7Present:Setter Property="CornerRadius" Value="{ThemeResource ControlCornerRadius}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:NavigationViewItem">
+                    <primitives:NavigationViewItemPresenter
+                            Grid.Row="0"
+                            x:Name="NavigationViewItemPresenter"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            Style="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}"
+                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False">
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
+                                    <VisualState x:Name="OnLeftNavigation"/>
+                                    <VisualState x:Name="OnLeftNavigationReveal">
+                                        <VisualState.Setters>
+                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="OnTopNavigationPrimary">
+                                        <VisualState.Setters>
+                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="OnTopNavigationPrimaryReveal">
+                                        <VisualState.Setters>
+                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="OnTopNavigationOverflow">
+                                        <VisualState.Setters>
+                                            <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                        </primitives:NavigationViewItemPresenter>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

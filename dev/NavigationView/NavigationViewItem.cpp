@@ -40,7 +40,9 @@ void NavigationViewItem::OnApplyTemplate()
     // Find selection indicator
     // Retrieve pointers to stable controls 
     winrt::IControlProtected controlProtected = *this;
+
     m_helper.Init(controlProtected);
+
     m_navigationViewItemPresenter.set(GetTemplateChildT<winrt::NavigationViewItemPresenter>(c_navigationViewItemPresenterName, controlProtected));
 
     m_toolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ToolTip"sv, controlProtected));
@@ -73,6 +75,12 @@ void NavigationViewItem::OnApplyTemplate()
 
         UpdateRepeaterItemsSource();
     }
+
+    //if (auto rootGrid = GetTemplateChildT<winrt::Grid>(L"NVIRootGrid", controlProtected))
+    //{
+    //    m_navigationViewItemVisualStateManager = winrt::make_self<NavigationViewItemPresenterVisualStateManager>();
+    //    rootGrid.SetValue(winrt::VisualStateManager::CustomVisualStateManagerProperty(), *m_navigationViewItemVisualStateManager);
+    //}
 
     m_appliedTemplate = true;
     UpdateVisualStateNoTransition();

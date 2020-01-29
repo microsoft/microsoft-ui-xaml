@@ -9,6 +9,7 @@ struct bringintoview_event_revoker;
 #include "NavigationViewItem.g.h"
 #include "NavigationViewItemPresenter.h"
 #include "NavigationViewItem.properties.h"
+#include "NavigationViewItemPresenterVisualStateManager.h"
 
 class NavigationViewItem :
     public winrt::implementation::NavigationViewItemT<NavigationViewItem, NavigationViewItemBase>,
@@ -101,4 +102,6 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
 
     void UpdateRepeaterItemsSource();
+
+    com_ptr<NavigationViewItemPresenterVisualStateManager> m_navigationViewItemVisualStateManager{ nullptr };
 };

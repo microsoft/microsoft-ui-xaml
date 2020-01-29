@@ -40,12 +40,20 @@ public:
 
     void Init(const winrt::IControlProtected & controlProtected)
     {
-        m_selectionIndicator.set(GetTemplateChildT<winrt::UIElement>(c_selectionIndicatorName, controlProtected));
+        if (auto selectionIndicator = GetTemplateChildT<winrt::UIElement>(c_selectionIndicatorName, controlProtected))
+        {
+            m_selectionIndicator.set(selectionIndicator);
+        }
+        else if(auto nviCore = GetTemplateChildT<winrt::NavigationViewItem>(L"NavigationViewItemCore", controlProtected))
+        {
+            m_selectionIndicator.set(GetTemplateChildT<winrt::UIElement>(c_selectionIndicatorName, nviCore));
+        }
     }
 
 private:
     const ITrackerHandleManager* m_owner;
     tracker_ref<winrt::UIElement> m_selectionIndicator{ m_owner };
+    tracker_ref<winrt::NavigationViewItem> m_subItem{ m_owner };
 
     static constexpr wstring_view c_selectionIndicatorName = L"SelectionIndicator"sv;
 };
