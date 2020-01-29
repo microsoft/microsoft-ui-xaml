@@ -20,16 +20,16 @@ END:DAYLIGHT
 END:VTIMEZONE
 BEGIN:VEVENT
 CLASS:PUBLIC
-CREATED:20200129T172315Z
+CREATED:20200129T173200Z
 DESCRIPTION:The WinUI community call is your monthly opportunity to learn a
 	bout native UX development for Windows with WinUI. \nIn these calls we’l
 	l discuss the WinUI roadmap\, our status and your feedback.\nhttps://githu
 	b.com/microsoft/microsoft-ui-xaml\n \nWatch here: https://www.youtube.com/
 	channel/UCzLbHrU7U3cUDNQWWAqjceA\n
 DTEND;TZID="GMT Standard Time":20200203T180000
-DTSTAMP:20200129T172316Z
+DTSTAMP:20200129T173200Z
 DTSTART;TZID="GMT Standard Time":20200203T170000
-LAST-MODIFIED:20200129T172315Z
+LAST-MODIFIED:20200129T173200Z
 LOCATION:Windows Developer YouTube Channel
 PRIORITY:5
 RRULE:FREQ=MONTHLY;BYMONTHDAY=3
