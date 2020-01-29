@@ -49,7 +49,7 @@ NumberBox::NumberBox()
 // This was largely copied from Calculator's GetRegionalSettingsAwareDecimalFormatter()
 winrt::DecimalFormatter NumberBox::GetRegionalSettingsAwareDecimalFormatter()
 {
-    std::vector<winrt::hstring> languageList;
+    winrt::DecimalFormatter formatter = nullptr;
 
     WCHAR currentLocale[LOCALE_NAME_MAX_LENGTH] = {};
     if (GetUserDefaultLocaleName(currentLocale, LOCALE_NAME_MAX_LENGTH) != 0)
@@ -66,13 +66,16 @@ winrt::DecimalFormatter NumberBox::GetRegionalSettingsAwareDecimalFormatter()
 
         if (winrt::Language::IsWellFormed(currentLocale))
         {
+            std::vector<winrt::hstring> languageList;
             languageList.push_back(winrt::hstring(currentLocale));
+            formatter = winrt::DecimalFormatter(languageList, winrt::GlobalizationPreferences::HomeGeographicRegion());
         }
     }
 
-    const auto formatter = (languageList.size() == 1)
-        ? winrt::DecimalFormatter(languageList, winrt::GlobalizationPreferences::HomeGeographicRegion())
-        : winrt::DecimalFormatter();
+    if (!formatter)
+    {
+        formatter = winrt::DecimalFormatter();
+    }
 
     formatter.IntegerDigits(1);
     formatter.FractionDigits(0);
