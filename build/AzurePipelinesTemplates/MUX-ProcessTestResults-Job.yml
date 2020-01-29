@@ -62,5 +62,5 @@ jobs:
       displayName: 'Publish pgc files'
       condition: succeededOrFailed()
       inputs:
-        PathtoPublish: $(Build.ArtifactStagingDirectory)
+        PathtoPublish: $(Build.ArtifactStagingDirectory)\PGO
         artifactName: ${{ parameters.pgoArtifact }}
