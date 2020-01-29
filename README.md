@@ -17,7 +17,7 @@ In these calls we’ll discuss the WinUI roadmap, our status and your feedback. 
 
 You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA)
 
-Add the event to your calendar: [ICS calendar file](docs/communitycalls/WinUICommunityCall.ics)
+Add the event to your calendar: [ICS calendar file](https://aka.ms/winuicommunitycall)
 
 ## WinUI 3.0 Alpha (November 2019)
 
