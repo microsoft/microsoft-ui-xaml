@@ -1,3 +1,4 @@
+
 # Windows UI Library
 
 [![Follow WinUI on Twitter](https://img.shields.io/twitter/follow/windowsui.svg?label=Follow%20WinUI%20on%20Twitter&style=social)](https://twitter.com/intent/follow?screen_name=windowsui)
@@ -7,6 +8,16 @@ The Windows UI Library (WinUI) provides official native Microsoft UI controls an
 WinUI is the easiest way to build great [Fluent Design](https://docs.microsoft.com/windows/uwp/design/fluent-design-system/) experiences for Windows.
 
 WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app running on Windows 10 using [native view embedding](https://docs.microsoft.com/xamarin/xamarin-forms/platform/native-views).
+
+## WinUI Community Calls
+
+The WinUI community call is your monthly opportunity to learn about native UX development for Windows with WinUI.
+
+In these calls we’ll discuss the WinUI roadmap, our status and your feedback.You can now [download an early build of WinUI 3.0 Alpha]
+
+You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA)
+
+Add the event to your calendar: 
 
 ## WinUI 3.0 Alpha (November 2019)
 
