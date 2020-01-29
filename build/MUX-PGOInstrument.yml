@@ -1,7 +1,8 @@
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
-  pgdFile: Microsoft.UI.Xaml.pgd
+  module: Microsoft.UI.Xaml
+  pgdFile: $(module).pgd
   pgoArtifact: PGO
 
 jobs:
@@ -28,9 +29,9 @@ jobs:
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
   - task: CopyFiles@2
     inputs:
-      sourceFolder: $(buildOutputDir)\$(buildConfiguration)
-      contents: '**\$(pgdFile)'
-      targetFolder: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)
+      sourceFolder: $(buildOutputDir)\$(buildConfiguration)\$(buildPlatform)\$(module)
+      contents: $(pgdFile)
+      targetFolder: $(Build.ArtifactStagingDirectory)\$(pgoArtifact)\$(buildPlatform)
   - task: PublishBuildArtifacts@1
     displayName: 'Publish pgd files'
     inputs:
