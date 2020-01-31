@@ -34,7 +34,7 @@ jobs:
     inputs:
       targetType: filePath
       filePath: $(pgoToolsPath)\generate-nuspec.ps1
-      arguments: "${{ parameters.pgoBranch }}" "$(nuspecPath)\$(nuspecFilename).template" "$(nuspecPath)\$(nuspecFilename)"
+      arguments: '${{ parameters.pgoBranch }}' '$(nuspecPath)\$(nuspecFilename).template' '$(nuspecPath)\$(nuspecFilename)'
 
   - task: CmdLine@1
     displayName: 'Build NuGet package'
