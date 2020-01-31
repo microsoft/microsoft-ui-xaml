@@ -18,7 +18,7 @@ steps:
   - template: MUX-InstallWindowsSDK-Steps.yml
 
   - template: MUX-InstallNuget-Steps.yml
-  
+
   # The environment variable VCToolsInstallDir isn't defined on lab machines, so we need to retrieve it ourselves.
   - script: |
       "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -Latest -requires Microsoft.Component.MSBuild -property InstallationPath > %TEMP%\vsinstalldir.txt
@@ -40,6 +40,14 @@ steps:
       restoreSolution: ${{ parameters.solutionPath }}
       feedsToUse: config
       nugetConfigPath: ${{ parameters.nugetConfigPath }}
+
+  - ${{ if eq( $env:PGOBuildMode, 'Optimize') }}:
+    - task: powershell@2
+      displayName: 'Restore PGO database'
+      inputs:
+        targetType: filePath
+        workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+        filePath: restore-pgodb.ps1
 
   - task: VSBuild@1
     displayName: 'Build solution ${{ parameters.solutionPath }}'
