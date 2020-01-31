@@ -41,7 +41,7 @@ steps:
       feedsToUse: config
       nugetConfigPath: ${{ parameters.nugetConfigPath }}
 
-  - ${{ if eq( $env:PGOBuildMode, 'Optimize') }}:
+  - ${{ if eq($(PGOBuildMode), 'Optimize') }}:
     - task: powershell@2
       displayName: 'Restore PGO database'
       inputs:
