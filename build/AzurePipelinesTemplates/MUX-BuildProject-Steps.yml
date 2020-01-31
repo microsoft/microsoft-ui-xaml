@@ -36,12 +36,12 @@ steps:
       filename: 'set'
 
 #  - ${{ if eq(parameters.pgoBuildMode, 'Optimize') }}:
-  - task: powershell@2
-    displayName: 'Restore PGO database'
-    inputs:
-      targetType: filePath
-      workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
-      filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
+  # - task: powershell@2
+  #   displayName: 'Restore PGO database'
+  #   inputs:
+  #     targetType: filePath
+  #     workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+  #     filePath: $(Build.SourcesDirectory)\tools\MUXPGODatabase\restore-pgodb.ps1
 
   - task: 333b11bd-d341-40d9-afcf-b32d5ce6f23b@2
     displayName: 'NuGet restore ${{ parameters.solutionPath }}'
