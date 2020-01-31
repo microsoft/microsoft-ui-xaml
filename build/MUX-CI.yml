@@ -29,10 +29,9 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
+    PGOBuildMode: Optimize  # TEMPORARY, remove before checkin!!!
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
-  
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
@@ -48,7 +47,7 @@ jobs:
     jobName: CreateNugetPackage
     dependsOn: Build
     prereleaseVersionTag: ci
- 
+
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -58,7 +57,7 @@ jobs:
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-   
+
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:

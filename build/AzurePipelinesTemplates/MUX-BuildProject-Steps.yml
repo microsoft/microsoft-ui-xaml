@@ -42,13 +42,13 @@ steps:
       feedsToUse: config
       nugetConfigPath: ${{ parameters.nugetConfigPath }}
 
-  - ${{ if eq(parameters.pgoBuildMode, 'Optimize') }}:
-    - task: powershell@2
-      displayName: 'Restore PGO database'
-      inputs:
-        targetType: filePath
-        workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
-        filePath: restore-pgodb.ps1
+#  - ${{ if eq(parameters.pgoBuildMode, 'Optimize') }}:
+  - task: powershell@2
+    displayName: 'Restore PGO database'
+    inputs:
+      targetType: filePath
+      workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+      filePath: restore-pgodb.ps1
 
   - task: VSBuild@1
     displayName: 'Build solution ${{ parameters.solutionPath }}'
