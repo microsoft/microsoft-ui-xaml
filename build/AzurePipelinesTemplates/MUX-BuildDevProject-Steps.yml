@@ -6,6 +6,7 @@ steps:
       appxPackageDir: $(appxPackageDir)
       buildOutputDir: $(buildOutputDir)
       publishDir: $(publishDir)
+      pgoBuildMode: $(PGOBuildMode)
 
   - template: MUX-MakeFrameworkPackages-Steps.yml
     parameters:

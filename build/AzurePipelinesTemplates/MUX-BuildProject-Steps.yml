@@ -4,6 +4,7 @@ parameters:
   buildOutputDir: '$(Build.SourcesDirectory)\BuildOutput'
   appxPackageDir: '$(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages'
   artifactName: 'drop'
+  pgoBuildMode: ''
 
 steps:
   - template: MUX-PopulateBuildDateAndRevision-Steps.yml
@@ -41,7 +42,7 @@ steps:
       feedsToUse: config
       nugetConfigPath: ${{ parameters.nugetConfigPath }}
 
-  - ${{ if eq($(PGOBuildMode), 'Optimize') }}:
+  - ${{ if eq(${{ parameters.pgoBuildMode }}, 'Optimize') }}:
     - task: powershell@2
       displayName: 'Restore PGO database'
       inputs:
