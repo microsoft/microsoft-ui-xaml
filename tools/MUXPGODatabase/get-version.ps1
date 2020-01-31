@@ -4,21 +4,15 @@ function get_version( $pgoBranch )
 
     $forkSHA = ( & git merge-base --fork-point $pgoBranch )
 
-    Write-Output $forkSHA
-
     if ( $LastExitCode -ne 0 )
     {
-        Write-Output $LastExitCode
-        throw "FAILED: git merge-base"
+        throw "FAILED: git merge-base {0}, {1}" -f $forkSHA, $LastExitCode
     }
 
     $forkDate = ( Get-Date -Date ( & git log -1 $forkSHA --date=iso --pretty=format:"%ad" ) ).ToUniversalTime().ToString("yyMMddHHmm")
 
-    Write-Output $forkDate
-
     if ( $LastExitCode -ne 0 )
     {
-        Write-Output $LastExitCode
         throw "FAILED: Get forkDate"
     }
 
