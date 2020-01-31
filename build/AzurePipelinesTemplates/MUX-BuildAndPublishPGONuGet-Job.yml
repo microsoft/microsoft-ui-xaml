@@ -3,7 +3,7 @@ parameters:
   pgdFile: Microsoft.UI.Xaml.pgd
   pgoDatabaseId: MUXPGODatabase-test
   pgoArtifact: PGO
-  pgoBranch: origin/master
+  pgoBranch: master
 
 jobs:
 - job: BuildAndPublishPGONuGet

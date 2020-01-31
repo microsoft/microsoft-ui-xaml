@@ -1,9 +1,6 @@
 function get_version( $pgoBranch )
 {
-    Write-Host $(git branch)
-    Write-Host $(git name-rev --name-only HEAD)
-
-    $forkSHA = $( git merge-base --fork-point $pgoBranch )
+    $forkSHA = $( git merge-base --fork-point remotes/origin/$pgoBranch HEAD )
 
     if ( $LastExitCode -ne 0 )
     {
@@ -17,7 +14,7 @@ function get_version( $pgoBranch )
         throw "FAILED: Get forkDate"
     }
 
-    if ( $pgoBranch -eq "origin/master" )
+    if ( $pgoBranch -eq "master" )
     {
         $version = $forkDate
     }
