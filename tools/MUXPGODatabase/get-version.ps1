@@ -1,14 +1,9 @@
 function get_version( $pgoBranch )
 {
-    Write-Host $pgoBranch
-
-    Write-Host $(git log)
-
+    Write-Host $(git branch)
+    Write-Host $(git name-rev --name-only HEAD)
 
     $forkSHA = $( git merge-base --fork-point $pgoBranch )
-
-    Write-Host $LastExitCode
-    Write-Host $forkSHA
 
     if ( $LastExitCode -ne 0 )
     {
@@ -16,9 +11,6 @@ function get_version( $pgoBranch )
     }
 
     $forkDate = ( Get-Date -Date $( git log -1 $forkSHA --date=iso --pretty=format:"%ad" ) ).ToUniversalTime().ToString("yyMMddHHmm")
-
-    Write-Host $forkDate
-    Write-Host $forkSHA
 
     if ( $LastExitCode -ne 0 )
     {
