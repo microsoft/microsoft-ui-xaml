@@ -2764,6 +2764,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        // Regression test for https://github.com/microsoft/microsoft-ui-xaml/issues/1790
+        public void ItemsSourceResyncTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                var root = new TreeItem(LabelFirstItem());
+                root.Expand();
+                Wait.ForIdle();
+
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+
+                ClickButton("SyncItemsSource");
+                Wait.ForIdle();
+                Verify.AreEqual("4", ReadResult());
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));

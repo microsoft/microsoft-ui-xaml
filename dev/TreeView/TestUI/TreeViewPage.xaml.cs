@@ -62,12 +62,12 @@ namespace MUXControlsTestApp
             TestTreeView2ItemsSource = new ObservableCollection<TreeViewItemSource>() { item1, item2 };
         }
 
-        private ObservableCollection<TreeViewItemSource> PrepareItemsSource()
+        private ObservableCollection<TreeViewItemSource> PrepareItemsSource(bool expandRootNode = false)
         {
             var root0 = new TreeViewItemSource() { Content = "Root.0" };
             var root1 = new TreeViewItemSource() { Content = "Root.1" };
             var root2 = new TreeViewItemSource() { Content = "Root.2" };
-            var root = new TreeViewItemSource() { Content = "Root", Children = { root0, root1, root2 } };
+            var root = new TreeViewItemSource() { Content = "Root", Children = { root0, root1, root2 }, IsExpanded = expandRootNode };
 
             return new ObservableCollection<TreeViewItemSource>{root};
         }
@@ -960,6 +960,11 @@ namespace MUXControlsTestApp
         private void ClearException_Click(object sender, RoutedEventArgs e)
         {
             ExceptionMessage.Text = string.Empty;
+        }
+
+        private void SyncItemsSource_Click(object sender, RoutedEventArgs e)
+        {
+            ContentModeTestTreeView.ItemsSource = PrepareItemsSource(expandRootNode:true);
         }
     }
 }
