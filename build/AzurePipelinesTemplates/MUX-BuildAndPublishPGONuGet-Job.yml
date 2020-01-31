@@ -1,7 +1,7 @@
 parameters:
   dependsOn: ''
   pgdFile: Microsoft.UI.Xaml.pgd
-  pgoDatabaseId: MUXPGODatabase
+  pgoDatabaseId: MUXPGODatabase-test
   pgoArtifact: PGO
   pgoBranch: master
 
