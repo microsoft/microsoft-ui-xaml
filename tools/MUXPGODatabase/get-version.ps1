@@ -14,7 +14,7 @@ function get_version( $pgoBranch )
         throw "FAILED: Get forkDate"
     }
 
-    if ($pgoBranch -eq "master")
+    if ($pgoBranch -eq "origin/master")
     {
         $version = $forkDate
     }
