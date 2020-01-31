@@ -1,6 +1,6 @@
 function get_version( $pgoBranch )
 {
-    $forkSHA = $( git merge-base --fork-point origin/$pgoBranch HEAD )
+    $forkSHA = $( git merge-base origin/$pgoBranch HEAD )
 
     if ( $LastExitCode -ne 0 )
     {
