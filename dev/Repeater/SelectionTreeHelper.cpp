@@ -133,11 +133,21 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
 bool SelectionTreeHelper::IsSubSet(const winrt::IndexPath& path, const winrt::IndexPath& subset)
 {
     bool isSubset = true;
-    for (int i = 0; i < subset.GetSize(); i++)
+
+    const auto pathSize = path.GetSize();
+    const auto subsetSize = subset.GetSize();
+    if (pathSize < subsetSize)
     {
-        isSubset = path.GetAt(i) == subset.GetAt(i);
-        if (!isSubset)
-            break;
+        isSubset = false;
+    }
+    else
+    {
+        for (int i = 0; i < subsetSize; i++)
+        {
+            isSubset = path.GetAt(i) == subset.GetAt(i);
+            if (!isSubset)
+                break;
+        }
     }
 
     return isSubset;
