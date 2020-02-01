@@ -14,7 +14,7 @@ jobs:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
     pgoToolsPath: $(Build.SourcesDirectory)\tools\MUXPGODatabase
     nuspecPath: $(pgoToolsPath)\NuSpecs
-    nuspecFilename: ${{ parameters.pgoDatabaseId }}.nuspec
+    nuspecFilename: PGO.nuspec
 
   steps:
   - task: DownloadBuildArtifacts@0
