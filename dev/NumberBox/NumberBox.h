@@ -33,6 +33,9 @@ public:
 
     NumberBox();
 
+    void Value(double value);
+    double Value();
+
     // IUIElement
     virtual winrt::AutomationPeer OnCreateAutomationPeer();
 
