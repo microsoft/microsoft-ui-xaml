@@ -320,6 +320,15 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
     {
         bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
+        if (itemContainer.IsExpanded() != itemNode->IsExpanded()) {
+            auto dispatcher = winrt::Window::Current().Dispatcher();
+            auto ignore = dispatcher.RunAsync(
+                winrt::CoreDispatcherPriority::Normal,
+                winrt::DispatchedHandler([itemNode, itemContainer]()
+                    {
+                        itemNode->IsExpanded(itemContainer.IsExpanded());
+                    }));
+        }
     }
     else
     {

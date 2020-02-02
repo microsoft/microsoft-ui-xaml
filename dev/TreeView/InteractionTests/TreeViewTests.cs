@@ -95,22 +95,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 SetContentMode(isContentMode);
 
-                UIObject ItemRoot = LabelFirstItem();
+                UIObject itemRoot = LabelFirstItem();
 
                 ClickButton("GetItemCount");
                 Verify.AreEqual("1", ReadResult());
 
-                InputHelper.Tap(ItemRoot);
+                InputHelper.Tap(itemRoot);
 
                 // Should be expanded now
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
 
-                InputHelper.Tap(ItemRoot);
+                ClickButton("AddSecondLevelOfNodes");
+                ClickButton("LabelItems");
 
-                // Should be collapsed now
+                var root0 = FindElement.ById("Root.0");
+                InputHelper.Tap(root0);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("5", ReadResult());
+
+                InputHelper.Tap(itemRoot);
                 ClickButton("GetItemCount");
                 Verify.AreEqual("1", ReadResult());
+
+                InputHelper.Tap(itemRoot);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("5", ReadResult());
+
+                var root1 = FindElement.ById("Root.1");
+                InputHelper.Tap(root1);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("8", ReadResult());
+
+                // Collapse and expand
+                InputHelper.Tap(itemRoot);
+                InputHelper.Tap(itemRoot);
+                ClickButton("GetItemCount");
+                Verify.AreEqual("8", ReadResult());
             }
         }
 
@@ -2779,16 +2800,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 SetContentMode(true);
 
-                var root = new TreeItem(LabelFirstItem());
-                root.Expand();
-                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("1", ReadResult());
 
+                ClickButton("ResetItemsSource");
+                Wait.ForIdle();
                 ClickButton("GetItemCount");
                 Verify.AreEqual("4", ReadResult());
 
-                ClickButton("SyncItemsSource");
+                ClickButton("ResetItemsSourceAsync");
                 Wait.ForIdle();
-                Verify.AreEqual("4", ReadResult());
+                ClickButton("GetItemCount");
+                Verify.AreEqual("6", ReadResult());
             }
         }
 
