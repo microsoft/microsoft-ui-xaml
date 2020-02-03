@@ -14,6 +14,7 @@ using Common;
 using System;
 using Microsoft.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using MUXControlsTestApp.Utils;
 
 #if USING_TAEF
 using WEX.TestExecution;
@@ -30,7 +31,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
     using IKeyIndexMapping = Microsoft.UI.Xaml.Controls.IKeyIndexMapping;
 
     [TestClass]
-    public class InspectingDataSourceTests: ApiTestBase
+    public class InspectingDataSourceTests : ApiTestBase
     {
         [TestMethod]
         public void CanCreateFromIBindableIterable()
@@ -111,6 +112,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 Verify.AreEqual(true, dataSource.HasKeyIndexMapping);
                 Verify.AreEqual(5, dataSource.IndexFromKey("5"));
                 Verify.AreEqual("5", dataSource.KeyFromIndex(5));
+            });
+        }
+
+        // Calling Reset multiple times before layout runs causes a crash
+        // in unique ids. We end up thinking we have multiple elements with the same id.
+        [TestMethod]
+        public void VerifyCallingResetMultipleTimesOnUniqueIdItemsSource()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new CustomItemsSourceWithUniqueId(Enumerable.Range(0, 5).ToList());
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = data,
+                    Animator = new DefaultElementAnimator()
+                };
+
+                Content = new Windows.UI.Xaml.Controls.ScrollViewer() 
+                {
+                    Width=400,
+                    Height=400,
+                    Content = repeater
+                };
+                Content.UpdateLayout();
+
+                data.Reset();
+                data.Reset();
+
+                Content.UpdateLayout();
+
+                Verify.AreEqual(5, repeater.ItemsSourceView.Count);
+                for(int i=0; i< 5; i++)
+                {
+                    Verify.IsNotNull(repeater.TryGetElement(i));
+                }
             });
         }
 

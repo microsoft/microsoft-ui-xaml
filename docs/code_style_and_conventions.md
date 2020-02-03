@@ -1,7 +1,7 @@
 # Code style and conventions
 
 * C++: [C++ Core Guidelines](https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md)
-* C#: Follow the .NET Core team's [C# coding style](https://github.com/dotnet/corefx/blob/master/Documentation/coding-guidelines/coding-style.md)
+* C#: Follow the .NET Core team's [C# coding style](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md)
 
 For all languages respect the [.editorconfig](https://editorconfig.org/) file 
 specified in the source tree. Many IDEs natively support this or can with a 
