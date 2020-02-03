@@ -1,18 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
+using Microsoft.UI.Xaml.Controls;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Windows.Globalization.NumberFormatting;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls;
-using Windows.Globalization.NumberFormatting;
-using System.Collections.Generic;
 
 namespace MUXControlsTestApp
 {
     [TopLevelTestPage(Name = "NumberBox")]
     public sealed partial class NumberBoxPage : TestPage
     {
+        public DataModelWithINPC DataModelWithINPC { get; set; } = new DataModelWithINPC();
+
         public NumberBoxPage()
         {
             this.InitializeComponent();
@@ -115,6 +118,12 @@ namespace MUXControlsTestApp
             TestNumberBox.Value = Double.NaN;
         }
 
+        private void SetTwoWayBoundNaNButton_Click(object sender, RoutedEventArgs e)
+        {
+            DataModelWithINPC.Value = Double.NaN;
+            TwoWayBoundNumberBoxValue.Text = TwoWayBoundNumberBox.Value.ToString();
+        }
+
         private void TextPropertyChanged(DependencyObject o, DependencyProperty p)
         {
             TextTextBox.Text = TestNumberBox.Text;
@@ -123,6 +132,31 @@ namespace MUXControlsTestApp
         private void ScrollviewerWithScroll_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
             VerticalOffsetDisplayBlock.Text = (sender as Windows.UI.Xaml.Controls.ScrollViewer).VerticalOffset.ToString();
+        }
+    }
+
+    public class DataModelWithINPC : INotifyPropertyChanged
+    {
+        private double _value;
+        
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public double Value
+        {
+            get => _value;
+            set
+            {
+                if (value != _value)
+                {
+                    _value = value;
+                    OnPropertyChanged(nameof(this.Value));
+                }
+            }
         }
     }
 }
