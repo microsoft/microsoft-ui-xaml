@@ -74,6 +74,7 @@
                         x:Name="TestNumberBox"
                         AutomationProperties.Name="TestNumberBox"
                         Header="NumberBox"
+                        Description="Description text"
                         PlaceholderText="Text"
                         ValueChanged="NumberBoxValueChanged"
                         SmallChange="{x:Bind SmallChangeNumberBox.Value, Mode=OneWay}"
