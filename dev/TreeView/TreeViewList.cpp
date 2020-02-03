@@ -8,8 +8,8 @@
 #include "TreeViewList.h"
 #include "TreeViewListAutomationPeer.h"
 #include "TreeViewItem.h"
-
 #include "TreeViewList.properties.cpp"
+#include "DispatcherHelper.h"
 
 TreeViewList::TreeViewList()
 {
@@ -321,13 +321,12 @@ void TreeViewList::PrepareContainerForItemOverride(winrt::DependencyObject const
         bool hasChildren = itemContainer.HasUnrealizedChildren() || itemNode->HasChildren();
         itemContainer.GlyphOpacity(hasChildren ? 1.0 : 0.0);
         if (itemContainer.IsExpanded() != itemNode->IsExpanded()) {
-            auto dispatcher = winrt::Window::Current().Dispatcher();
-            auto ignore = dispatcher.RunAsync(
-                winrt::CoreDispatcherPriority::Normal,
-                winrt::DispatchedHandler([itemNode, itemContainer]()
-                    {
-                        itemNode->IsExpanded(itemContainer.IsExpanded());
-                    }));
+            const DispatcherHelper dispatcher{ *this };
+            dispatcher.RunAsync(
+                [itemNode, itemContainer]()
+                {
+                    itemNode->IsExpanded(itemContainer.IsExpanded());
+                });
         }
     }
     else
