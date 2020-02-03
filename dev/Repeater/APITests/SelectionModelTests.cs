@@ -927,6 +927,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void SelectRangeRegressionTest()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var selectionModel = new SelectionModel() {
+                    Source = CreateNestedData(1, 2, 3)
+                };
+
+                // length of start smaller than end used to cause an out of range error.
+                selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
+
+                ValidateSelection(selectionModel,
+                   new List<IndexPath>()
+                   {
+                       Path(0, 0),
+                       Path(0, 1),
+                       Path(0, 2),
+                       Path(0),
+                       Path(1, 0),
+                       Path(1, 1)
+                   },
+                   new List<IndexPath>()
+                   {
+                       Path(),
+                       Path(1)
+                   },
+                   1 /* selectedInnerNodes */);
+            });
+        }
+
         private void Select(SelectionModel manager, int index, bool select)
         {
             Log.Comment((select ? "Selecting " : "DeSelecting ") + index);
