@@ -42,7 +42,7 @@ if ( $best -eq $null )
     throw "Appropriate database cannot be found"
 }
 
-Write-Host ( "PGO OPTIMIZATION: picked {0} version {1}" -f $packageId, $best.Version )
+Write-Host ( "PGO OPTIMIZE: picked {0} version {1}" -f $packageId, $best.Version )
 #Write-Host ( "Picked {0} version {1}" -f $packageId, $best )
 
 $best | Install-Package -Destination ..\..\packages -Force

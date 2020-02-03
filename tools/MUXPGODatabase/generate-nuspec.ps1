@@ -7,4 +7,5 @@ Param(
 . .\config.ps1
 
 $version = FormatVersion ( MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch $isReleaseBranch ) )
+Write-Host ( "PGO INSTRUMENT: generating {0} version {1}" -f $packageId, $version )
 fill_out_template $templatePath $outputPath @{ "version" = $version; "id" = $packageId }

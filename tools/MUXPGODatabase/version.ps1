@@ -23,7 +23,14 @@ function MakeVersionFromString ( $str )
 
 function FormatVersion ( $version )
 {
-    return "{0}.{1}.{2}-{3}" -f $version.Major, $version.Minor, $version.Revision, $version.Branch
+    $branch = ""
+
+    if ( $version.Branch -ne "" )
+    {
+        $branch = "-{0}" -f $version.Branch
+    }
+
+    return "{0}.{1}.{2}{3}" -f $version.Major, $version.Minor, $version.Revision, $branch
 }
 
 function CompareReleases ( $version1, $version2 )
