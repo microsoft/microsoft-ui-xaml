@@ -8,6 +8,9 @@
 #include "DisplayRegionHelper.h"
 #include "LifetimeHandler.h"
 
+// TODO: Remove once ApplicationViewMode::Spanning is available in the SDK
+const int c_ApplicationViewModeSpanning = 2;
+
 /* static */
 DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
 {
@@ -45,7 +48,7 @@ DisplayRegionHelperInfo DisplayRegionHelper::GetRegionInfo()
             view = winrt::ApplicationView::GetForCurrentView();
         } catch(...) {}
 
-        if (view)
+        if (view && view.ViewMode() == (winrt::Windows::UI::ViewManagement::ApplicationViewMode)c_ApplicationViewModeSpanning)
         {
             if (const auto appView = view.try_as<winrt::IApplicationViewSpanningRects>())
             {
