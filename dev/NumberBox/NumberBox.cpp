@@ -83,6 +83,24 @@ winrt::DecimalFormatter NumberBox::GetRegionalSettingsAwareDecimalFormatter()
     return formatter;
 }
 
+void NumberBox::Value(double value)
+{
+    // When using two way bindings to Value using x:Bind, we could end up with a stack overflow because
+    // nan != nan. However in this case, we are using nan as a value to represent value not set (cleared)
+    // and that can happen quite often. We can avoid the stack overflow by breaking the cycle here. This is possible
+    // for x:Bind since the generated code goes through this property setter. This is not the case for Binding
+    // unfortunately. x:Bind is recommended over Binding anyway due to its perf and debuggability benefits.
+    if (!std::isnan(value) || !std::isnan(Value()))
+    {
+        static_cast<NumberBox*>(this)->SetValue(s_ValueProperty, ValueHelper<double>::BoxValueIfNecessary(value));
+    }
+}
+
+double NumberBox::Value()
+{
+    return ValueHelper<double>::CastOrUnbox(static_cast<NumberBox*>(this)->GetValue(s_ValueProperty));
+}
+
 winrt::AutomationPeer NumberBox::OnCreateAutomationPeer()
 {
     return winrt::make<NumberBoxAutomationPeer>(*this);
