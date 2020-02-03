@@ -331,6 +331,7 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
                 // The children have changed, validate and update GlyphOpacity
                 bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
                 GlyphOpacity(hasChildren ? 1.0 : 0.0);
+                UpdateNodeIsExpandedAsync(*treeViewNode, IsExpanded());
             }
         }
         else if (property == s_HasUnrealizedChildrenProperty)
