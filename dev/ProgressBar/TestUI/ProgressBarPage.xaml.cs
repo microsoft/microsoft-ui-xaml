@@ -36,7 +36,8 @@ namespace MUXControlsTestApp
 
             var progressBarRoot = VisualTreeHelper.GetChild(layoutRoot, 0);
             var clip = VisualTreeHelper.GetChild(progressBarRoot, 0);
-            var indicator = (Rectangle)VisualTreeHelper.GetChild(clip, 0);
+            var stackPanel = VisualTreeHelper.GetChild(clip, 0);
+            var indicator = (Rectangle)VisualTreeHelper.GetChild(stackPanel, 0);
 
             indicator.SizeChanged += this.Indicator_SizeChanged;
             IndicatorWidthText.Text = indicator.ActualWidth.ToString();

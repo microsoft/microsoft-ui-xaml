@@ -426,6 +426,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.AreEqual("NaN", newValueTextBlock.GetText());
                 Verify.AreEqual("100", oldValueTextBlock.GetText());
 
+                Log.Comment("Verify that setting two way bound value to NaN doesn't cause a crash");
+                Button twoWayBindNanbutton = FindElement.ByName<Button>("SetTwoWayBoundValueNaNButton");
+                twoWayBindNanbutton.InvokeAndWait();
+                TextBlock twoWayBoundNumberBoxValue = FindElement.ByName<TextBlock>("TwoWayBoundNumberBoxValue");
+                Verify.AreEqual("NaN", twoWayBoundNumberBoxValue.GetText());
+
                 Log.Comment("Verify that setting value to NaN doesn't have any effect");
                 Button nanbutton = FindElement.ByName<Button>("SetValueNaNButton");
                 nanbutton.InvokeAndWait();

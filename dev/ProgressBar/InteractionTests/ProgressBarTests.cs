@@ -101,21 +101,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 Log.Comment("Updating width of ProgressBar also updates Indicator Width");
                 
-                widthInput.SetValue("150");
+                widthInput.SetValue("200");
                 updateWidthButton.InvokeAndWait();
 
-                Verify.AreEqual(Math.Round(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Changing value of ProgressBar of different width updates Indicator width");
 
                 changeValueButton.InvokeAndWait();
 
-                Verify.AreEqual(Math.Round(progressBar.Value * 1.5), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
+                Verify.AreEqual((progressBar.Value * 2), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator width is adjusted to ProgressBar width");
 
                 Log.Comment("Updating Maximum and Minimum also updates Indicator Width");
 
                 minimumInput.SetValue("10");
-                maximumInput.SetValue("15");
+                maximumInput.SetValue("16");
 
                 changeValueButton.InvokeAndWait();
 
@@ -123,7 +123,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 double adjustedValueFromRange = progressBar.Value - progressBar.Minimum;
                 double calculatedValue = (adjustedValueFromRange / range) * Convert.ToDouble(widthInputText.DocumentText);
 
-                Verify.AreEqual(Math.Round(calculatedValue, MidpointRounding.AwayFromZero), Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
+                Verify.AreEqual(calculatedValue, Convert.ToDouble(indicatorWidthText.DocumentText), "Indicator Width is adjusted based on range and ProgressBar width");
             }
         }
 
@@ -220,13 +220,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Convert.ToBoolean(showPausedText.DocumentText));
                 Verify.AreEqual(visualStateText.DocumentText, "Paused");
 
-                Log.Comment("ShowPaused = true && IsIndeterminate = true updates ProgressBar to Error visual state"); // same visual treatment as Error State
+                Log.Comment("ShowPaused = true && IsIndeterminate = true updates ProgressBar to IndeterminatePaused visual state"); 
 
                 isIndeterminateCheckBox.ToggleAndWait();
 
                 Verify.IsTrue(Convert.ToBoolean(showPausedText.DocumentText));
                 Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
-                Verify.AreEqual(visualStateText.DocumentText, "Error");
+                Verify.AreEqual(visualStateText.DocumentText, "IndeterminatePaused");
 
                 Log.Comment("IsIndeterminate = true updates ProgressBar to Indeterminate visual state");
 
@@ -235,12 +235,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
                 Verify.AreEqual(visualStateText.DocumentText, "Indeterminate");
 
-                Log.Comment("ShowError = true updates ProgressBar to Error visual state for both Determinate and Indeterminate");
+                Log.Comment("ShowError = true && IsIndeterminate = true updates ProgressBar to IndeterminateError visual state");
 
                 showErrorCheckBox.ToggleAndWait();
 
                 Verify.IsTrue(Convert.ToBoolean(showErrorText.DocumentText));
-                Verify.AreEqual(visualStateText.DocumentText, "Error");
+                Verify.AreEqual(visualStateText.DocumentText, "IndeterminateError");
+
+                Log.Comment("ShowError = true updates ProgressBar to Error visual state for Determinate");
 
                 isIndeterminateCheckBox.ToggleAndWait();
 
