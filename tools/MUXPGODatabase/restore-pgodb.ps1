@@ -4,12 +4,7 @@
 
 $feedUri = "https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Dependencies/nuget/v2"
 
-# $packages = ( & git log --date=iso --pretty=format:"%ad" ) | foreach {
-#   "2.0.{0}-master" -f ( Get-Date -Date $_ ).ToUniversalTime().ToString("yyMMddHHmm")
-# } | Sort-Object -Descending
-# $currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor "1807261844-master"
-
-$currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch $isReleaseBranch )
+$currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch )
 
 $packageSource = Register-PackageSource -Name MUX_Dependencies -Location $feedUri -ProviderName NuGet -Trusted
 $packages = ( Find-Package $packageId -Source MUX_Dependencies -AllowPrereleaseVersions -AllVersions ) | Sort-Object -Property Version -Descending
@@ -43,7 +38,6 @@ if ( $best -eq $null )
 }
 
 Write-Host ( "PGO OPTIMIZE: picked {0} version {1}" -f $packageId, $best.Version )
-#Write-Host ( "Picked {0} version {1}" -f $packageId, $best )
 
 $best | Install-Package -Destination ..\..\packages -Force
 $packageSource | Unregister-PackageSource

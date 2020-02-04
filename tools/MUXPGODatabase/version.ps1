@@ -55,7 +55,7 @@ function CompareBranches ( $version1, $version2 )
     return $version1.Branch -eq $version2.Branch
 }
 
-function GetDatetimeStamp ( $pgoBranch, $isReleaseBranch )
+function GetDatetimeStamp ( $pgoBranch )
 {
     $forkSHA = $( git merge-base origin/$pgoBranch HEAD )
 
@@ -71,14 +71,5 @@ function GetDatetimeStamp ( $pgoBranch, $isReleaseBranch )
         throw "FAILED: Get forkDate"
     }
 
-    if ( $isReleaseBranch )
-    {
-        $version = $forkDate
-    }
-    else
-    {
-        $version = $forkDate + "-" + $pgoBranch.Replace("/", "_").Replace("-", "_").Replace(".", "_")
-    }
-
-    return $version
+    return $forkDate + "-" + $pgoBranch.Replace("/", "_").Replace("-", "_").Replace(".", "_")
 }
