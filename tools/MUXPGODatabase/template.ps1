@@ -1,4 +1,4 @@
-function replace_many ( $string, $dictionary )
+function Replace-Many ( $string, $dictionary )
 {
     foreach ( $key in $dictionary.Keys )
     {
@@ -9,8 +9,8 @@ function replace_many ( $string, $dictionary )
     return $string
 }
 
-function fill_out_template ( $inputPath, $outputPath, $dictionary )
+function FillOut-Template ( $inputPath, $outputPath, $dictionary )
 {
-    $replaced = replace_many ( Get-Content $inputPath ) $dictionary
+    $replaced = Replace-Many ( Get-Content $inputPath ) $dictionary
     Write-Output $replaced | Set-Content $outputPath -Force | Out-Null
 }
