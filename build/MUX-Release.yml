@@ -24,9 +24,11 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_Arm:
         buildPlatform: 'arm'
         buildConfiguration: 'Release'
@@ -38,8 +40,6 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-    PGOBuildMode: Optimize
-
   steps:
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header

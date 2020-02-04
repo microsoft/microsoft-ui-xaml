@@ -36,7 +36,7 @@ steps:
 
   - task: powershell@2
     displayName: 'Restore PGO database'
-    condition: and(eq(variables['PGOBuildMode'], 'Optimize'), eq(variables['buildConfiguration'], 'Release'))
+    condition: eq(variables['PGOBuildMode'], 'Optimize')
     inputs:
       targetType: filePath
       workingDirectory: $(Build.SourcesDirectory)\tools\MUXPGODatabase
