@@ -82,9 +82,9 @@ namespace MUXControlsTestApp
         }
 
         private int lastOffsetsChangeCorrelationId = -1;
-        private int lastOffsetsChangeWithAdditionalVelocityId = -1;
+        private int lastOffsetsChangeWithAdditionalVelocityCorrelationId = -1;
         private int lastZoomFactorChangeCorrelationId = -1;
-        private int lastZoomFactorChangeWithAdditionalVelocityId = -1;
+        private int lastZoomFactorChangeWithAdditionalVelocityCorrelationId = -1;
         private HashSet<int> relativeChangeCorrelationIds = new HashSet<int>();
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
@@ -1483,7 +1483,7 @@ namespace MUXControlsTestApp
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options);
                     relativeChangeCorrelationIds.Add(lastOffsetsChangeCorrelationId);
-                    AppendAsyncEventMessage("Invoked ScrollBy Id=" + lastOffsetsChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ScrollBy CorrelationId=" + lastOffsetsChangeCorrelationId);
                 }
                 else
                 {
@@ -1491,7 +1491,7 @@ namespace MUXControlsTestApp
                         Convert.ToDouble(txtScrollHorizontalOffset.Text),
                         Convert.ToDouble(txtScrollVerticalOffset.Text),
                         options);
-                    AppendAsyncEventMessage("Invoked ScrollTo Id=" + lastOffsetsChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ScrollTo CorrelationId=" + lastOffsetsChangeCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1507,7 +1507,7 @@ namespace MUXControlsTestApp
             {
                 if (lastOffsetsChangeCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling scrollTo/By Id=" + lastOffsetsChangeCorrelationId);
+                    AppendAsyncEventMessage("Canceling scrollTo/By CorrelationId=" + lastOffsetsChangeCorrelationId);
                     scrollPresenter.ScrollBy(
                         0,
                         0,
@@ -1632,10 +1632,10 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastOffsetsChangeWithAdditionalVelocityId = scrollPresenter.AddScrollVelocity(
+                lastOffsetsChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(Convert.ToSingle(txtScrollHorizontalVelocity.Text), Convert.ToSingle(txtScrollVerticalVelocity.Text)),
                     inertiaDecayRate);
-                AppendAsyncEventMessage("Invoked AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                AppendAsyncEventMessage("Invoked AddScrollVelocity CorrelationId=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
             }
             catch (Exception ex)
             {
@@ -1648,9 +1648,9 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (lastOffsetsChangeWithAdditionalVelocityId != -1)
+                if (lastOffsetsChangeWithAdditionalVelocityCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddScrollVelocity CorrelationId=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
                     scrollPresenter.ScrollBy(
                         0,
                         0,
@@ -1773,7 +1773,7 @@ namespace MUXControlsTestApp
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options);
                     relativeChangeCorrelationIds.Add(lastZoomFactorChangeCorrelationId);
-                    AppendAsyncEventMessage("Invoked ZoomBy Id=" + lastZoomFactorChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ZoomBy CorrelationId=" + lastZoomFactorChangeCorrelationId);
                 }
                 else
                 {
@@ -1781,7 +1781,7 @@ namespace MUXControlsTestApp
                         Convert.ToSingle(txtZoomZoomFactor.Text),
                         (txtZoomCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtZoomCenterPoint.Text),
                         options);
-                    AppendAsyncEventMessage("Invoked ZoomTo Id=" + lastZoomFactorChangeCorrelationId);
+                    AppendAsyncEventMessage("Invoked ZoomTo CorrelationId=" + lastZoomFactorChangeCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1797,7 +1797,7 @@ namespace MUXControlsTestApp
             {
                 if (lastZoomFactorChangeCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling ZoomTo/By Id=" + lastZoomFactorChangeCorrelationId);
+                    AppendAsyncEventMessage("Canceling ZoomTo/By CorrelationId=" + lastZoomFactorChangeCorrelationId);
                     scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
@@ -1902,11 +1902,11 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastZoomFactorChangeWithAdditionalVelocityId = scrollPresenter.AddZoomVelocity(
+                lastZoomFactorChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddZoomVelocity(
                     Convert.ToSingle(txtAddZoomVelocityVelocity.Text),
                     (txtAddZoomVelocityCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtAddZoomVelocityCenterPoint.Text),
                     (txtAddZoomVelocityInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtAddZoomVelocityInertiaDecayRate.Text));
-                AppendAsyncEventMessage("Invoked AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                AppendAsyncEventMessage("Invoked AddZoomVelocity CorrelationId=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
             }
             catch (Exception ex)
             {
@@ -1919,9 +1919,9 @@ namespace MUXControlsTestApp
         {
             try
             {
-                if (lastZoomFactorChangeWithAdditionalVelocityId != -1)
+                if (lastZoomFactorChangeWithAdditionalVelocityCorrelationId != -1)
                 {
-                    AppendAsyncEventMessage("Canceling AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                    AppendAsyncEventMessage("Canceling AddZoomVelocity CorrelationId=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
                     scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
@@ -2099,7 +2099,7 @@ namespace MUXControlsTestApp
                     new ScrollingScrollOptions(
                         disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
                         disableAnimation ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default));
-                AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) Id={lastOffsetsChangeCorrelationId}");
+                AppendAsyncEventMessage($"ChangeView invoked ScrollTo(horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset}) CorrelationId={lastOffsetsChangeCorrelationId}");
             }
             else
             {
@@ -2150,7 +2150,7 @@ namespace MUXControlsTestApp
                     new ScrollingZoomOptions(
                         disableAnimation ? ScrollingAnimationMode.Disabled : ScrollingAnimationMode.Enabled,
                         disableAnimation ? ScrollingSnapPointsMode.Ignore : ScrollingSnapPointsMode.Default));
-                AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} Id={lastZoomFactorChangeCorrelationId}");
+                AppendAsyncEventMessage($"ChangeView invoked ZoomBy(zoomFactor:{targetZoomFactor}, centerPoint:{centerPoint}) targetting horizontalOffset:{targetHorizontalOffset}, verticalOffset:{targetVerticalOffset} CorrelationId={lastZoomFactorChangeCorrelationId}");
             }
 
             return true;

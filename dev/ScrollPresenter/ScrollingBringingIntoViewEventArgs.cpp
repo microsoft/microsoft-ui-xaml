@@ -31,7 +31,7 @@ double ScrollingBringingIntoViewEventArgs::TargetVerticalOffset()
     return m_targetVerticalOffset;
 }
 
-int ScrollingBringingIntoViewEventArgs::CorrelationId()
+int32_t ScrollingBringingIntoViewEventArgs::CorrelationId()
 {
     return m_offsetsChangeCorrelationId;
 }

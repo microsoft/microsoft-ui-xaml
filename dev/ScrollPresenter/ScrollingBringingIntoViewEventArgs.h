@@ -25,7 +25,7 @@ public:
     winrt::BringIntoViewRequestedEventArgs RequestEventArgs();
     double TargetHorizontalOffset();
     double TargetVerticalOffset();
-    int CorrelationId();
+    int32_t CorrelationId();
     bool Cancel();
     void Cancel(bool value); 
 
