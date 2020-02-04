@@ -194,7 +194,7 @@ namespace MUXControlsTestApp
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             _isRootCreated = false;
-#if FEATURE_SCROLLINGPRESENTER_ENABLED // Tracked by Issue 1043
+#if FEATURE_SCROLLPRESENTER_ENABLED // Tracked by Issue 1043
             AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
 #endif
 

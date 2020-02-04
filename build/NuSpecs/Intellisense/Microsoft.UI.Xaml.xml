@@ -78,8 +78,8 @@
     <member name="M:Microsoft.UI.Xaml.Automation.Peers.RepeaterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.ItemsRepeater)">
       <param name="owner" />
     </member>
-    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ScrollingPresenterAutomationPeer" />
-    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ScrollingPresenterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter)">
+    <member name="T:Microsoft.UI.Xaml.Automation.Peers.ScrollPresenterAutomationPeer" />
+    <member name="M:Microsoft.UI.Xaml.Automation.Peers.ScrollPresenterAutomationPeer.#ctor(Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter)">
       <param name="owner" />
     </member>
     <member name="T:Microsoft.UI.Xaml.Automation.Peers.SplitButtonAutomationPeer" />
@@ -1131,7 +1131,7 @@
       <returns>The index of the item the element was prepared for.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost">
-      <summary>A helper to coordinate interaction between the <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> and ScrollingView.
+      <summary>A helper to coordinate interaction between the <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> and ScrollView.
 Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prior Windows 10 1809 (Build 17763).  If your app will only run on versions of Windows 1809 or higher, there is no need to use this control.</summary>
     </member>
     <member name="M:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.#ctor" />
@@ -1140,15 +1140,15 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <returns>The most recently chosen UIElement for scroll anchoring after a layout pass, or null.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.HorizontalAnchorRatio">
-      <summary>Determines the horizontal position of the ScrollingView's anchor point with respect to the viewport. By default, the ScrollingView selects an element as its <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor?text=CurrentAnchor" /> by identifying the element in its viewport nearest to the anchor point.</summary>
+      <summary>Determines the horizontal position of the ScrollView's anchor point with respect to the viewport. By default, the ScrollView selects an element as its <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.CurrentAnchor?text=CurrentAnchor" /> by identifying the element in its viewport nearest to the anchor point.</summary>
       <returns>A normalized value (0.0 to 1.0). The default is 0.0.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.ScrollingView">
-      <summary>Gets or sets the ScrollingView to host.</summary>
-      <returns>A ScrollingView that contains one or more <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> controls.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.ScrollView">
+      <summary>Gets or sets the ScrollView to host.</summary>
+      <returns>A ScrollView that contains one or more <see cref="Microsoft.UI.Xaml.Controls.ItemsRepeater?text=ItemsRepeater" /> controls.</returns>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ItemsRepeaterScrollHost.VerticalAnchorRatio">
-      <summary>Determines the vertical position of the ScrollingView's anchor point with respect to the viewport. By default, the ScrollingView selects an element as its CurrentAnchor by identifying the element in its viewport nearest to the anchor point.</summary>
+      <summary>Determines the vertical position of the ScrollView's anchor point with respect to the viewport. By default, the ScrollView selects an element as its CurrentAnchor by identifying the element in its viewport nearest to the anchor point.</summary>
       <returns>A normalized value (0.0 to 1.0). The default is 0.0.</returns>
     </member>
     <member name="T:Microsoft.UI.Xaml.Controls.ItemsSourceView">
@@ -2007,7 +2007,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Forces the automatically computed vertical offsets to be recomputed.</summary>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ParallaxView.Source">
-      <summary>The element that either is or contains the ScrollingView that controls the parallax operation.</summary>
+      <summary>The element that either is or contains the ScrollView that controls the parallax operation.</summary>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ParallaxView.SourceProperty">
       <summary>Identifies the Source dependency property.</summary>
@@ -2363,7 +2363,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <param name="info" />
     </member>
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollByRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollFromRequested" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.AddScrollVelocityRequested" />
     <member name="E:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.ScrollToRequested" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.IScrollController.SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet,System.String,System.String,System.String,System.String)">
       <param name="propertySet" />
@@ -2440,14 +2440,14 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Info" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.OffsetDelta" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollByRequestedEventArgs.Options" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.#ctor(System.Single,Windows.Foundation.IReference{System.Single})">
       <param name="offsetVelocity" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.InertiaDecayRate" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.Info" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollFromRequestedEventArgs.OffsetVelocity" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.InertiaDecayRate" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.Info" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerAddScrollVelocityRequestedEventArgs.OffsetVelocity" />
     <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs" />
     <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.#ctor(System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="offset" />
@@ -2456,153 +2456,153 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Info" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Offset" />
     <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollControllerScrollToRequestedEventArgs.Options" />
-    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.#ctor">
-      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter?text=ScrollingPresenter" /> class.</summary>
+    <member name="T:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.#ctor">
+      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter?text=ScrollPresenter" /> class.</summary>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.AnchorRequested" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Background" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.BackgroundProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Background?text=Background" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Background?text=Background" /> dependency property.</returns>
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AnchorRequested" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Background" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.BackgroundProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Background?text=Background" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Background?text=Background" /> dependency property.</returns>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.BringingIntoView" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Content" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ContentOrientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ContentOrientationProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ContentOrientation?text=ContentOrientation" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ContentOrientation?text=ContentOrientation" /> dependency property.</returns>
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.BringingIntoView" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Content" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientation" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientationProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientation?text=ContentOrientation" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentOrientation?text=ContentOrientation" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ContentProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Content?text=Content" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.Content?text=Content" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ContentProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Content?text=Content" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.Content?text=Content" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ExpressionAnimationSources" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ExtentChanged" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ExtentHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ExtentWidth" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalAnchorRatioProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalAnchorRatio?text=HorizontalAnchorRatio" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalAnchorRatio?text=HorizontalAnchorRatio" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExpressionAnimationSources" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentChanged" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentHeight" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ExtentWidth" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatio" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatioProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatio?text=HorizontalAnchorRatio" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalAnchorRatio?text=HorizontalAnchorRatio" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollChainingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollChainingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalOffset" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollController" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollRailingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollRailingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.HorizontalSnapPoints" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.IgnoredInputKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.IgnoredInputKindProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MaxZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MaxZoomFactorProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.HorizontalSnapPoints" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.IgnoredInputKind" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.IgnoredInputKindProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactorProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MinZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MinZoomFactorProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MinZoomFactor?text=MinZoomFactor" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.MinZoomFactor?text=MinZoomFactor" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactorProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactor?text=MinZoomFactor" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.MinZoomFactor?text=MinZoomFactor" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollableHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollableWidth" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollAnimationStarting" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollBy(System.Double,System.Double)">
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollableHeight" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollableWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollBy(System.Double,System.Double)">
       <param name="horizontalOffsetDelta" />
       <param name="verticalOffsetDelta" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="horizontalOffsetDelta" />
       <param name="verticalOffsetDelta" />
       <param name="options" />
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollCompleted" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollCompleted" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.AddZoomVelocity(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="offsetsVelocity" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollTo(System.Double,System.Double)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollTo(System.Double,System.Double)">
       <param name="horizontalOffset" />
       <param name="verticalOffset" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="horizontalOffset" />
       <param name="verticalOffset" />
       <param name="options" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.State" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.StateChanged" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalAnchorRatio" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalAnchorRatioProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalAnchorRatio?text=VerticalAnchorRatio" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalAnchorRatio?text=VerticalAnchorRatio" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.State" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.StateChanged" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatio" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatioProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatio?text=VerticalAnchorRatio" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalAnchorRatio?text=VerticalAnchorRatio" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalOffset" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollChainingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollChainingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalOffset" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollController" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollController" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollRailingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollRailingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.VerticalSnapPoints" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ViewChanged" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ViewportHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ViewportWidth" />
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomAnimationStarting" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.VerticalSnapPoints" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewChanged" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewportHeight" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ViewportWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="zoomFactorDelta" />
       <param name="centerPoint" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
       <param name="zoomFactorDelta" />
       <param name="centerPoint" />
       <param name="options" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomChainingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomChainingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomCompleted" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomFactor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
+    <member name="E:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomCompleted" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomFactor" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
       <param name="zoomFactorVelocity" />
       <param name="centerPoint" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomMode?text=ZoomMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomMode?text=ZoomMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomMode?text=ZoomMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomMode?text=ZoomMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomSnapPoints" />
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="P:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomSnapPoints" />
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="zoomFactor" />
       <param name="centerPoint" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
       <param name="zoomFactor" />
       <param name="centerPoint" />
       <param name="options" />
@@ -3084,7 +3084,7 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>The user is interacting with the visualizer.</summary>
     </member>
     <member name="F:Microsoft.UI.Xaml.Controls.RefreshVisualizerState.Peeking">
-      <summary>The visualizer was pulled in the refresh direction from a position where a refresh is not allowed. Typically, the ScrollingView was not at position 0 at the start of the pull.</summary>
+      <summary>The visualizer was pulled in the refresh direction from a position where a refresh is not allowed. Typically, the ScrollView was not at position 0 at the start of the pull.</summary>
     </member>
     <member name="F:Microsoft.UI.Xaml.Controls.RefreshVisualizerState.Pending">
       <summary>The visualizer is pending.</summary>
@@ -3132,21 +3132,9 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.AnimationMode" />
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingScrollOptions.SnapPointsMode" />
-    <member name="T:Microsoft.UI.Xaml.Controls.ScrollingView" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.#ctor">
-      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView?text=ScrollingView" /> class.</summary>
-    </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.AnchorRequested" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.BringingIntoView" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ComputedHorizontalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ComputedHorizontalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ComputedVerticalScrollBarVisibility" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ComputedVerticalScrollBarVisibilityProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.Content" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ContentOrientation" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ContentOrientationProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ContentOrientation?text=ContentOrientation" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ContentOrientation?text=ContentOrientation" /> dependency property.</returns>
+    <member name="T:Microsoft.UI.Xaml.Controls.ScrollView" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.#ctor">
+      <summary>Initializes a new instance of the <see cref="Microsoft.UI.Xaml.Controls.ScrollView?text=ScrollView" /> class.</summary>
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ContentProperty">
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.Content?text=Content" /> dependency property.</summary>
@@ -3172,64 +3160,69 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollChainingMode?text=HorizontalScrollChainingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollControllerProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController?text=HorizontalScrollController" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollController?text=HorizontalScrollController" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollRailingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollRailingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollMode?text=HorizontalScrollMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.IgnoredInputKind" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.IgnoredInputKindProperty" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.MaxZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.MaxZoomFactorProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.HorizontalScrollRailingMode?text=HorizontalScrollRailingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.MinZoomFactor" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.MinZoomFactorProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.MinZoomFactor?text=MinZoomFactor" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.MinZoomFactor?text=MinZoomFactor" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.IgnoredInputKind" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.IgnoredInputKindProperty" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactorProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.MaxZoomFactor?text=MaxZoomFactor" /> dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.RegisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactor" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactorProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactor?text=MinZoomFactor" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.MinZoomFactor?text=MinZoomFactor" /> dependency property.</returns>
+    </member>
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.RegisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
       <param name="element" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollableHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollableWidth" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollAnimationStarting" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollBy(System.Double,System.Double)">
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollableHeight" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollableWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ScrollAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollBy(System.Double,System.Double)">
       <param name="horizontalOffsetDelta" />
       <param name="verticalOffsetDelta" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollBy(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="horizontalOffsetDelta" />
       <param name="verticalOffsetDelta" />
       <param name="options" />
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollCompleted" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollingPresenterProperty">
-      <summary>Identifies the ScrollingPresenter dependency property.</summary>
-      <returns>The identifier for the ScrollingPresenter dependency property.</returns>
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ScrollCompleted" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ScrollPresenterProperty">
+      <summary>Identifies the ScrollPresenter dependency property.</summary>
+      <returns>The identifier for the ScrollPresenter dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollFrom(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.AddZoomVelocity(Windows.Foundation.Numerics.Vector2,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="offsetsVelocity" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollTo(System.Double,System.Double)">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollTo(System.Double,System.Double)">
       <param name="horizontalOffset" />
       <param name="verticalOffset" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ScrollTo(System.Double,System.Double,Microsoft.UI.Xaml.Controls.ScrollingScrollOptions)">
       <param name="horizontalOffset" />
       <param name="verticalOffset" />
       <param name="options" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.State" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.StateChanged" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.State" />
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.StateChanged" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.UnregisterAnchorCandidate(Windows.UI.Xaml.UIElement)">
       <param name="element" />
     </member>
     <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalAnchorRatio" />
@@ -3248,51 +3241,56 @@ Use the ItemsRepeaterScrollHost if your app will run on versions of Windows prio
       <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</summary>
       <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollChainingMode?text=VerticalScrollChainingMode" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollControllerProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController?text=VerticalScrollController" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollController?text=VerticalScrollController" /> dependency property.</returns>
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollRailingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollRailingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollMode?text=VerticalScrollMode" /> dependency property.</returns>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.ViewChanged" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ViewportHeight" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ViewportWidth" />
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomAnimationStarting" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.VerticalScrollRailingMode?text=VerticalScrollRailingMode" /> dependency property.</returns>
+    </member>
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ViewChanged" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ViewportHeight" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ViewportWidth" />
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ZoomAnimationStarting" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="zoomFactorDelta" />
       <param name="centerPoint" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomBy(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
       <param name="zoomFactorDelta" />
       <param name="centerPoint" />
       <param name="options" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomChainingMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomChainingModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainingMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainingModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.ZoomChainingMode?text=ZoomChainingMode" /> dependency property.</returns>
     </member>
-    <member name="E:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomCompleted" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomFactor" />
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
+    <member name="E:Microsoft.UI.Xaml.Controls.ScrollView.ZoomCompleted" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomFactor" />
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomFrom(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Windows.Foundation.IReference{System.Single})">
       <param name="zoomFactorVelocity" />
       <param name="centerPoint" />
       <param name="inertiaDecayRate" />
     </member>
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomMode" />
-    <member name="P:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomModeProperty">
-      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ZoomMode?text=ZoomMode" /> dependency property.</summary>
-      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollingView.ZoomMode?text=ZoomMode" /> dependency property.</returns>
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomMode" />
+    <member name="P:Microsoft.UI.Xaml.Controls.ScrollView.ZoomModeProperty">
+      <summary>Identifies the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.ZoomMode?text=ZoomMode" /> dependency property.</summary>
+      <returns>The identifier for the <see cref="Microsoft.UI.Xaml.Controls.ScrollView.ZoomMode?text=ZoomMode" /> dependency property.</returns>
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2})">
       <param name="zoomFactor" />
       <param name="centerPoint" />
     </member>
-    <member name="M:Microsoft.UI.Xaml.Controls.ScrollingView.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
+    <member name="M:Microsoft.UI.Xaml.Controls.ScrollView.ZoomTo(System.Single,Windows.Foundation.IReference{Windows.Foundation.Numerics.Vector2},Microsoft.UI.Xaml.Controls.ScrollingZoomOptions)">
       <param name="zoomFactor" />
       <param name="centerPoint" />
       <param name="options" />

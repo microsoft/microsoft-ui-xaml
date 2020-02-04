@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Common;
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 using ScrollingScrollMode = Microsoft.UI.Xaml.Controls.ScrollingScrollMode;
 
 namespace MUXControlsTestApp
@@ -35,7 +35,7 @@ namespace MUXControlsTestApp
 
             this.VerticalOffsetAnimation1 = null;
             this.VerticalOffsetAnimation2 = null;
-            SetupScrollingPresenter();
+            SetupScrollPresenter();
 
             SetupAnimatedValuesSpy();
             TickForValuesSpy();
@@ -304,7 +304,7 @@ namespace MUXControlsTestApp
             SpyAnimatedValues();
         }
 
-        private void SetupScrollingPresenter()
+        private void SetupScrollPresenter()
         {
             LinearGradientBrush threeColorsLGB = new LinearGradientBrush() { StartPoint = new Point(0, 0), EndPoint = new Point(1, 1) };
 
@@ -322,7 +322,7 @@ namespace MUXControlsTestApp
             rectSC.Height = 900;
             rectSC.Fill = threeColorsLGB;
 
-            ScrollingPresenter s = new ScrollingPresenter();
+            ScrollPresenter s = new ScrollPresenter();
             s.Name = "s";
             s.Width = 500;
             s.Height = 300;
@@ -331,7 +331,7 @@ namespace MUXControlsTestApp
             s.HorizontalScrollMode = ScrollingScrollMode.Enabled;
             s.VerticalScrollMode = ScrollingScrollMode.Enabled;
             s.Content = rectSC;
-            s.ViewChanged += ScrollingPresenter_ViewChanged;
+            s.ViewChanged += ScrollPresenter_ViewChanged;
 
             sp.Children.Insert(0, s);
 
@@ -339,7 +339,7 @@ namespace MUXControlsTestApp
             parallaxView4.Source = s;
         }
 
-        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
             SpyAnimatedValues();
         }

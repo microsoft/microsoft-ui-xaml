@@ -9,8 +9,8 @@
     mc:Ignorable="d">
 
     <StackPanel Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="40">
-        <Button x:Name="navigateToSimpleRectangle" AutomationProperties.Name="navigateToSimpleRectangle" Margin="2" HorizontalAlignment="Stretch">Simple Rectangle in ScrollViewer and ScrollingPresenter</Button>
-        <Button x:Name="navigateToStackPanel" AutomationProperties.Name="navigateToStackPanel" Margin="2" HorizontalAlignment="Stretch">StackPanel children parallaxing in ScrollViewer and ScrollingPresenter</Button>
+        <Button x:Name="navigateToSimpleRectangle" AutomationProperties.Name="navigateToSimpleRectangle" Margin="2" HorizontalAlignment="Stretch">Simple Rectangle in ScrollViewer and ScrollPresenter</Button>
+        <Button x:Name="navigateToStackPanel" AutomationProperties.Name="navigateToStackPanel" Margin="2" HorizontalAlignment="Stretch">StackPanel children parallaxing in ScrollViewer and ScrollPresenter</Button>
         <Button x:Name="navigateToListViewBackground" AutomationProperties.Name="navigateToListViewBackground" Margin="2" HorizontalAlignment="Stretch">Vertical ListView with parallaxed background Image</Button>
         <Button x:Name="navigateToVSP" AutomationProperties.Name="navigateToVSP" Margin="2" HorizontalAlignment="Stretch">Vertical ListView using VirtualizingStackPanel, with parallaxed background Image</Button>
         <Button x:Name="navigateToListViewItem" AutomationProperties.Name="navigateToListViewItem" Margin="2" HorizontalAlignment="Stretch">Vertical ListView with parallaxed ListViewItem Images</Button>
