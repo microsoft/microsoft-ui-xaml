@@ -52,6 +52,7 @@ public:
     static winrt::float2 GetArrangeRenderSizesDelta(const winrt::ScrollPresenter& scrollPresenter);
     static winrt::float2 GetMinPosition(const winrt::ScrollPresenter& scrollPresenter);
     static winrt::float2 GetMaxPosition(const winrt::ScrollPresenter& scrollPresenter);
+    static winrt::InteractionTracker GetInteractionTracker(const winrt::ScrollPresenter& scrollPresenter);
     static winrt::ScrollPresenterViewChangeResult GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs);
     static winrt::ScrollPresenterViewChangeResult GetZoomCompletedResult(const winrt::ScrollingZoomCompletedEventArgs& zoomCompletedEventArgs);
 

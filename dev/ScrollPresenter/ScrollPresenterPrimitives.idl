@@ -297,11 +297,11 @@ unsealed runtimeclass ScrollPresenter : Windows.UI.Xaml.FrameworkElement
         Double horizontalOffsetDelta,
         Double verticalOffsetDelta,
         MU_XC_NAMESPACE.ScrollingScrollOptions options);
+    Int32 SetScrollVelocity(
+        Windows.Foundation.Numerics.Vector2 offsetsVelocity);
     Int32 AddScrollVelocity(
         Windows.Foundation.Numerics.Vector2 offsetsVelocity,
         Windows.Foundation.IReference<Windows.Foundation.Numerics.Vector2> inertiaDecayRate);
-    MU_XC_NAMESPACE.ScrollingScrollInfo ScrollWith(
-        Windows.Foundation.Numerics.Vector2 offsetsVelocity);
     [method_name("ZoomTo")]
     Int32 ZoomTo(
         Single zoomFactor,

@@ -1,6 +1,6 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <local:TestPage
-    x:Class="MUXControlsTestApp.ScrollingPresenterEdgeScrollingPage"
+    x:Class="MUXControlsTestApp.ScrollPresenterEdgeScrollingPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:MUXControlsTestApp"
@@ -16,10 +16,10 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Canvas x:Name="canvas" Width="580" Height="780" Background="LightYellow">
-            <controlsPrimitives:ScrollingPresenter
-                x:Name="scrollingPresenter" Width="400" Height="600"
+            <controlsPrimitives:ScrollPresenter
+                x:Name="scrollPresenter" Width="400" Height="600"
                 ZoomMode="Enabled" Margin="90" Background="ForestGreen"
-                IgnoredInputKind="Touch"
+                IgnoredInputKinds="Touch"
                 VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -60,7 +60,7 @@
                         </Rectangle>
                     </Canvas>
                 </Grid>
-            </controlsPrimitives:ScrollingPresenter>
+            </controlsPrimitives:ScrollPresenter>
             
             <Rectangle x:Name="rectLeftLeftEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
             <Rectangle x:Name="rectLeftRightEdge" Width="2" Height="780" Fill="Red" Visibility="Collapsed"/>
@@ -173,16 +173,16 @@
             
             <StackPanel Orientation="Horizontal" Margin="1">
                 <TextBlock Text="Events" Margin="1" VerticalAlignment="Center"/>
-                <Button x:Name="btnClearScrollingPresenterEvents" Content="Clear" Margin="1" Click="BtnClearScrollingPresenterEvents_Click"/>
-                <Button x:Name="btnCopyScrollingPresenterEvents" Content="Copy into Clipboard" Margin="1" Click="BtnCopyScrollingPresenterEvents_Click"/>
+                <Button x:Name="btnClearScrollPresenterEvents" Content="Clear" Margin="1" Click="BtnClearScrollPresenterEvents_Click"/>
+                <Button x:Name="btnCopyScrollPresenterEvents" Content="Copy into Clipboard" Margin="1" Click="BtnCopyScrollPresenterEvents_Click"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="1">
-                <CheckBox x:Name="chkLogScrollingPresenterMessages" Content="Log ScrollingPresenter Messages?" Margin="1" Checked="ChkLogScrollingPresenterMessages_Checked" Unchecked="ChkLogScrollingPresenterMessages_Unchecked"/>
-                <CheckBox x:Name="chkLogScrollingPresenterEvents" Content="Log ScrollingPresenter Events?" Margin="1" Checked="ChkLogScrollingPresenterEvents_Checked" Unchecked="ChkLogScrollingPresenterEvents_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollPresenterMessages" Content="Log ScrollPresenter Messages?" Margin="1" Checked="ChkLogScrollPresenterMessages_Checked" Unchecked="ChkLogScrollPresenterMessages_Unchecked"/>
+                <CheckBox x:Name="chkLogScrollPresenterEvents" Content="Log ScrollPresenter Events?" Margin="1" Checked="ChkLogScrollPresenterEvents_Checked" Unchecked="ChkLogScrollPresenterEvents_Unchecked"/>
                 <CheckBox x:Name="chkLogInteractionTrackerInfo" Content="Log InteractionTracker Info?" Margin="1" Checked="ChkLogInteractionTrackerInfo_Checked" Unchecked="ChkLogInteractionTrackerInfo_Unchecked"/>
             </StackPanel>
 
-            <ListBox x:Name="lstScrollingPresenterEvents" HorizontalAlignment="Stretch" Margin="2" Grid.Row="2"
+            <ListBox x:Name="lstScrollPresenterEvents" HorizontalAlignment="Stretch" Margin="2" Grid.Row="2"
                 ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollMode="Enabled"/>
         </Grid>
     </Grid>

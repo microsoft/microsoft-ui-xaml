@@ -16,32 +16,31 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 
-using ScrollingPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollingPresenter;
+using ScrollPresenter = Microsoft.UI.Xaml.Controls.Primitives.ScrollPresenter;
 
-using ScrollingPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollingPresenterTestHooks;
-using ScrollingPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollingPresenterViewChangeResult;
+using ScrollPresenterTestHooks = Microsoft.UI.Private.Controls.ScrollPresenterTestHooks;
+using ScrollPresenterViewChangeResult = Microsoft.UI.Private.Controls.ScrollPresenterViewChangeResult;
 using MUXControlsTestHooks = Microsoft.UI.Private.Controls.MUXControlsTestHooks;
 using MUXControlsTestHooksLoggingMessageEventArgs = Microsoft.UI.Private.Controls.MUXControlsTestHooksLoggingMessageEventArgs;
 
 namespace MUXControlsTestApp
 {
-    public sealed partial class ScrollingPresenterEdgeScrollingPage : TestPage
+    public sealed partial class ScrollPresenterEdgeScrollingPage : TestPage
     {
         private Object asyncEventReportingLock = new Object();
         private List<string> lstAsyncEventMessage = new List<string>();
         private UInt32 capturedPointerId = 0;
 
-        public ScrollingPresenterEdgeScrollingPage()
+        public ScrollPresenterEdgeScrollingPage()
         {
             InitializeComponent();
 
-            SizeChanged += ScrollingPresenterEdgeScrollingPage_SizeChanged;
+            SizeChanged += ScrollPresenterEdgeScrollingPage_SizeChanged;
 
-            scrollingPresenter.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ScrollingPresenter_PointerPressed), true);
-            scrollingPresenter.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(ScrollingPresenter_PointerReleased), true);
-            scrollingPresenter.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(ScrollingPresenter_PointerMoved), true);
-            scrollingPresenter.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(ScrollingPresenter_PointerCanceled), true);
-            scrollingPresenter.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(ScrollingPresenter_PointerCaptureLost), true);
+            scrollPresenter.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ScrollPresenter_PointerPressed), true);
+            scrollPresenter.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(ScrollPresenter_PointerReleased), true);
+            scrollPresenter.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(ScrollPresenter_PointerCanceled), true);
+            scrollPresenter.AddHandler(UIElement.PointerCaptureLostEvent, new PointerEventHandler(ScrollPresenter_PointerCaptureLost), true);
 
             canvas.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(Canvas_PointerPressed), true);
             canvas.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(Canvas_PointerReleased), true);
@@ -110,11 +109,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_PointerPressed(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage($"ScrollingPresenter_PointerPressed PointerId {e.Pointer.PointerId}");
+                AppendAsyncEventMessage($"ScrollPresenter_PointerPressed PointerId {e.Pointer.PointerId}");
             }
 
             if (IsPointerDeviceTypeRegistered(e.Pointer.PointerDeviceType) &&
@@ -126,9 +125,9 @@ namespace MUXControlsTestApp
                 {
                     Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
                         Windows.UI.Core.CoreCursorType.Hand, 0);
-                    AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollingPresenter).Position.ToString()}");
+                    AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollPresenter).Position.ToString()}");
                     AppendAsyncEventMessage($"RegisterPointerForEdgeScroll {e.Pointer.PointerId}");
-                    scrollingPresenter.RegisterPointerForEdgeScroll(e.Pointer.PointerId);
+                    scrollPresenter.RegisterPointerForEdgeScroll(e.Pointer.PointerId);
                     RegisterUnregisterToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = false;
                 }
                 else
@@ -138,11 +137,11 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenter_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage($"ScrollingPresenter_PointerReleased PointerId {e.Pointer.PointerId}");
+                AppendAsyncEventMessage($"ScrollPresenter_PointerReleased PointerId {e.Pointer.PointerId}");
             }
 
             if (IsPointerDeviceTypeRegistered(e.Pointer.PointerDeviceType))
@@ -151,36 +150,31 @@ namespace MUXControlsTestApp
 
                 if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || !ppp.IsLeftButtonPressed)
                 {
-                    Point position = e.GetCurrentPoint(scrollingPresenter).Position;
+                    Point position = e.GetCurrentPoint(scrollPresenter).Position;
                     (sender as UIElement).ReleasePointerCapture(e.Pointer);
                     AppendAsyncEventMessage($"Pointer capture released @ position {position.ToString()}");
                     Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
                         Windows.UI.Core.CoreCursorType.Arrow, 0);
-                    ScrollingScrollInfo scrollInfo = scrollingPresenter.UnregisterPointerForEdgeScroll();
-                    AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+                    int offsetsChangeCorrelationId = scrollPresenter.UnregisterPointerForEdgeScroll();
+                    AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll OffsetsChangeCorrelationId {offsetsChangeCorrelationId}");
                     RegisterUnregisterToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = true;
                 }
             }
         }
 
-        private void ScrollingPresenter_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
-
-        }
-
-        private void ScrollingPresenter_PointerCanceled(object sender, PointerRoutedEventArgs e)
-        {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage($"ScrollingPresenter_PointerCanceled PointerId {e.Pointer.PointerId}");
+                AppendAsyncEventMessage($"ScrollPresenter_PointerCanceled PointerId {e.Pointer.PointerId}");
             }
         }
 
-        private void ScrollingPresenter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        private void ScrollPresenter_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            if (chkLogScrollingPresenterEvents.IsChecked == true)
+            if (chkLogScrollPresenterEvents.IsChecked == true)
             {
-                AppendAsyncEventMessage($"ScrollingPresenter_PointerCaptureLost PointerId {e.Pointer.PointerId}");
+                AppendAsyncEventMessage($"ScrollPresenter_PointerCaptureLost PointerId {e.Pointer.PointerId}");
             }
         }
 
@@ -210,7 +204,7 @@ namespace MUXControlsTestApp
                     {
                         Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
                             Windows.UI.Core.CoreCursorType.Hand, 0);
-                        AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollingPresenter).Position.ToString()}");
+                        AppendAsyncEventMessage($"Pointer capture initiated @ position {e.GetCurrentPoint(scrollPresenter).Position.ToString()}");
                         StartStopToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = false;
                         capturedPointerId = e.Pointer.PointerId;
                     }
@@ -234,15 +228,15 @@ namespace MUXControlsTestApp
 
                     if (e.Pointer.PointerDeviceType != PointerDeviceType.Mouse || !ppp.IsLeftButtonPressed)
                     {
-                        Point position = e.GetCurrentPoint(scrollingPresenter).Position;
+                        Point position = e.GetCurrentPoint(scrollPresenter).Position;
                         (sender as UIElement).ReleasePointerCapture(e.Pointer);
                         AppendAsyncEventMessage($"Pointer capture released @ position {position.ToString()}");
                         Window.Current.CoreWindow.PointerCursor = new Windows.UI.Core.CoreCursor(
                             Windows.UI.Core.CoreCursorType.Arrow, 0);
                         StartStopToggleButtonFromPointerDeviceType(e.Pointer.PointerDeviceType).IsEnabled = true;
                         capturedPointerId = 0;
-                        ScrollingScrollInfo scrollInfo = scrollingPresenter.StopEdgeScrollWithPointer();
-                        AppendAsyncEventMessage($"StopEdgeScrollWithPointer OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+                        int offsetsChangeCorrelationId = scrollPresenter.StopEdgeScrollWithPointer();
+                        AppendAsyncEventMessage($"StopEdgeScrollWithPointer OffsetsChangeCorrelationId {offsetsChangeCorrelationId}");
                     }
                 }
             }
@@ -252,8 +246,8 @@ namespace MUXControlsTestApp
         {
             if (capturedPointerId == e.Pointer.PointerId)
             {
-                ScrollingScrollInfo scrollInfo = scrollingPresenter.StartEdgeScrollWithPointer(e);
-                AppendAsyncEventMessage($"StartEdgeScrollWithPointer OffsetsChangeId {scrollInfo.OffsetsChangeId}");
+                int offsetsChangeCorrelationId = scrollPresenter.StartEdgeScrollWithPointer(e);
+                AppendAsyncEventMessage($"StartEdgeScrollWithPointer OffsetsChangeCorrelationId {offsetsChangeCorrelationId}");
             }
         }
 
@@ -273,9 +267,9 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void ScrollingPresenterEdgeScrollingPage_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void ScrollPresenterEdgeScrollingPage_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            lstScrollingPresenterEvents.MaxHeight = ActualHeight - 80;
+            lstScrollPresenterEvents.MaxHeight = ActualHeight - 80;
         }
 
         private void BtnUpdateHorizontalEdgeScrollParameters_Click(object sender, RoutedEventArgs e)
@@ -294,11 +288,11 @@ namespace MUXControlsTestApp
 
                 AppendAsyncEventMessage($"Updating horizontal parameters with pointerPositionAdjustment:{pointerPositionAdjustment}, leftEdgeApplicableRange:{leftEdgeApplicableRange}, rightEdgeApplicableRange:{rightEdgeApplicableRange}, leftEdgeVelocity:{leftEdgeVelocity}, rightEdgeVelocity:{rightEdgeVelocity}");
 
-                scrollingPresenter.HorizontalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
-                scrollingPresenter.HorizontalEdgeScrollParameters.NearEdgeApplicableRange = leftEdgeApplicableRange;
-                scrollingPresenter.HorizontalEdgeScrollParameters.FarEdgeApplicableRange = rightEdgeApplicableRange;
-                scrollingPresenter.HorizontalEdgeScrollParameters.NearEdgeVelocity = leftEdgeVelocity;
-                scrollingPresenter.HorizontalEdgeScrollParameters.FarEdgeVelocity = rightEdgeVelocity;
+                scrollPresenter.HorizontalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
+                scrollPresenter.HorizontalEdgeScrollParameters.NearEdgeApplicableRange = leftEdgeApplicableRange;
+                scrollPresenter.HorizontalEdgeScrollParameters.FarEdgeApplicableRange = rightEdgeApplicableRange;
+                scrollPresenter.HorizontalEdgeScrollParameters.NearEdgeVelocity = leftEdgeVelocity;
+                scrollPresenter.HorizontalEdgeScrollParameters.FarEdgeVelocity = rightEdgeVelocity;
 
                 if (leftEdgeVelocity == 0)
                 {
@@ -310,8 +304,8 @@ namespace MUXControlsTestApp
                     rectLeftLeftEdge.Visibility = Visibility.Visible;
                     rectLeftRightEdge.Visibility = Visibility.Visible;
 
-                    Canvas.SetLeft(rectLeftLeftEdge, scrollingPresenter.Margin.Left - leftEdgeApplicableRange - rectLeftLeftEdge.Width / 2.0);
-                    Canvas.SetLeft(rectLeftRightEdge, scrollingPresenter.Margin.Left + leftEdgeApplicableRange - rectLeftLeftEdge.Width / 2.0);
+                    Canvas.SetLeft(rectLeftLeftEdge, scrollPresenter.Margin.Left - leftEdgeApplicableRange - rectLeftLeftEdge.Width / 2.0);
+                    Canvas.SetLeft(rectLeftRightEdge, scrollPresenter.Margin.Left + leftEdgeApplicableRange - rectLeftLeftEdge.Width / 2.0);
                 }
 
                 if (rightEdgeVelocity == 0)
@@ -324,8 +318,8 @@ namespace MUXControlsTestApp
                     rectRightLeftEdge.Visibility = Visibility.Visible;
                     rectRightRightEdge.Visibility = Visibility.Visible;
 
-                    Canvas.SetLeft(rectRightLeftEdge, scrollingPresenter.Margin.Left + scrollingPresenter.Width - rightEdgeApplicableRange - rectRightLeftEdge.Width / 2.0);
-                    Canvas.SetLeft(rectRightRightEdge, scrollingPresenter.Margin.Left + scrollingPresenter.Width + rightEdgeApplicableRange - rectRightLeftEdge.Width / 2.0);
+                    Canvas.SetLeft(rectRightLeftEdge, scrollPresenter.Margin.Left + scrollPresenter.Width - rightEdgeApplicableRange - rectRightLeftEdge.Width / 2.0);
+                    Canvas.SetLeft(rectRightRightEdge, scrollPresenter.Margin.Left + scrollPresenter.Width + rightEdgeApplicableRange - rectRightLeftEdge.Width / 2.0);
                 }
             }
             catch (Exception ex)
@@ -350,11 +344,11 @@ namespace MUXControlsTestApp
 
                 AppendAsyncEventMessage($"Updating vertical parameters with pointerPositionAdjustment:{pointerPositionAdjustment}, topEdgeApplicableRange:{topEdgeApplicableRange}, bottomEdgeApplicableRange:{bottomEdgeApplicableRange}, topEdgeVelocity:{topEdgeVelocity}, bottomEdgeVelocity:{bottomEdgeVelocity}");
 
-                scrollingPresenter.VerticalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
-                scrollingPresenter.VerticalEdgeScrollParameters.NearEdgeApplicableRange = topEdgeApplicableRange;
-                scrollingPresenter.VerticalEdgeScrollParameters.FarEdgeApplicableRange = bottomEdgeApplicableRange;
-                scrollingPresenter.VerticalEdgeScrollParameters.NearEdgeVelocity = topEdgeVelocity;
-                scrollingPresenter.VerticalEdgeScrollParameters.FarEdgeVelocity = bottomEdgeVelocity;
+                scrollPresenter.VerticalEdgeScrollParameters.PointerPositionAdjustment = pointerPositionAdjustment;
+                scrollPresenter.VerticalEdgeScrollParameters.NearEdgeApplicableRange = topEdgeApplicableRange;
+                scrollPresenter.VerticalEdgeScrollParameters.FarEdgeApplicableRange = bottomEdgeApplicableRange;
+                scrollPresenter.VerticalEdgeScrollParameters.NearEdgeVelocity = topEdgeVelocity;
+                scrollPresenter.VerticalEdgeScrollParameters.FarEdgeVelocity = bottomEdgeVelocity;
 
                 if (topEdgeVelocity == 0)
                 {
@@ -366,8 +360,8 @@ namespace MUXControlsTestApp
                     rectTopTopEdge.Visibility = Visibility.Visible;
                     rectTopBottomEdge.Visibility = Visibility.Visible;
 
-                    Canvas.SetTop(rectTopTopEdge, scrollingPresenter.Margin.Top - topEdgeApplicableRange - rectTopTopEdge.Height / 2.0);
-                    Canvas.SetTop(rectTopBottomEdge, scrollingPresenter.Margin.Top + topEdgeApplicableRange - rectTopTopEdge.Height / 2.0);
+                    Canvas.SetTop(rectTopTopEdge, scrollPresenter.Margin.Top - topEdgeApplicableRange - rectTopTopEdge.Height / 2.0);
+                    Canvas.SetTop(rectTopBottomEdge, scrollPresenter.Margin.Top + topEdgeApplicableRange - rectTopTopEdge.Height / 2.0);
                 }
 
                 if (bottomEdgeVelocity == 0)
@@ -380,8 +374,8 @@ namespace MUXControlsTestApp
                     rectBottomTopEdge.Visibility = Visibility.Visible;
                     rectBottomBottomEdge.Visibility = Visibility.Visible;
 
-                    Canvas.SetTop(rectBottomTopEdge, scrollingPresenter.Margin.Top + scrollingPresenter.Height - bottomEdgeApplicableRange - rectBottomTopEdge.Height / 2.0);
-                    Canvas.SetTop(rectBottomBottomEdge, scrollingPresenter.Margin.Top + scrollingPresenter.Height + bottomEdgeApplicableRange - rectBottomTopEdge.Height / 2.0);
+                    Canvas.SetTop(rectBottomTopEdge, scrollPresenter.Margin.Top + scrollPresenter.Height - bottomEdgeApplicableRange - rectBottomTopEdge.Height / 2.0);
+                    Canvas.SetTop(rectBottomBottomEdge, scrollPresenter.Margin.Top + scrollPresenter.Height + bottomEdgeApplicableRange - rectBottomTopEdge.Height / 2.0);
                 }
             }
             catch (Exception ex)
@@ -400,13 +394,13 @@ namespace MUXControlsTestApp
 
                     AppendAsyncEventMessage($"RegisterPointerForEdgeScroll {pointerId}");
 
-                    scrollingPresenter.RegisterPointerForEdgeScroll(pointerId);
+                    scrollPresenter.RegisterPointerForEdgeScroll(pointerId);
                 }
                 else
                 {
                     AppendAsyncEventMessage($"UnregisterPointerForEdgeScroll");
 
-                    scrollingPresenter.UnregisterPointerForEdgeScroll();
+                    scrollPresenter.UnregisterPointerForEdgeScroll();
                     txtRegisteredPointerId.Text = string.Empty;
                 }
             }
@@ -444,16 +438,16 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void BtnClearScrollingPresenterEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnClearScrollPresenterEvents_Click(object sender, RoutedEventArgs e)
         {
-            lstScrollingPresenterEvents.Items.Clear();
+            lstScrollPresenterEvents.Items.Clear();
         }
 
-        private void BtnCopyScrollingPresenterEvents_Click(object sender, RoutedEventArgs e)
+        private void BtnCopyScrollPresenterEvents_Click(object sender, RoutedEventArgs e)
         {
             string logs = string.Empty;
 
-            foreach (object log in lstScrollingPresenterEvents.Items)
+            foreach (object log in lstScrollPresenterEvents.Items)
             {
                 logs += log.ToString() + "\n";
             }
@@ -463,85 +457,85 @@ namespace MUXControlsTestApp
             Windows.ApplicationModel.DataTransfer.Clipboard.SetContent(dataPackage);
         }
 
-        private void ChkLogScrollingPresenterMessages_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Checked(object sender, RoutedEventArgs e)
         {
-            //To turn on info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
+            //To turn on info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: true, isLoggingVerboseLevel: true);
 
             MUXControlsTestHooks.LoggingMessage += MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterMessages_Unchecked(object sender, RoutedEventArgs e)
         {
-            //To turn off info and verbose logging for the ScrollingPresenter type:
-            MUXControlsTestHooks.SetLoggingLevelForType("ScrollingPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
+            //To turn off info and verbose logging for the ScrollPresenter type:
+            MUXControlsTestHooks.SetLoggingLevelForType("ScrollPresenter", isLoggingInfoLevel: false, isLoggingVerboseLevel: false);
 
             MUXControlsTestHooks.LoggingMessage -= MUXControlsTestHooks_LoggingMessage;
         }
 
-        private void ChkLogScrollingPresenterEvents_Checked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterEvents_Checked(object sender, RoutedEventArgs e)
         {
-            scrollingPresenter.ExtentChanged += ScrollingPresenter_ExtentChanged;
-            scrollingPresenter.StateChanged += ScrollingPresenter_StateChanged;
-            scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChanged;
-            scrollingPresenter.EdgeScrollQueued += ScrollingPresenter_EdgeScrollQueued;
-            scrollingPresenter.ScrollCompleted += ScrollingPresenter_ScrollCompleted;
+            scrollPresenter.ExtentChanged += ScrollPresenter_ExtentChanged;
+            scrollPresenter.StateChanged += ScrollPresenter_StateChanged;
+            scrollPresenter.ViewChanged += ScrollPresenter_ViewChanged;
+            scrollPresenter.EdgeScrollQueued += ScrollPresenter_EdgeScrollQueued;
+            scrollPresenter.ScrollCompleted += ScrollPresenter_ScrollCompleted;
         }
 
-        private void ChkLogScrollingPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
+        private void ChkLogScrollPresenterEvents_Unchecked(object sender, RoutedEventArgs e)
         {
-            scrollingPresenter.ExtentChanged -= ScrollingPresenter_ExtentChanged;
-            scrollingPresenter.StateChanged -= ScrollingPresenter_StateChanged;
-            scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChanged;
-            scrollingPresenter.EdgeScrollQueued -= ScrollingPresenter_EdgeScrollQueued;
-            scrollingPresenter.ScrollCompleted -= ScrollingPresenter_ScrollCompleted;
+            scrollPresenter.ExtentChanged -= ScrollPresenter_ExtentChanged;
+            scrollPresenter.StateChanged -= ScrollPresenter_StateChanged;
+            scrollPresenter.ViewChanged -= ScrollPresenter_ViewChanged;
+            scrollPresenter.EdgeScrollQueued -= ScrollPresenter_EdgeScrollQueued;
+            scrollPresenter.ScrollCompleted -= ScrollPresenter_ScrollCompleted;
         }
 
         private void ChkLogInteractionTrackerInfo_Checked(object sender, RoutedEventArgs e)
         {
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionPropertySpy.StartSpyingVector3Property(interactionTracker, "PositionVelocityInPixelsPerSecond", Vector3.Zero);
-            scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChangedForVelocitySpying;
+            scrollPresenter.ViewChanged += ScrollPresenter_ViewChangedForVelocitySpying;
         }
 
         private void ChkLogInteractionTrackerInfo_Unchecked(object sender, RoutedEventArgs e)
         {
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionPropertySpy.StopSpyingProperty(interactionTracker, "PositionVelocityInPixelsPerSecond");
-            scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChangedForVelocitySpying;
+            scrollPresenter.ViewChanged -= ScrollPresenter_ViewChangedForVelocitySpying;
         }
 
-        private void ScrollingPresenter_ExtentChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ExtentChanged(ScrollPresenter sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollingPresenter_ExtentChanged ExtentWidth={sender.ExtentWidth}, ExtentHeight={sender.ExtentHeight}");
+            AppendAsyncEventMessage($"ScrollPresenter_ExtentChanged ExtentWidth={sender.ExtentWidth}, ExtentHeight={sender.ExtentHeight}");
         }
 
-        private void ScrollingPresenter_StateChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_StateChanged(ScrollPresenter sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollingPresenter_StateChanged {sender.State.ToString()}");
+            AppendAsyncEventMessage($"ScrollPresenter_StateChanged {sender.State.ToString()}");
         }
 
-        private void ScrollingPresenter_ViewChanged(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChanged(ScrollPresenter sender, object args)
         {
-            AppendAsyncEventMessage($"ScrollingPresenter_ViewChanged H={sender.HorizontalOffset.ToString()}, V={sender.VerticalOffset}, ZF={sender.ZoomFactor}");
+            AppendAsyncEventMessage($"ScrollPresenter_ViewChanged H={sender.HorizontalOffset.ToString()}, V={sender.VerticalOffset}, ZF={sender.ZoomFactor}");
         }
 
-        private void ScrollingPresenter_EdgeScrollQueued(ScrollingPresenter sender, ScrollingEdgeScrollEventArgs e)
+        private void ScrollPresenter_EdgeScrollQueued(ScrollPresenter sender, ScrollingEdgeScrollEventArgs e)
         {
-            AppendAsyncEventMessage($"ScrollingPresenter_EdgeScrollQueued PointerId {e.PointerId}, OffsetsVelocity {e.OffsetsVelocity}, OffsetsChangeId {e.ScrollInfo.OffsetsChangeId}");
+            AppendAsyncEventMessage($"ScrollPresenter_EdgeScrollQueued PointerId {e.PointerId}, OffsetsVelocity {e.OffsetsVelocity}, OffsetsChangeId {e.CorrelationId}");
         }
 
-        private void ScrollingPresenter_ScrollCompleted(ScrollingPresenter sender, ScrollingScrollCompletedEventArgs args)
+        private void ScrollPresenter_ScrollCompleted(ScrollPresenter sender, ScrollingScrollCompletedEventArgs args)
         {
-            ScrollingPresenterViewChangeResult result = ScrollingPresenterTestHooks.GetScrollCompletedResult(args);
+            ScrollPresenterViewChangeResult result = ScrollPresenterTestHooks.GetScrollCompletedResult(args);
 
-            AppendAsyncEventMessage($"ScrollingPresenter_ScrollCompleted OffsetsChangeId={args.ScrollInfo.OffsetsChangeId}, Result={result}");
+            AppendAsyncEventMessage($"ScrollPresenter_ScrollCompleted OffsetsChangeId={args.CorrelationId}, Result={result}");
         }
 
-        private void ScrollingPresenter_ViewChangedForVelocitySpying(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChangedForVelocitySpying(ScrollPresenter sender, object args)
         {
             Vector3 positionVelocityInPixelsPerSecond;
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionGetValueStatus status = CompositionPropertySpy.TryGetVector3(interactionTracker, "PositionVelocityInPixelsPerSecond", out positionVelocityInPixelsPerSecond);
             AppendAsyncEventMessage($"InteractionTracker.PositionVelocityInPixelsPerSecond={positionVelocityInPixelsPerSecond.X}, {positionVelocityInPixelsPerSecond.Y}");
             AppendAsyncEventMessage($"InteractionTracker.PositionInertiaDecayRate={interactionTracker.PositionInertiaDecayRate}, InteractionTracker.ScaleInertiaDecayRate={interactionTracker.ScaleInertiaDecayRate}");
@@ -615,7 +609,7 @@ namespace MUXControlsTestApp
             {
                 foreach (string asyncEventMessage in lstAsyncEventMessage)
                 {
-                    lstScrollingPresenterEvents.Items.Add(asyncEventMessage);
+                    lstScrollPresenterEvents.Items.Add(asyncEventMessage);
                 }
                 lstAsyncEventMessage.Clear();
             }

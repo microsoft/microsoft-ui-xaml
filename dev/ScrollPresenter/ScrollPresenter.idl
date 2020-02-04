@@ -186,7 +186,7 @@ runtimeclass ScrollingAnchorRequestedEventArgs
 [webhosthidden]
 runtimeclass ScrollingEdgeScrollEventArgs
 {
-    ScrollingScrollInfo ScrollInfo { get; };
+    Int32 CorrelationId{ get; };
     Windows.Foundation.Numerics.Vector2 OffsetsVelocity { get; };
     UInt32 PointerId { get; };
 }

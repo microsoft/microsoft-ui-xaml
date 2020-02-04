@@ -642,34 +642,34 @@ int ScrollPresenter::AddZoomVelocity(float zoomFactorVelocity, winrt::IReference
     return viewChangeCorrelationId;
 }
 
-winrt::ScrollingScrollInfo ScrollingPresenter::StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args)
+int32_t ScrollPresenter::StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args)
 {
     if (SharedHelpers::IsTH2OrLower() ||
         (!m_horizontalEdgeScrollParameters && !m_verticalEdgeScrollParameters) ||
         !ProcessPointerEdgeScroll(args.GetCurrentPoint(*this) /*pointerPoint*/, false /*raiseEdgeScrollQueued*/))
     {
-        return winrt::ScrollingScrollInfo{ -1 };
+        return s_noOpCorrelationId;
     }
 
-    return m_edgeScrollInfo;
+    return m_edgeScrollCorrelationId;
 }
 
-winrt::ScrollingScrollInfo ScrollingPresenter::StopEdgeScrollWithPointer()
+int32_t ScrollPresenter::StopEdgeScrollWithPointer()
 {
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     if (SharedHelpers::IsTH2OrLower() ||
         !UpdateEdgeScroll(winrt::float2{}))
     {
-        return winrt::ScrollingScrollInfo{ -1 };
+        return s_noOpCorrelationId;
     }
 
-    return m_edgeScrollInfo;
+    return m_edgeScrollCorrelationId;
 }
 
-void ScrollingPresenter::RegisterPointerForEdgeScroll(UINT pointerId)
+void ScrollPresenter::RegisterPointerForEdgeScroll(UINT pointerId)
 {
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, pointerId);
+    SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_INT, METH_NAME, this, pointerId);
 
     if (SharedHelpers::IsTH2OrLower())
     {
@@ -677,25 +677,25 @@ void ScrollingPresenter::RegisterPointerForEdgeScroll(UINT pointerId)
     }
 
     m_registeredPointerIdForEdgeScroll = pointerId;
-    HookScrollingPresenterPointerMovedEvent();
+    HookScrollPresenterPointerMovedEvent();
 }
 
-winrt::ScrollingScrollInfo ScrollingPresenter::UnregisterPointerForEdgeScroll()
+int32_t ScrollPresenter::UnregisterPointerForEdgeScroll()
 {
-    SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+    SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
     if (!SharedHelpers::IsTH2OrLower() && m_registeredPointerIdForEdgeScroll != 0)
     {
         m_registeredPointerIdForEdgeScroll = 0;
-        UnhookScrollingPresenterPointerMovedEvent();
+        UnhookScrollPresenterPointerMovedEvent();
 
         if (UpdateEdgeScroll(winrt::float2{}))
         {
-            return m_edgeScrollInfo;
+            return m_edgeScrollCorrelationId;
         }
     }
 
-    return winrt::ScrollingScrollInfo{ -1 };
+    return s_noOpCorrelationId;
 }
 
 #pragma endregion
@@ -3945,7 +3945,7 @@ wstring_view ScrollPresenter::GetVisualTargetedPropertyName(ScrollPresenterDimen
     }
 }
 
-float ScrollingPresenter::GetEdgeScrollVelocity(
+float ScrollPresenter::GetEdgeScrollVelocity(
     bool isForHorizontalScroll,
     double offset,
     double viewportDim,
@@ -4021,7 +4021,7 @@ float ScrollingPresenter::GetEdgeScrollVelocity(
     return 0.0f;
 }
 
-float ScrollingPresenter::GetAdjustedEdgeScrollVelocity(
+float ScrollPresenter::GetAdjustedEdgeScrollVelocity(
     float edgeScrollingVelocity,
     float maxEdgeScrollingVelocity)
 {
@@ -4052,7 +4052,7 @@ float ScrollingPresenter::GetAdjustedEdgeScrollVelocity(
     return edgeScrollingVelocity;
 }
 
-bool ScrollingPresenter::CanEdgeScrollAtNearEdge(
+bool ScrollPresenter::CanEdgeScrollAtNearEdge(
     float edgeScrollingVelocity,
     double offset,
     double scrollableDim)
@@ -4072,7 +4072,7 @@ bool ScrollingPresenter::CanEdgeScrollAtNearEdge(
     return true;
 }
 
-bool ScrollingPresenter::CanEdgeScrollAtFarEdge(
+bool ScrollPresenter::CanEdgeScrollAtFarEdge(
     float edgeScrollingVelocity,
     double offset,
     double scrollableDim)
@@ -4492,7 +4492,7 @@ void ScrollPresenter::OnCompositionTargetRendering(const winrt::IInspectable& /*
                     // velocity so the imminent TryUpdatePositionWithAdditionalVelocity operation uses the closest approximation.
                     winrt::float2 currentPositionVelocityInPixelsPerSecond = GetPositionVelocityInPixelsPerSecond();
 
-                    SCROLLINGPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
+                    SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_STR, METH_NAME, this,
                         TypeLogging::Float2ToString(winrt::float2(currentPositionVelocityInPixelsPerSecond)).c_str());
                 }
 
@@ -5023,7 +5023,7 @@ void ScrollPresenter::OnPointerPressed(
     }
 }
 
-void ScrollingPresenter::OnPointerMoved(
+void ScrollPresenter::OnPointerMoved(
     const winrt::IInspectable& /*sender*/,
     const winrt::PointerRoutedEventArgs& args)
 {
@@ -6053,10 +6053,10 @@ void ScrollPresenter::UpdateDisplayInformation(winrt::DisplayInformation const& 
 
 bool ScrollPresenter::UpdateEdgeScroll(winrt::float2 const& offsetsVelocity)
 {
-    if ((m_edgeScrollInfo.OffsetsChangeId == -1 && (abs(offsetsVelocity.x) != 0.0f || abs(offsetsVelocity.y) != 0.0f)) ||
-        (m_edgeScrollInfo.OffsetsChangeId != -1 && (offsetsVelocity.x != m_edgeScrollOffsetsVelocity.x || offsetsVelocity.y != m_edgeScrollOffsetsVelocity.y)))
+    if ((m_edgeScrollCorrelationId == s_noOpCorrelationId && (abs(offsetsVelocity.x) != 0.0f || abs(offsetsVelocity.y) != 0.0f)) ||
+        (m_edgeScrollCorrelationId != s_noOpCorrelationId && (offsetsVelocity.x != m_edgeScrollOffsetsVelocity.x || offsetsVelocity.y != m_edgeScrollOffsetsVelocity.y)))
     {
-        m_edgeScrollInfo = ScrollWith(offsetsVelocity);
+        m_edgeScrollCorrelationId = SetScrollVelocity(offsetsVelocity);
         m_edgeScrollOffsetsVelocity = offsetsVelocity;
 
         SCROLLPRESENTER_TRACE_VERBOSE(
@@ -6065,7 +6065,7 @@ bool ScrollPresenter::UpdateEdgeScroll(winrt::float2 const& offsetsVelocity)
             METH_NAME,
             this,
             TypeLogging::Float2ToString(m_edgeScrollOffsetsVelocity).c_str(),
-            m_edgeScrollInfo.OffsetsChangeId);
+            m_edgeScrollCorrelationId);
 
         return true;
     }
@@ -6404,10 +6404,10 @@ int32_t ScrollPresenter::ChangeOffsetsWithVelocityPrivate(
     if (!Content())
     {
         // When there is no content, skip the view change request and return -1, indicating that no action was taken.
-        return -1;
+        return s_noOpCorrelationId;
     }
 
-    // When the ScrollingPresenter is not loaded or not set up yet, delay the offsets change request until it gets loaded.
+    // When the ScrollPresenter is not loaded or not set up yet, delay the offsets change request until it gets loaded.
     // OnCompositionTargetRendering will launch the delayed changes at that point.
     bool delayOperation = !IsLoadedAndSetUp();
 
@@ -6443,19 +6443,19 @@ int32_t ScrollPresenter::ChangeOffsetsWithVelocityPrivate(
 
     m_interactionTrackerAsyncOperations.push_back(interactionTrackerAsyncOperation);
 
-    int latestViewChangeId = m_latestViewChangeId = GetNextViewChangeId();
-    interactionTrackerAsyncOperation->SetViewChangeId(m_latestViewChangeId);
+    int32_t latestViewChangeCorrelationId = m_latestViewChangeCorrelationId = GetNextViewChangeCorrelationId();
+    interactionTrackerAsyncOperation->SetViewChangeCorrelationId(m_latestViewChangeCorrelationId);
 
-    // Cancel all pending ScrollWith operations since they are overridden by this new request.
+    // Cancel all pending SetScrollVelocity operations since they are overridden by this new request.
     do
     {
         interactionTrackerAsyncOperation = GetPendingInteractionTrackerOperationFromType(
             InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity);
         if (interactionTrackerAsyncOperation)
         {
-            if (interactionTrackerAsyncOperation->GetViewChangeId() != latestViewChangeId)
+            if (interactionTrackerAsyncOperation->GetViewChangeCorrelationId() != latestViewChangeCorrelationId)
             {
-                CompleteViewChange(interactionTrackerAsyncOperation, ScrollingPresenterViewChangeResult::Interrupted);
+                CompleteViewChange(interactionTrackerAsyncOperation, ScrollPresenterViewChangeResult::Interrupted);
                 m_interactionTrackerAsyncOperations.remove(interactionTrackerAsyncOperation);
             }
             else
@@ -6465,7 +6465,7 @@ int32_t ScrollPresenter::ChangeOffsetsWithVelocityPrivate(
         }
     } while (interactionTrackerAsyncOperation);
 
-    return m_latestViewChangeId;
+    return m_latestViewChangeCorrelationId;
 }
 
 void ScrollPresenter::ChangeZoomFactorPrivate(
@@ -6707,17 +6707,17 @@ bool ScrollPresenter::ProcessPointerEdgeScroll(
             pointerPosition);
     }
 
-    bool scrollWithQueued = UpdateEdgeScroll(offsetsVelocity);
+    bool edgeScrollQueued = UpdateEdgeScroll(offsetsVelocity);
 
-    if (raiseEdgeScrollQueued && scrollWithQueued)
+    if (raiseEdgeScrollQueued && edgeScrollQueued)
     {
         RaiseEdgeScrollQueued(
-            m_edgeScrollInfo,
+            m_edgeScrollCorrelationId,
             m_edgeScrollOffsetsVelocity,
             pointerPoint.PointerId());
     }
 
-    return scrollWithQueued;
+    return edgeScrollQueued;
 }
 
 void ScrollPresenter::ProcessPointerWheelScroll(
@@ -7270,7 +7270,7 @@ void ScrollPresenter::ProcessOffsetsChange(
 }
 
 // Processes an OffsetsChangeWithVelocity request to start a constant velocity scroll, taking into account the current offsets velocity.
-void ScrollingPresenter::ProcessOffsetsChange(
+void ScrollPresenter::ProcessOffsetsChange(
     std::shared_ptr<OffsetsChangeWithVelocity> offsetsChangeWithVelocity)
 {
     MUX_ASSERT(offsetsChangeWithVelocity);
@@ -7555,11 +7555,11 @@ void ScrollPresenter::CompleteViewChange(
                 case InteractionTrackerAsyncOperationType::TryUpdatePositionWithVelocity:
                 case InteractionTrackerAsyncOperationType::TryUpdatePositionWithAdditionalVelocity:
                 {
-                    if (m_edgeScrollOffsetsChangeCorrelationId == interactionTrackerAsyncOperation->GetViewChangeCorrelationId())
+                    if (m_edgeScrollCorrelationId == interactionTrackerAsyncOperation->GetViewChangeCorrelationId())
                     {
                         SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH_STR, METH_NAME, this, L"Edge scroll stopped");
 
-                        m_edgeScrollOffsetsChangeCorrelationId = -1;
+                        m_edgeScrollCorrelationId = s_noOpCorrelationId;
                         m_edgeScrollOffsetsVelocity.x = m_edgeScrollOffsetsVelocity.y = 0.0f;
                     }
                     RaiseViewChangeCompleted(true /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeCorrelationId());
@@ -7570,7 +7570,7 @@ void ScrollPresenter::CompleteViewChange(
                     // Stop Translation and Scale animations if needed, to trigger rasterization of Content & avoid fuzzy text rendering for instance.
                     StopTranslationAndZoomFactorExpressionAnimations();
 
-                    RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeId());
+                    RaiseViewChangeCompleted(false /*isForScroll*/, result, interactionTrackerAsyncOperation->GetViewChangeCorrelationId());
                     break;
                 }
             }
@@ -7695,7 +7695,7 @@ void ScrollPresenter::CompleteDelayedOperations()
     }
 }
 
-winrt::float2 ScrollingPresenter::GetPositionVelocityInPixelsPerSecond()
+winrt::float2 ScrollPresenter::GetPositionVelocityInPixelsPerSecond()
 {
     MUX_ASSERT(m_expressionAnimationSources);
     MUX_ASSERT(m_positionVelocityInPixelsPerSecondSourceExpressionAnimation);
@@ -8129,17 +8129,17 @@ void ScrollPresenter::UnhookScrollPresenterEvents()
     }
 }
 
-void ScrollPresenter::HookScrollingPresenterPointerMovedEvent()
+void ScrollPresenter::HookScrollPresenterPointerMovedEvent()
 {
     if (!m_pointerMovedEventHandler)
     {
-        m_pointerMovedEventHandler = winrt::box_value<winrt::PointerEventHandler>({ this, &ScrollingPresenter::OnPointerMoved });
+        m_pointerMovedEventHandler = winrt::box_value<winrt::PointerEventHandler>({ this, &ScrollPresenter::OnPointerMoved });
         MUX_ASSERT(m_pointerMovedEventHandler);
         AddHandler(winrt::UIElement::PointerMovedEvent(), m_pointerMovedEventHandler, true /*handledEventsToo*/); //TODO: should it be false?
     }
 }
 
-void ScrollPresenter::UnhookScrollingPresenterPointerMovedEvent()
+void ScrollPresenter::UnhookScrollPresenterPointerMovedEvent()
 {
     if (m_pointerMovedEventHandler)
     {
@@ -8498,17 +8498,17 @@ bool ScrollPresenter::RaiseBringingIntoView(
     return true;
 }
 
-void ScrollingPresenter::RaiseEdgeScrollQueued(
-    const winrt::ScrollingScrollInfo& scrollInfo,
+void ScrollPresenter::RaiseEdgeScrollQueued(
+    int edgeScrollCorrelationId,
     const winrt::float2& offsetsVelocity,
     UINT pointerId)
 {
     if (m_edgeScrollQueuedEventSource)
     {
-        SCROLLINGPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_INFO(*this, TRACE_MSG_METH, METH_NAME, this);
 
         auto edgeScrollQueuedEventArgs = winrt::make_self<ScrollingEdgeScrollEventArgs>(
-            scrollInfo,
+            edgeScrollCorrelationId,
             offsetsVelocity,
             pointerId);
 

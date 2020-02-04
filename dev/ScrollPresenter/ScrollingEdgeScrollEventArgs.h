@@ -3,7 +3,6 @@
 
 #pragma once
 
-//#include "ScrollingPresenter.h"
 #include "ScrollingEdgeScrollEventArgs.g.h"
 
 class ScrollingEdgeScrollEventArgs :
@@ -12,24 +11,22 @@ class ScrollingEdgeScrollEventArgs :
 public:
     ~ScrollingEdgeScrollEventArgs()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ScrollingEdgeScrollEventArgs(
-        //const winrt::ScrollingPresenter& scrollingPresenter,
-        const winrt::ScrollingScrollInfo& scrollInfo,
+        int correlationId,
         const winrt::float2& offsetsVelocity,
         UINT pointerId);
 
 #pragma region IScrollingEdgeScrollEventArgs
-    winrt::ScrollingScrollInfo ScrollInfo() const;
+    int CorrelationId() const;
     winrt::float2 OffsetsVelocity() const;
     UINT PointerId() const;
 #pragma endregion
 
 private:
-    //tracker_ref<winrt::ScrollingPresenter> m_scrollingPresenter{ this };
-    winrt::ScrollingScrollInfo m_scrollInfo{ -1 };
+    int m_correlationId{ -1 };
     winrt::float2 m_offsetsVelocity{};
     UINT m_pointerId{ 0 };
 };

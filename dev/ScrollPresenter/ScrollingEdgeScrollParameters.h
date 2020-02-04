@@ -11,12 +11,12 @@ class ScrollingEdgeScrollParameters :
 public:
     ScrollingEdgeScrollParameters()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
     ~ScrollingEdgeScrollParameters()
     {
-        SCROLLINGPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
+        SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH, METH_NAME, this);
     }
 
 #pragma region IScrollingEdgeScrollParameters

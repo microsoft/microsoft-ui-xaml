@@ -71,8 +71,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterTestHooksExpressionAnimationStatusChangedEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingZoomAnimationStartingEventArgs.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingAnchorRequestedEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollEdgeScrollEventArgs.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollEdgeScrollParameters.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollEventArgs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingEdgeScrollParameters.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterPrivate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollPresenterAnchoring.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ScrollingScrollOptions.cpp" />

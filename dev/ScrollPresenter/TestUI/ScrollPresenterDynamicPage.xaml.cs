@@ -127,10 +127,10 @@ namespace MUXControlsTestApp
             AppendAsyncEventMessage("ViewChanged H=" + sender.HorizontalOffset.ToString() + ", V=" + sender.VerticalOffset + ", ZF=" + sender.ZoomFactor);
         }
 
-        private void ScrollPresenter_ViewChangedForVelocitySpying(ScrollingPresenter sender, object args)
+        private void ScrollPresenter_ViewChangedForVelocitySpying(ScrollPresenter sender, object args)
         {
             Vector3 positionVelocityInPixelsPerSecond;
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionGetValueStatus status = CompositionPropertySpy.TryGetVector3(interactionTracker, "PositionVelocityInPixelsPerSecond", out positionVelocityInPixelsPerSecond);
             AppendAsyncEventMessage("InteractionTracker.PositionVelocityInPixelsPerSecond=" + positionVelocityInPixelsPerSecond.X + ", " + positionVelocityInPixelsPerSecond.Y);
             AppendAsyncEventMessage("InteractionTracker.PositionInertiaDecayRate=" + interactionTracker.PositionInertiaDecayRate + ", InteractionTracker.ScaleInertiaDecayRate=" + interactionTracker.ScaleInertiaDecayRate);
@@ -286,16 +286,16 @@ namespace MUXControlsTestApp
 
         private void ChkLogInteractionTrackerInfo_Checked(object sender, RoutedEventArgs e)
         {
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionPropertySpy.StartSpyingVector3Property(interactionTracker, "PositionVelocityInPixelsPerSecond", Vector3.Zero);
-            scrollingPresenter.ViewChanged += ScrollingPresenter_ViewChangedForVelocitySpying;
+            scrollPresenter.ViewChanged += ScrollPresenter_ViewChangedForVelocitySpying;
         }
 
         private void ChkLogInteractionTrackerInfo_Unchecked(object sender, RoutedEventArgs e)
         {
-            InteractionTracker interactionTracker = ScrollingPresenterTestHooks.GetInteractionTracker(scrollingPresenter);
+            InteractionTracker interactionTracker = ScrollPresenterTestHooks.GetInteractionTracker(scrollPresenter);
             CompositionPropertySpy.StopSpyingProperty(interactionTracker, "PositionVelocityInPixelsPerSecond");
-            scrollingPresenter.ViewChanged -= ScrollingPresenter_ViewChangedForVelocitySpying;
+            scrollPresenter.ViewChanged -= ScrollPresenter_ViewChangedForVelocitySpying;
         }
 
         private void ChkLogContentEffectiveViewportChangedEvent_Checked(object sender, RoutedEventArgs e)
@@ -1526,11 +1526,11 @@ namespace MUXControlsTestApp
                 if (lastOffsetsChangeCorrelationId != -1)
                 {
                     AppendAsyncEventMessage("Canceling ScrollTo/By Id=" + lastOffsetsChangeCorrelationId);
-                    int cancelId = scrollingPresenter.ScrollBy(
+                    int cancelCorrelationId = scrollPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
-                    AppendAsyncEventMessage("Cancel Id=" + cancelId);
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                    AppendAsyncEventMessage("Cancel CorrelationId=" + cancelCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1651,7 +1651,7 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastOffsetsChangeWithAdditionalVelocityCorrelationId = scrollingPresenter.AddScrollVelocity(
+                lastOffsetsChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddScrollVelocity(
                     new Vector2(Convert.ToSingle(txtScrollHorizontalAdditionalVelocity.Text), Convert.ToSingle(txtScrollVerticalAdditionalVelocity.Text)),
                     inertiaDecayRate);
                 AppendAsyncEventMessage("Invoked AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
@@ -1670,17 +1670,17 @@ namespace MUXControlsTestApp
                 if (lastOffsetsChangeWithAdditionalVelocityCorrelationId != -1)
                 {
                     AppendAsyncEventMessage("Canceling AddScrollVelocity Id=" + lastOffsetsChangeWithAdditionalVelocityCorrelationId);
-                    int cancelId = scrollPresenter.ScrollBy(
+                    int cancelCorrelationId = scrollPresenter.ScrollBy(
                         0,
                         0,
-                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore)).OffsetsChangeId;
-                    AppendAsyncEventMessage("Cancel Id=" + cancelId);
+                        new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
+                    AppendAsyncEventMessage("Cancel CorrelationId=" + cancelCorrelationId);
                 }
             }
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1699,7 +1699,7 @@ namespace MUXControlsTestApp
             catch (Exception ex)
             {
                 txtExceptionReport.Text = ex.ToString();
-                lstScrollingPresenterEvents.Items.Add(ex.ToString());
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
             }
         }
 
@@ -1710,11 +1710,11 @@ namespace MUXControlsTestApp
                 if (lastOffsetsChangeWithVelocityCorrelationId != -1)
                 {
                     AppendAsyncEventMessage("Canceling SetScrollVelocity Id=" + lastOffsetsChangeWithVelocityCorrelationId);
-                    int cancelId = scrollingPresenter.ScrollBy(
+                    int cancelCorrelationId = scrollPresenter.ScrollBy(
                         0,
                         0,
                         new ScrollingScrollOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
-                    AppendAsyncEventMessage("Cancel Id=" + cancelId);
+                    AppendAsyncEventMessage("Cancel CorrelationId=" + cancelCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1858,11 +1858,11 @@ namespace MUXControlsTestApp
                 if (lastZoomFactorChangeCorrelationId != -1)
                 {
                     AppendAsyncEventMessage("Canceling ZoomTo/By Id=" + lastZoomFactorChangeCorrelationId);
-                    int cancelId = scrollPresenter.ZoomBy(
+                    int cancelCorrelationId = scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero, 
                         new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
-                    AppendAsyncEventMessage("Cancel Id=" + cancelId);
+                    AppendAsyncEventMessage("Cancel CorrelationId=" + cancelCorrelationId);
                 }
             }
             catch (Exception ex)
@@ -1963,11 +1963,11 @@ namespace MUXControlsTestApp
 
                 ExecuteQueuedOperations();
 
-                lastZoomFactorChangeWithAdditionalVelocityId = scrollPresenter.AddZoomVelocity(
-                    Convert.ToSingle(txtAddZoomVelocityVelocity.Text),
+                lastZoomFactorChangeWithAdditionalVelocityCorrelationId = scrollPresenter.AddZoomVelocity(
+                    Convert.ToSingle(txtZoomAdditionalVelocity.Text),
                     (txtAddZoomVelocityCenterPoint.Text == "null") ? (Vector2?)null : ConvertFromStringToVector2(txtAddZoomVelocityCenterPoint.Text),
                     (txtAddZoomVelocityInertiaDecayRate.Text == "null") ? (float?)null : (float?)Convert.ToSingle(txtAddZoomVelocityInertiaDecayRate.Text));
-                AppendAsyncEventMessage("Invoked AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityId);
+                AppendAsyncEventMessage("Invoked AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
             }
             catch (Exception ex)
             {
@@ -1983,11 +1983,11 @@ namespace MUXControlsTestApp
                 if (lastZoomFactorChangeWithAdditionalVelocityCorrelationId != -1)
                 {
                     AppendAsyncEventMessage("Canceling AddZoomVelocity Id=" + lastZoomFactorChangeWithAdditionalVelocityCorrelationId);
-                    int cancelId = scrollingPresenter.ZoomBy(
+                    int cancelCorrelationId = scrollPresenter.ZoomBy(
                         0,
                         Vector2.Zero,
                         new ScrollingZoomOptions(ScrollingAnimationMode.Disabled, ScrollingSnapPointsMode.Ignore));
-                    AppendAsyncEventMessage("Cancel Id=" + cancelId);
+                    AppendAsyncEventMessage("Cancel CorrelationId=" + cancelCorrelationId);
                 }
             }
             catch (Exception ex)

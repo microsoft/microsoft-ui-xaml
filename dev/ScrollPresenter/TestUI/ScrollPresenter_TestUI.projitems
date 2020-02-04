@@ -16,6 +16,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterBringIntoViewPage.xaml.cs">
       <DependentUpon>ScrollPresenterBringIntoViewPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterEdgeScrollingPage.xaml.cs">
+      <DependentUpon>ScrollPresenterEdgeScrollingPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)ScrollPresenterMousePanningPage.xaml.cs">
       <DependentUpon>ScrollPresenterMousePanningPage.xaml</DependentUpon>
     </Compile>
@@ -72,6 +75,11 @@
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)ScrollPresenterBringIntoViewPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+      <IncludeInWindowsAppx>false</IncludeInWindowsAppx>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)ScrollPresenterEdgeScrollingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
       <IncludeInWindowsAppx>false</IncludeInWindowsAppx>

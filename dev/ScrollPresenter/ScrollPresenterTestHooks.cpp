@@ -229,6 +229,15 @@ winrt::float2 ScrollPresenterTestHooks::GetMaxPosition(const winrt::ScrollPresen
     return winrt::float2{ 0.0f, 0.0f };
 }
 
+winrt::InteractionTracker ScrollPresenterTestHooks::GetInteractionTracker(const winrt::ScrollPresenter& scrollPresenter)
+{
+    if (scrollPresenter)
+    {
+        return winrt::get_self<ScrollPresenter>(scrollPresenter)->GetInteractionTracker();
+    }
+    return nullptr;
+}
+
 winrt::ScrollPresenterViewChangeResult ScrollPresenterTestHooks::GetScrollCompletedResult(const winrt::ScrollingScrollCompletedEventArgs& scrollCompletedEventArgs)
 {
     if (scrollCompletedEventArgs)

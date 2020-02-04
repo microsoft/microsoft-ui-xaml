@@ -92,7 +92,7 @@ public:
     // 0.999972 closely matches the built-in InteractionTracker scrolling/zooming behavior introduced in RS5.
     static constexpr float s_mouseWheelInertiaDecayRate = 0.999972f;
 
-    static const int s_noOpCorrelationId;
+    static const int32_t s_noOpCorrelationId;
 
 #pragma region IScrollAnchorProvider
     void RegisterAnchorCandidate(winrt::UIElement const& element);
@@ -191,7 +191,7 @@ public:
     int StopEdgeScrollWithPointer();
 
     void RegisterPointerForEdgeScroll(UINT pointerId);
-    winrt::ScrollingScrollInfo UnregisterPointerForEdgeScroll();
+    int UnregisterPointerForEdgeScroll();
 
 #pragma endregion
 
@@ -451,9 +451,8 @@ private:
         InteractionTrackerAsyncOperationTrigger operationTrigger,
         int32_t existingViewChangeCorrelationId,
         _Out_opt_ int32_t* viewChangeCorrelationId);
-    void ChangeOffsetsWithVelocityPrivate(
-        winrt::float2 offsetsVelocity,
-        _Out_opt_ int32_t* viewChangeCorrelationId);
+    int32_t ChangeOffsetsWithVelocityPrivate(
+        winrt::float2 offsetsVelocity);
     void ChangeOffsetsWithAdditionalVelocityPrivate(
         winrt::float2 offsetsVelocity,
         winrt::float2 anticipatedOffsetsChange,
@@ -598,7 +597,7 @@ private:
         float zoomFactor,
         const winrt::float2& centerPoint,
         int32_t zoomFactorChangeCorrelationId);
-    int GetNextViewChangeCorrelationId();
+    int32_t GetNextViewChangeCorrelationId();
 
     bool IsInertiaFromImpulse() const;
     bool IsLoadedAndSetUp() const;
@@ -658,7 +657,7 @@ private:
         int32_t offsetsChangeCorrelationId,
         _Inout_ winrt::ScrollingSnapPointsMode* snapPointsMode);
     void RaiseEdgeScrollQueued(
-        const winrt::ScrollingScrollInfo& scrollInfo,
+        int32_t edgeScrollCorrelationId,
         const winrt::float2& offsetsVelocity,
         UINT pointerId);
 
@@ -840,8 +839,8 @@ private:
 #endif // _DEBUG
 
 private:
-    int m_latestViewChangeCorrelationId{ 0 };
-    int m_latestInteractionTrackerRequest{ 0 };
+    int32_t m_latestViewChangeCorrelationId{ 0 };
+    int32_t m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
     float m_animationRestartZoomFactor{ 1.0f };
@@ -960,7 +959,7 @@ private:
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ScrollSnapPointBase>>, SnapPointWrapperComparator<winrt::ScrollSnapPointBase>> m_sortedConsolidatedVerticalSnapPoints{};
     std::set<std::shared_ptr<SnapPointWrapper<winrt::ZoomSnapPointBase>>, SnapPointWrapperComparator<winrt::ZoomSnapPointBase>> m_sortedConsolidatedZoomSnapPoints{};
 
-    winrt::ScrollingScrollInfo m_edgeScrollInfo{ -1 };
+    int32_t m_edgeScrollCorrelationId{ s_noOpCorrelationId };
     winrt::float2 m_edgeScrollOffsetsVelocity{};
     winrt::ScrollingEdgeScrollParameters m_horizontalEdgeScrollParameters{ nullptr };
     winrt::ScrollingEdgeScrollParameters m_verticalEdgeScrollParameters{ nullptr };
