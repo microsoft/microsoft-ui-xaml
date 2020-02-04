@@ -47,7 +47,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
-                Verify.AreEqual(0, numBox.Value);
+                numBox.SetValue(0);
 
                 ComboBox spinModeComboBox = FindElement.ByName<ComboBox>("SpinModeComboBox");
                 spinModeComboBox.SelectItemByName("Inline");
@@ -112,7 +112,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Check("MinCheckBox");
                 Check("MaxCheckBox");
 
+                Log.Comment("Verify that spin buttons are disabled if value is NaN.");
+                Wait.ForIdle();
+                Verify.IsFalse(upButton.IsEnabled);
+                Verify.IsFalse(downButton.IsEnabled);
+
                 Log.Comment("Verify that when Value is at Minimum, the down spin button is disabled.");
+                numBox.SetValue(0);
+                Wait.ForIdle();
                 Verify.IsTrue(upButton.IsEnabled);
                 Verify.IsFalse(downButton.IsEnabled);
 
@@ -134,12 +141,6 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
                 Verify.IsTrue(upButton.IsEnabled);
                 Verify.IsTrue(downButton.IsEnabled);
-
-                Log.Comment("Verify that spin buttons are disabled if value is NaN.");
-                numBox.SetValue(double.NaN);
-                Wait.ForIdle();
-                Verify.IsFalse(upButton.IsEnabled);
-                Verify.IsFalse(downButton.IsEnabled);
 
                 ComboBox validationComboBox = FindElement.ByName<ComboBox>("ValidationComboBox");
                 validationComboBox.SelectItemByName("Disabled");
@@ -165,6 +166,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
 
                 Log.Comment("Verify that focusing the NumberBox selects the text");
                 numBox.SetFocus();
@@ -302,8 +304,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
+                Wait.ForIdle();
 
                 Log.Comment("Verify that scroll doesn't work when the control doesn't have focus.");
+                FindElement.ByName("MaxCheckBox").SetFocus();
+                Wait.ForIdle();
                 InputHelper.RotateWheel(numBox, 1);
                 Wait.ForIdle();
                 Verify.AreEqual(0, numBox.Value);
@@ -323,6 +329,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Testing for 1705
                 RangeValueSpinner numBoxInScrollViewer = FindElement.ByName<RangeValueSpinner>("NumberBoxInScroller");
+                numBoxInScrollViewer.SetValue(0);
+                Wait.ForIdle();
                 FindTextBox(numBoxInScrollViewer).SetFocus();
                 InputHelper.RotateWheel(numBoxInScrollViewer, 1);
                 InputHelper.RotateWheel(numBoxInScrollViewer, 1);
@@ -399,7 +407,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 EnterText(numBox, "12");
                 Verify.AreEqual("12", textTextBlock.GetText());
                 Verify.AreEqual("12", newValueTextBlock.GetText());
-                Verify.AreEqual("0",  oldValueTextBlock.GetText());
+                Verify.AreEqual("NaN",  oldValueTextBlock.GetText());
 
                 Log.Comment("Verify that setting value through UIA fires ValueChanged event.");
                 Button button = FindElement.ByName<Button>("SetValueButton");
@@ -447,6 +455,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
                 RangeValueSpinner numBox = FindElement.ByName<RangeValueSpinner>("TestNumberBox");
+                numBox.SetValue(0);
 
                 Log.Comment("Verify that expressions don't work if AcceptsExpression is false");
                 EnterText(numBox, "5 + 3");
