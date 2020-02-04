@@ -175,23 +175,22 @@ public:
     winrt::ScrollingEdgeScrollParameters HorizontalEdgeScrollParameters();
     winrt::ScrollingEdgeScrollParameters VerticalEdgeScrollParameters();
 
-
-    int ScrollTo(double horizontalOffset, double verticalOffset);
-    int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int SetScrollVelocity(winrt::float2 offsetsVelocity);
-    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
-    int StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args);
-    int StopEdgeScrollWithPointer();
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
+    int32_t SetScrollVelocity(winrt::float2 offsetsVelocity);
+    int32_t AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int32_t StartEdgeScrollWithPointer(const winrt::PointerRoutedEventArgs& args);
+    int32_t StopEdgeScrollWithPointer();
 
     void RegisterPointerForEdgeScroll(UINT pointerId);
-    int UnregisterPointerForEdgeScroll();
+    int32_t UnregisterPointerForEdgeScroll();
 
 #pragma endregion
 
@@ -840,7 +839,7 @@ private:
 
 private:
     int32_t m_latestViewChangeCorrelationId{ 0 };
-    int32_t m_latestInteractionTrackerRequest{ 0 };
+    int m_latestInteractionTrackerRequest{ 0 };
     InteractionTrackerAsyncOperationType m_lastInteractionTrackerAsyncOperationType{ InteractionTrackerAsyncOperationType::None };
     winrt::float2 m_endOfInertiaPosition{ 0.0f, 0.0f };
     float m_animationRestartZoomFactor{ 1.0f };

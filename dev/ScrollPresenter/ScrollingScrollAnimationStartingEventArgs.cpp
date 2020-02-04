@@ -22,7 +22,7 @@ void ScrollingScrollAnimationStartingEventArgs::Animation(winrt::CompositionAnim
     m_animation = value;
 }
 
-int ScrollingScrollAnimationStartingEventArgs::CorrelationId()
+int32_t ScrollingScrollAnimationStartingEventArgs::CorrelationId()
 {
     return m_offsetsChangeCorrelationId;
 }

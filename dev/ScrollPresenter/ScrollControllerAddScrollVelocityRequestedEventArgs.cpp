@@ -30,12 +30,12 @@ winrt::IReference<float> ScrollControllerAddScrollVelocityRequestedEventArgs::In
     return m_inertiaDecayRate;
 }
 
-int ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId() const
+int32_t ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId() const
 {
     return m_correlationId;
 }
 
-void ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId(int correlationId)
+void ScrollControllerAddScrollVelocityRequestedEventArgs::CorrelationId(int32_t correlationId)
 {
     SCROLLPRESENTER_TRACE_VERBOSE(nullptr, TRACE_MSG_METH_INT, METH_NAME, this, correlationId);
 

@@ -5,7 +5,7 @@
 #include "common.h"
 #include "ScrollingScrollCompletedEventArgs.h"
 
-int ScrollingScrollCompletedEventArgs::CorrelationId()
+int32_t ScrollingScrollCompletedEventArgs::CorrelationId()
 {
     return m_offsetsChangeCorrelationId;
 }
