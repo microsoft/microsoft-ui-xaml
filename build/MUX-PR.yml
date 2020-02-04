@@ -10,13 +10,13 @@ jobs:
       inputs:
         targetType: filePath
         filePath: build\ShouldSkipPRBuild.ps1
- 
+
 - job: Build
   dependsOn: Setup
   condition: |
     and
     (
-      eq(variables['useBuildOutputFromBuildId'],''), 
+      eq(variables['useBuildOutputFromBuildId'],''),
       ne(dependencies.Setup.outputs['checkPayload.shouldSkipPRBuild'],'True')
     )
   pool:
@@ -39,7 +39,7 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
+    PGOBuildMode: Optimize
   steps:
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
@@ -47,8 +47,8 @@ jobs:
 - template: AzurePipelinesTemplates\MUX-RunHelixTests-Job.yml
   parameters:
     name: 'RunTestsInHelix'
-    dependsOn: 
-    - Setup 
+    dependsOn:
+    - Setup
     - Build
     condition: |
       and
@@ -71,7 +71,7 @@ jobs:
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
     runTests: 'false'
-    matrix: 
+    matrix:
       Debug_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Debug'

@@ -6,6 +6,8 @@ $feedUri = "https://pkgs.dev.azure.com/ms/microsoft-ui-xaml/_packaging/MUX-Depen
 
 $currentVersion = MakeVersion $releaseVersionMajor $releaseVersionMinor ( GetDatetimeStamp $pgoBranch )
 
+Write-Host ( "PGO OPTIMIZE: requesting {0} version {1}" -f $packageId, ( FormatVersion $currentVersion ) )
+
 $packageSource = Register-PackageSource -Name MUX_Dependencies -Location $feedUri -ProviderName NuGet -Trusted
 $packages = ( Find-Package $packageId -Source MUX_Dependencies -AllowPrereleaseVersions -AllVersions ) | Sort-Object -Property Version -Descending
 
@@ -42,4 +44,4 @@ Write-Host ( "PGO OPTIMIZE: picked {0} version {1}" -f $packageId, $best.Version
 $best | Install-Package -Destination ..\..\packages -Force
 $packageSource | Unregister-PackageSource
 
-fill_out_template "PGO.version.props.template" "PGO.version.props" @{ "version" = $best.Version; "id" = $packageId }
+FillOut-Template "PGO.version.props.template" "PGO.version.props" @{ "version" = $best.Version; "id" = $packageId }

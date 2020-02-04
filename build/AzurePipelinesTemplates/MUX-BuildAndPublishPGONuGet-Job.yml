@@ -1,7 +1,6 @@
 parameters:
   dependsOn: ''
   pgdFile: Microsoft.UI.Xaml.pgd
-  pgoDatabaseId: MUXPGODatabase-test
   pgoArtifact: PGO
 
 jobs:
