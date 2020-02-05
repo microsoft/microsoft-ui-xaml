@@ -41,11 +41,6 @@ hstring NumberBoxAutomationPeer::GetNameCore()
         {
             name = SharedHelpers::TryGetStringRepresentationFromObject(numberBox.Header());
         }
-
-        if (name.empty())
-        {
-            name = L"NumberBox";
-        }
     }
 
     return name;
