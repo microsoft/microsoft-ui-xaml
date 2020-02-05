@@ -24,6 +24,7 @@ using TreeViewDragItemsCompletedEventArgs = Microsoft.UI.Xaml.Controls.TreeViewD
 using TreeViewList = Microsoft.UI.Xaml.Controls.TreeViewList;
 using TreeViewItem = Microsoft.UI.Xaml.Controls.TreeViewItem;
 using MaterialHelperTestApi = Microsoft.UI.Private.Media.MaterialHelperTestApi;
+using System.Threading.Tasks;
 
 namespace MUXControlsTestApp
 {
@@ -70,6 +71,26 @@ namespace MUXControlsTestApp
             var root = new TreeViewItemSource() { Content = "Root", Children = { root0, root1, root2 }, IsExpanded = expandRootNode };
 
             return new ObservableCollection<TreeViewItemSource>{root};
+        }
+
+        private async Task<ObservableCollection<TreeViewItemSource>> PrepareItemsSourceAsync()
+        {
+            return await Task.Run(() => {
+                var items = PrepareItemsSource(expandRootNode: true);
+
+                var root0 = items[0].Children[0];
+                var x0 = new TreeViewItemSource { Content = "Root.0.0" };
+                root0.Children.Add(x0);
+
+                var root1 = items[0].Children[1];
+                var y0 = new TreeViewItemSource { Content = "Root.1.0" };
+                var y1 = new TreeViewItemSource { Content = "Root.1.1" };
+                root1.Children.Add(y0);
+                root1.Children.Add(y1);
+                root1.IsExpanded = true;
+
+                return items;
+            });
         }
 
         protected override void OnNavigatedFrom(NavigationEventArgs e)
@@ -962,9 +983,20 @@ namespace MUXControlsTestApp
             ExceptionMessage.Text = string.Empty;
         }
 
-        private void SyncItemsSource_Click(object sender, RoutedEventArgs e)
+        private async void ResetItemsSourceAsync_Click(object sender, RoutedEventArgs e)
         {
-            ContentModeTestTreeView.ItemsSource = PrepareItemsSource(expandRootNode:true);
+            TestTreeViewItemsSource = await PrepareItemsSourceAsync();
+            this.Bindings.Update();
+        }
+
+        private void ResetItemsSource_Click(object sender, RoutedEventArgs e)
+        {
+            ContentModeTestTreeView.ItemsSource = PrepareItemsSource(expandRootNode: true);
+        }
+
+        private void ExpandRootNode_Click(object sender, RoutedEventArgs e)
+        {
+            TestTreeViewItemsSource[0].IsExpanded = !TestTreeViewItemsSource[0].IsExpanded;
         }
     }
 }
