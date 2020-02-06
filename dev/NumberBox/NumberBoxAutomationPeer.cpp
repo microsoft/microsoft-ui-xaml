@@ -31,6 +31,21 @@ hstring NumberBoxAutomationPeer::GetClassNameCore()
     return winrt::hstring_name_of<winrt::NumberBox>();
 }
 
+hstring NumberBoxAutomationPeer::GetNameCore()
+{
+    winrt::hstring name = __super::GetNameCore();
+
+    if (name.empty())
+    {
+        if (auto numberBox = Owner().try_as<winrt::NumberBox>())
+        {
+            name = SharedHelpers::TryGetStringRepresentationFromObject(numberBox.Header());
+        }
+    }
+
+    return name;
+}
+
 winrt::AutomationControlType NumberBoxAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::Spinner;

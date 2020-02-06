@@ -72,8 +72,7 @@
                     <controls:NumberBox
                         MinWidth="150"
                         x:Name="TestNumberBox"
-                        AutomationProperties.Name="TestNumberBox"
-                        Header="NumberBox"
+                        Header="TestNumberBox"
                         Description="Description text"
                         PlaceholderText="Text"
                         ValueChanged="NumberBoxValueChanged"
