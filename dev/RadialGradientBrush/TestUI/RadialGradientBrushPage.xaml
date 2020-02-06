@@ -99,6 +99,8 @@
 
                         <ComboBox x:Name="InterpolationColorSpaceComboBox" AutomationProperties.Name="InterpolationColorSpaceComboBox" Header="Space: ({Auto, Rgb, RgbLinear} only)" ItemsSource="{x:Bind GetColorSpaceValueNames(), Mode=OneTime}" SelectedItem="{x:Bind DynamicGradientBrushInterpolationSpace, Mode=TwoWay}" />
 
+                        <ComboBox x:Name="SpreadMethodComboBox" AutomationProperties.Name="SpreadMethodComboBox" Header="SpreadMethod:" ItemsSource="{x:Bind GetSpreadMethodValueNames(), Mode=OneTime}" SelectedItem="{x:Bind DynamicGradientBrushSpreadMethod, Mode=TwoWay}" />
+
                         <Rectangle x:Name="RectangleWithDynamicGradient" Width="200" Height="200" Fill="Gray" />
                         <TextBlock x:Name="TextBlockWithDynamicGradient" Text="Text with random gradient foreground" FontSize="20" Foreground="Gray" />
 

@@ -62,6 +62,33 @@ namespace MUXControlsTestApp
             }
         }
 
+        public string[] GetSpreadMethodValueNames()
+        {
+            return Enum.GetNames(typeof(GradientSpreadMethod));
+        }
+
+        public string DynamicGradientBrushSpreadMethod
+        {
+            get
+            {
+                if (DynamicGradientBrush != null)
+                {
+                    return DynamicGradientBrush.SpreadMethod.ToString();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                if (DynamicGradientBrush != null && value != null)
+                {
+                    DynamicGradientBrush.SpreadMethod = (GradientSpreadMethod)Enum.Parse(typeof(GradientSpreadMethod), value);
+                }
+            }
+        }
+
         private void ReplaceGradientButton_Click(object sender, RoutedEventArgs e)
         {
             DynamicGradientBrush = new RadialGradientBrush();
@@ -123,7 +150,7 @@ namespace MUXControlsTestApp
             byte[] pixelArray = pixelBuffer.ToArray();
 
             // Sample top left and center pixels to verify rendering is correct.
-            var centerColor = GetPixelAtPoint(new Point(50, 50), rtb, pixelArray);
+            var centerColor = GetPixelAtPoint(new Point(rtb.PixelWidth / 2, rtb.PixelHeight / 2), rtb, pixelArray);
             var outerColor = GetPixelAtPoint(new Point(0, 0), rtb, pixelArray);
 
             if (ApiInformation.IsTypePresent("Windows.UI.Composition.CompositionRadialGradientBrush"))
@@ -148,14 +175,6 @@ namespace MUXControlsTestApp
                 {
                     ColorMatchTestResult.Text = "Failed";
                 }
-            }
-        }
-
-        private void InterpolationColorSpaceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (DynamicGradientBrush != null && e.AddedItems.Count > 0)
-            {
-                DynamicGradientBrush.InterpolationSpace = (CompositionColorSpace)Enum.Parse(typeof(CompositionColorSpace), e.AddedItems[0].ToString());
             }
         }
 

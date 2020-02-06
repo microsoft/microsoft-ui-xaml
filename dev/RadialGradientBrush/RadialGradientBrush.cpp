@@ -104,6 +104,14 @@ void RadialGradientBrush::OnInterpolationSpacePropertyChanged(const winrt::Depen
     }
 }
 
+void RadialGradientBrush::OnSpreadMethodPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
+    {
+        UpdateCompositionExtendMode();
+    }
+}
+
 void RadialGradientBrush::OnFallbackColorChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     UpdateFallbackBrush();
@@ -134,6 +142,7 @@ void RadialGradientBrush::EnsureCompositionBrush()
             UpdateCompositionGradientStops();
             UpdateCompositionGradientMappingMode();
             UpdateCompositionInterpolationSpace();
+            UpdateCompositionExtendMode();
         }
         else
         {
@@ -227,6 +236,29 @@ void RadialGradientBrush::UpdateCompositionInterpolationSpace()
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
         compositionGradientBrush.InterpolationSpace(InterpolationSpace());
+    }
+}
+
+void RadialGradientBrush::UpdateCompositionExtendMode()
+{
+    MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
+
+    if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
+    {
+        switch (SpreadMethod())
+        {
+        case winrt::GradientSpreadMethod::Repeat:
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Wrap);
+            break;
+        case winrt::GradientSpreadMethod::Reflect:
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Mirror);
+            break;
+        case winrt::GradientSpreadMethod::Pad:
+            [[fallthrough]];
+        default: // Use Pad as the default if the mode isn't recognized.
+            compositionGradientBrush.ExtendMode(winrt::Windows::UI::Composition::CompositionGradientExtendMode::Clamp);
+            break;
+        }
     }
 }
 

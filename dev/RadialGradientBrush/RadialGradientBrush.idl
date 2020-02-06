@@ -27,6 +27,10 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
     [MUX_DEFAULT_VALUE("winrt::Windows::UI::Composition::CompositionColorSpace::Auto")]
     Windows.UI.Composition.CompositionColorSpace InterpolationSpace { get; set; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+    [MUX_DEFAULT_VALUE("winrt::GradientSpreadMethod::Pad")]
+    Windows.UI.Xaml.Media.GradientSpreadMethod SpreadMethod { get; set; };
+
     Windows.Foundation.Collections.IObservableVector<Windows.UI.Xaml.Media.GradientStop> GradientStops { get; };
 
     static Windows.UI.Xaml.DependencyProperty EllipseCenterProperty { get; };
@@ -34,6 +38,7 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
     static Windows.UI.Xaml.DependencyProperty GradientOriginOffsetProperty { get; };
     static Windows.UI.Xaml.DependencyProperty InterpolationSpaceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MappingModeProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty SpreadMethodProperty { get; };
 }
 
 }

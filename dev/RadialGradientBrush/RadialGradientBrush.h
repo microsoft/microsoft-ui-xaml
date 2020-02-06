@@ -28,6 +28,7 @@ public:
     void OnGradientOriginOffsetPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMappingModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnInterpolationSpacePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnSpreadMethodPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
 private:
     bool m_isConnected{};
@@ -48,6 +49,7 @@ private:
     void UpdateCompositionGradientOriginOffset();
     void UpdateCompositionGradientStops();
     void UpdateCompositionInterpolationSpace();
+    void UpdateCompositionExtendMode();
 
     void UpdateFallbackBrush();
 };
