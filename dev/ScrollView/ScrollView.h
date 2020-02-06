@@ -67,17 +67,17 @@ public:
     void RegisterAnchorCandidate(winrt::UIElement const& element);
     void UnregisterAnchorCandidate(winrt::UIElement const& element);
 
-    int ScrollTo(double horizontalOffset, double verticalOffset);
-    int ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
-    int ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
-    int SetScrollVelocity(winrt::float2 offsetsVelocity);
-    int AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
-    int ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
-    int AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset);
+    int32_t ScrollTo(double horizontalOffset, double verticalOffset, winrt::ScrollingScrollOptions const& options);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta);
+    int32_t ScrollBy(double horizontalOffsetDelta, double verticalOffsetDelta, winrt::ScrollingScrollOptions const& options);
+    int32_t SetScrollVelocity(winrt::float2 offsetsVelocity);
+    int32_t AddScrollVelocity(winrt::float2 offsetsVelocity, winrt::IReference<winrt::float2> inertiaDecayRate);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomTo(float zoomFactor, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint);
+    int32_t ZoomBy(float zoomFactorDelta, winrt::IReference<winrt::float2> centerPoint, winrt::ScrollingZoomOptions const& options);
+    int32_t AddZoomVelocity(float zoomFactorVelocity, winrt::IReference<winrt::float2> centerPoint, winrt::IReference<float> inertiaDecayRate);
 #pragma endregion
 
     // Invoked by ScrollViewTestHooks
