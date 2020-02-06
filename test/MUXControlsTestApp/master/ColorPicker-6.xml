@@ -178,8 +178,8 @@
                     FocusVisualSecondaryBrush=#99FFFFFF
                     FocusVisualPrimaryThickness=2,2,2,2
                     FocusVisualPrimaryBrush=#FF000000
-                    Visibility=Collapsed
-                    RenderSize=0,0
+                    Visibility=Visible
+                    RenderSize=16,16
                   [Windows.UI.Xaml.Shapes.Ellipse]
                       StrokeThickness=2
                       Name=FocusEllipse
@@ -199,7 +199,7 @@
                       FocusVisualPrimaryThickness=2,2,2,2
                       FocusVisualPrimaryBrush=#FF000000
                       Visibility=Visible
-                      RenderSize=0,0
+                      RenderSize=16,16
               [Windows.UI.Xaml.Shapes.Rectangle]
                   StrokeThickness=2
                   Name=RectangleBorder
