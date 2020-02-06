@@ -1,7 +1,6 @@
 parameters:
   dependsOn: ''
   pgdFile: Microsoft.UI.Xaml.pgd
-  pgoDatabase: MUXPGODatabase
   pgoArtifact: PGO
 
 jobs:
@@ -11,7 +10,9 @@ jobs:
     vmImage: 'windows-2019'
   variables:
     artifactsPath: $(Build.SourcesDirectory)\Artifacts
-    nugetPath: $(Build.SourcesDirectory)\tools\${{ parameters.pgoDatabase }}\NuSpecs
+    pgoToolsPath: $(Build.SourcesDirectory)\tools\MUXPGODatabase
+    nuspecPath: $(pgoToolsPath)\NuSpecs
+    nuspecFilename: PGO.nuspec
 
   steps:
   - task: DownloadBuildArtifacts@0
@@ -24,13 +25,21 @@ jobs:
     inputs:
       sourceFolder: $(artifactsPath)\${{ parameters.pgoArtifact }}
       contents: '**\${{ parameters.pgdFile }}'
-      targetFolder: $(nugetPath)\tools
+      targetFolder: $(nuspecPath)\tools
+
+  - task: powershell@2
+    displayName: 'Generate NuSpec file'
+    inputs:
+      targetType: filePath
+      filePath: $(pgoToolsPath)\generate-nuspec.ps1
+      workingDirectory: $(pgoToolsPath)
+      arguments: $(nuspecPath)\$(nuspecFilename).template $(nuspecPath)\$(nuspecFilename)
 
   - task: CmdLine@1
     displayName: 'Build NuGet package'
     inputs:
       filename: '$(Build.SourcesDirectory)\tools\NugetWrapper.cmd'
-      arguments: pack "$(nugetPath)\${{ parameters.pgoDatabase }}.nuspec" -BasePath "$(nugetPath)" -OutputDirectory "$(Build.ArtifactStagingDirectory)" -properties PROGRAMFILES="%ProgramFiles(x86)%"
+      arguments: pack "$(nuspecPath)\$(nuspecFilename)" -BasePath "$(nuspecPath)" -OutputDirectory "$(Build.ArtifactStagingDirectory)" -properties PROGRAMFILES="%ProgramFiles(x86)%"
 
   - task: PublishBuildArtifacts@1
     inputs:

@@ -14,7 +14,7 @@ jobs:
   # Skip the build job if we are reusing the output of a previous build.
   # useBuildOutputFromBuildId variable is set on the Pipeline at Queue time.
   condition:
-    eq(variables['useBuildOutputFromBuildId'],'') 
+    eq(variables['useBuildOutputFromBuildId'],'')
   pool:
     vmImage: 'windows-2019'
   timeoutInMinutes: 120
@@ -24,9 +24,11 @@ jobs:
       Release_x86:
         buildPlatform: 'x86'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_x64:
         buildPlatform: 'x64'
         buildConfiguration: 'Release'
+        PGOBuildMode: 'Optimize'
       Release_Arm:
         buildPlatform: 'arm'
         buildConfiguration: 'Release'
@@ -38,7 +40,6 @@ jobs:
     appxPackageDir : $(build.artifactStagingDirectory)\$(buildConfiguration)\$(buildPlatform)\AppxPackages
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
-
   steps:
 
   # Download and extract nuget package with non-stubbed MicrosoftTelemetry.h header
@@ -78,23 +79,23 @@ jobs:
       branchVersion: false
       nugetVer: true
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@0
     condition:
       eq(variables['useBuildOutputFromBuildId'],'')
-    inputs: 
-      artifactName: drop 
+    inputs:
+      artifactName: drop
       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
-  - task: DownloadBuildArtifacts@0 
+  - task: DownloadBuildArtifacts@0
     condition:
       ne(variables['useBuildOutputFromBuildId'],'')
-    inputs: 
+    inputs:
       buildType: specific
       buildVersionToDownload: specific
       project: $(System.TeamProjectId)
       pipeline: $(System.DefinitionId)
       buildId: $(useBuildOutputFromBuildId)
-      artifactName: drop 
+      artifactName: drop
       downloadPath: '$(Build.ArtifactStagingDirectory)'
 
   - task: CmdLine@1
@@ -138,7 +139,7 @@ jobs:
     signConfig: '$(Build.SourcesDirectory)\build\NuGetSignConfig.xml'
     useReleaseTag: '$(MUXFinalRelease)'
     prereleaseVersionTag: prerelease
- 
+
 # Build solution that depends on nuget package
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -148,7 +149,7 @@ jobs:
     helixType: 'test/nuget'
     dependsOn: CreateNugetPackage
     pkgArtifactPath: '$(artifactDownloadPath)\drop'
-   
+
 # Framework package tests
 - template: AzurePipelinesTemplates\MUX-NugetReleaseTest-Job.yml
   parameters:
@@ -167,7 +168,7 @@ jobs:
     rerunPassesRequiredToAvoidFailure: 5
     minimumExpectedTestsExecutedCount: $(minimumExpectedTestsExecutedCount)
 
-# NuGet package WACK tests 
+# NuGet package WACK tests
 - template: AzurePipelinesTemplates\MUX-WACKTests-Job.yml
   parameters:
     name: 'NugetPkgWACKTests'
