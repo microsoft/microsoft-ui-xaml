@@ -162,9 +162,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
                 Verify.AreEqual(visualStateText.DocumentText, "Indeterminate");
 
-                Log.Comment("Verify Lottie animation is active when in Indeterminate state");
+                // Lottie animations only support Windows versions rs5 and above
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Verify Lottie animation is active when in Indeterminate state");
 
-                Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
+                    Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
+                }
             }
         }
     }
