@@ -8,16 +8,19 @@
         <ResourceDictionary x:Key="Light">
             <StaticResource x:Key="NumberBoxPopupIndicatorForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <contract7NotPresent:StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+            <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="NumberBoxPopupIndicatorForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <contract7NotPresent:StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+            <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">0</Thickness>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
             <StaticResource x:Key="NumberBoxPopupIndicatorForeground" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <contract7NotPresent:StaticResource x:Key="SystemControlDescriptionTextForegroundBrush" ResourceKey="SystemControlPageTextBaseMediumBrush" />
+            <Thickness x:Key="NumberBoxPopupSpinButtonBorderThickness">2</Thickness>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     
@@ -25,7 +28,7 @@
     <Thickness x:Key="NumberBoxIconMargin">10,0,0,0</Thickness>
 
     <x:Double x:Key="NumberBoxPopupHorizonalOffset">-20</x:Double>
-    <x:Double x:Key="NumberBoxPopupVerticalOffset">8</x:Double>
+    <x:Double x:Key="NumberBoxPopupVerticalOffset">-16</x:Double>
     <x:Double x:Key="NumberBoxPopupShadowDepth">16</x:Double>
 
     <Thickness x:Key="NumberBoxPopupIndicatorMargin">0,0,8,0</Thickness>

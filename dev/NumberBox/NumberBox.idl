@@ -40,7 +40,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double Maximum;
 
-    [MUX_DEFAULT_VALUE("0")]
+    [MUX_DEFAULT_VALUE("std::numeric_limits<double>::quiet_NaN()")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     Double Value;
 
