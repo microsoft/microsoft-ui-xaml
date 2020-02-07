@@ -32,6 +32,8 @@ jobs:
     buildOutputDir : $(Build.SourcesDirectory)\BuildOutput
     publishDir : $(Build.ArtifactStagingDirectory)
   steps:
+  - script: echo '##vso[task.setvariable variable=PGOBuildMode]DISABLED'
+    condition: and(eq(variables['PGOBuildMode'], 'Optimize'), eq(variables['PGODisabled'], 'true'))
   - template: AzurePipelinesTemplates\MUX-BuildDevProject-Steps.yml
   - template: AzurePipelinesTemplates\MUX-PublishProjectOutput-Steps.yml
 
