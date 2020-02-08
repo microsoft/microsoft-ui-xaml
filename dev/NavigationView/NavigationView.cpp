@@ -773,7 +773,12 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         bool shouldSelectSetting = selectedItem && IsSettingsItem(selectedItem);
 
         if (shouldSelectSetting)
-        { 
+        {
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
+            m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(nullptr);
         }
 
@@ -806,7 +811,12 @@ void NavigationView::CreateAndHookEventsToSettings(std::wstring_view settingsNam
         SetValue(s_SettingsItemProperty, settingsItem);
 
         if (shouldSelectSetting)
-        { 
+        {
+            auto scopeGuard = gsl::finally([this]()
+            {
+                m_shouldIgnoreNextSelectionChange = false;
+            });
+            m_shouldIgnoreNextSelectionChange = true;
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(m_settingsItem.get());
         }
     }
@@ -2265,8 +2275,18 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
     auto newItem = args.NewValue();
+    auto oldItem = args.OldValue();
 
-    ChangeSelection(args.OldValue(), newItem);
+    ChangeSelection(oldItem, newItem);
+
+    // Animate to be sure the selected item is visually higlighted!
+    // See #1395 for additional context
+    if (oldItem != newItem)
+    {
+        ChangeSelectStatusForItem(oldItem, false /*selected*/);
+        ChangeSelectStatusForItem(newItem, true /*selected*/);
+        AnimateSelectionChanged(oldItem, newItem);
+    }
 
     if (m_appliedTemplate && IsTopNavigationView())
     {
@@ -2306,7 +2326,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
 
         m_indexOfLastSelectedItemInTopNav = m_topDataProvider.IndexOf(item); // for the next time we animate
     }
-
     SelectedItem(item);
 }
 
