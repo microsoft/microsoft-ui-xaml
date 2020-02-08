@@ -1548,6 +1548,11 @@ void NavigationView::RaiseSelectionChangedEvent(winrt::IInspectable const& nextI
 // If nextItem is selectionsuppressed, we should undo the selection. We didn't undo it OnSelectionChange because we want change by API has the same undo logic.
 void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem)
 {
+    // Selection changed event was requested to be ignored, so let's do that
+    if (m_shouldIgnoreNextSelectionChange) {
+        return;
+    }
+
     bool isSettingsItem = IsSettingsItem(nextItem);
 
     if (IsSelectionSuppressed(nextItem))
@@ -2274,6 +2279,7 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
+
     auto newItem = args.NewValue();
     auto oldItem = args.OldValue();
 
