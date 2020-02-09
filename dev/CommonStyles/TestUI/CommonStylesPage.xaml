@@ -45,7 +45,7 @@
                     </Grid>
                 </StackPanel>
                 <StackPanel Grid.Column="1">
-                     <Grid Height="{ThemeResource CompareGridHeight}">
+                    <Grid Height="{ThemeResource CompareGridHeight}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
@@ -216,7 +216,7 @@
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
                 </StackPanel>
-            </StackPanel>
+            </Grid>
             <StackPanel>
                 <Grid>
                     <Grid.RowDefinitions>
