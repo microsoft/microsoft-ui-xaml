@@ -211,7 +211,7 @@
                 </StackPanel>
                 <StackPanel>
                     <!-- If there are styles we need to ensure that are available, they can be placed below this TextBlock -->
-                    <TextBlock Text="Default style availability area" Style="{ThemeResource StandardGroupHeader}"/>
+                    <TextBlock Text="Default style availability area" />
 
                     <!-- Checking that the DefaultRadioButtonStyle can be accessed as resource -->
                     <RadioButton Style="{StaticResource DefaultRadioButtonStyle}" Content="I am a RadioButton with DefaultRadioButtonStyle set" />
