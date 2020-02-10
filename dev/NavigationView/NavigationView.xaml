@@ -527,26 +527,12 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
-                    <primitives:NavigationViewItemPresenter
-                        x:Name="NavigationViewItemPresenter"
-                        Icon="{TemplateBinding Icon}"
-                        ContentTransitions="{TemplateBinding ContentTransitions}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Margin="{TemplateBinding Margin}"
-                        Padding="{TemplateBinding Padding}"
-                        Foreground="{TemplateBinding Foreground}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
-                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                        Content="{TemplateBinding Content}"
-                        primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        IsTabStop="False">
+                    <Grid x:Name="NVIRootGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
                                 <VisualState x:Name="OnLeftNavigation">
@@ -576,7 +562,44 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                    </primitives:NavigationViewItemPresenter>
+
+
+                        <primitives:NavigationViewItemPresenter
+                        x:Name="NavigationViewItemPresenter"
+                        Icon="{TemplateBinding Icon}"
+                        ContentTransitions="{TemplateBinding ContentTransitions}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        Margin="{TemplateBinding Margin}"
+                        Padding="{TemplateBinding Padding}"
+                        Foreground="{TemplateBinding Foreground}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                        Content="{TemplateBinding Content}"
+                        primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                        IsTabStop="False">
+                        </primitives:NavigationViewItemPresenter>
+                        <local:ItemsRepeater
+                                Grid.Row="1"
+                                Margin="25,0,0,0"
+                                Visibility="Collapsed"
+                                x:Name="NavigationViewItemMenuItemsHost">
+                            <local:ItemsRepeater.Layout>
+                                <local:StackLayout Orientation="Vertical"/>
+                            </local:ItemsRepeater.Layout>
+                        </local:ItemsRepeater>
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout Placement="Right">
+                                <Grid x:Name="FlyoutRootGrid"/>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

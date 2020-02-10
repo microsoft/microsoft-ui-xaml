@@ -75,13 +75,32 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
-    void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
+    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
+    void RepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+
+    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
     winrt::NavigationViewItem GetSelectedContainer();
 
+    // Hierarchical APIs
+    void Expand(const winrt::NavigationViewItem& item);
+    void Collapse(const winrt::NavigationViewItem& item);
+
+    // Selection handling APIs
+    void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
+
 private:
+
+    // Selection handling APIs
+    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
+    void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
+    void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
+    void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
+    void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
+
     void ClosePaneIfNeccessaryAfterItemIsClicked();
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
@@ -90,7 +109,6 @@ private:
     inline NavigationViewTemplateSettings* GetTemplateSettings();
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
-    void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
     void UnselectPrevItem(winrt::IInspectable const& prevItem, winrt::IInspectable const& nextItem);
@@ -106,6 +124,7 @@ private:
     void SyncItemTemplates();
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
+    bool IsRootGridOfFlyout(const winrt::DependencyObject& element);
     bool IsRootItemsRepeater(const winrt::DependencyObject& element);
     void RaiseItemInvoked(winrt::IInspectable const& item,
         bool isSettings,
@@ -186,18 +205,19 @@ private:
 
     // Event Handlers
     void OnPaneToggleButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
+    void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+
     void OnNavigationViewItemTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     void OnNavigationViewItemKeyDown(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
     void OnNavigationViewItemKeyUp(const winrt::IInspectable& sender, const winrt::KeyRoutedEventArgs& args);
-    void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs & e);
-    void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
-    void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
+    void OnNavigationViewItemOnGotFocus(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& e);
+    void OnNavigationViewItemExpandedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
 
     void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
         bool isSettingsItem,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
-    void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
 
     void OnTitleBarMetricsChanged(const winrt::IInspectable& sender, const winrt::IInspectable& args);
     void OnTitleBarIsVisibleChanged(const winrt::CoreApplicationViewTitleBar& sender, const winrt::IInspectable& args);
@@ -211,13 +231,6 @@ private:
     void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
     winrt::NavigationViewItemBase NavigationViewItemBaseOrSettingsContentFromData(const winrt::IInspectable& data);
-
-    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
-    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
-    void RepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
-
-    void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
-    void OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e);
 
     // Cache these objects for the view as they are expensive to query via GetForCurrentView() calls.
     winrt::ViewManagement::ApplicationView m_applicationView{ nullptr };
@@ -260,12 +273,23 @@ private:
     bool ShouldShowFocusVisual();
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& indexPath);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
+
+    // Hierarchy related APIs
+    bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
+    void ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi);
+    void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
+    void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
+    winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
+    void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
+    winrt::ItemsRepeater GetRepeaterForIndexPath(const winrt::IndexPath& ip);
+    winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };
@@ -314,6 +338,8 @@ private:
     tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
     std::vector<int> m_itemsRemovedFromMenuFlyout{};
 
+    tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
+
     // Event Tokens
     winrt::Button::Click_revoker m_paneToggleButtonClickRevoker{};
     winrt::UIElement::Tapped_revoker m_settingsItemTappedRevoker{};
@@ -348,6 +374,7 @@ private:
     winrt::ItemsRepeater::ElementClearing_revoker m_topNavOverflowItemsRepeaterElementClearingRevoker{};
 
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
+    winrt::SelectionModel::ChildrenRequested_revoker m_childrenRequestedRevoker{};
 
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
@@ -357,7 +384,6 @@ private:
     TopNavigationViewDataProvider m_topDataProvider{ this };
 
     winrt::SelectionModel m_selectionModel{};
-    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     bool m_appliedTemplate{ false };
 

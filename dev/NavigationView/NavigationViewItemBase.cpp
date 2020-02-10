@@ -41,3 +41,18 @@ void NavigationViewItemBase::SetNavigationViewParent(winrt::NavigationView const
 {
     m_navigationView = winrt::make_weak(navigationView);
 }
+
+winrt::NavigationViewItem NavigationViewItemBase::GetParentNavigationViewItem()
+{
+    if (auto const ir = winrt::VisualTreeHelper::GetParent(*this))
+    {
+        if (auto const grid = winrt::VisualTreeHelper::GetParent(ir))
+        {
+            if (auto const nvi = winrt::VisualTreeHelper::GetParent(grid).try_as<winrt::NavigationViewItem>())
+            {
+                return nvi;
+            }
+        }
+    }
+    return nullptr;
+}

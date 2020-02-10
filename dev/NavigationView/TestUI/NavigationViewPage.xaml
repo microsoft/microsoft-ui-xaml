@@ -38,7 +38,16 @@
                 AccessKey="H">
             <muxcontrols:NavigationView.MenuItems>
                 <muxcontrols:NavigationViewItem x:Name="HomeItem" Content="Home" Icon="Home"/>
-                <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" />
+                <muxcontrols:NavigationViewItem x:Name="AppsItem" Content="Apps" Icon="Shop" >
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem x:Name="Item2v1" Content="Item 2.1" Icon="Audio">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem x:Name="Item2v1v1" Content="Item 2.1.1" Icon="Volume"/>
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                        <muxcontrols:NavigationViewItem x:Name="Item2v2" Content="Item 2.2" Icon="Video"/>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem x:Name="GamesItem" Content="Games" Icon="Emoji"/>
                 <muxcontrols:NavigationViewItemSeparator />
                 <muxcontrols:NavigationViewItemHeader x:Name="HeaderTextItem" Content="Header Text" />

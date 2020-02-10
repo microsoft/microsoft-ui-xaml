@@ -1,5 +1,15 @@
-namespace MU_XCP_NAMESPACE
+﻿namespace MU_XCP_NAMESPACE
 {
+
+[WUXC_VERSION_PREVIEW]
+[webhosthidden]
+unsealed runtimeclass NavigationViewItemPresenterTemplateSettings : Windows.UI.Xaml.DependencyObject
+{
+    NavigationViewItemPresenterTemplateSettings();
+
+    Windows.UI.Xaml.Thickness Indentation{ get; };
+    static Windows.UI.Xaml.DependencyProperty IndentationProperty{ get; };
+}
 
 [WUXC_VERSION_RS5]
 [webhosthidden]
@@ -9,6 +19,12 @@ unsealed runtimeclass NavigationViewItemPresenter : Windows.UI.Xaml.Controls.Con
 
     Windows.UI.Xaml.Controls.IconElement Icon { get; set; };
     static Windows.UI.Xaml.DependencyProperty IconProperty { get; };
+
+    [WUXC_VERSION_PREVIEW]
+    {
+        NavigationViewItemPresenterTemplateSettings TemplateSettings{ get; };
+        static Windows.UI.Xaml.DependencyProperty TemplateSettingsProperty{ get; };
+    }
 }
 
 }

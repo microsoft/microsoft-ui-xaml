@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "NavigationViewItemPresenter.h"
+#include "NavigationViewItemPresenterTemplateSettings.h"
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
