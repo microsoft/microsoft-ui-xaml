@@ -45,6 +45,7 @@ static constexpr auto c_navViewBackButtonToolTip = L"NavigationViewBackButtonToo
 static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
+static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
 
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
@@ -677,7 +678,7 @@ bool NavigationView::IsRootGridOfFlyout(const winrt::DependencyObject& element)
 {
     if (auto grid = element.try_as<winrt::Grid>())
     {
-        return grid.Name() == L"FlyoutRootGrid";
+        return grid.Name() == c_flyoutRootGrid;
     }
     return false;
 }
