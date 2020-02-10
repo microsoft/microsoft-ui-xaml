@@ -199,7 +199,8 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
             return IsTopNavigationView() ?  m_topNavRepeater.get() :  m_leftNavRepeater.get();
         }();
 
-        if (auto const nviContainer = childrenRepeater.TryGetElement(GetIndexFromItem(childrenRepeater, e.Source())))
+        auto index = GetIndexFromItem(childrenRepeater, e.Source());
+        if (auto const nviContainer = childrenRepeater.TryGetElement(index))
         {
             if (auto const nvi = nviContainer.try_as<winrt::NavigationViewItem>())
             {
@@ -4015,24 +4016,27 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
 winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip)
 {
     auto container = firstContainer;
-    for (int i = 1; i < ip.GetSize(); i++)
+    if (ip.GetSize() > 1)
     {
-        bool succeededGettingNextContainer = false;
-        if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+        for (int i = 1; i < ip.GetSize(); i++)
         {
-            if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+            bool succeededGettingNextContainer = false;
+            if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
-                if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))
+                if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
-                    container = nextContainer;
-                    succeededGettingNextContainer = true;
+                    if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))
+                    {
+                        container = nextContainer;
+                        succeededGettingNextContainer = true;
+                    }
                 }
             }
-        }
-        // If any of the above checks failed, it means something went wrong and we have an index for a non-existent repeater.
-        if (!succeededGettingNextContainer)
-        {
-            return nullptr;
+            // If any of the above checks failed, it means something went wrong and we have an index for a non-existent repeater.
+            if (!succeededGettingNextContainer)
+            {
+                return nullptr;
+            }
         }
     }
     return container.try_as<winrt::NavigationViewItemBase>();
