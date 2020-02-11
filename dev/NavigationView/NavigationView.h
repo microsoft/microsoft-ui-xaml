@@ -288,7 +288,7 @@ private:
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
-    winrt::ItemsRepeater GetRepeaterForIndexPath(const winrt::IndexPath& ip);
+    winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
 
     // Visual components

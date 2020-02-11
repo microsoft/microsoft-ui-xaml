@@ -187,30 +187,14 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
     else
     {
         // We need to find the realized NavigationViewItem container in order to extract the children data
-        auto const sourceIndexPath = e.SourceIndex();
-        auto const childrenRepeater = [this, sourceIndexPath]()
+        auto const sourceContainer = GetContainerForIndexPath(e.SourceIndex());
+        if (auto const nvi = sourceContainer.try_as<winrt::NavigationViewItem>())
         {
-            if (sourceIndexPath.GetSize() > 0)
+            if (auto const children = GetChildren(nvi))
             {
-                return GetRepeaterForIndexPath(sourceIndexPath);
-            }
-
-            // TODO: Implement for TopNav overflow and popup
-            return IsTopNavigationView() ?  m_topNavRepeater.get() :  m_leftNavRepeater.get();
-        }();
-
-        auto index = GetIndexFromItem(childrenRepeater, e.Source());
-        if (auto const nviContainer = childrenRepeater.TryGetElement(index))
-        {
-            if (auto const nvi = nviContainer.try_as<winrt::NavigationViewItem>())
-            {
-                if (auto const children = GetChildren(nvi))
-                {
-                    e.Children(children);
-                }
+                e.Children(children);
             }
         }
-
     }
 }
 
@@ -4139,7 +4123,7 @@ winrt::IInspectable NavigationView::GetChildren(const winrt::NavigationViewItem&
     return nvi.MenuItemsSource();
 }
 
-winrt::ItemsRepeater NavigationView::GetRepeaterForIndexPath(const winrt::IndexPath& ip)
+winrt::ItemsRepeater NavigationView::GetChildRepeaterForIndexPath(const winrt::IndexPath& ip)
 {
     if (auto const container = GetContainerForIndexPath(ip).try_as<winrt::NavigationViewItem>())
     {
