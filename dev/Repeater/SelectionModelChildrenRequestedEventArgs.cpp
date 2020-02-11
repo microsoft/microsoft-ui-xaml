@@ -27,6 +27,12 @@ winrt::IInspectable SelectionModelChildrenRequestedEventArgs::Source()
 
 winrt::IndexPath SelectionModelChildrenRequestedEventArgs::SourceIndex()
 {
+    auto node = m_sourceNode.lock();
+    if (!node)
+    {
+        throw winrt::hresult_error(E_FAIL, L"SourceIndex can only be accesed in the ChildrenRequested event handler.");
+    }
+
     return m_sourceIndexPath.get();
 }
 
