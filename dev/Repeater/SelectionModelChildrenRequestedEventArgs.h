@@ -9,7 +9,7 @@ class SelectionModelChildrenRequestedEventArgs :
     public ReferenceTracker<SelectionModelChildrenRequestedEventArgs, winrt::implementation::SelectionModelChildrenRequestedEventArgsT, winrt::composable, winrt::composing>
 {
 public:
-    SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode);
+    SelectionModelChildrenRequestedEventArgs(const winrt::IInspectable& data, const winrt::IndexPath& sourceIndexPath, const std::weak_ptr<SelectionNode>& sourceNode);
 
 #pragma region ISelectionModelChildrenRequestedEventArgs
     winrt::IInspectable Source();
@@ -18,10 +18,11 @@ public:
     void Children(winrt::IInspectable const& value);
 #pragma endregion
 
-    void Initialize(const winrt::IInspectable& source, const std::weak_ptr<SelectionNode>& sourceNode);
+    void Initialize(const winrt::IInspectable& source, const winrt::IndexPath& sourceIndexPath, const std::weak_ptr<SelectionNode>& sourceNode);
 
 private:
     tracker_ref<winrt::IInspectable> m_source{ this };
+    tracker_ref<winrt::IndexPath> m_sourceIndexPath{ this };
     tracker_ref<winrt::IInspectable> m_children{ this };
     std::weak_ptr<SelectionNode> m_sourceNode;
 };
