@@ -127,7 +127,7 @@ std::shared_ptr<SelectionNode> SelectionNode::GetAt(int index, bool realizeChild
             if (childData != nullptr)
             {
                 auto const childDataIndexPath = winrt::get_self<class IndexPath>(IndexPath())->CloneWithChildIndex(index);
-                auto resolvedChild = m_manager->ResolvePath(childData, childDataIndexPath, weak_from_this());
+                auto resolvedChild = m_manager->ResolvePath(childData, childDataIndexPath);
                 if (resolvedChild != nullptr)
                 {
                     child = std::make_shared<SelectionNode>(m_manager, this /* parent */);
