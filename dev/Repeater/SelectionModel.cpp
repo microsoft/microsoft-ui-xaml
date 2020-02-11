@@ -497,7 +497,7 @@ void SelectionModel::OnSelectionInvalidatedDueToCollectionChange()
     OnSelectionChanged();
 }
 
-winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data, const std::weak_ptr<SelectionNode>& sourceNode)
+winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data, const winrt::IndexPath& dataIndexPath, const std::weak_ptr<SelectionNode>& sourceNode)
 {
     winrt::IInspectable resolved = nullptr;
     // Raise ChildrenRequested event if there is a handler
@@ -505,18 +505,18 @@ winrt::IInspectable SelectionModel::ResolvePath(const winrt::IInspectable& data,
     {
         if (!m_childrenRequestedEventArgs)
         {
-            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data, sourceNode));
+            m_childrenRequestedEventArgs = tracker_ref<winrt::SelectionModelChildrenRequestedEventArgs>(this, winrt::make<SelectionModelChildrenRequestedEventArgs>(data, dataIndexPath, sourceNode));
         }
         else
         {
-            winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(data, sourceNode);
+            winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(data, dataIndexPath, sourceNode);
         }
 
         m_childrenRequestedEventSource(*this, m_childrenRequestedEventArgs.get());
         resolved = m_childrenRequestedEventArgs.get().Children();
 
         // Clear out the values in the args so that it cannot be used after the event handler call.
-        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, std::weak_ptr<SelectionNode>() /* empty weakptr */);
+        winrt::get_self<SelectionModelChildrenRequestedEventArgs>(m_childrenRequestedEventArgs.get())->Initialize(nullptr, nullptr, std::weak_ptr<SelectionNode>() /* empty weakptr */);
     }
     else
     {
