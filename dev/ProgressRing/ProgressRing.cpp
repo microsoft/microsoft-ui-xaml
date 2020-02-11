@@ -116,7 +116,7 @@ void ProgressRing::ApplyLottieAnimation()
             }
         }();
      
-        player.Source(winrt::make<ProgressRingLoading>(strokeThickness, size, foregroundColor, backgroundColor));
+        player.Source(winrt::make<ProgressRingIndeterminate>());
     }
 }
 

@@ -37,7 +37,7 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <!-- AnimatedVisualPlayer for Lottie -->
-                        <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="False" Stretch="None" Opacity="0"/>
+                        <local:AnimatedVisualPlayer x:Name="LottiePlayer" AutoPlay="false" Stretch="fill" Opacity="0"/>
 
                         <!--ProgressRing-->
                         <Grid x:Name="DeterminateProgressRingRoot">

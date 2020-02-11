@@ -6,7 +6,7 @@
 #include "pch.h"
 #include "common.h"
 
-#include "ProgressRingLoading.h"
+#include "ProgressRingIndeterminate.h"
 
 #include "ProgressRing.g.h"
 #include "ProgressRing.properties.h"
