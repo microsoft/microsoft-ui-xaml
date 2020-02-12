@@ -2280,13 +2280,13 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
 
-    auto newItem = args.NewValue();
-    auto oldItem = args.OldValue();
+    const auto newItem = args.NewValue();
+    const auto oldItem = args.OldValue();
 
     ChangeSelection(oldItem, newItem);
 
-    // Animate to be sure the selected item is visually higlighted!
-    // See #1395 for additional context
+    // When we do not raise a "SelectItemChanged" event, the selection does not get animated.
+    // To prevent faulty visual states, we will animate that here
     if (oldItem != newItem)
     {
         ChangeSelectStatusForItem(oldItem, false /*selected*/);
