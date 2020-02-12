@@ -132,7 +132,7 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_0()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         return result;
     }
 
@@ -144,7 +144,7 @@ class ProgressRingAnimatedVisual :
     {
         auto result = _c.CreateEllipseGeometry();
         result.TrimEnd(0.5F);
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_0p5(), RootProgress());
         return result;
     }
@@ -156,7 +156,7 @@ class ProgressRingAnimatedVisual :
     winrt::CompositionEllipseGeometry Ellipse_7_2()
     {
         auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 7, 7 });
+        result.Radius({ 9, 9 });
         StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p5(), _rootProgress);
         return result;
     }

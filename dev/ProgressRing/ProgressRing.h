@@ -45,5 +45,4 @@ private:
     tracker_ref<winrt::PathFigure> m_ringFigure{ this };
     tracker_ref<winrt::ArcSegment> m_ringArc{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
-    tracker_ref<winrt::SolidColorBrush> m_foreground{ this };
 };
