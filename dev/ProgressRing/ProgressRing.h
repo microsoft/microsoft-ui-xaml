@@ -25,12 +25,16 @@ public:
     void OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
+    void OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
 
 private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void ApplyLottieAnimation();
+    void SetLottieForegroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieBackgroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate);
     void UpdateStates();
     void UpdateSegment();
     void UpdateRing();
@@ -41,4 +45,5 @@ private:
     tracker_ref<winrt::PathFigure> m_ringFigure{ this };
     tracker_ref<winrt::ArcSegment> m_ringArc{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
+    tracker_ref<winrt::SolidColorBrush> m_foreground{ this };
 };

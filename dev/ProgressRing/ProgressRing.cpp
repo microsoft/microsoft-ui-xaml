@@ -9,6 +9,7 @@
 #include "math.h"
 
 winrt::Size ComputeCircleSize(double thickness, double actualWidth);
+winrt::float4 Color4(winrt::Color color);
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
 static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
@@ -20,6 +21,8 @@ static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
 static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush" };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
+static constexpr wstring_view s_ForegroundName{ L"Foreground" };
+static constexpr wstring_view s_BackgroundName{ L"Background" };
 
 ProgressRing::ProgressRing()
 {
@@ -62,12 +65,56 @@ void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, co
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    ApplyLottieAnimation();
+    if (const auto foreground = Foreground().try_as<winrt::SolidColorBrush>())
+    {
+        foreground.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
+    }
+
+    if (auto&& player = m_player.get())
+    {
+        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        {
+            SetLottieForegroundColor(progressRingIndeterminate);
+        }
+    }
+}
+
+void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    if (auto&& player = m_player.get())
+    {
+        if (auto const progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        {
+            SetLottieForegroundColor(progressRingIndeterminate);
+        }
+    }
 }
 
 void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
 {
-    ApplyLottieAnimation();
+    if (const auto background = Background().try_as<winrt::SolidColorBrush>())
+    {
+        background.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
+    }
+
+    if (auto&& player = m_player.get())
+    {
+        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        {
+            SetLottieBackgroundColor(progressRingIndeterminate);
+        }
+    }
+}
+
+void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    if (auto&& player = m_player.get())
+    {
+        if (auto const progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        {
+            SetLottieBackgroundColor(progressRingIndeterminate);
+        }
+    }
 }
 
 void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -85,39 +132,58 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        const float strokeThickness = static_cast<float>(StrokeThickness());
-        // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
-        const float diameter = static_cast<float>(ActualWidth());
-        const auto size = winrt::Size({ diameter, diameter });
-
-        const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]()
-        {
-            if (foreground)
-            {
-                return foreground.Color();
-            }
-            else
-            {
-                // Default color fallback if Foreground() Brush does not contain SolidColorBrush with Color property.
-                return SharedHelpers::FindInApplicationResources(s_DefaultForegroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
-            }
-        }();
-
-        const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]()
-        {
-            if (background)
-            {
-                return background.Color();
-            }
-            else
-            {
-                // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
-                return SharedHelpers::FindInApplicationResources(s_DefaultForegroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
-            }
-        }();
-     
         player.Source(winrt::make<ProgressRingIndeterminate>());
+
+        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        {
+            SetLottieForegroundColor(progressRingIndeterminate);
+            SetLottieBackgroundColor(progressRingIndeterminate);
+        }
     }
+}
+
+void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate)
+{
+    const auto compositor = winrt::Window::Current().Compositor();
+
+    const auto foregroundColor = [foreground = Foreground().try_as<winrt::SolidColorBrush>()]()
+    {
+        if (foreground)
+        {
+            return foreground.Color();
+        }
+        else
+        {
+            // Default color fallback if Foreground() Brush does not contain SolidColorBrush with Color property.
+            return SharedHelpers::FindInApplicationResources(s_DefaultForegroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
+        }
+    }();
+
+    const auto color = Color4(foregroundColor);
+
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, color);
+}
+
+void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate)
+{
+    const auto compositor = winrt::Window::Current().Compositor();
+
+    const auto backgroundColor = [background = Background().try_as<winrt::SolidColorBrush>()]()
+    {
+        if (background)
+        {
+            return background.Color();
+        }
+        else
+        {
+            // Default color fallback if Background() Brush does not contain SolidColorBrush with Color property.
+            return SharedHelpers::FindInApplicationResources(s_DefaultBackgroundThemeResourceName).as<winrt::SolidColorBrush>().Color();
+        }
+    }();
+
+    const auto color = Color4(backgroundColor);
+
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, color);
 }
 
 void ProgressRing::UpdateStates()
@@ -214,4 +280,9 @@ winrt::Size ComputeCircleSize(double thickness, double actualWidth)
     const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
 
     return { static_cast<float>(radius), static_cast<float>(radius) };
+}
+
+winrt::float4 Color4(winrt::Color color)
+{
+    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
 }

@@ -15,7 +15,6 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="$(MSBuildThisFileDirectory)IThemedLottie.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
   </ItemGroup>

@@ -24,7 +24,7 @@ private:
     winrt::CompositionPropertySet EnsureThemeProperties(winrt::Compositor compositor);
 
 public:
-    winrt::CompositionPropertySet GetThemeProperties(winrt::Compositor& compositor);
+    winrt::CompositionPropertySet GetThemeProperties(winrt::Compositor compositor);
 
     winrt::IAnimatedVisual TryCreateAnimatedVisual(
         const winrt::Compositor& compositor,

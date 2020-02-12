@@ -367,7 +367,7 @@ winrt::CompositionPropertySet ProgressRingIndeterminate::EnsureThemeProperties(w
     return _themeProperties;
 }
 
-winrt::CompositionPropertySet ProgressRingIndeterminate::GetThemeProperties(winrt::Compositor& compositor)
+winrt::CompositionPropertySet ProgressRingIndeterminate::GetThemeProperties(winrt::Compositor compositor)
 {
     return EnsureThemeProperties(compositor);
 }
