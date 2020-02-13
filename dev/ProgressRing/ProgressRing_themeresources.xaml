@@ -10,5 +10,5 @@
             <StaticResource x:Key="ProgressRingBackgroundThemeBrush" ResourceKey="SystemControlBackgroundBaseLowBrush" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
-
+    <x:Double x:Key="ProgressRingStrokeThickness">4</x:Double>
 </ResourceDictionary>

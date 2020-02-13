@@ -19,7 +19,7 @@ namespace AnimatedVisuals
     // Vector4 L"Background" as Color
     // Vector4 L"Foreground" as Color
     class ProgressRingIndeterminate
-        : public winrt::implements<ProgressRingIndeterminate, winrt::IAnimatedVisualSource>
+        : public winrt::implements<ProgressRingIndeterminate, winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisualSource, IThemedAnimatedVisualSource>
     {
         winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
 
