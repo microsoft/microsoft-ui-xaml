@@ -7,356 +7,366 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #include "pch.h"
-#include "common.h"
 #include "ProgressRingIndeterminate.h"
 #include "WindowsNumerics.h"
 
-static void StartProgressBoundAnimation(
-    winrt::CompositionObject target,
-    winrt::hstring animatedPropertyName,
-    winrt::CompositionAnimation animation,
-    winrt::ExpressionAnimation controllerProgressExpression)
-{
-    target.StartAnimation(animatedPropertyName, animation);
-    auto controller = target.TryGetAnimationController(animatedPropertyName);
-    controller.Pause();
-    controller.StartAnimation(L"Progress", controllerProgressExpression);
-}
+using namespace winrt::Microsoft::UI::Xaml::Controls;
+using namespace winrt::Windows::Foundation;
+using namespace winrt::Windows::Foundation::Metadata;
+using namespace winrt::Windows::Foundation::Numerics;
+using namespace winrt::Windows::Graphics;
+using namespace winrt::Windows::UI;
+using namespace winrt::Windows::UI::Composition;
 
-class ProgressRingAnimatedVisual :
-    public winrt::implements<ProgressRingAnimatedVisual, winrt::IAnimatedVisual, winrt::IClosable>
+namespace
 {
-    // Animation duration: 2.000 seconds.
-    static constexpr auto c_durationTicks = 2000ms;
-    winrt::Compositor const _c{ nullptr };
-    winrt::ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
-    winrt::CompositionPropertySet const _themeProperties{ nullptr };
-    winrt::CompositionColorBrush _boundColor_Foreground_0{ nullptr };
-    winrt::CompositionColorBrush _boundColor_Foreground_1{ nullptr };
-    winrt::CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
-    winrt::StepEasingFunction _holdThenStepEasingFunction{ nullptr };
-    winrt::ContainerVisual _root{ nullptr };
-    winrt::ExpressionAnimation _rootProgress{ nullptr };
-
-    void BindProperty(
-        winrt::CompositionObject target,
+    static void StartProgressBoundAnimation(
+        CompositionObject target,
         winrt::hstring animatedPropertyName,
-        winrt::hstring expression,
-        winrt::hstring referenceParameterName,
-        winrt::CompositionObject referencedObject)
+        CompositionAnimation animation,
+        ExpressionAnimation controllerProgressExpression)
     {
-        _reusableExpressionAnimation.ClearAllParameters();
-        _reusableExpressionAnimation.Expression(expression);
-        _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName, referencedObject);
-        target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
+        target.StartAnimation(animatedPropertyName, animation);
+        const auto controller = target.TryGetAnimationController(animatedPropertyName);
+        controller.Pause();
+        controller.StartAnimation(L"Progress", controllerProgressExpression);
     }
 
-    // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
-    // BG
-    // Color bound to theme property value: Background
-    winrt::CompositionColorBrush BoundColor_Background()
+    class AnimatedVisual
+        : public winrt::implements<AnimatedVisual, winrt::IAnimatedVisual, winrt::IClosable>
     {
-        auto result = _c.CreateColorBrush();
-        BindProperty(result, L"Color", L"ColorRGB(_theme.Background.W,_theme.Background.X,_theme.Background.Y,_theme.Background.Z)", L"_theme", _themeProperties);
-        return result;
-    }
+        // Animation duration: 2.000 seconds.
+        TimeSpan c_durationTicks{ 20000000L };
+        Compositor const _c{ nullptr };
+        ExpressionAnimation const _reusableExpressionAnimation{ nullptr };
+        CompositionPropertySet const _themeProperties{ nullptr };
+        CubicBezierEasingFunction _cubicBezierEasingFunction_0{ nullptr };
+        StepEasingFunction _holdThenStepEasingFunction{ nullptr };
+        ContainerVisual _root{ nullptr };
+        ExpressionAnimation _rootProgress{ nullptr };
+        CompositionColorBrush _themeColor_Foreground_0{ nullptr };
+        CompositionColorBrush _themeColor_Foreground_1{ nullptr };
 
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse B
-    // Color bound to theme property value: Foreground
-    winrt::CompositionColorBrush BoundColor_Foreground_0()
-    {
-        auto result = _boundColor_Foreground_0 = _c.CreateColorBrush();
-        auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 0);
-        _reusableExpressionAnimation.ClearAllParameters();
-        _reusableExpressionAnimation.Expression(L"ColorRGB(_theme.Foreground.W * my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)");
-        _reusableExpressionAnimation.SetReferenceParameter(L"my", propertySet);
-        _reusableExpressionAnimation.SetReferenceParameter(L"_theme", _themeProperties);
-        result.StartAnimation(L"Color", _reusableExpressionAnimation);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_1(), _rootProgress);
-        return result;
-    }
+        void BindProperty(
+            CompositionObject target,
+            winrt::hstring animatedPropertyName,
+            winrt::hstring expression,
+            winrt::hstring referenceParameterName,
+            CompositionObject referencedObject)
+        {
+            _reusableExpressionAnimation.ClearAllParameters();
+            _reusableExpressionAnimation.Expression(expression);
+            _reusableExpressionAnimation.SetReferenceParameter(referenceParameterName, referencedObject);
+            target.StartAnimation(animatedPropertyName, _reusableExpressionAnimation);
+        }
 
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse A
-    // Color bound to theme property value: Foreground
-    winrt::CompositionColorBrush BoundColor_Foreground_1()
-    {
-        auto result = _boundColor_Foreground_1 = _c.CreateColorBrush();
-        auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Opacity0", 1);
-        _reusableExpressionAnimation.ClearAllParameters();
-        _reusableExpressionAnimation.Expression(L"ColorRGB(_theme.Foreground.W * my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)");
-        _reusableExpressionAnimation.SetReferenceParameter(L"my", propertySet);
-        _reusableExpressionAnimation.SetReferenceParameter(L"_theme", _themeProperties);
-        result.StartAnimation(L"Color", _reusableExpressionAnimation);
-        StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0(), _rootProgress);
-        return result;
-    }
+        // Layer (Shape): Radial
+        CompositionContainerShape ContainerShape_0()
+        {
+            const auto result = _c.CreateContainerShape();
+            result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
+            // Transforms: Radial
+            result.Shapes().Append(ContainerShape_1());
+            return result;
+        }
 
-    // Layer (Shape): Radial
-    winrt::CompositionContainerShape ContainerShape_0()
-    {
-        auto result = _c.CreateContainerShape();
-        result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
-        // Transforms: Radial
-        result.Shapes().Append(ContainerShape_1());
-        return result;
-    }
+        // Layer (Shape): Radial
+        // Transforms for Radial
+        CompositionContainerShape ContainerShape_1()
+        {
+            const auto result = _c.CreateContainerShape();
+            const auto shapes = result.Shapes();
+            // Ellipse Path / ShapeGroup: Ellipse B
+            shapes.Append(SpriteShape_1());
+            // Ellipse Path / ShapeGroup: Ellipse A
+            shapes.Append(SpriteShape_2());
+            StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_900(), _rootProgress);
+            return result;
+        }
 
-    // Layer (Shape): Radial
-    // Transforms for Radial
-    winrt::CompositionContainerShape ContainerShape_1()
-    {
-        auto result = _c.CreateContainerShape();
-        auto shapes = result.Shapes();
-        // Ellipse Path / ShapeGroup: Ellipse B
-        shapes.Append(SpriteShape_1());
-        // Ellipse Path / ShapeGroup: Ellipse A
-        shapes.Append(SpriteShape_2());
-        StartProgressBoundAnimation(result, L"RotationAngleInDegrees", RotationAngleInDegreesScalarAnimation_0_to_900(), _rootProgress);
-        return result;
-    }
+        CubicBezierEasingFunction CubicBezierEasingFunction_0()
+        {
+            return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
+        }
 
-    winrt::CubicBezierEasingFunction CubicBezierEasingFunction_0()
-    {
-        return _cubicBezierEasingFunction_0 = _c.CreateCubicBezierEasingFunction({ 0.166999996F, 0.166999996F }, { 0.833000004F, 0.833000004F });
-    }
-
-    // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
-    // BG
-    // Ellipse Path.EllipseGeometry
-    winrt::CompositionEllipseGeometry Ellipse_7_0()
-    {
-        auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 9, 9 });
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse B
-    // Ellipse Path.EllipseGeometry
-    winrt::CompositionEllipseGeometry Ellipse_7_1()
-    {
-        auto result = _c.CreateEllipseGeometry();
-        result.TrimEnd(0.5F);
-        result.Radius({ 9, 9 });
-        StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_0p5(), RootProgress());
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse A
-    // Ellipse Path.EllipseGeometry
-    winrt::CompositionEllipseGeometry Ellipse_7_2()
-    {
-        auto result = _c.CreateEllipseGeometry();
-        result.Radius({ 9, 9 });
-        StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p5(), _rootProgress);
-        return result;
-    }
-
-    winrt::StepEasingFunction HoldThenStepEasingFunction()
-    {
-        auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
-        result.IsFinalStepSingleFrame(true);
-        return result;
-    }
-
-    // Opacity0
-    winrt::ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_1()
-    {
-        auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration({ c_durationTicks });
-        result.InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.5F, 1, _holdThenStepEasingFunction);
-        return result;
-    }
-
-    // Opacity0
-    winrt::ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0()
-    {
-        auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration({ c_durationTicks });
-        result.InsertKeyFrame(0, 1, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.5F, 0, _holdThenStepEasingFunction);
-        return result;
-    }
-
-    // The root of the composition.
-    winrt::ContainerVisual Root()
-    {
-        auto result = _root = _c.CreateContainerVisual();
-        auto propertySet = result.Properties();
-        propertySet.InsertScalar(L"Progress", 0);
-        result.Children().InsertAtTop(ShapeVisual_0());
-        return result;
-    }
-
-    winrt::ExpressionAnimation RootProgress()
-    {
-        auto result = _rootProgress = _c.CreateExpressionAnimation(L"_.Progress");
-        result.SetReferenceParameter(L"_", _root);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Rotation
-    winrt::ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_900()
-    {
-        auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration({ c_durationTicks });
-        result.InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.5F, 450, _cubicBezierEasingFunction_0);
-        result.InsertKeyFrame(1, 900, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    winrt::ShapeVisual ShapeVisual_0()
-    {
-        auto result = _c.CreateShapeVisual();
-        result.Size({ 100, 100 });
-        auto shapes = result.Shapes();
         // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
         // BG
-        shapes.Append(SpriteShape_0());
-        // Layer (Shape): Radial
-        shapes.Append(ContainerShape_0());
-        return result;
-    }
-
-    // Ellipse Path
-    winrt::CompositionSpriteShape SpriteShape_0()
-    {
-        auto result = _c.CreateSpriteShape(Ellipse_7_0());
-        result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
-        result.StrokeBrush(BoundColor_Background());
-        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path
-    winrt::CompositionSpriteShape SpriteShape_1()
-    {
-        auto result = _c.CreateSpriteShape(Ellipse_7_1());
-        result.StrokeBrush(BoundColor_Foreground_0());
-        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path
-    winrt::CompositionSpriteShape SpriteShape_2()
-    {
-        auto result = _c.CreateSpriteShape(Ellipse_7_2());
-        result.StrokeBrush(BoundColor_Foreground_1());
-        result.StrokeDashCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeEndCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeStartCap(winrt::CompositionStrokeCap::Round);
-        result.StrokeMiterLimit(4);
-        result.StrokeThickness(2);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse B
-    // Ellipse Path.EllipseGeometry
-    // TrimStart
-    winrt::StepEasingFunction StepThenHoldEasingFunction()
-    {
-        auto result = _c.CreateStepEasingFunction();
-        result.IsInitialStepSingleFrame(true);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse A
-    // Ellipse Path.EllipseGeometry
-    // TrimEnd
-    winrt::ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_0p5()
-    {
-        auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration({ c_durationTicks });
-        result.InsertKeyFrame(0, 9.99999975E-05F, _holdThenStepEasingFunction);
-        result.InsertKeyFrame(0.5F, 0.5F, _cubicBezierEasingFunction_0);
-        return result;
-    }
-
-    // Layer (Shape): Radial
-    // Transforms: Radial
-    // Ellipse Path / ShapeGroup: Ellipse B
-    // Ellipse Path.EllipseGeometry
-    // TrimStart
-    winrt::ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_0p5()
-    {
-        auto result = _c.CreateScalarKeyFrameAnimation();
-        result.Duration({ c_durationTicks });
-        result.InsertKeyFrame(0, 0, StepThenHoldEasingFunction());
-        result.InsertKeyFrame(0.5F, 0, HoldThenStepEasingFunction());
-        result.InsertKeyFrame(1, 0.5F, CubicBezierEasingFunction_0());
-        return result;
-    }
-
-public:
-    ProgressRingAnimatedVisual(
-        winrt::Compositor compositor,
-        winrt::CompositionPropertySet themeProperties)
-        : _c(compositor)
-        , _themeProperties(themeProperties)
-        , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
-    {
-        Root();
-    }
-
-    std::chrono::milliseconds Duration() const
-    {
-        return { c_durationTicks };
-    }
-
-    auto RootVisual() const
-    {
-        return _root;
-    }
-
-    winrt::float2 Size() const
-    {
-        return { 100, 100 };
-    }
-
-    void Close()
-    {
-        if (_root)
+        // Ellipse Path.EllipseGeometry
+        CompositionEllipseGeometry Ellipse_7_0()
         {
-            _root.Close();
+            const auto result = _c.CreateEllipseGeometry();
+            result.Radius({ 7, 7 });
+            return result;
         }
-    }
 
-    static bool IsRuntimeCompatible()
-    {
-        return SharedHelpers::IsAPIContractV7Available();
-    }
-};
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse B
+        // Ellipse Path.EllipseGeometry
+        CompositionEllipseGeometry Ellipse_7_1()
+        {
+            const auto result = _c.CreateEllipseGeometry();
+            result.TrimEnd(0.5F);
+            result.Radius({ 7, 7 });
+            StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_0p5(), RootProgress());
+            return result;
+        }
 
-winrt::CompositionPropertySet ProgressRingIndeterminate::EnsureThemeProperties(winrt::Compositor compositor)
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse A
+        // Ellipse Path.EllipseGeometry
+        CompositionEllipseGeometry Ellipse_7_2()
+        {
+            const auto result = _c.CreateEllipseGeometry();
+            result.Radius({ 7, 7 });
+            StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p5(), _rootProgress);
+            return result;
+        }
+
+        StepEasingFunction HoldThenStepEasingFunction()
+        {
+            const auto result = _holdThenStepEasingFunction = _c.CreateStepEasingFunction();
+            result.IsFinalStepSingleFrame(true);
+            return result;
+        }
+
+        // Opacity0
+        ScalarKeyFrameAnimation Opacity0ScalarAnimation_0_to_1()
+        {
+            const auto result = _c.CreateScalarKeyFrameAnimation();
+            result.Duration({ c_durationTicks });
+            result.InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
+            result.InsertKeyFrame(0.5F, 1, _holdThenStepEasingFunction);
+            return result;
+        }
+
+        // Opacity0
+        ScalarKeyFrameAnimation Opacity0ScalarAnimation_1_to_0()
+        {
+            const auto result = _c.CreateScalarKeyFrameAnimation();
+            result.Duration({ c_durationTicks });
+            result.InsertKeyFrame(0, 1, _holdThenStepEasingFunction);
+            result.InsertKeyFrame(0.5F, 0, _holdThenStepEasingFunction);
+            return result;
+        }
+
+        // The root of the composition.
+        ContainerVisual Root()
+        {
+            const auto result = _root = _c.CreateContainerVisual();
+            const auto propertySet = result.Properties();
+            propertySet.InsertScalar(L"Progress", 0);
+            result.Children().InsertAtTop(ShapeVisual_0());
+            return result;
+        }
+
+        ExpressionAnimation RootProgress()
+        {
+            const auto result = _rootProgress = _c.CreateExpressionAnimation(L"_.Progress");
+            result.SetReferenceParameter(L"_", _root);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Rotation
+        ScalarKeyFrameAnimation RotationAngleInDegreesScalarAnimation_0_to_900()
+        {
+            const auto result = _c.CreateScalarKeyFrameAnimation();
+            result.Duration({ c_durationTicks });
+            result.InsertKeyFrame(0, 0, _holdThenStepEasingFunction);
+            result.InsertKeyFrame(0.5F, 450, _cubicBezierEasingFunction_0);
+            result.InsertKeyFrame(1, 900, _cubicBezierEasingFunction_0);
+            return result;
+        }
+
+        ShapeVisual ShapeVisual_0()
+        {
+            const auto result = _c.CreateShapeVisual();
+            result.Size({ 100, 100 });
+            const auto shapes = result.Shapes();
+            // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
+            // BG
+            shapes.Append(SpriteShape_0());
+            // Layer (Shape): Radial
+            shapes.Append(ContainerShape_0());
+            return result;
+        }
+
+        // Ellipse Path
+        CompositionSpriteShape SpriteShape_0()
+        {
+            const auto result = _c.CreateSpriteShape(Ellipse_7_0());
+            result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
+            result.StrokeBrush(ThemeColor_Background());
+            result.StrokeDashCap(CompositionStrokeCap::Round);
+            result.StrokeEndCap(CompositionStrokeCap::Round);
+            result.StrokeStartCap(CompositionStrokeCap::Round);
+            result.StrokeMiterLimit(4);
+            result.StrokeThickness(2);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path
+        CompositionSpriteShape SpriteShape_1()
+        {
+            const auto result = _c.CreateSpriteShape(Ellipse_7_1());
+            result.StrokeBrush(ThemeColor_Foreground_0());
+            result.StrokeDashCap(CompositionStrokeCap::Round);
+            result.StrokeEndCap(CompositionStrokeCap::Round);
+            result.StrokeStartCap(CompositionStrokeCap::Round);
+            result.StrokeMiterLimit(4);
+            result.StrokeThickness(2);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path
+        CompositionSpriteShape SpriteShape_2()
+        {
+            const auto result = _c.CreateSpriteShape(Ellipse_7_2());
+            result.StrokeBrush(ThemeColor_Foreground_1());
+            result.StrokeDashCap(CompositionStrokeCap::Round);
+            result.StrokeEndCap(CompositionStrokeCap::Round);
+            result.StrokeStartCap(CompositionStrokeCap::Round);
+            result.StrokeMiterLimit(4);
+            result.StrokeThickness(2);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse B
+        // Ellipse Path.EllipseGeometry
+        // TrimStart
+        StepEasingFunction StepThenHoldEasingFunction()
+        {
+            const auto result = _c.CreateStepEasingFunction();
+            result.IsInitialStepSingleFrame(true);
+            return result;
+        }
+
+        // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
+        // BG
+        // Color bound to theme property value: Background
+        CompositionColorBrush ThemeColor_Background()
+        {
+            const auto result = _c.CreateColorBrush();
+            BindProperty(result, L"Color", L"ColorRGB(_theme.Background.W,_theme.Background.X,_theme.Background.Y,_theme.Background.Z)", L"_theme", _themeProperties);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse B
+        // Color bound to theme property value: Foreground
+        CompositionColorBrush ThemeColor_Foreground_0()
+        {
+            const auto result = _themeColor_Foreground_0 = _c.CreateColorBrush();
+            const auto propertySet = result.Properties();
+            propertySet.InsertScalar(L"Opacity0", 0);
+            _reusableExpressionAnimation.ClearAllParameters();
+            _reusableExpressionAnimation.Expression(L"ColorRGB(_theme.Foreground.W * my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)");
+            _reusableExpressionAnimation.SetReferenceParameter(L"my", propertySet);
+            _reusableExpressionAnimation.SetReferenceParameter(L"_theme", _themeProperties);
+            result.StartAnimation(L"Color", _reusableExpressionAnimation);
+            StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_0_to_1(), _rootProgress);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse A
+        // Color bound to theme property value: Foreground
+        CompositionColorBrush ThemeColor_Foreground_1()
+        {
+            const auto result = _themeColor_Foreground_1 = _c.CreateColorBrush();
+            const auto propertySet = result.Properties();
+            propertySet.InsertScalar(L"Opacity0", 1);
+            _reusableExpressionAnimation.ClearAllParameters();
+            _reusableExpressionAnimation.Expression(L"ColorRGB(_theme.Foreground.W * my.Opacity0,_theme.Foreground.X,_theme.Foreground.Y,_theme.Foreground.Z)");
+            _reusableExpressionAnimation.SetReferenceParameter(L"my", propertySet);
+            _reusableExpressionAnimation.SetReferenceParameter(L"_theme", _themeProperties);
+            result.StartAnimation(L"Color", _reusableExpressionAnimation);
+            StartProgressBoundAnimation(propertySet, L"Opacity0", Opacity0ScalarAnimation_1_to_0(), _rootProgress);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse A
+        // Ellipse Path.EllipseGeometry
+        // TrimEnd
+        ScalarKeyFrameAnimation TrimEndScalarAnimation_0_to_0p5()
+        {
+            const auto result = _c.CreateScalarKeyFrameAnimation();
+            result.Duration({ c_durationTicks });
+            result.InsertKeyFrame(0, 9.99999975E-05F, _holdThenStepEasingFunction);
+            result.InsertKeyFrame(0.5F, 0.5F, _cubicBezierEasingFunction_0);
+            return result;
+        }
+
+        // Layer (Shape): Radial
+        // Transforms: Radial
+        // Ellipse Path / ShapeGroup: Ellipse B
+        // Ellipse Path.EllipseGeometry
+        // TrimStart
+        ScalarKeyFrameAnimation TrimStartScalarAnimation_0_to_0p5()
+        {
+            const auto result = _c.CreateScalarKeyFrameAnimation();
+            result.Duration({ c_durationTicks });
+            result.InsertKeyFrame(0, 0, StepThenHoldEasingFunction());
+            result.InsertKeyFrame(0.5F, 0, HoldThenStepEasingFunction());
+            result.InsertKeyFrame(1, 0.5F, CubicBezierEasingFunction_0());
+            return result;
+        }
+
+    public:
+        AnimatedVisual(Compositor compositor, CompositionPropertySet themeProperties)
+            : _c(compositor)
+            , _themeProperties(themeProperties)
+            , _reusableExpressionAnimation(compositor.CreateExpressionAnimation())
+        {
+            const auto _ = Root();
+        }
+
+        void Close()
+        {
+            if (_root)
+            {
+                _root.Close();
+            }
+        }
+
+        TimeSpan Duration()
+        {
+            return { c_durationTicks };
+        }
+
+
+        Visual RootVisual()
+        {
+            return _root;
+        }
+
+
+        float2 Size()
+        {
+            return { 100, 100 };
+        }
+
+        static bool IsRuntimeCompatible()
+        {
+            return ApiInformation::IsApiContractPresent(L"Windows.Foundation.UniversalApiContract", 7);
+        }
+    };
+} // end namespace
+
+CompositionPropertySet AnimatedVisuals::ProgressRingIndeterminate::EnsureThemeProperties(Compositor compositor)
 {
     if (_themeProperties == nullptr)
     {
@@ -367,21 +377,21 @@ winrt::CompositionPropertySet ProgressRingIndeterminate::EnsureThemeProperties(w
     return _themeProperties;
 }
 
-winrt::CompositionPropertySet ProgressRingIndeterminate::GetThemeProperties(winrt::Compositor compositor)
+CompositionPropertySet AnimatedVisuals::ProgressRingIndeterminate::GetThemeProperties(Compositor compositor)
 {
     return EnsureThemeProperties(compositor);
 }
 
-winrt::IAnimatedVisual ProgressRingIndeterminate::TryCreateAnimatedVisual(
-    const winrt::Compositor& compositor,
-    winrt::IInspectable& diagnostics)
+IAnimatedVisual AnimatedVisuals::ProgressRingIndeterminate::TryCreateAnimatedVisual(
+    const Compositor& compositor,
+    IInspectable& diagnostics)
 {
-    EnsureThemeProperties(compositor);
+    const auto _ = EnsureThemeProperties(compositor);
     diagnostics = nullptr;
 
-    if (ProgressRingAnimatedVisual::IsRuntimeCompatible())
+    if (AnimatedVisual::IsRuntimeCompatible())
     {
-        return winrt::make<ProgressRingAnimatedVisual>(compositor, _themeProperties);
+        return winrt::make<AnimatedVisual>(compositor, _themeProperties);
     }
 
     return nullptr;

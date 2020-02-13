@@ -72,7 +72,7 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
 
     if (auto&& player = m_player.get())
     {
-        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieForegroundColor(progressRingIndeterminate);
         }
@@ -83,7 +83,7 @@ void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObjec
 {
     if (auto&& player = m_player.get())
     {
-        if (auto const progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        if (auto const progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieForegroundColor(progressRingIndeterminate);
         }
@@ -99,7 +99,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
 
     if (auto&& player = m_player.get())
     {
-        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieBackgroundColor(progressRingIndeterminate);
         }
@@ -110,7 +110,7 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
 {
     if (auto&& player = m_player.get())
     {
-        if (auto const progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        if (auto const progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieBackgroundColor(progressRingIndeterminate);
         }
@@ -132,9 +132,9 @@ void ProgressRing::ApplyLottieAnimation()
 {
     if (auto&& player = m_player.get())
     {
-        player.Source(winrt::make<ProgressRingIndeterminate>());
+        player.Source(winrt::make<AnimatedVisuals::ProgressRingIndeterminate>());
 
-        if (const auto progressRingIndeterminate = player.Source().try_as<ProgressRingIndeterminate>())
+        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieForegroundColor(progressRingIndeterminate);
             SetLottieBackgroundColor(progressRingIndeterminate);
@@ -142,7 +142,7 @@ void ProgressRing::ApplyLottieAnimation()
     }
 }
 
-void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate)
+void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
@@ -164,7 +164,7 @@ void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<ProgressRingInd
     progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, color);
 }
 
-void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate)
+void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)
 {
     const auto compositor = winrt::Window::Current().Compositor();
 

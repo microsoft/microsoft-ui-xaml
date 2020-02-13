@@ -33,8 +33,8 @@ private:
     void OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&);
     void OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&);
     void ApplyLottieAnimation();
-    void SetLottieForegroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate);
-    void SetLottieBackgroundColor(winrt::impl::com_ref<ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
+    void SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate);
     void UpdateStates();
     void UpdateSegment();
     void UpdateRing();

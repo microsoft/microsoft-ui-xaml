@@ -7,26 +7,29 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+//#include "IThemedAnimatedVisualSource.h"
 
+namespace AnimatedVisuals
+{
     // Name:        RadialIntermintent
     // Frame rate:  60 fps
     // Frame count: 120
     // ===========
     // Property bindings:
-    // Vector4 "Background" as Color
-    // Vector4 "Foreground" as Color
-class ProgressRingIndeterminate :
-    public winrt::implements<ProgressRingIndeterminate, winrt::IAnimatedVisualSource>
-{
-private:
-    winrt::CompositionPropertySet _themeProperties{ nullptr };
+    // Vector4 L"Background" as Color
+    // Vector4 L"Foreground" as Color
+    class ProgressRingIndeterminate :
+        public winrt::implements<ProgressRingIndeterminate, winrt::IAnimatedVisualSource>
+    {
+        winrt::CompositionPropertySet _themeProperties{ nullptr };
 
-    winrt::CompositionPropertySet EnsureThemeProperties(winrt::Compositor compositor);
+        winrt::CompositionPropertySet EnsureThemeProperties(winrt::Compositor compositor);
 
-public:
-    winrt::CompositionPropertySet GetThemeProperties(winrt::Compositor compositor);
+    public:
+        winrt::CompositionPropertySet GetThemeProperties(winrt::Compositor compositor);
 
-    winrt::IAnimatedVisual TryCreateAnimatedVisual(
-        const winrt::Compositor& compositor,
-        winrt::IInspectable& diagnostics);
-};
+        winrt::IAnimatedVisual TryCreateAnimatedVisual(
+            const winrt::Compositor& compositor,
+            IInspectable& diagnostics);
+    };
+}

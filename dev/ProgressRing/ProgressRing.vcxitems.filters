@@ -3,15 +3,11 @@
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp">
-      <Filter>AnimatedVisuals</Filter>
-    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h">
-      <Filter>AnimatedVisuals</Filter>
-    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
