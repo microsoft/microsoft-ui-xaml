@@ -7,7 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-//#include "IThemedAnimatedVisualSource.h"
+#include "IThemedAnimatedVisualSource.h"
 
 namespace AnimatedVisuals
 {
@@ -18,18 +18,18 @@ namespace AnimatedVisuals
     // Property bindings:
     // Vector4 L"Background" as Color
     // Vector4 L"Foreground" as Color
-    class ProgressRingIndeterminate :
-        public winrt::implements<ProgressRingIndeterminate, winrt::IAnimatedVisualSource>
+    class ProgressRingIndeterminate
+        : public winrt::implements<ProgressRingIndeterminate, winrt::IAnimatedVisualSource>
     {
-        winrt::CompositionPropertySet _themeProperties{ nullptr };
+        winrt::Windows::UI::Composition::CompositionPropertySet _themeProperties{ nullptr };
 
-        winrt::CompositionPropertySet EnsureThemeProperties(winrt::Compositor compositor);
+        winrt::Windows::UI::Composition::CompositionPropertySet EnsureThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
     public:
-        winrt::CompositionPropertySet GetThemeProperties(winrt::Compositor compositor);
+        virtual winrt::Windows::UI::Composition::CompositionPropertySet GetThemeProperties(winrt::Windows::UI::Composition::Compositor compositor);
 
-        winrt::IAnimatedVisual TryCreateAnimatedVisual(
-            const winrt::Compositor& compositor,
-            IInspectable& diagnostics);
+        virtual winrt::Microsoft::UI::Xaml::Controls::IAnimatedVisual TryCreateAnimatedVisual(
+            const winrt::Windows::UI::Composition::Compositor& compositor,
+            winrt::IInspectable& diagnostics);
     };
 }

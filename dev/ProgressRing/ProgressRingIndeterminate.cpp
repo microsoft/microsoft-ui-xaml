@@ -92,10 +92,10 @@ namespace
         // Ellipse Path / ShapeGroup: Ellipse / Transforms: Radial BG / Layer (Shape): Radial
         // BG
         // Ellipse Path.EllipseGeometry
-        CompositionEllipseGeometry Ellipse_7_0()
+        CompositionEllipseGeometry Ellipse_9_0()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 7, 7 });
+            result.Radius({ 9, 9 });
             return result;
         }
 
@@ -103,11 +103,11 @@ namespace
         // Transforms: Radial
         // Ellipse Path / ShapeGroup: Ellipse B
         // Ellipse Path.EllipseGeometry
-        CompositionEllipseGeometry Ellipse_7_1()
+        CompositionEllipseGeometry Ellipse_9_1()
         {
             const auto result = _c.CreateEllipseGeometry();
             result.TrimEnd(0.5F);
-            result.Radius({ 7, 7 });
+            result.Radius({ 9, 9 });
             StartProgressBoundAnimation(result, L"TrimStart", TrimStartScalarAnimation_0_to_0p5(), RootProgress());
             return result;
         }
@@ -116,10 +116,10 @@ namespace
         // Transforms: Radial
         // Ellipse Path / ShapeGroup: Ellipse A
         // Ellipse Path.EllipseGeometry
-        CompositionEllipseGeometry Ellipse_7_2()
+        CompositionEllipseGeometry Ellipse_9_2()
         {
             const auto result = _c.CreateEllipseGeometry();
-            result.Radius({ 7, 7 });
+            result.Radius({ 9, 9 });
             StartProgressBoundAnimation(result, L"TrimEnd", TrimEndScalarAnimation_0_to_0p5(), _rootProgress);
             return result;
         }
@@ -197,7 +197,7 @@ namespace
         // Ellipse Path
         CompositionSpriteShape SpriteShape_0()
         {
-            const auto result = _c.CreateSpriteShape(Ellipse_7_0());
+            const auto result = _c.CreateSpriteShape(Ellipse_9_0());
             result.TransformMatrix({ 5, 0, 0, 5, 50, 50 });
             result.StrokeBrush(ThemeColor_Background());
             result.StrokeDashCap(CompositionStrokeCap::Round);
@@ -213,7 +213,7 @@ namespace
         // Ellipse Path
         CompositionSpriteShape SpriteShape_1()
         {
-            const auto result = _c.CreateSpriteShape(Ellipse_7_1());
+            const auto result = _c.CreateSpriteShape(Ellipse_9_1());
             result.StrokeBrush(ThemeColor_Foreground_0());
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
@@ -228,7 +228,7 @@ namespace
         // Ellipse Path
         CompositionSpriteShape SpriteShape_2()
         {
-            const auto result = _c.CreateSpriteShape(Ellipse_7_2());
+            const auto result = _c.CreateSpriteShape(Ellipse_9_2());
             result.StrokeBrush(ThemeColor_Foreground_1());
             result.StrokeDashCap(CompositionStrokeCap::Round);
             result.StrokeEndCap(CompositionStrokeCap::Round);
