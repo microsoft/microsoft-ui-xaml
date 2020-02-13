@@ -27,6 +27,7 @@
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
                 <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
                 <TextBlock x:Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
+                <Button Content="Use API to selecte MenuItem4" Click="SelectItemUsingAPI"/>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

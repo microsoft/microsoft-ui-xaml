@@ -92,6 +92,10 @@ namespace MUXControlsTestApp
         private void SelectSecondItem(object sender, RoutedEventArgs e)
         {
             navview.SelectedItem = categories[1];
+        }        
+        private void SelectItemUsingAPI(object sender, RoutedEventArgs e)
+        {
+            navview.SelectedItem = categories[0].Children[0].Children[1];
         }
         private void ExpandingItem(object sender, NavigationViewItemExpandingEventArgs e)
         {

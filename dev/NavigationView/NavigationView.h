@@ -272,6 +272,7 @@ private:
     bool NeedRearrangeOfTopElementsAfterOverflowSelectionChanged(int selectedOriginalIndex);
     bool ShouldShowFocusVisual();
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
+    winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
@@ -280,6 +281,7 @@ private:
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
+    int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
 
     // Hierarchy related APIs
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
@@ -290,6 +292,9 @@ private:
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
+    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+    winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
+
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

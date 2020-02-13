@@ -24,6 +24,7 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
+#include "ElementFactoryGetArgs.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -186,7 +187,7 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
     }
     else
     {
-        // We need to find the realized NavigationViewItem container in order to extract the children data
+        // We need to find the realized NavigationViewItem container in order to extract the children data.
         auto const sourceContainer = GetContainerForIndexPath(e.SourceIndex());
         if (auto const nvi = sourceContainer.try_as<winrt::NavigationViewItem>())
         {
@@ -2381,6 +2382,13 @@ void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, 
         // If we select an item, we follow the unselect to simplify the code.
         container.IsSelected(selected);
     }
+    else if (selected)
+    {
+        // If we are selecting an item and have not found a realized container for it,
+        // we may need to manually resolve a container for this in order to update the
+        // SelectionModel's selected IndexPath.
+        auto const ip = GetIndexPathOfItem(item);
+    }
  }
 
 bool NavigationView::IsSettingsItem(winrt::IInspectable const& item)
@@ -3905,7 +3913,6 @@ template<typename T> T NavigationView::GetContainerForData(const winrt::IInspect
     return nullptr;
 }
 
-// TODO: Update to realized all items in order to evaluate databinding
 winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data)
 {
     // TODO: Temporary inefficient solution that results in unnecessary time complexity, fix.
@@ -3915,26 +3922,134 @@ winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::Items
         return rootRepeater.TryGetElement(index);
     }
 
-    if (auto const repeaterItemSourceView = rootRepeater.ItemsSourceView())
+    for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
     {
-        for (int i = 0; i < repeaterItemSourceView.Count(); i++)
+        if (auto const container = rootRepeater.TryGetElement(i))
         {
-            if (auto const container = rootRepeater.TryGetElement(i))
+            if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+            {
+                if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+                {
+                    if (auto const foundElement = SearchEntireTreeForContainer(nviRepeater, data))
+                    {
+                        return foundElement;
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
+winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip)
+{
+    auto const childrenRepeater = winrt::get_self<NavigationViewItem>(parentContainer)->GetRepeater();
+
+    // Check whether repeater has realized children
+    if (childrenRepeater.TryGetElement(0))
+    {
+        for (int i = 0; i < GetContainerCountInRepeater(childrenRepeater); i++)
+        {
+            if (auto const container = childrenRepeater.TryGetElement(i))
             {
                 if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
                 {
-                    if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+                    auto const newIndexPath = winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
+                    if (nvi.Content() == data)
                     {
-                        if (auto const foundElement = SearchEntireTreeForContainer(nviRepeater, data))
+                        return newIndexPath;
+                    }
+                    else
+                    {
+                        if (auto const foundIndexPath = SearchEntireTreeForIndexPath(nvi, data, newIndexPath))
                         {
-                            return foundElement;
+                            return foundIndexPath;
                         }
                     }
                 }
             }
-        }   
+        }
+    }
+    else if (auto const childrenData = GetChildren(parentContainer))
+    {
+        auto newDataSource = childrenData.try_as<winrt::ItemsSourceView>();
+        if (childrenData && !newDataSource)
+        {
+            newDataSource = winrt::ItemsSourceView(childrenData);
+        }
+
+        auto const tempIR = winrt::make_self<ItemsRepeater>();
+        tempIR->ItemTemplate(*m_navigationViewItemsFactory);
+        tempIR->ItemsSource(newDataSource);
+        LayoutUtils::MeasureAndGetDesiredWidthFor(static_cast<winrt::ItemsRepeater>(*tempIR), c_infSize);
+
+        if (auto const testite = tempIR->TryGetElement(0))
+        {
+            int i = 0;
+            i++;
+        }
+
+        //for (int i = 0; i < newDataSource.Count(); i++)
+        //{
+        //    auto const newIndexPath = winrt::get_self<IndexPath>(ip)->CloneWithChildIndex(i);
+        //    auto const childData = newDataSource.GetAt(i);
+        //    if (childData == data)
+        //    {
+        //        return newIndexPath;
+        //    }
+        //    else
+        //    {
+        //        // Resolve databinding for item and search throught that item's children
+        //        if (auto const nvib = ResolveContainerForItem(childData, i))
+        //        {
+        //            if (auto const nvi = nvib.try_as<winrt::NavigationViewItem>())
+        //            {
+        //                //LayoutUtils::MeasureAndGetDesiredWidthFor(nvi, c_infSize);
+        //                // DEBUGGING CODE
+        //                auto menuItems = nvi.MenuItems();
+        //                auto menuItemsSource = nvi.MenuItemsSource();
+        //                auto navigationViewItemChildren = GetChildren(nvi);
+
+
+        //                if (auto const foundIndexPath = SearchEntireTreeForIndexPath(nvi, data, newIndexPath))
+        //                {
+        //                    return foundIndexPath;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
+    }
+
+    return nullptr;
+}
+
+winrt::NavigationViewItemBase NavigationView::ResolveContainerForItem(const winrt::IInspectable& item, int index)
+{
+    auto const args = winrt::make_self<ElementFactoryGetArgs>();
+    args->Data(item);
+    args->Index(index);
+
+    if(auto item = m_navigationViewItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
+    {
+        if (auto nvib = item.try_as<winrt::NavigationViewItemBase>())
+        {
+            return nvib;
+        }
     }
     return nullptr;
+}
+
+int NavigationView::GetContainerCountInRepeater(const winrt::ItemsRepeater& ir)
+{
+    if (ir)
+    {
+        if (auto const repeaterItemSourceView = ir.ItemsSourceView())
+        {
+            return repeaterItemSourceView.Count();
+        }
+    }
+    return -1;
 }
 
 int NavigationView::GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data)
@@ -3960,6 +4075,41 @@ winrt::IInspectable NavigationView::GetItemFromIndex(const winrt::ItemsRepeater&
         }
     }
     return nullptr;
+}
+
+winrt::IndexPath NavigationView::GetIndexPathOfItem(const winrt::IInspectable& data)
+{
+    if (auto const nvib = data.try_as<winrt::NavigationViewItemBase>())
+    {
+        return GetIndexPathForContainer(nvib);
+    }
+
+    // In the databinding scenario, we need to conduct a search where we go through every item,
+    // realizing it if necessary.
+    if(IsTopNavigationView())
+    {
+        // TODO   
+    }
+    else
+    {
+        auto const leftRepeater = m_leftNavRepeater.get();
+        for (int i = 0; i < GetContainerCountInRepeater(leftRepeater); i++)
+        {
+            if (auto const container = leftRepeater.TryGetElement(i))
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    auto const ip = winrt::make<IndexPath>(std::vector<int>({ i }));
+                    if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                    {
+                        return indexPath;
+                    }
+                }
+            }
+        }
+    }
+
+    return winrt::make<IndexPath>(std::vector<int>(0));
 }
 
 winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip)
