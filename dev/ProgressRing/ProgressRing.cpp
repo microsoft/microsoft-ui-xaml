@@ -228,7 +228,7 @@ void ProgressRing::UpdateSegment()
             return 2 * M_PI * normalizedRange;
         }();
 
-        const double thickness = StrokeThickness();
+        const double thickness = 4;
         const auto size = ComputeCircleSize(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
@@ -242,7 +242,7 @@ void ProgressRing::UpdateSegment()
 
 void ProgressRing::UpdateRing()
 {
-    const double thickness = StrokeThickness();
+    const double thickness = 4;
     const auto size = ComputeCircleSize(thickness, ActualWidth());
 
     const float segmentWidth = size.Width;

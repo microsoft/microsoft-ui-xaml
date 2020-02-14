@@ -6,9 +6,8 @@
     xmlns:animatedVisuals="using:AnimatedVisuals">
 
     <Style TargetType="local:ProgressRing">
-        <Setter Property="Foreground" Value="{ThemeResource SystemControlHighlightAccentBrush}" />
-        <Setter Property="Background" Value="{ThemeResource SystemControlBackgroundBaseLowBrush}" />
-        <Setter Property="StrokeThickness" Value="4" />
+        <Setter Property="Foreground" Value="{ThemeResource ProgressRingForegroundThemeBrush}" />
+        <Setter Property="Background" Value="{ThemeResource ProgressRingBackgroundThemeBrush}" />
         <Setter Property="Maximum" Value="100" />
         <Setter Property="Template">
             <Setter.Value>
@@ -45,7 +44,7 @@
                             <Path
                                 Fill="Transparent"
                                 Stroke="{TemplateBinding Background}"
-                                StrokeThickness="{TemplateBinding StrokeThickness}"
+                                StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
                                 StrokeStartLineCap="Round"
                                 StrokeEndLineCap="Round">
                                 <Path.Data>
@@ -71,7 +70,7 @@
                             <Path
                             Fill="Transparent"
                             Stroke="{TemplateBinding Foreground}"
-                            StrokeThickness="{TemplateBinding StrokeThickness}"
+                            StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
                             StrokeStartLineCap="Round"
                             StrokeEndLineCap="Round">
                                 <Path.Data>
