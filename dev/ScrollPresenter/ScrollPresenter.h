@@ -250,9 +250,6 @@ public:
     void OnPropertyChanged(
         const winrt::DependencyPropertyChangedEventArgs& args);
 
-    void OnContentSizeChanged(
-        const winrt::IInspectable& sender,
-        const winrt::SizeChangedEventArgs& args);
     void OnContentPropertyChanged(
         const winrt::DependencyObject& sender,
         const winrt::DependencyProperty& args);

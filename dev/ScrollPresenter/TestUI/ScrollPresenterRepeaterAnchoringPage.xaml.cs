@@ -349,8 +349,11 @@ namespace MUXControlsTestApp
             }
             catch (Exception ex)
             {
-                txtExceptionReport.Text = ex.ToString();
-                lstScrollPresenterEvents.Items.Add(ex.ToString());
+                if (string.IsNullOrEmpty(txtExceptionReport.Text))
+                {
+                    txtExceptionReport.Text = ex.ToString();
+                    lstScrollPresenterEvents.Items.Add(ex.ToString());
+                }
             }
         }
 
@@ -382,6 +385,28 @@ namespace MUXControlsTestApp
             try
             {
                 scrollPresenter.VerticalAnchorRatio = Convert.ToDouble(txtVerticalAnchorRatio.Text);
+            }
+            catch (Exception ex)
+            {
+                txtExceptionReport.Text = ex.ToString();
+                lstScrollPresenterEvents.Items.Add(ex.ToString());
+            }
+        }
+
+        private void BtnGetCurrentAnchor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (scrollPresenter.CurrentAnchor == null)
+                {
+                    txtCurrentAnchor.Text = "null";
+                }
+                else
+                {
+                    FrameworkElement currentAnchorAsFE = scrollPresenter.CurrentAnchor as FrameworkElement;
+
+                    txtCurrentAnchor.Text = currentAnchorAsFE == null ? "UIElement" : currentAnchorAsFE.Name;
+                }
             }
             catch (Exception ex)
             {
