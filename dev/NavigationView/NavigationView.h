@@ -274,14 +274,15 @@ private:
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
+    bool DoesRepeaterHaveRealizedContainers(const winrt::ItemsRepeater& ir);
 
     // Hierarchy related APIs
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
@@ -289,6 +290,7 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip);
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
