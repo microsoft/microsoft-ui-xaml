@@ -12,10 +12,12 @@ winrt::Size ComputeCircleSize(double thickness, double actualWidth);
 winrt::float4 Color4(winrt::Color color);
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
+static constexpr wstring_view s_OutlinePathName{ L"OutlinePathPart" };
 static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
 static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
-static constexpr wstring_view s_BarFigureName{ L"RingFigurePart" };
-static constexpr wstring_view s_BarArcName{ L"RingArcPart" };
+static constexpr wstring_view s_RingPathName{ L"RingPathPart" };
+static constexpr wstring_view s_RingFigureName{ L"RingFigurePart" };
+static constexpr wstring_view s_RingArcName{ L"RingArcPart" };
 static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer" };
 static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
 static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
@@ -23,6 +25,8 @@ static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemCont
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
 static constexpr wstring_view s_ForegroundName{ L"Foreground" };
 static constexpr wstring_view s_BackgroundName{ L"Background" };
+
+double strokeThickness{ 4 };
 
 ProgressRing::ProgressRing()
 {
@@ -41,12 +45,15 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
+    m_outlinePath.set(GetTemplateChildT<winrt::Path>(s_OutlinePathName, controlProtected));
     m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
     m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
-    m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_BarFigureName, controlProtected));
-    m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_BarArcName, controlProtected));
+    m_ringPath.set(GetTemplateChildT<winrt::Path>(s_RingPathName, controlProtected));
+    m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_RingFigureName, controlProtected));
+    m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
     m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
+    GetStrokeThickness();
     ApplyLottieAnimation();
     UpdateRing();
     UpdateStates();
@@ -115,12 +122,6 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
             SetLottieBackgroundColor(progressRingIndeterminate);
         }
     }
-}
-
-void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    ApplyLottieAnimation();
-    UpdateRing();
 }
 
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -228,7 +229,8 @@ void ProgressRing::UpdateSegment()
             return 2 * M_PI * normalizedRange;
         }();
 
-        const double thickness = 4;
+        const double thickness = strokeThickness;
+
         const auto size = ComputeCircleSize(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
@@ -242,7 +244,7 @@ void ProgressRing::UpdateSegment()
 
 void ProgressRing::UpdateRing()
 {
-    const double thickness = 4;
+    const double thickness = strokeThickness;
     const auto size = ComputeCircleSize(thickness, ActualWidth());
 
     const float segmentWidth = size.Width;
@@ -265,11 +267,29 @@ void ProgressRing::UpdateRing()
     }
 
     if (auto&& ringArc = m_ringArc.get())
-    {  
+    {
         ringArc.Size(winrt::Size(segmentWidth, size.Height));
     }
 
     UpdateSegment();
+}
+
+void ProgressRing::GetStrokeThickness()
+{
+    double ringPathStrokeThickness = 0;
+    double outlinePathStrokeThickness = 0;
+    
+    if (auto&& ringPath = m_ringPath.get())
+    {
+        ringPathStrokeThickness = ringPath.StrokeThickness();
+    }
+
+    if (auto&& outlinePath = m_outlinePath.get())
+    {
+        outlinePathStrokeThickness = outlinePath.StrokeThickness();
+    }
+
+    strokeThickness = std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
 }
 
 winrt::Size ComputeCircleSize(double thickness, double actualWidth)

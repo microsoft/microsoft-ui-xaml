@@ -38,10 +38,13 @@ private:
     void UpdateStates();
     void UpdateSegment();
     void UpdateRing();
+    void GetStrokeThickness();
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
+    tracker_ref<winrt::Path> m_outlinePath{ this };
     tracker_ref<winrt::PathFigure> m_outlineFigure{ this };
     tracker_ref<winrt::ArcSegment> m_outlineArc{ this };
+    tracker_ref<winrt::Path> m_ringPath{ this };
     tracker_ref<winrt::PathFigure> m_ringFigure{ this };
     tracker_ref<winrt::ArcSegment> m_ringArc{ this };
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };

@@ -42,6 +42,7 @@
                         <Grid x:Name="DeterminateProgressRingRoot">
                             <!-- Progress Ring Track-->
                             <Path
+                                x:Name="OutlinePathPart"
                                 Fill="Transparent"
                                 Stroke="{TemplateBinding Background}"
                                 StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
@@ -55,9 +56,9 @@
                                                     <PathFigure.Segments>
                                                         <PathSegmentCollection>
                                                             <ArcSegment
-                                                            x:Name="OutlineArcPart"
-                                                            IsLargeArc="True"
-                                                            SweepDirection="Clockwise"/>
+                                                                x:Name="OutlineArcPart"
+                                                                IsLargeArc="True"
+                                                                SweepDirection="Clockwise"/>
                                                         </PathSegmentCollection>
                                                     </PathFigure.Segments>
                                                 </PathFigure>
@@ -68,11 +69,12 @@
                             </Path>
                             <!-- Progress Ring Indicator-->
                             <Path
-                            Fill="Transparent"
-                            Stroke="{TemplateBinding Foreground}"
-                            StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
-                            StrokeStartLineCap="Round"
-                            StrokeEndLineCap="Round">
+                                x:Name="RingPathPart"
+                                Fill="Transparent"
+                                Stroke="{TemplateBinding Foreground}"
+                                StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
+                                StrokeStartLineCap="Round"
+                                StrokeEndLineCap="Round">
                                 <Path.Data>
                                     <PathGeometry>
                                         <PathGeometry.Figures>
@@ -81,9 +83,9 @@
                                                     <PathFigure.Segments>
                                                         <PathSegmentCollection>
                                                             <ArcSegment
-                                                            x:Name="RingArcPart"
-                                                            IsLargeArc="False"
-                                                            SweepDirection="Clockwise" />
+                                                                x:Name="RingArcPart"
+                                                                IsLargeArc="False"
+                                                                SweepDirection="Clockwise" />
                                                         </PathSegmentCollection>
                                                     </PathFigure.Segments>
                                                 </PathFigure>
