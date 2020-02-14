@@ -8,7 +8,7 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
-winrt::Size ComputeCircleSize(double thickness, double actualWidth);
+winrt::float2 GetCircleRadius(double thickness, double actualWidth);
 winrt::float4 Color4(winrt::Color color);
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
@@ -231,11 +231,11 @@ void ProgressRing::UpdateSegment()
 
         const double thickness = strokeThickness;
 
-        const auto size = ComputeCircleSize(thickness, ActualWidth());
+        const auto size = GetCircleRadius(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
-        const double x = (std::sin(angle) * size.Width) + size.Width + translationFactor;
-        const double y = (((std::cos(angle) * size.Height) - size.Height) * -1) + translationFactor;
+        const double x = (std::sin(angle) * size.x) + size.x + translationFactor;
+        const double y = (((std::cos(angle) * size.y) - size.y) * -1) + translationFactor;
 
         ringArc.IsLargeArc(angle >= M_PI);
         ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
@@ -245,9 +245,9 @@ void ProgressRing::UpdateSegment()
 void ProgressRing::UpdateRing()
 {
     const double thickness = strokeThickness;
-    const auto size = ComputeCircleSize(thickness, ActualWidth());
+    const auto size = GetCircleRadius(thickness, ActualWidth());
 
-    const float segmentWidth = size.Width;
+    const float segmentWidth = size.x;
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
 
     if (auto&& outlineFigure = m_outlineFigure.get())
@@ -262,13 +262,13 @@ void ProgressRing::UpdateRing()
 
     if (auto&& outlineArc = m_outlineArc.get())
     {
-        outlineArc.Size(winrt::Size(segmentWidth, size.Height));
+        outlineArc.Size(winrt::Size(segmentWidth, size.y));
         outlineArc.Point(winrt::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
     }
 
     if (auto&& ringArc = m_ringArc.get())
     {
-        ringArc.Size(winrt::Size(segmentWidth, size.Height));
+        ringArc.Size(winrt::Size(segmentWidth, size.y));
     }
 
     UpdateSegment();
@@ -292,7 +292,7 @@ void ProgressRing::GetStrokeThickness()
     strokeThickness = std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
 }
 
-winrt::Size ComputeCircleSize(double thickness, double actualWidth)
+winrt::float2 GetCircleRadius(double thickness, double actualWidth)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
 
