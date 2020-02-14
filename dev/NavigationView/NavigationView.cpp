@@ -25,6 +25,7 @@
 #include "StackLayout.h"
 #include "ItemsRepeater.h"
 #include "ElementFactoryGetArgs.h"
+#include "ElementFactoryRecycleArgs.h"
 #include <ItemsRepeater.common.h>
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
@@ -186,7 +187,7 @@ void NavigationView::OnSelectionModelChildrenRequested(const winrt::SelectionMod
     {
         e.Children(GetChildren(nvi));
     }
-    else if (auto const children = GetChildrenForItemInIndexPath(e.SourceIndex()))
+    else if (auto const children = GetChildrenForItemInIndexPath(e.SourceIndex(), true /*forceRealize*/))
     {
         e.Children(children);
     }
@@ -4051,6 +4052,13 @@ winrt::NavigationViewItemBase NavigationView::ResolveContainerForItem(const winr
     return nullptr;
 }
 
+void NavigationView::RecycleContainer(const winrt::UIElement& container)
+{
+    auto const args = winrt::make_self<ElementFactoryRecycleArgs>();
+    args->Element(container);
+    m_navigationViewItemsFactory.get()->RecycleElement(static_cast<winrt::ElementFactoryRecycleArgs>(*args));
+}
+
 int NavigationView::GetContainerCountInRepeater(const winrt::ItemsRepeater& ir)
 {
     if (ir)
@@ -4135,14 +4143,12 @@ winrt::IndexPath NavigationView::GetIndexPathOfItem(const winrt::IInspectable& d
     return winrt::make<IndexPath>(std::vector<int>(0));
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip, bool forceRealize)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip)
 {
     if (ip && ip.GetSize() > 0)
     {
         auto firstIndex = ip.GetAt(0);
-
-        // TODO: Implement forceRealize for TopNav
-        if (IsTopNavigationView() && !forceRealize)
+        if (IsTopNavigationView())
         {
             // Get the repeater that is presenting the first item
             auto ir = m_topDataProvider.IsItemInPrimaryList(firstIndex) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
@@ -4151,7 +4157,7 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
             auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(firstIndex);
 
             // Get the container of the first item
-            if (auto container = ir.TryGetElement(irIndex))
+            if (auto const container = ir.TryGetElement(irIndex))
             {
                 // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
                 // We want to be able to retrieve containers for items that are in the flyout.
@@ -4163,16 +4169,16 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
         }
         else
         {
-            if (auto container = m_leftNavRepeater.get().TryGetElement(firstIndex))
+            if (auto const container = m_leftNavRepeater.get().TryGetElement(firstIndex))
             {
-                return GetContainerForIndexPath(container, ip, forceRealize);
+                return GetContainerForIndexPath(container, ip);
             }
         }
     }
     return nullptr;
 }
 
-winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize)
+winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip)
 {
     auto container = firstContainer;
     if (ip.GetSize() > 1)
@@ -4182,56 +4188,14 @@ winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const win
             bool succeededGettingNextContainer = false;
             if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
             {
-                auto const nextContainerIndex = ip.GetAt(i);
-                auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater();
-                if (nviRepeater && DoesRepeaterHaveRealizedContainers(nviRepeater))
+                if (auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
                 {
-                    if (auto const nextContainer = nviRepeater.TryGetElement(nextContainerIndex))
+                    if (auto const nextContainer = nviRepeater.TryGetElement(ip.GetAt(i)))
                     {
                         container = nextContainer;
                         succeededGettingNextContainer = true;
                     }
                 }
-                else if(forceRealize)
-                {
-                    if (auto const childrenData = GetChildren(nvi))
-                    {
-                        // Get children data in an enumarable form
-                        auto newDataSource = childrenData.try_as<winrt::ItemsSourceView>();
-                        if (childrenData && !newDataSource)
-                        {
-                            newDataSource = winrt::ItemsSourceView(childrenData);
-                        }
-
-                        if (auto const data = newDataSource.GetAt(nextContainerIndex))
-                        {
-                            // Resolve databinding for item and search through that item's children
-                            if (auto const nvib = ResolveContainerForItem(data, nextContainerIndex))
-                            {
-                                if (auto const nextContainer = nvib.try_as<winrt::NavigationViewItem>())
-                                {
-                                    // Process x:bind
-                                    if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(nextContainer))
-                                    {
-                                        // Clear out old data. 
-                                        extension.Recycle();
-                                        int nextPhase = VirtualizationInfo::PhaseReachedEnd;
-                                        // Run Phase 0
-                                        extension.ProcessBindings(data, nextContainerIndex, 0 /* currentPhase */, nextPhase);
-
-                                        // TODO: If nextPhase is not -1, ProcessBinding for all the phases
-                                    }
-
-                                    container = nextContainer;
-                                    succeededGettingNextContainer = true;
-
-                                    //TODO: Recycle container!
-                                }
-                            }
-                        }
-                    }
-                }
-
             }
             // If any of the above checks failed, it means something went wrong and we have an index for a non-existent repeater.
             if (!succeededGettingNextContainer)
@@ -4339,24 +4303,121 @@ winrt::IInspectable NavigationView::GetChildren(const winrt::NavigationViewItem&
     return nvi.MenuItemsSource();
 }
 
-winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::IndexPath& ip)
-{
-    if (auto const nvib = GetContainerForIndexPath(ip, true /*forceRealize*/))
-    {
-        if (auto const nvi = nvib.try_as<winrt::NavigationViewItem>())
-        {
-            // TODO: Make sure to recycle container before return
-            return GetChildren(nvi);
-        }
-    }
-    return nullptr;
-}
-
 winrt::ItemsRepeater NavigationView::GetChildRepeaterForIndexPath(const winrt::IndexPath& ip)
 {
     if (auto const container = GetContainerForIndexPath(ip).try_as<winrt::NavigationViewItem>())
     {
         return winrt::get_self<NavigationViewItem>(container)->GetRepeater();
     }
+    return nullptr;
+}
+
+
+winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize)
+{
+    if (ip && ip.GetSize() > 0)
+    {
+        auto firstIndex = ip.GetAt(0);
+        if (IsTopNavigationView())
+        {
+            // TODO: Implement
+        }
+        else
+        {
+            if (auto const container = m_leftNavRepeater.get().TryGetElement(firstIndex))
+            {
+                return GetChildrenForItemInIndexPath(container, ip, true);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize)
+{
+    auto container = firstContainer;
+    bool shouldRecycleContainer = false;
+    if (ip.GetSize() > 1)
+    {
+        for (int i = 1; i < ip.GetSize(); i++)
+        {
+            bool succeededGettingNextContainer = false;
+            if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+            {
+                auto const nextContainerIndex = ip.GetAt(i);
+                auto const nviRepeater = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater();
+                if (nviRepeater && DoesRepeaterHaveRealizedContainers(nviRepeater))
+                {
+                    if (auto const nextContainer = nviRepeater.TryGetElement(nextContainerIndex))
+                    {
+                        container = nextContainer;
+                        succeededGettingNextContainer = true;
+                    }
+                }
+                else if (forceRealize)
+                {
+                    if (auto const childrenData = GetChildren(nvi))
+                    {
+                        if (shouldRecycleContainer)
+                        {
+                            RecycleContainer(nvi);
+                            shouldRecycleContainer = false;
+                        }
+
+                        // Get children data in an enumarable form
+                        auto newDataSource = childrenData.try_as<winrt::ItemsSourceView>();
+                        if (childrenData && !newDataSource)
+                        {
+                            newDataSource = winrt::ItemsSourceView(childrenData);
+                        }
+
+                        if (auto const data = newDataSource.GetAt(nextContainerIndex))
+                        {
+                            // Resolve databinding for item and search through that item's children
+                            if (auto const nvib = ResolveContainerForItem(data, nextContainerIndex))
+                            {
+                                if (auto const nextContainer = nvib.try_as<winrt::NavigationViewItem>())
+                                {
+                                    // Process x:bind
+                                    if (auto extension = CachedVisualTreeHelpers::GetDataTemplateComponent(nextContainer))
+                                    {
+                                        // Clear out old data. 
+                                        extension.Recycle();
+                                        int nextPhase = VirtualizationInfo::PhaseReachedEnd;
+                                        // Run Phase 0
+                                        extension.ProcessBindings(data, nextContainerIndex, 0 /* currentPhase */, nextPhase);
+
+                                        // TODO: If nextPhase is not -1, ProcessBinding for all the phases
+                                    }
+
+                                    container = nextContainer;
+                                    shouldRecycleContainer = true;
+                                    succeededGettingNextContainer = true;
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+            // If any of the above checks failed, it means something went wrong and we have an index for a non-existent repeater.
+            if (!succeededGettingNextContainer)
+            {
+                return nullptr;
+            }
+        }
+    }
+
+    if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+    {
+        auto const children = GetChildren(nvi);
+        if (shouldRecycleContainer)
+        {
+            RecycleContainer(nvi);
+        }
+        return children;
+    }
+
     return nullptr;
 }

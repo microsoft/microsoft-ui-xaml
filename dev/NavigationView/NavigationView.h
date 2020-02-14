@@ -274,8 +274,8 @@ private:
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
-    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
+    winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     void KeyboardFocusFirstItemFromItem(const winrt::NavigationViewItemBase& nvib);
@@ -290,12 +290,14 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
-    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
     winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
+    void RecycleContainer(const winrt::UIElement& container);
 
 
     // Visual components
