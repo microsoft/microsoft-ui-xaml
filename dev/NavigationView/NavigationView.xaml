@@ -529,8 +529,8 @@
                 <ControlTemplate TargetType="local:NavigationViewItem">
                     <Grid x:Name="NVIRootGrid">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
                         <VisualStateManager.VisualStateGroups>
@@ -548,11 +548,13 @@
                                 <VisualState x:Name="OnTopNavigationPrimary">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        <Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationPrimaryReveal">
                                     <VisualState.Setters>
                                         <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        <Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
                                     </VisualState.Setters>
                                 </VisualState>
                                 <VisualState x:Name="OnTopNavigationOverflow">
@@ -595,7 +597,7 @@
                             </local:ItemsRepeater.Layout>
                         </local:ItemsRepeater>
                         <FlyoutBase.AttachedFlyout>
-                            <Flyout Placement="Right">
+                            <Flyout x:Name="ChildrenFlyout" Placement="RightEdgeAlignedTop">
                                 <Grid x:Name="FlyoutRootGrid"/>
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>

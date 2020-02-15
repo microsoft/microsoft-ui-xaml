@@ -6,12 +6,11 @@ using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
-#if !BUILD_WINDOWS
 using NavigationViewItemInvokedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewItemInvokedEventArgs;
 using NavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using NavigationViewItemExpandingEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewExpandingEventArgs;
 using NavigationViewCollapsedEventArgs = Microsoft.UI.Xaml.Controls.NavigationViewCollapsedEventArgs;
-#endif
+using NavigationViewPaneDisplayMode = Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode;
 
 namespace MUXControlsTestApp
 {
@@ -113,6 +112,13 @@ namespace MUXControlsTestApp
             {
                 CollapsedItemLabel.Text = "Last Collapsed: ERROR - No container returned!";
             }
+        }
+
+        private void PaneDisplayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var tag = Convert.ToString(((sender as ComboBox).SelectedItem as ComboBoxItem).Tag);
+            var mode = (NavigationViewPaneDisplayMode)Enum.Parse(typeof(NavigationViewPaneDisplayMode), tag);
+            navview.PaneDisplayMode = mode;
         }
     }
 }

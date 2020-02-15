@@ -28,6 +28,17 @@
                 <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
                 <TextBlock x:Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
                 <Button Content="Use API to selecte MenuItem4" Click="SelectItemUsingAPI"/>
+                <ComboBox x:Name="PaneDisplayModeCombobox"
+                                AutomationProperties.Name="PaneDisplayModeCombobox"
+                                Header="PaneDisplayMode"
+                                SelectionChanged="PaneDisplayModeCombobox_SelectionChanged"
+                                Margin="5">
+                    <ComboBoxItem Content="Auto" Tag="Auto"/>
+                    <ComboBoxItem Content="Left" Tag="Left"/>
+                    <ComboBoxItem Content="Top" Tag="Top"/>
+                    <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
+                    <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
+                </ComboBox>
             </StackPanel>
         </muxcontrols:NavigationView>
     </Grid>

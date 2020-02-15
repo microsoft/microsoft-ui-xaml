@@ -102,26 +102,27 @@ private:
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
 
     // Item/container info functions
-    bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
-    winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
-    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
-    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
-    winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
-    winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
-    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
+    static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
-    static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip, bool forceRealize = false);
+    winrt::UIElement SearchEntireTreeForContainer(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data);
+    winrt::IndexPath SearchEntireTreeForIndexPath(const winrt::NavigationViewItem& parentContainer, const winrt::IInspectable& data, const winrt::IndexPath& ip);
+
+    winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
+    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
     bool DoesRepeaterHaveRealizedContainers(const winrt::ItemsRepeater& ir);
-    winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
     bool IsSettingsItem(winrt::IInspectable const& item);
     bool IsSelectionSuppressed(const winrt::IInspectable& item);
+    bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
+    winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
 
     // Hierarchy related functions
     void ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi);

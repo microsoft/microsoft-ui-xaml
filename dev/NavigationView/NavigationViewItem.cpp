@@ -396,8 +396,16 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
         }
     }
 
-    winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), enabledStateValue, true);
-    winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), selectedStateValue, true);
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), enabledStateValue, true);
+        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), selectedStateValue, true);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, enabledStateValue, true);
+        winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
+    }
 
     UpdateVisualStateForNavigationViewPositionChange();
 
@@ -501,7 +509,7 @@ void NavigationViewItem::ReparentRepeater()
 bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
     UpdateIsClosedCompact();
-    return m_isClosedCompact && Depth() == 0;
+    return (m_isClosedCompact && Depth() == 0) || IsOnTopPrimary();
 }
 
 void NavigationViewItem::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
