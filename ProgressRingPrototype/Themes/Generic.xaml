@@ -1,0 +1,54 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ProgressRingPrototype">
+
+    <Style TargetType="local:ProgressUI" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ProgressUI">
+                    <Grid
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup>
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Indeterminate">
+                                    <VisualState.Setters>
+                                        <Setter Target="indeterminatePlayer.Visibility" Value="Visible" />
+                                        <Setter Target="indeterminatePlayer.IsPlaying" Value="True" />
+                                        <Setter Target="determinatePlayer.Visibility" Value="Collapsed" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+                        <!-- Determinate -->
+                        <local:AnimatedVisualPlayerProposed 
+                            x:Name="determinatePlayer" 
+                            IsLooping="False"
+                            Position="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ProgressPosition}">
+                            <local:AnimatedVisualPlayerProposed.Source>
+                                <local:LoadAnimation />
+                            </local:AnimatedVisualPlayerProposed.Source>
+                        </local:AnimatedVisualPlayerProposed>
+
+                        <!-- Indeterminate -->
+                        <local:AnimatedVisualPlayerProposed 
+                            x:Name="indeterminatePlayer" 
+                            Visibility="Collapsed"
+                            IsLooping="True">
+                            <local:AnimatedVisualPlayerProposed.Source>
+                                <local:Gears3 />
+                            </local:AnimatedVisualPlayerProposed.Source>
+                        </local:AnimatedVisualPlayerProposed>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    
+</ResourceDictionary>

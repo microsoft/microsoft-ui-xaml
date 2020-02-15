@@ -1,0 +1,25 @@
+﻿<Page
+    x:Class="ProgressRingPrototype.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ProgressRingPrototype"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="100" />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Indeterminate"/>
+            <CheckBox x:Name="indeterminateCheckBox"/>
+            <Slider Header="Value: " x:Name="inputSlider" Minimum="0" Maximum="1" StepFrequency="0.01" Width="100"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1">
+            <local:ProgressUI Width="100" Height="100"
+                Value="{Binding Mode=OneWay,ElementName=inputSlider, Path=Value}" 
+                IsIndeterminate="{Binding Mode=OneWay,ElementName=indeterminateCheckBox, Path=IsChecked}" />
+        </StackPanel>
+    </Grid>
+</Page>
