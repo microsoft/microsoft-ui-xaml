@@ -10,13 +10,15 @@ using System.Collections.Generic;
 using MUXControlsTestApp;
 
 #if USING_TAEF
-using WEX.TestExecution;
+using WEX.TestExecution; 
 using WEX.TestExecution.Markup;
 using WEX.Logging.Interop;
 #else
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 #endif
+
+testing something
 
 namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 {
