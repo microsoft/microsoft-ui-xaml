@@ -259,7 +259,6 @@ bool TwoPaneView::IsInMultipleRegions(DisplayRegionHelperInfo info, winrt::Rect 
     {
         winrt::Rect rc1 = info.Regions[0];
         winrt::Rect rc2 = info.Regions[1];
-        winrt::Rect rcWindow = DisplayRegionHelper::WindowRect();
 
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
         {
