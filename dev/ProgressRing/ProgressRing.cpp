@@ -8,7 +8,7 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
-winrt::float2 GetCircleRadius(double thickness, double actualWidth);
+float GetCircleRadius(double thickness, double actualWidth);
 winrt::float4 Color4(winrt::Color color);
 
 static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
@@ -25,8 +25,6 @@ static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemCont
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
 static constexpr wstring_view s_ForegroundName{ L"Foreground" };
 static constexpr wstring_view s_BackgroundName{ L"Background" };
-
-double strokeThickness{ 4 };
 
 ProgressRing::ProgressRing()
 {
@@ -77,13 +75,7 @@ void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, c
         foreground.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnForegroundColorPropertyChanged });
     }
 
-    if (auto&& player = m_player.get())
-    {
-        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-        {
-            SetLottieForegroundColor(progressRingIndeterminate);
-        }
-    }
+    OnForegroundColorPropertyChanged(nullptr, nullptr);
 }
 
 void ProgressRing::OnForegroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -104,13 +96,7 @@ void ProgressRing::OnBackgroundPropertyChanged(const winrt::DependencyObject&, c
         background.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ProgressRing::OnBackgroundColorPropertyChanged });
     }
 
-    if (auto&& player = m_player.get())
-    {
-        if (const auto progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
-        {
-            SetLottieBackgroundColor(progressRingIndeterminate);
-        }
-    }
+    OnBackgroundColorPropertyChanged(nullptr, nullptr);
 }
 
 void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -229,13 +215,13 @@ void ProgressRing::UpdateSegment()
             return 2 * M_PI * normalizedRange;
         }();
 
-        const double thickness = strokeThickness;
+        const double thickness = GetStrokeThickness();
 
         const auto size = GetCircleRadius(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
 
-        const double x = (std::sin(angle) * size.x) + size.x + translationFactor;
-        const double y = (((std::cos(angle) * size.y) - size.y) * -1) + translationFactor;
+        const double x = (std::sin(angle) * size) + size + translationFactor;
+        const double y = (((std::cos(angle) * size) - size) * -1) + translationFactor;
 
         ringArc.IsLargeArc(angle >= M_PI);
         ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
@@ -244,10 +230,10 @@ void ProgressRing::UpdateSegment()
 
 void ProgressRing::UpdateRing()
 {
-    const double thickness = strokeThickness;
+    const double thickness = GetStrokeThickness();
     const auto size = GetCircleRadius(thickness, ActualWidth());
 
-    const float segmentWidth = size.x;
+    const float segmentWidth = size;
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
 
     if (auto&& outlineFigure = m_outlineFigure.get())
@@ -262,44 +248,41 @@ void ProgressRing::UpdateRing()
 
     if (auto&& outlineArc = m_outlineArc.get())
     {
-        outlineArc.Size(winrt::Size(segmentWidth, size.y));
+        outlineArc.Size(winrt::Size(segmentWidth, size));
         outlineArc.Point(winrt::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
     }
 
     if (auto&& ringArc = m_ringArc.get())
     {
-        ringArc.Size(winrt::Size(segmentWidth, size.y));
+        ringArc.Size(winrt::Size(segmentWidth, size));
     }
 
     UpdateSegment();
 }
 
-void ProgressRing::GetStrokeThickness()
+double ProgressRing::GetStrokeThickness()
 {
-    double ringPathStrokeThickness = 0;
-    double outlinePathStrokeThickness = 0;
+    const auto ringPathStrokeThickness = [ringPath = m_ringPath.get()]()
+    {
+        return ringPath.StrokeThickness();
+    }();
     
-    if (auto&& ringPath = m_ringPath.get())
+    const auto outlinePathStrokeThickness = [outlinePath = m_outlinePath.get()]()
     {
-        ringPathStrokeThickness = ringPath.StrokeThickness();
-    }
+        return outlinePath.StrokeThickness();
+    }();
 
-    if (auto&& outlinePath = m_outlinePath.get())
-    {
-        outlinePathStrokeThickness = outlinePath.StrokeThickness();
-    }
-
-    strokeThickness = std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
+    return std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
 }
 
-winrt::float2 GetCircleRadius(double thickness, double actualWidth)
+float GetCircleRadius(double thickness, double actualWidth)
 {
     const double safeThickness = std::max(thickness, static_cast<double>(0.0));
 
     // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
     const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
 
-    return { static_cast<float>(radius), static_cast<float>(radius) };
+    return { static_cast<float>(radius) };
 }
 
 winrt::float4 Color4(winrt::Color color)

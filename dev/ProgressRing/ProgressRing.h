@@ -38,7 +38,7 @@ private:
     void UpdateStates();
     void UpdateSegment();
     void UpdateRing();
-    void GetStrokeThickness();
+    double GetStrokeThickness();
 
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
     tracker_ref<winrt::Path> m_outlinePath{ this };
