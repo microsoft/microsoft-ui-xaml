@@ -34,6 +34,26 @@
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 9" Icon="Home" x:Name="MI9"/>
+                <muxcontrols:NavigationViewItem Content="Menu Item 10" Icon="Home" x:Name="MI10" SelectsOnInvoked="False">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 11" Icon="Save" x:Name="MI11" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 12" Icon="Paste" x:Name="MI12" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 13" Icon="Cut" x:Name="MI13" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 14" Icon="Home" x:Name="MI14" SelectsOnInvoked="False">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 15" Icon="Save" x:Name="MI15" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 16" Icon="Paste" x:Name="MI16" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
             </muxcontrols:NavigationView.MenuItems>
             <StackPanel Margin="10,10,0,0">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>

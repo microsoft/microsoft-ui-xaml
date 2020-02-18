@@ -129,6 +129,7 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
+    void CollapseAllMenuItems(const winrt::ItemsRepeater& ir);
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
@@ -182,7 +183,7 @@ private:
     void HandleTopNavigationMeasureOverrideNormal(const winrt::Windows::Foundation::Size & availableSize);
     void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
-    void SelectOverflowItem(winrt::IInspectable const& item);
+    void SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip);
 
     void ResetAndRearrangeTopNavItems(winrt::Size const& availableSize);
     void ArrangeTopNavItems(winrt::Size const& availableSize);

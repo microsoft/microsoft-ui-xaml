@@ -227,7 +227,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
             if (!IsSelectionSuppressed(selectedItem))
             {
-                SelectOverflowItem(selectedItem);
+                SelectOverflowItem(selectedItem, selectedIndex);
             }
         }
         else
@@ -2647,10 +2647,19 @@ void NavigationView::SetOverflowButtonVisibility(winrt::Visibility const& visibi
     }
 }
 
-void NavigationView::SelectOverflowItem(winrt::IInspectable const& item)
+void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip)
 {
+    auto itemBeingMoved = item;
+    // If a child is being selected, we want to move the parent
+    if (ip.GetSize() > 1)
+    {
+        auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
+        itemBeingMoved = GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
+    }
+
+
     // Calculate selected overflow item size.
-    auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(item);
+    auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(itemBeingMoved);
     MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
     auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
  
@@ -3046,6 +3055,11 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
+        // We want to make sure only top level items are visible when switching pane modes
+        if (IsTopNavigationView())
+        {
+            CollapseAllMenuItems(m_leftNavRepeater.get());
+        }
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -4420,4 +4434,18 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     }
 
     return nullptr;
+}
+
+void NavigationView::CollapseAllMenuItems(const winrt::ItemsRepeater& ir)
+{
+    for (int index = 0; index < GetContainerCountInRepeater(ir); index++)
+    {
+        if (auto const element = ir.TryGetElement(index))
+        {
+            if (auto const nvi = element.try_as<winrt::NavigationViewItem>())
+            {
+                ChangeIsExpandedNavigationViewItem(nvi, false /*isExpanded*/);
+            }
+        }
+    }
 }
