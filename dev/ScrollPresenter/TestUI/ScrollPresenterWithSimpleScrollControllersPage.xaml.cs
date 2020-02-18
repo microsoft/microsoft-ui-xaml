@@ -363,10 +363,9 @@ namespace MUXControlsTestApp
                         horizontalScrollController.AddScrollVelocityRequested += OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: new HorizontalScrollController events hooked");
 
-                        horizontalScrollController.SetValues(
-                            0.0                      /*minOffset*/,
-                            GetHorizontalMaxOffset() /*maxOffset*/,
+                        horizontalScrollController.SetDimensions(
                             GetHorizontalOffset()    /*offset*/,
+                            GetHorizontalMaxOffset() /*scrollableExtent*/,
                             GetHorizontalViewport()  /*viewport*/);
                     }
                 }
@@ -404,10 +403,9 @@ namespace MUXControlsTestApp
                         verticalScrollController.AddScrollVelocityRequested += OnAddScrollVelocityRequested;
                         LogMessage("CanvasScrollControllerConsumer: new VerticalScrollController events hooked");
 
-                        verticalScrollController.SetValues(
-                            0.0                    /*minOffset*/,
-                            GetVerticalMaxOffset() /*maxOffset*/,
+                        verticalScrollController.SetDimensions(
                             GetVerticalOffset()    /*offset*/,
+                            GetVerticalMaxOffset() /*scrollableExtent*/,
                             GetVerticalViewport()  /*viewport*/);
                     }
                 }
@@ -543,17 +541,15 @@ namespace MUXControlsTestApp
             SetVerticalOffset(newVerticalOffset);
 
             if (horizontalScrollController != null)
-                horizontalScrollController.SetValues(
-                    0.0                      /*minOffset*/,
-                    GetHorizontalMaxOffset() /*maxOffset*/,
+                horizontalScrollController.SetDimensions(
                     GetHorizontalOffset()    /*offset*/,
+                    GetHorizontalMaxOffset() /*scrollableExtent*/,
                     GetHorizontalViewport()  /*viewport*/);
 
             if (verticalScrollController != null)
-                verticalScrollController.SetValues(
-                    0.0                    /*minOffset*/,
-                    GetVerticalMaxOffset() /*maxOffset*/,
+                verticalScrollController.SetDimensions(
                     GetVerticalOffset()    /*offset*/,
+                    GetVerticalMaxOffset() /*scrollableExtent*/,
                     GetVerticalViewport()  /*viewport*/);
         }
 
@@ -655,7 +651,7 @@ namespace MUXControlsTestApp
         }
 #endif
 
-        public bool IsInteracting
+        public bool IsScrolling
         {
             get;
             private set;
@@ -679,9 +675,8 @@ namespace MUXControlsTestApp
 
         public void SetExpressionAnimationSources(
             CompositionPropertySet propertySet,
-            string minOffsetPropertyName,
-            string maxOffsetPropertyName,
             string offsetPropertyName,
+            string scrollableExtentPropertyName,
             string multiplierPropertyName)
         {
             /*
@@ -710,23 +705,22 @@ namespace MUXControlsTestApp
 #endif
         }
 
-        public void SetValues(
-            double minOffset,
-            double maxOffset,
+        public void SetDimensions(
             double offset,
+            double scrollableExtent,
             double viewport)
         {
-            LogMessage("ScrollBarController: SetValues for Orientation=" + Orientation + " with maxOffset=" + maxOffset + ", offset=" + offset + ", viewport=" + viewport);
+            LogMessage("ScrollBarController: SetDimensions for Orientation=" + Orientation + " with offset=" + offset + ", scrollableExtent=" + scrollableExtent + ", viewport=" + viewport);
 
             if (operationsCount > 0)
             {
-                LogMessage("ScrollBarController: SetValues ignored during operation");
+                LogMessage("ScrollBarController: SetDimensions ignored during operation");
                 return;
             }
 
             scrollBar.ViewportSize = viewport;
-            scrollBar.Minimum = minOffset;
-            scrollBar.Maximum = maxOffset;
+            scrollBar.Minimum = 0.0;
+            scrollBar.Maximum = scrollableExtent;
             scrollBar.Value = offset;
             scrollBar.LargeChange = viewport;
         }
@@ -783,9 +777,9 @@ namespace MUXControlsTestApp
 #if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
                     AreScrollerInteractionsAllowed = true;
 #endif
-                    if (IsInteracting)
+                    if (IsScrolling)
                     {
-                        IsInteracting = false;
+                        IsScrolling = false;
                         RaiseInteractionInfoChanged();
                     }
                     break;
@@ -804,9 +798,9 @@ namespace MUXControlsTestApp
                             AreScrollerInteractionsAllowed = false;
                         }
 #endif
-                        if (!IsInteracting)
+                        if (!IsScrolling)
                         {
-                            IsInteracting = true;
+                            IsScrolling = true;
                             RaiseInteractionInfoChanged();
                         }
                     }

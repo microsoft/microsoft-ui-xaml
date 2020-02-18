@@ -31,7 +31,7 @@ public:
     bool IsInteractionElementRailEnabled();
 #endif
 
-    bool IsInteracting();
+    bool IsScrolling();
 
     winrt::UIElement InteractionElement();
 
@@ -39,18 +39,16 @@ public:
 
     void SetExpressionAnimationSources(
         winrt::CompositionPropertySet const& propertySet,
-        winrt::hstring const& minOffsetPropertyName,
-        winrt::hstring const& maxOffsetPropertyName,
         winrt::hstring const& offsetPropertyName,
+        winrt::hstring const& scrollableExtentPropertyName,
         winrt::hstring const& multiplierPropertyName);
 
     void SetScrollMode(
         winrt::ScrollingScrollMode const& scrollMode);
 
-    void SetValues(
-        double minOffset,
-        double maxOffset,
+    void SetDimensions(
         double offset,
+        double scrollableExtent,
         double viewport);
 
     winrt::CompositionAnimation GetScrollAnimation(
@@ -131,7 +129,7 @@ private:
     int m_operationsCount{ 0 };
     double m_lastScrollBarValue{ 0.0 };
     double m_lastOffset{ 0.0 };
-    bool m_isInteracting{ false };
+    bool m_isScrolling{ false };
 #if USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED
     bool m_areScrollerInteractionsAllowed{ true };
 #endif

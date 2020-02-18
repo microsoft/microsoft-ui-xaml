@@ -68,8 +68,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 Owner = owner;
                 Orientation = orientation;
-                MinOffset = 0.0;
-                MaxOffset = 0.0;
+                ScrollableExtent = 0.0;
                 Offset = 0.0;
                 Viewport = 0.0;
             }
@@ -104,12 +103,12 @@ namespace MUXControlsTestApp.Utilities
             }
 #endif
 
-            public bool IsInteracting
+            public bool IsScrolling
             {
                 get
                 {
-                    RaiseLogMessage("UniScrollController: get_IsInteracting for Orientation=" + Orientation);
-                    return Owner.IsInteracting;
+                    RaiseLogMessage("UniScrollController: get_IsScrolling for Orientation=" + Orientation);
+                    return Owner.IsScrolling;
                 }
             }
 
@@ -131,19 +130,13 @@ namespace MUXControlsTestApp.Utilities
                 }
             }
 
-            internal double MinOffset
-            {
-                get;
-                private set;
-            }
-
-            internal double MaxOffset
-            {
-                get;
-                private set;
-            }
-
             internal double Offset
+            {
+                get;
+                private set;
+            }
+
+            internal double ScrollableExtent
             {
                 get;
                 private set;
@@ -173,19 +166,13 @@ namespace MUXControlsTestApp.Utilities
                 set;
             }
 
-            private string MinOffsetPropertyName
-            {
-                get;
-                set;
-            }
-
-            private string MaxOffsetPropertyName
-            {
-                get;
-                set;
-            }
-
             private string OffsetPropertyName
+            {
+                get;
+                set;
+            }
+
+            private string ScrollableExtentPropertyName
             {
                 get;
                 set;
@@ -210,20 +197,18 @@ namespace MUXControlsTestApp.Utilities
             }
 
             public void SetExpressionAnimationSources(
-                CompositionPropertySet propertySet, string minOffsetPropertyName, string maxOffsetPropertyName, string offsetPropertyName, string multiplierPropertyName)
+                CompositionPropertySet propertySet, string offsetPropertyName, string scrollableExtentPropertyName, string multiplierPropertyName)
             {
                 RaiseLogMessage(
                     "UniScrollController: SetExpressionAnimationSources for Orientation=" + Orientation +
-                    " with minOffsetPropertyName=" + minOffsetPropertyName +
-                    ", maxOffsetPropertyName=" + maxOffsetPropertyName +
-                    ", offsetPropertyName=" + offsetPropertyName +
+                    " with offsetPropertyName=" + offsetPropertyName +
+                    ", scrollableExtentPropertyName=" + scrollableExtentPropertyName +
                     ", multiplierPropertyName=" + multiplierPropertyName);
                 ExpressionAnimationSources = propertySet;
                 if (ExpressionAnimationSources != null)
                 {
-                    MinOffsetPropertyName = minOffsetPropertyName.Trim();
-                    MaxOffsetPropertyName = maxOffsetPropertyName.Trim();
                     OffsetPropertyName = offsetPropertyName.Trim();
+                    ScrollableExtentPropertyName = scrollableExtentPropertyName.Trim();
                     MultiplierPropertyName = multiplierPropertyName.Trim();
 
                     UpdateInteractionElementScrollMultiplier();
@@ -236,9 +221,8 @@ namespace MUXControlsTestApp.Utilities
                 }
                 else
                 {
-                    MinOffsetPropertyName =
-                    MaxOffsetPropertyName =
                     OffsetPropertyName =
+                    ScrollableExtentPropertyName =
                     MultiplierPropertyName = string.Empty;
 
                     ThumbOffsetAnimation = null;
@@ -257,18 +241,17 @@ namespace MUXControlsTestApp.Utilities
 #endif
             }
 
-            public void SetValues(double minOffset, double maxOffset, double offset, double viewport)
+            public void SetDimensions(double offset, double scrollableExtent, double viewport)
             {
                 RaiseLogMessage(
-                    "UniScrollController: SetValues for Orientation=" + Orientation +
-                    " with minOffset=" + minOffset +
-                    ", maxOffset=" + maxOffset +
-                    ", offset=" + offset +
+                    "UniScrollController: SetDimensions for Orientation=" + Orientation +
+                    " with offset=" + offset +
+                    ", scrollableExtent=" + scrollableExtent +
                     ", viewport=" + viewport);
 
-                if (maxOffset < minOffset)
+                if (scrollableExtent < 0)
                 {
-                    throw new ArgumentOutOfRangeException("maxOffset");
+                    throw new ArgumentOutOfRangeException("scrollableExtent");
                 }
 
                 if (viewport < 0.0)
@@ -276,8 +259,8 @@ namespace MUXControlsTestApp.Utilities
                     throw new ArgumentOutOfRangeException("viewport");
                 }
 
-                offset = Math.Max(minOffset, offset);
-                offset = Math.Min(maxOffset, offset);
+                offset = Math.Max(0.0, offset);
+                offset = Math.Min(scrollableExtent, offset);
 
                 double offsetTarget = 0.0;
 
@@ -287,8 +270,8 @@ namespace MUXControlsTestApp.Utilities
                 }
                 else
                 {
-                    offsetTarget = Math.Max(minOffset, offsetTarget);
-                    offsetTarget = Math.Min(maxOffset, offsetTarget);
+                    offsetTarget = Math.Max(0.0, offsetTarget);
+                    offsetTarget = Math.Min(scrollableExtent, offsetTarget);
                 }
 
                 if (Orientation == Orientation.Horizontal)
@@ -297,13 +280,11 @@ namespace MUXControlsTestApp.Utilities
                     Owner.OffsetTarget = new Point(Owner.OffsetTarget.X, offsetTarget);
 
                 bool updateThumbSize =
-                    MinOffset != minOffset ||
-                    MaxOffset != maxOffset ||
+                    ScrollableExtent != scrollableExtent ||
                     Viewport != viewport;
 
-                MinOffset = minOffset;
                 Offset = offset;
-                MaxOffset = maxOffset;
+                ScrollableExtent = scrollableExtent;
                 Viewport = viewport;
 
                 if (updateThumbSize && !Owner.UpdateThumbSize())
@@ -353,7 +334,7 @@ namespace MUXControlsTestApp.Utilities
             {
                 if (ExpressionAnimationSources != null && !string.IsNullOrWhiteSpace(MultiplierPropertyName))
                 {
-                    float interactionVisualScrollMultiplier = Owner.GetInteractionElementScrollMultiplier(Orientation, MaxOffset, MinOffset);
+                    float interactionVisualScrollMultiplier = Owner.GetInteractionElementScrollMultiplier(Orientation, ScrollableExtent);
 
                     RaiseLogMessage("UniScrollController: UpdateInteractionElementScrollMultiplier for Orientation=" + Orientation + ", InteractionElementScrollMultiplier=" + interactionVisualScrollMultiplier);
                     ExpressionAnimationSources.InsertScalar(MultiplierPropertyName, interactionVisualScrollMultiplier);
@@ -442,12 +423,11 @@ namespace MUXControlsTestApp.Utilities
                 if (ThumbOffsetAnimation == null && ExpressionAnimationSources != null &&
                     !string.IsNullOrWhiteSpace(MultiplierPropertyName) &&
                     !string.IsNullOrWhiteSpace(OffsetPropertyName) &&
-                    !string.IsNullOrWhiteSpace(MinOffsetPropertyName) &&
-                    !string.IsNullOrWhiteSpace(MaxOffsetPropertyName))
+                    !string.IsNullOrWhiteSpace(ScrollableExtentPropertyName))
                 {
                     ThumbOffsetAnimation = ExpressionAnimationSources.Compositor.CreateExpressionAnimation();
                     ThumbOffsetAnimation.Expression =
-                        "min(eas." + MaxOffsetPropertyName + ",max(eas." + MinOffsetPropertyName + ",eas." + OffsetPropertyName + "))/(-eas." + MultiplierPropertyName + ")";
+                        "min(eas." + ScrollableExtentPropertyName + ",max(0,eas." + OffsetPropertyName + "))/(-eas." + MultiplierPropertyName + ")";
                     ThumbOffsetAnimation.SetReferenceParameter("eas", ExpressionAnimationSources);
                 }
             }
@@ -674,7 +654,7 @@ namespace MUXControlsTestApp.Utilities
         }
 #endif
 
-        internal bool IsInteracting
+        internal bool IsScrolling
         {
             get;
             private set;
@@ -722,9 +702,9 @@ namespace MUXControlsTestApp.Utilities
                     {
                         parentWidth = parent.ActualWidth;
                     }
-                    if (horizontalScrollController.MaxOffset != horizontalScrollController.MinOffset)
+                    if (horizontalScrollController.ScrollableExtent != 0.0)
                     {
-                        return horizontalScrollController.Offset / (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) * (parentWidth - Thumb.Width);
+                        return horizontalScrollController.Offset / horizontalScrollController.ScrollableExtent * (parentWidth - Thumb.Width);
                     }
                 }
 
@@ -744,9 +724,9 @@ namespace MUXControlsTestApp.Utilities
                     {
                         parentHeight = parent.ActualHeight;
                     }
-                    if (verticalScrollController.MaxOffset != verticalScrollController.MinOffset)
+                    if (verticalScrollController.ScrollableExtent != 0.0)
                     {
-                        return verticalScrollController.Offset / (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) * (parentHeight - Thumb.Height);
+                        return verticalScrollController.Offset / verticalScrollController.ScrollableExtent * (parentHeight - Thumb.Height);
                     }
                 }
 
@@ -948,9 +928,9 @@ namespace MUXControlsTestApp.Utilities
                     AreScrollerInteractionsAllowed = false;
 #endif
 
-                    if (!IsInteracting)
+                    if (!IsScrolling)
                     {
-                        IsInteracting = true;
+                        IsScrolling = true;
                         RaiseInteractionInfoChanged();
                     }
                     break;
@@ -986,7 +966,7 @@ namespace MUXControlsTestApp.Utilities
 
         private void Thumb_ManipulationStarting(object sender, ManipulationStartingRoutedEventArgs e)
         {
-            if (IsInteracting)
+            if (IsScrolling)
             {
                 preManipulationThumbOffset = new Point(HorizontalThumbOffset, VerticalThumbOffset);
             }
@@ -994,7 +974,7 @@ namespace MUXControlsTestApp.Utilities
 
         private void Thumb_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (IsInteracting)
+            if (IsScrolling)
             {
                 Point targetThumbOffset = new Point(
                     preManipulationThumbOffset.X + e.Cumulative.Translation.X,
@@ -1012,9 +992,9 @@ namespace MUXControlsTestApp.Utilities
             AreScrollerInteractionsAllowed = true;
 #endif
 
-            if (IsInteracting)
+            if (IsScrolling)
             {
-                IsInteracting = false;
+                IsScrolling = false;
                 RaiseInteractionInfoChanged();
             }
         }
@@ -1054,7 +1034,7 @@ namespace MUXControlsTestApp.Utilities
                 }
                 else
                 {
-                    newSize.Width = Math.Max(Math.Min(40.0, parentSize.Width), horizontalScrollController.Viewport / (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset + horizontalScrollController.Viewport) * parentSize.Width);
+                    newSize.Width = Math.Max(Math.Min(40.0, parentSize.Width), horizontalScrollController.Viewport / (horizontalScrollController.ScrollableExtent + horizontalScrollController.Viewport) * parentSize.Width);
                 }
                 if (verticalScrollController.Viewport == 0.0)
                 {
@@ -1062,7 +1042,7 @@ namespace MUXControlsTestApp.Utilities
                 }
                 else
                 {
-                    newSize.Height = Math.Max(Math.Min(40.0, parentSize.Height), verticalScrollController.Viewport / (verticalScrollController.MaxOffset - verticalScrollController.MinOffset + verticalScrollController.Viewport) * parentSize.Height);
+                    newSize.Height = Math.Max(Math.Min(40.0, parentSize.Height), verticalScrollController.Viewport / (verticalScrollController.ScrollableExtent + verticalScrollController.Viewport) * parentSize.Height);
                 }
                 if (newSize.Width != Thumb.Width)
                 {
@@ -1108,8 +1088,8 @@ namespace MUXControlsTestApp.Utilities
                 if (parentSize.Width != thumbSize.Width || parentSize.Height != thumbSize.Height)
                 {
                     scrollPresenterOffset = new Point(
-                        parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * (horizontalScrollController.MaxOffset - horizontalScrollController.MinOffset) / (parentSize.Width - thumbSize.Width)),
-                        parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * (verticalScrollController.MaxOffset - verticalScrollController.MinOffset) / (parentSize.Height - thumbSize.Height)));
+                        parentSize.Width == thumbSize.Width ? 0 : (thumbOffset.X * horizontalScrollController.ScrollableExtent / (parentSize.Width - thumbSize.Width)),
+                        parentSize.Height == thumbSize.Height ? 0 : (thumbOffset.Y * verticalScrollController.ScrollableExtent / (parentSize.Height - thumbSize.Height)));
                 }
             }
 
@@ -1363,7 +1343,7 @@ namespace MUXControlsTestApp.Utilities
             }
         }
 
-        internal float GetInteractionElementScrollMultiplier(Orientation orientation, double maxOffset, double minOffset)
+        internal float GetInteractionElementScrollMultiplier(Orientation orientation, double scrollableExtent)
         {
             if (Thumb != null)
             {
@@ -1379,7 +1359,7 @@ namespace MUXControlsTestApp.Utilities
                 }
                 if (parentDim != thumbDim)
                 {
-                    return (float)((maxOffset - minOffset) / (thumbDim - parentDim));
+                    return (float)(scrollableExtent / (thumbDim - parentDim));
                 }
             }
 

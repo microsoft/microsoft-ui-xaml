@@ -25,8 +25,8 @@ enum ScrollSnapPointsAlignment
 [marshaling_behavior(agile)]
 [threading(both)]
 unsealed runtimeclass SnapPointBase
-// All composable classes must derrive from a Windows base class to pass WACK.
-: Windows.UI.Xaml.DependencyObject
+    // All composable classes must derrive from a Windows base class to pass WACK.
+    : Windows.UI.Xaml.DependencyObject
 {
 #ifdef ApplicableRangeType
     Double ApplicableRange { get; };
@@ -202,12 +202,12 @@ interface IScrollController
 #if USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED
     Boolean IsInteractionElementRailEnabled{ get; };
 #endif
-    Boolean IsInteracting { get; };
+    Boolean IsScrolling { get; };
     Windows.UI.Xaml.UIElement InteractionElement { get; };
     Windows.UI.Xaml.Controls.Orientation InteractionElementScrollOrientation { get; };
-    void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String minOffsetPropertyName, String maxOffsetPropertyName, String offsetPropertyName, String multiplierPropertyName);
+    void SetExpressionAnimationSources(Windows.UI.Composition.CompositionPropertySet propertySet, String offsetPropertyName, String scrollableExtentPropertyName, String multiplierPropertyName);
     void SetScrollMode(MU_XC_NAMESPACE.ScrollingScrollMode scrollMode);
-    void SetValues(Double minOffset, Double maxOffset, Double offset, Double viewport);
+    void SetDimensions(Double offset, Double scrollableExtent, Double viewport);
     Windows.UI.Composition.CompositionAnimation GetScrollAnimation(Int32 correlationId, Windows.Foundation.Numerics.Vector2 currentPosition, Windows.UI.Composition.CompositionAnimation defaultAnimation);
     void NotifyScrollCompleted(Int32 correlationId);
     event Windows.Foundation.TypedEventHandler<IScrollController, ScrollControllerScrollToRequestedEventArgs> ScrollToRequested;

@@ -265,9 +265,8 @@ void ScrollPresenter::HorizontalScrollController(winrt::IScrollController const&
             MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
             m_horizontalScrollController.get().SetExpressionAnimationSources(
                 nullptr /*scrollControllerExpressionAnimationSources*/,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -293,9 +292,8 @@ void ScrollPresenter::HorizontalScrollController(winrt::IScrollController const&
             MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
             m_horizontalScrollController.get().SetExpressionAnimationSources(
                 m_horizontalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -324,9 +322,8 @@ void ScrollPresenter::VerticalScrollController(winrt::IScrollController const& v
             MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
             m_verticalScrollController.get().SetExpressionAnimationSources(
                 nullptr /*scrollControllerExpressionAnimationSources*/,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -352,9 +349,8 @@ void ScrollPresenter::VerticalScrollController(winrt::IScrollController const& v
             MUX_ASSERT(SharedHelpers::IsRS2OrHigher());
             m_verticalScrollController.get().SetExpressionAnimationSources(
                 m_verticalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -1851,30 +1847,29 @@ void ScrollPresenter::EnsureScrollControllerExpressionAnimationSources(
 
     SCROLLPRESENTER_TRACE_VERBOSE(*this, TRACE_MSG_METH_INT, METH_NAME, this, dimension);
 
-    scrollControllerExpressionAnimationSources.InsertScalar(s_minOffsetPropertyName, 0.0f);
-    scrollControllerExpressionAnimationSources.InsertScalar(s_maxOffsetPropertyName, 0.0f);
     scrollControllerExpressionAnimationSources.InsertScalar(s_offsetPropertyName, 0.0f);
+    scrollControllerExpressionAnimationSources.InsertScalar(s_scrollableExtentPropertyName, 0.0f);
     scrollControllerExpressionAnimationSources.InsertScalar(s_multiplierPropertyName, 1.0f);
 
     if (dimension == ScrollPresenterDimension::HorizontalScroll)
     {
         MUX_ASSERT(!m_horizontalScrollControllerOffsetExpressionAnimation);
-        MUX_ASSERT(!m_horizontalScrollControllerMaxOffsetExpressionAnimation);
+        MUX_ASSERT(!m_horizontalScrollControllerScrollableExtentExpressionAnimation);
 
         m_horizontalScrollControllerOffsetExpressionAnimation = compositor.CreateExpressionAnimation(L"it.Position.X - it.MinPosition.X");
         m_horizontalScrollControllerOffsetExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
-        m_horizontalScrollControllerMaxOffsetExpressionAnimation = compositor.CreateExpressionAnimation(L"it.MaxPosition.X - it.MinPosition.X");
-        m_horizontalScrollControllerMaxOffsetExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
+        m_horizontalScrollControllerScrollableExtentExpressionAnimation = compositor.CreateExpressionAnimation(L"it.MaxPosition.X - it.MinPosition.X");
+        m_horizontalScrollControllerScrollableExtentExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
     else
     {
         MUX_ASSERT(!m_verticalScrollControllerOffsetExpressionAnimation);
-        MUX_ASSERT(!m_verticalScrollControllerMaxOffsetExpressionAnimation);
+        MUX_ASSERT(!m_verticalScrollControllerScrollableExtentExpressionAnimation);
 
         m_verticalScrollControllerOffsetExpressionAnimation = compositor.CreateExpressionAnimation(L"it.Position.Y - it.MinPosition.Y");
         m_verticalScrollControllerOffsetExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
-        m_verticalScrollControllerMaxOffsetExpressionAnimation = compositor.CreateExpressionAnimation(L"it.MaxPosition.Y - it.MinPosition.Y");
-        m_verticalScrollControllerMaxOffsetExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
+        m_verticalScrollControllerScrollableExtentExpressionAnimation = compositor.CreateExpressionAnimation(L"it.MaxPosition.Y - it.MinPosition.Y");
+        m_verticalScrollControllerScrollableExtentExpressionAnimation.SetReferenceParameter(L"it", m_interactionTracker);
     }
 }
 
@@ -2393,14 +2388,14 @@ void ScrollPresenter::SetupScrollControllerVisualInterationSource(
                 m_horizontalScrollControllerVisualInteractionSource = nullptr;
                 m_horizontalScrollControllerExpressionAnimationSources = nullptr;
                 m_horizontalScrollControllerOffsetExpressionAnimation = nullptr;
-                m_horizontalScrollControllerMaxOffsetExpressionAnimation = nullptr;
+                m_horizontalScrollControllerScrollableExtentExpressionAnimation = nullptr;
             }
             else
             {
                 m_verticalScrollControllerVisualInteractionSource = nullptr;
                 m_verticalScrollControllerExpressionAnimationSources = nullptr;
                 m_verticalScrollControllerOffsetExpressionAnimation = nullptr;
-                m_verticalScrollControllerMaxOffsetExpressionAnimation = nullptr;
+                m_verticalScrollControllerScrollableExtentExpressionAnimation = nullptr;
             }
 
             RaiseInteractionSourcesChanged();
@@ -3554,25 +3549,25 @@ void ScrollPresenter::StartScrollControllerExpressionAnimationSourcesAnimations(
     {
         MUX_ASSERT(m_horizontalScrollControllerExpressionAnimationSources);
         MUX_ASSERT(m_horizontalScrollControllerOffsetExpressionAnimation);
-        MUX_ASSERT(m_horizontalScrollControllerMaxOffsetExpressionAnimation);
+        MUX_ASSERT(m_horizontalScrollControllerScrollableExtentExpressionAnimation);
 
         m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_horizontalScrollControllerOffsetExpressionAnimation);
         RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
 
-        m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_horizontalScrollControllerMaxOffsetExpressionAnimation);
-        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
+        m_horizontalScrollControllerExpressionAnimationSources.StartAnimation(s_scrollableExtentPropertyName, m_horizontalScrollControllerScrollableExtentExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_scrollableExtentPropertyName /*propertyName*/);
     }
     else
     {
         MUX_ASSERT(m_verticalScrollControllerExpressionAnimationSources);
         MUX_ASSERT(m_verticalScrollControllerOffsetExpressionAnimation);
-        MUX_ASSERT(m_verticalScrollControllerMaxOffsetExpressionAnimation);
+        MUX_ASSERT(m_verticalScrollControllerScrollableExtentExpressionAnimation);
 
         m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_offsetPropertyName, m_verticalScrollControllerOffsetExpressionAnimation);
         RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
 
-        m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_maxOffsetPropertyName, m_verticalScrollControllerMaxOffsetExpressionAnimation);
-        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
+        m_verticalScrollControllerExpressionAnimationSources.StartAnimation(s_scrollableExtentPropertyName, m_verticalScrollControllerScrollableExtentExpressionAnimation);
+        RaiseExpressionAnimationStatusChanged(true /*isExpressionAnimationStarted*/, s_scrollableExtentPropertyName /*propertyName*/);
     }
 }
 
@@ -3589,8 +3584,8 @@ void ScrollPresenter::StopScrollControllerExpressionAnimationSourcesAnimations(
         m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
         RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
 
-        m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
-        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
+        m_horizontalScrollControllerExpressionAnimationSources.StopAnimation(s_scrollableExtentPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_scrollableExtentPropertyName /*propertyName*/);
     }
     else
     {
@@ -3599,8 +3594,8 @@ void ScrollPresenter::StopScrollControllerExpressionAnimationSourcesAnimations(
         m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_offsetPropertyName);
         RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_offsetPropertyName /*propertyName*/);
 
-        m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_maxOffsetPropertyName);
-        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_maxOffsetPropertyName /*propertyName*/);
+        m_verticalScrollControllerExpressionAnimationSources.StopAnimation(s_scrollableExtentPropertyName);
+        RaiseExpressionAnimationStatusChanged(false /*isExpressionAnimationStarted*/, s_scrollableExtentPropertyName /*propertyName*/);
     }
 }
 
@@ -4260,18 +4255,16 @@ void ScrollPresenter::OnLoaded(
         {
             m_horizontalScrollController.get().SetExpressionAnimationSources(
                 m_horizontalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
         if (m_verticalScrollControllerExpressionAnimationSources)
         {
             m_verticalScrollController.get().SetExpressionAnimationSources(
                 m_verticalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -4633,12 +4626,12 @@ void ScrollPresenter::OnPointerPressed(
         return;
     }
 #else
-    if (m_horizontalScrollController && m_horizontalScrollController.get().IsInteracting())
+    if (m_horizontalScrollController && m_horizontalScrollController.get().IsScrolling())
     {
         return;
     }
 
-    if (m_verticalScrollController && m_verticalScrollController.get().IsInteracting())
+    if (m_verticalScrollController && m_verticalScrollController.get().IsScrolling())
     {
         return;
     }
@@ -4785,7 +4778,7 @@ void ScrollPresenter::OnScrollControllerInteractionRequested(
 }
 
 // Invoked by an IScrollController implementation when one or more of its characteristics has changed:
-// IsInteracting, InteractionElement, InteractionElementScrollOrientation
+// IsScrolling, InteractionElement, InteractionElementScrollOrientation
 // #ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED IsInteractionElementRailEnabled
 // #ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED AreScrollControllerInteractionsAllowed
 // #ifdef USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED AreScrollerInteractionsAllowed
@@ -4815,9 +4808,8 @@ void ScrollPresenter::OnScrollControllerInteractionInfoChanged(
         {
             m_horizontalScrollController.get().SetExpressionAnimationSources(
                 m_horizontalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -4827,9 +4819,8 @@ void ScrollPresenter::OnScrollControllerInteractionInfoChanged(
         {
             m_verticalScrollController.get().SetExpressionAnimationSources(
                 m_verticalScrollControllerExpressionAnimationSources,
-                s_minOffsetPropertyName,
-                s_maxOffsetPropertyName,
                 s_offsetPropertyName,
+                s_scrollableExtentPropertyName,
                 s_multiplierPropertyName);
         }
     }
@@ -5657,10 +5648,9 @@ void ScrollPresenter::UpdateScrollControllerValues(ScrollPresenterDimension dime
     {
         if (m_horizontalScrollController)
         {
-            m_horizontalScrollController.get().SetValues(
-                0.0 /*minOffset*/,
-                ScrollableWidth() /*maxOffset*/,
+            m_horizontalScrollController.get().SetDimensions(
                 m_zoomedHorizontalOffset /*offset*/,
+                ScrollableWidth() /*scrollableExtent*/,
                 ViewportWidth() /*viewport*/);
         }
     }
@@ -5670,10 +5660,9 @@ void ScrollPresenter::UpdateScrollControllerValues(ScrollPresenterDimension dime
 
         if (m_verticalScrollController)
         {
-            m_verticalScrollController.get().SetValues(
-                0.0 /*minOffset*/,
-                ScrollableHeight() /*maxOffset*/,
+            m_verticalScrollController.get().SetDimensions(
                 m_zoomedVerticalOffset /*offset*/,
+                ScrollableHeight() /*scrollableExtent*/,
                 ViewportHeight() /*viewport*/);
         }
     }

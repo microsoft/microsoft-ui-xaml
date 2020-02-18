@@ -834,9 +834,9 @@ private:
     winrt::ExpressionAnimation m_zoomFactorSourceExpressionAnimation{ nullptr };
 
     winrt::ExpressionAnimation m_horizontalScrollControllerOffsetExpressionAnimation{ nullptr };
-    winrt::ExpressionAnimation m_horizontalScrollControllerMaxOffsetExpressionAnimation{ nullptr };
+    winrt::ExpressionAnimation m_horizontalScrollControllerScrollableExtentExpressionAnimation{ nullptr };
     winrt::ExpressionAnimation m_verticalScrollControllerOffsetExpressionAnimation{ nullptr };
-    winrt::ExpressionAnimation m_verticalScrollControllerMaxOffsetExpressionAnimation{ nullptr };
+    winrt::ExpressionAnimation m_verticalScrollControllerScrollableExtentExpressionAnimation{ nullptr };
 
     // Event Sources
     event_source<winrt::ViewportChangedEventHandler> m_viewportChanged{ this };
@@ -904,9 +904,8 @@ private:
     static constexpr std::wstring_view s_scalePropertyName{ L"Scale"sv };
 
     // Properties of the IScrollController's ExpressionAnimationSources CompositionPropertySet
-    static constexpr wstring_view s_minOffsetPropertyName{ L"MinOffset"sv };
-    static constexpr wstring_view s_maxOffsetPropertyName{ L"MaxOffset"sv };
     static constexpr wstring_view s_offsetPropertyName{ L"Offset"sv };
+    static constexpr wstring_view s_scrollableExtentPropertyName{ L"ScrollableExtent"sv };
     static constexpr wstring_view s_multiplierPropertyName{ L"Multiplier"sv };
 
     // Properties used in snap points composition expressions

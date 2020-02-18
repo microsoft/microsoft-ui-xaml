@@ -831,7 +831,7 @@ void ScrollView::OnPropertyChanged(const winrt::DependencyPropertyChangedEventAr
 }
 
 // Invoked by an IScrollController implementation when one or more of its characteristics has changed:
-// IsInteracting, InteractionElement, InteractionElementScrollOrientation
+// IsScrolling, InteractionElement, InteractionElementScrollOrientation
 // #ifdef USE_SCROLLCONTROLLER_ISINTERACTIONELEMENTRAILENABLED IsInteractionElementRailEnabled
 // #ifdef USE_SCROLLCONTROLLER_ARESCROLLCONTROLLERINTERACTIONSALLOWED AreScrollControllerInteractionsAllowed
 // #ifdef USE_SCROLLCONTROLLER_ARESCROLLERINTERACTIONSALLOWED AreScrollerInteractionsAllowed
@@ -839,7 +839,7 @@ void ScrollView::OnScrollControllerInteractionInfoChanged(
     const winrt::IScrollController& sender,
     const winrt::IInspectable& /*args*/)
 {
-    bool isScrollControllerInteracting = sender.IsInteracting();
+    bool isScrollControllerScrolling = sender.IsScrolling();
     bool showIndicators = false;
     bool hideIndicators = false;
 
@@ -847,13 +847,13 @@ void ScrollView::OnScrollControllerInteractionInfoChanged(
     {
         UpdateScrollControllersAutoHiding();
 
-        if (m_isHorizontalScrollControllerInteracting != isScrollControllerInteracting)
+        if (m_isHorizontalScrollControllerScrolling != isScrollControllerScrolling)
         {
-            SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"HorizontalScrollController.IsInteracting changed: ", m_isHorizontalScrollControllerInteracting, isScrollControllerInteracting);
+            SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"HorizontalScrollController.IsScrolling changed: ", m_isHorizontalScrollControllerScrolling, isScrollControllerScrolling);
 
-            m_isHorizontalScrollControllerInteracting = isScrollControllerInteracting;
+            m_isHorizontalScrollControllerScrolling = isScrollControllerScrolling;
 
-            if (isScrollControllerInteracting)
+            if (isScrollControllerScrolling)
             {
                 // Prevent the vertical scroll controller from fading out while the user is interacting with the horizontal one.
                 m_keepIndicatorsShowing = true;
@@ -878,13 +878,13 @@ void ScrollView::OnScrollControllerInteractionInfoChanged(
     {
         UpdateScrollControllersAutoHiding();
 
-        if (m_isVerticalScrollControllerInteracting != isScrollControllerInteracting)
+        if (m_isVerticalScrollControllerScrolling != isScrollControllerScrolling)
         {
-            SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"VerticalScrollController.IsInteracting changed: ", m_isVerticalScrollControllerInteracting, isScrollControllerInteracting);
+            SCROLLVIEW_TRACE_INFO(*this, TRACE_MSG_METH_STR_INT_INT, METH_NAME, this, L"VerticalScrollController.IsScrolling changed: ", m_isVerticalScrollControllerScrolling, isScrollControllerScrolling);
 
-            m_isVerticalScrollControllerInteracting = isScrollControllerInteracting;
+            m_isVerticalScrollControllerScrolling = isScrollControllerScrolling;
 
-            if (isScrollControllerInteracting)
+            if (isScrollControllerScrolling)
             {
                 // Prevent the horizontal scroll controller from fading out while the user is interacting with the vertical one.
                 m_keepIndicatorsShowing = true;

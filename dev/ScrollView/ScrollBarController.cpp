@@ -65,9 +65,9 @@ bool ScrollBarController::IsInteractionElementRailEnabled()
 }
 #endif
 
-bool ScrollBarController::IsInteracting()
+bool ScrollBarController::IsScrolling()
 {
-    return m_isInteracting;
+    return m_isScrolling;
 }
 
 winrt::UIElement ScrollBarController::InteractionElement()
@@ -85,9 +85,8 @@ winrt::Orientation ScrollBarController::InteractionElementScrollOrientation()
 
 void ScrollBarController::SetExpressionAnimationSources(
     winrt::CompositionPropertySet const& propertySet,
-    winrt::hstring const& minOffsetPropertyName,
-    winrt::hstring const& maxOffsetPropertyName,
     winrt::hstring const& offsetPropertyName,
+    winrt::hstring const& scrollableExtentPropertyName,
     winrt::hstring const& multiplierPropertyName)
 {
     // Unused because InteractionElement returns null.
@@ -110,26 +109,24 @@ void ScrollBarController::SetScrollMode(
 #endif
 }
 
-void ScrollBarController::SetValues(
-    double minOffset,
-    double maxOffset,
+void ScrollBarController::SetDimensions(
     double offset,
+    double scrollableExtent,
     double viewport)
 {
     SCROLLVIEW_TRACE_INFO(
         nullptr,
-        L"%s[0x%p](minOffset:%lf, maxOffset:%lf, offset:%lf, viewport:%lf, operationsCount:%d)\n",
+        L"%s[0x%p](offset:%lf, scrollableExtent:%lf, viewport:%lf, operationsCount:%d)\n",
         METH_NAME,
         this,
-        minOffset,
-        maxOffset,
         offset,
+        scrollableExtent,
         viewport,
         m_operationsCount);
 
-    if (maxOffset < minOffset)
+    if (scrollableExtent < 0.0)
     {
-        throw winrt::hresult_invalid_argument(L"maxOffset cannot be smaller than minOffset.");
+        throw winrt::hresult_invalid_argument(L"scrollableExtent cannot be negative.");
     }
 
     if (viewport < 0.0)
@@ -137,30 +134,30 @@ void ScrollBarController::SetValues(
         throw winrt::hresult_invalid_argument(L"viewport cannot be negative.");
     }
 
-    offset = max(minOffset, offset);
-    offset = min(maxOffset, offset);
+    offset = max(0.0, offset);
+    offset = min(scrollableExtent, offset);
     m_lastOffset = offset;
 
     MUX_ASSERT(m_scrollBar);
 
-    if (minOffset < m_scrollBar.Minimum())
+    if (0.0 < m_scrollBar.Minimum())
     {
-        m_scrollBar.Minimum(minOffset);
+        m_scrollBar.Minimum(0.0);
     }
 
-    if (maxOffset > m_scrollBar.Maximum())
+    if (scrollableExtent > m_scrollBar.Maximum())
     {
-        m_scrollBar.Maximum(maxOffset);
+        m_scrollBar.Maximum(scrollableExtent);
     }
 
-    if (minOffset != m_scrollBar.Minimum())
+    if (0.0 != m_scrollBar.Minimum())
     {
-        m_scrollBar.Minimum(minOffset);
+        m_scrollBar.Minimum(0.0);
     }
 
-    if (maxOffset != m_scrollBar.Maximum())
+    if (scrollableExtent != m_scrollBar.Maximum())
     {
-        m_scrollBar.Maximum(maxOffset);
+        m_scrollBar.Maximum(scrollableExtent);
     }
 
     m_scrollBar.ViewportSize(viewport);
@@ -168,7 +165,7 @@ void ScrollBarController::SetValues(
     m_scrollBar.SmallChange(max(1.0, viewport / s_defaultViewportToSmallChangeRatio));
 
     // The ScrollBar Value is only updated when there is no operation in progress.
-    if (m_operationsCount == 0 || m_scrollBar.Value() < minOffset || m_scrollBar.Value() > maxOffset)
+    if (m_operationsCount == 0 || m_scrollBar.Value() < 0.0 || m_scrollBar.Value() > scrollableExtent)
     {
         m_scrollBar.Value(offset);
         m_lastScrollBarValue = offset;
@@ -473,9 +470,9 @@ void ScrollBarController::OnScroll(
         m_areScrollerInteractionsAllowed = true;
 #endif
 
-        if (m_isInteracting)
+        if (m_isScrolling)
         {
-            m_isInteracting = false;
+            m_isScrolling = false;
             RaiseInteractionInfoChanged();
         }
         break;
@@ -493,9 +490,9 @@ void ScrollBarController::OnScroll(
             m_areScrollerInteractionsAllowed = false;
 #endif
 
-            if (!m_isInteracting)
+            if (!m_isScrolling)
             {
-                m_isInteracting = true;
+                m_isScrolling = true;
                 RaiseInteractionInfoChanged();
             }
         }

@@ -354,9 +354,9 @@ private:
     bool m_areHorizontalScrollControllerInteractionsAllowed{ false };
     bool m_areVerticalScrollControllerInteractionsAllowed{ false };
 
-    // Set to the values of IScrollController::IsInteracting.
-    bool m_isHorizontalScrollControllerInteracting{ false };
-    bool m_isVerticalScrollControllerInteracting{ false };
+    // Set to the values of IScrollController::IsScrolling.
+    bool m_isHorizontalScrollControllerScrolling{ false };
+    bool m_isVerticalScrollControllerScrolling{ false };
 
     // Set to True when the pointer is over the optional scroll controllers.
     bool m_isPointerOverHorizontalScrollController{ false };
