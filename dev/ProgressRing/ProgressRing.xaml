@@ -16,7 +16,6 @@
 
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Determinate" />
                                 <VisualState x:Name="Indeterminate">
                                     <Storyboard>
@@ -45,7 +44,7 @@
                                 x:Name="OutlinePathPart"
                                 Fill="Transparent"
                                 Stroke="{TemplateBinding Background}"
-                                StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
+                                StrokeThickness="{StaticResource ProgressRingStrokeThickness}"
                                 StrokeStartLineCap="Round"
                                 StrokeEndLineCap="Round">
                                 <Path.Data>
@@ -72,7 +71,7 @@
                                 x:Name="RingPathPart"
                                 Fill="Transparent"
                                 Stroke="{TemplateBinding Foreground}"
-                                StrokeThickness="{ThemeResource ProgressRingStrokeThickness}"
+                                StrokeThickness="{StaticResource ProgressRingStrokeThickness}"
                                 StrokeStartLineCap="Round"
                                 StrokeEndLineCap="Round">
                                 <Path.Data>
