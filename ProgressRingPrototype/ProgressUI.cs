@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
 
 namespace ProgressRingPrototype
 {
@@ -9,6 +10,8 @@ namespace ProgressRingPrototype
         public ProgressUI()
         {
             this.DefaultStyleKey = typeof(ProgressUI);
+
+            
         }
 
         public ProgressUITemplateSettings TemplateSettings { get; } = new ProgressUITemplateSettings();
@@ -23,6 +26,17 @@ namespace ProgressRingPrototype
 
             // TODO : If we want to go down the path of supporting storyboards, 
             // we can set templateSetings.arc* properties etc here.
+        }
+
+        protected override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+
+            // Do this in Foreground property changed event.
+            if (Foreground is SolidColorBrush)
+            {
+                TemplateSettings.ForegroundColor = (Foreground as SolidColorBrush).Color;
+            }
         }
 
         public bool IsIndeterminate

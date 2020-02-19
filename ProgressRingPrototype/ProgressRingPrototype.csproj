@@ -19,6 +19,7 @@
     <WindowsXamlEnableOverview>true</WindowsXamlEnableOverview>
     <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
     <DisableXbfGeneration>true</DisableXbfGeneration>
+    <RuntimeIdentifiers>win10;win10-arm;win10-arm-aot;win10-arm64-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -124,6 +125,7 @@
     <Compile Include="LottieAnimations\29-motorcycle.cs" />
     <Compile Include="LottieAnimations\519-load-complete.cs" />
     <Compile Include="LottieAnimations\7379-gears-animation.cs" />
+    <Compile Include="LottieAnimations\WindowsLogoAnimatedVisual.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

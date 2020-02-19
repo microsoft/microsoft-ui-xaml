@@ -11,14 +11,15 @@
             <ColumnDefinition Width="200" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel>
+        <StackPanel Spacing="5">
             <TextBlock Text="Indeterminate"/>
             <CheckBox x:Name="indeterminateCheckBox"/>
-            <Slider Header="Value: " x:Name="inputSlider" Minimum="0" Maximum="1" StepFrequency="0.01" Width="100"/>
+            <Slider Header="Value: " x:Name="inputSlider" Minimum="0" Maximum="1" StepFrequency="0.01" Width="100" IsThumbToolTipEnabled="False"/>
         </StackPanel>
-        <StackPanel Grid.Column="1">
+        <StackPanel Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="4" Margin="10">
             <local:ProgressUI Width="100" Height="100"
                 Value="{Binding Mode=OneWay,ElementName=inputSlider, Path=Value}" 
+                Foreground="Green"
                 IsIndeterminate="{Binding Mode=OneWay,ElementName=indeterminateCheckBox, Path=IsChecked}" />
         </StackPanel>
     </Grid>

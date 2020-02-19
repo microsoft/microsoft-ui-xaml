@@ -17,31 +17,24 @@
                                 <VisualState x:Name="Normal" />
                                 <VisualState x:Name="Indeterminate">
                                     <VisualState.Setters>
-                                        <Setter Target="indeterminatePlayer.Visibility" Value="Visible" />
-                                        <Setter Target="indeterminatePlayer.IsPlaying" Value="True" />
-                                        <Setter Target="determinatePlayer.Visibility" Value="Collapsed" />
+                                        <Setter Target="player.Source">
+                                            <Setter.Value>
+                                                <local:WindowsLogoAnimatedVisual
+                                                    Foreground="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ForegroundColor}"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Setter Target="player.IsLooping" Value="True" />
+                                        <Setter Target="player.IsPlaying" Value="True" />
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Determinate -->
                         <local:AnimatedVisualPlayerProposed 
-                            x:Name="determinatePlayer" 
-                            IsLooping="False"
+                            x:Name="player" 
                             Position="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.ProgressPosition}">
                             <local:AnimatedVisualPlayerProposed.Source>
                                 <local:LoadAnimation />
-                            </local:AnimatedVisualPlayerProposed.Source>
-                        </local:AnimatedVisualPlayerProposed>
-
-                        <!-- Indeterminate -->
-                        <local:AnimatedVisualPlayerProposed 
-                            x:Name="indeterminatePlayer" 
-                            Visibility="Collapsed"
-                            IsLooping="True">
-                            <local:AnimatedVisualPlayerProposed.Source>
-                                <local:Gears3 />
                             </local:AnimatedVisualPlayerProposed.Source>
                         </local:AnimatedVisualPlayerProposed>
                     </Grid>
