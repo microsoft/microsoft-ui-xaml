@@ -216,18 +216,41 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
         auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
         {
-            // SelectOverflowItem is moving data in/out of overflow.
-            auto scopeGuard = gsl::finally([this]()
-                {
-                    m_selectionChangeFromOverflowMenu = false;
-                });
-            m_selectionChangeFromOverflowMenu = true;
-
-            CloseTopNavigationViewFlyout();
-
-            if (!IsSelectionSuppressed(selectedItem))
+            // We only want to close the overflow flyout and move the item on selection if it is a leaf node
+            auto const itemShouldBeMoved = [selectedIndex, this]()
             {
-                SelectOverflowItem(selectedItem, selectedIndex);
+                if (auto const selectedContainer = GetContainerForIndexPath(selectedIndex))
+                {
+                    if (auto const selectedNVI = selectedContainer.try_as<winrt::NavigationViewItem>())
+                    {
+                        if (DoesNavigationViewItemHaveChildren(selectedNVI))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }();
+
+            if (itemShouldBeMoved)
+            {
+                // SelectOverflowItem is moving data in/out of overflow.
+                auto scopeGuard = gsl::finally([this]()
+                    {
+                        m_selectionChangeFromOverflowMenu = false;
+                    });
+                m_selectionChangeFromOverflowMenu = true;
+
+                CloseTopNavigationViewFlyout();
+
+                if (!IsSelectionSuppressed(selectedItem))
+                {
+                    SelectOverflowItem(selectedItem, selectedIndex);
+                }
+            }
+            else
+            {
+                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
             }
         }
         else
@@ -2649,20 +2672,24 @@ void NavigationView::SetOverflowButtonVisibility(winrt::Visibility const& visibi
 
 void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip)
 {
-    auto itemBeingMoved = item;
-    // If a child is being selected, we want to move the parent
-    if (ip.GetSize() > 1)
-    {
-        auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
-        itemBeingMoved = GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
-    }
 
+    auto const itemBeingMoved = [item, ip, this]()
+    {
+        if (ip.GetSize() > 1)
+        {
+            auto indexOfParentInOverflow = m_topDataProvider.ConvertOriginalIndexToIndex(ip.GetAt(0));
+            // We want to make sure that container is collapsed before movement
+            CollapseAllMenuItems(m_topNavRepeaterOverflowView.get());
+            return GetItemFromIndex(m_topNavRepeaterOverflowView.get(), indexOfParentInOverflow);
+        }
+        return item;
+    }();
 
     // Calculate selected overflow item size.
     auto selectedOverflowItemIndex = m_topDataProvider.IndexOf(itemBeingMoved);
     MUX_ASSERT(selectedOverflowItemIndex != s_itemNotFound);
     auto selectedOverflowItemWidth = m_topDataProvider.GetWidthForItem(selectedOverflowItemIndex);
- 
+
     bool needInvalidMeasure = !m_topDataProvider.IsValidWidthForItem(selectedOverflowItemIndex);
 
     if (!needInvalidMeasure)
@@ -2689,7 +2716,7 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         // SelectedItem is assumed to be removed from primary first, then added it back if it should not be removed
         auto itemsToBeRemoved = FindMovableItemsToBeRemovedFromPrimaryList(widthAtLeastToBeRemoved, { } /*excludeItems*/);
         m_itemsRemovedFromMenuFlyout = itemsToBeRemoved;
-        
+
         // calculate the size to be removed
         auto toBeRemovedItemWidth = m_topDataProvider.CalculateWidthForItems(itemsToBeRemoved);
 
@@ -2723,12 +2750,13 @@ void NavigationView::SelectOverflowItem(winrt::IInspectable const& item, winrt::
         }
     }
 
+    // TODO: Verify that this is no longer needed and delete
     if (needInvalidMeasure)
     {
         // not all items have known width, need to redo the layout
         m_topDataProvider.MoveAllItemsToPrimaryList();
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(item);
-        InvalidateTopNavPrimaryLayout();  
+        InvalidateTopNavPrimaryLayout();
     }
 }
 
@@ -3060,6 +3088,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         {
             CollapseAllMenuItems(m_leftNavRepeater.get());
         }
+
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -4335,6 +4364,23 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::I
         if (IsTopNavigationView())
         {
             // TODO: Implement
+
+             // Get the repeater that is presenting the first item
+            auto ir = m_topDataProvider.IsItemInPrimaryList(firstIndex) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
+
+            // Get the index of the first item in the repeater
+            auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(firstIndex);
+
+            // Get the container of the first item
+            if (auto const container = ir.TryGetElement(irIndex))
+            {
+                // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
+                // We want to be able to retrieve containers for items that are in the flyout.
+                // This will return nullptr if requesting children containers of
+                // items in the primary list, or unrealized items in the overflow popup.
+                // However this should not happen.
+                return GetChildrenForItemInIndexPath(container, ip, true);
+            }
         }
         else
         {

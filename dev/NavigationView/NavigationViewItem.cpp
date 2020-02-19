@@ -151,10 +151,10 @@ void NavigationViewItem::RepeaterElementClearing(const winrt::ItemsRepeater& ir,
         winrt::get_self<NavigationViewItemBase>(nvib)->Depth(0);
     }
 }
-
+ 
 winrt::UIElement NavigationViewItem::GetSelectionIndicator()
 {
-    auto selectIndicator = m_helper.GetSelectionIndicator();
+    auto selectIndicator = m_helper.GetSelectionIndicator(); 
     if (auto presenter = GetPresenter())
     {
         selectIndicator = presenter->GetSelectionIndicator();
@@ -481,20 +481,21 @@ void NavigationViewItem::ReparentRepeater()
 {
     if (auto const repeater = m_repeater.get())
     {
-        if (ShouldRepeaterShowInFlyout() && !m_parentedToFlyout)
+        auto const shouldShowRepeaterInFlyout = ShouldRepeaterShowInFlyout();
+        if (shouldShowRepeaterInFlyout && !m_parentedToFlyout)
         {
             m_rootGrid.get().Children().RemoveAtEnd();
-            m_flyoutRootGrid.get().Children().Append(m_repeater.get());
+            m_flyoutRootGrid.get().Children().Append(repeater);
             m_parentedToFlyout = true;
 
             // Repeater is moved to flyout, so we dont want any left margin
             auto const oldRepeaterMargin = repeater.Margin();
             repeater.Margin({ 0, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
         }
-        else if (m_parentedToFlyout)
+        else if (!shouldShowRepeaterInFlyout && m_parentedToFlyout)
         {
             m_flyoutRootGrid.get().Children().RemoveAtEnd();
-            m_rootGrid.get().Children().Append(m_repeater.get());
+            m_rootGrid.get().Children().Append(repeater);
             m_parentedToFlyout = false;
 
             // Update item indentation based on its depth

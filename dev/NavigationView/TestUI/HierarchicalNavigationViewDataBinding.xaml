@@ -18,7 +18,7 @@
 
     <Grid>
         <muxcontrols:NavigationView x:Name="navview" MenuItemsSource="{x:Bind categories, Mode=OneWay}" MenuItemTemplate="{StaticResource NavigationViewMenuItem}"
-                                    ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem">
+                                    ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem" PaneDisplayMode="Top">
             <StackPanel Margin="10,10,0,0">
                 <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
                 <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>

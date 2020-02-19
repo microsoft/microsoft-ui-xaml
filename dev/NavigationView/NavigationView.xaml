@@ -282,7 +282,7 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
+                                            <Flyout Placement="BottomEdgeAlignedRight" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
