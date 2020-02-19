@@ -1066,6 +1066,7 @@ void NavigationView::OpenPane()
 // Call this when you want an uncancellable close
 void NavigationView::ClosePane()
 {
+    CollapseAllMenuItems(m_leftNavRepeater.get());
     auto scopeGuard = gsl::finally([this]()
     {
         m_isOpenPaneForInteraction = false;
