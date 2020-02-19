@@ -129,6 +129,7 @@ private:
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
+    void CollapseAllTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
     void CollapseAllMenuItems(const winrt::ItemsRepeater& ir);
 
     // Force realization functions
@@ -136,7 +137,7 @@ private:
     void RecycleContainer(const winrt::UIElement& container);
 
 
-    void ClosePaneIfNeccessaryAfterItemIsClicked();
+    void ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedItem);
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
     void OnAccessKeyInvoked(winrt::IInspectable const& sender, winrt::AccessKeyInvokedEventArgs const& args);
     winrt::NavigationTransitionInfo CreateNavigationTransitionInfo(NavigationRecommendedTransitionDirection recommendedTransitionDirection);

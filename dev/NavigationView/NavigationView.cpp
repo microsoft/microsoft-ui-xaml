@@ -663,7 +663,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
-    ClosePaneIfNeccessaryAfterItemIsClicked();
+    ClosePaneIfNeccessaryAfterItemIsClicked(nvi);
 }
 
 bool NavigationView::IsRootItemsRepeater(const winrt::DependencyObject& element)
@@ -1666,8 +1666,6 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(prevItem, nextItem);
-
-        ClosePaneIfNeccessaryAfterItemIsClicked();
     }
 }
 
@@ -3083,12 +3081,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // When PaneDisplayMode is changed, reset the force flag to make the Pane can be opened automatically again.
         m_wasForceClosed = false;
 
-        // We want to make sure only top level items are visible when switching pane modes
-        if (IsTopNavigationView())
-        {
-            CollapseAllMenuItems(m_leftNavRepeater.get());
-        }
-
+        CollapseAllTopLevelMenuItems(auto_unbox(args.OldValue()));
         UpdatePaneToggleButtonVisibility();
         UpdatePaneDisplayMode(auto_unbox(args.OldValue()), auto_unbox(args.NewValue()));
         UpdatePaneTitleFrameworkElementParents();
@@ -3689,9 +3682,9 @@ void NavigationView::OnTitleBarIsVisibleChanged(const winrt::CoreApplicationView
     UpdateTitleBarPadding();
 }
 
-void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked()
+void NavigationView::ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedContainer)
 {
-    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded)
+    if (IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Expanded && !DoesNavigationViewItemHaveChildren(selectedContainer))
     {
         ClosePane();
     }
@@ -4480,6 +4473,20 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::U
     }
 
     return nullptr;
+}
+
+void NavigationView::CollapseAllTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode)
+{
+    // We want to make sure only top level items are visible when switching pane modes
+    if (oldDisplayMode == winrt::NavigationViewPaneDisplayMode::Top)
+    {
+        CollapseAllMenuItems(m_topNavRepeater.get());
+        CollapseAllMenuItems(m_topNavRepeaterOverflowView.get());
+    }
+    else
+    {
+        CollapseAllMenuItems(m_leftNavRepeater.get());
+    }
 }
 
 void NavigationView::CollapseAllMenuItems(const winrt::ItemsRepeater& ir)
