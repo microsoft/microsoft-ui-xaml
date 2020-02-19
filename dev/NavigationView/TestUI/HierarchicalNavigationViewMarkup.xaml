@@ -1,0 +1,83 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<Page
+    x:Class="MUXControlsTestApp.HierarchicalNavigationViewMarkup"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:muxcontrols="using:Microsoft.UI.Xaml.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <muxcontrols:NavigationView x:Name="navview" ItemInvoked="{x:Bind ClickedItem}" Expanding="ExpandingItem" Collapsed="CollapsedItem" PaneDisplayMode="Left">
+            <muxcontrols:NavigationView.MenuItems>
+                <muxcontrols:NavigationViewItem Content="Menu Item 1" Icon="Home" x:Name="MI1" SelectsOnInvoked="False">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 2" Icon="Save" x:Name="MI2" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 3" Icon="Paste" x:Name="MI3" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 4" Icon="Cut" x:Name="MI4" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 5 (Selectable)" Icon="Home" x:Name="MI5" SelectsOnInvoked="True">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 6" Icon="Save" x:Name="MI6" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 7" Icon="Paste" x:Name="MI7" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 8" Icon="Cut" x:Name="MI8" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 9" Icon="Home" x:Name="MI9"/>
+                <muxcontrols:NavigationViewItem Content="Menu Item 10 (Selectable)" Icon="Home" x:Name="MI10" SelectsOnInvoked="True">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 11" Icon="Save" x:Name="MI11" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 12" Icon="Paste" x:Name="MI12" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 13" Icon="Cut" x:Name="MI13" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+                <muxcontrols:NavigationViewItem Content="Menu Item 14" Icon="Home" x:Name="MI14" SelectsOnInvoked="False">
+                    <muxcontrols:NavigationViewItem.MenuItems>
+                        <muxcontrols:NavigationViewItem Content="Menu Item 15" Icon="Save" x:Name="MI15" SelectsOnInvoked="False">
+                            <muxcontrols:NavigationViewItem.MenuItems>
+                                <muxcontrols:NavigationViewItem Content="Menu Item 16" Icon="Paste" x:Name="MI16" />
+                                <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
+                            </muxcontrols:NavigationViewItem.MenuItems>
+                        </muxcontrols:NavigationViewItem>
+                    </muxcontrols:NavigationViewItem.MenuItems>
+                </muxcontrols:NavigationViewItem>
+            </muxcontrols:NavigationView.MenuItems>
+            <StackPanel Margin="10,10,0,0">
+                <TextBlock x:Name="SelectedItemLabel" AutomationProperties.Name="SelectedItemLabel" Text="uninitialized"/>
+                <Button Content="Get Selected Item Label" x:Name="GetSelectedItemLabelButton" AutomationProperties.Name="GetSelectedItemLabelButton" Click="PrintSelectedItem"/>
+                <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
+                <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
+                <TextBlock x:Name="IsChildSelectedLabel" Text="uninitialized"/>
+                <Button Content="Print all 'isChildSelected=true' items" Click="PrintAllIsChildSelectedItems"/>
+                <Button Content="Select Second Item" Click="SelectSecondItem"/>
+                <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
+                <TextBlock x:Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
+                <ComboBox x:Name="PaneDisplayModeCombobox"
+                                AutomationProperties.Name="PaneDisplayModeCombobox"
+                                Header="PaneDisplayMode"
+                                SelectionChanged="PaneDisplayModeCombobox_SelectionChanged"
+                                Margin="5">
+                    <ComboBoxItem Content="Auto" Tag="Auto"/>
+                    <ComboBoxItem Content="Left" Tag="Left"/>
+                    <ComboBoxItem Content="Top" Tag="Top"/>
+                    <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
+                    <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
+                </ComboBox>
+            </StackPanel>
+        </muxcontrols:NavigationView>
+
+    </Grid>
+</Page>
