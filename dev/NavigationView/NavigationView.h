@@ -132,6 +132,8 @@ private:
     void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
     void CollapseAllTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
     void CollapseAllMenuItems(const winrt::ItemsRepeater& ir);
+    void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
+    void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);

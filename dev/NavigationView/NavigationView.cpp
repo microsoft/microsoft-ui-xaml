@@ -27,6 +27,8 @@
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
 #include <ItemsRepeater.common.h>
+#include "NavigationViewExpandingEventArgs.h"
+#include "NavigationViewCollapsedEventArgs.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -608,7 +610,17 @@ void NavigationView::OnNavigationViewItemExpandedPropertyChanged(const winrt::De
 {
     if (auto const nvi = sender.try_as<winrt::NavigationViewItem>())
     {
+        if (nvi.IsExpanded())
+        {
+            RaiseExpandingEvent(nvi);
+        }
+
         ShowHideChildrenItemsRepeater(nvi);
+
+        if (!nvi.IsExpanded())
+        {
+            RaiseCollapsedEvent(nvi);
+        }
     }
 }
 
@@ -4521,4 +4533,18 @@ void NavigationView::CollapseAllMenuItems(const winrt::ItemsRepeater& ir)
             }
         }
     }
+}
+
+void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
+{
+    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    eventArgs->ExpandingItemContainer(container);
+    m_expandingEventSource(*this, *eventArgs);
+}
+
+void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container)
+{
+    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    eventArgs->CollapsedItemContainer(container);
+    m_collapsedEventSource(*this, *eventArgs);
 }
