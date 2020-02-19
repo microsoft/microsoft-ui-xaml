@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
+    <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AnimatedVisuals">
+      <UniqueIdentifier>{76115a89-641e-4eaa-ac72-f01887e6cb2d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
