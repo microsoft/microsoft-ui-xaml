@@ -4180,36 +4180,44 @@ winrt::IndexPath NavigationView::GetIndexPathOfItem(const winrt::IInspectable& d
     return winrt::make<IndexPath>(std::vector<int>(0));
 }
 
+winrt::UIElement NavigationView::GetContainerForIndex(int index)
+{
+    if (IsTopNavigationView())
+    {
+        // Get the repeater that is presenting the first item
+        auto ir = m_topDataProvider.IsItemInPrimaryList(index) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
+
+        // Get the index of the first item in the repeater
+        auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(index);
+
+        // Get the container of the first item
+        if (auto const container = ir.TryGetElement(irIndex))
+        {
+            return container;
+        }
+    }
+    else
+    {
+        if (auto const container = m_leftNavRepeater.get().TryGetElement(index))
+        {
+            return container;
+        }
+    }
+    return nullptr;
+}
+
 winrt::NavigationViewItemBase NavigationView::GetContainerForIndexPath(const winrt::IndexPath& ip)
 {
     if (ip && ip.GetSize() > 0)
     {
-        auto firstIndex = ip.GetAt(0);
-        if (IsTopNavigationView())
+        if (auto const container = GetContainerForIndex(ip.GetAt(0)))
         {
-            // Get the repeater that is presenting the first item
-            auto ir = m_topDataProvider.IsItemInPrimaryList(firstIndex) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
-
-            // Get the index of the first item in the repeater
-            auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(firstIndex);
-
-            // Get the container of the first item
-            if (auto const container = ir.TryGetElement(irIndex))
-            {
-                // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
-                // We want to be able to retrieve containers for items that are in the flyout.
-                // This will return nullptr if requesting children containers of
-                // items in the primary list, or unrealized items in the overflow popup.
-                // However this should not happen.
-                return GetContainerForIndexPath(container, ip);
-            }
-        }
-        else
-        {
-            if (auto const container = m_leftNavRepeater.get().TryGetElement(firstIndex))
-            {
-                return GetContainerForIndexPath(container, ip);
-            }
+            // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
+            // We want to be able to retrieve containers for items that are in the flyout.
+            // This will return nullptr if requesting children containers of
+            // items in the primary list, or unrealized items in the overflow popup.
+            // However this should not happen.
+            return GetContainerForIndexPath(container, ip);
         }
     }
     return nullptr;
@@ -4354,37 +4362,11 @@ winrt::IInspectable NavigationView::GetChildrenForItemInIndexPath(const winrt::I
 {
     if (ip && ip.GetSize() > 0)
     {
-        auto firstIndex = ip.GetAt(0);
-        if (IsTopNavigationView())
+        if (auto const container = GetContainerForIndex(ip.GetAt(0)))
         {
-            // TODO: Implement
-
-             // Get the repeater that is presenting the first item
-            auto ir = m_topDataProvider.IsItemInPrimaryList(firstIndex) ? m_topNavRepeater.get() : m_topNavRepeaterOverflowView.get();
-
-            // Get the index of the first item in the repeater
-            auto irIndex = m_topDataProvider.ConvertOriginalIndexToIndex(firstIndex);
-
-            // Get the container of the first item
-            if (auto const container = ir.TryGetElement(irIndex))
-            {
-                // TODO: Fix below for top flyout scenario once the flyout is introduced in the XAML.
-                // We want to be able to retrieve containers for items that are in the flyout.
-                // This will return nullptr if requesting children containers of
-                // items in the primary list, or unrealized items in the overflow popup.
-                // However this should not happen.
-                return GetChildrenForItemInIndexPath(container, ip, true);
-            }
-        }
-        else
-        {
-            if (auto const container = m_leftNavRepeater.get().TryGetElement(firstIndex))
-            {
-                return GetChildrenForItemInIndexPath(container, ip, true);
-            }
+            return GetChildrenForItemInIndexPath(container, ip, forceRealize);
         }
     }
-
     return nullptr;
 }
 

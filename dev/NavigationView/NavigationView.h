@@ -106,6 +106,7 @@ private:
     static winrt::IInspectable GetItemFromIndex(const winrt::ItemsRepeater& ir, int index);
     winrt::IndexPath GetIndexPathOfItem(const winrt::IInspectable& data);
     winrt::IndexPath GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib);
+    winrt::UIElement GetContainerForIndex(int index);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::IndexPath& ip);
     winrt::NavigationViewItemBase GetContainerForIndexPath(const winrt::UIElement& firstContainer, const winrt::IndexPath& ip);
     winrt::IInspectable GetChildrenForItemInIndexPath(const winrt::IndexPath& ip, bool forceRealize = false);
