@@ -282,7 +282,7 @@
                                         Visibility="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.OverflowButtonVisibility}">
 
                                         <Button.Flyout>
-                                            <Flyout Placement="Bottom" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
+                                            <Flyout Placement="BottomEdgeAlignedRight" ElementSoundMode="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=ElementSoundMode}">
                                                 <Flyout.FlyoutPresenterStyle>
                                                     <Style TargetType="FlyoutPresenter">
                                                         <Setter Property="Padding" Value="0,8" />
@@ -527,7 +527,46 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:NavigationViewItem">
-                    <primitives:NavigationViewItemPresenter
+                    <Grid x:Name="NVIRootGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
+                                <VisualState x:Name="OnLeftNavigation">
+                                    <VisualState.Setters>
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="OnLeftNavigationReveal">
+                                    <VisualState.Setters>
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="OnTopNavigationPrimary">
+                                    <VisualState.Setters>
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
+                                        <Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="OnTopNavigationPrimaryReveal">
+                                    <VisualState.Setters>
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
+                                        <Setter Target="ChildrenFlyout.Placement" Value="BottomEdgeAlignedLeft"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="OnTopNavigationOverflow">
+                                    <VisualState.Setters>
+                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+
+
+                        <primitives:NavigationViewItemPresenter
                         x:Name="NavigationViewItemPresenter"
                         Icon="{TemplateBinding Icon}"
                         ContentTransitions="{TemplateBinding ContentTransitions}"
@@ -547,36 +586,22 @@
                         Content="{TemplateBinding Content}"
                         primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
                         IsTabStop="False">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="ItemOnNavigationViewListPositionStates">
-                                <VisualState x:Name="OnLeftNavigation">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPane}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OnLeftNavigationReveal">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnLeftPaneWithRevealFocus}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OnTopNavigationPrimary">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPane}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OnTopNavigationPrimaryReveal">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneWithRevealFocus}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="OnTopNavigationOverflow">
-                                    <VisualState.Setters>
-                                        <Setter Target="NavigationViewItemPresenter.Style" Value="{StaticResource MUX_NavigationViewItemPresenterStyleWhenOnTopPaneOverflow}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                    </primitives:NavigationViewItemPresenter>
+                        </primitives:NavigationViewItemPresenter>
+                        <local:ItemsRepeater
+                                Grid.Row="1"
+                                Margin="25,0,0,0"
+                                Visibility="Collapsed"
+                                x:Name="NavigationViewItemMenuItemsHost">
+                            <local:ItemsRepeater.Layout>
+                                <local:StackLayout Orientation="Vertical"/>
+                            </local:ItemsRepeater.Layout>
+                        </local:ItemsRepeater>
+                        <FlyoutBase.AttachedFlyout>
+                            <Flyout x:Name="ChildrenFlyout" Placement="RightEdgeAlignedTop">
+                                <Grid x:Name="FlyoutRootGrid"/>
+                            </Flyout>
+                        </FlyoutBase.AttachedFlyout>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

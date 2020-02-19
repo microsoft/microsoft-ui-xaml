@@ -188,8 +188,12 @@ public:
 
     winrt::event_token BackRequested(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewBackRequestedEventArgs> const& value);
     void BackRequested(winrt::event_token const& token);
+    winrt::event_token Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewCollapsedEventArgs> const& value);
+    void Collapsed(winrt::event_token const& token);
     winrt::event_token DisplayModeChanged(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs> const& value);
     void DisplayModeChanged(winrt::event_token const& token);
+    winrt::event_token Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewExpandingEventArgs> const& value);
+    void Expanding(winrt::event_token const& token);
     winrt::event_token ItemInvoked(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs> const& value);
     void ItemInvoked(winrt::event_token const& token);
     winrt::event_token PaneClosed(winrt::TypedEventHandler<winrt::NavigationView, winrt::IInspectable> const& value);
@@ -204,7 +208,9 @@ public:
     void SelectionChanged(winrt::event_token const& token);
 
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewBackRequestedEventArgs>> m_backRequestedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewCollapsedEventArgs>> m_collapsedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs>> m_displayModeChangedEventSource;
+    event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewExpandingEventArgs>> m_expandingEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs>> m_itemInvokedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::IInspectable>> m_paneClosedEventSource;
     event_source<winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewPaneClosingEventArgs>> m_paneClosingEventSource;

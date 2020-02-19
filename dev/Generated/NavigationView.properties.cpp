@@ -51,7 +51,9 @@ GlobalDependencyProperty NavigationViewProperties::s_TemplateSettingsProperty{ n
 
 NavigationViewProperties::NavigationViewProperties()
     : m_backRequestedEventSource{static_cast<NavigationView*>(this)}
+    , m_collapsedEventSource{static_cast<NavigationView*>(this)}
     , m_displayModeChangedEventSource{static_cast<NavigationView*>(this)}
+    , m_expandingEventSource{static_cast<NavigationView*>(this)}
     , m_itemInvokedEventSource{static_cast<NavigationView*>(this)}
     , m_paneClosedEventSource{static_cast<NavigationView*>(this)}
     , m_paneClosingEventSource{static_cast<NavigationView*>(this)}
@@ -1146,6 +1148,16 @@ void NavigationViewProperties::BackRequested(winrt::event_token const& token)
     m_backRequestedEventSource.remove(token);
 }
 
+winrt::event_token NavigationViewProperties::Collapsed(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewCollapsedEventArgs> const& value)
+{
+    return m_collapsedEventSource.add(value);
+}
+
+void NavigationViewProperties::Collapsed(winrt::event_token const& token)
+{
+    m_collapsedEventSource.remove(token);
+}
+
 winrt::event_token NavigationViewProperties::DisplayModeChanged(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewDisplayModeChangedEventArgs> const& value)
 {
     return m_displayModeChangedEventSource.add(value);
@@ -1154,6 +1166,16 @@ winrt::event_token NavigationViewProperties::DisplayModeChanged(winrt::TypedEven
 void NavigationViewProperties::DisplayModeChanged(winrt::event_token const& token)
 {
     m_displayModeChangedEventSource.remove(token);
+}
+
+winrt::event_token NavigationViewProperties::Expanding(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewExpandingEventArgs> const& value)
+{
+    return m_expandingEventSource.add(value);
+}
+
+void NavigationViewProperties::Expanding(winrt::event_token const& token)
+{
+    m_expandingEventSource.remove(token);
 }
 
 winrt::event_token NavigationViewProperties::ItemInvoked(winrt::TypedEventHandler<winrt::NavigationView, winrt::NavigationViewItemInvokedEventArgs> const& value)

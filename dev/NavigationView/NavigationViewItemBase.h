@@ -5,9 +5,11 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
 
@@ -49,10 +51,17 @@ public:
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+
+    winrt::NavigationViewItem GetParentNavigationViewItem();
+
+    void Depth(int depth) { m_depth = depth; };
+    int Depth() { return m_depth; };
 protected:
+
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
 
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
+    int m_depth{ 0 };
 };

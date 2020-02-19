@@ -8,9 +8,44 @@
 
 namespace winrt::Microsoft::UI::Xaml::Controls
 {
-    CppWinRTActivatableClassWithBasicFactory(NavigationViewItemBase)
+    CppWinRTActivatableClassWithDPFactory(NavigationViewItemBase)
 }
 
 #include "NavigationViewItemBase.g.cpp"
 
+GlobalDependencyProperty NavigationViewItemBaseProperties::s_IsSelectedProperty{ nullptr };
 
+NavigationViewItemBaseProperties::NavigationViewItemBaseProperties()
+{
+    EnsureProperties();
+}
+
+void NavigationViewItemBaseProperties::EnsureProperties()
+{
+    if (!s_IsSelectedProperty)
+    {
+        s_IsSelectedProperty =
+            InitializeDependencyProperty(
+                L"IsSelected",
+                winrt::name_of<bool>(),
+                winrt::name_of<winrt::NavigationViewItemBase>(),
+                false /* isAttached */,
+                ValueHelper<bool>::BoxedDefaultValue(),
+                nullptr);
+    }
+}
+
+void NavigationViewItemBaseProperties::ClearProperties()
+{
+    s_IsSelectedProperty = nullptr;
+}
+
+void NavigationViewItemBaseProperties::IsSelected(bool value)
+{
+    static_cast<NavigationViewItemBase*>(this)->SetValue(s_IsSelectedProperty, ValueHelper<bool>::BoxValueIfNecessary(value));
+}
+
+bool NavigationViewItemBaseProperties::IsSelected()
+{
+    return ValueHelper<bool>::CastOrUnbox(static_cast<NavigationViewItemBase*>(this)->GetValue(s_IsSelectedProperty));
+}
