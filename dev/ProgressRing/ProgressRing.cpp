@@ -231,30 +231,28 @@ void ProgressRing::UpdateSegment()
 void ProgressRing::UpdateRing()
 {
     const double thickness = GetStrokeThickness();
-    const auto size = GetCircleRadius(thickness, ActualWidth());
-
-    const float segmentWidth = size;
+    const auto radius = GetCircleRadius(thickness, ActualWidth());
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
 
     if (auto&& outlineFigure = m_outlineFigure.get())
     {
-        outlineFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
+        outlineFigure.StartPoint(winrt::Point(radius + translationFactor, translationFactor));
     }
 
     if (auto&& ringFigure = m_ringFigure.get())
     {
-        ringFigure.StartPoint(winrt::Point(segmentWidth + translationFactor, translationFactor));
+        ringFigure.StartPoint(winrt::Point(radius + translationFactor, translationFactor));
     }
 
     if (auto&& outlineArc = m_outlineArc.get())
     {
-        outlineArc.Size(winrt::Size(segmentWidth, size));
-        outlineArc.Point(winrt::Point(segmentWidth + translationFactor - 0.05f, translationFactor));
+        outlineArc.Size(winrt::Size(radius, radius));
+        outlineArc.Point(winrt::Point(radius + translationFactor - 0.05f, translationFactor));
     }
 
     if (auto&& ringArc = m_ringArc.get())
     {
-        ringArc.Size(winrt::Size(segmentWidth, size));
+        ringArc.Size(winrt::Size(radius, radius));
     }
 
     UpdateSegment();
@@ -264,12 +262,20 @@ double ProgressRing::GetStrokeThickness()
 {
     const auto ringPathStrokeThickness = [ringPath = m_ringPath.get()]()
     {
-        return ringPath.StrokeThickness();
+        if (ringPath)
+        {
+            return ringPath.StrokeThickness();
+        }
+        return 0.0;
     }();
     
     const auto outlinePathStrokeThickness = [outlinePath = m_outlinePath.get()]()
     {
-        return outlinePath.StrokeThickness();
+        if (outlinePath)
+        {
+            return outlinePath.StrokeThickness();
+        }
+        return 0.0;
     }();
 
     return std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
@@ -282,7 +288,7 @@ float GetCircleRadius(double thickness, double actualWidth)
     // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
     const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
 
-    return { static_cast<float>(radius) };
+    return static_cast<float>(radius);
 }
 
 winrt::float4 Color4(winrt::Color color)
