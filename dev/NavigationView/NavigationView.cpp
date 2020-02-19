@@ -1994,7 +1994,10 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
         {
-            if (nvi.SelectsOnInvoked())
+            // if nvi is already selected we don't need to invoke it again
+            // otherwise ItemInvoked fires twice when item was tapped
+            // or fired when window gets focus
+            if (nvi.SelectsOnInvoked() && !nvi.IsSelected())
             {
                 if (IsTopNavigationView())
                 {
