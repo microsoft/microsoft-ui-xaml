@@ -91,10 +91,9 @@ private:
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
-
-
-    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
-    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
+    void Depth(int depth) override;
+    void PropagateDepthToChildren();
+    void UpdateItemIndentation();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

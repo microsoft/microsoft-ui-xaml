@@ -7,6 +7,8 @@
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
@@ -16,6 +18,12 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 {
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
+
+    if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGrid, *this))
+    {
+        m_contentGrid.set(contentGrid);
+    }
+
     if (auto navigationViewItem = GetNavigationViewItem())
     {
         navigationViewItem->UpdateVisualStateNoTransition();
@@ -54,4 +62,12 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
         navigationViewItem = winrt::get_self<NavigationViewItem>(item);
     }
     return navigationViewItem;
+}
+
+void NavigationViewItemPresenter::UpdateContentMargin(const winrt::Thickness& newMargin)
+{
+    if (auto const grid = m_contentGrid.get())
+    {
+        grid.Margin(newMargin);
+    }
 }

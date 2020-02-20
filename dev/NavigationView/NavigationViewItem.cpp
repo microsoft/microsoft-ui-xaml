@@ -461,18 +461,13 @@ void NavigationViewItem::ReparentRepeater()
             m_parentedToFlyout = true;
 
             // Repeater is moved to flyout, so we dont want any left margin
-            auto const oldRepeaterMargin = repeater.Margin();
-            repeater.Margin({ 0, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
+            Depth(0);
         }
         else if (!shouldShowRepeaterInFlyout && m_parentedToFlyout)
         {
             m_flyoutRootGrid.get().Children().RemoveAtEnd();
             m_rootGrid.get().Children().Append(repeater);
             m_parentedToFlyout = false;
-
-            // Update item indentation based on its depth
-            auto const oldRepeaterMargin = repeater.Margin();
-            repeater.Margin({ m_defaultRepeaterLeftMargin, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
         }
     }
 }
@@ -483,6 +478,31 @@ bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
     UpdateIsClosedCompact();
     return (m_isClosedCompact && Depth() == 0) || IsOnTopPrimary();
+}
+
+void NavigationViewItem::UpdateItemIndentation()
+{
+    // Update item indentation based on its depth
+
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+
+    }
+
+    //auto const oldRepeaterMargin = repeater.Margin();
+    //repeater.Margin({ m_defaultRepeaterLeftMargin, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
+}
+
+void NavigationViewItem::Depth(int depth)
+{
+    m_depth = depth;
+    UpdateItemIndentation();
+    PropagateDepthToChildren();
+}
+
+void NavigationViewItem::PropagateDepthToChildren()
+{
+
 }
 
 void NavigationViewItem::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)

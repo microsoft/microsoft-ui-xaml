@@ -54,7 +54,7 @@ public:
 
     winrt::NavigationViewItem GetParentNavigationViewItem();
 
-    void Depth(int depth) { m_depth = depth; };
+    virtual void Depth(int depth) { m_depth = depth; };
     int Depth() { return m_depth; };
 protected:
 

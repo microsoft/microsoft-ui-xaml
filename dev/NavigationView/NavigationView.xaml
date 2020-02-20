@@ -589,7 +589,6 @@
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"
-                                Margin="25,0,0,0"
                                 Visibility="Collapsed"
                                 x:Name="NavigationViewItemMenuItemsHost">
                             <local:ItemsRepeater.Layout>

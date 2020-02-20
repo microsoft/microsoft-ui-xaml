@@ -566,13 +566,18 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-                        <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
-                        <Grid 
+                        <Border
+                            x:Name="RevealBorder"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" />
+                        <Grid x:Name="PresenterContentRootGrid">
+                            <!-- Wrap SelectionIndicator in a grid so that its offset is 0,0 - this enables the offset animation. -->
+                            <Grid 
                             Margin="4,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center">
 
-                            <Rectangle
+                                <Rectangle
                                 x:Name="SelectionIndicator"
                                 Width="2"
                                 Height="24"
@@ -582,31 +587,26 @@
                                 contract7Present:RadiusY="{Binding CornerRadius, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"
                                 contract7NotPresent:RadiusX="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource TopLeftCornerRadiusDoubleValueConverter}}"
                                 contract7NotPresent:RadiusY="{Binding Source={ThemeResource ControlCornerRadius}, Converter={StaticResource BottomRightCornerRadiusDoubleValueConverter}}"/>
-                        </Grid>
+                            </Grid>
 
-                        <Border
-                            x:Name="RevealBorder"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" />
-
-                        <Grid
+                            <Grid
                             HorizontalAlignment="Stretch"
                             x:Name="ContentGrid"
                             MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition x:Name="IconColumn" Width="{ThemeResource NavigationViewCompactPaneLength}" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
 
-                            <Viewbox x:Name="IconBox"
+                                <Viewbox x:Name="IconBox"
                                 Height="16"
                                 Margin="{ThemeResource NavigationViewItemOnLeftIconBoxMargin}">
-                                <ContentPresenter 
+                                    <ContentPresenter 
                                     x:Name="Icon" 
                                     Content="{TemplateBinding Icon}" />
-                            </Viewbox>
+                                </Viewbox>
 
-                            <ContentPresenter x:Name="ContentPresenter"
+                                <ContentPresenter x:Name="ContentPresenter"
                                 Grid.Column="1"
                                 ContentTransitions="{TemplateBinding ContentTransitions}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -616,6 +616,7 @@
                                 ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                 Margin="{TemplateBinding Padding}"
                                 AutomationProperties.AccessibilityView="Raw"/>
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

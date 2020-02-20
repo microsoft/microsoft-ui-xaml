@@ -23,8 +23,11 @@ public:
 
     winrt::UIElement GetSelectionIndicator();
 
+    void UpdateContentMargin(const winrt::Thickness& newMargin);
+
 private:
     NavigationViewItem * GetNavigationViewItem();
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
+    tracker_ref<winrt::Grid> m_contentGrid{ this };
 };
