@@ -116,6 +116,7 @@ private:
 
     winrt::ItemsRepeater GetChildRepeaterForIndexPath(const winrt::IndexPath& ip);
     winrt::ItemsRepeater GetParentItemsRepeaterForContainer(const winrt::NavigationViewItemBase& nvib);
+    winrt::NavigationViewItem GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerTheSelectedItemInTheSelectionModel(const winrt::NavigationViewItemBase& nvib);
     bool IsContainerInOverflow(const winrt::NavigationViewItemBase& nvib);
     int GetContainerCountInRepeater(const winrt::ItemsRepeater& ir);
@@ -123,6 +124,7 @@ private:
     bool IsSettingsItem(winrt::IInspectable const& item);
     bool IsSelectionSuppressed(const winrt::IInspectable& item);
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
+    bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
 
     // Hierarchy related functions

@@ -8,6 +8,9 @@
 
 #include "NavigationViewItemHeader.properties.cpp"
 
+static constexpr auto c_rootGrid = L"InnerHeaderGrid"sv;
+static constexpr int c_itemIndentation = 25;
+
 NavigationViewItemHeader::NavigationViewItemHeader()
 {
     SetDefaultStyleKey(this);
@@ -25,7 +28,13 @@ void NavigationViewItemHeader::OnApplyTemplate()
         UpdateIsClosedCompact();
     }
 
+    if (auto rootGrid = GetTemplateChildT<winrt::Grid>(c_rootGrid, *this))
+    {
+        m_rootGrid.set(rootGrid);
+    }
+
     UpdateVisualState(false /*useTransitions*/);
+    UpdateItemIndentation();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
     NavigationView::CreateAndAttachHeaderAnimation(visual);
@@ -53,4 +62,26 @@ void NavigationViewItemHeader::UpdateIsClosedCompact()
 void NavigationViewItemHeader::UpdateVisualState(bool useTransitions)
 {
     winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"HeaderTextCollapsed" : L"HeaderTextVisible", useTransitions);
+}
+
+void NavigationViewItemHeader::Depth(int depth)
+{
+    NavigationViewItemBase::Depth(depth);
+    UpdateItemIndentation();
+}
+
+int NavigationViewItemHeader::Depth()
+{
+    return NavigationViewItemBase::Depth();
+}
+
+void NavigationViewItemHeader::UpdateItemIndentation()
+{
+    // Update item indentation based on its depth
+    if (auto const rootGrid = m_rootGrid.get())
+    {
+        auto const oldMargin = rootGrid.Margin();
+        auto newLeftMargin = Depth() * c_itemIndentation;
+        rootGrid.Margin({ static_cast<double>(newLeftMargin), oldMargin.Top, oldMargin.Right, oldMargin.Bottom });
+    }
 }

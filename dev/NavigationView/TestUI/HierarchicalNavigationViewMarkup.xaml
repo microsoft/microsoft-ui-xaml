@@ -19,7 +19,6 @@
                             <muxcontrols:NavigationViewItem.MenuItems>
                                 <muxcontrols:NavigationViewItemHeader Content="HEADER 1"/>
                                 <muxcontrols:NavigationViewItem Content="Menu Item 3" Icon="Paste" x:Name="MI3" />
-                                <muxcontrols:NavigationViewItemSeparator/>
                                 <muxcontrols:NavigationViewItem Content="Menu Item 4" Icon="Cut" x:Name="MI4" />
                             </muxcontrols:NavigationViewItem.MenuItems>
                         </muxcontrols:NavigationViewItem>

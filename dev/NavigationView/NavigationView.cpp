@@ -599,7 +599,7 @@ void NavigationView::UpdateParentIsChildSelectedProperty(const winrt::Navigation
 {
     auto const isChildSelected = nvi.IsSelected();
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-    while (auto newNVI = nviImpl->GetParentNavigationViewItem())
+    while (auto newNVI = GetParentNavigationViewItemForContainer(nvi))
     {
         newNVI.IsChildSelected(isChildSelected);
         nviImpl = winrt::get_self<NavigationViewItem>(newNVI);
@@ -712,6 +712,23 @@ winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(const wi
     return nullptr;
 }
 
+winrt::NavigationViewItem NavigationView::GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib)
+{
+    winrt::DependencyObject parent = GetParentItemsRepeaterForContainer(nvib);
+    if (!IsRootItemsRepeater(parent))
+    {
+        while (parent)
+        {
+            parent = winrt::VisualTreeHelper::GetParent(parent);
+            if (auto const nvi = parent.try_as<winrt::NavigationViewItem>())
+            {
+                return nvi;
+            }
+        }
+    }
+    return nullptr;
+}
+
 winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib)
 {
     auto path = std::vector<int>();
@@ -772,7 +789,6 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
     return IndexPath::CreateFromIndices(path);
 }
 
-
 void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
     // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
@@ -786,11 +802,17 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->SetNavigationViewParent(*this);
+        nvibImpl->IsTopLevelItem(IsTopLevelItem(nvib));
 
-        if (auto const parentNVI = nvibImpl->GetParentNavigationViewItem())
+        if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
         {
-            auto parentDepth = winrt::get_self<NavigationViewItemBase>(nvib)->Depth();
-            winrt::get_self<NavigationViewItemBase>(nvib)->Depth(parentDepth + 1);
+            auto const parentNVIImpl = winrt::get_self<NavigationViewItem>(parentNVI);
+            auto parentDepth = parentNVIImpl->Depth();
+            if (parentNVIImpl->ShouldRepeaterShowInFlyout())
+            {
+                parentDepth = -1;
+            }
+            nvibImpl->Depth(parentDepth + 1);
         }
 
         // Visual state info propagation
@@ -856,7 +878,9 @@ void NavigationView::RepeaterElementClearing(const winrt::ItemsRepeater& ir, con
 {
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
-        winrt::get_self<NavigationViewItemBase>(nvib)->Depth(0);
+        auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        nvibImpl->Depth(0);
+        nvibImpl->IsTopLevelItem(false);
         if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
         {
             // Revoke all the events that we were listing to on the item
@@ -4521,4 +4545,9 @@ void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& co
     auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
     eventArgs->CollapsedItemContainer(container);
     m_collapsedEventSource(*this, *eventArgs);
+}
+
+bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
+{
+    return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
 }

@@ -64,6 +64,9 @@ public:
 
     NavigationViewItemPresenter* GetPresenter();
 
+    void Depth(int depth);
+    int Depth();
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
@@ -91,8 +94,7 @@ private:
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
-    void Depth(int depth) override;
-    void PropagateDepthToChildren();
+    void PropagateDepthToChildren(int depth);
     void UpdateItemIndentation();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
@@ -129,5 +131,4 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_parentedToFlyout{ false };
-    double m_defaultRepeaterLeftMargin{ 0 };
 };

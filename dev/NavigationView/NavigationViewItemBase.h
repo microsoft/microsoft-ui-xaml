@@ -52,10 +52,12 @@ public:
     winrt::SplitView GetSplitView();
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
-    winrt::NavigationViewItem GetParentNavigationViewItem();
-
     virtual void Depth(int depth) { m_depth = depth; };
-    int Depth() { return m_depth; };
+    virtual int Depth() { return m_depth; };
+
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() { return m_isTopLevelItem; };
+
 protected:
 
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
@@ -64,4 +66,5 @@ private:
 
     NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
     int m_depth{ 0 };
+    bool m_isTopLevelItem{ false };
 };

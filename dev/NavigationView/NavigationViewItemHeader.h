@@ -17,9 +17,13 @@ public:
     // IFrameworkElementOverrides
     void OnApplyTemplate() override;
 
+    void Depth(int depth);
+    int Depth();
+
 private:
     void OnSplitViewPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
     void UpdateIsClosedCompact();
+    void UpdateItemIndentation();
 
     void UpdateVisualState(bool useTransitions);
 
@@ -27,5 +31,7 @@ private:
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
+
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
 
 };

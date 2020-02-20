@@ -23,11 +23,14 @@ public:
 
     winrt::UIElement GetSelectionIndicator();
 
-    void UpdateContentMargin(const winrt::Thickness& newMargin);
+    void UpdateLeftIndentation(double leftIndentation);
 
 private:
     NavigationViewItem * GetNavigationViewItem();
+    void UpdateMargin();
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };
+
+    double m_leftIndentation{ 0 };
 };

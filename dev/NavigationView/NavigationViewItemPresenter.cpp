@@ -28,6 +28,8 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+
+    UpdateMargin();
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
@@ -64,10 +66,17 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
     return navigationViewItem;
 }
 
-void NavigationViewItemPresenter::UpdateContentMargin(const winrt::Thickness& newMargin)
+void NavigationViewItemPresenter::UpdateLeftIndentation(double leftIndentation)
+{
+    m_leftIndentation = leftIndentation;
+    UpdateMargin();
+}
+
+void NavigationViewItemPresenter::UpdateMargin()
 {
     if (auto const grid = m_contentGrid.get())
     {
-        grid.Margin(newMargin);
+        auto const oldGridMargin = grid.Margin();
+        grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
     }
 }
