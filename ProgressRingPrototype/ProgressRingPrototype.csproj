@@ -125,6 +125,7 @@
     <Compile Include="LottieAnimations\29-motorcycle.cs" />
     <Compile Include="LottieAnimations\519-load-complete.cs" />
     <Compile Include="LottieAnimations\7379-gears-animation.cs" />
+    <Compile Include="LottieAnimations\IndeterminateRing.cs" />
     <Compile Include="LottieAnimations\WindowsLogoAnimatedVisual.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
