@@ -13,6 +13,7 @@ static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationVi
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
 static constexpr auto c_rootGrid = L"NVIRootGrid"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
+// TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
 static constexpr int c_itemIndentation = 25;
 
 

@@ -52,8 +52,6 @@ public:
     winrt::SplitView GetSplitView();
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
-    winrt::NavigationViewItem GetParentNavigationViewItem();
-
     void Depth(int depth) { m_depth = depth; };
     int Depth() { return m_depth; };
 protected:
