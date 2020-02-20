@@ -598,11 +598,11 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
 void NavigationView::UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi)
 {
     auto const isChildSelected = nvi.IsSelected();
-    auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-    while (auto newNVI = nviImpl->GetParentNavigationViewItem())
+    auto currentNVI = nvi;
+    while (auto newNVI = GetParentNavigationViewItemForContainer(currentNVI))
     {
         newNVI.IsChildSelected(isChildSelected);
-        nviImpl = winrt::get_self<NavigationViewItem>(newNVI);
+        currentNVI = newNVI;
     }
 }
 
@@ -712,6 +712,25 @@ winrt::ItemsRepeater NavigationView::GetParentItemsRepeaterForContainer(const wi
     return nullptr;
 }
 
+winrt::NavigationViewItem NavigationView::GetParentNavigationViewItemForContainer(const winrt::NavigationViewItemBase& nvib)
+{
+    // TODO: This scenario does not find parent items when in a flyout, which causes problems if item if first loaded
+    // straight in the flyout. Fix. This logic can be merged with the 'GetIndexPathForContainer' logic below.
+    winrt::DependencyObject parent = GetParentItemsRepeaterForContainer(nvib);
+    if (!IsRootItemsRepeater(parent))
+    {
+        while (parent)
+        {
+            parent = winrt::VisualTreeHelper::GetParent(parent);
+            if (auto const nvi = parent.try_as<winrt::NavigationViewItem>())
+            {
+                return nvi;
+            }
+        }
+    }
+    return nullptr;
+}
+
 winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::NavigationViewItemBase& nvib)
 {
     auto path = std::vector<int>();
@@ -787,10 +806,10 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->SetNavigationViewParent(*this);
 
-        if (auto const parentNVI = nvibImpl->GetParentNavigationViewItem())
+        if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
         {
-            auto parentDepth = winrt::get_self<NavigationViewItemBase>(nvib)->Depth();
-            winrt::get_self<NavigationViewItemBase>(nvib)->Depth(parentDepth + 1);
+            auto parentDepth = winrt::get_self<NavigationViewItem>(parentNVI)->Depth();
+            nvibImpl->Depth(parentDepth + 1);
         }
 
         // Visual state info propagation
