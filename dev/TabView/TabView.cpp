@@ -210,6 +210,11 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
     UpdateTabWidths();
 }
 
+void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
+{
+    // TODO: Implement
+}
+
 void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)
 {
     m_addTabButtonClickEventSource(*this, args);
