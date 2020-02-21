@@ -7,6 +7,16 @@ enum TabViewWidthMode
 {
     Equal = 0,
     SizeToContent = 1,
+    Compact = 2,
+};
+
+[WUXC_VERSION_MUXONLY]
+[webhosthidden]
+enum CloseButtonOverlayMode
+{
+    Auto = 0,
+    OnHover = 1,
+    Persistent = 2,
 };
 
 [WUXC_VERSION_MUXONLY]
