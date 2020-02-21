@@ -74,11 +74,6 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 {
     int32_t positionInSet = 0;
 
-    if (IsSettingsItem())
-    {
-        return 1;
-    }
-
     if (IsOnTopNavigation())
     {
         if (auto navigationView = GetParentNavigationView())
@@ -99,11 +94,6 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
 int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
 {
     int32_t sizeOfSet = 0;
-
-    if (IsSettingsItem())
-    {
-        return 1;
-    }
 
     if (IsOnTopNavigation())
     {
