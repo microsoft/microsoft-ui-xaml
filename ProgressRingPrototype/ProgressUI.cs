@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
@@ -10,8 +11,6 @@ namespace ProgressRingPrototype
         public ProgressUI()
         {
             this.DefaultStyleKey = typeof(ProgressUI);
-
-            
         }
 
         public ProgressUITemplateSettings TemplateSettings { get; } = new ProgressUITemplateSettings();
@@ -31,11 +30,46 @@ namespace ProgressRingPrototype
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+            RegisterAndUpdateColors();
+        }
 
-            // Do this in Foreground property changed event.
+        private void RegisterAndUpdateColors()
+        {
+            if (Foreground is SolidColorBrush)
+            {
+                var foreground = (Foreground as SolidColorBrush);
+                RegisterPropertyChangedCallback(ForegroundProperty,
+                    new DependencyPropertyChangedCallback(OnForegroundChanged));
+
+                foreground.RegisterPropertyChangedCallback(SolidColorBrush.ColorProperty,
+                    new DependencyPropertyChangedCallback(OnForegroundChanged));
+            }
+
+            if (Background is SolidColorBrush)
+            {
+                var background = (Background as SolidColorBrush);
+                TemplateSettings.BackgroundColor = background.Color;
+                RegisterPropertyChangedCallback(BackgroundProperty,
+                   new DependencyPropertyChangedCallback(OnBackgroundChanged));
+
+                background.RegisterPropertyChangedCallback(SolidColorBrush.ColorProperty,
+                    new DependencyPropertyChangedCallback(OnBackgroundChanged));
+            }
+        }
+
+        private void OnForegroundChanged(DependencyObject sender, DependencyProperty dp)
+        {
             if (Foreground is SolidColorBrush)
             {
                 TemplateSettings.ForegroundColor = (Foreground as SolidColorBrush).Color;
+            }
+        }
+
+        private void OnBackgroundChanged(DependencyObject sender, DependencyProperty dp)
+        {
+            if (Background is SolidColorBrush)
+            {
+                TemplateSettings.BackgroundColor = (Background as SolidColorBrush).Color;
             }
         }
 
@@ -52,5 +86,15 @@ namespace ProgressRingPrototype
         {
             VisualStateManager.GoToState((ProgressUI)d, (bool)e.NewValue ? "Indeterminate" : "Normal", true);
         }
+
+
+        public float StrokeWidth
+        {
+            get { return (float)GetValue(StrokeWidthProperty); }
+            set { SetValue(StrokeWidthProperty, value); }
+        }
+
+        public static readonly DependencyProperty StrokeWidthProperty =
+            DependencyProperty.Register("StrokeWidth", typeof(float), typeof(ProgressUI), new PropertyMetadata((float)1.0));
     }
 }

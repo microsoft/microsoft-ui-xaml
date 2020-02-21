@@ -14,12 +14,15 @@
         <StackPanel Spacing="5">
             <TextBlock Text="Indeterminate"/>
             <CheckBox x:Name="indeterminateCheckBox"/>
-            <Slider Header="Value: " x:Name="inputSlider" Minimum="0" Maximum="1" StepFrequency="0.01" Width="100" IsThumbToolTipEnabled="False"/>
+            <Slider Header="Value: " x:Name="progressSlider" Minimum="0" Maximum="1" StepFrequency="0.01" Width="100" IsThumbToolTipEnabled="False"/>
+            <Slider Header="StrokeWidth: " x:Name="strokeWidthSlider" Minimum="0" Maximum="5" StepFrequency=".24" Width="100" IsThumbToolTipEnabled="False"/>
         </StackPanel>
-        <StackPanel Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="4" Margin="10">
+        <StackPanel Grid.Column="1" BorderBrush="Gray" BorderThickness="2" CornerRadius="4" Margin="10" HorizontalAlignment="Center" VerticalAlignment="Center">
             <local:ProgressUI Width="100" Height="100"
-                Value="{Binding Mode=OneWay,ElementName=inputSlider, Path=Value}" 
-                Foreground="Green"
+                Value="{Binding Mode=OneWay,ElementName=progressSlider, Path=Value}" 
+                Foreground="{ThemeResource SystemAccentColor}"
+                Background="{ThemeResource SystemBaseLowColor}"
+                StrokeWidth="{Binding Mode=OneWay,ElementName=strokeWidthSlider, Path=Value}" 
                 IsIndeterminate="{Binding Mode=OneWay,ElementName=indeterminateCheckBox, Path=IsChecked}" />
         </StackPanel>
     </Grid>

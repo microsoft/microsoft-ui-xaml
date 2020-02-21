@@ -11,6 +11,7 @@ using System;
 using System.Numerics;
 using Windows.UI;
 using Windows.UI.Composition;
+using Windows.UI.Xaml;
 
 namespace ProgressRingPrototype
 {
@@ -22,49 +23,64 @@ namespace ProgressRingPrototype
     // Vector4 "Background" as Color
     // Vector4 "Foreground" as Color
     // Scalar "StrokeWidth"
-    sealed class IndeterminateRing : IAnimatedVisualSource
+    sealed class IndeterminateRing : DependencyObject, IAnimatedVisualSource
     {
         CompositionPropertySet _themeProperties;
-        Color _themeBackground = Color.FromArgb(0xFF, 0xD3, 0xD3, 0xD3);
-        Color _themeForeground = Color.FromArgb(0xFF, 0x00, 0x78, 0xD7);
-        float _themeStrokeWidth = 2;
 
         public Color Background
         {
-            get => _themeBackground;
-            set
+            get { return (Color)GetValue(BackgroundProperty); }
+            set { SetValue(BackgroundProperty, value); }
+        }
+
+        public static readonly DependencyProperty BackgroundProperty =
+            DependencyProperty.Register("Background", typeof(Color), typeof(IndeterminateRing),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0xD3, 0xD3, 0xD3), new PropertyChangedCallback(OnBackgroundChanged)));
+
+        private static void OnBackgroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var me = ((IndeterminateRing)d);
+            if (me._themeProperties != null)
             {
-                _themeBackground = value;
-                if (_themeProperties != null)
-                {
-                    _themeProperties.InsertVector4("Background", ColorAsVector4(_themeBackground));
-                }
+                me._themeProperties.InsertVector4("Background", ColorAsVector4(me.Background));
             }
         }
 
         public Color Foreground
         {
-            get => _themeForeground;
-            set
+            get { return (Color)GetValue(ForegroundProperty); }
+            set { SetValue(ForegroundProperty, value); }
+        }
+
+        public static readonly DependencyProperty ForegroundProperty =
+            DependencyProperty.Register("Foreground", typeof(Color), typeof(IndeterminateRing),
+                new PropertyMetadata(Color.FromArgb(0xFF, 0x00, 0x78, 0xD7), new PropertyChangedCallback(OnForegroundChanged)));
+
+        private static void OnForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var me = ((IndeterminateRing)d);
+            if (me._themeProperties != null)
             {
-                _themeForeground = value;
-                if (_themeProperties != null)
-                {
-                    _themeProperties.InsertVector4("Foreground", ColorAsVector4(_themeForeground));
-                }
+                me._themeProperties.InsertVector4("Foreground", ColorAsVector4(me.Foreground));
             }
         }
 
         public float StrokeWidth
         {
-            get => _themeStrokeWidth;
-            set
+            get { return (float)GetValue(StrokeWidthProperty); }
+            set { SetValue(StrokeWidthProperty, value); }
+        }
+
+        public static readonly DependencyProperty StrokeWidthProperty =
+            DependencyProperty.Register("StrokeWidth", typeof(float), typeof(IndeterminateRing),
+                new PropertyMetadata((float)2.0, new PropertyChangedCallback(OnStrokeWidthChanged)));
+
+        private static void OnStrokeWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var me = ((IndeterminateRing)d);
+            if (me._themeProperties != null)
             {
-                _themeStrokeWidth = value;
-                if (_themeProperties != null)
-                {
-                    _themeProperties.InsertScalar("StrokeWidth", _themeStrokeWidth);
-                }
+                me._themeProperties.InsertScalar("StrokeWidth", me.StrokeWidth);
             }
         }
 
@@ -80,9 +96,9 @@ namespace ProgressRingPrototype
             if (_themeProperties is null)
             {
                 _themeProperties = compositor.CreatePropertySet();
-                _themeProperties.InsertVector4("Background", ColorAsVector4(_themeBackground));
-                _themeProperties.InsertVector4("Foreground", ColorAsVector4(_themeForeground));
-                _themeProperties.InsertScalar("StrokeWidth", _themeStrokeWidth);
+                _themeProperties.InsertVector4("Background", ColorAsVector4(Background));
+                _themeProperties.InsertVector4("Foreground", ColorAsVector4(Foreground));
+                _themeProperties.InsertScalar("StrokeWidth", StrokeWidth);
             }
             return _themeProperties;
         }
