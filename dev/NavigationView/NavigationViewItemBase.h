@@ -43,17 +43,21 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnNavigationViewRepeaterPositionChanged() {}
-
     NavigationViewRepeaterPosition Position();
     void Position(NavigationViewRepeaterPosition value);
+    virtual void OnNavigationViewRepeaterPositionChanged() {}
+
+    void Depth(int depth);
+    int Depth();
+    virtual void OnNavigationViewItemBaseDepthChanged() {}
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
 
-    void Depth(int depth) { m_depth = depth; };
-    int Depth() { return m_depth; };
+    // TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
+    static constexpr int c_itemIndentation = 25;
+
 protected:
 
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };

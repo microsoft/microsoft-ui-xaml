@@ -7,6 +7,8 @@
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
@@ -16,10 +18,18 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 {
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
+
+    if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGrid, *this))
+    {
+        m_contentGrid.set(contentGrid);
+    }
+
     if (auto navigationViewItem = GetNavigationViewItem())
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+
+    UpdateMargin();
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
@@ -54,4 +64,19 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
         navigationViewItem = winrt::get_self<NavigationViewItem>(item);
     }
     return navigationViewItem;
+}
+
+void NavigationViewItemPresenter::UpdateContentLeftIndentation(double leftIndentation)
+{
+    m_leftIndentation = leftIndentation;
+    UpdateMargin();
+}
+
+void NavigationViewItemPresenter::UpdateMargin()
+{
+    if (auto const grid = m_contentGrid.get())
+    {
+        auto const oldGridMargin = grid.Margin();
+        grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
+    }
 }

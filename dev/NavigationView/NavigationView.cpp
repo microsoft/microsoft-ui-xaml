@@ -791,7 +791,6 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
     return IndexPath::CreateFromIndices(path);
 }
 
-
 void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
     // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
@@ -810,6 +809,10 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
         {
             auto parentDepth = winrt::get_self<NavigationViewItem>(parentNVI)->Depth();
             nvibImpl->Depth(parentDepth + 1);
+        }
+        else
+        {
+            nvibImpl->Depth(0);
         }
 
         // Visual state info propagation
@@ -832,6 +835,8 @@ void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, con
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
+            winrt::get_self<NavigationViewItem>(nvi)->IsTopLevelItem(IsTopLevelItem(nvi));
+
             if (ir != m_topNavRepeaterOverflowView.get())
             {
                 nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
@@ -875,9 +880,11 @@ void NavigationView::RepeaterElementClearing(const winrt::ItemsRepeater& ir, con
 {
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
-        winrt::get_self<NavigationViewItemBase>(nvib)->Depth(0);
+        auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
+        nvibImpl->Depth(0);
         if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
         {
+            winrt::get_self<NavigationViewItem>(nvi)->IsTopLevelItem(false);
             // Revoke all the events that we were listing to on the item
             nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
         }
@@ -4585,4 +4592,9 @@ void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& co
     auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
     eventArgs->CollapsedItemContainer(container);
     m_collapsedEventSource(*this, *eventArgs);
+}
+
+bool NavigationView::IsTopLevelItem(const winrt::NavigationViewItemBase& nvib)
+{
+    return IsRootItemsRepeater(GetParentItemsRepeaterForContainer(nvib));
 }

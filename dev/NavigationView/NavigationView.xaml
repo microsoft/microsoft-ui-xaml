@@ -589,7 +589,6 @@
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"
-                                Margin="25,0,0,0"
                                 Visibility="Collapsed"
                                 x:Name="NavigationViewItemMenuItemsHost">
                             <local:ItemsRepeater.Layout>
@@ -598,6 +597,13 @@
                         </local:ItemsRepeater>
                         <FlyoutBase.AttachedFlyout>
                             <Flyout x:Name="ChildrenFlyout" Placement="RightEdgeAlignedTop">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter">
+                                        <Setter Property="Padding" Value="0,8" />
+                                        <!-- Set negative top margin to make the flyout align exactly with the button -->
+                                        <Setter Property="Margin" Value="0,-4,0,0" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
                                 <Grid x:Name="FlyoutRootGrid"/>
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>

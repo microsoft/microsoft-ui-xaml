@@ -26,6 +26,17 @@ winrt::NavigationView NavigationViewItemBase::GetNavigationView()
     return m_navigationView.get();
 }
 
+void NavigationViewItemBase::Depth(int depth)
+{
+    m_depth = depth;
+    OnNavigationViewItemBaseDepthChanged();
+}
+
+int NavigationViewItemBase::Depth()
+{
+    return m_depth;
+}
+
 winrt::SplitView NavigationViewItemBase::GetSplitView()
 {
     winrt::SplitView splitView{ nullptr };

@@ -13,9 +13,6 @@ static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationVi
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
 static constexpr auto c_rootGrid = L"NVIRootGrid"sv;
 static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
-// TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
-static constexpr int c_itemIndentation = 25;
-
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
@@ -25,6 +22,12 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
 void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualStateNoTransition();
+}
+
+void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
+{
+    UpdateItemIndentation();
+    PropagateDepthToChildren(Depth() + 1);
 }
 
 NavigationViewItem::NavigationViewItem()
@@ -95,9 +98,6 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::RepeaterElementClearing });
 
             repeater.ItemTemplate(*(nvImpl->m_navigationViewItemsFactory));
-
-            // Store the default value so that we know what to revert to
-            m_defaultRepeaterLeftMargin = repeater.Margin().Left;
         }
 
         UpdateRepeaterItemsSource();
@@ -109,6 +109,7 @@ void NavigationViewItem::OnApplyTemplate()
     }
 
     m_appliedTemplate = true;
+    UpdateItemIndentation();
     UpdateVisualStateNoTransition();
 
     auto visual = winrt::ElementCompositionPreview::GetElementVisual(*this);
@@ -454,26 +455,21 @@ void NavigationViewItem::ReparentRepeater()
 {
     if (auto const repeater = m_repeater.get())
     {
-        auto const shouldShowRepeaterInFlyout = ShouldRepeaterShowInFlyout();
-        if (shouldShowRepeaterInFlyout && !m_parentedToFlyout)
+        if (ShouldRepeaterShowInFlyout() && !m_isRepeaterParentedToFlyout)
         {
             m_rootGrid.get().Children().RemoveAtEnd();
             m_flyoutRootGrid.get().Children().Append(repeater);
-            m_parentedToFlyout = true;
+            m_isRepeaterParentedToFlyout = true;
 
-            // Repeater is moved to flyout, so we dont want any left margin
-            auto const oldRepeaterMargin = repeater.Margin();
-            repeater.Margin({ 0, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
+            PropagateDepthToChildren(0);
         }
-        else if (!shouldShowRepeaterInFlyout && m_parentedToFlyout)
+        else if (!ShouldRepeaterShowInFlyout() && m_isRepeaterParentedToFlyout)
         {
             m_flyoutRootGrid.get().Children().RemoveAtEnd();
             m_rootGrid.get().Children().Append(repeater);
-            m_parentedToFlyout = false;
+            m_isRepeaterParentedToFlyout = false;
 
-            // Update item indentation based on its depth
-            auto const oldRepeaterMargin = repeater.Margin();
-            repeater.Margin({ m_defaultRepeaterLeftMargin, oldRepeaterMargin.Top, oldRepeaterMargin.Right, oldRepeaterMargin.Bottom });
+            PropagateDepthToChildren(1);
         }
     }
 }
@@ -483,7 +479,35 @@ void NavigationViewItem::ReparentRepeater()
 bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
     UpdateIsClosedCompact();
-    return (m_isClosedCompact && Depth() == 0) || IsOnTopPrimary();
+    return (m_isClosedCompact && m_isTopLevelItem) || IsOnTopPrimary();
+}
+
+void NavigationViewItem::UpdateItemIndentation()
+{
+    // Update item indentation based on its depth
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        auto newLeftMargin = Depth() * c_itemIndentation;
+        winrt::get_self<NavigationViewItemPresenter>(presenter)->UpdateContentLeftIndentation(static_cast<double>(newLeftMargin));
+    }
+}
+
+void NavigationViewItem::PropagateDepthToChildren(int depth)
+{
+    if (auto const repeater = m_repeater.get())
+    {
+        auto itemsCount = repeater.ItemsSourceView().Count();
+        for (int index = 0; index < itemsCount; index++)
+        {
+            if (auto const element = repeater.TryGetElement(index))
+            {
+                if (auto const nvib = element.try_as<winrt::NavigationViewItemBase>())
+                {
+                    winrt::get_self<NavigationViewItemBase>(nvib)->Depth(depth);
+                }
+            }
+        }
+    }
 }
 
 void NavigationViewItem::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
