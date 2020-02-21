@@ -64,10 +64,14 @@ public:
 
     NavigationViewItemPresenter* GetPresenter();
 
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() { return m_isTopLevelItem; };
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
     void OnNavigationViewRepeaterPositionChanged() override;
+    void OnNavigationViewItemBaseDepthChanged() override;
 
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnUnloaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -91,10 +95,8 @@ private:
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
-
-
-    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
-    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
+    void PropagateDepthToChildren(int depth);
+    void UpdateItemIndentation();
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};
@@ -129,6 +131,6 @@ private:
     bool m_isPressed{ false };
     bool m_isPointerOver{ false };
 
-    bool m_parentedToFlyout{ false };
-    double m_defaultRepeaterLeftMargin{ 0 };
+    bool m_isRepeaterParentedToFlyout{ false };
+    bool m_isTopLevelItem{ false };
 };

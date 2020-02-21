@@ -124,6 +124,7 @@ private:
     bool IsSettingsItem(winrt::IInspectable const& item);
     bool IsSelectionSuppressed(const winrt::IInspectable& item);
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
+    bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
 
     // Hierarchy related functions
