@@ -13,9 +13,9 @@ WinUI can be used in any Windows 10 UWP XAML app, or in a Xamarin.Forms app runn
 
 The WinUI community call is your monthly opportunity to learn about native UX development for Windows with WinUI.
 
-In these calls we’ll discuss the WinUI roadmap, our status and your feedback. You can now [download an early build of WinUI 3.0 Alpha]
+In these calls we’ll discuss the WinUI roadmap, our status and your feedback.
 
-You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA)
+You can watch them online here on YouTube at the [Windows Developer channel](https://www.youtube.com/channel/UCzLbHrU7U3cUDNQWWAqjceA).
 
 Add the event to your calendar: [ICS calendar file](https://aka.ms/winuicommunitycall)
 
