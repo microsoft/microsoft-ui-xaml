@@ -72,6 +72,14 @@ void TabViewItem::OnApplyTemplate()
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     UpdateShadow();
+    if (!IsSelected() && m_tabViewWidthode == winrt::TabViewWidthMode::Compact)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Compact", false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"StandardWidth", false);
+    }
 }
 
 void TabViewItem::UpdateShadow()
@@ -104,6 +112,25 @@ void TabViewItem::OnTabDragCompleted(const winrt::IInspectable& sender, const wi
 winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
 {
     return winrt::make<TabViewItemAutomationPeer>(*this);
+}
+
+void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
+{
+    m_tabViewWidthode = mode;
+
+    // When switching to compact, all items hide the labels and only show their icon
+    // This switch needs to be done here!
+    if (mode == winrt::TabViewWidthMode::Compact)
+    {
+        if (!IsSelected())
+        {
+            winrt::VisualStateManager::GoToState(*this, L"Compact", false);
+        }
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Standard",false);
+    }
 }
 
 

@@ -581,6 +581,21 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="TabWidthModes">
+                                <VisualState x:Name="StandardWidth">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconBox.Margin" Value="{ThemeResource TabViewItemHeaderIconMargin}"/>
+                                        <Setter Target="ContentPresenter.Visibility" Value="Visible"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Compact">
+                                    <VisualState.Setters>
+                                        <Setter Target="IconBox.Margin" Value="0,0,0,0"/>
+                                        <Setter Target="ContentPresenter.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Border x:Name="TabSeparator"
