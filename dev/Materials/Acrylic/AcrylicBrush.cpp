@@ -419,11 +419,19 @@ winrt::Color AcrylicBrush::GetEffectiveLuminosityColor()
 // The tintColor passed into this method should be the original, unmodified color created using user values for TintColor + TintOpacity
 winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double> luminosityOpacity)
 {
-    // To create the Luminosity blend input color, we're taking the TintColor input, converting to HSV, and clamping the V between these values
+    Rgb rgbTintColor = RgbFromColor(tintColor);
+
+    // If luminosity opacity is specified, just use the values as is
+    if (luminosityOpacity != nullptr)
+    {
+        return ColorFromRgba(rgbTintColor, std::clamp(luminosityOpacity.GetDouble(), 0.0, 1.0));
+    }
+
+    // To create the Luminosity blend input color without luminosity opacity,
+    // we're taking the TintColor input, converting to HSV, and clamping the V between these values
     const double minHsvV = 0.125;
     const double maxHsvV = 0.965;
 
-    Rgb rgbTintColor = RgbFromColor(tintColor);
     Hsv hsvTintColor = RgbToHsv(rgbTintColor);
 
     auto clampedHsvV = std::clamp(hsvTintColor.v, minHsvV, maxHsvV);
@@ -431,27 +439,16 @@ winrt::Color GetLuminosityColor(winrt::Color tintColor, winrt::IReference<double
     Hsv hsvLuminosityColor = Hsv(hsvTintColor.h, hsvTintColor.s, clampedHsvV);
     Rgb rgbLuminosityColor = HsvToRgb(hsvLuminosityColor);
 
-    double effectiveLuminosityOpacity = 0;
-
     // Now figure out luminosity opacity
-    if (luminosityOpacity == nullptr)
-    {
-        // Map original *tint* opacity to this range
-        const double minLuminosityOpacity = 0.15;
-        const double maxLuminosityOpacity = 1.03;
+    // Map original *tint* opacity to this range
+    const double minLuminosityOpacity = 0.15;
+    const double maxLuminosityOpacity = 1.03;
 
-        double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
-        double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
-
-        effectiveLuminosityOpacity = std::min(mappedTintOpacity, 1.0);
-    }
-    else
-    {
-        effectiveLuminosityOpacity = std::clamp(luminosityOpacity.GetDouble(), 0.0, 1.0);
-    }
+    double luminosityOpacityRangeMax = maxLuminosityOpacity - minLuminosityOpacity;
+    double mappedTintOpacity = ((tintColor.A / 255.0) * luminosityOpacityRangeMax) + minLuminosityOpacity;
 
     // Finally, combine the luminosity opacity and the HsvV-clamped tint color
-    return ColorFromRgba(rgbLuminosityColor, effectiveLuminosityOpacity);
+    return ColorFromRgba(rgbLuminosityColor, std::min(mappedTintOpacity, 1.0));
 }
 
 void AcrylicBrush::EnsureNoiseBrush()

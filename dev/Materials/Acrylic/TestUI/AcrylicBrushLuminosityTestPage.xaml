@@ -13,12 +13,12 @@
             <muxc:AcrylicBrush x:Key="AcrylicBlackNoLuminosityOpacity" BackgroundSource="Backdrop"
                 TintOpacity="0.2" TintColor="#000000" FallbackColor="#FF008000" />
             <muxc:AcrylicBrush x:Key="AcrylicDarkGreyNoLuminosityOpacity" BackgroundSource="Backdrop"
-                TintOpacity="0.2" TintColor="#151515" FallbackColor="#FF008000" />
+                TintOpacity="0.2" TintColor="#1F1F1F" FallbackColor="#FF008000" />
 
             <muxc:AcrylicBrush x:Key="AcrylicBlackWithLuminosityOpacity" BackgroundSource="Backdrop"
                 TintOpacity="0.2" TintColor="#000000" FallbackColor="#FF008000" />
             <muxc:AcrylicBrush x:Key="AcrylicDarkGreyWithLuminosityOpacity" BackgroundSource="Backdrop"
-                TintOpacity="0.2" TintColor="#151515" FallbackColor="#FF008000" />
+                TintOpacity="0.2" TintColor="#1F1F1F" FallbackColor="#FF008000" />
     </local:TestPage.Resources>
     
     <Grid MaxWidth="600" MaxHeight="600">
@@ -48,11 +48,11 @@
 
                 <TextBlock Text="Black" Foreground="Black" Margin="0,5,0,0"/>
                 <Rectangle x:Name="Rectangle3" Width="150" Height="150"
-                    Fill="{ThemeResource AcrylicBlackNoLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    Fill="{ThemeResource AcrylicBlackWithLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 </Rectangle>
 
                 <Rectangle x:Name="Rectangle4" Width="150" Height="150"
-                    Fill="{ThemeResource AcrylicDarkGreyNoLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    Fill="{ThemeResource AcrylicDarkGreyWithLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 </Rectangle>
                 <TextBlock Text="Grey" Foreground="Black"/>
             </StackPanel>
