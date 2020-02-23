@@ -227,7 +227,20 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
 
 void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
-    // TODO: Implement
+    // Switch the visual states of all tab items to to the correct closebutton overlay mode
+    for (auto item : TabItems())
+    {
+        auto tvi = item.try_as<TabViewItem>();
+        if (!tvi)
+        {
+            tvi = ContainerFromItem(item).try_as<TabViewItem>();
+        }
+
+        if (tvi)
+        {
+            tvi->OnCloseButtonOverlayModeChanged(CloseButtonOverlayMode());
+        }
+    }
 }
 
 void TabView::OnAddButtonClick(const winrt::IInspectable&, const winrt::RoutedEventArgs& args)

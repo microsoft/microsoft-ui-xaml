@@ -72,6 +72,8 @@ void TabViewItem::OnApplyTemplate()
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     UpdateShadow();
+
+    // Handling compact/non compact width mode
     if (!IsSelected() && m_tabViewWidthode == winrt::TabViewWidthMode::Compact)
     {
         winrt::VisualStateManager::GoToState(*this, L"Compact", false);
@@ -79,6 +81,19 @@ void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sen
     else
     {
         winrt::VisualStateManager::GoToState(*this, L"StandardWidth", false);
+    }
+
+    // Handling CloseButton display mode
+    if (m_closeButtonOverlayMode == winrt::TabViewCloseButtonOverlayMode::OnHover)
+    {
+        if (IsSelected())
+        {
+            UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+        }
+        else
+        {
+            UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
+        }
     }
 }
 
@@ -114,6 +129,19 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
     return winrt::make<TabViewItemAutomationPeer>(*this);
 }
 
+void TabViewItem::OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode)
+{
+    m_closeButtonOverlayMode = mode;
+    if (mode == winrt::TabViewCloseButtonOverlayMode::OnHover && !IsSelected())
+    {
+        UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
+    }
+    if (mode == winrt::TabViewCloseButtonOverlayMode::Persistent)
+    {
+        UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+    }
+}
+
 void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
 {
     m_tabViewWidthode = mode;
@@ -129,16 +157,53 @@ void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, L"Standard",false);
+        winrt::VisualStateManager::GoToState(*this, L"StandardWidth",false);
     }
 }
 
 
 void TabViewItem::UpdateCloseButton()
 {
+    if (!IsClosable())
+    {
+        UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
+    }
+    else
+    {
+        switch (m_closeButtonOverlayMode)
+        {
+            case winrt::TabViewCloseButtonOverlayMode::Persistent :
+            {
+                // In case of "Persistent" always show button
+                UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+                break;
+            }
+            case winrt::TabViewCloseButtonOverlayMode::OnHover:
+            {
+                // If we only want to show the button on hover, we also show it when we are selected, otherwise hide it
+                if (IsSelected())
+                {
+                    UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+                }
+                else
+                {
+                    UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
+                }
+                break;
+            }
+        }
+    }
     if (auto && closeButton = m_closeButton.get())
     {
         closeButton.Visibility(IsClosable() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+    }
+}
+
+void TabViewItem::UpdateCloseButtonVisibility(winrt::Visibility const& newVisibility)
+{
+    if (auto&& closeButton = m_closeButton.get())
+    {
+        closeButton.Visibility(newVisibility);
     }
 }
 
@@ -263,6 +328,12 @@ void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
     {
         m_isMiddlePointerButtonPressed = true;
     }
+
+    // If we show close button onhover, we now must show the close button
+    if (m_closeButtonOverlayMode == winrt::TabViewCloseButtonOverlayMode::OnHover)
+    {
+        UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+    }
 }
 
 void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
@@ -270,6 +341,12 @@ void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
     __super::OnPointerExited(args);
 
     m_isMiddlePointerButtonPressed = false;
+
+    // If we are on hover, we now should hide the close button if we are not selected
+    if (m_closeButtonOverlayMode == winrt::TabViewCloseButtonOverlayMode::OnHover && !IsSelected())
+    {
+        UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
+    }
 }
 
 void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)

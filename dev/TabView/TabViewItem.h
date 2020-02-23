@@ -39,13 +39,16 @@ public:
 
     void RaiseRequestClose(TabViewTabCloseRequestedEventArgs const& args);
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
+    void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
 
 private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
-    winrt::TabViewWidthMode m_tabViewWidthode{ winrt::TabViewWidthMode::SizeToContent };
+    winrt::TabViewWidthMode m_tabViewWidthode{ winrt::TabViewWidthMode::Equal };
+    winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Persistent };
 
     void UpdateCloseButton();
+    void UpdateCloseButtonVisibility(winrt::Visibility const& newVisibility);
     void RequestClose();
     void OnIconSourceChanged();
 

@@ -201,7 +201,7 @@ namespace MUXControlsTestApp
         {
             if (Tabs != null)
             {
-                switch (TabWidthComboBox.SelectedIndex)
+                switch (CloseButtonOverlayModeCombobox.SelectedIndex)
                 {
                     case 0: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.Auto; break;
                     case 1: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.OnHover; break;

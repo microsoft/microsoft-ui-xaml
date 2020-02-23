@@ -616,7 +616,7 @@
                             FocusVisualMargin="{TemplateBinding FocusVisualMargin}">
 
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="{ThemeResource TabViewItemHeaderIconSize}" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
