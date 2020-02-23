@@ -115,7 +115,5 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
 
             return tabViewItem;
         }
-
-
     }
 }

@@ -408,6 +408,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void CloseButtonOverlayModeTests()
+        {
+            using(var setup = new TestSetupHelper("TabView Tests"))
+            {
+                ComboBox closeButtonOverlayModeComboBox = FindElement.ByName<ComboBox>("CloseButtonOverlayModeCombobox");
+                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                Wait.ForIdle();
+
+                Button closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Button closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                Verify.IsNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+
+                closeButtonOverlayModeComboBox.SelectItemByName("Persistent");
+                Wait.ForIdle();
+
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNotNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+            }
+        } 
 
         [TestMethod]
         public void GamePadTest()
