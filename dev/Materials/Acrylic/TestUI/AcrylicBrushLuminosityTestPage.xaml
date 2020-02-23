@@ -27,21 +27,23 @@
 
         <StackPanel Orientation="Horizontal">
             <StackPanel Margin="10,0,10,10">
-                <TextBlock Text="Acrylic brushes without LuminosityOpacity set"
-                    TextWrapping="WrapWholeWords" Foreground="Black" MaxWidth="150"/>
+                <TextBlock Text="LuminosityOpacity not set
+                           (should look the same)"
+                    TextWrapping="WrapWholeWords" Foreground="Black" MaxWidth="170"/>
 
                 <TextBlock Text="Black" Foreground="Black" Margin="0,5,0,0"/>
                 <Rectangle x:Name="Rectangle1" Width="150" Height="150"
-                    Fill="{ThemeResource AcrylicBlackNoLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    Fill="{ThemeResource AcrylicBlackNoLuminosityOpacity}" HorizontalAlignment="Left" VerticalAlignment="Center">
                 </Rectangle>
                 <Rectangle x:Name="Rectangle2" Width="150" Height="150"
-                    Fill="{ThemeResource AcrylicDarkGreyNoLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    Fill="{ThemeResource AcrylicDarkGreyNoLuminosityOpacity}" HorizontalAlignment="Left" VerticalAlignment="Center">
                 </Rectangle>
                 <TextBlock Text="Grey" Foreground="Black"/>
             </StackPanel>
 
-            <StackPanel Margin="10,0,10,10">
-                <TextBlock Text="Acrylic brushes with LuminosityOpacity set"
+            <StackPanel Margin="0,0,10,10">
+                <TextBlock Text="LuminosityOpacity set
+                           (should look different)"
                     TextWrapping="WrapWholeWords" Foreground="Black" MaxWidth="150"/>
 
                 <TextBlock Text="Black" Foreground="Black" Margin="0,5,0,0"/>
