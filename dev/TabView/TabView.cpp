@@ -38,6 +38,10 @@ TabView::TabView()
         winrt::KeyboardAccelerator ctrlf4Accel;
         ctrlf4Accel.Key(winrt::VirtualKey::F4);
         ctrlf4Accel.Modifiers(winrt::VirtualKeyModifiers::Control);
+
+        // TODO: This needs to be localized.
+        m_tabItemCloseKeyboardAccelerator = L"Ctrl+F4";
+
         ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
         ctrlf4Accel.ScopeOwner(*this);
         KeyboardAccelerators().Append(ctrlf4Accel);

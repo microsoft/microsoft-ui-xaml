@@ -24,7 +24,12 @@ void TabViewItem::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_closeButton.set([this, controlProtected]() {
+    auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
+    auto internalTabView = tabView
+        ? winrt::get_self<TabView>(tabView)
+        : nullptr;
+
+    m_closeButton.set([this, controlProtected, internalTabView]() {
         auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
         if (closeButton)
         {
@@ -35,18 +40,39 @@ void TabViewItem::OnApplyTemplate()
                 winrt::AutomationProperties::SetName(closeButton, closeButtonName);
             }
 
+            // Setup the tooltip for the close button
+            auto tooltip = winrt::ToolTip();
+            auto closeButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip);
+            if (internalTabView != nullptr)
+            {
+                auto keyboardAcceleratorText = internalTabView->GetCloseButtonLocalizedKeyboardAccelerator();
+                if (keyboardAcceleratorText != hstring{})
+                {
+                    // TODO:
+                    // - Appending the tooltip content here...is there a better way to do this in C++/WinRT?
+                    // - I think we might also have to localize the parantheses? I.e. Asian languages uses different parantheses character
+                    //   than latin-based languages.
+                    // - This value is the same for all tabs in a tabview. Can we compute this only once and then use it for all tab items?
+                    closeButtonTooltipText = closeButtonTooltipText + hstring(L" (") + keyboardAcceleratorText + hstring(L")");
+                }
+
+            }
+
+            tooltip.Content(box_value(closeButtonTooltipText));
+            winrt::ToolTipService::SetToolTip(closeButton, tooltip);
+
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;
-    }());
+        }());
 
     OnIconSourceChanged();
 
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    if (tabView)
     {
         if (SharedHelpers::IsThemeShadowAvailable())
         {
-            if (auto internalTabView = winrt::get_self<TabView>(tabView))
+            if (internalTabView)
             {
                 winrt::ThemeShadow shadow;
                 shadow.Receivers().Append(internalTabView->GetShadowReceiver());
