@@ -129,4 +129,8 @@
     <value>Pechar separador</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
+    <value>Pechar separador</value>
+    <comment>Tooltip for the close button on each tab.</comment>
+  </data>
 </root>
