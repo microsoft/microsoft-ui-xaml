@@ -136,7 +136,7 @@ void TabViewItem::OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverl
     {
         UpdateCloseButtonVisibility(winrt::Visibility::Collapsed);
     }
-    if (mode == winrt::TabViewCloseButtonOverlayMode::Persistent)
+    if (mode == winrt::TabViewCloseButtonOverlayMode::Persistent || mode == winrt::TabViewCloseButtonOverlayMode::Auto)
     {
         UpdateCloseButtonVisibility(winrt::Visibility::Visible);
     }
@@ -172,9 +172,15 @@ void TabViewItem::UpdateCloseButton()
     {
         switch (m_closeButtonOverlayMode)
         {
-            case winrt::TabViewCloseButtonOverlayMode::Persistent :
+            case winrt::TabViewCloseButtonOverlayMode::Persistent:
             {
                 // In case of "Persistent" always show button
+                UpdateCloseButtonVisibility(winrt::Visibility::Visible);
+                break;
+            }
+            case winrt::TabViewCloseButtonOverlayMode::Auto:
+            {
+                // In case of "Auto" always show button
                 UpdateCloseButtonVisibility(winrt::Visibility::Visible);
                 break;
             }

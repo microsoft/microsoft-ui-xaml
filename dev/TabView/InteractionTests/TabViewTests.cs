@@ -425,9 +425,30 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 closeButtonOverlayModeComboBox.SelectItemByName("Persistent");
                 Wait.ForIdle();
 
+                // Verifiying "Persistent" works correctly
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
                 closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 Verify.IsNotNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
+
+                // Verifiying "OnHover" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                Wait.ForIdle();
+
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+               
+                // Verifiying "Auto" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("Auto");
+                Wait.ForIdle();
+
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNotNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+
             }
         } 
 
