@@ -44,14 +44,12 @@ void TabViewItem::OnApplyTemplate()
             auto tooltip = winrt::ToolTip();
             auto closeButtonTooltipText = static_cast<std::wstring>(ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip));
 
-            if (internalTabView != nullptr)
+            if (internalTabView)
             {
-                auto keyboardAcceleratorText = internalTabView->GetCloseButtonLocalizedKeyboardAccelerator();
+                auto const keyboardAcceleratorText = internalTabView->GetCloseButtonLocalizedKeyboardAccelerator();
                 if (keyboardAcceleratorText != hstring{})
                 {
                     // TODO:
-                    // - I think we might also have to localize the parantheses? I.e. Asian languages uses different parantheses character
-                    //   than latin-based languages.
                     // - This value is the same for all tabs in a tabview. Can we compute this only once and then use it for all tab items?
                     closeButtonTooltipText = closeButtonTooltipText.append(hstring(L" (")).append(keyboardAcceleratorText).append(hstring(L")"));
                 }
