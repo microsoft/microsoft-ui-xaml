@@ -33,6 +33,10 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)RadioButtons_themeresources.xaml">
+      <Version>RS1</Version>
+      <Type>ThemeResources</Type>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)RadioButton.xaml">
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
