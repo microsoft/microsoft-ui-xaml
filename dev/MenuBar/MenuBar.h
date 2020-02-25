@@ -18,6 +18,8 @@ public:
     bool IsFlyoutOpen() { return m_isFlyoutOpen; };
     void IsFlyoutOpen(bool state);
 
+    void RequestPassThroughElement(const winrt::Microsoft::UI::Xaml::Controls::MenuBarItem& menuBarItem);
+
 public:
     // IUIElement / IUIElementOverridesHelper
     winrt::AutomationPeer OnCreateAutomationPeer();

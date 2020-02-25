@@ -26,11 +26,6 @@ winrt::AutomationPeer MenuBar::OnCreateAutomationPeer()
 void MenuBar::OnApplyTemplate()
 {
     SetUpTemplateParts();
-    
-    for (auto const& menuBarItem : Items())
-    {
-        winrt::get_self<MenuBarItem>(menuBarItem)->AddPassThroughElement(m_layoutRoot.get());
-    }
 }
 
 void MenuBar::SetUpTemplateParts()
@@ -52,6 +47,12 @@ void MenuBar::SetUpTemplateParts()
 
         m_contentRoot.set(contentRoot);
     }
+}
+
+void MenuBar::RequestPassThroughElement(const winrt::Microsoft::UI::Xaml::Controls::MenuBarItem& menuBarItem)
+{
+    // To enable switching flyout on hover, every menubar item needs the MenuBar root to include it for hit detection with flyouts open
+    winrt::get_self<MenuBarItem>(menuBarItem)->AddPassThroughElement(m_layoutRoot.get());
 }
 
 void MenuBar::IsFlyoutOpen(bool state)

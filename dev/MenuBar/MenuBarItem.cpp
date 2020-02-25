@@ -36,15 +36,17 @@ void MenuBarItem::OnApplyTemplate()
 {
     m_button.set(GetTemplateChildT<winrt::Button>(L"ContentButton", *this));
 
-    PopulateContent();
-    DetachEventHandlers();
-    AttachEventHandlers();
-
     auto menuBar = SharedHelpers::GetAncestorOfType<winrt::MenuBar>(winrt::VisualTreeHelper::GetParent(*this));
     if (menuBar)
     {
         m_menuBar = winrt::make_weak(menuBar);
+        // Ask parent MenuBar for its root to enable pass through
+        winrt::get_self<MenuBar>(menuBar)->RequestPassThroughElement(*this);
     }
+
+    PopulateContent();
+    DetachEventHandlers();
+    AttachEventHandlers();
 }
 
 void MenuBarItem::PopulateContent()
