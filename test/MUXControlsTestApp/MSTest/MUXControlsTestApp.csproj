@@ -39,8 +39,11 @@
   <ItemGroup>
     <SDKReference Include="TestPlatform.Universal, Version=$(UnitTestPlatformVersion)" />
   </ItemGroup>
-  <ItemGroup>
-    <AppxManifest Include="Package.appxmanifest">
+  <ItemGroup >
+    <AppxManifest Include="PackageInnerLoop.appxmanifest" Condition="$(SolutionName) == 'MUXControlsInnerLoop'">      
+      <SubType>Designer</SubType>
+    </AppxManifest>    
+    <AppxManifest Include="Package.appxmanifest" Condition="$(SolutionName) != 'MUXControlsInnerLoop'">      
       <SubType>Designer</SubType>
     </AppxManifest>
   </ItemGroup>
