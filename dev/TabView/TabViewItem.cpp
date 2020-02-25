@@ -42,18 +42,18 @@ void TabViewItem::OnApplyTemplate()
 
             // Setup the tooltip for the close button
             auto tooltip = winrt::ToolTip();
-            auto closeButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip);
+            auto closeButtonTooltipText = static_cast<std::wstring>(ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip));
+
             if (internalTabView != nullptr)
             {
                 auto keyboardAcceleratorText = internalTabView->GetCloseButtonLocalizedKeyboardAccelerator();
                 if (keyboardAcceleratorText != hstring{})
                 {
                     // TODO:
-                    // - Appending the tooltip content here...is there a better way to do this in C++/WinRT?
                     // - I think we might also have to localize the parantheses? I.e. Asian languages uses different parantheses character
                     //   than latin-based languages.
                     // - This value is the same for all tabs in a tabview. Can we compute this only once and then use it for all tab items?
-                    closeButtonTooltipText = closeButtonTooltipText + hstring(L" (") + keyboardAcceleratorText + hstring(L")");
+                    closeButtonTooltipText = closeButtonTooltipText.append(hstring(L" (")).append(keyboardAcceleratorText).append(hstring(L")"));
                 }
 
             }
