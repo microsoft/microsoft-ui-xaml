@@ -3,6 +3,7 @@
 
 using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
@@ -94,11 +95,16 @@ namespace MUXControlsTestApp
 
         private void AddMenuBarToEmptyMenuBarItem_Click(object sender, RoutedEventArgs e)
         {
+            int eCount = EmptyMenuBar.Items.Count;
             MenuBarItem mainMenuBarHelp = new MenuBarItem();
-            mainMenuBarHelp.Title = "Help";
-            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help1" });
-            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help2" });
-            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help3" });
+            mainMenuBarHelp.Title = "Help" + eCount;
+            mainMenuBarHelp.SetValue(AutomationProperties.NameProperty, "Help" + eCount);
+            MenuFlyoutItem newFlyout = new MenuFlyoutItem() { Text = "Add" + eCount };
+            // UIA Name for interaction test
+            newFlyout.SetValue(AutomationProperties.NameProperty, "Add" + eCount);
+            mainMenuBarHelp.Items.Add(newFlyout);
+
+            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Remove" + eCount });
             EmptyMenuBar.Items.Add(mainMenuBarHelp);
         }
 
