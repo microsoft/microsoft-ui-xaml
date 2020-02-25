@@ -91,5 +91,16 @@ namespace MUXControlsTestApp
             var testFrame = Window.Current.Content as TestFrame;
             testFrame.ChangeBarVisibility(Visibility.Collapsed);
         }
+
+        private void AddMenuBarToEmptyMenuBarItem_Click(object sender, RoutedEventArgs e)
+        {
+            MenuBarItem mainMenuBarHelp = new MenuBarItem();
+            mainMenuBarHelp.Title = "Help";
+            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help1" });
+            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help2" });
+            mainMenuBarHelp.Items.Add(new MenuFlyoutItem() { Text = "Help3" });
+            EmptyMenuBar.Items.Add(mainMenuBarHelp);
+        }
+
     }
 }
