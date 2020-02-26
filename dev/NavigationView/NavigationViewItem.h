@@ -30,6 +30,7 @@ public:
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     winrt::UIElement GetSelectionIndicator();
     winrt::ToolTip GetToolTip();
@@ -97,6 +98,9 @@ private:
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
     void PropagateDepthToChildren(int depth);
     void UpdateItemIndentation();
+    bool IsRepeaterVisible();
+    void ShowSelectionIndicatorIfRequired();
+    void ShowSelectionIndicator(bool visible);
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};
     PropertyChanged_revoker m_splitViewDisplayModeChangedRevoker{};

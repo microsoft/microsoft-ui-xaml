@@ -100,6 +100,7 @@ private:
     void OnSelectionModelChildrenRequested(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelChildrenRequestedEventArgs& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void ChangeSelection(const winrt::IInspectable& prevItem, const winrt::IInspectable& nextItem);
+    void UpdateSelectionModelSelection(const winrt::IndexPath& ip);
 
     // Item/container info functions
     int GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt::IInspectable& data);
@@ -126,16 +127,19 @@ private:
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
     bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
+    bool IsContainerInFlyout(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchy related functions
     void ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi);
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
-    void UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi);
+    void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
+    void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
     void CollapseAllTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
     void CollapseAllMenuItems(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
+    void CloseFlyoutIfRequired(const winrt::IndexPath& selectedIndex);
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);

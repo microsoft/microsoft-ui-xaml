@@ -340,6 +340,7 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         Boolean IsExpanded{ get; set; };
         [MUX_DEFAULT_VALUE("false")]
         Boolean HasUnrealizedChildren{ get; set; };
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]
         Boolean IsChildSelected{ get; set; };
 

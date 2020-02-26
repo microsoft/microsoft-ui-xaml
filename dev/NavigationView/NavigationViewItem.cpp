@@ -233,6 +233,35 @@ void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::Dependenc
     UpdateRepeaterItemsSource();
 }
 
+void NavigationViewItem::OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    ShowSelectionIndicatorIfRequired();
+}
+
+void NavigationViewItem::ShowSelectionIndicatorIfRequired()
+{
+    if (!IsSelected())
+    {
+        if (!IsRepeaterVisible() && IsChildSelected())
+        {
+            ShowSelectionIndicator(true);
+        }
+        else
+        {
+            ShowSelectionIndicator(false);
+        }
+    }
+}
+
+void NavigationViewItem::ShowSelectionIndicator(bool visible)
+{
+    if (auto const selectionIndicator = GetSelectionIndicator())
+    {
+        auto const opacity = visible ? 1.0 : 0.0;
+        selectionIndicator.Opacity(opacity);
+    }
+}
+
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
 {
     auto stateName = showIcon ? (showContent ? L"IconOnLeft": L"IconOnly") : L"ContentOnly"; 
@@ -449,6 +478,15 @@ void NavigationViewItem::IsRepeaterVisible(bool visible)
     {
         winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
     }
+    else if(ShouldRepeaterShowInFlyout() && !visible)
+    {
+        if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+        {
+            flyout.Hide();
+        }
+    }
+
+    ShowSelectionIndicatorIfRequired();
 }
 
 void NavigationViewItem::ReparentRepeater()
@@ -480,6 +518,11 @@ bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
     UpdateIsClosedCompact();
     return (m_isClosedCompact && m_isTopLevelItem) || IsOnTopPrimary();
+}
+
+bool NavigationViewItem::IsRepeaterVisible()
+{
+    return m_repeater.get().Visibility() == winrt::Visibility::Visible;
 }
 
 void NavigationViewItem::UpdateItemIndentation()
