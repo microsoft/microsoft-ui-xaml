@@ -567,25 +567,25 @@
 
 
                         <primitives:NavigationViewItemPresenter
-                        x:Name="NavigationViewItemPresenter"
-                        Icon="{TemplateBinding Icon}"
-                        ContentTransitions="{TemplateBinding ContentTransitions}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        Margin="{TemplateBinding Margin}"
-                        Padding="{TemplateBinding Padding}"
-                        Foreground="{TemplateBinding Foreground}"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
-                        UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
-                        VerticalAlignment="{TemplateBinding VerticalAlignment}"
-                        HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                        Content="{TemplateBinding Content}"
-                        primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
-                        IsTabStop="False">
+                            x:Name="NavigationViewItemPresenter"
+                            Icon="{TemplateBinding Icon}"
+                            ContentTransitions="{TemplateBinding ContentTransitions}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Margin="{TemplateBinding Margin}"
+                            Padding="{TemplateBinding Padding}"
+                            Foreground="{TemplateBinding Foreground}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            UseSystemFocusVisuals="{TemplateBinding UseSystemFocusVisuals}"
+                            VerticalAlignment="{TemplateBinding VerticalAlignment}"
+                            HorizontalAlignment="{TemplateBinding HorizontalAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            Content="{TemplateBinding Content}"
+                            primitiveContract7Present:CornerRadius="{TemplateBinding CornerRadius}"
+                            IsTabStop="False">
                         </primitives:NavigationViewItemPresenter>
                         <local:ItemsRepeater
                                 Grid.Row="1"
@@ -604,7 +604,23 @@
                                         <Setter Property="Margin" Value="0,-4,0,0" />
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
-                                <Grid x:Name="FlyoutRootGrid"/>
+                                <Grid x:Name="FlyoutRootGrid">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid
+                                        Grid.Row="0"
+                                        x:Name="FlyoutTitleContentPresenterGrid"
+                                        MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
+                                        Padding="12,0,0,0"> 
+                                        <ContentPresenter
+                                            Grid.Row="0"
+                                            x:Name="FlyoutTitleContentPresenter"
+                                            VerticalAlignment="Center"/>
+                                    </Grid>
+                                    <Grid Grid.Row="1" x:Name="FlyoutContentGrid"/>
+                                </Grid>
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>
                     </Grid>
