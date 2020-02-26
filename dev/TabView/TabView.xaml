@@ -593,6 +593,15 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+
+                            <VisualStateGroup x:Name="CloseIconStates">
+                                <VisualState x:Name="CloseButtonVisible"/>
+                                <VisualState x:Name="CloseButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
                         <Border x:Name="TabSeparator"

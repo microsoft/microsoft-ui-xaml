@@ -48,7 +48,6 @@ private:
     winrt::TabViewCloseButtonOverlayMode m_closeButtonOverlayMode{ winrt::TabViewCloseButtonOverlayMode::Persistent };
 
     void UpdateCloseButton();
-    void UpdateCloseButtonVisibility(winrt::Visibility const& newVisibility);
     void RequestClose();
     void OnIconSourceChanged();
     void UpdateWidthModeVisualState();
