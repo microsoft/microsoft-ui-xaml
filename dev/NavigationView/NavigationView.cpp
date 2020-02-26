@@ -286,7 +286,7 @@ void NavigationView::CloseFlyoutIfRequired(const winrt::IndexPath& selectedIndex
                         auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
                         if (nviImpl->ShouldRepeaterShowInFlyout())
                         {
-                            nviImpl->IsRepeaterVisible(false);
+                            nviImpl->SetRepeaterVisibilityAndUpdatePositionIfRequired(false);
                         }
                     }
                 }
@@ -359,9 +359,9 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavRepeater.set(leftNavRepeater);
 
-        m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
-        m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
-        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::RepeaterGettingFocus });
+        m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
+        m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
+        m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_leftNavRepeaterLoadedRevoker = leftNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -380,9 +380,9 @@ void NavigationView::OnApplyTemplate()
             stackLayoutImpl->DisableVirtualization(true);
         }
 
-        m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
-        m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
-        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::RepeaterGettingFocus });
+        m_topNavItemsRepeaterElementPreparedRevoker = topNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
+        m_topNavItemsRepeaterElementClearingRevoker = topNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
+        m_topNavRepeaterGettingFocusRevoker = topNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
 
         m_topNavRepeaterLoadedRevoker = topNavRepeater.Loaded(winrt::auto_revoke, { this, &NavigationView::OnRepeaterLoaded });
 
@@ -394,8 +394,8 @@ void NavigationView::OnApplyTemplate()
     {
         m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
 
-        m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::RepeaterElementPrepared });
-        m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::RepeaterElementClearing });
+        m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
+        m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
 
         topNavListOverflowRepeater.ItemTemplate(*m_navigationViewItemsFactory);
     }
@@ -826,7 +826,7 @@ winrt::IndexPath NavigationView::GetIndexPathForContainer(const winrt::Navigatio
     return IndexPath::CreateFromIndices(path);
 }
 
-void NavigationView::RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
+void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args)
 {
     // This validation is only relevant outside of the Windows build where WUXC and MUXC have distinct types.
     // Certain items are disallowed in a NavigationView's items list. Check for them.
@@ -911,7 +911,7 @@ void NavigationView::ApplyCustomMenuItemContainerStyling(const winrt::Navigation
     }
 }
 
-void NavigationView::RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args)
+void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args)
 {
     if (auto nvib = args.Element().try_as<winrt::NavigationViewItemBase>())
     {
@@ -2096,7 +2096,7 @@ void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewIt
     }
 }
 
-void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
+void NavigationView::OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args)
 {
     if (args.InputDevice() == winrt::FocusInputDeviceKind::Keyboard)
     {
@@ -4478,7 +4478,7 @@ void NavigationView::ChangeIsExpandedNavigationViewItem(const winrt::NavigationV
 void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi)
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
-    nviImpl->IsRepeaterVisible(nvi.IsExpanded());
+    nviImpl->SetRepeaterVisibilityAndUpdatePositionIfRequired(nvi.IsExpanded());
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
         nvi.IsExpanded() ? m_lastItemExpandedIntoFlyout.set(nvi) : m_lastItemExpandedIntoFlyout.set(nullptr);

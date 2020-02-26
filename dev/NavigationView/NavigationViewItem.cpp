@@ -16,6 +16,17 @@ static constexpr auto c_flyoutContentGrid = L"FlyoutContentGrid"sv;
 static constexpr auto c_flyoutTitleContentPresenterGrid = L"FlyoutTitleContentPresenterGrid"sv;
 static constexpr auto c_flyoutTitleContentPresenter = L"FlyoutTitleContentPresenter"sv;
 
+// Visual States
+static constexpr auto c_pressedSelected = L"PressedSelected"sv;
+static constexpr auto c_pointerOverSelected = L"PointerOverSelected"sv;
+static constexpr auto c_selected = L"Selected"sv;
+static constexpr auto c_pressed = L"Pressed"sv;
+static constexpr auto c_pointerOver = L"PointerOver"sv;
+static constexpr auto c_disabled = L"Disabled"sv;
+static constexpr auto c_enabled = L"Enabled"sv;
+static constexpr auto c_normal = L"Normal"sv;
+
+
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
     UpdateVisualState(false /*useTransition*/);
@@ -96,8 +107,8 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeater.set(repeater);
 
             // Primary element setup happens in NavigationView
-            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::RepeaterElementPrepared });
-            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::RepeaterElementClearing });
+            m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
+            m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
 
             repeater.ItemTemplate(*(nvImpl->m_navigationViewItemsFactory));
         }
@@ -358,54 +369,51 @@ void NavigationViewItem::UpdateVisualStateForToolTip()
     }
 }
 
-void NavigationViewItem::UpdateVisualState(bool useTransitions)
+void NavigationViewItem::UpdateVisualStateForPointer()
 {
-    if (!m_appliedTemplate)
-        return;
-
     // DisabledStates and CommonStates
-    auto enabledStateValue = L"Enabled";
+    auto enabledStateValue = c_enabled;
     bool isSelected = IsSelected();
-    auto selectedStateValue = L"Normal";
+    auto selectedStateValue = c_normal;
     if (IsEnabled())
     {
         if (isSelected)
         {
             if (m_isPressed)
             {
-                selectedStateValue = L"PressedSelected";
+                selectedStateValue = c_pressedSelected;
             }
             else if (m_isPointerOver)
             {
-                selectedStateValue = L"PointerOverSelected";
+                selectedStateValue = c_pointerOverSelected;
             }
             else
             {
-                selectedStateValue = L"Selected";
+                selectedStateValue = c_selected;
             }
         }
         else if (m_isPointerOver)
         {
             if (m_isPressed)
             {
-                selectedStateValue = L"Pressed";
+                selectedStateValue = c_pressed;
             }
             else
             {
-                selectedStateValue = L"PointerOver";
+                selectedStateValue = c_pointerOver;
             }
         }
         else if (m_isPressed)
         {
-            selectedStateValue = L"Pressed";
+            selectedStateValue = c_pressed;
         }
     }
     else
     {
-        enabledStateValue = L"Disabled";
+        enabledStateValue = c_disabled;
         if (isSelected)
         {
-            selectedStateValue = L"Selected";
+            selectedStateValue = c_selected;
         }
     }
 
@@ -422,6 +430,15 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
         winrt::VisualStateManager::GoToState(*this, enabledStateValue, true);
         winrt::VisualStateManager::GoToState(*this, selectedStateValue, true);
     }
+
+}
+
+void NavigationViewItem::UpdateVisualState(bool useTransitions)
+{
+    if (!m_appliedTemplate)
+        return;
+
+    UpdateVisualStateForPointer();
 
     UpdateVisualStateForNavigationViewPositionChange();
 
@@ -480,18 +497,18 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
     return presenter;
 }
 
-void NavigationViewItem::IsRepeaterVisible(bool visible)
+void NavigationViewItem::SetRepeaterVisibilityAndUpdatePositionIfRequired(bool shouldShowRepeater)
 {
     ReparentRepeater();
 
-    auto visibility = visible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+    auto visibility = shouldShowRepeater ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
 
-    if (ShouldRepeaterShowInFlyout() && visible)
+    if (ShouldRepeaterShowInFlyout() && shouldShowRepeater)
     {
         winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
     }
-    else if(ShouldRepeaterShowInFlyout() && !visible)
+    else if(ShouldRepeaterShowInFlyout() && !shouldShowRepeater)
     {
         if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
         {
