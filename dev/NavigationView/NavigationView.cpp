@@ -211,9 +211,9 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
         return;
     }
 
+    auto const selectedIndex = selectionModel.SelectedIndex();
     if (IsTopNavigationView())
     {
-        auto selectedIndex = selectionModel.SelectedIndex();
         // If selectedIndex does not exist, means item is being deselected through API
         auto isInOverflow = (selectedIndex && selectedIndex.GetSize() > 0) ? !m_topDataProvider.IsItemInPrimaryList(selectedIndex.GetAt(0)) : false;
         if (isInOverflow)
@@ -254,17 +254,44 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
             {
                 // TODO: Add flag that keeps track of the fact that item will need to be moved if no leaf
                 // item is selected.
+                CloseFlyoutIfRequired(selectedIndex);
                 SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
             }
-        }
+        } 
         else
         {
+            CloseFlyoutIfRequired(selectedIndex);
             SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
         }
     }
     else
     {
+        CloseFlyoutIfRequired(selectedIndex);
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+    }
+}
+
+void NavigationView::CloseFlyoutIfRequired(const winrt::IndexPath& selectedIndex)
+{
+    if (auto const rootItem = GetContainerForIndex(selectedIndex.GetAt(0)))
+    {
+        if (auto const nvi = rootItem.try_as<winrt::NavigationViewItem>())
+        {
+            if (auto const selectedItem = GetContainerForIndexPath(selectedIndex))
+            {
+                if (auto const selectedNVI = selectedItem.try_as<winrt::NavigationViewItem>())
+                {
+                    if (!DoesNavigationViewItemHaveChildren(selectedNVI))
+                    {
+                        auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+                        if (nviImpl->ShouldRepeaterShowInFlyout())
+                        {
+                            nviImpl->IsRepeaterVisible(false);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -578,7 +605,7 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
         if (isSelectedInContainer && !isContainerSelectedInModel)
         {
             auto indexPath = GetIndexPathForContainer(nvi);
-            m_selectionModel.SelectAt(indexPath);
+            UpdateSelectionModelSelection(indexPath);
         }
         else if (!isSelectedInContainer && isContainerSelectedInModel)
         {
@@ -591,18 +618,10 @@ void NavigationView::OnNavigationViewItemIsSelectedPropertyChanged(const winrt::
             }
         }
 
-        UpdateParentIsChildSelectedProperty(nvi);
-    }
-}
-
-void NavigationView::UpdateParentIsChildSelectedProperty(const winrt::NavigationViewItem& nvi)
-{
-    auto const isChildSelected = nvi.IsSelected();
-    auto currentNVI = nvi;
-    while (auto newNVI = GetParentNavigationViewItemForContainer(currentNVI))
-    {
-        newNVI.IsChildSelected(isChildSelected);
-        currentNVI = newNVI;
+        if (isSelectedInContainer)
+        {
+            nvi.IsChildSelected(false);
+        }
     }
 }
 
@@ -673,7 +692,7 @@ void NavigationView::OnNavigationViewItemInvoked(const winrt::NavigationViewItem
     if (m_selectionModel && nvi.SelectsOnInvoked())
     {
         auto ip = GetIndexPathForContainer(nvi);
-        m_selectionModel.SelectAt(ip);
+        UpdateSelectionModelSelection(ip);
     }
 
     ToggleIsExpandedNavigationViewItem(nvi);
@@ -697,6 +716,22 @@ bool NavigationView::IsRootGridOfFlyout(const winrt::DependencyObject& element)
     {
         return grid.Name() == c_flyoutRootGrid;
     }
+    return false;
+}
+
+bool NavigationView::IsContainerInFlyout(const winrt::NavigationViewItemBase& nvib)
+{
+    winrt::DependencyObject parent = nvib;
+    do
+    {
+        parent = winrt::VisualTreeHelper::GetParent(parent);
+        if (IsRootGridOfFlyout(parent))
+        {
+            return true;
+        }
+
+    } while (parent && !IsRootItemsRepeater(parent));
+
     return false;
 }
 
@@ -1746,10 +1781,53 @@ void NavigationView::ChangeSelection(const winrt::IInspectable& prevItem, const 
         // To keep the logic the same as RS4, ItemInvoke is before unselect the old item
         // And SelectionChanged is after we selected the new item.
         UnselectPrevItem(prevItem, nextItem);
-
         ChangeSelectStatusForItem(nextItem, true /*selected*/);
         RaiseSelectionChangedEvent(nextItem, isSettingsItem, recommendedDirection);
         AnimateSelectionChanged(prevItem, nextItem);
+    }
+}
+
+void NavigationView::UpdateSelectionModelSelection(const winrt::IndexPath& ip)
+{
+    auto const prevIndexPath = m_selectionModel.SelectedIndex();
+    m_selectionModel.SelectAt(ip);
+    UpdateIsChildSelected(prevIndexPath, ip);  
+}
+
+void NavigationView::UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP)
+{ 
+    if (prevIP && prevIP.GetSize() > 0)
+    {
+        UpdateIsChildSelectedForIndexPath(prevIP, false /*isChildSelected*/);
+    }
+     
+    if (nextIP && nextIP.GetSize() > 0)
+    {
+        UpdateIsChildSelectedForIndexPath(nextIP, true /*isChildSelected*/);
+    }
+}
+
+void NavigationView::UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected)
+{
+    // Update the isChildSelected property for every container on the IndexPath (with the exception of the actual container pointed to by the indexpath)
+    auto container = GetContainerForIndex(ip.GetAt(0));
+    auto index = 1;
+    while (container)
+    {
+        if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+        {
+            nvi.IsChildSelected(isChildSelected);
+            if (auto const nextIR = winrt::get_self<NavigationViewItem>(nvi)->GetRepeater())
+            {
+                if (index < ip.GetSize() - 1)
+                {
+                    container = nextIR.TryGetElement(ip.GetAt(index));
+                    index++;
+                    continue;
+                }
+            }
+        }
+        container = nullptr;
     }
 }
 
@@ -2507,7 +2585,7 @@ void NavigationView::ChangeSelectStatusForItem(winrt::IInspectable const& item, 
                     m_shouldIgnoreNextSelectionChange = false;
                 });
             m_shouldIgnoreNextSelectionChange = true;
-            m_selectionModel.SelectAt(ip);
+            UpdateSelectionModelSelection(ip);
         }
     }
 }
