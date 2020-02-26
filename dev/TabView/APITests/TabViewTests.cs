@@ -38,9 +38,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 tabView = new TabView();
                 Content = tabView;
 
-                tabView.TabItems.Add(CreateTabViewitem("Item 0", Symbol.Add));
-                tabView.TabItems.Add(CreateTabViewitem("Item 1", Symbol.AddFriend));
-                tabView.TabItems.Add(CreateTabViewitem("Item 2"));
+                tabView.TabItems.Add(CreateTabViewItem("Item 0", Symbol.Add));
+                tabView.TabItems.Add(CreateTabViewItem("Item 1", Symbol.AddFriend));
+                tabView.TabItems.Add(CreateTabViewItem("Item 2"));
 
                 tabView.SelectedIndex = 0;
                 tabView.SelectedItem = tabView.TabItems[0];
@@ -56,7 +56,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             RunOnUIThread.Execute(() =>
             {
                 VerifyTabWidthVisualStates(tabView.TabItems, true);
-                tabView.TabItems.Add(CreateTabViewitem("Item 3"));
+                tabView.TabItems.Add(CreateTabViewItem("Item 3"));
             });
 
             IdleSynchronizer.Wait();
@@ -93,7 +93,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             }
         }
 
-        private static TabViewItem CreateTabViewitem(string name, Symbol icon, bool closable = true, bool enabled = true)
+        private static TabViewItem CreateTabViewItem(string name, Symbol icon, bool closable = true, bool enabled = true)
         {
             var tabViewItem = new TabViewItem();
 
@@ -105,7 +105,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
             return tabViewItem;
         }
 
-        private static TabViewItem CreateTabViewitem(string name, bool closable = true, bool enabled = true)
+        private static TabViewItem CreateTabViewItem(string name, bool closable = true, bool enabled = true)
         {
             var tabViewItem = new TabViewItem();
 

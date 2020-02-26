@@ -71,6 +71,7 @@ namespace MUXControlsTestApp
                 FirstTab.IsClosable = (bool)IsClosableCheckBox.IsChecked;
             }
         }
+
         public void IsDisabledTabVisibleCheckBox_CheckChanged(object sender, RoutedEventArgs e)
         {
             if (Tabs != null && DisabledTab != null)
