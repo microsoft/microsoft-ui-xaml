@@ -12,7 +12,9 @@
 static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationViewItemPresenter"sv;
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
 static constexpr auto c_rootGrid = L"NVIRootGrid"sv;
-static constexpr auto c_flyoutRootGrid = L"FlyoutRootGrid"sv;
+static constexpr auto c_flyoutContentGrid = L"FlyoutContentGrid"sv;
+static constexpr auto c_flyoutTitleContentPresenterGrid = L"FlyoutTitleContentPresenterGrid"sv;
+static constexpr auto c_flyoutTitleContentPresenter = L"FlyoutTitleContentPresenter"sv;
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
 {
@@ -103,9 +105,19 @@ void NavigationViewItem::OnApplyTemplate()
         UpdateRepeaterItemsSource();
     }
 
-    if (auto flyoutRootGrid = GetTemplateChildT<winrt::Grid>(c_flyoutRootGrid, controlProtected))
+    if (auto flyoutContentGrid = GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected))
     {
-        m_flyoutRootGrid.set(flyoutRootGrid);
+        m_flyoutContentGrid.set(flyoutContentGrid);
+    }
+
+    if (auto flyoutTitleContentPresenterGrid = GetTemplateChildT<winrt::Grid>(c_flyoutTitleContentPresenterGrid, controlProtected))
+    {
+        m_flyoutTitleContentPresenterGrid.set(flyoutTitleContentPresenterGrid);
+    }
+
+    if (auto flyoutTitleContentPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_flyoutTitleContentPresenter, controlProtected))
+    {
+        m_flyoutTitleContentPresenter.set(flyoutTitleContentPresenter);
     }
 
     m_appliedTemplate = true;
@@ -153,6 +165,7 @@ void NavigationViewItem::OnSplitViewPropertyChanged(const winrt::DependencyObjec
         args == winrt::SplitView::DisplayModeProperty())
     {
         UpdateIsClosedCompact();
+        ReparentRepeater();
     }
 }
 
@@ -495,20 +508,46 @@ void NavigationViewItem::ReparentRepeater()
     {
         if (ShouldRepeaterShowInFlyout() && !m_isRepeaterParentedToFlyout)
         {
+            // Reparent repeater to flyout
             m_rootGrid.get().Children().RemoveAtEnd();
-            m_flyoutRootGrid.get().Children().Append(repeater);
+            m_flyoutContentGrid.get().Children().Append(repeater);
             m_isRepeaterParentedToFlyout = true;
 
             PropagateDepthToChildren(0);
         }
         else if (!ShouldRepeaterShowInFlyout() && m_isRepeaterParentedToFlyout)
         {
-            m_flyoutRootGrid.get().Children().RemoveAtEnd();
+            m_flyoutContentGrid.get().Children().RemoveAtEnd();
             m_rootGrid.get().Children().Append(repeater);
             m_isRepeaterParentedToFlyout = false;
 
             PropagateDepthToChildren(1);
         }
+        ReparentContent();
+    }
+}
+
+void NavigationViewItem::ReparentContent()
+{
+    if (!IsOnTopPrimary() && m_isRepeaterParentedToFlyout)
+    {
+        // Move content of item to flyout header
+        if (auto const itemContent = Content())
+        {
+            m_navigationViewItemPresenter.get().Content(nullptr);
+            m_flyoutTitleContentPresenter.get().Content(itemContent);
+        }
+        m_flyoutTitleContentPresenterGrid.get().Visibility(winrt::Visibility::Visible);
+    }
+    else if (m_flyoutTitleContentPresenter.get().Visibility() == winrt::Visibility::Visible)
+    {
+        // Move content of item back to the item
+        if (auto const itemContent = m_flyoutTitleContentPresenter.get().Content())
+        {
+            m_flyoutTitleContentPresenter.get().Content(nullptr);
+            m_navigationViewItemPresenter.get().Content(itemContent);
+        }
+        m_flyoutTitleContentPresenterGrid.get().Visibility(winrt::Visibility::Collapsed);
     }
 }
 

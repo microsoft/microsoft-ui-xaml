@@ -95,6 +95,7 @@ private:
 
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();
+    void ReparentContent();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
     void PropagateDepthToChildren(int depth);
     void UpdateItemIndentation();
@@ -123,8 +124,10 @@ private:
     tracker_ref<winrt::NavigationViewItemPresenter> m_navigationViewItemPresenter{ this };
     tracker_ref<winrt::IInspectable> m_suggestedToolTipContent{ this };
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
-    tracker_ref<winrt::Grid> m_flyoutRootGrid{ this };
+    tracker_ref<winrt::Grid> m_flyoutContentGrid{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
+    tracker_ref<winrt::ContentPresenter> m_flyoutTitleContentPresenter{ this };
+    tracker_ref<winrt::Grid> m_flyoutTitleContentPresenterGrid{ this };
 
     bool m_isClosedCompact{ false };
 
