@@ -58,7 +58,7 @@ public:
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
-    void IsRepeaterVisible(bool visible);
+    void SetRepeaterVisibilityAndUpdatePositionIfRequired(bool shouldShowRepeater);
     bool ShouldRepeaterShowInFlyout();
 
     winrt::ItemsRepeater GetRepeater() { return m_repeater.get(); };
@@ -85,6 +85,7 @@ private:
     void UpdateVisualStateForNavigationViewPositionChange();
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
+    void UpdateVisualStateForPointer();
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();

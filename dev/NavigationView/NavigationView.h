@@ -75,9 +75,8 @@ public:
 
     void CoerceToGreaterThanZero(double& value);
 
-    void RepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
-    void RepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
-    void RepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
+    void OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
+    void OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
     com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
@@ -93,6 +92,8 @@ public:
     void OnNavigationViewItemInvoked(const winrt::NavigationViewItem& nvi);
 
 private:
+
+    void OnRepeaterGettingFocus(const winrt::IInspectable& sender, const winrt::GettingFocusEventArgs& args);
 
     // Selection handling functions
     void OnNavigationViewItemIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args);
