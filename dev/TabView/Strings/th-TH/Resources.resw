@@ -129,8 +129,4 @@
     <value>ปิดแท็บ</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
-  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
-    <value>ปิดแท็บ</value>
-    <comment>Tooltip for the close button on each tab.</comment>
-  </data>
 </root>

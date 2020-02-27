@@ -129,8 +129,4 @@
     <value>關閉索引標籤</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
-  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
-    <value>關閉索引標籤</value>
-    <comment>Tooltip for the close button on each tab.</comment>
-  </data>
 </root>

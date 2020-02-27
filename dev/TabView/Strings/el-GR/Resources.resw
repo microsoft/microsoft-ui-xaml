@@ -129,8 +129,4 @@
     <value>Κλείσιμο καρτέλας</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
-  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
-    <value>Κλείσιμο καρτέλας</value>
-    <comment>Tooltip for the close button on each tab.</comment>
-  </data>
 </root>
