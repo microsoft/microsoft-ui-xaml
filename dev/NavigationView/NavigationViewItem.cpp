@@ -25,6 +25,8 @@ static constexpr auto c_pointerOver = L"PointerOver"sv;
 static constexpr auto c_disabled = L"Disabled"sv;
 static constexpr auto c_enabled = L"Enabled"sv;
 static constexpr auto c_normal = L"Normal"sv;
+static constexpr auto c_chevronHidden = L"ChevronHidden"sv;
+static constexpr auto c_chevronVisible = L"ChevronVisible"sv;
 
 
 void NavigationViewItem::UpdateVisualStateNoTransition()
@@ -250,16 +252,23 @@ void NavigationViewItem::OnIconPropertyChanged(const winrt::DependencyPropertyCh
 void NavigationViewItem::OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRepeaterItemsSource();
+    UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateRepeaterItemsSource();
+    UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     ShowSelectionIndicatorIfRequired();
+}
+
+void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    UpdateVisualStateForChevron();
 }
 
 void NavigationViewItem::ShowSelectionIndicatorIfRequired()
@@ -459,6 +468,22 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
 
     // visual state for focus state. top navigation use it to provide different visual for selected and selected+focused
     UpdateVisualStateForKeyboardFocusedState();
+
+    UpdateVisualStateForChevron();
+}
+
+void NavigationViewItem::UpdateVisualStateForChevron()
+{
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        auto const chevronState = HasChildren() && !IsOnTopPrimary() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? c_chevronVisible : c_chevronHidden;
+        winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), chevronState, true);
+    }
+}
+
+bool NavigationViewItem::HasChildren()
+{
+    return MenuItems().Size() > 0 || MenuItemsSource() != nullptr || HasUnrealizedChildren();
 }
 
 bool NavigationViewItem::ShouldShowIcon()
@@ -503,6 +528,7 @@ void NavigationViewItem::SetRepeaterVisibilityAndUpdatePositionIfRequired(bool s
 
     auto visibility = shouldShowRepeater ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
+
 
     if (ShouldRepeaterShowInFlyout() && shouldShowRepeater)
     {
@@ -568,11 +594,8 @@ void NavigationViewItem::ReparentContent()
     }
 }
 
-// We only want to show flyouts if the item is at the top level of the
-// item tree and navigationview is in compact mode.
 bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
-    UpdateIsClosedCompact();
     return (m_isClosedCompact && m_isTopLevelItem) || IsOnTopPrimary();
 }
 
@@ -607,6 +630,12 @@ void NavigationViewItem::PropagateDepthToChildren(int depth)
             }
         }
     }
+}
+
+void NavigationViewItem::OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args)
+{
+    IsExpanded(!IsExpanded());
+    args.Handled(true);
 }
 
 void NavigationViewItem::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)

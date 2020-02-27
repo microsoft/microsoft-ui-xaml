@@ -47,7 +47,7 @@
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 14" x:Name="MI14" SelectsOnInvoked="False">
                     <muxcontrols:NavigationViewItem.MenuItems>
-                        <muxcontrols:NavigationViewItem Content="Menu Item 15" Icon="Save" x:Name="MI15" SelectsOnInvoked="False">
+                        <muxcontrols:NavigationViewItem Content="Menu Item 15 (Selectable)" Icon="Save" x:Name="MI15">
                             <muxcontrols:NavigationViewItem.MenuItems>
                                 <muxcontrols:NavigationViewItem Content="Menu Item 16" Icon="Paste" x:Name="MI16" />
                                 <muxcontrols:NavigationViewItem Content="Menu Item 17" Icon="Cut" x:Name="MI17" />
