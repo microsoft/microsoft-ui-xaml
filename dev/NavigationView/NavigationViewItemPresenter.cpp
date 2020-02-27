@@ -8,6 +8,7 @@
 #include "SharedHelpers.h"
 
 static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
+static constexpr auto c_expandCollapseChevron = L"ExpandCollapseChevron"sv;
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
@@ -26,6 +27,12 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 
     if (auto navigationViewItem = GetNavigationViewItem())
     {
+        if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
+        {
+            m_expandCollapseChevron.set(expandCollapseChevron);
+            m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+        }
+
         navigationViewItem->UpdateVisualStateNoTransition();
     }
 
@@ -79,4 +86,10 @@ void NavigationViewItemPresenter::UpdateMargin()
         auto const oldGridMargin = grid.Margin();
         grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
     }
+}
+
+void NavigationViewItemPresenter::IsExpandCollapseChevronVisible(bool isVisible)
+{
+    auto const visibility = isVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+    m_expandCollapseChevron.get().Visibility(visibility);
 }

@@ -50,7 +50,7 @@ void NavigationViewItemProperties::EnsureProperties()
                 winrt::name_of<winrt::NavigationViewItem>(),
                 false /* isAttached */,
                 ValueHelper<bool>::BoxValueIfNecessary(false),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHasUnrealizedChildrenPropertyChanged));
     }
     if (!s_IconProperty)
     {
@@ -131,6 +131,14 @@ void NavigationViewItemProperties::ClearProperties()
     s_MenuItemsSourceProperty = nullptr;
     s_SelectsOnInvokedProperty = nullptr;
     NavigationViewItemBase::ClearProperties();
+}
+
+void NavigationViewItemProperties::OnHasUnrealizedChildrenPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NavigationViewItem>();
+    winrt::get_self<NavigationViewItem>(owner)->OnHasUnrealizedChildrenPropertyChanged(args);
 }
 
 void NavigationViewItemProperties::OnIconPropertyChanged(

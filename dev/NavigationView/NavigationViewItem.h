@@ -31,6 +31,7 @@ public:
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     winrt::UIElement GetSelectionIndicator();
     winrt::ToolTip GetToolTip();
@@ -68,6 +69,8 @@ public:
     void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
     bool IsTopLevelItem() { return m_isTopLevelItem; };
 
+    void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
+
 private:
     void UpdateNavigationViewItemToolTip();
     void SuggestedToolTipChanged(winrt::IInspectable const& newContent);
@@ -86,6 +89,7 @@ private:
     void UpdateVisualStateForKeyboardFocusedState();
     void UpdateVisualStateForToolTip();
     void UpdateVisualStateForPointer();
+    void UpdateVisualStateForChevron();
 
     void UpdateVisualState(bool useTransitions);
     bool ShouldShowIcon();
@@ -93,6 +97,7 @@ private:
     bool ShouldEnableToolTip();
     bool IsOnLeftNav();
     bool IsOnTopPrimary();
+    bool HasChildren();
 
     void UpdateRepeaterItemsSource();
     void ReparentRepeater();

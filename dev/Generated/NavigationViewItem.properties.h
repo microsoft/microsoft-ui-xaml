@@ -54,6 +54,10 @@ public:
     static void EnsureProperties();
     static void ClearProperties();
 
+    static void OnHasUnrealizedChildrenPropertyChanged(
+        winrt::DependencyObject const& sender,
+        winrt::DependencyPropertyChangedEventArgs const& args);
+
     static void OnIconPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);

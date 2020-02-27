@@ -25,12 +25,17 @@ public:
 
     void UpdateContentLeftIndentation(double leftIndentation);
 
+    void IsExpandCollapseChevronVisible(bool isVisible);
+
 private:
     NavigationViewItem * GetNavigationViewItem();
     void UpdateMargin();
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
     tracker_ref<winrt::Grid> m_contentGrid{ this };
+    tracker_ref<winrt::Grid> m_expandCollapseChevron{ this };
+
+    winrt::event_token m_expandCollapseChevronTappedToken{};
 
     double m_leftIndentation{ 0 };
 };
