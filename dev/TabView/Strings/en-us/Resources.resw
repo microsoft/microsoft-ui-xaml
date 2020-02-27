@@ -133,4 +133,8 @@
     <value>Close tab</value>
     <comment>Tooltip for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>Close tab (Ctrl+F4)</value>
+    <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
+  </data>
 </root>

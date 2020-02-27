@@ -40,24 +40,13 @@ void TabViewItem::OnApplyTemplate()
                 winrt::AutomationProperties::SetName(closeButton, closeButtonName);
             }
 
-            // Setup the tooltip for the close button
-            auto tooltip = winrt::ToolTip();
-            auto closeButtonTooltipText = static_cast<std::wstring>(ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip));
-
             if (internalTabView)
             {
-                auto const keyboardAcceleratorText = internalTabView->GetCloseButtonLocalizedKeyboardAccelerator();
-                if (keyboardAcceleratorText != hstring{})
-                {
-                    // TODO:
-                    // - This value is the same for all tabs in a tabview. Can we compute this only once and then use it for all tab items?
-                    closeButtonTooltipText = closeButtonTooltipText.append(hstring(L" (")).append(keyboardAcceleratorText).append(hstring(L")"));
-                }
-
+                // Setup the tooltip for the close button
+                auto tooltip = winrt::ToolTip();
+                tooltip.Content(box_value(internalTabView->GetTabCloseButtonTooltipText()));
+                winrt::ToolTipService::SetToolTip(closeButton, tooltip);
             }
-
-            tooltip.Content(box_value(closeButtonTooltipText));
-            winrt::ToolTipService::SetToolTip(closeButton, tooltip);
 
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }

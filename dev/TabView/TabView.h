@@ -114,7 +114,7 @@ public:
 
     winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
 
-    winrt::hstring GetCloseButtonLocalizedKeyboardAccelerator() { return m_tabItemCloseKeyboardAccelerator; }
+    winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -185,8 +185,7 @@ private:
 
     DispatcherHelper m_dispatcherHelper{ *this };
 
-    // TODO: This might be the member holding the localized Keyboard Accelerator set in the TabView for closing tab items.
-    winrt::hstring m_tabItemCloseKeyboardAccelerator{};
+    winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
 };
