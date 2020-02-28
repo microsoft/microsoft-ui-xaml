@@ -119,10 +119,7 @@ void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPrope
         }
     }
 
-    if (IsIndeterminate())
-    {
-        UpdateRing();
-    }
+    UpdateRing();
 }
 
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -193,7 +190,7 @@ void ProgressRing::SetLottieStrokeThickness(winrt::impl::com_ref<AnimatedVisuals
 {
     const auto compositor = winrt::Window::Current().Compositor();
 
-    progressRingIndeterminate->GetThemeProperties(compositor).InsertScalar(L"StrokeWidth", static_cast<float>(StrokeThickness()));
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertScalar(L"StrokeWidth", static_cast<float>(StrokeThickness()) / 2.0f );
 }
 
 void ProgressRing::UpdateStates()
