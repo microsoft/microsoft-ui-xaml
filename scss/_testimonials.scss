@@ -1,0 +1,11 @@
+.testimonials {
+  padding-top: 7rem;
+  padding-bottom: 7rem;
+  .testimonial-item {
+    max-width: 18rem;
+    img {
+      max-width: 12rem;
+      box-shadow: 0px 5px 5px 0px $gray-500;
+    }
+  }
+}
