@@ -1,8 +1,0 @@
-parameters:
-  nugetVersion: 5.2.0
-
-steps:
-  - task: NuGetToolInstaller@0
-    displayName: 'Use NuGet ${{ parameters.nugetVersion }}'
-    inputs:
-      versionSpec: ${{ parameters.nugetVersion }}

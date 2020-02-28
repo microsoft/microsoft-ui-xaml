@@ -1,4 +1,0 @@
-# DISABLED: Turned this off since it's currently generating very noisy notifications to the team and reviewers can't
-# tell the difference between being explicitly added as a reviewer versus by way of this group.
-# Add the code reviews team to all PRs in the repo.
-# * @Microsoft/microsoft-ui-xaml-codereviews
