@@ -58,6 +58,11 @@ namespace MUXControlsTestApp
             TestProgressRing.Height = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
         }
 
+        public void UpdateStroke_Click(object sender, RoutedEventArgs e)
+        {
+            TestProgressRing.StrokeThickness = String.IsNullOrEmpty(StrokeInput.Text) ? Double.Parse(StrokeInput.PlaceholderText) : Double.Parse(StrokeInput.Text);
+        }
+
         public void UpdateValue_Click(object sender, RoutedEventArgs e)
         {
             TestProgressRing.Value = String.IsNullOrEmpty(ValueInput.Text) ? Double.Parse(ValueInput.PlaceholderText) : Double.Parse(ValueInput.Text);

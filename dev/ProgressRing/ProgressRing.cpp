@@ -51,7 +51,6 @@ void ProgressRing::OnApplyTemplate()
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
     m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
-    GetStrokeThickness();
     ApplyLottieAnimation();
     UpdateRing();
     UpdateStates();
@@ -110,6 +109,22 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
     }
 }
 
+void ProgressRing::OnStrokeThicknessPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    if (auto&& player = m_player.get())
+    {
+        if (auto const progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
+        {
+            SetLottieStrokeThickness(progressRingIndeterminate);
+        }
+    }
+
+    if (IsIndeterminate())
+    {
+        UpdateRing();
+    }
+}
+
 void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateStates();
@@ -125,6 +140,7 @@ void ProgressRing::ApplyLottieAnimation()
         {
             SetLottieForegroundColor(progressRingIndeterminate);
             SetLottieBackgroundColor(progressRingIndeterminate);
+            SetLottieStrokeThickness(progressRingIndeterminate);
         }
     }
 }
@@ -173,6 +189,13 @@ void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals
     progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, color);
 }
 
+void ProgressRing::SetLottieStrokeThickness(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)
+{
+    const auto compositor = winrt::Window::Current().Compositor();
+
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertScalar(L"StrokeWidth", static_cast<float>(StrokeThickness()));
+}
+
 void ProgressRing::UpdateStates()
 {
     if (IsIndeterminate())
@@ -215,7 +238,7 @@ void ProgressRing::UpdateSegment()
             return 2 * M_PI * normalizedRange;
         }();
 
-        const double thickness = GetStrokeThickness();
+        const double thickness = StrokeThickness();
 
         const auto size = GetCircleRadius(thickness, ActualWidth());
         const double translationFactor = std::max(thickness / 2.0, 0.0);
@@ -230,7 +253,7 @@ void ProgressRing::UpdateSegment()
 
 void ProgressRing::UpdateRing()
 {
-    const double thickness = GetStrokeThickness();
+    const double thickness = StrokeThickness();
     const auto radius = GetCircleRadius(thickness, ActualWidth());
     const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
 

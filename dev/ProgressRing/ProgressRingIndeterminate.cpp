@@ -44,6 +44,7 @@ namespace
         StepEasingFunction _holdThenStepEasingFunction{ nullptr };
         ContainerVisual _root{ nullptr };
         ExpressionAnimation _rootProgress{ nullptr };
+        ExpressionAnimation _scalarExpressionAnimation{ nullptr };
         CompositionColorBrush _themeColor_Foreground_0{ nullptr };
         CompositionColorBrush _themeColor_Foreground_1{ nullptr };
 
@@ -181,6 +182,13 @@ namespace
             return result;
         }
 
+        ExpressionAnimation ScalarExpressionAnimation()
+        {
+            const auto result = _scalarExpressionAnimation = _c.CreateExpressionAnimation(L"_theme.StrokeWidth");
+            result.SetReferenceParameter(L"_theme", _themeProperties);
+            return result;
+        }
+
         ShapeVisual ShapeVisual_0()
         {
             const auto result = _c.CreateShapeVisual();
@@ -204,7 +212,7 @@ namespace
             result.StrokeEndCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeMiterLimit(4);
-            result.StrokeThickness(2);
+            result.StartAnimation(L"StrokeThickness", ScalarExpressionAnimation());
             return result;
         }
 
@@ -219,7 +227,7 @@ namespace
             result.StrokeEndCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeMiterLimit(4);
-            result.StrokeThickness(2);
+            result.StartAnimation(L"StrokeThickness", ScalarExpressionAnimation());
             return result;
         }
 
@@ -234,7 +242,7 @@ namespace
             result.StrokeEndCap(CompositionStrokeCap::Round);
             result.StrokeStartCap(CompositionStrokeCap::Round);
             result.StrokeMiterLimit(4);
-            result.StrokeThickness(2);
+            result.StartAnimation(L"StrokeThickness", ScalarExpressionAnimation());
             return result;
         }
 
@@ -373,6 +381,7 @@ CompositionPropertySet AnimatedVisuals::ProgressRingIndeterminate::EnsureThemePr
         _themeProperties = compositor.CreatePropertySet();
         _themeProperties.InsertVector4(L"Background", { 211, 211, 211, 255 });
         _themeProperties.InsertVector4(L"Foreground", { 0, 120, 215, 255 });
+        _themeProperties.InsertScalar(L"StrokeWidth", { 2 });
     }
     return _themeProperties;
 }
