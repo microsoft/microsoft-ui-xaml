@@ -310,7 +310,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         [TestMethod]
         public void HoveringBehaviorTest()
         {
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone))
+            // Overlay pass through element is only available from IFlyoutBase3 forward
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone) || !ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3"))
             {
                 Log.Comment("Skipping tests on phone, because menubar is not supported.");
                 return;
@@ -333,19 +334,14 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     () => FindCore.ByName("Add0", shouldWait: false) != null, // The item should be in the tree
                     () => true);
 
-                // overlay pass through element is only available from IFlyoutBase3 forward
                 // Check if hovering over the next button actually will show the correct item
-                if (ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3"))
-                {
-                    // Hover over next item
-                    VerifyElement.NotFound("Add1", FindBy.Name);
-                    InputHelper.MoveMouse(help1, 0, 0);
-                    InputHelper.MoveMouse(help1, 1, 1);
-                    InputHelper.MoveMouse(help1, 5, 5);
+                VerifyElement.NotFound("Add1", FindBy.Name);
+                InputHelper.MoveMouse(help1, 0, 0);
+                InputHelper.MoveMouse(help1, 1, 1);
+                InputHelper.MoveMouse(help1, 5, 5);
 
-                    // Verify flyout item is existent
-                    VerifyElement.Found("Add1", FindBy.Name);
-                }
+                // Verify flyout item is existent
+                VerifyElement.Found("Add1", FindBy.Name);
             }
         }
 
