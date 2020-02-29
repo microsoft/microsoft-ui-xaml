@@ -26,9 +26,14 @@ TwoPaneView::TwoPaneView()
     SetDefaultStyleKey(this);
 
     SizeChanged({ this, &TwoPaneView::OnSizeChanged });
-    winrt::Window::Current().SizeChanged({ this, &TwoPaneView::OnWindowSizeChanged });
+    m_windowSizeChangedToken = winrt::Window::Current().SizeChanged({ this, &TwoPaneView::OnWindowSizeChanged });
 
     EnsureProperties();
+}
+
+TwoPaneView::~TwoPaneView()
+{
+    winrt::Window::Current().SizeChanged(m_windowSizeChangedToken);
 }
 
 void TwoPaneView::OnApplyTemplate()
@@ -124,7 +129,7 @@ void TwoPaneView::UpdateMode()
     DisplayRegionHelperInfo info = DisplayRegionHelper::GetRegionInfo();
     winrt::Rect rcControl = GetControlRect();
     bool isInMultipleRegions = IsInMultipleRegions(info, rcControl);
-    
+
     if (isInMultipleRegions)
     {
         if (info.Mode == winrt::TwoPaneViewMode::Wide)
