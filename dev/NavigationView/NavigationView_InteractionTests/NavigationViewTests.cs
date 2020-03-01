@@ -4179,6 +4179,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuide","D")]
+        public void VerifyIconsRespectCompactPaneLength()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
+            {
+                var checkMenuItemsButton = FindElement.ByName("CheckMenuItemsOffset");
+                var compactpaneCheckbox = new ComboBox(FindElement.ByName("CompactPaneLenghtComboBox"));
+                var currentStatus = new CheckBox(FindElement.ByName("MenuItemsCorrectOffset"));
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+
+                compactpaneCheckbox.SelectItemByName("96");
+                Wait.ForIdle();
+
+                checkMenuItemsButton.Click();
+                Wait.ForIdle();
+                Verify.IsTrue(currentStatus.ToggleState == ToggleState.On);
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
