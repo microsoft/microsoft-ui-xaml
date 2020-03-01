@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #include "pch.h"
@@ -7,6 +7,8 @@
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_iconBoxColumnDefinitionName = L"IconColumn"sv;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
@@ -14,12 +16,16 @@ NavigationViewItemPresenter::NavigationViewItemPresenter()
 
 void NavigationViewItemPresenter::OnApplyTemplate()
 {
+    winrt::IControlProtected controlProtected = *this;
+
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
     if (auto navigationViewItem = GetNavigationViewItem())
     {
         navigationViewItem->UpdateVisualStateNoTransition();
     }
+
+    m_iconBoxColumnDefinition.set(GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, controlProtected));
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
@@ -54,4 +60,14 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
         navigationViewItem = winrt::get_self<NavigationViewItem>(item);
     }
     return navigationViewItem;
+}
+
+void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength)
+{
+    if (auto iconGridColumn = m_iconBoxColumnDefinition.try_as<winrt::ColumnDefinition>())
+    {
+        auto gridLength = iconGridColumn.Width();
+        gridLength.Value = compactPaneLength;
+        iconGridColumn.Width(gridLength);
+    }
 }

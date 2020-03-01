@@ -24,6 +24,7 @@
 #include "NavigationViewAutomationPeer.h"
 #include "StackLayout.h"
 
+// General items
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
 static constexpr auto c_paneTitleFrameworkElement = L"PaneTitleTextBlock"sv;
@@ -36,6 +37,7 @@ static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
 static constexpr auto c_contentGridName = L"ContentGrid"sv;
 static constexpr auto c_searchButtonName = L"PaneAutoSuggestButton"sv;
+static constexpr auto c_paneToggleButtonGridName = L"PaneToggleButtonGrid"sv;
 static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
@@ -45,6 +47,7 @@ static constexpr auto c_navViewCloseButton = L"NavigationViewCloseButton"sv;
 static constexpr auto c_navViewCloseButtonToolTip = L"NavigationViewCloseButtonToolTip"sv;
 static constexpr auto c_paneShadowReceiverCanvas = L"PaneShadowReceiver"sv;
 
+// DisplayMode Top specific items
 static constexpr auto c_topNavMenuItemsHost = L"TopNavMenuItemsHost"sv;
 static constexpr auto c_topNavOverflowButton = L"TopNavOverflowButton"sv;
 static constexpr auto c_topNavMenuItemsOverflowHost = L"TopNavMenuItemsOverflowHost"sv;
@@ -54,6 +57,7 @@ static constexpr auto c_leftNavPaneAutoSuggestBoxPresenter = L"PaneAutoSuggestBo
 static constexpr auto c_topNavPaneAutoSuggestBoxPresenter = L"TopPaneAutoSuggestBoxPresenter"sv;
 static constexpr auto c_paneTitlePresenter = L"PaneTitlePresenter"sv;
 
+// DisplayMode Left specific items
 static constexpr auto c_leftNavFooterContentBorder = L"FooterContentBorder"sv;
 static constexpr auto c_leftNavPaneHeaderContentBorder = L"PaneHeaderContentBorder"sv;
 static constexpr auto c_leftNavPaneCustomContentBorder = L"PaneCustomContentBorder"sv;
@@ -256,6 +260,7 @@ void NavigationView::OnApplyTemplate()
     m_paneTitleOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneTitleOnTopPane, controlProtected));
     m_paneCustomContentOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected));
     m_paneFooterOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected));
+    m_paneToggleButtonGrid.set(GetTemplateChildT<winrt::Grid>(c_paneToggleButtonGridName, controlProtected));
 
     // Get a pointer to the root SplitView
     if (auto splitView = GetTemplateChildT<winrt::SplitView>(c_rootSplitViewName, controlProtected))
@@ -3026,6 +3031,15 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     {
         // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
+
+        // Update pane-button-grid width hwne pane is closed and we are not in minimal
+        if (!IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Minimal)
+        {
+            if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
+            {
+                paneButtonGrid.Width(CompactPaneLength());
+            }
+        }
     }
     else if (property == s_IsTitleBarAutoPaddingEnabledProperty)
     {
@@ -3105,6 +3119,36 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+    if (isPaneOpen || DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+    {
+        // Opening pane, so we need to clear the button grid width to prevent clipping
+        if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
+        {
+            paneButtonGrid.Width(NAN);
+        }
+    }
+    else
+    {
+        // Closing pane, so we need to set width of button grid so they are centered
+        if (DisplayMode() != winrt::NavigationViewDisplayMode::Minimal)
+        {
+            // Update pane (toggle) button grid's width for button centering
+            if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
+            {
+                paneButtonGrid.Width(CompactPaneLength());
+            }
+        }
+    }
+
+    if (isPaneOpen)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"PaneOpen", false /* usetransition */);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"PaneClosed", false /* usetransition */);
+    }
+
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
     UpdateSettingsItemToolTip();
@@ -3155,7 +3199,15 @@ void NavigationView::UpdatePaneDisplayMode()
                 thisAsUIElement8.KeyTipTarget(paneToggleButton);
             }
         }
-        
+
+        //if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
+        //{
+        //    // Update pane (toggle) button grid's width for button centering
+        //    if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
+        //    {
+        //        paneButtonGrid.Width(CompactPaneLength());
+        //    }
+        //}
     }
     else
     {
