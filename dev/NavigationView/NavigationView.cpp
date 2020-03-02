@@ -37,7 +37,7 @@ static constexpr auto c_paneContentGridName = L"PaneContentGrid"sv;
 static constexpr auto c_rootGridName = L"RootGrid"sv;
 static constexpr auto c_contentGridName = L"ContentGrid"sv;
 static constexpr auto c_searchButtonName = L"PaneAutoSuggestButton"sv;
-static constexpr auto c_paneToggleButtonGridName = L"PaneToggleButtonGrid"sv;
+static constexpr auto c_paneToggleButtonIconGridColumnName = L"PaneToggleButtonIconWidthColumn"sv;
 static constexpr auto c_togglePaneTopPadding = L"TogglePaneTopPadding"sv;
 static constexpr auto c_contentPaneTopPadding = L"ContentPaneTopPadding"sv;
 static constexpr auto c_contentLeftPadding = L"ContentLeftPadding"sv;
@@ -260,7 +260,6 @@ void NavigationView::OnApplyTemplate()
     m_paneTitleOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneTitleOnTopPane, controlProtected));
     m_paneCustomContentOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneCustomContentOnTopPane, controlProtected));
     m_paneFooterOnTopPane.set(GetTemplateChildT<winrt::ContentControl>(c_paneFooterOnTopPane, controlProtected));
-    m_paneToggleButtonGrid.set(GetTemplateChildT<winrt::Grid>(c_paneToggleButtonGridName, controlProtected));
 
     // Get a pointer to the root SplitView
     if (auto splitView = GetTemplateChildT<winrt::SplitView>(c_rootSplitViewName, controlProtected))
@@ -1117,6 +1116,51 @@ void NavigationView::UpdateIsClosedCompact()
         UpdateBackAndCloseButtonsVisibility();
         UpdatePaneTitleMargins();
         UpdatePaneToggleSize();
+    }
+}
+
+void NavigationView::UpdatePaneButtonsWidths()
+{
+    if (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top
+        || DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+    {
+        if (auto backButton = m_backButton.try_as<winrt::Button>())
+        {
+            backButton.Width(40);
+        }
+        if (auto paneToggleButton = m_paneToggleButton.try_as<winrt::Button>())
+        {
+            paneToggleButton.MinWidth(40);
+        }
+        if(auto paneButton = m_paneToggleButton.try_as<winrt::Button>())
+        {
+            if (auto paneToggleButtonIconColumn = paneButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName).try_as<winrt::ColumnDefinition>())
+            {
+                auto width = paneToggleButtonIconColumn.Width();
+                width.Value = 40;
+                paneToggleButtonIconColumn.Width(width);
+            }
+        }
+    }
+    else
+    {
+        if (auto backButton = m_backButton.try_as<winrt::Button>())
+        {
+            backButton.Width(CompactPaneLength());
+        }
+        if (auto paneToggleButton = m_paneToggleButton.try_as<winrt::Button>())
+        {
+            paneToggleButton.MinWidth(CompactPaneLength());
+        }
+        if (auto paneButton = m_paneToggleButton.try_as<winrt::Button>())
+        {
+            if (auto paneToggleButtonIconColumn = paneButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName).try_as<winrt::ColumnDefinition>())
+            {
+                auto width = paneToggleButtonIconColumn.Width();
+                width.Value = CompactPaneLength();
+                paneToggleButtonIconColumn.Width(width);
+            }
+        }
     }
 }
 
@@ -2981,6 +3025,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneTitleFrameworkElementParents();
         UpdatePaneVisibility();
         UpdateVisualState();
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsPaneVisibleProperty)
     {
@@ -3033,13 +3078,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         UpdatePaneShadow();
 
         // Update pane-button-grid width when pane is closed and we are not in minimal
-        if (!IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Minimal)
-        {
-            if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
-            {
-                paneButtonGrid.Width(CompactPaneLength());
-            }
-        }
+        UpdatePaneButtonsWidths();
     }
     else if (property == s_IsTitleBarAutoPaddingEnabledProperty)
     {
@@ -3119,35 +3158,6 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
-    if (isPaneOpen || DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
-    {
-        // Opening pane, so we need to clear the button grid width to prevent clipping
-        if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
-        {
-            paneButtonGrid.Width(NAN);
-        }
-    }
-    else
-    {
-        // Closing pane, so we need to set width of button grid so they are centered
-        if (DisplayMode() != winrt::NavigationViewDisplayMode::Minimal)
-        {
-            // Update pane (toggle) button grid's width for button centering
-            if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
-            {
-                paneButtonGrid.Width(CompactPaneLength());
-            }
-        }
-    }
-
-    if (isPaneOpen)
-    {
-        winrt::VisualStateManager::GoToState(*this, L"PaneOpen", false /* usetransition */);
-    }
-    else
-    {
-        winrt::VisualStateManager::GoToState(*this, L"PaneClosed", false /* usetransition */);
-    }
 
     SetPaneToggleButtonAutomationName();
     UpdatePaneTabFocusNavigation();
@@ -3168,6 +3178,7 @@ void NavigationView::OnIsPaneOpenChanged()
             }
         }
     }
+    UpdatePaneButtonsWidths();
 }
 
 void NavigationView::UpdatePaneToggleButtonVisibility()
