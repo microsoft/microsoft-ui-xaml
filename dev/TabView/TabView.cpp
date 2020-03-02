@@ -210,7 +210,7 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
     UpdateTabWidths();
 
     // Switch the visual states of all tab items to the correct TabViewWidthMode
-    for (auto item : TabItems())
+    for (auto&& item : TabItems())
     {
         auto tvi = item.try_as<TabViewItem>();
         if (!tvi)
@@ -228,7 +228,7 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
 void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs&)
 {
     // Switch the visual states of all tab items to to the correct closebutton overlay mode
-    for (auto item : TabItems())
+    for (auto&& item : TabItems())
     {
         auto tvi = item.try_as<TabViewItem>();
         if (!tvi)
@@ -637,6 +637,7 @@ void TabView::UpdateTabWidths()
                 }
                 else
                 {
+                    // Case: TabWidthMode "Compact" or "FitToContent"
                     tabColumn.MaxWidth(availableWidth);
                     tabColumn.Width(winrt::GridLengthHelper::FromValueAndType(1.0, winrt::GridUnitType::Auto));
                     if (auto listview = m_listView.get())

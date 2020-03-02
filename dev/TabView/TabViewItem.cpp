@@ -175,6 +175,12 @@ void TabViewItem::UpdateCloseButton()
                 }
                 break;
             }
+            default:
+            {
+                // Default, use "Auto"
+                winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
+                break;
+            }
         }
     }
 }
