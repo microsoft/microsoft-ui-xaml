@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using MUXControlsTestApp.Utilities;
@@ -940,21 +940,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 selectionModel.SelectRange(IndexPath.CreateFrom(0), IndexPath.CreateFrom(1, 1));
 
                 ValidateSelection(selectionModel,
-                   new List<IndexPath>()
-                   {
-                       Path(0, 0),
-                       Path(0, 1),
-                       Path(0, 2),
-                       Path(0),
-                       Path(1, 0),
-                       Path(1, 1)
-                   },
-                   new List<IndexPath>()
-                   {
-                       Path(),
-                       Path(1)
-                   },
-                   1 /* selectedInnerNodes */);
+                    new List<IndexPath>()
+                    {
+                        Path(0, 0),
+                        Path(0, 1),
+                        Path(0, 2),
+                        Path(0),
+                        Path(1, 0),
+                        Path(1, 1)
+                    },
+                    new List<IndexPath>()
+                    {
+                        Path(),
+                        Path(1)
+                    },
+                    1 /* selectedInnerNodes */);
+
+                selectionModel = new SelectionModel() { Source = CreateNestedData(2, 2, 1) };
+
+                selectionModel.SelectRange(
+                    Path(1), Path(2));
+
+                ValidateSelection(
+                    selectionModel,
+                    new List<IndexPath> {
+                        Path(1,0,0),
+                        Path(1), Path(2),
+                        Path(1,0),Path(1,1),
+                        Path(2,0),Path(2,1),
+                        Path(1,0,1),
+                        Path(1,1,0),Path(1,1,1),
+                        Path(2,0,0),Path(2,0,1),
+                        Path(2,1,0),Path(2,1,1),
+
+                    },
+                    new List<IndexPath> { IndexPath.CreateFromIndices(new List<int> { }) },
+                    12);
+
             });
         }
 
