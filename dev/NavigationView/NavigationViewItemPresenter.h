@@ -23,12 +23,13 @@ public:
 
     winrt::UIElement GetSelectionIndicator();
 
-    void UpdateCompactPaneLength(double compactPaneLength);
+    void UpdateCompactPaneLength(double compactPaneLength,bool shouldUpdate);
 
 private:
     NavigationViewItem * GetNavigationViewItem();
 
     tracker_ref<winrt::ColumnDefinition> m_iconBoxColumnDefinition{ this };
+    double m_compactPaneLengthValue = 40;
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
 };
