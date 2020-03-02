@@ -3032,7 +3032,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
         // Need to update receiver margins when CompactPaneLength changes
         UpdatePaneShadow();
 
-        // Update pane-button-grid width hwne pane is closed and we are not in minimal
+        // Update pane-button-grid width when pane is closed and we are not in minimal
         if (!IsPaneOpen() && DisplayMode() != winrt::NavigationViewDisplayMode::Minimal)
         {
             if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
@@ -3199,15 +3199,6 @@ void NavigationView::UpdatePaneDisplayMode()
                 thisAsUIElement8.KeyTipTarget(paneToggleButton);
             }
         }
-
-        //if (DisplayMode() == winrt::NavigationViewDisplayMode::Compact)
-        //{
-        //    // Update pane (toggle) button grid's width for button centering
-        //    if (auto paneButtonGrid = m_paneToggleButtonGrid.try_as<winrt::FrameworkElement>())
-        //    {
-        //        paneButtonGrid.Width(CompactPaneLength());
-        //    }
-        //}
     }
     else
     {

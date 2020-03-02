@@ -4180,7 +4180,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         }
 
         [TestMethod]
-        [TestProperty("TestSuide","D")]
+        [TestProperty("TestSuite","D")]
         public void VerifyIconsRespectCompactPaneLength()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView compact pane length test" }))
