@@ -69,18 +69,14 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
 
 void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate)
 {
-    if (this) 
+    m_compactPaneLengthValue = compactPaneLength;
+    if (shouldUpdate)
     {
-        m_compactPaneLengthValue = compactPaneLength;
-        if (shouldUpdate)
+        if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
         {
-            if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
-            {
-                auto gridLength = iconGridColumn.Width();
-                gridLength.Value = compactPaneLength;
-                iconGridColumn.Width(gridLength);
-            }
+            auto gridLength = iconGridColumn.Width();
+            gridLength.Value = compactPaneLength;
+            iconGridColumn.Width(gridLength);
         }
     }
-
 }

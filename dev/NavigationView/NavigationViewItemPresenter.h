@@ -28,7 +28,7 @@ public:
 private:
     NavigationViewItem * GetNavigationViewItem();
 
-    double m_compactPaneLengthValue = 40;
+    double m_compactPaneLengthValue { 40 };
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
 };
