@@ -26,14 +26,9 @@ TwoPaneView::TwoPaneView()
     SetDefaultStyleKey(this);
 
     SizeChanged({ this, &TwoPaneView::OnSizeChanged });
-    m_windowSizeChangedToken = winrt::Window::Current().SizeChanged({ this, &TwoPaneView::OnWindowSizeChanged });
+    m_windowSizeChangedRevoker = winrt::Window::Current().SizeChanged(winrt::auto_revoke, { this, &TwoPaneView::OnWindowSizeChanged });
 
     EnsureProperties();
-}
-
-TwoPaneView::~TwoPaneView()
-{
-    winrt::Window::Current().SizeChanged(m_windowSizeChangedToken);
 }
 
 void TwoPaneView::OnApplyTemplate()
