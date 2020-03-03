@@ -146,6 +146,7 @@ private:
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
     void RecycleContainer(const winrt::UIElement& container);
 
+    void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
 
     void ClosePaneIfNeccessaryAfterItemIsClicked(const winrt::NavigationViewItem& selectedItem);
     bool NeedTopPaddingForRS5OrHigher(winrt::CoreApplicationViewTitleBar const& coreTitleBar);
@@ -195,6 +196,7 @@ private:
     void HandleTopNavigationMeasureOverrideOverflow(const winrt::Windows::Foundation::Size & availableSize);
     void SetOverflowButtonVisibility(winrt::Visibility const& visibility);
     void SelectOverflowItem(winrt::IInspectable const& item, winrt::IndexPath const& ip);
+    void SelectandMoveOverflowItem(winrt::IInspectable const& selectedItem, winrt::IndexPath const& selectedIndex, bool closeFlyout);
 
     void ResetAndRearrangeTopNavItems(winrt::Size const& availableSize);
     void ArrangeTopNavItems(winrt::Size const& availableSize);
@@ -402,6 +404,8 @@ private:
     winrt::SelectionModel::SelectionChanged_revoker m_selectionChangedRevoker{};
     winrt::SelectionModel::ChildrenRequested_revoker m_childrenRequestedRevoker{};
 
+    winrt::FlyoutBase::Closing_revoker m_flyoutClosingRevoker{};
+
     bool m_wasForceClosed{ false };
     bool m_isClosedCompact{ false };
     bool m_blockNextClosingEvent{ false };
@@ -434,5 +438,7 @@ private:
     bool m_isOpenPaneForInteraction{ false };
 
     int32_t m_indexOfLastFocusedItem{ -1 };
+
+    bool m_moveTopNavOverflowItemOnFlyoutClose{ false };
 };
 

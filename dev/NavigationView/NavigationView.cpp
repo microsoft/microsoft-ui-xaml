@@ -211,6 +211,7 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
         return;
     }
 
+    bool setSelectedItem = true;
     auto const selectedIndex = selectionModel.SelectedIndex();
     if (IsTopNavigationView())
     {
@@ -236,38 +237,40 @@ void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionMode
 
             if (itemShouldBeMoved)
             {
-                // SelectOverflowItem is moving data in/out of overflow.
-                auto scopeGuard = gsl::finally([this]()
-                    {
-                        m_selectionChangeFromOverflowMenu = false;
-                    });
-                m_selectionChangeFromOverflowMenu = true;
-
-                CloseTopNavigationViewFlyout();
-
-                if (!IsSelectionSuppressed(selectedItem))
-                {
-                    SelectOverflowItem(selectedItem, selectedIndex);
-                }
+                SelectandMoveOverflowItem(selectedItem, selectedIndex, true /*closeFlyout*/);
+                setSelectedItem = false;
             }
             else
             {
-                // TODO: Add flag that keeps track of the fact that item will need to be moved if no leaf
-                // item is selected.
-                CloseFlyoutIfRequired(selectedIndex);
-                SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+                m_moveTopNavOverflowItemOnFlyoutClose = true;
             }
         } 
-        else
-        {
-            CloseFlyoutIfRequired(selectedIndex);
-            SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
-        }
     }
-    else
+
+    if (setSelectedItem)
     {
         CloseFlyoutIfRequired(selectedIndex);
         SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(selectedItem);
+    }
+}
+
+void NavigationView::SelectandMoveOverflowItem(winrt::IInspectable const& selectedItem, winrt::IndexPath const& selectedIndex, bool closeFlyout)
+{
+    // SelectOverflowItem is moving data in/out of overflow.
+    auto scopeGuard = gsl::finally([this]()
+        {
+            m_selectionChangeFromOverflowMenu = false;
+        });
+    m_selectionChangeFromOverflowMenu = true;
+
+    if (closeFlyout)
+    {
+        CloseTopNavigationViewFlyout();
+    }
+
+    if (!IsSelectionSuppressed(selectedItem))
+    {
+        SelectOverflowItem(selectedItem, selectedIndex);
     }
 }
 
@@ -408,9 +411,13 @@ void NavigationView::OnApplyTemplate()
         auto visual = winrt::ElementCompositionPreview::GetElementVisual(topNavOverflowButton);
         CreateAndAttachHeaderAnimation(visual);
 
-        if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = topNavOverflowButton.Flyout())
+        if (auto const flyoutBase = topNavOverflowButton.Flyout())
         {
-            topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+            if (winrt::IFlyoutBase6 topNavOverflowButtonAsFlyoutBase6 = flyoutBase)
+            {
+                topNavOverflowButtonAsFlyoutBase6.ShouldConstrainToRootBounds(false);
+            }
+            m_flyoutClosingRevoker = flyoutBase.Closing(winrt::auto_revoke, { this, &NavigationView::OnFlyoutClosing });
         }
     }
 
@@ -591,6 +598,31 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
     if (ir)
     {
         ir.ItemsSource(itemsSource);
+    }
+}
+
+void NavigationView::OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args)
+{
+    // If the user selected an parent item in the overflow flyout then the item has not been moved to top primary yet.
+    // So we need to move it.
+    if (m_moveTopNavOverflowItemOnFlyoutClose)
+    {
+        m_moveTopNavOverflowItemOnFlyoutClose = false;
+
+        auto const selectedIndex = m_selectionModel.SelectedIndex();
+        if (selectedIndex.GetSize() > 0)
+        {
+            if (auto const firstContainer = GetContainerForIndex(selectedIndex.GetAt(0)))
+            {
+                if (auto const firstNVI = firstContainer.try_as<winrt::NavigationViewItem>())
+                {
+                    // We want to collapse the top level item before we move it
+                    firstNVI.IsExpanded(false);
+                }
+            }
+
+            SelectandMoveOverflowItem(SelectedItem(), selectedIndex, false);
+        }
     }
 }
 
@@ -4225,9 +4257,9 @@ winrt::NavigationViewItemBase NavigationView::ResolveContainerForItem(const winr
     args->Data(item);
     args->Index(index);
 
-    if (auto item = m_navigationViewItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
+    if (auto container = m_navigationViewItemsFactory.get()->GetElement(static_cast<winrt::ElementFactoryGetArgs>(*args)))
     {
-        if (auto nvib = item.try_as<winrt::NavigationViewItemBase>())
+        if (auto nvib = container.try_as<winrt::NavigationViewItemBase>())
         {
             return nvib;
         }
