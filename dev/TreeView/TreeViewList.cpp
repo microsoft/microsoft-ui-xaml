@@ -99,6 +99,14 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
     if (!args.InRecycleQueue())
     {
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
+
+        // "Re-evaluate" the item source binding to trigger a TreeViewItem.OnPropertChanged(ItemsSourceProperty) changed call.
+        if (auto itemsSource = targetItem.ItemsSource())
+        {
+            targetItem.ItemsSource(nullptr);
+            targetItem.ItemsSource(itemsSource);
+        }     
+
         auto targetNode = NodeFromContainer(targetItem);
         auto treeViewItem = winrt::get_self<TreeViewItem>(targetItem);
         treeViewItem->UpdateIndentation(targetNode.Depth());
