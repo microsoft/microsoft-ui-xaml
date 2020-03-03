@@ -74,6 +74,7 @@
                     <Button x:Name="ResetItemsSource" AutomationProperties.Name="ResetItemsSource" Content="ResetItemsSource" HorizontalAlignment="Stretch" Margin="1" Click="ResetItemsSource_Click"/>
                     <Button x:Name="ResetItemsSourceAsync" AutomationProperties.Name="ResetItemsSourceAsync" Content="ResetItemsSourceAsync" HorizontalAlignment="Stretch" Margin="1" Click="ResetItemsSourceAsync_Click"/>
                     <Button x:Name="ExpandRootNode" AutomationProperties.Name="ExpandRootNode" Content="ExpandRootNode" HorizontalAlignment="Stretch" Margin="1" Click="ExpandRootNode_Click"/>
+                    <Button x:Name="SwapItemsSource" AutomationProperties.Name="SwapItemsSource" Content="SwapItemsSource" HorizontalAlignment="Stretch" Margin="1" Click="SwapItemsSource_Click"/>
                 </StackPanel>
             </ScrollViewer>
             <ScrollViewer Grid.Column="1">
