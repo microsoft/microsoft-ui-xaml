@@ -55,7 +55,7 @@ namespace MUXControlsTestApp
             navview.MenuItems.RemoveAt(2);
         }
 
-        private void PrintAllIsChildSelectedItems(object sender, RoutedEventArgs e)
+        private void PrintTopLevelIsChildSelectedItems(object sender, RoutedEventArgs e)
         {
             string itemstring = "";
             itemstring = BuildIsChildSelectedString(navview.MenuItems, itemstring);
@@ -74,7 +74,6 @@ namespace MUXControlsTestApp
                 {
                     itemstring += item.Name + " ";
                 }
-                itemstring = BuildIsChildSelectedString(item.MenuItems, itemstring);
             }
             return itemstring;
         }

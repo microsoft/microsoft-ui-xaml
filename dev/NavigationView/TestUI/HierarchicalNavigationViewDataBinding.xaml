@@ -12,7 +12,7 @@
 
     <Page.Resources>
         <DataTemplate x:Key="NavigationViewMenuItem" x:DataType="local:Category">
-            <muxcontrols:NavigationViewItem Content="{x:Bind Name}" MenuItemsSource="{x:Bind Children}" SelectsOnInvoked="{x:Bind IsLeaf}"/>
+            <muxcontrols:NavigationViewItem Content="{x:Bind Content}" Name="{x:Bind Name}" MenuItemsSource="{x:Bind Children}" SelectsOnInvoked="{x:Bind SelectsOnInvoked}"/>
         </DataTemplate>
     </Page.Resources>
 

@@ -4214,6 +4214,137 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyExpandCollpaseFunctionality()
+        {
+            var testScenarios = RegressionTestScenario.BuildHierarchicalNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    Log.Comment("Verify that first menu item is not expanded.");
+                    var firstItem = FindElement.ByName("Menu Item 1");
+                    var childItem = FindElement.ByName("Menu Item 2");
+                    Verify.IsNull(childItem);
+
+                    Log.Comment("Expand first menu item.");
+                    InputHelper.LeftClick(firstItem);
+                    Wait.ForIdle();
+
+                    childItem = FindElement.ByName("Menu Item 2");
+                    Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
+
+                }
+            }
+        }
+
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CanSelectNavigationViewItemWithChildren()
+        {
+            var testScenarios = RegressionTestScenario.BuildHierarchicalNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
+
+                    Log.Comment("Verify that first menu item is not expanded.");
+                    var firstItem = FindElement.ByName("Menu Item 6 (Selectable)");
+                    var childItem = FindElement.ByName("Menu Item 7 (Selectable)");
+                    Verify.IsNull(childItem);
+                    Verify.Equals(displayModeTextBox.DocumentText, "uninitialized");
+
+                    InputHelper.LeftClick(firstItem);
+                    Wait.ForIdle();
+
+                    var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
+                    getSelectItemButton.Invoke();
+                    Wait.ForIdle();
+
+                    childItem = FindElement.ByName("Menu Item 7 (Selectable)");
+                    Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
+                    Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
+
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void CanSelectItemInFlyoutAndParentDisplaysIndicator()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                Log.Comment("Put NavigationView into Left Compact Mode.");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
+
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
+                Verify.Equals(displayModeTextBox.DocumentText, "uninitialized");
+
+                Log.Comment("Expand children of a NavigationViewItem into a flyout.");
+                var item = FindElement.ByName("Menu Item 6 (Selectable)");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
+
+                item = FindElement.ByName("Menu Item 7 (Selectable)");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 7 (Selectable)");
+
+                Verify.IsNotNull(FindElement.ById("ChildrenFlyout"), "Flyout should still be open.");
+
+                item = FindElement.ByName("Menu Item 8");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 8");
+
+                // Refresh the cache to make sure that the flyout object we are going to be searching for
+                // does not return as a false positive due to the caching mechanism.
+                ElementCache.Refresh();
+                Verify.IsNull(FindElement.ById("ChildrenFlyout"), "Flyout should be closed.");
+
+                // Verify that selection indicator is being displayed on top level parent item for selected item
+                var printIsChildSelectedButton = new Button(FindElement.ByName("PrintTopLevelIsChildSelectedItemsButton"));
+                printIsChildSelectedButton.Invoke();
+                Wait.ForIdle();
+
+                TextBlock isChildSelectedLabel = new TextBlock(FindElement.ByName("IsChildSelectedLabel"));
+                Verify.IsTrue(isChildSelectedLabel.DocumentText.Contains("MI6"));
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void SelectingNonTopLevelItemInOverflowMovesItem()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
+            {
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
+
+                Log.Comment("Put NavigationView into Left Compact Mode.");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Top");
+                Wait.ForIdle();
+
+                InvokeOverflowButton();
+
+                var item = FindElement.ByName("Menu Item 29 (Selectable)");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+
+                var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
+                getSelectItemButton.Invoke();
+                Wait.ForIdle();
+                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 29 (Selectable)");
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
@@ -4352,7 +4483,9 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
     {
         LeftNav = 1,
         TopNav = 2,
-        LeftNavRS4 = 4
+        LeftNavRS4 = 4,
+        HierarchyMarkup = 8,
+        HierarchyDatabinding = 16
     }
     class RegressionTestScenario
     {
@@ -4377,6 +4510,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             return BuildTestScenarios(RegressionTestType.LeftNav | RegressionTestType.TopNav);
         }
+        public static List<RegressionTestScenario> BuildHierarchicalNavRegressionTestScenarios()
+        {
+            return BuildTestScenarios(RegressionTestType.HierarchyMarkup | RegressionTestType.HierarchyDatabinding);
+        }
         private static List<RegressionTestScenario> BuildTestScenarios(RegressionTestType types)
         {
             Dictionary<RegressionTestType, RegressionTestScenario> map =
@@ -4384,6 +4521,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                     { RegressionTestType.LeftNav, new RegressionTestScenario("NavigationView Test", isLeftnavTest: true, isUsingRS4Style: false)},
                     { RegressionTestType.TopNav, new RegressionTestScenario("NavigationView TopNav Test", isLeftnavTest: false, isUsingRS4Style: false)},
+                    { RegressionTestType.HierarchyMarkup, new RegressionTestScenario("HierarchicalNavigationView Markup Test", isLeftnavTest: false, isUsingRS4Style: false)},
+                    { RegressionTestType.HierarchyDatabinding, new RegressionTestScenario("HierarchicalNavigationView DataBinding Test", isLeftnavTest: false, isUsingRS4Style: false)},
             };
 
             List<RegressionTestScenario> scenarios = new List<RegressionTestScenario>();

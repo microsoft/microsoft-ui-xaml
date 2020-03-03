@@ -15,17 +15,19 @@ namespace MUXControlsTestApp
 {
     public class Category
     {
+        public String Content { get; set; }
         public String Name { get; set; }
         public String Icon { get; set; }
         public ObservableCollection<Category> Children { get; set; }
-        public bool IsLeaf { get; set; }
+        public bool SelectsOnInvoked { get; set; }
 
-        public Category(String name, String icon, ObservableCollection<Category> children, bool isLeaf)
+        public Category(String content, String name, String icon, ObservableCollection<Category> children, bool selectsOnInvoked)
         {
+            this.Content = content;
             this.Name = name;
             this.Icon = icon;
             this.Children = children;
-            this.IsLeaf = isLeaf;
+            this.SelectsOnInvoked = selectsOnInvoked;
         }
     }
 
@@ -39,23 +41,39 @@ namespace MUXControlsTestApp
             this.InitializeComponent();
 
             var categories3 = new ObservableCollection<Category>();
-            categories3.Add(new Category("Menu Item 3", "Icon", null, true));
-            categories3.Add(new Category("Menu Item 4", "Icon", null, true));
+            categories3.Add(new Category("Menu Item 4", "MI4", "Icon", null, true));
+            categories3.Add(new Category("Menu Item 5", "MI5", "Icon", null, true));
 
             var categories2 = new ObservableCollection<Category>();
-            categories2.Add(new Category("Menu Item 2", "Icon", categories3, false));
+            categories2.Add(new Category("Menu Item 2", "MI2", "Icon", categories3, false));
+            categories2.Add(new Category("Menu Item 3", "MI3", "Icon", null, true));
 
-            
             var categories5 = new ObservableCollection<Category>();
-            categories5.Add(new Category("Menu Item 7", "Icon", null, true));
-            categories5.Add(new Category("Menu Item 8", "Icon", null, true));
+            categories5.Add(new Category("Menu Item 8", "MI8", "Icon", null, true));
+            categories5.Add(new Category("Menu Item 9", "MI9", "Icon", null, true));
 
             var categories4 = new ObservableCollection<Category>();
-            categories4.Add(new Category("Menu Item 6", "Icon", categories5, false));
+            categories4.Add(new Category("Menu Item 7 (Selectable)", "MI7", "Icon", categories5, true));
 
-            categories.Add(new Category("Menu Item 1", "Icon", categories2, false));
-            categories.Add(new Category("Menu Item 5", "Icon", categories4, true));
-            categories.Add(new Category("Menu Item 9", "Icon", null, true));
+            var categories7 = new ObservableCollection<Category>();
+            categories7.Add(new Category("Menu Item 13", "MI13", "Icon", null, true));
+            categories7.Add(new Category("Menu Item 14", "MI14", "Icon", null, true));
+
+            var categories6 = new ObservableCollection<Category>();
+            categories6.Add(new Category("Menu Item 12", "MI12", "Icon", categories7, false));
+
+            var categories9 = new ObservableCollection<Category>();
+            categories9.Add(new Category("Menu Item 17", "MI17", "Icon", null, true));
+            categories9.Add(new Category("Menu Item 18", "MI18", "Icon", null, true));
+
+            var categories8 = new ObservableCollection<Category>();
+            categories8.Add(new Category("Menu Item 16 (Selectable)", "MI16", "Icon", categories9, true));
+
+            categories.Add(new Category("Menu Item 1", "MI1", "Icon", categories2, false));
+            categories.Add(new Category("Menu Item 6 (Selectable)", "MI6", "Icon", categories4, true));
+            categories.Add(new Category("Menu Item 10", "MI10", "Icon", null, true));
+            categories.Add(new Category("Menu Item 11", "MI11", "Icon", categories6, false));
+            categories.Add(new Category("Menu Item 15", "MI15", "Icon", categories8, false));
 
         }
 
@@ -70,7 +88,7 @@ namespace MUXControlsTestApp
             var selectedItem = navview.SelectedItem;
             if(selectedItem != null)
             {
-                var label = ((Category)selectedItem).Name;
+                var label = ((Category)selectedItem).Content;
                 SelectedItemLabel.Text = label;
             }
             else
@@ -81,7 +99,7 @@ namespace MUXControlsTestApp
 
         private void AddMenuItem(object sender, RoutedEventArgs e)
         {
-            categories.Add(new Category("Menu Item G", "Icon", null, true));
+            categories.Add(new Category("Menu Item G", "MIG", "Icon", null, true));
         }
 
         private void RemoveSecondMenuItem(object sender, RoutedEventArgs e)
