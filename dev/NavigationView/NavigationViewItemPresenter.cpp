@@ -24,7 +24,8 @@ void NavigationViewItemPresenter::OnApplyTemplate()
     {
         navigationViewItem->UpdateVisualStateNoTransition();
 
-        // We probably switched displaymode, so restore width now!
+
+        // We probably switched displaymode, so restore width now, otherwise the next time we will restore is when the CompactPaneLength changes
         if (navigationViewItem->GetNavigationView().PaneDisplayMode() != winrt::NavigationViewPaneDisplayMode::Top)
         {
             UpdateCompactPaneLength(m_compactPaneLengthValue, true);
@@ -68,19 +69,18 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
 
 void NavigationViewItemPresenter::UpdateCompactPaneLength(double compactPaneLength, bool shouldUpdate)
 {
-    if (!this) {
-        // "We" are null, skip
-        return;
+    if (this) 
+    {
+        m_compactPaneLengthValue = compactPaneLength;
+        if (shouldUpdate)
+        {
+            if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
+            {
+                auto gridLength = iconGridColumn.Width();
+                gridLength.Value = compactPaneLength;
+                iconGridColumn.Width(gridLength);
+            }
+        }
     }
 
-    m_compactPaneLengthValue = compactPaneLength;
-    if (!shouldUpdate) {
-        return;
-    }
-    if (auto iconGridColumn = GetTemplateChildT<winrt::ColumnDefinition>(c_iconBoxColumnDefinitionName, *this))
-    {
-        auto gridLength = iconGridColumn.Width();
-        gridLength.Value = compactPaneLength;
-        iconGridColumn.Width(gridLength);
-    }
 }

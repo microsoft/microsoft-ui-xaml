@@ -1124,41 +1124,41 @@ void NavigationView::UpdatePaneButtonsWidths()
     if (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top
         || DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
     {
-        if (auto backButton = m_backButton.try_as<winrt::Button>())
+        if (auto backButton = m_backButton.get())
         {
-            backButton.Width(40);
+            backButton.Width(c_paneToggleButtonWidth);
         }
-        if (auto paneToggleButton = m_paneToggleButton.try_as<winrt::Button>())
+        if (auto paneToggleButton = m_paneToggleButton.get())
         {
-            paneToggleButton.MinWidth(40);
-        }
-        if(auto paneButton = m_paneToggleButton.try_as<winrt::Button>())
-        {
-            if (auto paneToggleButtonIconColumn = paneButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName).try_as<winrt::ColumnDefinition>())
+            paneToggleButton.MinWidth(c_paneToggleButtonWidth);
+            if (auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
             {
-                auto width = paneToggleButtonIconColumn.Width();
-                width.Value = 40;
-                paneToggleButtonIconColumn.Width(width);
+                if (auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
+                {
+                    auto width = paneToggleButtonIconColumn.Width();
+                    width.Value = c_paneToggleButtonWidth;
+                    paneToggleButtonIconColumn.Width(width);
+                }
             }
         }
     }
     else
     {
-        if (auto backButton = m_backButton.try_as<winrt::Button>())
+        if (auto backButton = m_backButton.get())
         {
             backButton.Width(CompactPaneLength());
         }
-        if (auto paneToggleButton = m_paneToggleButton.try_as<winrt::Button>())
+        if (auto paneToggleButton = m_paneToggleButton.get())
         {
             paneToggleButton.MinWidth(CompactPaneLength());
-        }
-        if (auto paneButton = m_paneToggleButton.try_as<winrt::Button>())
-        {
-            if (auto paneToggleButtonIconColumn = paneButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName).try_as<winrt::ColumnDefinition>())
+            if (auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
             {
-                auto width = paneToggleButtonIconColumn.Width();
-                width.Value = CompactPaneLength();
-                paneToggleButtonIconColumn.Width(width);
+                if (auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
+                {
+                    auto width = paneToggleButtonIconColumn.Width();
+                    width.Value = CompactPaneLength();
+                    paneToggleButtonIconColumn.Width(width);
+                }
             }
         }
     }
