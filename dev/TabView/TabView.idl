@@ -65,6 +65,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     TabViewWidthMode TabWidthMode{ get; set; };
 
+    [WUXC_VERSION_PREVIEW]
     [MUX_DEFAULT_VALUE("winrt::TabViewCloseButtonOverlayMode::Persistent")]
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     TabViewCloseButtonOverlayMode CloseButtonOverlayMode{ get; set; };
@@ -132,6 +133,7 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty TabItemsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateSelectorProperty{ get; };
+    [WUXC_VERSION_PREVIEW]
     static Windows.UI.Xaml.DependencyProperty CloseButtonOverlayModeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanDragTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanReorderTabsProperty{ get; };
