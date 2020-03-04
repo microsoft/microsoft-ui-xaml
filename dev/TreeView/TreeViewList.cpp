@@ -100,7 +100,7 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
     {
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
 
-        // "Re-evaluate" the item source binding to trigger a TreeViewItem.OnPropertChanged(ItemsSourceProperty) changed call.
+        // "Re-evaluate" the item source binding to trigger a TreeViewItem.OnPropertyChanged(ItemsSourceProperty) call.
         if (auto itemsSource = targetItem.ItemsSource())
         {
             targetItem.ItemsSource(nullptr);
