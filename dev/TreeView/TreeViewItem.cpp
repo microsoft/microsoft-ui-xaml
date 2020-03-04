@@ -322,22 +322,25 @@ void TreeViewItem::OnPropertyChanged(const winrt::DependencyPropertyChangedEvent
         }
         else if (property == s_ItemsSourceProperty)
         {
-            winrt::IInspectable value = args.NewValue();
-
-            auto treeViewNode = winrt::get_self<TreeViewNode>(node);
-            treeViewNode->ItemsSource(value);
-            if (IsInContentMode())
-            {
-                // The children have changed, validate and update GlyphOpacity
-                bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
-                GlyphOpacity(hasChildren ? 1.0 : 0.0);
-            }
+            SetItemsSource(node, args.NewValue());
         }
         else if (property == s_HasUnrealizedChildrenProperty)
         {
             bool value = unbox_value<bool>(args.NewValue());
             node.HasUnrealizedChildren(value);
         }
+    }
+}
+
+void TreeViewItem::SetItemsSource(winrt::TreeViewNode const& node, winrt::IInspectable const& value)
+{
+    auto treeViewNode = winrt::get_self<TreeViewNode>(node);
+    treeViewNode->ItemsSource(value);
+    if (IsInContentMode())
+    {
+        // The children have changed, validate and update GlyphOpacity
+        bool hasChildren = HasUnrealizedChildren() || treeViewNode->HasChildren();
+        GlyphOpacity(hasChildren ? 1.0 : 0.0);
     }
 }
 
