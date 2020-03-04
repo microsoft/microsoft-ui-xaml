@@ -64,4 +64,6 @@ private:
     tracker_ref<winrt::RowDefinition> m_rowTop{ this };
     tracker_ref<winrt::RowDefinition> m_rowMiddle{ this };
     tracker_ref<winrt::RowDefinition> m_rowBottom{ this };
+    winrt::IWindow::SizeChanged_revoker m_windowSizeChangedRevoker{};
+
 };
