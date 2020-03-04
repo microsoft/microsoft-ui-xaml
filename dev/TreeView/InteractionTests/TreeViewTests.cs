@@ -2815,6 +2815,34 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "B")]
+        public void ItemsSourceSwitchForthAndBackTest()
+        {
+            // TreeView databinding only works on RS5+
+            if (IsLowerThanRS5())
+            {
+                return;
+            }
+
+            using (var setup = new TestSetupHelper("TreeView Tests"))
+            {
+                SetContentMode(true);
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("2", ReadResult());
+
+                ClickButton("SwapItemsSource");
+                Wait.ForIdle();
+                ClickButton("ExpandRootNode");
+                Wait.ForIdle();
+                ClickButton("GetItemCount");
+                Verify.AreEqual("4", ReadResult());
+            }
+        }
+
         private void ClickButton(string buttonName)
         {
             var button = new Button(FindElement.ByName(buttonName));
