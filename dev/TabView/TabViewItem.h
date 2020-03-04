@@ -41,7 +41,7 @@ public:
     void OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode);
     void OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode);
 
-private:
+ private:
     tracker_ref<winrt::Button> m_closeButton{ this };
     tracker_ref<winrt::ToolTip> m_toolTip{ this };
     winrt::TabViewWidthMode m_tabViewWidthMode{ winrt::TabViewWidthMode::Equal };

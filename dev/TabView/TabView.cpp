@@ -660,15 +660,15 @@ void TabView::UpdateTabWidths()
     for (auto item : TabItems())
     {
         // Set the calculated width on each tab.
-        auto tvi = item.try_as<TabViewItem>();
+        auto tvi = item.try_as<winrt::TabViewItem>();
         if (!tvi)
         {
-            tvi = ContainerFromItem(item).as<TabViewItem>();
+            tvi = ContainerFromItem(item).as<winrt::TabViewItem>();
         }
 
         if (tvi)
         {
-            tvi->Width(tabWidth);
+            tvi.Width(tabWidth);
         }
     }
 }
@@ -686,6 +686,7 @@ void TabView::UpdateSelectedItem()
         if (tvi)
         {
             listView.SelectedItem(tvi);
+
             // Setting ListView.SelectedItem will not work here in all cases.
             // The reason why that doesn't work but this does is unknown.
             tvi.IsSelected(true);
