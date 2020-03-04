@@ -33,7 +33,7 @@ hstring ProgressRingAutomationPeer::GetClassNameCore()
 
 winrt::AutomationControlType ProgressRingAutomationPeer::GetAutomationControlTypeCore()
 {
-    return winrt::AutomationControlType::ProgressRing;
+    return winrt::AutomationControlType::ProgressBar;
 }
 
 com_ptr<ProgressRing> ProgressRingAutomationPeer::GetImpl()
