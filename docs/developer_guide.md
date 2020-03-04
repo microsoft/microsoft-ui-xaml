@@ -19,6 +19,11 @@ Additional reading:
 
 Install latest VS2019 (16.1 or later) from here: http://visualstudio.com/downloads
 
+Include the following workloads:
+* .NET desktop development
+* Desktop Development with C++
+* Universal Windows Platform development
+
 #### SDK
 
 While WinUI is designed to work against many versions of Windows, you will need 
@@ -27,12 +32,6 @@ a fairly recent SDK in order to build WinUI. It's required that you install the
 all the boxes when prompted), or you can manually download them from here: 
 https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
-<!-- 
-You will also need to install The Windows 10 Insider SDK 18323. The easiest way 
-to install this is to run the Install-WindowsSdkISO.ps1 script from this repo in
-an Administrator Powershell window:
-
- `.\build\Install-WindowsSdkISO.ps1 18323` -->
 
 ## Building the repository
 

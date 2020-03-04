@@ -41,10 +41,6 @@
       <Version>RS1</Version>
       <Type>DefaultStyle</Type>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">      
-      <Version>RS1</Version>
-      <Type>DefaultStyle</Type>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)RadioButtons.idl" />

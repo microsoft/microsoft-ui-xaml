@@ -14,7 +14,7 @@
     <ProjectCapability Include="SourceItemsFromImports" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)..\RadioButtons\RadioButton_themeresources.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)RadioButton_themeresources.xaml">
       <Version>RS1</Version>
       <Type>ThemeResources</Type>
     </Page>

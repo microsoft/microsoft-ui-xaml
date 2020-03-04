@@ -8,9 +8,9 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBa
     ProgressRing();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Double StrokeThickness{ get; set; };
+    Boolean IsIndeterminate{ get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty StrokeThicknessProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
 }
 
 }
