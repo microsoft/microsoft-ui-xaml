@@ -7,7 +7,7 @@
 #include "ProgressRingAutomationPeer.g.h"
 
 class ProgressRingAutomationPeer :
-    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT, winrt::IRangeValueProvider>
+    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT>
 {
 
 public:

@@ -7,7 +7,7 @@
 #include "ProgressBarAutomationPeer.g.h"
 
 class ProgressBarAutomationPeer :
-    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT, winrt::IRangeValueProvider>
+    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT>
 {
 
 public:
