@@ -20,14 +20,7 @@ public:
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     bool IsReadOnly() { return true; }
-    double Value();
-    double SmallChange();
-    double LargeChange();
-    double Minimum();
-    double Maximum();
-    void SetValue(double value);
 
 private:
-    com_ptr<ProgressRing> GetImpl();
 };
 
