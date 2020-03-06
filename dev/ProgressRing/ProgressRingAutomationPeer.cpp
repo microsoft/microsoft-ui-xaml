@@ -18,17 +18,40 @@ ProgressRingAutomationPeer::ProgressRingAutomationPeer(winrt::ProgressRing const
 // IAutomationPeerOverrides
 winrt::IInspectable ProgressRingAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
+    if (auto progressRing = Owner().try_as<winrt::ProgressRing>())
+    {
+        if (progressRing.IsIndeterminate())
+        {
+            return nullptr;
+        }
+    }
+
     if (patternInterface == winrt::PatternInterface::RangeValue)
     {
         return *this;
     }
 
-    return __super::GetPatternCore(patternInterface);
+     return __super::GetPatternCore(patternInterface);
 }
 
-hstring ProgressRingAutomationPeer::GetClassNameCore()
+winrt::hstring ProgressRingAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::ProgressRing>();
+}
+
+winrt::hstring ProgressRingAutomationPeer::GetNameCore()
+{
+    //Check to see if the item has a defined AutomationProperties.Name
+    winrt::hstring name = __super::GetNameCore();
+
+    if (auto progressRing = Owner().try_as<winrt::ProgressRing>())
+    {
+        if (progressRing.IsIndeterminate())
+        {
+            return winrt::hstring{ L"Busy" + name };
+        }
+    }
+    return name;
 }
 
 winrt::AutomationControlType ProgressRingAutomationPeer::GetAutomationControlTypeCore()
