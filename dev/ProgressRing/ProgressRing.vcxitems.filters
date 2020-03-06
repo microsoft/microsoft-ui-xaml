@@ -19,4 +19,7 @@
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+  </ItemGroup>
 </Project>

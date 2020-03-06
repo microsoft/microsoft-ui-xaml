@@ -48,7 +48,7 @@ winrt::hstring ProgressRingAutomationPeer::GetNameCore()
     {
         if (progressRing.IsIndeterminate())
         {
-            return winrt::hstring{ L"Busy" + name };
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressRingIndeterminateStatus) + name };
         }
     }
     return name;

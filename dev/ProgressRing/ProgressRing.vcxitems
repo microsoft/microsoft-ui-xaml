@@ -39,4 +39,7 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+  </ItemGroup>
 </Project>

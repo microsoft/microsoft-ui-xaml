@@ -112,6 +112,7 @@ public:
 #define SR_PlaceAfterString L"PlaceAfterString"
 #define SR_PlaceBeforeString L"PlaceBeforeString"
 #define SR_PlaceBetweenString L"PlaceBetweenString"
+#define SR_ProgressRingIndeterminateStatus L"ProgressRingIndeterminateStatus"
 #define SR_RatingLocalizedControlType L"RatingLocalizedControlType"
 #define SR_SplitButtonSecondaryButtonName L"SplitButtonSecondaryButtonName"
 #define SR_ProofingMenuItemLabel L"ProofingMenuItemLabel"
