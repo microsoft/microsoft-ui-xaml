@@ -193,6 +193,33 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         }
 
         [TestMethod]
+        public void ValidateStackLayoutDoesNotRetainIncorrectMinorWidth()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var repeater = new ItemsRepeater();
+                var stackLayout = new StackLayout();
+                repeater.Layout = stackLayout;
+                repeater.ItemsSource = Enumerable.Range(0, 1);
+                repeater.ItemTemplate = (DataTemplate)XamlReader.Load(
+                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+                         <Button Content='{Binding}' Height='100' />
+                    </DataTemplate>");
+                var scrollViewer = new ScrollViewer() {
+                    Content = repeater
+                };
+                scrollViewer.Width = 300;
+                Content = scrollViewer;
+                Content.UpdateLayout();
+
+                repeater.Measure(new Size(600, 100));
+                Content.UpdateLayout();
+
+                Verify.AreEqual(repeater.ActualSize.X, 300);
+            });
+        }
+
+        [TestMethod]
         public void ValidateStackLayoutDisabledVirtualizationWithItemsRepeater()
         {
             RunOnUIThread.Execute(() =>
