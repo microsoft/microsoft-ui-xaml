@@ -66,7 +66,7 @@ void AnimatedVisualPlayer::AnimationPlay::Start()
             auto timeToEnd = (1 - m_fromProgress) / ((1 - m_fromProgress) + m_toProgress);
             animation.InsertKeyFrame(timeToEnd, 1, linearEasing);
             // Jump to the beginning.
-            animation.InsertKeyFrame(::nextafterf(timeToEnd, 0), 0, linearEasing);
+            animation.InsertKeyFrame(::nextafterf(timeToEnd, 1), 0, linearEasing);
         }
 
         // Play to toProgress
@@ -477,7 +477,7 @@ winrt::Size AnimatedVisualPlayer::MeasureOverride(winrt::Size const& availableSi
     auto heightScale = ((availableSize.Height == std::numeric_limits<double>::infinity()) ? FLT_MAX : availableSize.Height) / m_animatedVisualSize.y;
     return (heightScale > widthScale)
         ? winrt::Size{ availableSize.Width, m_animatedVisualSize.y * widthScale }
-    : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
+        : winrt::Size{ m_animatedVisualSize.x * heightScale, availableSize.Height };
 }
 
 // Public API.

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using AnimatedVisualPlayerTests;
 using Common;
 using Microsoft.Graphics.Canvas;
-using Windows.Foundation.Metadata;
 using Windows.Graphics;
 using Windows.Graphics.Capture;
 using Windows.Graphics.DirectX;
@@ -18,7 +17,6 @@ using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Tests.MUXControls.ApiTests;
 
 namespace MUXControlsTestApp
 {
@@ -75,32 +73,48 @@ namespace MUXControlsTestApp
             }
         }
 
-        // Play from 0 to 1.
-        async void PlayButton_Click(object sender, RoutedEventArgs e)
+        async void Play(double from, double to, TextBox statusTextBox)
         {
-            bool isPlaying = Player.IsPlaying;
-            IsPlayingTextBoxBeforePlaying.Text = isPlaying.ToString();
+            IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
 
+            // Start playing and concurrently get the IsPlaying state.
             Task task1 = Player.PlayAsync(0, 1, false).AsTask();
             Task task2 = GetIsPlayingAsync();
 
+            // Wait for playing to finish.
             await Task.WhenAll(task1, task2);
-
-            ProgressTextBox.Text = Constants.PlayingEndedText;
+            statusTextBox.Text = Constants.PlayingEndedText;
         }
 
-        // Play forward from 0.35 to 0.
-        async void ToZeroKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        void PlayForward(double fromProgress, double toProgress, TextBox statusTextBox)
         {
-            await Player.PlayAsync(0.35, 0, false);
-            ToZeroKeyframeAnimationProgressTextBox.Text = Constants.PlayingEndedText;
+            Player.PlaybackRate = 1;
+            Play(fromProgress, toProgress, statusTextBox);
         }
 
+        // Play from 0 to 1.
+        void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            IsPlayingTextBoxBeforePlaying.Text = Player.IsPlaying.ToString();
+            PlayForward(0, 1, ProgressTextBox);
+        }
+
+        // Play forwards from 0.35 to 0.
+        void ToZeroKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            PlayForward(0.35, 0, ToZeroKeyframeAnimationProgressTextBox);
+        }
+
+        // Play forwards from 0.35 to 0.3.
+        void AroundTheEndAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            PlayForward(0.35, 0.3, AroundTheEndAnimationProgressTextBox);
+        }
+        
         // Play forwards from 1 to 0.35.
-        async void FromOneKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
+        void FromOneKeyframeAnimationPlayButton_Click(object sender, RoutedEventArgs e)
         {
-            await Player.PlayAsync(1, 0.35, false);
-            FromOneKeyframeAnimationProgressTextBox.Text = Constants.PlayingEndedText;
+            PlayForward(1, 0.35, FromOneKeyframeAnimationProgressTextBox);
         }
 
         // Play backwards from 1 to 0.5 then forwards from 0.5 to 1.
@@ -109,6 +123,7 @@ namespace MUXControlsTestApp
             // Start playing backwards from 1 to 0.
             Player.PlaybackRate = -1;
             Task task1 = Player.PlayAsync(0, 1, false).AsTask();
+
             // Reverse direction after half of the animation duration.
             Task task2 = DelayForHalfAnimationDurationThenReverse();
 
@@ -210,7 +225,12 @@ namespace MUXControlsTestApp
 
                 var colors = canvasBitmap.GetPixelColors();
                 var redPixelCount = colors.Where(c => c == FallbackGrid.RectangleColor).Count();
-                FallenBackTextBox.Text = redPixelCount >= FallbackGrid.RectangleHeight * FallbackGrid.RectangleWidth
+
+                // Check that the number of red pixels is at least half the number of pixels in the
+                // FallbackGrid. We require only half to allow for any scaling or borders or anything
+                // that is not important to determining whether or not we are showing the
+                // FallbackGrid.
+                FallenBackTextBox.Text = redPixelCount >= FallbackGrid.RectangleHeight * FallbackGrid.RectangleWidth * 0.5
                     ? Constants.TrueText
                     : Constants.FalseText;
             }
