@@ -16,6 +16,7 @@ public:
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
     winrt::hstring GetClassNameCore();
+    winrt::hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
     bool IsReadOnly() { return true; }

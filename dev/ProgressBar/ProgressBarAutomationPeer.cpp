@@ -18,6 +18,14 @@ ProgressBarAutomationPeer::ProgressBarAutomationPeer(winrt::ProgressBar const& o
 // IAutomationPeerOverrides
 winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInterface const& patternInterface)
 {
+    if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
+    {
+        if (progressBar.IsIndeterminate())
+        {
+            return nullptr;
+        }
+    }
+
     if (patternInterface == winrt::PatternInterface::RangeValue)
     {
         return *this;
@@ -29,6 +37,29 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
 hstring ProgressBarAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::ProgressBar>();
+}
+
+winrt::hstring ProgressBarAutomationPeer::GetNameCore()
+{
+    //Check to see if the item has a defined AutomationProperties.Name
+    winrt::hstring name = __super::GetNameCore();
+
+    if (auto progressRing = Owner().try_as<winrt::ProgressBar>())
+    {
+        if (progressRing.ShowError())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarErrorStatus) + name };
+        }
+        else if (progressRing.ShowPaused())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarPausedStatus) + name };
+        }
+        else if (progressRing.IsIndeterminate())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarIndeterminateStatus) + name };
+        }
+    }
+    return name;
 }
 
 winrt::AutomationControlType ProgressBarAutomationPeer::GetAutomationControlTypeCore()

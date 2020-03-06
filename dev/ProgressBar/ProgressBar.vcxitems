@@ -37,4 +37,7 @@
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressBar.idl" />
   </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+  </ItemGroup>
 </Project>
