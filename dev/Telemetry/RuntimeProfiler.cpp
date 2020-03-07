@@ -11,6 +11,9 @@
 #define DEFINE_PROFILEGROUP(name, group, size) \
     CMethodProfileGroup<size>        name(group)
 
+// defined in dllmain.cpp with values from version.h
+extern const char *g_BinaryVersion;
+
 namespace RuntimeProfiler {
 
     void UninitializeRuntimeProfiler();
@@ -161,7 +164,8 @@ namespace RuntimeProfiler {
             TraceLoggingWrite(  
                 g_hTelemetryProvider,  
                 "RuntimeProfiler",
-                TraceLoggingDescription("XAML methods that have been called."),  
+                TraceLoggingDescription("XAML methods that have been called."),
+                TraceLoggingString(g_BinaryVersion, "BinaryVersion"),
                 TraceLoggingWideString(OutputBuffer, "ApiCounts"),
                 TraceLoggingUInt32(((UINT32)m_group), "ProfileGroupId"),
                 TraceLoggingUInt32(((UINT32)cMethods),"TotalCount"),
