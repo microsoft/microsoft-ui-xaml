@@ -41,6 +41,12 @@ TabView::TabView()
         ctrlf4Accel.Invoked({ this, &TabView::OnCtrlF4Invoked });
         ctrlf4Accel.ScopeOwner(*this);
         KeyboardAccelerators().Append(ctrlf4Accel);
+
+        m_tabCloseButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltipWithKA);
+    }
+    else
+    {
+        m_tabCloseButtonTooltipText = ResourceAccessor::GetLocalizedStringResource(SR_TabViewCloseButtonTooltip);
     }
 
     // Ctrl+Tab as a KeyboardAccelerator only works on 19H1+
