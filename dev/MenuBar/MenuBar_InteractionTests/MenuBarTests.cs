@@ -340,8 +340,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.MoveMouse(help1, 1, 1);
                 InputHelper.MoveMouse(help1, 5, 5);
 
-                // Verify flyout item is existent
-                VerifyElement.Found("Add1", FindBy.Name);
+                UIObject add1Element = null;
+                ElementCache.Clear();
+                var element = GetElement(ref add1Element, "Add1");
+                Verify.IsNotNull(add1Element);
             }
         }
 
@@ -367,6 +369,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 
                 Verify.AreEqual(true, fileButton.HasKeyboardFocus);
             }
+        }
+
+
+        private T GetElement<T>(ref T element, string elementName) where T : UIObject
+        {
+            if (element == null)
+            {
+                Log.Comment("Find the " + elementName);
+                element = FindElement.ByNameOrId<T>(elementName);
+                Verify.IsNotNull(element);
+            }
+            return element;
         }
     }
 }
