@@ -48,20 +48,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests
                 Verify.AreEqual("Item 0", (tabView.SelectedItem as TabViewItem).Header);
                 tabView.TabWidthMode = TabViewWidthMode.Compact;
                 Content.UpdateLayout();
-            
-                // Check if switching to compact updates all items correctly
+            });
+
+            IdleSynchronizer.Wait();
+
+            // Check if switching to compact updates all items correctly
+            RunOnUIThread.Execute(() =>
+            {
                 VerifyTabWidthVisualStates(tabView.TabItems, true);
                 tabView.TabItems.Add(CreateTabViewItem("Item 3"));
+            });
 
-                Content.UpdateLayout();
+            IdleSynchronizer.Wait();
 
-                // Check if a newly added item has correct visual states
+            // Check if a newly added item has correct visual states
+            RunOnUIThread.Execute(() =>
+            {
                 VerifyTabWidthVisualStates(tabView.TabItems, true);
                 tabView.TabWidthMode = TabViewWidthMode.Equal;
+            });
 
-                Content.UpdateLayout();
-                
-                // Switch back to non compact and check if every item has the correct visual state
+            IdleSynchronizer.Wait();
+
+            // Switch back to non compact and check if every item has the correct visual state
+            RunOnUIThread.Execute(() =>
+            {
                 VerifyTabWidthVisualStates(tabView.TabItems, false);
             });
         }
