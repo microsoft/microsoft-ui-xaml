@@ -111,7 +111,7 @@ void TabViewProperties::EnsureProperties()
                 winrt::name_of<winrt::TabViewCloseButtonOverlayMode>(),
                 winrt::name_of<winrt::TabView>(),
                 false /* isAttached */,
-                ValueHelper<winrt::TabViewCloseButtonOverlayMode>::BoxValueIfNecessary(winrt::TabViewCloseButtonOverlayMode::Persistent),
+                ValueHelper<winrt::TabViewCloseButtonOverlayMode>::BoxValueIfNecessary(winrt::TabViewCloseButtonOverlayMode::Auto),
                 winrt::PropertyChangedCallback(&OnCloseButtonOverlayModePropertyChanged));
     }
     if (!s_IsAddTabButtonVisibleProperty)

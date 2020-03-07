@@ -66,9 +66,11 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     TabViewWidthMode TabWidthMode{ get; set; };
 
     [WUXC_VERSION_PREVIEW]
-    [MUX_DEFAULT_VALUE("winrt::TabViewCloseButtonOverlayMode::Persistent")]
-    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    TabViewCloseButtonOverlayMode CloseButtonOverlayMode{ get; set; };
+    {
+        [MUX_DEFAULT_VALUE("winrt::TabViewCloseButtonOverlayMode::Auto")]
+        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
+        TabViewCloseButtonOverlayMode CloseButtonOverlayMode{ get; set; };
+    }
 
     Object TabStripHeader{ get; set; };
     Windows.UI.Xaml.DataTemplate TabStripHeaderTemplate{ get; set; };
@@ -134,7 +136,9 @@ unsealed runtimeclass TabView : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TabItemTemplateSelectorProperty{ get; };
     [WUXC_VERSION_PREVIEW]
-    static Windows.UI.Xaml.DependencyProperty CloseButtonOverlayModeProperty{ get; };
+    {
+        static Windows.UI.Xaml.DependencyProperty CloseButtonOverlayModeProperty{ get; };
+    }
     static Windows.UI.Xaml.DependencyProperty CanDragTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty CanReorderTabsProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty AllowDropTabsProperty{ get; };
