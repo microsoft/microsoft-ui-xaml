@@ -2288,7 +2288,7 @@ void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChan
     // When we do not raise a "SelectItemChanged" event, the selection does not get animated.
     // To prevent faulty visual states, we will animate that here
     // Since we only do this for the settings item, check if the old item is our settings item
-    if (oldItem != newItem && IsSettingsItem(oldItem))
+    if (oldItem != newItem && m_shouldIgnoreNextSelectionChangeBecauseSettingsRestore)
     {
         ChangeSelectStatusForItem(oldItem, false /*selected*/);
         ChangeSelectStatusForItem(newItem, true /*selected*/);
