@@ -24,7 +24,7 @@ winrt::IInspectable ProgressRingAutomationPeer::GetPatternCore(winrt::PatternInt
         {
             if (progressRing.IsIndeterminate())
             {
-                return nullptr;
+                return __super::GetPatternCore(patternInterface);
             }
         }
 

@@ -24,7 +24,7 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
         {
             if (progressBar.IsIndeterminate())
             {
-                return nullptr;
+                return __super::GetPatternCore(patternInterface);
             }
         }
 
