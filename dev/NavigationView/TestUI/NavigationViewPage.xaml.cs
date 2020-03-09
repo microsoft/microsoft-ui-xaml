@@ -579,7 +579,7 @@ namespace MUXControlsTestApp
         private void FlipOrientation_Click(object sender, RoutedEventArgs e)
         {
             NavView.PaneDisplayMode = NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Top ? NavigationViewPaneDisplayMode.Auto : NavigationViewPaneDisplayMode.Top;
-            FindAndGiveAutomationNameToVisualChild("SettingsTopNavPaneItem");
+            FindAndGiveAutomationNameToVisualChild("SettingsItem");
         }
 
         private void ClearSelectedItem_Click(object sender, RoutedEventArgs e)
@@ -664,16 +664,7 @@ namespace MUXControlsTestApp
 
         private void ReadSettingsSelected_Click(object sender, RoutedEventArgs e)
         {
-            DependencyObject settings = null;
-            if (NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Left ||
-                NavView.PaneDisplayMode == NavigationViewPaneDisplayMode.Auto)
-            {
-                settings = FindVisualChildByName(NavView, "SettingsNavPaneItem");
-            }
-            else
-            {
-                settings = FindVisualChildByName(NavView, "SettingsTopNavPaneItem");
-            }
+            DependencyObject settings = FindVisualChildByName(NavView, "SettingsItem");
 
             SettingsSelectedState.Text = (settings as NavigationViewItem).IsSelected.ToString();
         }

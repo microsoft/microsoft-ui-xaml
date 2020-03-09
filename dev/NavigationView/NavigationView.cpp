@@ -580,6 +580,7 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         if (!m_settingsItem)
         {
             m_settingsItem.set(winrt::make < ::NavigationViewItem>());
+            m_settingsItem.get().Name(L"SettingsItem");
         }
 
         auto settingsItem = m_settingsItem.get();

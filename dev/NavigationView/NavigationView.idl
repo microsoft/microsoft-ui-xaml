@@ -159,7 +159,10 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
     [MUX_DEFAULT_VALUE("1008.0")]
     [MUX_PROPERTY_VALIDATION_CALLBACK("CoerceToGreaterThanZero")]
     Double ExpandedModeThresholdWidth { get; set; };
-    Windows.Foundation.Collections.IVector<Object> FooterMenuItems{ get; };
+    [WUXC_VERSION_PREVIEW]
+    {
+        Windows.Foundation.Collections.IVector<Object> FooterMenuItems{ get; };
+    }
     Windows.UI.Xaml.UIElement PaneFooter { get; set; };
     Object Header { get; set; };
     Windows.UI.Xaml.DataTemplate HeaderTemplate { get; set; };

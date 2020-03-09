@@ -310,7 +310,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.AreEqual("Music as header", header.DocumentText);
 
                     Log.Comment("Click settings item");
-                    menuItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    menuItem = FindElement.ByName("Settings");
                     InputHelper.LeftClick(menuItem);
                     Wait.ForIdle();
                     header = new TextBlock(FindElement.ByName("Settings as header"));
@@ -532,9 +532,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    String settings = testScenario.IsLeftNavTest ? "Settings" : "SettingsTopNavPaneItem";
                     Log.Comment("Verify that settings item is enabled by default");
-                    VerifyElement.Found(settings, FindBy.Name);
+                    VerifyElement.Found("Settings", FindBy.Name);
 
                     CheckBox settingsCheckbox = new CheckBox(FindElement.ByName("SettingsItemVisibilityCheckbox"));
 
@@ -542,12 +541,12 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     settingsCheckbox.Uncheck();
                     ElementCache.Clear();
                     Wait.ForIdle();
-                    VerifyElement.NotFound(settings, FindBy.Name);
+                    VerifyElement.NotFound("Settings", FindBy.Name);
 
                     Log.Comment("Verify that settings item is visible when IsSettingsVisible == true");
                     settingsCheckbox.Check();
                     Wait.ForIdle();
-                    VerifyElement.Found(settings, FindBy.Name);
+                    VerifyElement.Found("Settings", FindBy.Name);
                 }
             }
         }
@@ -574,7 +573,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Log.Comment("Verify that settings item is visible when IsSettingsVisible == true");
                     toggleCheckbox.Check();
                     Wait.ForIdle();
-                    VerifyElement.Found("SettingsNavPaneItem", FindBy.Id);
+                    VerifyElement.Found("SettingsItem", FindBy.Id);
                 }
             }
         }
@@ -857,7 +856,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 SetNavViewWidth(ControlWidth.Wide);
                 Wait.ForIdle();
 
-                Button navButton = new Button(FindElement.ById("SettingsNavPaneItem"));
+                Button navButton = new Button(FindElement.ById("SettingsItem"));
                 Log.Comment("Verify that the SettingsNavPaneItem size in Expanded mode and actual width is " + navButton.BoundingRectangle.Width);
 
                 // NavigationViewCompactPaneLength is 40 or 48 in different release. This test case doesn't need an exactly number of width, so just choose 48 as the boundary
@@ -2519,7 +2518,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
                     Log.Comment("Setting focus to Settings");
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
                     settingsItem.SetFocus();
                     Wait.ForIdle();
 
@@ -2620,7 +2619,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
                 {
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
 
                     settingsItem.SetFocus();
                     Wait.ForIdle();
@@ -2654,7 +2653,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                         return;
                     }
 
-                    UIObject settingsItem = testScenario.IsLeftNavTest ? FindElement.ByName("Settings") : FindElement.ByName("SettingsTopNavPaneItem");
+                    UIObject settingsItem = FindElement.ByName("Settings");
 
                     settingsItem.SetFocus();
                     Wait.ForIdle();
@@ -3830,7 +3829,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 flipOrientationButton.Invoke();
                 Wait.ForIdle();
 
-                var topSettingsItem = new Button(FindElement.ByName("SettingsTopNavPaneItem"));
+                var topSettingsItem = new Button(FindElement.ByName("SettingsItem"));
                 topSettingsItem.Invoke();
 
                 Log.Comment("Verify the top settings item is selected.");
