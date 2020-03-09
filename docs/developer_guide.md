@@ -35,6 +35,17 @@ https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk
 
 ## Building the repository
 
+Building the solution **MUXControls.sln** will build all projects. If
+you want to work on a single control/project, you can reduce build times by
+editing **InnerLoopAreas.props** to include the desired projects (a list of all
+projects is found in **FeatureAreas.props**) and using **MUXControlsInnerLoop.sln**.
+
+If you use the inner loop solution, please avoid pushing changes to those files.
+This can be avoided by running the following commands in git:
+```
+git update-index --skip-worktree InnerLoopAreas.props
+git update-index --skip-worktree MUXControlsInnerLoop.sln
+```
 Generally you will want to set your configuration to **Debug**, **x64**, and 
 select **MUXControlsTestApp** as your startup project in Visual Studio.
 
