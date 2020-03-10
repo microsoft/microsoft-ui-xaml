@@ -341,7 +341,6 @@ unsealed runtimeclass NavigationViewItem : NavigationViewItemBase
         [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]
         Boolean HasUnrealizedChildren{ get; set; };
-        [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
         [MUX_DEFAULT_VALUE("false")]
         Boolean IsChildSelected{ get; set; };
 

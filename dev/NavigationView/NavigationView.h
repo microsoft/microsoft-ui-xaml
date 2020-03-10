@@ -128,19 +128,19 @@ private:
     bool DoesNavigationViewItemHaveChildren(const winrt::NavigationViewItem& nvi);
     bool IsTopLevelItem(const winrt::NavigationViewItemBase& nvib);
     winrt::IInspectable GetChildren(const winrt::NavigationViewItem& nvi);
-    bool IsContainerInFlyout(const winrt::NavigationViewItemBase& nvib);
 
     // Hierarchy related functions
     void ToggleIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi);
     void ChangeIsExpandedNavigationViewItem(const winrt::NavigationViewItem& nvi, bool isExpanded);
     void ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi);
+    winrt::NavigationViewItem FindLowestLevelContainerToDisplaySelectionIndicator();
     void UpdateIsChildSelectedForIndexPath(const winrt::IndexPath& ip, bool isChildSelected);
     void UpdateIsChildSelected(const winrt::IndexPath& prevIP, const winrt::IndexPath& nextIP);
-    void CollapseAllTopLevelMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
-    void CollapseAllMenuItems(const winrt::ItemsRepeater& ir);
+    void CollapseAllMenuItems(winrt::NavigationViewPaneDisplayMode oldDisplayMode);
+    void CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeater& ir);
     void RaiseExpandingEvent(const winrt::NavigationViewItemBase& container);
     void RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container);
-    void CloseFlyoutIfRequired(const winrt::IndexPath& selectedIndex);
+    void CloseFlyoutIfRequired();
 
     // Force realization functions
     winrt::NavigationViewItemBase ResolveContainerForItem(const winrt::IInspectable& item, int index);
@@ -269,9 +269,11 @@ private:
     void UpdateTitleBarPadding();
 
     void RaiseDisplayModeChanged(const winrt::NavigationViewDisplayMode& displayMode);
-    void AnimateSelectionChanged(const winrt::IInspectable& lastItem, const winrt::IInspectable& currentItem);
+    void AnimateSelectionChanged(const winrt::IInspectable& currentItem);
     void AnimateSelectionChangedToItem(const winrt::IInspectable& selectedItem);
     void PlayIndicatorAnimations(const winrt::UIElement& indicator, float yFrom, float yTo, winrt::Size beginSize, winrt::Size endSize, bool isOutgoing);
+    void PlayIndicatorNonSameLevelAnimations(const winrt::UIElement& indicator, bool isOutgoing, bool fromTop);
+    void PlayIndicatorNonSameLevelTopPrimaryAnimation(const winrt::UIElement& indicator, bool isOutgoing);
     void OnAnimationComplete(const winrt::IInspectable& sender, const winrt::CompositionBatchCompletedEventArgs& args);
     void ResetElementAnimationProperties(const winrt::UIElement& element, float desiredOpacity);
     winrt::NavigationViewItem NavigationViewItemOrSettingsContentFromData(const winrt::IInspectable& data);
@@ -336,8 +338,11 @@ private:
     tracker_ref<winrt::Grid> m_topNavGrid{ this };
     tracker_ref<winrt::Border> m_topNavContentOverlayAreaGrid{ this };
 
+    // Indicator animations
     tracker_ref<winrt::UIElement> m_prevIndicator{ this };
     tracker_ref<winrt::UIElement> m_nextIndicator{ this };
+    tracker_ref<winrt::UIElement> m_activeIndicator{ this };
+    tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
 
     tracker_ref<winrt::FrameworkElement> m_togglePaneTopPadding{ this };
     tracker_ref<winrt::FrameworkElement> m_contentPaneTopPadding{ this };
@@ -361,10 +366,6 @@ private:
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderCloseButtonColumn{ this };
     tracker_ref<winrt::ColumnDefinition> m_paneHeaderToggleButtonColumn{ this };
     tracker_ref<winrt::RowDefinition> m_paneHeaderContentBorderRow{ this };
-
-    int m_indexOfLastSelectedItemInTopNav{ 0 };
-    tracker_ref<winrt::IInspectable> m_lastSelectedItemPendingAnimationInTopNav{ this };
-    std::vector<int> m_itemsRemovedFromMenuFlyout{};
 
     tracker_ref<winrt::NavigationViewItem> m_lastItemExpandedIntoFlyout{ this };
 

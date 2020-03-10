@@ -26,6 +26,7 @@ public:
     void UpdateContentLeftIndentation(double leftIndentation);
 
     void IsExpandCollapseChevronVisible(bool isVisible);
+    void RotateExpandCollapseChevron(bool isExpanded);
 
 private:
     NavigationViewItem * GetNavigationViewItem();
@@ -38,4 +39,7 @@ private:
     winrt::event_token m_expandCollapseChevronTappedToken{};
 
     double m_leftIndentation{ 0 };
+
+    tracker_ref<winrt::Storyboard> m_chevronExpandedStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_chevronCollapsedStoryboard{ this };
 };

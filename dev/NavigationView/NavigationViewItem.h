@@ -30,7 +30,6 @@ public:
     void OnIconPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMenuItemsSourcePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
     winrt::UIElement GetSelectionIndicator();
@@ -70,6 +69,9 @@ public:
     bool IsTopLevelItem() { return m_isTopLevelItem; };
 
     void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
+    bool ShowSelectionIndicatorIfRequired();
+    void RotateExpandCollapseChevron(bool isExpanded);
+    bool IsRepeaterVisible();
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -105,8 +107,6 @@ private:
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
     void PropagateDepthToChildren(int depth);
     void UpdateItemIndentation();
-    bool IsRepeaterVisible();
-    void ShowSelectionIndicatorIfRequired();
     void ShowSelectionIndicator(bool visible);
 
     PropertyChanged_revoker m_splitViewIsPaneOpenChangedRevoker{};

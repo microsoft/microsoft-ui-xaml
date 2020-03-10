@@ -9,6 +9,8 @@
 
 static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
 static constexpr auto c_expandCollapseChevron = L"ExpandCollapseChevron"sv;
+static constexpr auto c_expandCollapseRotateExpandedStoryboard = L"ExpandCollapseRotateExpandedStoryboard"sv;
+static constexpr auto c_expandCollapseRotateCollapsedStoryboard = L"ExpandCollapseRotateCollapsedStoryboard"sv;
 
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
@@ -36,7 +38,28 @@ void NavigationViewItemPresenter::OnApplyTemplate()
         navigationViewItem->UpdateVisualStateNoTransition();
     }
 
+    m_chevronExpandedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateExpandedStoryboard, *this));
+    m_chevronCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateCollapsedStoryboard, *this));
+
     UpdateMargin();
+}
+
+void NavigationViewItemPresenter::RotateExpandCollapseChevron(bool isExpanded)
+{
+    if (isExpanded)
+    {
+        if (auto const openStoryboard = m_chevronExpandedStoryboard.get())
+        {
+            openStoryboard.Begin();
+        }
+    }
+    else
+    {
+        if (auto const closedStoryboard = m_chevronCollapsedStoryboard.get())
+        {
+            closedStoryboard.Begin();
+        }
+    }
 }
 
 winrt::UIElement NavigationViewItemPresenter::GetSelectionIndicator()
