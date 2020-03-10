@@ -1892,18 +1892,8 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 {
     auto const firstElement = [this, nvib]()
     {
-        if (IsTopNavigationView())
-        {
-            if (IsContainerInOverflow(nvib))
-            {
-                return m_topNavRepeaterOverflowView.get().TryGetElement(0);
-            }
-            else
-            {
-                return m_topNavRepeater.get().TryGetElement(0);
-            }
-        }
-        return m_leftNavRepeater.get().TryGetElement(0);
+        auto const parentIR = GetParentItemsRepeaterForContainer(nvib);
+        return parentIR.TryGetElement(0);
     }();
 
     if (auto controlFirst = firstElement.try_as<winrt::Control>())
@@ -1914,29 +1904,12 @@ void NavigationView::KeyboardFocusFirstItemFromItem(const winrt::NavigationViewI
 
 void NavigationView::KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib)
 {
-    auto const ir = [this, nvib]()
-    {
-        if (IsTopNavigationView())
-        {
-            if (IsContainerInOverflow(nvib))
-            {
-                return m_topNavRepeaterOverflowView.get();
-            }
-            else
-            {
-                return m_topNavRepeater.get();
-            }
-        }
-        else
-        {
-            return m_leftNavRepeater.get();
-        }
-    }();
+    auto const parentIR = GetParentItemsRepeaterForContainer(nvib);
 
-    if (auto itemsSourceView = ir.ItemsSourceView())
+    if (auto itemsSourceView = parentIR.ItemsSourceView())
     {
         auto lastIndex = itemsSourceView.Count() - 1;
-        if (auto lastElement = ir.TryGetElement(lastIndex))
+        if (auto lastElement = parentIR.TryGetElement(lastIndex))
         {
             if (auto controlLast = lastElement.try_as<winrt::Control>())
             {
@@ -1953,7 +1926,8 @@ void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, con
         if (auto const oldFocusedElement = args.OldFocusedElement())
         {
             auto const oldElementParent = winrt::VisualTreeHelper::GetParent(oldFocusedElement);
-            auto const rootRepeater = [this]()
+            auto const newFocusedElement = args.NewFocusedElement();
+            auto const mainMenuRepeater = [this]()
             {
                 if (IsTopNavigationView())
                 {
@@ -1961,12 +1935,16 @@ void NavigationView::RepeaterGettingFocus(const winrt::IInspectable& sender, con
                 }
                 return m_leftNavRepeater.get();
             }();
+
+            auto const gettingFocusRepeater = sender.try_as<winrt::ItemsRepeater>();
+
             // If focus is coming from outside the root repeater, put focus on last focused item
-            if (rootRepeater != oldElementParent)
+            if (gettingFocusRepeater != oldElementParent)
             {
+                bool isInMainMenu = mainMenuRepeater == gettingFocusRepeater;
                 if (auto const argsAsIGettingFocusEventArgs2 = args.try_as<winrt::IGettingFocusEventArgs2>())
                 {
-                    if (auto const lastFocusedNvi = rootRepeater.TryGetElement(m_indexOfLastFocusedItem))
+                    if (auto const lastFocusedNvi = gettingFocusRepeater.TryGetElement(isInMainMenu ? m_indexOfLastFocusedItemInMainMenu : m_indexOfLastFocusedItemInFooterMenu))
                     {
                         if (argsAsIGettingFocusEventArgs2.TrySetNewFocusedElement(lastFocusedNvi))
                         {
@@ -1983,16 +1961,34 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
 {
     if (auto nvi = sender.try_as<winrt::NavigationViewItem>())
     {
+        auto const parentIR = GetParentItemsRepeaterForContainer(nvi);
+
         // Store index of last focused item in order to get proper focus behavior.
         // No need to keep track of last focused item if the item is in the overflow menu.
-        m_indexOfLastFocusedItem = [this, nvi]()
+        if (parentIR && parentIR == m_topNavRepeater.get() || parentIR == m_leftNavRepeater.get())
         {
-            if (IsTopNavigationView())
+            m_indexOfLastFocusedItemInMainMenu = [this, nvi]()
             {
-                return m_topNavRepeater.get().GetElementIndex(nvi);;
-            }
-            return m_leftNavRepeater.get().GetElementIndex(nvi);
-        }();
+                auto const parentIR = GetParentItemsRepeaterForContainer(nvi);
+                if (parentIR && parentIR != m_topNavRepeaterOverflowView.get())
+                {
+                    return parentIR.GetElementIndex(nvi);
+                }
+                return -1;
+            }();
+        }
+        else if(parentIR && parentIR != m_topNavRepeaterOverflowView.get())
+        {
+            m_indexOfLastFocusedItemInFooterMenu = [this, nvi]()
+            {
+                auto const parentIR = GetParentItemsRepeaterForContainer(nvi);
+                if (parentIR)
+                {
+                    return parentIR.GetElementIndex(nvi);
+                }
+                return -1;
+            }();
+        }
 
         // Achieve selection follows focus behavior
         if (IsNavigationViewListSingleSelectionFollowsFocus())
@@ -2004,7 +2000,7 @@ void NavigationView::OnNavigationViewItemOnGotFocus(const winrt::IInspectable& s
             {
                 if (IsTopNavigationView())
                 {
-                    if (auto parentIR = GetParentItemsRepeaterForContainer(nvi))
+                    if (parentIR)
                     {
                         if (parentIR != m_topNavRepeaterOverflowView.get())
                         {
@@ -2546,7 +2542,9 @@ void NavigationView::UpdateNavigationViewUseSystemVisual()
     if (SharedHelpers::IsRS1OrHigher() && !ShouldPreserveNavigationViewRS4Behavior() && m_appliedTemplate)
     {
         PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavRepeater.get(), ShouldShowFocusVisual());
+        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_leftNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
         PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavRepeater.get(), ShouldShowFocusVisual());
+        PropagateShowFocusVisualToAllNavigationViewItemsInRepeater(m_topNavFooterMenuRepeater.get(), ShouldShowFocusVisual());
     }
 }
 
