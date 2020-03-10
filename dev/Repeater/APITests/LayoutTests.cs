@@ -197,23 +197,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var repeater = new ItemsRepeater() {
-                    ItemsSource = Enumerable.Range(0, 1),
-                    Layout = new StackLayout(),
-                    ItemTemplate = (DataTemplate)XamlReader.Load(
-                    @"<DataTemplate  xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
-                         <Button Content='{Binding}' Height='100' />
-                    </DataTemplate>")
+                var repeater = new ItemsRepeater() 
+                {
+                    ItemsSource = Enumerable.Range(0, 1)
                 };
-                var scrollViewer = new ScrollViewer() {
-                    Width = 300,
-                    Content = repeater
+
+                Content = new ScrollViewer() 
+                {
+                    Content = repeater,
+                    Width = 400,
                 };
-                Content = scrollViewer;
+
                 Content.UpdateLayout();
+
+                // Measure with large width.
                 repeater.Measure(new Size(600, 100));
+                Verify.AreEqual(600, repeater.DesiredSize.Width);
+                // Measure with smaller width again before arrange. 
+                // StackLayout has to pick up the smaller width for its extent.
+                repeater.Measure(new Size(300, 100));
+                Verify.AreEqual(300, repeater.DesiredSize.Width);
+
                 Content.UpdateLayout();
-                Verify.AreEqual(repeater.ActualWidth, 300);
+                Verify.AreEqual(400, repeater.ActualWidth);
             });
         }
 
