@@ -2380,9 +2380,21 @@ void NavigationView::UpdateSingleSelectionFollowsFocusTemplateSetting()
 
 void NavigationView::OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args)
 {
-    auto newItem = args.NewValue();
 
-    ChangeSelection(args.OldValue(), newItem);
+    const auto newItem = args.NewValue();
+    const auto oldItem = args.OldValue();
+
+    ChangeSelection(oldItem, newItem);
+
+    // When we do not raise a "SelectItemChanged" event, the selection does not get animated.
+    // To prevent faulty visual states, we will animate that here
+    // Since we only do this for the settings item, check if the old item is our settings item
+    if (oldItem != newItem && m_shouldIgnoreNextSelectionChangeBecauseSettingsRestore)
+    {
+        ChangeSelectStatusForItem(oldItem, false /*selected*/);
+        ChangeSelectStatusForItem(newItem, true /*selected*/);
+        AnimateSelectionChanged(oldItem, newItem);
+    }
 
     if (m_appliedTemplate && IsTopNavigationView())
     {
@@ -2425,7 +2437,6 @@ void NavigationView::SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNot
 
         m_indexOfLastSelectedItemInTopNav = m_topDataProvider.IndexOf(item); // for the next time we animate
     }
-
     SelectedItem(item);
 }
 
@@ -2981,12 +2992,12 @@ int NavigationView::GetSelectedItemIndex()
 
 double NavigationView::GetPaneToggleButtonWidth()
 {
-    return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonWidth", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonWidth)));
+    return unbox_value<double>(SharedHelpers::FindInApplicationResources(L"PaneToggleButtonWidth", box_value(c_paneToggleButtonWidth)));
 }
 
 double NavigationView::GetPaneToggleButtonHeight()
 {
-    return unbox_value<double>(SharedHelpers::FindResource(L"PaneToggleButtonHeight", winrt::Application::Current().Resources(), box_value(c_paneToggleButtonHeight)));
+    return unbox_value<double>(SharedHelpers::FindInApplicationResources(L"PaneToggleButtonHeight", box_value(c_paneToggleButtonHeight)));
 }
 
 void NavigationView::UpdateTopNavigationWidthCache()

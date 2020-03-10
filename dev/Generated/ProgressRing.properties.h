@@ -9,17 +9,17 @@ class ProgressRingProperties
 public:
     ProgressRingProperties();
 
-    void StrokeThickness(double value);
-    double StrokeThickness();
+    void IsIndeterminate(bool value);
+    bool IsIndeterminate();
 
-    static winrt::DependencyProperty StrokeThicknessProperty() { return s_StrokeThicknessProperty; }
+    static winrt::DependencyProperty IsIndeterminateProperty() { return s_IsIndeterminateProperty; }
 
-    static GlobalDependencyProperty s_StrokeThicknessProperty;
+    static GlobalDependencyProperty s_IsIndeterminateProperty;
 
     static void EnsureProperties();
     static void ClearProperties();
 
-    static void OnStrokeThicknessPropertyChanged(
+    static void OnIsIndeterminatePropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 };

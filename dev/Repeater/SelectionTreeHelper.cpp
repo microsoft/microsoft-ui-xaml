@@ -84,8 +84,8 @@ void SelectionTreeHelper::TraverseRangeRealizeChildren(
         bool isStartPath = IsSubSet(start, currentPath);
         bool isEndPath = IsSubSet(end, currentPath);
 
-        int startIndex = depth < start.GetSize() && isStartPath ? start.GetAt(depth) : 0;
-        int endIndex = depth < end.GetSize() && isEndPath ? end.GetAt(depth) : node->DataCount() - 1;
+        int startIndex = depth < start.GetSize() && isStartPath ? std::max(0, start.GetAt(depth)) : 0;
+        int endIndex = depth < end.GetSize() && isEndPath ? std::min(node->DataCount() - 1, end.GetAt(depth)) : node->DataCount() - 1;
 
         for (int i = endIndex; i >= startIndex; i--)
         {

@@ -351,6 +351,7 @@ namespace MUXControlsTestApp
 
         private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
+            SelectionChangedRaised.Text = "True";
             // Reset argument type indicatiors
             SelectionChangedItemType.Text = "null";
             SelectionChangedItemContainerType.Text = "null";
@@ -378,6 +379,11 @@ namespace MUXControlsTestApp
             {
                 SelectionChangedItemContainerType.Text = args.SelectedItemContainer.GetType().ToString();
             }
+        }
+
+        private void ClearSelectionChangeBlock(object sender,RoutedEventArgs e)
+        {
+            SelectionChangedRaised.Text = "False";
         }
 
         private void MoviesEnabledCheckbox_Checked(object sender, RoutedEventArgs e)
