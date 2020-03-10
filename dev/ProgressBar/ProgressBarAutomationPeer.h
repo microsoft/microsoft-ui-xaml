@@ -7,7 +7,7 @@
 #include "ProgressBarAutomationPeer.g.h"
 
 class ProgressBarAutomationPeer :
-    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT>
+    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT, winrt::IRangeValueProvider>
 {
 
 public:
@@ -19,8 +19,17 @@ public:
     winrt::hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
+    // IRangeValueProvider is necessary here to override IsReadOnly() to true.
     bool IsReadOnly() { return true; }
+    double Value();
+    double SmallChange();
+    double LargeChange();
+    double Minimum();
+    double Maximum();
+    void SetValue(double value);
+
 
 private:
+    com_ptr<ProgressBar> GetImpl();
 };
 

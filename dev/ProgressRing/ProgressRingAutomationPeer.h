@@ -7,7 +7,7 @@
 #include "ProgressRingAutomationPeer.g.h"
 
 class ProgressRingAutomationPeer :
-    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT>
+    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT, winrt::IRangeValueProvider>
 {
 
 public:
@@ -19,8 +19,16 @@ public:
     winrt::hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
+    // IRangeValueProvider is necessary here to override IsReadOnly() to true.
     bool IsReadOnly() { return true; }
+    double Value();
+    double SmallChange();
+    double LargeChange();
+    double Minimum();
+    double Maximum();
+    void SetValue(double value);
 
 private:
+    com_ptr<ProgressRing> GetImpl();
 };
 

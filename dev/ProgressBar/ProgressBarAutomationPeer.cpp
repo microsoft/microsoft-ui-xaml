@@ -24,7 +24,7 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
         {
             if (progressBar.IsIndeterminate())
             {
-                return __super::GetPatternCore(patternInterface);
+                return nullptr;
             }
         }
 
@@ -65,4 +65,47 @@ winrt::hstring ProgressBarAutomationPeer::GetNameCore()
 winrt::AutomationControlType ProgressBarAutomationPeer::GetAutomationControlTypeCore()
 {
     return winrt::AutomationControlType::ProgressBar;
+}
+
+com_ptr<ProgressBar> ProgressBarAutomationPeer::GetImpl()
+{
+    com_ptr<ProgressBar> impl = nullptr;
+
+    if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
+    {
+        impl = winrt::get_self<ProgressBar>(progressBar)->get_strong();
+    }
+
+    return impl;
+}
+
+// IRangeValueProvider
+double ProgressBarAutomationPeer::Value()
+{
+    return GetImpl()->Value();
+}
+
+double ProgressBarAutomationPeer::SmallChange()
+{
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+double ProgressBarAutomationPeer::LargeChange()
+{
+    return std::numeric_limits<double>::quiet_NaN();
+}
+
+double ProgressBarAutomationPeer::Minimum()
+{
+    return GetImpl()->Minimum();
+}
+
+double ProgressBarAutomationPeer::Maximum()
+{
+    return GetImpl()->Maximum();
+}
+
+void ProgressBarAutomationPeer::SetValue(double value)
+{
+    GetImpl()->Value(value);
 }
