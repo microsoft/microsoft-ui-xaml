@@ -24,7 +24,7 @@
                         <muxcontrols:NavigationViewItem Content="Menu Item 3" x:Name="MI3" Icon="Save" />
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item 6 (Selectable)" x:Name="MI6" SelectsOnInvoked="True">
+                <muxcontrols:NavigationViewItem Content="Menu Item 6 (Selectable)" x:Name="MI6" SelectsOnInvoked="True" Icon="Cut">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 7 (Selectable)" x:Name="MI7" SelectsOnInvoked="True">
                             <muxcontrols:NavigationViewItem.MenuItems>
@@ -35,7 +35,7 @@
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
                 <muxcontrols:NavigationViewItem Content="Menu Item 10" Icon="Save" x:Name="MI10"/>
-                <muxcontrols:NavigationViewItem Content="Menu Item 11" x:Name="MI11" SelectsOnInvoked="False">
+                <muxcontrols:NavigationViewItem Content="Menu Item 11" x:Name="MI11" SelectsOnInvoked="False" Icon="Paste">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItemHeader Content="HEADER 2"/>
                         <muxcontrols:NavigationViewItem Content="Menu Item 12" Icon="Save" x:Name="MI12" SelectsOnInvoked="False">
@@ -46,7 +46,7 @@
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item 15" x:Name="MI15" SelectsOnInvoked="False">
+                <muxcontrols:NavigationViewItem Content="Menu Item 15" x:Name="MI15" SelectsOnInvoked="False" Icon="Shuffle">
                     <muxcontrols:NavigationViewItem.MenuItems>
                         <muxcontrols:NavigationViewItem Content="Menu Item 16 (Selectable)" Icon="Save" x:Name="MI16">
                             <muxcontrols:NavigationViewItem.MenuItems>
@@ -56,7 +56,7 @@
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
                 </muxcontrols:NavigationViewItem>
-                <muxcontrols:NavigationViewItem Content="Menu Item 19" x:Name="MI19" SelectsOnInvoked="True"/>
+                <!--<muxcontrols:NavigationViewItem Content="Menu Item 19" x:Name="MI19" SelectsOnInvoked="True"/>
                 <muxcontrols:NavigationViewItem Content="Menu Item 20" x:Name="MI20" SelectsOnInvoked="True"/>
                 <muxcontrols:NavigationViewItem Content="Menu Item 21" x:Name="MI21" SelectsOnInvoked="True"/>
                 <muxcontrols:NavigationViewItem Content="Menu Item 22" x:Name="MI22" SelectsOnInvoked="True"/>
@@ -75,7 +75,7 @@
                             </muxcontrols:NavigationViewItem.MenuItems>
                         </muxcontrols:NavigationViewItem>
                     </muxcontrols:NavigationViewItem.MenuItems>
-                </muxcontrols:NavigationViewItem>
+                </muxcontrols:NavigationViewItem>-->
 
             </muxcontrols:NavigationView.MenuItems>
             <StackPanel Margin="10,10,0,0">

@@ -261,29 +261,26 @@ void NavigationViewItem::OnMenuItemsSourcePropertyChanged(const winrt::Dependenc
     UpdateVisualStateForChevron();
 }
 
-void NavigationViewItem::OnIsChildSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    ShowSelectionIndicatorIfRequired();
-}
-
 void NavigationViewItem::OnHasUnrealizedChildrenPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     UpdateVisualStateForChevron();
 }
 
-void NavigationViewItem::ShowSelectionIndicatorIfRequired()
+bool NavigationViewItem::ShowSelectionIndicatorIfRequired()
 {
     if (!IsSelected())
     {
         if (!IsRepeaterVisible() && IsChildSelected())
         {
             ShowSelectionIndicator(true);
+            return true;
         }
         else
         {
             ShowSelectionIndicator(false);
         }
     }
+    return false;
 }
 
 void NavigationViewItem::ShowSelectionIndicator(bool visible)
@@ -297,8 +294,11 @@ void NavigationViewItem::ShowSelectionIndicator(bool visible)
 
 void NavigationViewItem::UpdateVisualStateForIconAndContent(bool showIcon, bool showContent)
 {
-    auto stateName = showIcon ? (showContent ? L"IconOnLeft": L"IconOnly") : L"ContentOnly"; 
-    winrt::VisualStateManager::GoToState(*this, stateName, false /*useTransitions*/);
+    if (auto const presenter = m_navigationViewItemPresenter.get())
+    {
+        auto stateName = showIcon ? (showContent ? L"IconOnLeft" : L"IconOnly") : L"ContentOnly";
+        winrt::VisualStateManager::GoToState(presenter, stateName, false /*useTransitions*/);
+    }
 }
 
 void NavigationViewItem::UpdateVisualStateForNavigationViewPositionChange()
@@ -456,10 +456,11 @@ void NavigationViewItem::UpdateVisualState(bool useTransitions)
   
     if (IsOnLeftNav())
     {
-        winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"ClosedCompact" : L"NotClosedCompact", useTransitions); 
-
-        // Backward Compatibility with RS4-, new implementation prefer IconOnLeft/IconOnly/ContentOnly
-        winrt::VisualStateManager::GoToState(*this, shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
+        if (auto const presenter = m_navigationViewItemPresenter.get())
+        {
+            // Backward Compatibility with RS4-, new implementation prefer IconOnLeft/IconOnly/ContentOnly
+            winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), shouldShowIcon ? L"IconVisible" : L"IconCollapsed", useTransitions);
+        }
     } 
    
     UpdateVisualStateForToolTip();
@@ -529,20 +530,20 @@ void NavigationViewItem::SetRepeaterVisibilityAndUpdatePositionIfRequired(bool s
     auto visibility = shouldShowRepeater ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
 
-
-    if (ShouldRepeaterShowInFlyout() && shouldShowRepeater)
+    if (ShouldRepeaterShowInFlyout())
     {
-        winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
-    }
-    else if(ShouldRepeaterShowInFlyout() && !shouldShowRepeater)
-    {
-        if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+        if (shouldShowRepeater)
         {
-            flyout.Hide();
+            winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
+        }
+        else
+        {
+            if (auto const flyout = winrt::FlyoutBase::GetAttachedFlyout(m_rootGrid.get()))
+            {
+                flyout.Hide();
+            }
         }
     }
-
-    ShowSelectionIndicatorIfRequired();
 }
 
 void NavigationViewItem::ReparentRepeater()
@@ -738,4 +739,9 @@ void NavigationViewItem::OnPresenterPointerCaptureLost(const winrt::IInspectable
     m_isPressed = false;
     m_isPointerOver = false;
     UpdateVisualState(true);
+}
+
+void NavigationViewItem::RotateExpandCollapseChevron(bool isExpanded)
+{
+    winrt::get_self<NavigationViewItemPresenter>(m_navigationViewItemPresenter.get())->RotateExpandCollapseChevron(isExpanded);
 }
