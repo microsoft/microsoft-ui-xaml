@@ -129,4 +129,12 @@
     <value>关闭标签页</value>
     <comment>Automation name for the close button on each tab.</comment>
   </data>
+  <data name="TabViewCloseButtonTooltip" xml:space="preserve">
+    <value>关闭选项卡</value>
+    <comment>Tooltip for the close button on each tab.</comment>
+  </data>
+  <data name="TabViewCloseButtonTooltipWithKA" xml:space="preserve">
+    <value>关闭选项卡(Ctrl+F4)</value>
+    <comment>Tooltip for the close button on each tab (with keyboard accelerator).</comment>
+  </data>
 </root>
