@@ -16,11 +16,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MSBuildThisFileDirectory)IThemedAnimatedVisualSource.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ProgressRing.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\Generated\ProgressRing.properties.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingAutomationPeer.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRingIndeterminate.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)ProgressRing.cpp" />
   </ItemGroup>
@@ -36,5 +38,8 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="$(MSBuildThisFileDirectory)ProgressRing.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

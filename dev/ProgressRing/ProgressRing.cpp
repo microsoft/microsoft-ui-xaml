@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ProgressRing.h"
+#include "ProgressRingAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "math.h"
@@ -37,6 +38,11 @@ ProgressRing::ProgressRing()
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
 
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
+}
+
+winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
+{
+    return winrt::make<ProgressRingAutomationPeer>(*this);
 }
 
 void ProgressRing::OnApplyTemplate()

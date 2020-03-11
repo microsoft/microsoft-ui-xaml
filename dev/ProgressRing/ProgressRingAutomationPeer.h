@@ -3,19 +3,19 @@
 
 #pragma once
 
-#include "ProgressBar.h"
-#include "ProgressBarAutomationPeer.g.h"
+#include "ProgressRing.h"
+#include "ProgressRingAutomationPeer.g.h"
 
-class ProgressBarAutomationPeer :
-    public ReferenceTracker<ProgressBarAutomationPeer, winrt::implementation::ProgressBarAutomationPeerT, winrt::IRangeValueProvider>
+class ProgressRingAutomationPeer :
+    public ReferenceTracker<ProgressRingAutomationPeer, winrt::implementation::ProgressRingAutomationPeerT, winrt::IRangeValueProvider>
 {
 
 public:
-    ProgressBarAutomationPeer(winrt::ProgressBar const& owner);
+    ProgressRingAutomationPeer(winrt::ProgressRing const& owner);
 
     // IAutomationPeerOverrides
     winrt::IInspectable GetPatternCore(winrt::PatternInterface const& patternInterface);
-    winrt::hstring GetClassNameCore();
+    hstring GetClassNameCore();
     winrt::hstring GetNameCore();
     winrt::AutomationControlType GetAutomationControlTypeCore();
 
@@ -28,8 +28,7 @@ public:
     double Maximum();
     void SetValue(double value);
 
-
 private:
-    com_ptr<ProgressBar> GetImpl();
+    com_ptr<ProgressRing> GetImpl();
 };
 
