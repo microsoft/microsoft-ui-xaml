@@ -319,7 +319,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                                 {
                                     returnValue++;
 
-                                    if (child.try_as<winrt::NavigationViewItemAutomationPeer>() == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                    if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                                     {
                                         if (automationOutput == AutomationOutput::Position)
                                         {

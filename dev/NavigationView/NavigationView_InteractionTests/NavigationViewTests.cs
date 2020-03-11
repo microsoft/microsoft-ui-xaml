@@ -4255,7 +4255,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     var firstItem = FindElement.ByName("Menu Item 6 (Selectable)");
                     var childItem = FindElement.ByName("Menu Item 7 (Selectable)");
                     Verify.IsNull(childItem);
-                    Verify.Equals(displayModeTextBox.DocumentText, "uninitialized");
+                    Verify.AreEqual(displayModeTextBox.DocumentText, "uninitialized");
 
                     InputHelper.LeftClick(firstItem);
                     Wait.ForIdle();
@@ -4266,7 +4266,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     childItem = FindElement.ByName("Menu Item 7 (Selectable)");
                     Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
-                    Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
+                    Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
 
                 }
             }
@@ -4284,25 +4284,25 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Wait.ForIdle();
 
                 TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
-                Verify.Equals(displayModeTextBox.DocumentText, "uninitialized");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "uninitialized");
 
                 Log.Comment("Expand children of a NavigationViewItem into a flyout.");
                 var item = FindElement.ByName("Menu Item 6 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
 
                 item = FindElement.ByName("Menu Item 7 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 7 (Selectable)");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 7 (Selectable)");
 
                 Verify.IsNotNull(FindElement.ById("ChildrenFlyout"), "Flyout should still be open.");
 
                 item = FindElement.ByName("Menu Item 8");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 8");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 8");
 
                 // Refresh the cache to make sure that the flyout object we are going to be searching for
                 // does not return as a false positive due to the caching mechanism.
@@ -4341,7 +4341,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 getSelectItemButton.Invoke();
                 Wait.ForIdle();
-                Verify.Equals(displayModeTextBox.DocumentText, "Menu Item 29 (Selectable)");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 29 (Selectable)");
             }
         }
 
