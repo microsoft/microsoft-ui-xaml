@@ -311,7 +311,11 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         public void HoveringBehaviorTest()
         {
             // Overlay pass through element is only available from IFlyoutBase3 forward
-            if (PlatformConfiguration.IsDevice(DeviceType.Phone) || !ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3"))
+            // On OS versions below RS5 test is unreliable/not working.
+            // Tracked by 
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone) 
+                || !ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3")
+                || PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
             {
                 Log.Comment("Skipping tests on phone, because menubar is not supported.");
                 return;
