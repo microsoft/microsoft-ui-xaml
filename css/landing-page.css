@@ -4,6 +4,10 @@
  * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-landing-page/blob/master/LICENSE)
  */
 
+html{
+   scroll-behavior: smooth;
+}
+
 body {
   font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -20,34 +24,95 @@ h6 {
 
 header.masthead {
   position: relative;
-  background-color: #343a40;
-  background: url("../img/bg-masthead.jpg") no-repeat center center;
   background-size: cover;
-  padding-top: 8rem;
-  padding-bottom: 8rem;
+  padding-top: 6rem;
+  padding-bottom: 6rem;
 }
-
-header.masthead .overlay {
-  position: absolute;
-  background-color: #212529;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.3;
-}
-
 header.masthead h1 {
-  font-size: 2rem;
+  color:#0E53BD;
+  font-size: 4rem;
+}
+
+.navbar-custom {
+  background-color: #375a7f;
+}
+
+.btn-custom {
+  background-color: #0E53BD;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.btn-custom:hover {
+  background-color: #83BEEC;
+  color: #FFFFFF;
+}
+
+.navbar-brand {
+  color: #FFFFFF;
+  font-size: 1.5em;
+}
+
+.navbar-brand:hover{
+  color: #FFFFFF;
+}
+
+.nav-item {
+  font-size: 1.25em;
+}
+#learn-more {
+  padding: 12px;
+  font-size: 1.25rem;
+  font-weight: 500;
 }
 
 @media (min-width: 768px) {
   header.masthead {
-    padding-top: 12rem;
-    padding-bottom: 12rem;
+    padding-top: 7rem;
+    padding-bottom: 7rem;
   }
   header.masthead h1 {
-    font-size: 3rem;
+    font-size: 5rem;
+    text-align: left;
+  }
+  #mainSubtext{
+    text-align: left;
+  }
+
+  #learn-more {
+    float:left;
+  }
+
+  #mainLogo {
+    text-align: left;
+  }
+
+  #video-wrapper {
+    position: relative;
+    height: 0;
+  }
+  
+  #video-content {
+  position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 786px){
+  #video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+  }
+  
+  #video-content {
+  position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -58,6 +123,8 @@ header.masthead h1 {
 .showcase .showcase-img {
   min-height: 30rem;
   background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 @media (min-width: 768px) {
@@ -67,8 +134,9 @@ header.masthead h1 {
 }
 
 .features-icons {
-  padding-top: 7rem;
-  padding-bottom: 7rem;
+  background-color: #e1e6eb;
+  padding-top: 6rem;
+  padding-bottom: 6rem;
 }
 
 .features-icons .features-icons-item {
@@ -87,45 +155,180 @@ header.masthead h1 {
   font-size: 5rem;
 }
 
-.testimonials {
-  padding-top: 7rem;
-  padding-bottom: 7rem;
+.features-icons h2 { 
+  text-align: center;
+  color:black;
 }
 
+.features-icons h3 {
+  color: black;
+  font-weight: 100;
+}
+
+.features-icons p{
+  color: #FFFFFF;
+}
+
+.major-point{
+  background-color: white;
+}
+
+.showcase-text{
+  color: black;
+}
+
+.text-icon {
+  color: #0E53BD;
+}
+
+.testimonials, .video-spotlight {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+  background-color: #e1e6eb;
+}
 .testimonials .testimonial-item {
-  max-width: 18rem;
+  padding: 10px;
+  text-align: left;
+  color: black;
+  margin-bottom: 20px;
 }
 
-.testimonials .testimonial-item img {
-  max-width: 12rem;
-  box-shadow: 0px 5px 5px 0px #adb5bd;
+.testimonials .testimonial-item h5 {
+  color: black;
+  font-size: 2em;
+  font-weight: 500;
+}
+
+.testimonials .testimonial-item i{
+  color: black;
+}
+
+.testimonial-subtext {
+  color:#c3cad6; 
 }
 
 .call-to-action {
   position: relative;
-  background-color: #343a40;
-  background: url("../img/bg-masthead.jpg") no-repeat center center;
   background-size: cover;
+
+  justify-content: center;
+  background-image: url('../img/winui-logo.png');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: auto;
+}
+
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+  .specific-call {
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px) saturate(125%);
+    background-color: rgba(255, 255, 255, 0.5); 
+  }
+}
+
+.specific-call {
   padding-top: 7rem;
   padding-bottom: 7rem;
 }
 
-.call-to-action .overlay {
-  position: absolute;
-  background-color: #212529;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  opacity: 0.3;
+.call-to-action .btn-custom {
+  max-width: 12rem;
 }
 
-footer.footer {
-  padding-top: 4rem;
-  padding-bottom: 4rem;
+.call-to-action h2 {
+  font-weight: normal;
+}
+
+/* footer.footer {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+} */
+
+footer.footer a{
+  color: #375a7f;
 }
 
 .nav-item {
-  margin-left: 40px;
-  margin-right: 40px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.navbar-brand {
+  font-weight: 500;
+}
+
+#mainHeader {
+  /* display: inline-block; */
+}
+
+#mainSubtext{
+  font-weight: 300;
+  color: black;
+  display: inline-block;
+  margin-left: auto;
+    margin-right: auto;
+}
+
+#mainLogo {
+  width: 75%;
+  height: auto;
+}
+
+.logo {
+  max-height: 7rem;
+  /* margin-right: 3rem;
+  margin-left: 3rem; */
+}
+
+.logo-bottom {
+  max-height: 90%;
+}
+
+
+
+.icon-calendar {
+  font-size: .85em;
+  font-weight: 600;
+}
+
+#add-to-cal {
+  font-size: .85em;
+  color: #0E53BD;
+  padding-bottom: 3px;
+  font-weight: 600;
+}
+
+.partner-summary h2, .testimonials h2, .video-spotlight h2{
+  text-align: left;
+  color:#0E53BD;
+  font-weight: 700;
+}
+
+.partner-summary h4, .testimonials h4, .video-spotlight h4 {
+  text-align: left;
+  color: black;
+  font-weight: 300;
+}
+
+.partners-container {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+} 
+
+.our-partners {
+  background-color: white;
+}
+
+a {
+  color: #004E8C;
+  cursor: pointer;
+}
+
+a:hover {
+  color: #003966;
+  text-decoration: none;
+}
+
+#uhf-footer{
+  margin-top: 0px;
 }
