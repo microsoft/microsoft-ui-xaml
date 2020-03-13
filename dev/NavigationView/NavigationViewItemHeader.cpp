@@ -8,7 +8,7 @@
 
 #include "NavigationViewItemHeader.properties.cpp"
 
-static constexpr auto c_rootGrid = L"InnerHeaderGrid"sv;
+static constexpr auto c_rootGrid = L"NavigationViewItemHeaderRootGrid"sv;
 
 NavigationViewItemHeader::NavigationViewItemHeader()
 {
@@ -60,7 +60,7 @@ void NavigationViewItemHeader::UpdateIsClosedCompact()
 
 void NavigationViewItemHeader::UpdateVisualState(bool useTransitions)
 {
-    winrt::VisualStateManager::GoToState(*this, m_isClosedCompact ? L"HeaderTextCollapsed" : L"HeaderTextVisible", useTransitions);
+    winrt::VisualStateManager::GoToState(*this, m_isClosedCompact && IsTopLevelItem() ? L"HeaderTextCollapsed" : L"HeaderTextVisible", useTransitions);
 }
 
 void NavigationViewItemHeader::OnNavigationViewItemBaseDepthChanged()

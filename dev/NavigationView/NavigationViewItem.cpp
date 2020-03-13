@@ -600,7 +600,7 @@ void NavigationViewItem::ReparentContent()
 
 bool NavigationViewItem::ShouldRepeaterShowInFlyout()
 {
-    return (m_isClosedCompact && m_isTopLevelItem) || IsOnTopPrimary();
+    return (m_isClosedCompact && IsTopLevelItem()) || IsOnTopPrimary();
 }
 
 bool NavigationViewItem::IsRepeaterVisible()

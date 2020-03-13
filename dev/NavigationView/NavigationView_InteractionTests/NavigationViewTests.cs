@@ -4274,7 +4274,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void CanSelectItemInFlyoutAndParentDisplaysIndicator()
+        public void CanSelectItemInFlyoutAndParentIsAwareOfChildSelection()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
@@ -4283,6 +4283,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 panelDisplayModeComboBox.SelectItemByName("LeftCompact");
                 Wait.ForIdle();
 
+                var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
                 Verify.AreEqual(displayModeTextBox.DocumentText, "uninitialized");
 
@@ -4290,26 +4291,28 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var item = FindElement.ByName("Menu Item 6 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 6 (Selectable)");
 
                 item = FindElement.ByName("Menu Item 7 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 7 (Selectable)");
 
                 Verify.IsNotNull(FindElement.ById("ChildrenFlyout"), "Flyout should still be open.");
 
                 item = FindElement.ByName("Menu Item 8");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
-                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 8");
 
                 // Refresh the cache to make sure that the flyout object we are going to be searching for
                 // does not return as a false positive due to the caching mechanism.
                 ElementCache.Refresh();
                 Verify.IsNull(FindElement.ById("ChildrenFlyout"), "Flyout should be closed.");
 
-                // Verify that selection indicator is being displayed on top level parent item for selected item
+                // Verify that the correct item has been selected
+                getSelectItemButton.Invoke();
+                Wait.ForIdle();
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 8");
+
+                // Verify that top level parent item is aware of selected child
                 var printIsChildSelectedButton = new Button(FindElement.ByName("PrintTopLevelIsChildSelectedItemsButton"));
                 printIsChildSelectedButton.Invoke();
                 Wait.ForIdle();
@@ -4327,17 +4330,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
 
-                Log.Comment("Put NavigationView into Left Compact Mode.");
+                Log.Comment("Put NavigationView into Top Mode.");
                 var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
                 panelDisplayModeComboBox.SelectItemByName("Top");
                 Wait.ForIdle();
 
                 InvokeOverflowButton();
 
+                Log.Comment("Invoke 'Menu Item 29 (Selectable)'.");
                 var item = FindElement.ByName("Menu Item 29 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
 
+                Log.Comment("Invoke GetSelectedItemLabelButton and verify selected item is correct.");
                 var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 getSelectItemButton.Invoke();
                 Wait.ForIdle();

@@ -65,9 +65,6 @@ public:
 
     NavigationViewItemPresenter* GetPresenter();
 
-    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
-    bool IsTopLevelItem() { return m_isTopLevelItem; };
-
     void OnExpandCollapseChevronTapped(const winrt::IInspectable& sender, const winrt::TappedRoutedEventArgs& args);
     bool ShowSelectionIndicatorIfRequired();
     void RotateExpandCollapseChevron(bool isExpanded);
@@ -145,5 +142,4 @@ private:
     bool m_isPointerOver{ false };
 
     bool m_isRepeaterParentedToFlyout{ false };
-    bool m_isTopLevelItem{ false };
 };

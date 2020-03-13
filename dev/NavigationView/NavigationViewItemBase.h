@@ -58,6 +58,9 @@ public:
     // TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
     static constexpr int c_itemIndentation = 25;
 
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() { return m_isTopLevelItem; };
+
 protected:
 
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
@@ -66,4 +69,5 @@ private:
 
     NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
     int m_depth{ 0 };
+    bool m_isTopLevelItem{ false };
 };

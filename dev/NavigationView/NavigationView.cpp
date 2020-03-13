@@ -892,6 +892,8 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
             nvibImpl->Depth(0);
         }
 
+        nvibImpl->IsTopLevelItem(IsTopLevelItem(nvib));
+
         // Visual state info propagation
         auto position = [this, ir]()
         {
@@ -912,8 +914,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
-            winrt::get_self<NavigationViewItem>(nvi)->IsTopLevelItem(IsTopLevelItem(nvi));
-
             if (ir != m_topNavRepeaterOverflowView.get())
             {
                 nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
@@ -959,9 +959,9 @@ void NavigationView::OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, c
     {
         auto const nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->Depth(0);
+        nvibImpl->IsTopLevelItem(false);
         if (auto nvi = nvib.try_as<winrt::NavigationViewItem>())
         {
-            winrt::get_self<NavigationViewItem>(nvi)->IsTopLevelItem(false);
             // Revoke all the events that we were listing to on the item
             nvi.SetValue(s_NavigationViewItemRevokersProperty, nullptr);
         }

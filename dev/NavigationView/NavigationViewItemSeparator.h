@@ -17,7 +17,11 @@ public:
 
 private:
     void OnNavigationViewRepeaterPositionChanged() override;
+    void OnNavigationViewItemBaseDepthChanged() override;
     void UpdateVisualState(bool useTransitions);
+    void UpdateItemIndentation();
 
     bool m_appliedTemplate{ false };
+
+    tracker_ref<winrt::Grid> m_rootGrid{ this };
 };
