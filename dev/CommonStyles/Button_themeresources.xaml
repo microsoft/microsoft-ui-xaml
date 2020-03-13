@@ -225,6 +225,7 @@
                         x:Name="ContentPresenter"
                         Background="{TemplateBinding Background}"
                         contract7Present:BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                        Foreground="{TemplateBinding Foreground}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
                         Content="{TemplateBinding Content}"

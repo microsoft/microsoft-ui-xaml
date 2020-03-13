@@ -20,6 +20,14 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
 {
     if (patternInterface == winrt::PatternInterface::RangeValue)
     {
+        if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
+        {
+            if (progressBar.IsIndeterminate())
+            {
+                return nullptr;
+            }
+        }
+
         return *this;
     }
 
@@ -29,6 +37,29 @@ winrt::IInspectable ProgressBarAutomationPeer::GetPatternCore(winrt::PatternInte
 hstring ProgressBarAutomationPeer::GetClassNameCore()
 {
     return winrt::hstring_name_of<winrt::ProgressBar>();
+}
+
+winrt::hstring ProgressBarAutomationPeer::GetNameCore()
+{
+    //Check to see if the item has a defined AutomationProperties.Name
+    winrt::hstring name = __super::GetNameCore();
+
+    if (auto progressBar = Owner().try_as<winrt::ProgressBar>())
+    {
+        if (progressBar.ShowError())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarErrorStatus) + name };
+        }
+        else if (progressBar.ShowPaused())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarPausedStatus) + name };
+        }
+        else if (progressBar.IsIndeterminate())
+        {
+            return winrt::hstring{ ResourceAccessor::GetLocalizedStringResource(SR_ProgressBarIndeterminateStatus) + name };
+        }
+    }
+    return name;
 }
 
 winrt::AutomationControlType ProgressBarAutomationPeer::GetAutomationControlTypeCore()

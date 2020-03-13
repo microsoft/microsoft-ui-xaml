@@ -24,7 +24,12 @@ void TabViewItem::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_closeButton.set([this, controlProtected]() {
+    auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
+    auto internalTabView = tabView
+        ? winrt::get_self<TabView>(tabView)
+        : nullptr;
+
+    m_closeButton.set([this, controlProtected, internalTabView]() {
         auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
         if (closeButton)
         {
@@ -35,18 +40,26 @@ void TabViewItem::OnApplyTemplate()
                 winrt::AutomationProperties::SetName(closeButton, closeButtonName);
             }
 
+            if (internalTabView)
+            {
+                // Setup the tooltip for the close button
+                auto tooltip = winrt::ToolTip();
+                tooltip.Content(box_value(internalTabView->GetTabCloseButtonTooltipText()));
+                winrt::ToolTipService::SetToolTip(closeButton, tooltip);
+            }
+
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;
-    }());
+        }());
 
     OnIconSourceChanged();
 
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    if (tabView)
     {
         if (SharedHelpers::IsThemeShadowAvailable())
         {
-            if (auto internalTabView = winrt::get_self<TabView>(tabView))
+            if (internalTabView)
             {
                 winrt::ThemeShadow shadow;
                 shadow.Receivers().Append(internalTabView->GetShadowReceiver());
