@@ -333,10 +333,18 @@ winrt::Color AcrylicBrush::GetEffectiveTintColor()
 {
     winrt::Color tintColor = TintColor();
     double tintOpacity = TintOpacity();
-    double tintOpacityModifier = GetTintOpacityModifier(tintColor);
 
     // Update tintColor's alpha with the combined opacity value
-    tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity * tintOpacityModifier));
+    // If LuminosityOpacity was specified, we don't intervene into users parameters
+    if (TintLuminosityOpacity() != nullptr)
+    {
+        tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity));
+    }
+    else
+    {
+        double tintOpacityModifier = GetTintOpacityModifier(tintColor);
+        tintColor.A = static_cast<uint8_t>(round(tintColor.A * tintOpacity * tintOpacityModifier));
+    }
 
     return tintColor;
 }
