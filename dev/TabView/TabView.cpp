@@ -212,11 +212,14 @@ void TabView::OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChang
     // Switch the visual states of all tab items to the correct TabViewWidthMode
     for (auto&& item : TabItems())
     {
-        auto tvi = item.try_as<TabViewItem>();
-        if (!tvi)
+        auto const tvi = [item, this]()
         {
-            tvi = ContainerFromItem(item).try_as<TabViewItem>();
-        }
+            if (auto tabViewItem = item.try_as<TabViewItem>())
+            {
+                return tabViewItem;
+            }
+            return ContainerFromItem(item).try_as<TabViewItem>();
+        }();
 
         if (tvi)
         {
@@ -230,11 +233,14 @@ void TabView::OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPro
     // Switch the visual states of all tab items to to the correct closebutton overlay mode
     for (auto&& item : TabItems())
     {
-        auto tvi = item.try_as<TabViewItem>();
-        if (!tvi)
+        auto const tvi = [item, this]()
         {
-            tvi = ContainerFromItem(item).try_as<TabViewItem>();
-        }
+            if (auto tabViewItem = item.try_as<TabViewItem>())
+            {
+                return tabViewItem;
+            }
+            return ContainerFromItem(item).try_as<TabViewItem>();
+        }();
 
         if (tvi)
         {
