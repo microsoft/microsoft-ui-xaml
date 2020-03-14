@@ -422,10 +422,10 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNull(closeUnselectedButton);
                 Verify.IsNotNull(closeSelectedButton);
 
-                closeButtonOverlayModeComboBox.SelectItemByName("Persistent");
+                closeButtonOverlayModeComboBox.SelectItemByName("Always");
                 Wait.ForIdle();
 
-                // Verifiying "Persistent" works correctly
+                // Verifiying "Always" works correctly
                 closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
                 closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
                 Verify.IsNotNull(closeUnselectedButton);

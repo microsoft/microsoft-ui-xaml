@@ -36,7 +36,7 @@
                 <ComboBox x:Name="CloseButtonOverlayModeCombobox" AutomationProperties.Name="CloseButtonOverlayModeCombobox" SelectedIndex="2" Margin="0,4,0,0" SelectionChanged="CloseButtonOverlayModeCombobox_SelectionChanged">
                     <ComboBoxItem Content="Auto"/>
                     <ComboBoxItem Content="OnHover"/>
-                    <ComboBoxItem Content="Persistent"/>
+                    <ComboBoxItem Content="Always"/>
                 </ComboBox>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
