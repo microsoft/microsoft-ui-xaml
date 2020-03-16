@@ -533,6 +533,31 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void VerifyNumberBoxHeaderBehavior()
+        {
+            using (var setup = new TestSetupHelper("NumberBox Tests"))
+            {
+                var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
+                var header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+
+                Verify.IsNull(header);
+
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Verify.IsNotNull(header);
+                toggleHeaderButton.Invoke();
+                Wait.ForIdle();
+                ElementCache.Clear();
+                
+                header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
+                Verify.IsNull(header);
+            }
+        }
+
+
         Button FindButton(UIObject parent, string buttonName)
         {
             foreach (UIObject elem in parent.Children)
