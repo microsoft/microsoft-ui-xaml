@@ -630,6 +630,8 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_TestUI"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "RadialGradientBrush_InteractionTests", "dev\RadialGradientBrush\InteractionTests\RadialGradientBrush_InteractionTests.shproj", "{74D18B1B-5F6B-4534-945B-131E8E3206FB}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TabView_APITests", "dev\TabView\APITests\TabView_APITests.shproj", "{2F4E95E9-F729-481C-B9AA-C9BEC91AE395}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		dev\ComboBox\ComboBox.vcxitems*{00523caf-422a-4185-9392-d374b72a019a}*SharedItemsImports = 9
@@ -666,6 +668,7 @@ Global
 		dev\SplitButton\TestUI\SplitButton_TestUI.projitems*{280c91f4-96b5-4bde-9e02-e573e1def583}*SharedItemsImports = 13
 		dev\Repeater\TestUI\Repeater_TestUI.projitems*{2ed883f5-20db-4445-8c96-517a21e5e657}*SharedItemsImports = 13
 		dev\MenuFlyout\TestUI\MenuFlyout_TestUI.projitems*{2ef860e2-8766-41fc-bde2-e6b18bb8c206}*SharedItemsImports = 13
+		dev\TabView\APITests\TabView_APITests.projitems*{2f4e95e9-f729-481c-b9aa-c9bec91ae395}*SharedItemsImports = 13
 		dev\ParallaxView\ParallaxView.vcxitems*{3095445a-afcd-5154-ac36-9770e6ec1aa5}*SharedItemsImports = 9
 		dev\RadioMenuFlyoutItem\RadioMenuFlyoutItem.vcxitems*{3353a4a7-87b3-4e43-8f8d-43c7380d1d56}*SharedItemsImports = 9
 		dev\Lights\Lights.vcxitems*{3479a3ae-2854-4bec-80ab-eab0772cb90a}*SharedItemsImports = 9
@@ -927,6 +930,7 @@ Global
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TabView\TestUI\TabView_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
+		dev\TabView\APITests\TabView_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
 		dev\TimePicker\TestUI\TimePicker_TestUI.projitems*{dedc1e4f-cfa5-4443-83eb-e79d425df7e7}*SharedItemsImports = 4
@@ -1015,6 +1019,7 @@ Global
 		dev\SwipeControl\SwipeControl_APITests\SwipeControl_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\SwipeControl\SwipeControl_TestUI\SwipeControl_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TabView\TestUI\TabView_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
+		dev\TabView\APITests\TabView_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TeachingTip\APITests\TeachingTip_APITests.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TeachingTip\TestUI\TeachingTip_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
 		dev\TimePicker\TestUI\TimePicker_TestUI.projitems*{fbc396f5-26dd-4ca3-981e-c7bc9fea4546}*SharedItemsImports = 4
@@ -1615,6 +1620,7 @@ Global
 		{8B056B8F-C1AB-4A80-BD17-DEACE9897E6A} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{AE308818-AF18-48BA-BF33-89779083D297} = {0115F80C-AB97-412D-85D9-33A5188F8907}
 		{74D18B1B-5F6B-4534-945B-131E8E3206FB} = {0115F80C-AB97-412D-85D9-33A5188F8907}
+		{2F4E95E9-F729-481C-B9AA-C9BEC91AE395} = {B3E64837-A5E4-49CB-97FF-A365307B9191}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D93836AB-52D3-4DE2-AE25-23F26F55ECED}
