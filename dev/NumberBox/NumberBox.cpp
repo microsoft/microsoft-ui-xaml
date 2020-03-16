@@ -11,6 +11,7 @@
 #include "Utils.h"
 #include "winnls.h"
 
+static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv };
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
@@ -133,6 +134,12 @@ void NumberBox::OnApplyTemplate()
         {
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
+    }
+
+    if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, controlProtected))
+    {
+        // Set presenter to enable lightweight styling of the headers margin
+        m_headerPresenter.set(headerPresenter);
     }
 
     m_textBox.set([this, controlProtected]() {
@@ -295,6 +302,22 @@ void NumberBox::UpdateValueToText()
     {
         textBox.Text(Text());
         ValidateInput();
+    }
+}
+
+void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // To enable lightweight styling, collapse header presenter if there is no header specified
+    if (const auto headerPresenter = m_headerPresenter.get())
+    {
+        if (const auto header = Header())
+        {
+            headerPresenter.Visibility(winrt::Visibility::Visible);
+        }
+        else
+        {
+            headerPresenter.Visibility(winrt::Visibility::Collapsed);
+        }
     }
 }
 

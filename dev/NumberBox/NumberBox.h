@@ -42,6 +42,7 @@ public:
     // IFrameworkElement
     void OnApplyTemplate();
 
+    void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 
@@ -87,6 +88,7 @@ private:
     winrt::SignificantDigitsNumberRounder m_displayRounder{};
 
     tracker_ref<winrt::TextBox> m_textBox{ this };
+    tracker_ref<winrt::ContentPresenter> m_headerPresenter{ this };
     tracker_ref<winrt::Popup> m_popup{ this };
 
     winrt::RepeatButton::Click_revoker m_upButtonClickRevoker{};
