@@ -69,6 +69,7 @@ public:
     bool ShowSelectionIndicatorIfRequired();
     void RotateExpandCollapseChevron(bool isExpanded);
     bool IsRepeaterVisible();
+    void PropagateDepthToChildren(int depth);
 
 private:
     void UpdateNavigationViewItemToolTip();
@@ -102,7 +103,6 @@ private:
     void ReparentRepeater();
     void ReparentContent();
     void OnFlyoutClosing(const winrt::IInspectable& sender, const winrt::FlyoutBaseClosingEventArgs& args);
-    void PropagateDepthToChildren(int depth);
     void UpdateItemIndentation();
     void ShowSelectionIndicator(bool visible);
 

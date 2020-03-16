@@ -881,17 +881,6 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
     {
         auto nvibImpl = winrt::get_self<NavigationViewItemBase>(nvib);
         nvibImpl->SetNavigationViewParent(*this);
-
-        if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
-        {
-            auto parentDepth = winrt::get_self<NavigationViewItem>(parentNVI)->Depth();
-            nvibImpl->Depth(parentDepth + 1);
-        }
-        else
-        {
-            nvibImpl->Depth(0);
-        }
-
         nvibImpl->IsTopLevelItem(IsTopLevelItem(nvib));
 
         // Visual state info propagation
@@ -909,11 +898,34 @@ void NavigationView::OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, c
         }();
         nvibImpl->Position(position);
 
+        if (auto const parentNVI = GetParentNavigationViewItemForContainer(nvib))
+        {
+            auto const parentNVIImpl = winrt::get_self<NavigationViewItem>(parentNVI);
+            auto itemDepth = parentNVIImpl->ShouldRepeaterShowInFlyout() ? 0 : parentNVIImpl->Depth() + 1;
+            nvibImpl->Depth(itemDepth);
+        }
+        else
+        {
+            nvibImpl->Depth(0);
+        }
+
         // Apply any custom container styling
         ApplyCustomMenuItemContainerStyling(nvib, ir, args.Index());
 
         if (auto nvi = args.Element().try_as<winrt::NavigationViewItem>())
         {
+            // Propagate depth to children items if they exist
+            auto childDepth = [position, nvibImpl]()
+            {
+                if (position == NavigationViewRepeaterPosition::TopPrimary)
+                {
+                    return 0;
+                }
+                return nvibImpl->Depth() + 1;
+
+            }();
+            winrt::get_self<NavigationViewItem>(nvi)->PropagateDepthToChildren(childDepth);
+
             if (ir != m_topNavRepeaterOverflowView.get())
             {
                 nvibImpl->UseSystemFocusVisuals(ShouldShowFocusVisual());
@@ -4620,7 +4632,9 @@ winrt::NavigationViewItem NavigationView::FindLowestLevelContainerToDisplaySelec
 void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewItem& nvi)
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
+
     nviImpl->SetRepeaterVisibilityAndUpdatePositionIfRequired(nvi.IsExpanded());
+
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
         nvi.IsExpanded() ? m_lastItemExpandedIntoFlyout.set(nvi) : m_lastItemExpandedIntoFlyout.set(nullptr);

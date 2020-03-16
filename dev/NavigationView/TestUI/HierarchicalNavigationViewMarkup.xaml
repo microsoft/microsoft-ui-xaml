@@ -89,10 +89,10 @@
                 <Button Content="Collapse Selected Item" Click="CollapseSelectedItem"/>
                 <Button Content="Remove Second MenuItem" Click="RemoveSecondMenuItem"/>
                 <TextBlock x:Name="IsChildSelectedLabel" AutomationProperties.Name="IsChildSelectedLabel" Text="uninitialized"/>
-                <Button x:Name ="PrintTopLevelIsChildSelectedItemsButton" AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
+                <Button AutomationProperties.Name="PrintTopLevelIsChildSelectedItemsButton" Content="Print TopLevel IsChildSelected Items" Click="PrintTopLevelIsChildSelectedItems"/>
                 <Button Content="Select Second Item" Click="SelectSecondItem"/>
                 <TextBlock Margin="0,10,0,0" x:Name="ExpandingItemLabel" Text="Last Expanding: N/A"/>
-                <TextBlock x:Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
+                <TextBlock x:Name="CollapsedItemLabel" AutomationProperties.Name="CollapsedItemLabel" Text="Last Collapsed: N/A"/>
                 <ComboBox x:Name="PaneDisplayModeCombobox"
                                 AutomationProperties.Name="PaneDisplayModeCombobox"
                                 Header="PaneDisplayMode"

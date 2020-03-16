@@ -4274,7 +4274,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void CanSelectItemInFlyoutAndParentIsAwareOfChildSelection()
+        public void CanSelectItemInFlyoutAndNVIGetsCollapseOnFlyoutClose()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
@@ -4283,21 +4283,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 panelDisplayModeComboBox.SelectItemByName("LeftCompact");
                 Wait.ForIdle();
 
-                var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("SelectedItemLabel"));
                 Verify.AreEqual(displayModeTextBox.DocumentText, "uninitialized");
 
-                Log.Comment("Expand children of a NavigationViewItem into a flyout.");
+                Log.Comment("Select Menu Item 6 (Selectable) which should open flyout.");
                 var item = FindElement.ByName("Menu Item 6 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
 
+                Log.Comment("Select Menu Item 7 (Selectable) which should keep flyout open.");
                 item = FindElement.ByName("Menu Item 7 (Selectable)");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
 
                 Verify.IsNotNull(FindElement.ById("ChildrenFlyout"), "Flyout should still be open.");
 
+                Log.Comment("Select Menu Item 8.");
                 item = FindElement.ByName("Menu Item 8");
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
@@ -4308,23 +4309,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Verify.IsNull(FindElement.ById("ChildrenFlyout"), "Flyout should be closed.");
 
                 // Verify that the correct item has been selected
+                var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 getSelectItemButton.Invoke();
                 Wait.ForIdle();
                 Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 8");
 
-                // Verify that top level parent item is aware of selected child
-                var printIsChildSelectedButton = new Button(FindElement.ByName("PrintTopLevelIsChildSelectedItemsButton"));
-                printIsChildSelectedButton.Invoke();
-                Wait.ForIdle();
-
-                TextBlock isChildSelectedLabel = new TextBlock(FindElement.ByName("IsChildSelectedLabel"));
-                Verify.IsTrue(isChildSelectedLabel.DocumentText.Contains("MI6"));
+                // Verify that parent has been collapsed
+                TextBlock collapsedItemLabel = new TextBlock(FindElement.ByName("CollapsedItemLabel"));
+                Verify.AreEqual(collapsedItemLabel.DocumentText, "Last Collapsed: Menu Item 6 (Selectable)");
             }
         }
 
         [TestMethod]
         [TestProperty("TestSuite", "D")]
-        public void SelectingNonTopLevelItemInOverflowMovesItem()
+        public void SelectingNonTopLevelItemInOverflow()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))
             {
@@ -4342,11 +4340,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 InputHelper.LeftClick(item);
                 Wait.ForIdle();
 
+                Log.Comment("Invoke 'Menu Item 30 (Selectable)'.");
+                item = FindElement.ByName("Menu Item 30 (Selectable)");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+
+                Log.Comment("Invoke 'Menu Item 31");
+                item = FindElement.ByName("Menu Item 31");
+                InputHelper.LeftClick(item);
+                Wait.ForIdle();
+
                 Log.Comment("Invoke GetSelectedItemLabelButton and verify selected item is correct.");
                 var getSelectItemButton = new Button(FindElement.ByName("GetSelectedItemLabelButton"));
                 getSelectItemButton.Invoke();
                 Wait.ForIdle();
-                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 29 (Selectable)");
+                Verify.AreEqual(displayModeTextBox.DocumentText, "Menu Item 31");
             }
         }
 

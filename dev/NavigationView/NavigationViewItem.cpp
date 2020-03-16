@@ -37,6 +37,7 @@ void NavigationViewItem::UpdateVisualStateNoTransition()
 void NavigationViewItem::OnNavigationViewRepeaterPositionChanged()
 {
     UpdateVisualStateNoTransition();
+    ReparentRepeater();
 }
 
 void NavigationViewItem::OnNavigationViewItemBaseDepthChanged()
@@ -525,8 +526,6 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
 
 void NavigationViewItem::SetRepeaterVisibilityAndUpdatePositionIfRequired(bool shouldShowRepeater)
 {
-    ReparentRepeater();
-
     auto visibility = shouldShowRepeater ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
 
