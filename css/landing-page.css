@@ -41,6 +41,7 @@ header.masthead h1 {
   background-color: #0E53BD;
   color: #FFFFFF;
   font-weight: 600;
+  -webkit-appearance: none;
 }
 
 .btn-custom:hover {
@@ -131,6 +132,15 @@ header.masthead h1 {
   #video-wrapper {
       margin-top: 2rem;
   }
+
+  .partner-summary h4 {
+    margin-bottom: 2rem;
+  }
+
+  .call-to-action h4 {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
 .showcase .showcase-text {
@@ -175,6 +185,8 @@ header.masthead h1 {
 .features-icons h2 { 
   text-align: center;
   color:black;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .features-icons h3 {
