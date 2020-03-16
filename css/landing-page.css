@@ -241,7 +241,7 @@ header.masthead h1 {
   background-size: cover;
 
   justify-content: center;
-  background-image: url('../img/winui-logo.png');
+  background-image: url('../img/winui-big.png');
   background-position: center center;
   background-repeat: no-repeat;
   background-size: auto;
@@ -250,7 +250,7 @@ header.masthead h1 {
 @supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
   .specific-call {
     -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(20px) saturate(125%);
+    backdrop-filter: blur(10px) saturate(125%);
     background-color: rgba(255, 255, 255, 0.5); 
   }
 }
