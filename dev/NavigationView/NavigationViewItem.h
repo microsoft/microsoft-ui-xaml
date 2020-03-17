@@ -50,7 +50,6 @@ public:
     // It provides a chance for NavigationViewItemPresenter to request visualstate refresh
     void UpdateVisualStateNoTransition();
 
-    void OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerReleased(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerEntered(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
@@ -58,7 +57,7 @@ public:
     void OnPresenterPointerCanceled(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
     void OnPresenterPointerCaptureLost(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args);
 
-    void SetRepeaterVisibilityAndUpdatePositionIfRequired(bool shouldShowRepeater);
+    void ShowChildren(bool shouldShowChildren);
     bool ShouldRepeaterShowInFlyout();
 
     winrt::ItemsRepeater GetRepeater() { return m_repeater.get(); };

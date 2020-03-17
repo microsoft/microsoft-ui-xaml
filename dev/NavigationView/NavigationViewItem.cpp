@@ -524,14 +524,14 @@ NavigationViewItemPresenter * NavigationViewItem::GetPresenter()
     return presenter;
 }
 
-void NavigationViewItem::SetRepeaterVisibilityAndUpdatePositionIfRequired(bool shouldShowRepeater)
+void NavigationViewItem::ShowChildren(bool shouldShowChildren)
 {
-    auto visibility = shouldShowRepeater ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
+    auto visibility = shouldShowChildren ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
     m_repeater.get().Visibility(visibility);
 
     if (ShouldRepeaterShowInFlyout())
     {
-        if (shouldShowRepeater)
+        if (shouldShowChildren)
         {
             winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
         }
@@ -695,11 +695,6 @@ void NavigationViewItem::OnLostFocus(winrt::RoutedEventArgs const& e)
         m_hasKeyboardFocus = false;
         UpdateVisualStateNoTransition();
     }
-}
-
-void NavigationViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    //TODO: Verify that handling here is not requied for visual states
 }
 
 void NavigationViewItem::OnPresenterPointerPressed(const winrt::IInspectable& sender, const winrt::PointerRoutedEventArgs& args)

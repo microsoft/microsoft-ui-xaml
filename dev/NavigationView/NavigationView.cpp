@@ -306,7 +306,7 @@ void NavigationView::CloseFlyoutIfRequired()
                                 auto const nviImpl = winrt::get_self<NavigationViewItem>(nvi);
                                 if (nviImpl->ShouldRepeaterShowInFlyout())
                                 {
-                                    nviImpl->SetRepeaterVisibilityAndUpdatePositionIfRequired(false);
+                                    nviImpl->ShowChildren(false);
                                 }
                             }
                         }
@@ -382,6 +382,14 @@ void NavigationView::OnApplyTemplate()
     {
         m_leftNavRepeater.set(leftNavRepeater);
 
+        // API is currently in preview, so setting this via code.
+        // Disabling virtualization for now because of https://github.com/microsoft/microsoft-ui-xaml/issues/2095
+        if (auto stackLayout = leftNavRepeater.Layout().try_as<winrt::StackLayout>())
+        {
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            stackLayoutImpl->DisableVirtualization(true);
+        }
+
         m_leftNavItemsRepeaterElementPreparedRevoker = leftNavRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_leftNavItemsRepeaterElementClearingRevoker = leftNavRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
         m_leftNavRepeaterGettingFocusRevoker = leftNavRepeater.GettingFocus(winrt::auto_revoke, { this, &NavigationView::OnRepeaterGettingFocus });
@@ -416,6 +424,14 @@ void NavigationView::OnApplyTemplate()
     if (auto topNavListOverflowRepeater = GetTemplateChildT<winrt::ItemsRepeater>(c_topNavMenuItemsOverflowHost, controlProtected))
     {
         m_topNavRepeaterOverflowView.set(topNavListOverflowRepeater);
+
+        // API is currently in preview, so setting this via code.
+        // Disabling virtualization for now because of https://github.com/microsoft/microsoft-ui-xaml/issues/2095
+        if (auto stackLayout = topNavListOverflowRepeater.Layout().try_as<winrt::StackLayout>())
+        {
+            auto stackLayoutImpl = winrt::get_self<StackLayout>(stackLayout);
+            stackLayoutImpl->DisableVirtualization(true);
+        }
 
         m_topNavOverflowItemsRepeaterElementPreparedRevoker = topNavListOverflowRepeater.ElementPrepared(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementPrepared });
         m_topNavOverflowItemsRepeaterElementClearingRevoker = topNavListOverflowRepeater.ElementClearing(winrt::auto_revoke, { this, &NavigationView::OnRepeaterElementClearing });
@@ -4633,7 +4649,7 @@ void NavigationView::ShowHideChildrenItemsRepeater(const winrt::NavigationViewIt
 {
     auto nviImpl = winrt::get_self<NavigationViewItem>(nvi);
 
-    nviImpl->SetRepeaterVisibilityAndUpdatePositionIfRequired(nvi.IsExpanded());
+    nviImpl->ShowChildren(nvi.IsExpanded());
 
     if (nviImpl->ShouldRepeaterShowInFlyout())
     {
