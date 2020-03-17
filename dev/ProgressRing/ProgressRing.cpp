@@ -55,7 +55,6 @@ void ProgressRing::OnApplyTemplate()
     m_ringPath.set(GetTemplateChildT<winrt::Path>(s_RingPathName, controlProtected));
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_RingFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
-    //m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
 
     m_player.set([this, controlProtected]()
     {
@@ -214,12 +213,6 @@ void ProgressRing::UpdateStates()
     else
     {
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
-
-        //if (auto&& player = m_player.get())
-        //{
-        //    const auto _ = player.PlayAsync(0, 1, false);
-        //    //player.Stop();
-        //}
     }
 }
 
