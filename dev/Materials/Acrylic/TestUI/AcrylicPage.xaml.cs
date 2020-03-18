@@ -30,6 +30,7 @@ namespace MUXControlsTestApp
             navigateToColorAcrylic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(AcrylicColorPage), 0); };
             navigateToMarkupAcrylic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(AcrylicMarkupPage), 0); };
             navigateToRenderingAcrylic.Click += delegate { Frame.NavigateWithoutAnimation(typeof(AcrylicRenderingPage), 0); };
+            navigateToLuminosityAcrylicTest.Click += delegate { Frame.NavigateWithoutAnimation(typeof(AcrylicBrushLuminosityTestPage), 0); };
         }
     }
 }

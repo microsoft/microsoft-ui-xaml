@@ -1,0 +1,62 @@
+﻿<local:TestPage
+    x:Class="MUXControlsTestApp.AcrylicBrushLuminosityTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MUXControlsTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Media"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <local:TestPage.Resources>
+            <muxc:AcrylicBrush x:Key="AcrylicBlackNoLuminosityOpacity" BackgroundSource="Backdrop"
+                TintOpacity="0.2" TintColor="#000000" FallbackColor="#FF008000" />
+            <muxc:AcrylicBrush x:Key="AcrylicDarkGreyNoLuminosityOpacity" BackgroundSource="Backdrop"
+                TintOpacity="0.2" TintColor="#1F1F1F" FallbackColor="#FF008000" />
+
+            <muxc:AcrylicBrush x:Key="AcrylicBlackWithLuminosityOpacity" BackgroundSource="Backdrop"
+                TintOpacity="0.2" TintColor="#000000" FallbackColor="#FF008000" />
+            <muxc:AcrylicBrush x:Key="AcrylicDarkGreyWithLuminosityOpacity" BackgroundSource="Backdrop"
+                TintOpacity="0.2" TintColor="#1F1F1F" FallbackColor="#FF008000" />
+    </local:TestPage.Resources>
+    
+    <Grid MaxWidth="600" MaxHeight="600">
+        <Image x:Name="BackgroundPanel" Source="ms-appx:///Assets/SMPTE_WallpaperHD.png"
+                Stretch="Fill"/>
+
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Margin="10,0,10,10">
+                <TextBlock Text="LuminosityOpacity not set
+                           (should look the same)"
+                    TextWrapping="WrapWholeWords" Foreground="Black" MaxWidth="170"/>
+
+                <TextBlock Text="Black" Foreground="Black" Margin="0,5,0,0"/>
+                <Rectangle x:Name="Rectangle1" Width="150" Height="150"
+                    Fill="{ThemeResource AcrylicBlackNoLuminosityOpacity}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                </Rectangle>
+                <Rectangle x:Name="Rectangle2" Width="150" Height="150"
+                    Fill="{ThemeResource AcrylicDarkGreyNoLuminosityOpacity}" HorizontalAlignment="Left" VerticalAlignment="Center">
+                </Rectangle>
+                <TextBlock Text="Grey" Foreground="Black"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,0,10,10">
+                <TextBlock Text="LuminosityOpacity set
+                           (should look different)"
+                    TextWrapping="WrapWholeWords" Foreground="Black" MaxWidth="150"/>
+
+                <TextBlock Text="Black" Foreground="Black" Margin="0,5,0,0"/>
+                <Rectangle x:Name="Rectangle3" Width="150" Height="150"
+                    Fill="{ThemeResource AcrylicBlackWithLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </Rectangle>
+
+                <Rectangle x:Name="Rectangle4" Width="150" Height="150"
+                    Fill="{ThemeResource AcrylicDarkGreyWithLuminosityOpacity}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                </Rectangle>
+                <TextBlock Text="Grey" Foreground="Black"/>
+            </StackPanel>
+        </StackPanel>
+            
+    </Grid>
+</local:TestPage>
