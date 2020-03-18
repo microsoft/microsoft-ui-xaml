@@ -4272,9 +4272,8 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
-        // TODO: fix and re-enable
-        //[TestMethod]
-        //[TestProperty("TestSuite", "D")]
+       [TestMethod]
+       [TestProperty("TestSuite", "D")]
         public void CanSelectItemInFlyoutAndNVIGetsCollapsedOnFlyoutClose()
         {
             using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "HierarchicalNavigationView Markup Test" }))

@@ -533,7 +533,13 @@ void NavigationViewItem::ShowChildren(bool shouldShowChildren)
     {
         if (shouldShowChildren)
         {
-            winrt::FlyoutBase::ShowAttachedFlyout(m_rootGrid.get());
+            // There seems to be a race condition happening which sometimes
+            // prevents the opening of the flyout. Queue callback as a workaround.
+            SharedHelpers::QueueCallbackForCompositionRendering(
+                [strongThis = get_strong()]()
+            {
+                winrt::FlyoutBase::ShowAttachedFlyout(strongThis->m_rootGrid.get());
+            });
         }
         else
         {
@@ -554,6 +560,7 @@ void NavigationViewItem::ReparentRepeater()
             if (ShouldRepeaterShowInFlyout() && !m_isRepeaterParentedToFlyout)
             {
                 // Reparent repeater to flyout
+                // TODO: Replace removeatend with something more specific
                 m_rootGrid.get().Children().RemoveAtEnd();
                 m_flyoutContentGrid.get().Children().Append(repeater);
                 m_isRepeaterParentedToFlyout = true;
