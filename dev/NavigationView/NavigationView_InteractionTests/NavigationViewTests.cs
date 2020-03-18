@@ -2949,6 +2949,41 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "C")]
+        public void DisplayModeChangeSelectionEventTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+                {
+                    if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone3))
+                    {
+                        Log.Warning("Test is disabled on RS2 and earlier because SplitView lacks the requisite events.");
+                        return;
+                    }
+                    Button clearSelectedItem = new Button(FindElement.ById("ClearSelectionChangeIndicatorButton"));
+                    TextBlock selectionRaisedIndicator = new TextBlock(FindElement.ById("SelectionChangedRaised"));
+
+                    ComboBox selectedItem = new ComboBox(FindElement.ById("SelectedItemCombobox"));
+                    selectedItem.SelectItemByName("Settings");
+                    Verify.AreEqual("True", selectionRaisedIndicator.GetText());
+
+                    ComboBox displayMode = new ComboBox(FindElement.ById("PaneDisplayModeCombobox"));
+                    clearSelectedItem.InvokeAndWait();
+                    displayMode.SelectItemByName("Top");
+                    Verify.AreEqual("False", selectionRaisedIndicator.GetText());
+                    Wait.ForIdle();
+
+
+                    displayMode.SelectItemByName("Left");
+                    Wait.ForIdle();
+                    Verify.AreEqual("False", selectionRaisedIndicator.GetText());
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "C")]
         public void PaneOpenCloseEventsTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();

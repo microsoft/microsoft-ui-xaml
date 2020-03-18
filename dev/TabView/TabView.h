@@ -103,6 +103,7 @@ public:
     void OnKeyDown(winrt::KeyRoutedEventArgs const& e);
 
     // Internal
+    void OnCloseButtonOverlayModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTabWidthModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedIndexPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSelectedItemPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -113,6 +114,8 @@ public:
     void RequestCloseTab(winrt::TabViewItem const& item);
 
     winrt::UIElement GetShadowReceiver() { return m_shadowReceiver.get(); }
+
+    winrt::hstring GetTabCloseButtonTooltipText() { return m_tabCloseButtonTooltipText; }
 
 private:
     void OnLoaded(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
@@ -182,6 +185,8 @@ private:
     winrt::ItemsPresenter::SizeChanged_revoker m_itemsPresenterSizeChangedRevoker{};
 
     DispatcherHelper m_dispatcherHelper{ *this };
+
+    winrt::hstring m_tabCloseButtonTooltipText{};
 
     winrt::Size previousAvailableSize{};
 };

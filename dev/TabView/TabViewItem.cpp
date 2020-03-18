@@ -24,7 +24,12 @@ void TabViewItem::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_closeButton.set([this, controlProtected]() {
+    auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
+    auto internalTabView = tabView
+        ? winrt::get_self<TabView>(tabView)
+        : nullptr;
+
+    m_closeButton.set([this, controlProtected, internalTabView]() {
         auto closeButton = GetTemplateChildT<winrt::Button>(L"CloseButton", controlProtected);
         if (closeButton)
         {
@@ -35,18 +40,26 @@ void TabViewItem::OnApplyTemplate()
                 winrt::AutomationProperties::SetName(closeButton, closeButtonName);
             }
 
+            if (internalTabView)
+            {
+                // Setup the tooltip for the close button
+                auto tooltip = winrt::ToolTip();
+                tooltip.Content(box_value(internalTabView->GetTabCloseButtonTooltipText()));
+                winrt::ToolTipService::SetToolTip(closeButton, tooltip);
+            }
+
             m_closeButtonClickRevoker = closeButton.Click(winrt::auto_revoke, { this, &TabViewItem::OnCloseButtonClick });
         }
         return closeButton;
-    }());
+        }());
 
     OnIconSourceChanged();
 
-    if (auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this)))
+    if (tabView)
     {
         if (SharedHelpers::IsThemeShadowAvailable())
         {
-            if (auto internalTabView = winrt::get_self<TabView>(tabView))
+            if (internalTabView)
             {
                 winrt::ThemeShadow shadow;
                 shadow.Receivers().Append(internalTabView->GetShadowReceiver());
@@ -72,6 +85,9 @@ void TabViewItem::OnApplyTemplate()
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
     UpdateShadow();
+    UpdateWidthModeVisualState();
+
+    UpdateCloseButton();
 }
 
 void TabViewItem::UpdateShadow()
@@ -106,12 +122,62 @@ winrt::AutomationPeer TabViewItem::OnCreateAutomationPeer()
     return winrt::make<TabViewItemAutomationPeer>(*this);
 }
 
+void TabViewItem::OnCloseButtonOverlayModeChanged(winrt::TabViewCloseButtonOverlayMode const& mode)
+{
+    m_closeButtonOverlayMode = mode;
+    UpdateCloseButton();
+}
+
+void TabViewItem::OnTabViewWidthModeChanged(winrt::TabViewWidthMode const& mode)
+{
+    m_tabViewWidthMode = mode;
+    UpdateWidthModeVisualState();
+}
+
 
 void TabViewItem::UpdateCloseButton()
 {
-    if (auto && closeButton = m_closeButton.get())
+    if (!IsClosable())
     {
-        closeButton.Visibility(IsClosable() ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
+        winrt::VisualStateManager::GoToState(*this, L"CloseButtonCollapsed", false);
+    }
+    else
+    {
+        switch (m_closeButtonOverlayMode)
+        {
+            case winrt::TabViewCloseButtonOverlayMode::OnHover:
+            {
+                // If we only want to show the button on hover, we also show it when we are selected, otherwise hide it
+                if (IsSelected() || m_isPointerOver)
+                {
+                    winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
+                }
+                else
+                {
+                    winrt::VisualStateManager::GoToState(*this, L"CloseButtonCollapsed", false);
+                }
+                break;
+            }
+            default:
+            {
+                // Default, use "Auto"
+                winrt::VisualStateManager::GoToState(*this, L"CloseButtonVisible", false);
+                break;
+            }
+        }
+    }
+}
+
+void TabViewItem::UpdateWidthModeVisualState()
+{
+    // Handling compact/non compact width mode
+    if (!IsSelected() && m_tabViewWidthMode == winrt::TabViewWidthMode::Compact)
+    {
+        winrt::VisualStateManager::GoToState(*this, L"Compact", false);
+    }
+    else
+    {
+        winrt::VisualStateManager::GoToState(*this, L"StandardWidth", false);
     }
 }
 
@@ -232,17 +298,24 @@ void TabViewItem::OnPointerEntered(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerEntered(args);
 
+    m_isPointerOver = true;
+
     if (m_hasPointerCapture)
     {
         m_isMiddlePointerButtonPressed = true;
     }
+
+    UpdateCloseButton();
 }
 
 void TabViewItem::OnPointerExited(winrt::PointerRoutedEventArgs const& args)
 {
     __super::OnPointerExited(args);
 
+    m_isPointerOver = false;
     m_isMiddlePointerButtonPressed = false;
+
+    UpdateCloseButton();
 }
 
 void TabViewItem::OnPointerCanceled(winrt::PointerRoutedEventArgs const& args)

@@ -26,8 +26,9 @@
     <LangVersion>$(CSLangVersion)</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(BuildingWithBuildExe) != 'true'">
-    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10</UniversalCRTSdkDir>
-    <WindowsMetadataPath>$(UniversalCRTSdkDir)\UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Kits\Installed Roots@KitsRoot10)</UniversalCRTSdkDir>
+    <UniversalCRTSdkDir Condition="'$(UniversalCRTSdkDir)' == ''">$(MSBuildProgramFiles32)\Windows Kits\10\</UniversalCRTSdkDir>
+    <WindowsMetadataPath>$(UniversalCRTSdkDir)UnionMetadata\$(TargetPlatformVersion)</WindowsMetadataPath>
     <AssemblyName>MUXControls.Test</AssemblyName>
     <!-- We are using .NetCore because we are targetting CoreCLR but with Windows UAP support. It maps to netcore50 in the project.json file. 
          If you don't need UAP support, for example you are just driving UI with Microsoft.Windows.Apps.Test, you should build with .NETPlatform,Version=5.4. This maps to dotnet54 in the project.json file.

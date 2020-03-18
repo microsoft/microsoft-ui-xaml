@@ -408,6 +408,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void CloseButtonOverlayModeTests()
+        {
+            using(var setup = new TestSetupHelper("TabView Tests"))
+            {
+                ComboBox closeButtonOverlayModeComboBox = FindElement.ByName<ComboBox>("CloseButtonOverlayModeCombobox");
+                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                Wait.ForIdle();
+
+                Button closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Button closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                Verify.IsNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+
+                closeButtonOverlayModeComboBox.SelectItemByName("Always");
+                Wait.ForIdle();
+
+                // Verifiying "Always" works correctly
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNotNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+
+                // Verifiying "OnHover" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("OnHover");
+                Wait.ForIdle();
+
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+               
+                // Verifiying "Auto" works correctly
+                closeButtonOverlayModeComboBox.SelectItemByName("Auto");
+                Wait.ForIdle();
+
+                closeSelectedButton = FindCloseButton(FindElement.ByName("FirstTab"));
+                closeUnselectedButton = FindCloseButton(FindElement.ByName("LongHeaderTab"));
+                Verify.IsNotNull(closeUnselectedButton);
+                Verify.IsNotNull(closeSelectedButton);
+
+            }
+        } 
 
         [TestMethod]
         public void GamePadTest()
