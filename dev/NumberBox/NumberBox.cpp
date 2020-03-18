@@ -312,7 +312,25 @@ void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEv
     {
         if (const auto header = Header())
         {
-            headerPresenter.Visibility(winrt::Visibility::Visible);
+            // Check if header is string or not
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+            {
+                if (headerAsString.Value().empty())
+                {
+                    // String is the empty string, hide presenter
+                    headerPresenter.Visibility(winrt::Visibility::Collapsed);
+                }
+                else
+                {
+                    // String is not an empty string
+                    headerPresenter.Visibility(winrt::Visibility::Visible);
+                }
+            }
+            else
+            {
+                // Header is not a string, so let's show header presenter
+                headerPresenter.Visibility(winrt::Visibility::Visible);
+            }
         }
         else
         {
