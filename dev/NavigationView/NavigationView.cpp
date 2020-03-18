@@ -4266,6 +4266,25 @@ winrt::UIElement NavigationView::SearchEntireTreeForContainer(const winrt::Items
     return nullptr;
 }
 
+winrt::IndexPath NavigationView::SearchEntireTreeForIndexPath(const winrt::ItemsRepeater& rootRepeater, const winrt::IInspectable& data)
+{
+    for (int i = 0; i < GetContainerCountInRepeater(rootRepeater); i++)
+    {
+        if (auto const container = rootRepeater.TryGetElement(i))
+        {
+            if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+            {
+                auto const ip = winrt::make<IndexPath>(std::vector<int>({ i }));
+                if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                {
+                    return indexPath;
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 // There are two possibilities here if the passed in item has children. Either the children of the passed in container have already been realized,
 // in which case we simply just iterate through the children containers, or they have not been realized yet and we have to iterate through the data
 // and manually realize each item.
@@ -4439,24 +4458,23 @@ winrt::IndexPath NavigationView::GetIndexPathOfItem(const winrt::IInspectable& d
     // realizing it if necessary.
     if (IsTopNavigationView())
     {
-        // TODO
+        // First search through primary list
+        if (auto const ip = SearchEntireTreeForIndexPath(m_topNavRepeater.get(), data))
+        {
+            return ip;
+        }
+
+        // If item was not located in primary list, search through overflow
+        if (auto const ip = SearchEntireTreeForIndexPath(m_topNavRepeaterOverflowView.get(), data))
+        {
+            return ip;
+        }
     }
     else
     {
-        auto const leftRepeater = m_leftNavRepeater.get();
-        for (int i = 0; i < GetContainerCountInRepeater(leftRepeater); i++)
+        if (auto const ip = SearchEntireTreeForIndexPath(m_leftNavRepeater.get(), data))
         {
-            if (auto const container = leftRepeater.TryGetElement(i))
-            {
-                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
-                {
-                    auto const ip = winrt::make<IndexPath>(std::vector<int>({ i }));
-                    if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
-                    {
-                        return indexPath;
-                    }
-                }
-            }
+            return ip;
         }
     }
 
