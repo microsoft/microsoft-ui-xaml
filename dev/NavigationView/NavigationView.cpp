@@ -1535,7 +1535,7 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
 void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem)
 {
     // If we are delaying animation due to item movement in top nav overflow, dont do anything
-    if (m_lastSelectedItemPendingAnimationInTopNav.get())
+    if (m_lastSelectedItemPendingAnimationInTopNav)
     {
         return;
     }

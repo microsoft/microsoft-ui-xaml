@@ -113,26 +113,15 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
 
-            repeater.ItemTemplate(*(nvImpl->m_navigationViewItemsFactory));
+            repeater.ItemTemplate(*(nvImpl->GetNavigationViewItemsFactory()));
         }
 
         UpdateRepeaterItemsSource();
     }
 
-    if (auto flyoutContentGrid = GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected))
-    {
-        m_flyoutContentGrid.set(flyoutContentGrid);
-    }
-
-    if (auto flyoutTitleContentPresenterGrid = GetTemplateChildT<winrt::Grid>(c_flyoutTitleContentPresenterGrid, controlProtected))
-    {
-        m_flyoutTitleContentPresenterGrid.set(flyoutTitleContentPresenterGrid);
-    }
-
-    if (auto flyoutTitleContentPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_flyoutTitleContentPresenter, controlProtected))
-    {
-        m_flyoutTitleContentPresenter.set(flyoutTitleContentPresenter);
-    }
+    m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
+    m_flyoutTitleContentPresenterGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutTitleContentPresenterGrid, controlProtected));
+    m_flyoutTitleContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(c_flyoutTitleContentPresenter, controlProtected));
 
     m_appliedTemplate = true;
     UpdateItemIndentation();
@@ -144,17 +133,16 @@ void NavigationViewItem::OnApplyTemplate()
 
 void NavigationViewItem::UpdateRepeaterItemsSource()
 {
-    auto const itemsSource = [this]()
-    {
-        if (auto const menuItemsSource = MenuItemsSource())
-        {
-            return menuItemsSource;
-        }
-        return MenuItems().as<winrt::IInspectable>();
-    }();
-
     if (auto repeater = m_repeater.get())
     {
+        auto const itemsSource = [this]()
+        {
+            if (auto const menuItemsSource = MenuItemsSource())
+            {
+                return menuItemsSource;
+            }
+            return MenuItems().as<winrt::IInspectable>();
+        }();
         repeater.ItemsSource(itemsSource);
     }
 }
@@ -288,8 +276,7 @@ void NavigationViewItem::ShowSelectionIndicator(bool visible)
 {
     if (auto const selectionIndicator = GetSelectionIndicator())
     {
-        auto const opacity = visible ? 1.0 : 0.0;
-        selectionIndicator.Opacity(opacity);
+        selectionIndicator.Opacity(visible ? 1.0 : 0.0);
     }
 }
 
