@@ -78,7 +78,7 @@ public:
     void OnRepeaterElementPrepared(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementPreparedEventArgs& args);
     void OnRepeaterElementClearing(const winrt::ItemsRepeater& ir, const winrt::ItemsRepeaterElementClearingEventArgs& args);
 
-    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
+    com_ptr<NavigationViewItemsFactory> NavigationViewItemsFactory() { return m_navigationViewItemsFactory };
 
     // Used in AutomationPeer
     winrt::ItemsRepeater LeftNavRepeater();
@@ -321,6 +321,7 @@ private:
     void KeyboardFocusLastItemFromItem(const winrt::NavigationViewItemBase& nvib);
     void ApplyCustomMenuItemContainerStyling(const winrt::NavigationViewItemBase& nvib, const winrt::ItemsRepeater& ir, int index);
 
+    com_ptr<NavigationViewItemsFactory> m_navigationViewItemsFactory{ nullptr };
 
     // Visual components
     tracker_ref<winrt::Button> m_paneToggleButton{ this };

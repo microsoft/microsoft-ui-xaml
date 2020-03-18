@@ -113,7 +113,7 @@ void NavigationViewItem::OnApplyTemplate()
             m_repeaterElementPreparedRevoker = repeater.ElementPrepared(winrt::auto_revoke, { nvImpl,  &NavigationView::OnRepeaterElementPrepared });
             m_repeaterElementClearingRevoker = repeater.ElementClearing(winrt::auto_revoke, { nvImpl, &NavigationView::OnRepeaterElementClearing });
 
-            repeater.ItemTemplate(*(nvImpl->m_navigationViewItemsFactory));
+            repeater.ItemTemplate(*(nvImpl->NavigationViewItemsFactory()));
         }
 
         UpdateRepeaterItemsSource();
