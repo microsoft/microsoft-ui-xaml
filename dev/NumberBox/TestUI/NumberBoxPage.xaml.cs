@@ -136,7 +136,15 @@ namespace MUXControlsTestApp
             }
             else
             {
-                HeaderTestingNumberBox.Header = null;
+                // Switching between normal header and empty string header
+                if(HeaderTestingNumberBox.Header as string is null)
+                {
+                    HeaderTestingNumberBox.Header = "";
+                }
+                else
+                {
+                    HeaderTestingNumberBox.Header = null;
+                }
             }
         }
 
