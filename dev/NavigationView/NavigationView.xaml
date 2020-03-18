@@ -618,12 +618,10 @@
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
                                     <Grid
-                                        Grid.Row="0"
                                         x:Name="FlyoutTitleContentPresenterGrid"
                                         MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
                                         Padding="12,0,0,0"> 
                                         <ContentPresenter
-                                            Grid.Row="0"
                                             x:Name="FlyoutTitleContentPresenter"
                                             VerticalAlignment="Center"/>
                                     </Grid>

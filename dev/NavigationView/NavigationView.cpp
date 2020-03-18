@@ -1535,7 +1535,7 @@ void NavigationView::AnimateSelectionChangedToItem(const winrt::IInspectable& se
 void NavigationView::AnimateSelectionChanged(const winrt::IInspectable& nextItem)
 {
     // If we are delaying animation due to item movement in top nav overflow, dont do anything
-    if (m_lastSelectedItemPendingAnimationInTopNav.get())
+    if (m_lastSelectedItemPendingAnimationInTopNav)
     {
         return;
     }
@@ -4439,7 +4439,39 @@ winrt::IndexPath NavigationView::GetIndexPathOfItem(const winrt::IInspectable& d
     // realizing it if necessary.
     if (IsTopNavigationView())
     {
-        // TODO
+        // First search through primary list
+        auto const topRepeater = m_topNavRepeater.get();
+        for (int i = 0; i < GetContainerCountInRepeater(topRepeater); i++)
+        {
+            if (auto const container = topRepeater.TryGetElement(i))
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    auto const ip = winrt::make<IndexPath>(std::vector<int>({ i }));
+                    if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                    {
+                        return indexPath;
+                    }
+                }
+            }
+        }
+
+        // If item was not located in primary list, search through overflow
+        auto const topOverflowRepeater = m_topNavRepeaterOverflowView.get();
+        for (int i = 0; i < GetContainerCountInRepeater(topOverflowRepeater); i++)
+        {
+            if (auto const container = topOverflowRepeater.TryGetElement(i))
+            {
+                if (auto const nvi = container.try_as<winrt::NavigationViewItem>())
+                {
+                    auto const ip = winrt::make<IndexPath>(std::vector<int>({ i }));
+                    if (auto const indexPath = SearchEntireTreeForIndexPath(nvi, data, ip))
+                    {
+                        return indexPath;
+                    }
+                }
+            }
+        }
     }
     else
     {
