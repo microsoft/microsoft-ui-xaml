@@ -115,6 +115,22 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             });
         }
 
+        [TestMethod]
+        public void VerifyIndexOfBehavior()
+        {
+            RunOnUIThread.Execute(() =>
+            {
+                var data = new ObservableVectorWithUniqueIds(Enumerable.Range(0, 10));
+                var dataSource = new ItemsSourceView(data);
+                foreach(int i in Enumerable.Range(0, 10))
+                {
+                    Verify.AreEqual(i, dataSource.IndexOf(i));
+                }
+
+                Verify.AreEqual(-1, dataSource.IndexOf(11));
+            });
+        }
+
         // Calling Reset multiple times before layout runs causes a crash
         // in unique ids. We end up thinking we have multiple elements with the same id.
         [TestMethod]
