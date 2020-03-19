@@ -24,6 +24,7 @@ public:
 #pragma endregion
 
     int IndexOf(winrt::IInspectable const& value);
+    int IndexOfCore(winrt::IInspectable const& value);
 
 private:
     winrt::Collections::IVector<winrt::IInspectable>

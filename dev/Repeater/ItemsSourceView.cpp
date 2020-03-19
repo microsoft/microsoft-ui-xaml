@@ -43,7 +43,7 @@ int ItemsSourceView::IndexFromKey(winrt::hstring const& id)
 
 int ItemsSourceView::IndexOf(winrt::IInspectable const& value)
 {
-    throw winrt::hresult_not_implemented();
+    return IndexOfCore(value);
 }
 
 winrt::event_token ItemsSourceView::CollectionChanged(winrt::NotifyCollectionChangedEventHandler const& value)
@@ -96,3 +96,8 @@ int ItemsSourceView::IndexFromKeyCore(winrt::hstring const& /* id */)
 }
 
 #pragma endregion
+
+int ItemsSourceView::IndexOfCore(winrt::IInspectable const& value)
+{
+    throw winrt::hresult_not_implemented();
+}

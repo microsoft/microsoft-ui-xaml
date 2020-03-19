@@ -108,7 +108,9 @@ unsealed runtimeclass ItemsSourceView: Windows.UI.Xaml.Interop.INotifyCollection
     Int32 IndexFromKey(String key);
 
     [WUXC_VERSION_PREVIEW]
-    Int32 IndexOf(IInspectable item);
+    {
+        Int32 IndexOf(IInspectable item);
+    }
 }
 
 [WUXC_VERSION_MUXONLY]
