@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -21,6 +21,8 @@ public:
     winrt::event_token CollectionChanged(winrt::NotifyCollectionChangedEventHandler const& value);
     void CollectionChanged(winrt::event_token const& token);
 #pragma endregion
+
+    int32_t IndexOf(winrt::IInspectable const& value);
 
 #pragma region Consume API for internal use only.
     void OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
