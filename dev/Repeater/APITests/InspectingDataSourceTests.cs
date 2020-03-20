@@ -120,14 +120,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
         {
             RunOnUIThread.Execute(() =>
             {
-                var data = new ObservableVectorWithUniqueIds(Enumerable.Range(0, 10));
-                var dataSource = new ItemsSourceView(data);
-                foreach(int i in Enumerable.Range(0, 10))
+                var collections = new List<IEnumerable>();
+                collections.Add(new ObservableVectorWithUniqueIds(Enumerable.Range(0, 10)));
+                collections.Add(new ObservableCollection<int>(Enumerable.Range(0,10)));
+
+                foreach(var collection in collections)
                 {
-                    Verify.AreEqual(i, dataSource.IndexOf(i));
+                    var dataSource = new ItemsSourceView(collection);
+                    foreach(int i in collection)
+                    {
+                        Verify.AreEqual(i, dataSource.IndexOf(i));
+                    }
+
+                    Verify.AreEqual(-1, dataSource.IndexOf(11));
                 }
 
-                Verify.AreEqual(-1, dataSource.IndexOf(11));
+                // Enumerabl.Range returns IEnumerable which does not provide IndexOf
+                var crashingDataSource = new ItemsSourceView(Enumerable.Range(0, 10));
+                var index = -1;
+                try
+                {
+                    index = crashingDataSource.IndexOf(0);
+                }catch(Exception){ }
+                Verify.AreEqual(-1, index);
             });
         }
 

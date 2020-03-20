@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 #pragma once
@@ -10,19 +10,19 @@ class ItemsSourceView :
 {
 public:
 
-#pragma region IDataSource
+#pragma region ItemsSourceView
     int32_t Count();
     winrt::IInspectable GetAt(int index);
 
     bool HasKeyIndexMapping();
     winrt::hstring KeyFromIndex(int index);
     int IndexFromKey(winrt::hstring const& id);
+    int IndexOf(winrt::IInspectable const& value);
 
     winrt::event_token CollectionChanged(winrt::NotifyCollectionChangedEventHandler const& value);
     void CollectionChanged(winrt::event_token const& token);
 #pragma endregion
 
-    int IndexOf(winrt::IInspectable const& value);
 
 #pragma region Consume API for internal use only.
     void OnItemsSourceChanged(winrt::NotifyCollectionChangedEventArgs const& args);
