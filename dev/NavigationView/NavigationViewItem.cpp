@@ -13,8 +13,6 @@ static constexpr wstring_view c_navigationViewItemPresenterName = L"NavigationVi
 static constexpr auto c_repeater = L"NavigationViewItemMenuItemsHost"sv;
 static constexpr auto c_rootGrid = L"NVIRootGrid"sv;
 static constexpr auto c_flyoutContentGrid = L"FlyoutContentGrid"sv;
-static constexpr auto c_flyoutTitleContentPresenterGrid = L"FlyoutTitleContentPresenterGrid"sv;
-static constexpr auto c_flyoutTitleContentPresenter = L"FlyoutTitleContentPresenter"sv;
 
 // Visual States
 static constexpr auto c_pressedSelected = L"PressedSelected"sv;
@@ -120,8 +118,6 @@ void NavigationViewItem::OnApplyTemplate()
     }
 
     m_flyoutContentGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutContentGrid, controlProtected));
-    m_flyoutTitleContentPresenterGrid.set(GetTemplateChildT<winrt::Grid>(c_flyoutTitleContentPresenterGrid, controlProtected));
-    m_flyoutTitleContentPresenter.set(GetTemplateChildT<winrt::ContentPresenter>(c_flyoutTitleContentPresenter, controlProtected));
 
     m_appliedTemplate = true;
     UpdateItemIndentation();
@@ -562,32 +558,7 @@ void NavigationViewItem::ReparentRepeater()
 
                 PropagateDepthToChildren(1);
             }
-            ReparentContent();
         }
-    }
-}
-
-void NavigationViewItem::ReparentContent()
-{
-    if (!IsOnTopPrimary() && m_isRepeaterParentedToFlyout)
-    {
-        // Move content of item to flyout header
-        if (auto const itemContent = Content())
-        {
-            m_navigationViewItemPresenter.get().Content(nullptr);
-            m_flyoutTitleContentPresenter.get().Content(itemContent);
-        }
-        m_flyoutTitleContentPresenterGrid.get().Visibility(winrt::Visibility::Visible);
-    }
-    else if (m_flyoutTitleContentPresenter.get().Visibility() == winrt::Visibility::Visible)
-    {
-        // Move content of item back to the item
-        if (auto const itemContent = m_flyoutTitleContentPresenter.get().Content())
-        {
-            m_flyoutTitleContentPresenter.get().Content(nullptr);
-            m_navigationViewItemPresenter.get().Content(itemContent);
-        }
-        m_flyoutTitleContentPresenterGrid.get().Visibility(winrt::Visibility::Collapsed);
     }
 }
 

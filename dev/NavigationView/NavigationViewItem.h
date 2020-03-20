@@ -128,8 +128,6 @@ private:
     tracker_ref<winrt::ItemsRepeater> m_repeater{ this };
     tracker_ref<winrt::Grid> m_flyoutContentGrid{ this };
     tracker_ref<winrt::Grid> m_rootGrid{ this };
-    tracker_ref<winrt::ContentPresenter> m_flyoutTitleContentPresenter{ this };
-    tracker_ref<winrt::Grid> m_flyoutTitleContentPresenterGrid{ this };
 
     bool m_isClosedCompact{ false };
 

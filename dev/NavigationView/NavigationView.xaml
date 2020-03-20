@@ -613,19 +613,7 @@
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
                                 <Grid x:Name="FlyoutRootGrid">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                    <Grid
-                                        x:Name="FlyoutTitleContentPresenterGrid"
-                                        MinHeight="{ThemeResource NavigationViewItemOnLeftMinHeight}"
-                                        Padding="12,0,0,0"> 
-                                        <ContentPresenter
-                                            x:Name="FlyoutTitleContentPresenter"
-                                            VerticalAlignment="Center"/>
-                                    </Grid>
-                                    <Grid Grid.Row="1" x:Name="FlyoutContentGrid"/>
+                                    <Grid x:Name="FlyoutContentGrid"/>
                                 </Grid>
                             </Flyout>
                         </FlyoutBase.AttachedFlyout>
