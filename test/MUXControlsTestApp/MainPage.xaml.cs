@@ -198,7 +198,7 @@ namespace MUXControlsTestApp
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
             // This method gets called when we navigate to MainPage.
-            // Now we should unload the ScrollViewer dictionary!
+            // Now we should unload the scroller dictionary!
             App.RemoveResourceDictionaryFromMergedDictionaries(App.AdditionStylesXaml);
 
             LanguageChooser.SelectedItem = MUXControlsTestApp.App.LanguageOverride;
