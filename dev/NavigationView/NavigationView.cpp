@@ -3865,7 +3865,8 @@ int NavigationView::GetIndexFromItem(const winrt::ItemsRepeater& ir, const winrt
     {
         if (auto itemsSourceView = ir.ItemsSourceView())
         {
-            return itemsSourceView.IndexOf(data);
+            auto inspectingDataSource = static_cast<InspectingDataSource*>(winrt::get_self<ItemsSourceView>(itemsSourceView));
+            return inspectingDataSource->IndexOf(data);
         }
     }
     return -1;
