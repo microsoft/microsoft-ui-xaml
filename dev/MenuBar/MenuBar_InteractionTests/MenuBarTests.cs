@@ -307,6 +307,49 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        public void HoveringBehaviorTest()
+        {
+            // Overlay pass through element is only available from IFlyoutBase3 forward
+            // On OS versions below RS5 test is unreliable/not working.
+            // Tracked by https://github.com/Microsoft/microsoft-ui-xaml/issues/115
+            if (PlatformConfiguration.IsDevice(DeviceType.Phone) 
+                || !ApiInformation.IsTypePresent("Windows.UI.Xaml.Controls.Primitives.IFlyoutBase3")
+                || PlatformConfiguration.IsOSVersionLessThan(OSVersion.Redstone4))
+            {
+                Log.Comment("Skipping tests on phone, because menubar is not supported.");
+                return;
+            }
+            using (var setup = new TestSetupHelper("MenuBar Tests"))
+            {
+                var menuBar = FindElement.ById("SizedMenuBar");
+                var addButton = FindElement.ByName("AddItemsToEmptyMenuBar");
+
+                addButton.Click();
+                addButton.Click();
+                addButton.Click();
+
+                var help0 = FindElement.ByName<Button>("Help0");
+                var help1 = FindElement.ByName<Button>("Help1");
+
+                // This behavior seems to a bit unreliable, so repeat
+                InputHelper.LeftClick(help0);
+                TestEnvironment.VerifyAreEqualWithRetry(20,
+                    () => FindCore.ByName("Add0", shouldWait: false) != null, // The item should be in the tree
+                    () => true);
+
+                // Check if hovering over the next button actually will show the correct item
+                VerifyElement.NotFound("Add1", FindBy.Name);
+                InputHelper.MoveMouse(help1, 0, 0);
+                InputHelper.MoveMouse(help1, 1, 1);
+                InputHelper.MoveMouse(help1, 5, 5);
+
+                UIObject add1Element = null;
+                ElementCache.Clear();
+                var element = GetElement(ref add1Element, "Add1");
+                Verify.IsNotNull(add1Element);
+            }
+        }
 
         [TestMethod]
         public void TabTest()
@@ -330,6 +373,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 
                 Verify.AreEqual(true, fileButton.HasKeyboardFocus);
             }
+        }
+
+
+        private T GetElement<T>(ref T element, string elementName) where T : UIObject
+        {
+            if (element == null)
+            {
+                Log.Comment("Find the " + elementName);
+                element = FindElement.ByNameOrId<T>(elementName);
+                Verify.IsNotNull(element);
+            }
+            return element;
         }
     }
 }
