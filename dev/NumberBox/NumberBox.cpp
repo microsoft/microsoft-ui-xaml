@@ -11,6 +11,7 @@
 #include "Utils.h"
 #include "winnls.h"
 
+static constexpr wstring_view c_numberBoxHeaderName{ L"HeaderContentPresenter"sv };
 static constexpr wstring_view c_numberBoxDownButtonName{ L"DownSpinButton"sv };
 static constexpr wstring_view c_numberBoxUpButtonName{ L"UpSpinButton"sv };
 static constexpr wstring_view c_numberBoxTextBoxName{ L"InputBox"sv };
@@ -133,6 +134,12 @@ void NumberBox::OnApplyTemplate()
         {
             winrt::AutomationProperties::SetName(spinUp, spinUpName);
         }
+    }
+
+    if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, controlProtected))
+    {
+        // Set presenter to enable lightweight styling of the headers margin
+        m_headerPresenter.set(headerPresenter);
     }
 
     m_textBox.set([this, controlProtected]() {
@@ -295,6 +302,40 @@ void NumberBox::UpdateValueToText()
     {
         textBox.Text(Text());
         ValidateInput();
+    }
+}
+
+void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+{
+    // To enable lightweight styling, collapse header presenter if there is no header specified
+    if (const auto headerPresenter = m_headerPresenter.get())
+    {
+        if (const auto header = Header())
+        {
+            // Check if header is string or not
+            if (const auto headerAsString = Header().try_as<winrt::IReference<winrt::hstring>>())
+            {
+                if (headerAsString.Value().empty())
+                {
+                    // String is the empty string, hide presenter
+                    headerPresenter.Visibility(winrt::Visibility::Collapsed);
+                }
+                else
+                {
+                    // String is not an empty string
+                    headerPresenter.Visibility(winrt::Visibility::Visible);
+                }
+            }
+            else
+            {
+                // Header is not a string, so let's show header presenter
+                headerPresenter.Visibility(winrt::Visibility::Visible);
+            }
+        }
+        else
+        {
+            headerPresenter.Visibility(winrt::Visibility::Collapsed);
+        }
     }
 }
 
