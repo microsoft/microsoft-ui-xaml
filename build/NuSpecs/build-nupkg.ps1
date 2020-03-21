@@ -9,7 +9,8 @@ Param(
     [string]$BuildFlavor = "release",
     [string]$BuildArch = "x86",
     [switch]$NoDeleteTemp,
-    [switch]$SkipFrameworkPackage
+    [switch]$SkipFrameworkPackage,
+    [switch]$SkipMakeNugetPackageAppxPackages
 )
 
 #
@@ -136,6 +137,14 @@ if(-not $SkipFrameworkPackage)
     # Nuget package with framework package encapsulation
 
     $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir\FrameworkPackage"
+
+    if(-not $SkipMakeNugetPackageAppxPackages)
+    {
+	# For the framework package, we need to build the framework package appx files
+        echo "Creating APPX files for framework package (errors might occur)"
+	cmd /c $scriptDirectory"\MakeAllAppx.cmd" | Out-Null
+        echo "Finished creating APPX files for framework package"
+    }
 
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x86\Release"
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x64\Release"

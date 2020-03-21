@@ -72,6 +72,7 @@ jobs:
         -Subversion '$(buildrevision)' `
         -BuildArch ${{ parameters.primaryBuildArch }} `
         -BuildFlavor ${{ parameters.buildFlavor }}
+        -SkipMakeNugetPackageAppxPackages
 
     displayName: 'build-nupkg.ps1'
 
