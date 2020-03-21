@@ -140,9 +140,10 @@ if(-not $SkipFrameworkPackage)
 
     if(-not $SkipMakeNugetPackageAppxPackages)
     {
-	# For the framework package, we need to build the framework package appx files
+	    # For the framework package, we need to build the framework package appx files
         echo "Creating APPX files for framework package (errors might occur)"
-	cmd /c $scriptDirectory"\MakeAllAppx.cmd" | Out-Null
+        # Wait for the appx files to be generated
+        cmd /c $scriptDirectory"\MakeAllAppx.cmd" | Out-Null
         echo "Finished creating APPX files for framework package"
     }
 
