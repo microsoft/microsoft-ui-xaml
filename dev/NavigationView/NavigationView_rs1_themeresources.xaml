@@ -943,6 +943,20 @@
                         x:Name="LayoutRoot" 
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
+                        <Grid.Resources>
+                            <Storyboard x:Name="ExpandCollapseRotateExpandedStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                    Storyboard.TargetProperty="Angle"
+                                    From="0.0" To="180.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                            <Storyboard x:Name="ExpandCollapseRotateCollapsedStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                    Storyboard.TargetProperty="Angle"
+                                    From="180.0" To="0.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="PointerStates">
                                 <VisualState x:Name="Normal" />
@@ -1019,6 +1033,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="ChevronStates">
+                                <VisualState x:Name="ChevronHidden"/>
+                                <VisualState x:Name="ChevronVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle 
                             x:Name="PointerRectangle" 
@@ -1032,6 +1054,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Viewbox 
                                 x:Name="IconBox" 
@@ -1058,6 +1081,27 @@
                                 ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"/>
+                            <Grid x:Name="ExpandCollapseChevron"
+                                    Grid.Column="2"
+                                    Visibility="Collapsed"
+                                    HorizontalAlignment="Right"
+                                    Width="24"
+                                    Margin="-16,0,0,0"
+                                    Background="Transparent">
+                                <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
+                                            RenderTransformOrigin="0.5, 0.5"
+                                            FontSize="8"
+                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            IsTextScaleFactorEnabled="False">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Grid>
                         </Grid>
                         <Grid 
                             x:Name="SelectionIndicatorGrid"
@@ -1087,6 +1131,20 @@
                         x:Name="LayoutRoot"
                         Background="{TemplateBinding Background}"
                         Control.IsTemplateFocusTarget="True">
+                        <Grid.Resources>
+                            <Storyboard x:Name="ExpandCollapseRotateExpandedStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                    Storyboard.TargetProperty="Angle"
+                                    From="0.0" To="180.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                            <Storyboard x:Name="ExpandCollapseRotateCollapsedStoryboard">
+                                <DoubleAnimation
+                                    Storyboard.TargetName="ExpandCollapseChevronRotateTransform"
+                                    Storyboard.TargetProperty="Angle"
+                                    From="180.0" To="0.0" Duration="0:0:0.1"/>
+                            </Storyboard>
+                        </Grid.Resources>
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="DisabledStates">
                                 <VisualState x:Name="Enabled"/>
@@ -1126,6 +1184,14 @@
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
+                            <VisualStateGroup x:Name="ChevronStates">
+                                <VisualState x:Name="ChevronHidden"/>
+                                <VisualState x:Name="ChevronVisible">
+                                    <VisualState.Setters>
+                                        <Setter Target="ExpandCollapseChevron.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Rectangle 
                             x:Name="PointerRectangle" 
@@ -1135,6 +1201,7 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Viewbox 
                                 x:Name="IconBox"
@@ -1159,6 +1226,27 @@
                                 Content="{TemplateBinding Content}"
                                 VerticalAlignment="Center"
                                 AutomationProperties.AccessibilityView="Raw"/>
+                            <Grid x:Name="ExpandCollapseChevron"
+                                    Grid.Column="2"
+                                    Visibility="Collapsed"
+                                    HorizontalAlignment="Right"
+                                    Width="24"
+                                    Margin="-16,0,0,0"
+                                    Background="Transparent">
+                                <TextBlock Foreground="{ThemeResource NavigationViewItemForeground}"
+                                            RenderTransformOrigin="0.5, 0.5"
+                                            FontSize="8"
+                                            Text="{StaticResource NavigationViewItemExpandedGlyph}"
+                                            FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            IsTextScaleFactorEnabled="False">
+                                    <TextBlock.RenderTransform>
+                                        <RotateTransform x:Name="ExpandCollapseChevronRotateTransform"/>
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Grid>
                         </Grid>
                         <Grid 
                             x:Name="SelectionIndicatorGrid"

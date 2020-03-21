@@ -461,7 +461,7 @@ void NavigationViewItem::UpdateVisualStateForChevron()
 {
     if (auto const presenter = m_navigationViewItemPresenter.get())
     {
-        auto const chevronState = HasChildren() && !IsOnTopPrimary() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? c_chevronVisible : c_chevronHidden;
+        auto const chevronState = HasChildren() && !(m_isClosedCompact && ShouldRepeaterShowInFlyout()) ? c_chevronVisible : c_chevronHidden;
         winrt::VisualStateManager::GoToState(m_navigationViewItemPresenter.get(), chevronState, true);
     }
 }

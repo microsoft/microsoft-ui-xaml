@@ -25,7 +25,6 @@ public:
 
     void UpdateContentLeftIndentation(double leftIndentation);
 
-    void IsExpandCollapseChevronVisible(bool isVisible);
     void RotateExpandCollapseChevron(bool isExpanded);
 
 private:

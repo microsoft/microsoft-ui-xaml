@@ -110,9 +110,3 @@ void NavigationViewItemPresenter::UpdateMargin()
         grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
     }
 }
-
-void NavigationViewItemPresenter::IsExpandCollapseChevronVisible(bool isVisible)
-{
-    auto const visibility = isVisible ? winrt::Visibility::Visible : winrt::Visibility::Collapsed;
-    m_expandCollapseChevron.get().Visibility(visibility);
-}
