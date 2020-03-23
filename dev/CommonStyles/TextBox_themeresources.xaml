@@ -14,7 +14,7 @@
             <SolidColorBrush x:Key="TextBoxBorderThemeBrush" Color="#FFFFFFFF" />
             <SolidColorBrush x:Key="TextBoxButtonBackgroundThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TextBoxButtonBorderThemeBrush" Color="Transparent" />
-            <SolidColorBrush x:Key="TextBoxButtonForegroundThemeBrush" Color="#99000000" />
+            <SolidColorBrush x:Key="TextBoxButtonForegroundThemeBrush" Color="#99FFFFFF" />
             <SolidColorBrush x:Key="TextBoxButtonPointerOverBackgroundThemeBrush" Color="#FFDEDEDE" />
             <SolidColorBrush x:Key="TextBoxButtonPointerOverBorderThemeBrush" Color="Transparent" />
             <SolidColorBrush x:Key="TextBoxButtonPointerOverForegroundThemeBrush" Color="#FF000000" />
@@ -25,8 +25,11 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#66FFFFFF" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
+            <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemAltHighColor" />
             <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemBaseHighColor" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="{ThemeResource SystemColorButtonFaceColor}" />
@@ -46,8 +49,11 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="{ThemeResource SystemColorGrayTextColor}" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="{ThemeResource SystemColorButtonTextColor}" />
+            <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemAltHighColor" />
             <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemBaseHighColor" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="TextBoxForegroundHeaderThemeBrush" Color="#FF000000" />
@@ -67,8 +73,11 @@
             <SolidColorBrush x:Key="TextBoxDisabledBorderThemeBrush" Color="#26000000" />
             <SolidColorBrush x:Key="TextBoxDisabledForegroundThemeBrush" Color="#FF666666" />
             <SolidColorBrush x:Key="TextBoxForegroundThemeBrush" Color="#FF000000" />
+            <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="SystemAltHighColor" />
             <StaticResource x:Key="TextControlBorderBrush" ResourceKey="SystemControlForegroundBaseMediumBrush" />
             <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="SystemControlHighlightBaseMediumHighBrush" />
+            <StaticResource x:Key="TextControlButtonForeground" ResourceKey="SystemBaseHighColor" />
+            <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="SystemBaseHighColor" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 
@@ -231,9 +240,6 @@
                                         </ObjectAnimationUsingKeyFrames>
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
-                                        </ObjectAnimationUsingKeyFrames>
-                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentElement" Storyboard.TargetProperty="RequestedTheme">
-                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Light" />
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
