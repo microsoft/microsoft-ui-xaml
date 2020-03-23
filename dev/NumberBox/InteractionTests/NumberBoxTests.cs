@@ -538,9 +538,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("NumberBox Tests"))
             {
+                var headerBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderBeforeApplyTemplateTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate); 
+                
+                var headerTemplateBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderTemplatePropertyTest");
+                Verify.IsNotNull(headerBeforeApplyTemplate);
+
                 var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
                 var header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
-
+                
                 Log.Comment("Check header is null");
                 Verify.IsNull(header);
 

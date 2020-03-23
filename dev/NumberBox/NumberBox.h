@@ -80,6 +80,8 @@ private:
     void UpdateSpinButtonEnabled();
     void StepValue(double change);
 
+    void UpdateHeaderPresenterState(const IInspectable header);
+
     bool IsInBounds(double value);
 
     bool m_valueUpdating{ false };

@@ -74,7 +74,6 @@
                     <controls:NumberBox
                         MinWidth="150"
                         x:Name="TestNumberBox"
-                        Header="TestNumberBox"
                         Description="Description text"
                         PlaceholderText="Text"
                         ValueChanged="NumberBoxValueChanged"
@@ -82,7 +81,12 @@
                         LargeChange="{x:Bind LargeChangeNumberBox.Value, Mode=OneWay}"
                         AcceptsExpression="{x:Bind ExpressionCheckBox.IsChecked.Value, Mode=OneWay}"
                         IsWrapEnabled="{x:Bind WrapCheckBox.IsChecked.Value, Mode=OneWay}"
-                        IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}"/>
+                        IsEnabled="{x:Bind EnabledCheckBox.IsChecked.Value, Mode=OneWay}">
+                        <controls:NumberBox.Header>
+                            <TextBlock AutomationProperties.Name="HeaderBeforeApplyTemplateTest" Text="TestNumberBox"/>
+                        </controls:NumberBox.Header>
+                        
+                    </controls:NumberBox>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="Value:" Margin="0,0,5,0" />
@@ -129,6 +133,14 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBox MaxHeight="30" VerticalAlignment="Top"/>
                     <controls:NumberBox x:Name="HeaderTestingNumberBox" MaxHeight="32" VerticalAlignment="Top" PlaceholderText="I should not be clipped without header"/>
+                    <controls:NumberBox x:Name="HeaderTestingNumberBoxTwo" MaxHeight="32" VerticalAlignment="Top">
+                        <controls:NumberBox.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock AutomationProperties.Name="HeaderTemplatePropertyTest"  Text="MyText"/>
+                            </DataTemplate>
+                        </controls:NumberBox.HeaderTemplate>
+                    </controls:NumberBox>
+
                 </StackPanel>
             </StackPanel>
         </Grid>
