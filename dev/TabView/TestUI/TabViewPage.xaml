@@ -26,11 +26,18 @@
                 <CheckBox x:Name="IsDisabledTabVisibleCheckBox" AutomationProperties.Name="IsDisabledTabVisibleCheckBox" Checked="IsDisabledTabVisibleCheckBox_CheckChanged" Unchecked="IsDisabledTabVisibleCheckBox_CheckChanged" Content="Disabled tab visible" IsChecked="True"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock VerticalAlignment="Center">Tab Width:</TextBlock>
-                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="1" SelectionChanged="TabWidthComboBox_SelectionChanged">
-                        <ComboBoxItem Content="SizeToContent"/>
+                    <ComboBox x:Name="TabWidthComboBox" AutomationProperties.Name="TabWidthComboBox" Margin="4,0,0,0" SelectedIndex="0" SelectionChanged="TabWidthComboBox_SelectionChanged">
                         <ComboBoxItem Content="Equal"/>
+                        <ComboBoxItem Content="SizeToContent"/>
+                        <ComboBoxItem Content="Compact"/>
                     </ComboBox>
                 </StackPanel>
+                <TextBlock Text="Closebutton overlay mode:"/>
+                <ComboBox x:Name="CloseButtonOverlayModeCombobox" AutomationProperties.Name="CloseButtonOverlayModeCombobox" SelectedIndex="2" Margin="0,4,0,0" SelectionChanged="CloseButtonOverlayModeCombobox_SelectionChanged">
+                    <ComboBoxItem Content="Auto"/>
+                    <ComboBoxItem Content="OnHover"/>
+                    <ComboBoxItem Content="Always"/>
+                </ComboBox>
 
                 <Border HorizontalAlignment="Stretch" Height="3" Background="{ThemeResource SystemChromeGrayColor}" Margin="0,8,0,8"/>
 

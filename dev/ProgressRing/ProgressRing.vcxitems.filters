@@ -20,6 +20,6 @@
     <Page Include="$(MSBuildThisFileDirectory)ProgressRing_themeresources.xaml" />
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="$(MSBuildThisFileDirectory)Resources.resw" />
+    <PRIResource Include="$(MSBuildThisFileDirectory)Strings\en-us\Resources.resw" />
   </ItemGroup>
 </Project>

@@ -14,7 +14,7 @@
         VerticalScrollMode="Disabled" HorizontalAlignment="Stretch">
         <StackPanel>
             <TextBlock Text="Control samples" Style="{ThemeResource StandardGroupHeader}" HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" BorderBrush="Transparent">
+            <StackPanel x:Name="RootSampleControlsPanel" Orientation="Horizontal" HorizontalAlignment="Center" BorderBrush="Transparent">
                 <StackPanel.Resources>
                     <x:Double x:Key="CompareGridHeight">600</x:Double>
                     <Style TargetType="StackPanel" x:Key="CompactPanelStyle">
@@ -258,6 +258,10 @@
                     <Button x:Name="AppBarButtonDensityTest" AutomationProperties.Name="AppBarButtonDensityTest" Content="AppBarButtonDensity" Click="AppBarButtonDensityTest_Click" />
                     <Button x:Name="AppBarToggleButtonDensityTest" AutomationProperties.Name="AppBarToggleButtonDensityTest" Content="AppBarToggleButtonDensity" Click="AppBarToggleButtonDensityTest_Click" />
                     <Button x:Name="RichEditBoxDensityTest" AutomationProperties.Name="RichEditBoxDensityTest" Content="RichEditBoxDensity" Click="RichEditBoxDensityTest_Click" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                    <Button Content="Set blue background" Click="BlueBackground_Click"/>
+                    <Button Content="Set standard background" Click="StandardBackground_Click" Margin="8,0,0,0"/>
                 </StackPanel>
             </StackPanel>
         </StackPanel>

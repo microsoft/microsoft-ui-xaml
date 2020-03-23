@@ -71,6 +71,7 @@
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TimePicker\TestUI\TimePicker_TestUI.projitems" Label="Shared" Condition="$(FeatureTimePickerEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ToolTip\TestUI\ToolTip_TestUI.projitems" Label="Shared" Condition="$(FeatureToolTipEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\TestUI\TabView_TestUI.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\TabView\APITests\TabView_APITests.projitems" Label="Shared" Condition="$(FeatureTabViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\FlipView\TestUI\FlipView_TestUI.projitems" Label="Shared" Condition="$(FeatureFlipViewEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\TestUI\ComboBox_TestUI.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />
   <Import Project="$(MSBuildThisFileDirectory)\..\..\dev\ComboBox\APITests\ComboBox_APITests.projitems" Label="Shared" Condition="$(FeatureComboBoxEnabled) == 'true'" />

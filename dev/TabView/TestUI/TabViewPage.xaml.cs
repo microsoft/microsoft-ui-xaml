@@ -191,8 +191,22 @@ namespace MUXControlsTestApp
             {
                 switch (TabWidthComboBox.SelectedIndex)
                 {
-                    case 0: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.SizeToContent; break;
-                    case 1: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.Equal; break;
+                    case 0: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.Equal; break;
+                    case 1: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.SizeToContent; break;
+                    case 2: Tabs.TabWidthMode = Microsoft.UI.Xaml.Controls.TabViewWidthMode.Compact; break;
+                }
+            }
+        }
+
+        private void CloseButtonOverlayModeCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (Tabs != null)
+            {
+                switch (CloseButtonOverlayModeCombobox.SelectedIndex)
+                {
+                    case 0: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.Auto; break;
+                    case 1: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.OnHover; break;
+                    case 2: Tabs.CloseButtonOverlayMode = Microsoft.UI.Xaml.Controls.TabViewCloseButtonOverlayMode.Always; break;
                 }
             }
         }
