@@ -99,7 +99,9 @@
                             Foreground="{ThemeResource TextControlHeaderForeground}"
                             Margin="{ThemeResource TextBoxTopHeaderMargin}"
                             TextWrapping="Wrap"
-                            VerticalAlignment="Top"/>
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed"
+                            x:DeferLoadStrategy="Lazy" />
 
                         <TextBox x:Name="InputBox"
                             Grid.Row="1"

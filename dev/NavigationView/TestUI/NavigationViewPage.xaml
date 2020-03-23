@@ -178,6 +178,9 @@
                             <ComboBoxItem Content="LeftCompact" Tag="LeftCompact"/>
                             <ComboBoxItem Content="LeftMinimal" Tag="LeftMinimal"/>
                         </ComboBox>
+                        <Button x:Name="ClearSelectionChangeIndicatorButton" AutomationProperties.Name="ClearSelectionChangeIndicatorButton"  Click="ClearSelectionChangeBlock">Clear selection changed indicator</Button>
+                        <TextBlock VerticalAlignment="Center">Selection was raised:  </TextBlock>
+                        <TextBlock VerticalAlignment="Center" x:Name="SelectionChangedRaised" AutomationProperties.Name="SelectionChangedRaised"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">

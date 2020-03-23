@@ -135,8 +135,6 @@ void ProgressBar::SetProgressBarIndicatorWidth()
                 {
                     indeterminateProgressBarIndicator2.Width(progressBarWidth * 0.6); // 60% of ProgressBar Width
                 }
-
-                return;
             }
             else if (std::abs(maximum - minimum) > DBL_EPSILON)
             {

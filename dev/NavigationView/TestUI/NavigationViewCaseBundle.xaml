@@ -19,7 +19,6 @@
             </Style>
         </VariableSizedWrapGrid.Resources>
 
-        
         <StackPanel>
             <TextBlock Text="Common tests"/>
             <Button x:Name="NavigationViewPage" AutomationProperties.Name="NavigationView Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Test</Button>
@@ -33,6 +32,9 @@
             <Button x:Name="NavigateToMinimalPage" AutomationProperties.Name="Navigation Minimal Test" Margin="2" HorizontalAlignment="Stretch">Navigation Minimal Test</Button>
             <Button x:Name="NavigationViewBlankPage1" AutomationProperties.Name="NavigationView Blank Test1" Margin="2" HorizontalAlignment="Stretch">NavigationView Blank Test1</Button>
             <Button x:Name="NavigationViewMenuItemStretchPageButton" AutomationProperties.Name="NavigationView Menuitem Stretch Test" Margin="2" HorizontalAlignment="Stretch">NavigationView Menuitem Stretch Test</Button>
+            <TextBlock Text="Hierarchy Tests" />
+            <Button x:Name="NavigateToHierarchicalNavigationViewMarkupPage" AutomationProperties.Name="HierarchicalNavigationView Markup Test" Margin="2" HorizontalAlignment="Stretch">Hierarchical NavigationView Markup Test</Button>
+            <Button x:Name="NavigateToHierarchicalNavigationViewDataBindingPage" AutomationProperties.Name="HierarchicalNavigationView DataBinding Test" Margin="2" HorizontalAlignment="Stretch">Hierarchical NavigationView DataBinding Test</Button>
         </StackPanel>
 
         <StackPanel>
@@ -53,8 +55,7 @@
             <TextBlock Text="Custom resources"/>
             <Button x:Name="NavigateToItemTemplatePage" AutomationProperties.Name="NavigationView ItemTemplate Test" Margin="2" HorizontalAlignment="Stretch">NavigationView ItemTemplate Test</Button>
             <Button x:Name="NavigateToCustomThemeResourcesPage" AutomationProperties.Name="NavigationView custom ThemeResources Test" Margin="2" HorizontalAlignment="Stretch">NavigationView with custom ThemeResources Test</Button>
-
         </StackPanel>
-        
+
     </VariableSizedWrapGrid>
 </local:TestPage>

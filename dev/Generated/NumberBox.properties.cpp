@@ -72,7 +72,7 @@ void NumberBoxProperties::EnsureProperties()
                 winrt::name_of<winrt::NumberBox>(),
                 false /* isAttached */,
                 ValueHelper<winrt::IInspectable>::BoxedDefaultValue(),
-                nullptr);
+                winrt::PropertyChangedCallback(&OnHeaderPropertyChanged));
     }
     if (!s_HeaderTemplateProperty)
     {
@@ -273,6 +273,14 @@ void NumberBoxProperties::ClearProperties()
     s_TextReadingOrderProperty = nullptr;
     s_ValidationModeProperty = nullptr;
     s_ValueProperty = nullptr;
+}
+
+void NumberBoxProperties::OnHeaderPropertyChanged(
+    winrt::DependencyObject const& sender,
+    winrt::DependencyPropertyChangedEventArgs const& args)
+{
+    auto owner = sender.as<winrt::NumberBox>();
+    winrt::get_self<NumberBox>(owner)->OnHeaderPropertyChanged(args);
 }
 
 void NumberBoxProperties::OnIsWrapEnabledPropertyChanged(

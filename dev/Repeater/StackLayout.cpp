@@ -57,6 +57,8 @@ winrt::Size StackLayout::MeasureOverride(
     winrt::VirtualizingLayoutContext const& context,
     winrt::Size const& availableSize)
 {
+    GetAsStackState(context.LayoutState())->OnMeasureStart();
+
     auto desiredSize = GetFlowAlgorithm(context).Measure(
         availableSize,
         context,
@@ -80,8 +82,6 @@ winrt::Size StackLayout::ArrangeOverride(
         false, /* isWraping */
         FlowLayoutAlgorithm::LineAlignment::Start,
         LayoutId());
-
-    GetAsStackState(context.LayoutState())->OnArrangeLayoutEnd();
 
     return { value.Width, value.Height };
 }

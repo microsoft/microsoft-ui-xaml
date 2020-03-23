@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "common.h"
 #include "ProgressRing.h"
+#include "ProgressRingAutomationPeer.h"
 #include "RuntimeProfiler.h"
 #include "ResourceAccessor.h"
 #include "math.h"
@@ -11,20 +12,20 @@
 float GetCircleRadius(double thickness, double actualWidth);
 winrt::float4 Color4(winrt::Color color);
 
-static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot" };
-static constexpr wstring_view s_OutlinePathName{ L"OutlinePathPart" };
-static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart" };
-static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart" };
-static constexpr wstring_view s_RingPathName{ L"RingPathPart" };
-static constexpr wstring_view s_RingFigureName{ L"RingFigurePart" };
-static constexpr wstring_view s_RingArcName{ L"RingArcPart" };
-static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer" };
-static constexpr wstring_view s_DeterminateStateName{ L"Determinate" };
-static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate" };
-static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush" };
-static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush" };
-static constexpr wstring_view s_ForegroundName{ L"Foreground" };
-static constexpr wstring_view s_BackgroundName{ L"Background" };
+static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
+static constexpr wstring_view s_OutlinePathName{ L"OutlinePathPart"sv };
+static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart"sv };
+static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart"sv };
+static constexpr wstring_view s_RingPathName{ L"RingPathPart"sv };
+static constexpr wstring_view s_RingFigureName{ L"RingFigurePart"sv };
+static constexpr wstring_view s_RingArcName{ L"RingArcPart"sv };
+static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
+static constexpr wstring_view s_DeterminateStateName{ L"Determinate"sv };
+static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate"sv };
+static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
+static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
+static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
+static constexpr wstring_view s_BackgroundName{ L"Background"sv };
 
 ProgressRing::ProgressRing()
 {
@@ -39,6 +40,11 @@ ProgressRing::ProgressRing()
     SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
+winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
+{
+    return winrt::make<ProgressRingAutomationPeer>(*this);
+}
+
 void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
@@ -49,7 +55,16 @@ void ProgressRing::OnApplyTemplate()
     m_ringPath.set(GetTemplateChildT<winrt::Path>(s_RingPathName, controlProtected));
     m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_RingFigureName, controlProtected));
     m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
-    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected));
+
+    m_player.set([this, controlProtected]()
+    {
+        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
+        if (player)
+        {
+            player.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
+        }
+        return player;
+    }());
 
     GetStrokeThickness();
     ApplyLottieAnimation();
@@ -106,6 +121,17 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
         if (auto const progressRingIndeterminate = player.Source().try_as<AnimatedVisuals::ProgressRingIndeterminate>())
         {
             SetLottieBackgroundColor(progressRingIndeterminate);
+        }
+    }
+}
+
+void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+{
+    if (auto&& player = m_player.get())
+    {
+        if (player.Opacity() == 0)
+        {
+            player.Stop();
         }
     }
 }
@@ -187,11 +213,6 @@ void ProgressRing::UpdateStates()
     else
     {
         winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
-
-        if (auto&& player = m_player.get())
-        {
-            player.Stop();
-        }
     }
 }
 
