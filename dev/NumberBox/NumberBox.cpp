@@ -617,7 +617,7 @@ bool NumberBox::IsInBounds(double value)
     return (value >= Minimum() && value <= Maximum());
 }
 
-void NumberBox::UpdateHeaderPresenterState(IInspectable header)
+void NumberBox::UpdateHeaderPresenterState(winrt::IInspectable const& header)
 {
     // Load header presenter as late as possible
     if(m_headerPresenter == nullptr)
