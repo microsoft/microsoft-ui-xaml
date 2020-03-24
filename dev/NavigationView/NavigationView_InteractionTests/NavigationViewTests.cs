@@ -681,6 +681,42 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
         [TestMethod]
         [TestProperty("TestSuite", "A")]
+        public void AddRemoveFooterItemTest()
+        {
+            var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
+            foreach (var testScenario in testScenarios)
+            {
+                using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", testScenario.TestPageName }))
+                {
+                    var addButton = FindElement.ById<Button>("AddFooterItemButton");
+                    var removeButton = FindElement.ById<Button>("RemoveFooterItemButton");
+
+                    Log.Comment("Verify that footer menu items can be added");
+                    addButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.Found("New Footer Menu Item 0", FindBy.Name);
+
+                    Log.Comment("Verify that more footer menu items can be added");
+                    addButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.Found("New Footer Menu Item 1", FindBy.Name);
+
+                    Log.Comment("Verify that footer menu items can be removed");
+                    removeButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.NotFound("New Footer Menu Item 1", FindBy.Name);
+                    VerifyElement.Found("New Footer Menu Item 0", FindBy.Name);
+
+                    Log.Comment("Verify that more Footer menu items can be removed");
+                    removeButton.Invoke();
+                    Wait.ForIdle();
+                    VerifyElement.NotFound("New Menu Item 0", FindBy.Name);
+                }
+            }
+        }
+
+        [TestMethod]
+        [TestProperty("TestSuite", "A")]
         public void AddRemoveOriginalItemTest()
         {
             var testScenarios = RegressionTestScenario.BuildLeftNavRegressionTestScenarios();
@@ -3864,7 +3900,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 flipOrientationButton.Invoke();
                 Wait.ForIdle();
 
-                var topSettingsItem = new Button(FindElement.ByName("SettingsItem"));
+                var topSettingsItem = new Button(FindElement.ByName("Settings"));
                 topSettingsItem.Invoke();
 
                 Log.Comment("Verify the top settings item is selected.");

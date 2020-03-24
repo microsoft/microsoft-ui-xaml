@@ -162,6 +162,8 @@ NavigationView::NavigationView()
     SetValue(s_MenuItemsProperty, items);
 
     auto footerItems = winrt::make<Vector<winrt::IInspectable>>();
+    auto observableVector = footerItems.try_as<winrt::IObservableVector<winrt::IInspectable>>();
+    observableVector.VectorChanged({ this, &NavigationView::OnFooterItemsVectorChanged });
     SetValue(s_FooterMenuItemsProperty, footerItems);
 
     auto weakThis = get_weak();
@@ -192,6 +194,14 @@ NavigationView::NavigationView()
             winrt::name_of<winrt::NavigationViewItem>(),
             true /* isAttached */,
             nullptr /* defaultValue */);
+}
+
+void NavigationView::OnFooterItemsVectorChanged(winrt::Collections::IObservableVector<winrt::IInspectable> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
+{
+    if (!m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition)
+    {
+        UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
+    }
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -575,6 +585,9 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
 {
     auto dataSource = FooterMenuItems();
 
+    UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
+    UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
+
     if (forceSelectionModelUpdate || !m_settingsItem)
     {
         if (!m_settingsItem)
@@ -586,6 +599,9 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
         auto settingsItem = m_settingsItem.get();
 
         uint32_t index = 0;
+
+        m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition = true;
+
         if (dataSource.IndexOf(settingsItem, index))
         {
             // if settings item already there - remove it
@@ -598,6 +614,9 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
             // add settings item to the end of footer
             dataSource.Append(settingsItem);
         }
+
+        m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition = false;
+
     }
 
     UpdateSelectionForMenuItems();
@@ -611,12 +630,10 @@ void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpd
 
     if (IsTopNavigationView())
     {
-        UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
         UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), dataSource);
     }
     else
     {
-        UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
         UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), dataSource);
     }
 }
@@ -3096,7 +3113,7 @@ void NavigationView::OnPropertyChanged(const winrt::DependencyPropertyChangedEve
     }
     else if (property == s_FooterMenuItemsProperty)
     {
-        UpdateFooterRepeaterItemsSource(true);
+        UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
     }
     else if (property == s_PaneDisplayModeProperty)
     {

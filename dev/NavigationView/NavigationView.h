@@ -90,6 +90,7 @@ private:
     inline NavigationViewTemplateSettings* GetTemplateSettings();
     inline bool IsNavigationViewListSingleSelectionFollowsFocus();
     inline void UpdateSingleSelectionFollowsFocusTemplateSetting();
+    void OnFooterItemsVectorChanged(winrt::Collections::IObservableVector<winrt::IInspectable> const& sender, winrt::Collections::IVectorChangedEventArgs const& e);
     void OnSelectedItemPropertyChanged(winrt::DependencyPropertyChangedEventArgs const& args);
     void SetSelectedItemAndExpectItemInvokeWhenSelectionChangedIfNotInvokedFromAPI(winrt::IInspectable const& item, bool inFooter);
     void ChangeSelectStatusForItem(winrt::IInspectable const& item, bool selected);
@@ -383,6 +384,8 @@ private:
     bool m_shouldIgnoreNextSelectionChange{ false };
     // Used to disable raising selection change iff settings item gets restored because of displaymode change
     bool m_shouldIgnoreNextSelectionChangeBecauseSettingsRestore{ false };
+    // Used to prevent stackoverflow when settings item moved to bottom on collection change
+    bool m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition{ false };
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
     bool m_selectionChangeFromOverflowMenu{ false };
 

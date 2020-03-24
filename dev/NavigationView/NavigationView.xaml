@@ -359,9 +359,6 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="8"/> <!-- above list margin -->
                                             <RowDefinition Height="*"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="8"/>
                                         </Grid.RowDefinitions>
 
                                         <Grid x:Name="ContentPaneTopPadding"
@@ -413,33 +410,43 @@
                                             HorizontalContentAlignment="Stretch"
                                             Grid.Row="4" />
 
-                                        <!-- Left nav ItemsRepeater -->
                                         <local:ItemsRepeaterScrollHost
                                             Grid.Row="6"
-                                            Margin="0,0,0,20"
                                             HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Top">
+                                            VerticalAlignment="Stretch">
                                             <ScrollViewer
                                                 VerticalScrollBarVisibility="Auto">
-                                                <local:ItemsRepeater 
+                                                <Grid x:Name="ScrollingContentGrid">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="8"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Left nav ItemsRepeater -->
+                                                    <local:ItemsRepeater
                                                         x:Name="MenuItemsHost"
+                                                        Margin="0,0,0,20"
                                                         AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
                                                         AutomationProperties.AccessibilityView = "Content"/>
+
+
+                                                    <ContentControl
+                                                        x:Name="FooterContentBorder"
+                                                        IsTabStop="False"
+                                                        VerticalContentAlignment="Stretch"
+                                                        HorizontalContentAlignment="Stretch"
+                                                        Grid.Row="2" />
+                                                    <!-- Left footer menu ItemsRepeater -->
+                                                    <local:ItemsRepeater
+                                                        x:Name="FooterMenuItemsHost"
+                                                        AutomationProperties.AccessibilityView = "Content"
+                                                        Grid.Row="3"/>
+                                                </Grid>
                                             </ScrollViewer>
                                         </local:ItemsRepeaterScrollHost>
-
-
-                                        <ContentControl
-                                            x:Name="FooterContentBorder"
-                                            IsTabStop="False"
-                                            VerticalContentAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch"
-                                            Grid.Row="7" />
-                                        <!-- Left footer menu ItemsRepeater -->
-                                        <local:ItemsRepeater
-                                            x:Name="FooterMenuItemsHost"
-                                            AutomationProperties.AccessibilityView = "Content"
-                                            Grid.Row="8"/>
 
                                     </Grid>
                                 </SplitView.Pane>
