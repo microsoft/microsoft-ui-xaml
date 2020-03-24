@@ -120,60 +120,57 @@ $assemblies=(
 	"System","EnvDTE","EnvDTE80"
 )
 
-$source="
+$source=@"
 using System;
 using EnvDTE;
 using EnvDTE80;
 using System.Collections.Generic;
 namespace SolutionHelper
 {
-	public static class SolutionRegister$id{
-		public static void Main(){
-            Console.WriteLine(`"Started script`");
-            Type dteType = null;
-            try
+    public static class SolutionRegister$id{
+        public static void Main(){
+            Console.WriteLine("Started script");
+            var dteType = Type.GetTypeFromProgID("VisualStudio.DTE.16.0", true);
+            if(dteType == null)
             {
-                dteType = Type.GetTypeFromProgID(`"VisualStudio.DTE.16.0`", true);
-            } catch(Exception)
-            {
-                Console.WriteLine(`"You need to install Visual Studio to add projects to the solution`");
+                Console.WriteLine("You need to install Visual Studio to add projects to the solution");
                 return;
             }
             var dte = (EnvDTE.DTE)System.Activator.CreateInstance(dteType);
             var sln = (SolutionClass)dte.Solution;
             Solution2 solution = (Solution2)dte.Solution;
-            Console.WriteLine(`"Got solution class`");
+            Console.WriteLine("Got solution class");
 
-            var solutionNames = new List<string>(){`"MUXControls.sln`",`"MUXControlsInnerLoop.sln`"};
+            var solutionNames = new List<string>(){"MUXControls.sln","MUXControlsInnerLoop.sln"};
             foreach(var solutionName in solutionNames)
             {
-                Console.WriteLine(`"Opening solution: $($cleanMuxControlsDir)`" + solutionName);
-                solution.Open(`"$cleanMuxControlsDir`" + solutionName);
-                Console.WriteLine(`"Opened solution`");
+                Console.WriteLine("Opening solution: $($cleanMuxControlsDir)" + solutionName);
+                solution.Open("$cleanMuxControlsDir" + solutionName);
+                Console.WriteLine("Opened solution");
                 var devFolder = solution.Projects.Item(1);
     
                 // Get correct reference here:
-                Console.WriteLine(`"Get dev folder`");
-                var solutionFolderAsSolutionFolder = (SolutionFolder)devFolder.Object;
-                Console.WriteLine(`"Add folder`");
-                SolutionFolder newControlFolder = (SolutionFolder)solutionFolderAsSolutionFolder.AddSolutionFolder(`"$controlName`").Object;
-                    
-                Console.WriteLine(`"Adding projects:`");
-                Console.WriteLine(`"Adding source`");
-                newControlFolder.AddFromFile(`"$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems`");
-                Console.WriteLine(`"Adding test UI`");
-                newControlFolder.AddFromFile(`"$($cleanMuxControlsDir)dev\\$($controlName)/TestUI/$($controlName)_TestUI.shproj`");
-                Console.WriteLine(`"Adding interactions test`");
-                newControlFolder.AddFromFile(`"$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj`");
-                Console.WriteLine(`"Finished adding projects, saving solution`");
-    
+                Console.WriteLine("Get dev folder");
+                var devSolutionFolder = (SolutionFolder)devFolder.Object;
+                Console.WriteLine("Add folder");
+                SolutionFolder newControlFolder = (SolutionFolder)devSolutionFolder.AddSolutionFolder("$controlName").Object;
+
+                Console.WriteLine("Adding projects:");
+                Console.WriteLine("Adding source");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\$($controlName).vcxitems");
+                Console.WriteLine("Adding test UI");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)/TestUI/$($controlName)_TestUI.shproj");
+                Console.WriteLine("Adding interactions test");
+                newControlFolder.AddFromFile("$($cleanMuxControlsDir)dev\\$($controlName)\\InteractionTests\\$($controlName)_InteractionTests.shproj");
+                Console.WriteLine("Finished adding projects, saving solution");
+
                 solution.Close(true);
-                Console.WriteLine(`"Saved solution`" + solutionName);
+                Console.WriteLine("Saved solution" + solutionName);
             }
         }
-	}
+    }
 }
-"
+"@
 
 
 Add-Type -ReferencedAssemblies $assemblies -TypeDefinition $source -Language CSharp
