@@ -74,7 +74,6 @@ void ProgressRing::OnApplyTemplate()
 
 void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
 {
-    ApplyLottieAnimation();
     UpdateRing();
 }
 
