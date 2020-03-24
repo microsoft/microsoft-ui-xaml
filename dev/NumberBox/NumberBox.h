@@ -43,6 +43,7 @@ public:
     void OnApplyTemplate();
 
     void OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpinButtonPlacementModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnTextPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
 

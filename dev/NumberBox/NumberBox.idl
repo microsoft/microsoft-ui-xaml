@@ -93,6 +93,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty SelectionFlyoutProperty{ get; };

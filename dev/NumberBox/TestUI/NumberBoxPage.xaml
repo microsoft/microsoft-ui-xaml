@@ -63,6 +63,9 @@
             <Button x:Name="SetTwoWayBoundValueNaNButton" AutomationProperties.Name="SetTwoWayBoundValueNaNButton" Content="Set two way bound value to NaN" Click="SetTwoWayBoundNaNButton_Click" Margin="0,4,0,0"/>
 
             <Button x:Name="ToggleHeaderValueButton" AutomationProperties.Name="ToggleHeaderValueButton" Content="Toggle header for clipping issue" Click="ToggleHeaderValueButton_Click" Margin="0,4,0,0"/>
+
+            <Button x:Name="ToggleHeaderTemplateValueButton" AutomationProperties.Name="ToggleHeaderTemplateValueButton" Content="Toggle header template" Click="ToggleHeaderTemplateValueButton_Click" Margin="0,4,0,0"/>
+
         </StackPanel>
 
         <Grid Grid.Column="1">
@@ -136,11 +139,11 @@
                     <controls:NumberBox x:Name="HeaderTestingNumberBoxTwo" MaxHeight="32" VerticalAlignment="Top">
                         <controls:NumberBox.HeaderTemplate>
                             <DataTemplate>
-                                <TextBlock AutomationProperties.Name="HeaderTemplatePropertyTest"  Text="MyText"/>
+                                <TextBlock AutomationProperties.Name="HeaderTemplateBeforeApplayTemplateTest"  Text="MyText"/>
                             </DataTemplate>
                         </controls:NumberBox.HeaderTemplate>
                     </controls:NumberBox>
-
+                    <controls:NumberBox x:Name="HeaderTemplateTestingNumberBox"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

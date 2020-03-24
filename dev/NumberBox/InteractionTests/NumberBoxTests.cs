@@ -541,7 +541,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 var headerBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderBeforeApplyTemplateTest");
                 Verify.IsNotNull(headerBeforeApplyTemplate); 
                 
-                var headerTemplateBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderTemplatePropertyTest");
+                var headerTemplateBeforeApplyTemplate = FindElement.ByName<TextBlock>("HeaderTemplateBeforeApplayTemplateTest");
                 Verify.IsNotNull(headerBeforeApplyTemplate);
 
                 var toggleHeaderButton = FindElement.ByName<Button>("ToggleHeaderValueButton");
@@ -565,6 +565,18 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                 Log.Comment("Check that header is null again");
                 header = FindElement.ByName<TextBlock>("NumberBoxHeaderClippingDemoHeader");
                 Verify.IsNull(header);
+
+
+                var toggleHeaderTemplateButton = FindElement.ByName<Button>("ToggleHeaderTemplateValueButton");
+                var headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+
+                Verify.IsNull(headerTemplate);
+
+                toggleHeaderTemplateButton.Invoke();
+                Wait.ForIdle();
+
+                headerTemplate = FindElement.ByName<TextBlock>("HeaderTemplateTestingBlock");
+                Verify.IsNotNull(headerTemplate);
             }
         }
 
