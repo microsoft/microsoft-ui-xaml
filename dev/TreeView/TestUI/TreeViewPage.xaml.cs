@@ -998,5 +998,17 @@ namespace MUXControlsTestApp
         {
             TestTreeViewItemsSource[0].IsExpanded = !TestTreeViewItemsSource[0].IsExpanded;
         }
+
+        private void SwapItemsSource_Click(object sender, RoutedEventArgs e)
+        {
+            if (ContentModeTestTreeView.ItemsSource == TestTreeView2ItemsSource)
+            {
+                this.ContentModeTestTreeView.ItemsSource = TestTreeViewItemsSource;
+            }
+            else
+            {
+                this.ContentModeTestTreeView.ItemsSource = TestTreeView2ItemsSource;
+            }
+        }
     }
 }
