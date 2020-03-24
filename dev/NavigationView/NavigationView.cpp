@@ -1364,44 +1364,29 @@ void NavigationView::UpdateIsClosedCompact()
 
 void NavigationView::UpdatePaneButtonsWidths()
 {
-    if (PaneDisplayMode() == winrt::NavigationViewPaneDisplayMode::Top
-        || DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
+    auto newButtonWidths = [this]()
     {
-        if (const auto backButton = m_backButton.get())
+        if (DisplayMode() == winrt::NavigationViewDisplayMode::Minimal)
         {
-            backButton.Width(c_paneToggleButtonWidth);
+            return (double)c_paneToggleButtonWidth;
         }
-        if (const auto paneToggleButton = m_paneToggleButton.get())
-        {
-            paneToggleButton.MinWidth(c_paneToggleButtonWidth);
-            if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
-            {
-                if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
-                {
-                    auto width = paneToggleButtonIconColumn.Width();
-                    width.Value = c_paneToggleButtonWidth;
-                    paneToggleButtonIconColumn.Width(width);
-                }
-            }
-        }
+        return CompactPaneLength();
+    }();
+
+    if (const auto backButton = m_backButton.get())
+    {
+        backButton.Width(newButtonWidths);
     }
-    else
+    if (const auto paneToggleButton = m_paneToggleButton.get())
     {
-        if (const auto backButton = m_backButton.get())
+        paneToggleButton.MinWidth(newButtonWidths);
+        if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
         {
-            backButton.Width(CompactPaneLength());
-        }
-        if (const auto paneToggleButton = m_paneToggleButton.get())
-        {
-            paneToggleButton.MinWidth(CompactPaneLength());
-            if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
+            if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
             {
-                if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
-                {
-                    auto width = paneToggleButtonIconColumn.Width();
-                    width.Value = CompactPaneLength();
-                    paneToggleButtonIconColumn.Width(width);
-                }
+                auto width = paneToggleButtonIconColumn.Width();
+                width.Value = newButtonWidths;
+                paneToggleButtonIconColumn.Width(width);
             }
         }
     }
