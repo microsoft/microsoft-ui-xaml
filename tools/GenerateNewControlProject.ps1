@@ -130,7 +130,15 @@ namespace SolutionHelper
 	public static class SolutionRegister$id{
 		public static void Main(){
             Console.WriteLine(`"Started script`");
-            var dteType = Type.GetTypeFromProgID(`"VisualStudio.DTE.16.0`", true);
+            Type dteType = null;
+            try
+            {
+                dteType = Type.GetTypeFromProgID(`"VisualStudio.DTE.16.0`", true);
+            } catch(Exception)
+            {
+                Console.WriteLine(`"You need to install Visual Studio to add projects to the solution`");
+                return;
+            }
             var dte = (EnvDTE.DTE)System.Activator.CreateInstance(dteType);
             var sln = (SolutionClass)dte.Solution;
             Solution2 solution = (Solution2)dte.Solution;
