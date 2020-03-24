@@ -137,25 +137,35 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify all properties are set to false by default for testing");
-
-                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                Log.Comment("Verify Lottie animation is active with Indeterminate as onLoad default");
 
                 TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
+
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
+
+                if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
+                {
+                    Log.Comment("Verify Lottie animation is active when in Indeterminate state");
+
+                    Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
+                }
+
+                Log.Comment("All properties to false updates ProgresRing to Determinate");
+
+                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
 
+                isIndeterminateCheckBox.ToggleAndWait();
+
                 Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
-
-                Log.Comment("All properties to false updates ProgressBar to Determinate");
-
                 Verify.AreEqual(visualStateText.DocumentText, "Determinate");
 
                 Log.Comment("Verify Lottie animation is inactive when in Determinate state (LottieRoot is hidden)");
 
                 Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
 
-                Log.Comment("IsIndeterminate = true updates ProgressBar to Indeterminate visual state");
+                Log.Comment("IsIndeterminate = true updates ProgressRing to Indeterminate visual state");
 
                 isIndeterminateCheckBox.ToggleAndWait();
 
