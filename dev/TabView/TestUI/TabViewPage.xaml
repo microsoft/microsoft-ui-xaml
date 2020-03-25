@@ -60,7 +60,17 @@
                     <Button x:Name="GetScrollButtonsVisible" AutomationProperties.Name="GetScrollButtonsVisible" Content="Get" Margin="4,0,0,0" Click="GetScrollButtonsVisible_Click" />
                 </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="DecreaseButton enabled:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock x:Name="ScrollDecreaseButtonEnabled" AutomationProperties.Name="ScrollDecreaseButtonEnabled" Text="False" VerticalAlignment="Center"/>
+                    <Button x:Name="GetScrollDecreaseButtonEnabled" AutomationProperties.Name="GetScrollDecreaseButtonEnabled" Content="Get" Margin="4,0,0,0" Click="GetScrollDecreaseButtonEnabled_Click" />
+                </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="IncreaseButton enabled:" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                    <TextBlock x:Name="ScrollIncreaseButtonEnabled" AutomationProperties.Name="ScrollIncreaseButtonEnabled" Text="False" VerticalAlignment="Center"/>
+                    <Button x:Name="GetScrollIncreaseButtonEnabled" AutomationProperties.Name="GetScrollIncreaseButtonEnabled" Content="Get" Margin="4,0,0,0" Click="GetScrollIncreaseButtonEnabled_Click" />
+                </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                     <TextBlock>Selected Index:</TextBlock>

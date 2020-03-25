@@ -186,6 +186,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        private bool IsScrollIncreaseButtonEnabled()
+        {
+            FindElement.ByName<Button>("GetScrollIncreaseButtonEnabled").InvokeAndWait();
+            var scrollIncreaseButtonEnabled = FindElement.ByName<TextBlock>("ScrollIncreaseButtonEnabled").DocumentText;
+            return scrollIncreaseButtonEnabled == "True";
+        }
+
+        private bool IsScrollDecreaseButtonEnabled()
+        {
+            FindElement.ByName<Button>("GetScrollDecreaseButtonEnabled").InvokeAndWait();
+            var scrollDecreaseButtonEnabled = FindElement.ByName<TextBlock>("ScrollDecreaseButtonEnabled").DocumentText;
+            return scrollDecreaseButtonEnabled == "True";
+        }
+
         [TestMethod]
         public void CloseSelectionTest()
         {
