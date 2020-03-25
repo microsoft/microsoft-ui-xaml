@@ -562,7 +562,7 @@
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
-                                        Foreground=#99000000
+                                        Foreground=#FF000000
                                         Padding=0,0,0,0
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
@@ -577,7 +577,7 @@
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
-                                          Foreground=#99000000
+                                          Foreground=#FF000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
                                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -600,7 +600,7 @@
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
-                                              Foreground=#99000000
+                                              Foreground=#FF000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
@@ -609,7 +609,7 @@
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                    Foreground=#99000000
+                                    Foreground=#FF000000
                                     Padding=0,0,0,0
                                     CornerRadius=0,0,0,0
                                     BorderThickness=0,0,0,0
@@ -625,7 +625,7 @@
                                     RenderSize=34,19
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#99000000
+                                      Foreground=#FF000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
@@ -813,7 +813,7 @@
                                       Visibility=Visible
                                       RenderSize=20,20
                                     [Windows.UI.Xaml.Controls.ContentPresenter]
-                                        Foreground=#99000000
+                                        Foreground=#FF000000
                                         Padding=0,0,0,0
                                         CornerRadius=0,0,0,0
                                         BorderThickness=0,0,0,0
@@ -828,7 +828,7 @@
                                         Visibility=Visible
                                         RenderSize=20,20
                                       [Windows.UI.Xaml.Controls.SymbolIcon]
-                                          Foreground=#99000000
+                                          Foreground=#FF000000
                                           Margin=0,0,0,0
                                           FocusVisualSecondaryThickness=1,1,1,1
                                           FocusVisualSecondaryBrush=#99FFFFFF
@@ -851,7 +851,7 @@
                                             RenderSize=20,20
                                           [Windows.UI.Xaml.Controls.TextBlock]
                                               Padding=0,0,0,0
-                                              Foreground=#99000000
+                                              Foreground=#FF000000
                                               Margin=0,0,0,0
                                               FocusVisualSecondaryThickness=1,1,1,1
                                               FocusVisualSecondaryBrush=#99FFFFFF
@@ -860,7 +860,7 @@
                                               Visibility=Visible
                                               RenderSize=20,20
                                 [Windows.UI.Xaml.Controls.ContentPresenter]
-                                    Foreground=#99000000
+                                    Foreground=#FF000000
                                     Padding=0,0,0,0
                                     CornerRadius=0,0,0,0
                                     BorderThickness=0,0,0,0
@@ -876,7 +876,7 @@
                                     RenderSize=22,19
                                   [Windows.UI.Xaml.Controls.TextBlock]
                                       Padding=0,0,0,0
-                                      Foreground=#99000000
+                                      Foreground=#FF000000
                                       Margin=0,0,0,0
                                       FocusVisualSecondaryThickness=1,1,1,1
                                       FocusVisualSecondaryBrush=#99FFFFFF
