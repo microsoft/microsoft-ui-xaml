@@ -136,25 +136,7 @@ void NumberBox::OnApplyTemplate()
         }
     }
 
-    if(const auto header = Header())
-    {
-        if (const auto headerAsString = header.try_as<winrt::IReference<winrt::hstring>>())
-        {
-            if (!headerAsString.Value().empty())
-            {
-                // We have the header specified and its not an empty string, so lets render it!
-                UpdateHeaderPresenterState(header);
-            }
-        }
-        else
-        {
-            UpdateHeaderPresenterState(header);
-        }
-    }
-    else if (const auto headerTemplate = HeaderTemplate())
-    {
-        UpdateHeaderPresenterState(nullptr);
-    }
+    UpdateHeaderPresenterState();
 
     m_textBox.set([this, controlProtected]() {
         const auto textBox = GetTemplateChildT<winrt::TextBox>(c_numberBoxTextBoxName, controlProtected);
@@ -321,12 +303,12 @@ void NumberBox::UpdateValueToText()
 
 void NumberBox::OnHeaderPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateHeaderPresenterState(Header());
+    UpdateHeaderPresenterState();
 }
 
 void NumberBox::OnHeaderTemplatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    UpdateHeaderPresenterState(Header());
+    UpdateHeaderPresenterState();
 }
 
 void NumberBox::OnValidationModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
@@ -632,10 +614,36 @@ bool NumberBox::IsInBounds(double value)
     return (value >= Minimum() && value <= Maximum());
 }
 
-void NumberBox::UpdateHeaderPresenterState(winrt::IInspectable const& header)
+void NumberBox::UpdateHeaderPresenterState()
 {
+    bool shouldShowHeader = false;
+
     // Load header presenter as late as possible
-    if(m_headerPresenter == nullptr)
+
+    // To enable lightweight styling, collapse header presenter if there is no header specified
+    if (const auto header = Header())
+    {
+        // Check if header is string or not
+        if (const auto headerAsString = header.try_as<winrt::IReference<winrt::hstring>>())
+        {
+            if (!headerAsString.Value().empty())
+            {
+                // Header is not empty string
+                shouldShowHeader = true;
+            }
+        }
+        else
+        {
+            // Header is not a string, so let's show header presenter
+            shouldShowHeader = true;
+        }
+    }
+    if(const auto headerTemplate = HeaderTemplate())
+    {
+        shouldShowHeader = true;
+    }
+
+    if(shouldShowHeader && m_headerPresenter == nullptr)
     {
         if (const auto headerPresenter = GetTemplateChildT<winrt::ContentPresenter>(c_numberBoxHeaderName, (winrt::IControlProtected)*this))
         {
@@ -643,45 +651,9 @@ void NumberBox::UpdateHeaderPresenterState(winrt::IInspectable const& header)
             m_headerPresenter.set(headerPresenter);
         }
     }
-    bool validHeader = false;
 
-    // To enable lightweight styling, collapse header presenter if there is no header specified
     if (const auto headerPresenter = m_headerPresenter.get())
     {
-        if (header != nullptr)
-        {
-            // Check if header is string or not
-            if (const auto headerAsString = header.try_as<winrt::IReference<winrt::hstring>>())
-            {
-                if (headerAsString.Value().empty())
-                {
-                    // String is the empty string, hide presenter
-                    validHeader = true;
-                    headerPresenter.Visibility(winrt::Visibility::Collapsed);
-                }
-                else
-                {
-                    // String is not an empty string
-                    validHeader = true;
-                    headerPresenter.Visibility(winrt::Visibility::Visible);
-                }
-            }
-            else
-            {
-                // Header is not a string, so let's show header presenter
-                validHeader = true;
-                headerPresenter.Visibility(winrt::Visibility::Visible);
-            }
-        }
-        if(const auto headerTemplate = HeaderTemplate())
-        {
-            validHeader = true;
-            headerPresenter.Visibility(winrt::Visibility::Visible);
-        }
-        if (!validHeader)
-        {
-            // We did not fulfill ANY of the criteria above, so lets hide presenter
-            headerPresenter.Visibility(winrt::Visibility::Collapsed);
-        }
+        headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
 }
