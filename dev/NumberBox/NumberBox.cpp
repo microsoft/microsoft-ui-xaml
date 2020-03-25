@@ -652,7 +652,7 @@ void NumberBox::UpdateHeaderPresenterState()
         }
     }
 
-    if (const auto headerPresenter = m_headerPresenter.get())
+    if (auto&& headerPresenter = m_headerPresenter.get())
     {
         headerPresenter.Visibility(shouldShowHeader ? winrt::Visibility::Visible : winrt::Visibility::Collapsed);
     }
