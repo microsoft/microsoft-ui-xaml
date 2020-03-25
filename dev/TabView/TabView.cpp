@@ -351,7 +351,7 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
         auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
         m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
 
-        scrollViewer.ViewChanged({ this, &TabView::OnScrollViewerViewChanged });
+        m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
     }
 
     UpdateTabWidths();

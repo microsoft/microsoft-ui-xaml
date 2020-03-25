@@ -179,6 +179,7 @@ private:
     winrt::UIElement::Drop_revoker m_listViewDropRevoker{};
 
     winrt::FxScrollViewer::Loaded_revoker m_scrollViewerLoadedRevoker{};
+    winrt::FxScrollViewer::ViewChanged_revoker m_scrollViewerViewChangedRevoker{};
 
     winrt::Button::Click_revoker m_addButtonClickRevoker{};
 
