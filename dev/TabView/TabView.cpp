@@ -346,9 +346,11 @@ void TabView::OnScrollViewerLoaded(const winrt::IInspectable&, const winrt::Rout
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
         auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
+        m_scrollDecreaseButton.set(decreaseButton);
         m_scrollDecreaseClickRevoker = decreaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollDecreaseClick });
 
         auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+        m_scrollIncreaseButton.set(increaseButton);
         m_scrollIncreaseClickRevoker = increaseButton.Click(winrt::auto_revoke, { this, &TabView::OnScrollIncreaseClick });
 
         m_scrollViewerViewChangedRevoker = scrollViewer.ViewChanged(winrt::auto_revoke, { this, &TabView::OnScrollViewerViewChanged });
@@ -366,17 +368,19 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        auto decreaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollDecreaseButton").as<winrt::RepeatButton>();
-        auto increaseButton = SharedHelpers::FindInVisualTreeByName(scrollViewer, L"ScrollIncreaseButton").as<winrt::RepeatButton>();
+        auto decreaseButton = m_scrollDecreaseButton.get();
+        auto increaseButton = m_scrollIncreaseButton.get();
 
-        auto minThreshold = 0.1;
+        constexpr auto minThreshold = 0.1;
+        auto horizontalOffset = scrollViewer.HorizontalOffset();
+        auto scrollableWidth = scrollViewer.ScrollableWidth();
 
-        if (abs(scrollViewer.HorizontalOffset() - scrollViewer.ScrollableWidth()) < minThreshold)
+        if (abs(horizontalOffset - scrollableWidth) < minThreshold)
         {
             decreaseButton.IsEnabled(true);
             increaseButton.IsEnabled(false);
         }
-        else if (abs(scrollViewer.HorizontalOffset()) < minThreshold)
+        else if (abs(horizontalOffset) < minThreshold)
         {
             decreaseButton.IsEnabled(false);
             increaseButton.IsEnabled(true);

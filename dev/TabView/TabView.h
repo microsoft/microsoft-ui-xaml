@@ -164,6 +164,8 @@ private:
     tracker_ref<winrt::ContentPresenter> m_rightContentPresenter{ this };
     tracker_ref<winrt::Grid> m_tabContainerGrid{ this };
     tracker_ref<winrt::FxScrollViewer> m_scrollViewer{ this };
+    tracker_ref<winrt::RepeatButton> m_scrollDecreaseButton{ this };
+    tracker_ref<winrt::RepeatButton> m_scrollIncreaseButton{ this };
     tracker_ref<winrt::Button> m_addButton{ this };
     tracker_ref<winrt::ItemsPresenter> m_itemsPresenter{ this };
 
