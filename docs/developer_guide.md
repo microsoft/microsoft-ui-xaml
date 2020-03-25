@@ -1,4 +1,4 @@
-﻿# Developer Guide
+# Developer Guide
 
 This guide provides instructions on how to build the repo and implement 
 improvements.
@@ -55,11 +55,19 @@ To create a NuGet package for a given build flavor (release/debug) and build arc
 
 After building the solution in the desired configuration, you can run the `build-nupkg.ps1` script that will run the required steps.
 The script takes the following arguments:
-- BuildOutput: The path to the microsoft-ui-xaml BuildOutput folder
-- BuildFlavor (default: `release`): The flavor to use for nuget build (`debug` or `release`)
-- BuildArch (default `x86`): The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`
-- OutputDir: The folder where the nuget package will be generated in
-- SkipFrameworkPackage (default `False`): Can be specified to skip building a framework package
+#### -BuildOutput
+The path to the microsoft-ui-xaml BuildOutput folder
+#### -BuildFlavor
+The flavor to use for nuget build (`debug` or `release`). Defaults to `release`.
+#### -BuildArch
+The build arch to use for the `.winmd` and `generic.xaml` file, one of: `x64`, `x86`, `ARM`, `ARM64`. Defaults to `x86`.
+#### -OutputDir
+The folder where the nuget package will be generated in
+#### -SkipFrameworkPackage
+Can be specified to skip building a framework package. Defaults to `False`.
+In order to generate framework packages, you need to generate package appx files. 
+This can be done using the `MakeAllAppx.cmd` located in the same folder as `build-nupkg.ps1`.
+
 
 Example usage (running from root of repository folder):
 ```

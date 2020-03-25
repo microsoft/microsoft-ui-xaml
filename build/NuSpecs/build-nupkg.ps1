@@ -136,19 +136,6 @@ if(-not $SkipFrameworkPackage)
     # Nuget package with framework package encapsulation
     $NugetArgs = "$CommonNugetArgs -OutputDirectory $OutputDir\FrameworkPackage"
 
-    # Check if appx file for the given build arch and build flavor exists
-    $foundAppPri = Test-Path "$BuildOutput\\$BuildFlavor\\$BuildArch\\FrameworkPackage\\MicrosoftUIXamlVersion.props" -PathType Leaf
-    if(-not $foundAppPri)
-    {
-        echo "Found package pri and appx file:" $foundAppPri
-        # For the framework package, we need to build the framework package appx files
-        echo "Creating APPX files for framework package (errors might occur)"
-        # Wait for the appx files to be generated
-        cmd /c $scriptDirectory"\MakeAllAppx.cmd" | Out-Null
-        echo "Finished creating APPX files for framework package"
-    }
-    
-
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x86\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x86\Release"
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\x64\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\x64\Release"
     Copy-IntoNewDirectory -IfExists $BuildOutput\$BuildFlavor\arm\FrameworkPackage\Microsoft.UI.Xaml.*.appx "$toolsDir\AppX\arm\Release"
