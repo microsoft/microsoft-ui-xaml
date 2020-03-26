@@ -98,11 +98,15 @@ namespace MUXControlsTestApp
             {
                 return null;
             }
-            // Path we are using here: NavigationViewItem->RootGrid->ContentGrid
-            var contentGrid = VisualTreeHelper.GetChild(
-                VisualTreeHelper.GetChild(
-                    VisualTreeHelper.GetChild(element, 0), 0), 2);
-            return VisualTreeHelper.GetChild(contentGrid, 1) as UIElement;
+            // Path we are using here: NVIGrid->NavigationViewItemPresenter->LayoutRoot
+            // ->PresenterContentRootGrid->ContentGrid->ContentPresenter
+            var elementGrid = VisualTreeHelper.GetChild(element,0);
+            var presenter = VisualTreeHelper.GetChild(elementGrid, 0);
+            var layoutRoot = VisualTreeHelper.GetChild(presenter, 0);
+            var presenterContentRootGrid = VisualTreeHelper.GetChild(layoutRoot, 1);
+            var contentGrid = VisualTreeHelper.GetChild(presenterContentRootGrid, 1);
+            var contentPresenter = VisualTreeHelper.GetChild(contentGrid, 1);
+            return contentPresenter as UIElement;
 
         }
     }
