@@ -48,6 +48,9 @@
                 <Button x:Name="ChangeShopTextButton" AutomationProperties.Name="ChangeShopTextButton" Content="Change Shop text" Margin="0,0,0,8" Click="ChangeShopTextButton_Click"/>
                 <Button x:Name="CustomTooltipButton" AutomationProperties.Name="CustomTooltipButton" Content="Custom Tooltip" Margin="0,0,0,8" Click="CustomTooltipButton_Click"/>
                 <Button x:Name="SetTabViewWidth" AutomationProperties.Name="SetTabViewWidth" Content="Set Width" Margin="0,0,0,8" Click="SetTabViewWidth_Click" />
+                <Button x:Name="ScrollTabViewToTheLeft" AutomationProperties.Name="ScrollTabViewToTheLeft" Content="Scroll TabView To the Left" Margin="0,0,0,8" Click="TabViewScrollToTheLeftButton_Click" />
+                <Button x:Name="ScrollTabViewToTheMiddle" AutomationProperties.Name="ScrollTabViewToTheMiddle" Content="Scroll TabView To the Middle" Margin="0,0,0,8" Click="TabViewScrollToTheMiddleButton_Click" />
+                <Button x:Name="ScrollTabViewToTheRight" AutomationProperties.Name="ScrollTabViewToTheRight" Content="Scroll TabView To the Right" Margin="0,0,0,8" Click="TabViewScrollToTheRightButton_Click" />
 
                 <Button x:Name="ShortLongTextButton" AutomationProperties.Name="ShortLongTextButton" Content="Short/Long Text" Margin="0,0,0,8" Click="ShortLongTextButton_Click" />
 
