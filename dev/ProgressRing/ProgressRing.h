@@ -40,4 +40,10 @@ private:
 
     tracker_ref<winrt::AnimatedVisualPlayer> m_player{ this };
     tracker_ref<winrt::Grid> m_layoutRoot{ this };
+
+    void UpdateLottieProgress();
+    void UpdateStates();
+    void UpdateSegment();
+    void UpdateRing();
+    double GetStrokeThickness();
 };
