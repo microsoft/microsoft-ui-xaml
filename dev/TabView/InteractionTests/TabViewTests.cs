@@ -143,19 +143,19 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 // Scroll all the way to the left and verify decrease/increase button visual state
                 FindElement.ByName<Button>("ScrollTabViewToTheLeft").InvokeAndWait();
-                Thread.Sleep(TimeSpan.FromMilliseconds(300));
+                Wait.ForMilliseconds(300);
                 Verify.IsFalse(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be disabled");
                 Verify.IsTrue(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be enabled");
 
                 // Scroll to the middle position and verify decrease/increase button visual state
                 FindElement.ByName<Button>("ScrollTabViewToTheMiddle").InvokeAndWait();
-                Thread.Sleep(TimeSpan.FromMilliseconds(300));
+                Wait.ForMilliseconds(300);
                 Verify.IsTrue(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be enabled");
                 Verify.IsTrue(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be enabled");
 
                 // Scroll all the way to the right and verify decrease/increase button visual state
                 FindElement.ByName<Button>("ScrollTabViewToTheRight").InvokeAndWait();
-                Thread.Sleep(TimeSpan.FromMilliseconds(300));
+                Wait.ForMilliseconds(300);
                 Verify.IsTrue(IsScrollDecreaseButtonEnabled(), "Scroll decrease button should be enabled");
                 Verify.IsFalse(IsScrollIncreaseButtonEnabled(), "Scroll increase button should be disabled");
 
