@@ -362,19 +362,19 @@ namespace MUXControlsTestApp
         public void TabViewScrollToTheLeftButton_Click(object sender, RoutedEventArgs e)
         {
             var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
-            scrollViewer.ChangeView(0, null, null, false);
+            scrollViewer.ChangeView(0, null, null, true);
         }
 
         public void TabViewScrollToTheMiddleButton_Click(object sender, RoutedEventArgs e)
         {
             var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
-            scrollViewer.ChangeView(scrollViewer.ScrollableWidth / 2.0f, null, null, false);
+            scrollViewer.ChangeView(scrollViewer.ScrollableWidth / 2.0f, null, null, true);
         }
 
         public void TabViewScrollToTheRightButton_Click(object sender, RoutedEventArgs e)
         {
             var scrollViewer = VisualTreeUtils.FindVisualChildByName(Tabs, "ScrollViewer") as ScrollViewer;
-            scrollViewer.ChangeView(double.MaxValue, null, null, false);
+            scrollViewer.ChangeView(double.MaxValue, null, null, true);
         }
 
         public void GetScrollDecreaseButtonEnabled_Click(object sender, RoutedEventArgs e)
