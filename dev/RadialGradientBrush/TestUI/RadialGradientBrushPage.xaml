@@ -120,8 +120,8 @@
                             <TextBlock Text="{x:Bind DynamicGradientBrush.MappingMode}" Grid.Row="0" Grid.Column="1" />
                             <TextBlock Text="GradientStops.Count: " Grid.Row="1" />
                             <TextBlock Text="{x:Bind DynamicGradientBrush.GradientStops.Count}" Grid.Row="1" Grid.Column="1" x:Name="GradientStopCountText" AutomationProperties.Name="GradientStopCountText" />
-                            <TextBlock Text="GradientOriginOffset: " Grid.Row="2" />
-                            <TextBlock Text="{x:Bind DynamicGradientBrush.GradientOriginOffset}" Grid.Row="2" Grid.Column="1" />
+                            <TextBlock Text="GradientOffset: " Grid.Row="2" />
+                            <TextBlock Text="{x:Bind DynamicGradientBrush.GradientOffset}" Grid.Row="2" Grid.Column="1" />
                             <TextBlock Text="EllipseCenter: " Grid.Row="3" />
                             <TextBlock Text="{x:Bind DynamicGradientBrush.EllipseCenter}" Grid.Row="3" Grid.Column="1" />
                             <TextBlock Text="EllipseRadius: " Grid.Row="4" />

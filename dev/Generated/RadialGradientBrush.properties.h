@@ -15,8 +15,8 @@ public:
     void EllipseRadius(winrt::Point const& value);
     winrt::Point EllipseRadius();
 
-    void GradientOriginOffset(winrt::Point const& value);
-    winrt::Point GradientOriginOffset();
+    void GradientOffset(winrt::Point const& value);
+    winrt::Point GradientOffset();
 
     void InterpolationSpace(winrt::CompositionColorSpace const& value);
     winrt::CompositionColorSpace InterpolationSpace();
@@ -29,14 +29,14 @@ public:
 
     static winrt::DependencyProperty EllipseCenterProperty() { return s_EllipseCenterProperty; }
     static winrt::DependencyProperty EllipseRadiusProperty() { return s_EllipseRadiusProperty; }
-    static winrt::DependencyProperty GradientOriginOffsetProperty() { return s_GradientOriginOffsetProperty; }
+    static winrt::DependencyProperty GradientOffsetProperty() { return s_GradientOffsetProperty; }
     static winrt::DependencyProperty InterpolationSpaceProperty() { return s_InterpolationSpaceProperty; }
     static winrt::DependencyProperty MappingModeProperty() { return s_MappingModeProperty; }
     static winrt::DependencyProperty SpreadMethodProperty() { return s_SpreadMethodProperty; }
 
     static GlobalDependencyProperty s_EllipseCenterProperty;
     static GlobalDependencyProperty s_EllipseRadiusProperty;
-    static GlobalDependencyProperty s_GradientOriginOffsetProperty;
+    static GlobalDependencyProperty s_GradientOffsetProperty;
     static GlobalDependencyProperty s_InterpolationSpaceProperty;
     static GlobalDependencyProperty s_MappingModeProperty;
     static GlobalDependencyProperty s_SpreadMethodProperty;
@@ -52,7 +52,7 @@ public:
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 
-    static void OnGradientOriginOffsetPropertyChanged(
+    static void OnGradientOffsetPropertyChanged(
         winrt::DependencyObject const& sender,
         winrt::DependencyPropertyChangedEventArgs const& args);
 

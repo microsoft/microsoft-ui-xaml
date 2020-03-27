@@ -121,7 +121,7 @@ namespace MUXControlsTestApp
 
         private void RandomizeGradientOriginButton_Click(object sender, RoutedEventArgs e)
         {
-            RandomizeGradientOriginOffset(DynamicGradientBrush);
+            RandomizeGradientOffset(DynamicGradientBrush);
         }
 
         private void RandomizeEllipseCenterButton_Click(object sender, RoutedEventArgs e)
@@ -198,17 +198,17 @@ namespace MUXControlsTestApp
             }
         }
 
-        private void RandomizeGradientOriginOffset(RadialGradientBrush gradientBrush)
+        private void RandomizeGradientOffset(RadialGradientBrush gradientBrush)
         {
             if (gradientBrush != null)
             {
                 if (gradientBrush.MappingMode == BrushMappingMode.Absolute)
                 {
-                    gradientBrush.GradientOriginOffset = new Point(_random.Next(0, 100), _random.Next(0, 100));
+                    gradientBrush.GradientOffset = new Point(_random.Next(0, 100), _random.Next(0, 100));
                 }
                 else
                 {
-                    gradientBrush.GradientOriginOffset = new Point(_random.Next(-100, 100) / 100f, _random.Next(-100, 100) / 100f);
+                    gradientBrush.GradientOffset = new Point(_random.Next(-100, 100) / 100f, _random.Next(-100, 100) / 100f);
                 }
             }
         }
@@ -251,7 +251,7 @@ namespace MUXControlsTestApp
 
                 RandomizeEllipseCenter(gradientBrush);
                 RandomizeEllipseRadius(gradientBrush);
-                RandomizeGradientOriginOffset(gradientBrush);
+                RandomizeGradientOffset(gradientBrush);
             }
         }
 
