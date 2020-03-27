@@ -6,7 +6,6 @@ using Common;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using System.Collections.Generic;
-using System.Threading;
 
 #if USING_TAEF
 using WEX.TestExecution;
