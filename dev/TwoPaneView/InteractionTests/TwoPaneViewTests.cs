@@ -4,6 +4,7 @@
 using System;
 
 using Common;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.Foundation.Metadata;
@@ -146,7 +147,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             {
                 Log.Comment("Verify horizontal split regions");
                 SetComboBox("SimulateComboBox", "LeftRight");
-                
+
                 VerifyViewMode(ViewMode.LeftRight);
                 VerifyPaneSize(1, c_simulatedPaneWidth, c_simulatedPaneHeight);
                 VerifyPaneSize(2, c_simulatedPaneWidth, c_simulatedPaneHeight);
@@ -245,24 +246,43 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                 VerifyPaneSize(1, controlWidth / 2.0, 0);
                 VerifyPaneSize(2, controlWidth / 2.0, 0);
-                
+
                 Log.Comment("Verify changing pane 2 length to pixel sizing");
                 SetLength(2, 199, "Pixel");
 
                 VerifyPaneSize(1, controlWidth - 199, 0);
                 VerifyPaneSize(2, 199, 0);
-                
+
                 Log.Comment("Verify column sizes stay the same when switching pane order");
                 SetWideModeConfiguration(WideModeConfiguration.RightLeft);
 
                 VerifyPaneSize(1, controlWidth - 199, 0);
                 VerifyPaneSize(2, 199, 0);
-                
+
                 Log.Comment("Verify lengths apply to top/bottom configuration");
                 SetControlWidth(ControlWidth.Narrow);
-                
+
                 VerifyPaneSize(1, 0, controlHeight - 199);
                 VerifyPaneSize(2, 0, 199);
+            }
+        }
+
+
+        // Verify that tabbing around puts us where we expect
+        [TestMethod]
+        public void VerifyTabKeyWorks()
+        {
+            using (var setup = new TestSetupHelper("TwoPaneView Tests")) // This clicks the button corresponding to the test page.
+            {
+                UIObject twoPaneView = TryFindElement.ByName("TwoPaneView");
+                Verify.IsNotNull(twoPaneView, "TwoPaneView is present");
+                twoPaneView.SetFocus();
+                Wait.ForIdle();
+                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
+                KeyboardHelper.PressKey(Key.Tab);
+                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
+                KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
+                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
             }
         }
 
