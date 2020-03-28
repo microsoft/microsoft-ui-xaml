@@ -4,7 +4,6 @@
 using System;
 
 using Common;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Infra;
 using Windows.UI.Xaml.Tests.MUXControls.InteractionTests.Common;
 using Windows.Foundation.Metadata;
@@ -274,15 +273,15 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("TwoPaneView Tests")) // This clicks the button corresponding to the test page.
             {
-                UIObject twoPaneView = TryFindElement.ByName("TwoPaneView");
+                UIObject twoPaneView = TryFindElement.ByName("TwoPaneViewLarge");
                 Verify.IsNotNull(twoPaneView, "TwoPaneView is present");
                 twoPaneView.SetFocus();
                 Wait.ForIdle();
-                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
+                Verify.AreNotEqual(UIObject.Focused, twoPaneView, "TwoPaneView should not be focused");
                 KeyboardHelper.PressKey(Key.Tab);
-                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
+                Verify.AreNotEqual(UIObject.Focused, twoPaneView, "TwoPaneView should not be focused");
                 KeyboardHelper.PressKey(Key.Tab, ModifierKey.Shift);
-                Verify.IsFalse(twoPaneView.HasKeyboardFocus, "TwoPaneView isn't focused");
+                Verify.AreNotEqual(UIObject.Focused, twoPaneView, "TwoPaneView should not be focused");
             }
         }
 
