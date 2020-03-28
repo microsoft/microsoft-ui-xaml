@@ -18,7 +18,7 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::Point(0.5,0.5)")]
-    Windows.Foundation.Point GradientOffset { get; set; };
+    Windows.Foundation.Point GradientOrigin { get; set; };
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     [MUX_DEFAULT_VALUE("winrt::BrushMappingMode::RelativeToBoundingBox")]
@@ -36,7 +36,7 @@ unsealed runtimeclass RadialGradientBrush : Windows.UI.Xaml.Media.XamlCompositio
 
     static Windows.UI.Xaml.DependencyProperty EllipseCenterProperty { get; };
     static Windows.UI.Xaml.DependencyProperty EllipseRadiusProperty { get; };
-    static Windows.UI.Xaml.DependencyProperty GradientOffsetProperty { get; };
+    static Windows.UI.Xaml.DependencyProperty GradientOriginProperty { get; };
     static Windows.UI.Xaml.DependencyProperty InterpolationSpaceProperty { get; };
     static Windows.UI.Xaml.DependencyProperty MappingModeProperty { get; };
     static Windows.UI.Xaml.DependencyProperty SpreadMethodProperty { get; };

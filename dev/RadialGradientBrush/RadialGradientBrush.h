@@ -25,7 +25,7 @@ public:
 
     void OnEllipseCenterPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnEllipseRadiusPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
-    void OnGradientOffsetPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
+    void OnGradientOriginPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnMappingModePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnInterpolationSpacePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
     void OnSpreadMethodPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args);
@@ -46,7 +46,7 @@ private:
     void UpdateCompositionGradientEllipseCenter();
     void UpdateCompositionGradientEllipseRadius();
     void UpdateCompositionGradientMappingMode();
-    void UpdateCompositionGradientOffset();
+    void UpdateCompositionGradientOrigin();
     void UpdateCompositionGradientStops();
     void UpdateCompositionInterpolationSpace();
     void UpdateCompositionExtendMode();
