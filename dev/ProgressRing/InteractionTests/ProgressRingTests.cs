@@ -151,7 +151,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
 
-                Log.Comment("All properties to false updates ProgresRing to Determinate");
+                Log.Comment("All properties to false updates ProgressRing to Determinate");
 
                 ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
