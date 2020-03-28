@@ -203,10 +203,10 @@ void RadialGradientBrush::UpdateCompositionGradientOrigin()
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto gradientOffset = GradientOrigin();
+        const auto gradientOrigin = GradientOrigin();
         // This sets the gradient offset center to the top left corner
         // Top Left is (-0.5,-0.5), center is (0,0)
-        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOffset.X - 0.5f, gradientOffset.Y - 0.5f));
+        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - 0.5f, gradientOrigin.Y - 0.5f));
     }
 }
 
