@@ -634,13 +634,13 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                     var element = (TextBlock)repeater.TryGetElement(i);
                     if (i % 2 == 0)
                     {
-                        // Text is bound to the data for even indicies
+                        // Text is bound to the data for even indices
                         Verify.AreEqual(i.ToString(), element.Text);
                         Verify.AreEqual(i, element.DataContext);
                     }
                     else
                     {
-                        // Text explicitly set on the element only for odd indicies
+                        // Text explicitly set on the element only for odd indices
                         Verify.AreEqual("static", element.Text);
                     }
                 }
