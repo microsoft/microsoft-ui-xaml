@@ -135,13 +135,17 @@
                 <ControlTemplate TargetType="primitives:TabViewListView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
                         <StackPanel Orientation="Horizontal">
-                            <Rectangle
+                            <Path
                                 VerticalAlignment="Bottom"
                                 Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
                                 Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
                                 Margin="0,0,-10,0"
-                                Fill="Green"/>
-                            <ScrollViewer x:Name="ScrollViewer"
+                                Fill="{TemplateBinding Background}">
+                                    <Path.Data>
+                                        <RectangleGeometry Rect="0,0,100,100"/>
+                                    </Path.Data>
+                                </Path>
+                                <ScrollViewer x:Name="ScrollViewer"
                                 Grid.Column="1"
                                 Canvas.ZIndex="10"
                                 AutomationProperties.AccessibilityView="Raw"
@@ -157,17 +161,23 @@
                                 VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                                 VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
                                 ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                Margin="0,0,5,0"
                                 Style="{StaticResource TabScrollViewerStyle}">
 
                                 <ItemsPresenter x:Name="TabsItemsPresenter"
                                     Padding="{TemplateBinding Padding}" />
 
                             </ScrollViewer>
-                            <Rectangle
+                            <Path
+                                Margin="-5,0,0,0"
                                 VerticalAlignment="Bottom"
                                 Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
                                 Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
-                                Fill="Green"/>
+                                Fill="{TemplateBinding Background}">
+                                <Path.Data>
+                                    <RectangleGeometry Rect="0,0,100,100"/>
+                                </Path.Data>
+                            </Path>
                         </StackPanel>
                     </Border>
 
@@ -449,7 +459,7 @@
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LayoutRoot.(Canvas.ZIndex)" Value="20"/>
                                         <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
-                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
+                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -638,24 +648,28 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
-
-                        <Rectangle
+                        <Path x:Name="LeftRadiusRender"
                             IsHitTestVisible="False"
                             Grid.Column="0"
                             Canvas.ZIndex="20"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
-                            Fill="Red"
-                            VerticalAlignment="Bottom"
-                            />
-
-                        <Rectangle
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
+                            VerticalAlignment="Bottom">
+                            <Path.Data>
+                                <RectangleGeometry Rect="0,0,100,100"/>
+                            </Path.Data>
+                        </Path>
+                            <Path x:Name="RightRadiusRender"
                             IsHitTestVisible="False"
                             Grid.Column="2"
                             Canvas.ZIndex="20"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
                             VerticalAlignment="Bottom"
-                            Fill="Red"/>
-
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}">
+                            <Path.Data>
+                                <RectangleGeometry Rect="0,0,100,100"/>
+                            </Path.Data>
+                        </Path>
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"

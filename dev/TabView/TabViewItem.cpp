@@ -61,6 +61,14 @@ void TabViewItem::OnApplyTemplate()
         {
             if (internalTabView)
             {
+                winrt::ThemeShadow leftShadow;
+                leftShadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                m_leftRadiusShadow = leftShadow;
+
+                winrt::ThemeShadow rightShadow;
+                rightShadow.Receivers().Append(internalTabView->GetShadowReceiver());
+                m_rightRadiusShadow = rightShadow;
+
                 winrt::ThemeShadow shadow;
                 shadow.Receivers().Append(internalTabView->GetShadowReceiver());
                 m_shadow = shadow;
@@ -80,6 +88,23 @@ void TabViewItem::OnApplyTemplate()
     }
 
     UpdateCloseButton();
+
+
+    if (auto leftPath = GetTemplateChildT<winrt::FrameworkElement>(L"LeftRadiusRender", *this))
+    {
+        double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+        auto currentTranslation = Translation();
+        auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+        leftPath.Translation(translation);
+    }
+
+    if (auto rightPath = GetTemplateChildT<winrt::FrameworkElement>(L"RightRadiusRender", *this))
+    {
+        double shadowDepth = unbox_value<double>(SharedHelpers::FindInApplicationResources(c_tabViewShadowDepthName, box_value(c_tabShadowDepth)));
+        auto currentTranslation = Translation();
+        auto translation = winrt::float3{ currentTranslation.x, currentTranslation.y, (float)shadowDepth };
+        rightPath.Translation(translation);
+    }
 }
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
@@ -105,11 +130,37 @@ void TabViewItem::UpdateShadow()
     {
         if (IsSelected() && !m_isDragging)
         {
-            Shadow(m_shadow.as<winrt::ThemeShadow>());
+            if (auto leftPath = GetTemplateChildT<winrt::FrameworkElement>(L"LeftRadiusRender", *this))
+            {
+                leftPath.Shadow(m_leftRadiusShadow.as<winrt::ThemeShadow>());
+            }
+
+            if (auto rightPath = GetTemplateChildT<winrt::FrameworkElement>(L"RightRadiusRender", *this))
+            {
+                rightPath.Shadow(m_rightRadiusShadow.as<winrt::ThemeShadow>());
+            }
+
+            if (auto tabContainer = GetTemplateChildT<winrt::FrameworkElement>(L"TabContainer", *this))
+            {
+                tabContainer.Shadow(m_shadow.as<winrt::ThemeShadow>());
+            }
         }
         else
         {
-            Shadow(nullptr);
+            if (auto leftPath = GetTemplateChildT<winrt::FrameworkElement>(L"LeftRadiusRender", *this))
+            {
+                leftPath.Shadow(nullptr);
+            }
+
+            if (auto rightPath = GetTemplateChildT<winrt::FrameworkElement>(L"RightRadiusRender", *this))
+            {
+                rightPath.Shadow(nullptr);
+            }
+
+            if (auto tabContainer = GetTemplateChildT<winrt::FrameworkElement>(L"TabContainer", *this))
+            {
+                tabContainer.Shadow(nullptr);
+            }
         }
     }
 }
