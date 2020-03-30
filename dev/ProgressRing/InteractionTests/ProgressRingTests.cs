@@ -137,7 +137,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify Lottie animation is active with Indeterminate as onLoad default");
+                Log.Comment("Verify IsIndeterminate is set to True for testing");
 
                 TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
                 Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
@@ -151,7 +151,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
 
-                Log.Comment("All properties to false updates ProgresRing to Determinate");
+                Log.Comment("All properties to false updates ProgressRing to Determinate");
 
                 ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
