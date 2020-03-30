@@ -134,28 +134,43 @@
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:TabViewListView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
-                        <ScrollViewer x:Name="ScrollViewer"
-                            Grid.Column="1"
-                            AutomationProperties.AccessibilityView="Raw"
-                            BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
-                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                            IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
-                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                            IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
-                            TabNavigation="{TemplateBinding TabNavigation}"
-                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                            Style="{StaticResource TabScrollViewerStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle
+                                VerticalAlignment="Bottom"
+                                Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
+                                Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
+                                Margin="0,0,-10,0"
+                                Fill="Green"/>
+                            <ScrollViewer x:Name="ScrollViewer"
+                                Grid.Column="1"
+                                Canvas.ZIndex="10"
+                                AutomationProperties.AccessibilityView="Raw"
+                                BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
+                                HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                                HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                                IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                                IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                                IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
+                                IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                                IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
+                                TabNavigation="{TemplateBinding TabNavigation}"
+                                VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                                VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                                ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                                Style="{StaticResource TabScrollViewerStyle}">
 
-                            <ItemsPresenter x:Name="TabsItemsPresenter"
-                                Padding="{TemplateBinding Padding}" />
+                                <ItemsPresenter x:Name="TabsItemsPresenter"
+                                    Padding="{TemplateBinding Padding}" />
 
-                        </ScrollViewer>
+                            </ScrollViewer>
+                            <Rectangle
+                                VerticalAlignment="Bottom"
+                                Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
+                                Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
+                                Fill="Green"/>
+                        </StackPanel>
                     </Border>
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -389,6 +404,12 @@
                         Padding="{TemplateBinding Padding}"
                         Margin="-1,0,0,0"> <!-- This item will cover the separator on its left side. -->
 
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="LeftColumn" Width="0"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="RightColumn" Width="0"/>
+                        </Grid.ColumnDefinitions>
+                        
                         <Grid.RenderTransform>
                             <ScaleTransform x:Name="LayoutRootScale" />
                         </Grid.RenderTransform>
@@ -424,6 +445,11 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="LayoutRoot.(Canvas.ZIndex)" Value="20"/>
+                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
+                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -434,6 +460,10 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPointerOver}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
+                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -444,6 +474,10 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPressed}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
+                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
+                                        <Setter Target="LayoutRoot.Background" Value="Transparent"/>
+                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
+                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
@@ -604,9 +638,28 @@
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
 
+
+                        <Rectangle
+                            IsHitTestVisible="False"
+                            Grid.Column="0"
+                            Canvas.ZIndex="20"
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
+                            Fill="Red"
+                            VerticalAlignment="Bottom"
+                            />
+
+                        <Rectangle
+                            IsHitTestVisible="False"
+                            Grid.Column="2"
+                            Canvas.ZIndex="20"
+                            Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
+                            VerticalAlignment="Bottom"
+                            Fill="Red"/>
+
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
+                            Grid.Column="1"
                             BorderBrush="{ThemeResource TabViewItemSeparator}"
                             BorderThickness="1"
                             Margin="0,6,0,6"/>

@@ -84,6 +84,15 @@ void TabViewItem::OnApplyTemplate()
 
 void TabViewItem::OnIsSelectedPropertyChanged(const winrt::DependencyObject& sender, const winrt::DependencyProperty& args)
 {
+    if (IsSelected())
+    {
+        SetValue(winrt::Canvas::ZIndexProperty(),box_value(20));
+    }
+    else
+    {
+        SetValue(winrt::Canvas::ZIndexProperty(), box_value(0));
+    }
+
     UpdateShadow();
     UpdateWidthModeVisualState();
 
