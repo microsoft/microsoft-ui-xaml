@@ -1,4 +1,4 @@
-﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
+<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. See LICENSE in the project root for license information. -->
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -432,11 +432,10 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
-                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
                                         <Setter Target="LayoutRoot.(Canvas.ZIndex)" Value="20"/>
-                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
-                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -447,10 +446,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPointerOver}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
-                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
-                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -461,10 +459,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundPressed}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
-                                        <Setter Target="LayoutRoot.Margin" Value="-5,0,-4,0"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"/>
-                                        <Setter Target="RightColumn.Width" Value="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>
