@@ -368,8 +368,8 @@ void TabView::UpdateScrollViewerDecreaseAndIncreaseButtonsViewState()
 {
     if (auto&& scrollViewer = m_scrollViewer.get())
     {
-        auto decreaseButton = m_scrollDecreaseButton.get();
-        auto increaseButton = m_scrollIncreaseButton.get();
+        auto&& decreaseButton = m_scrollDecreaseButton.get();
+        auto&& increaseButton = m_scrollIncreaseButton.get();
 
         constexpr auto minThreshold = 0.1;
         auto horizontalOffset = scrollViewer.HorizontalOffset();
