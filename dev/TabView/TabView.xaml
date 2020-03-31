@@ -626,6 +626,7 @@
                             IsHitTestVisible="False"
                             Grid.Column="0"
                             Canvas.ZIndex="20"
+                            Stretch="Uniform"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
@@ -637,9 +638,9 @@
                             Canvas.ZIndex="20"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
                             VerticalAlignment="Bottom"
+                            Stretch="Uniform"
                             Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}">
-                            
                         </Path>
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
