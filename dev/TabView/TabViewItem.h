@@ -72,6 +72,4 @@ public:
 
     void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
-    winrt::IInspectable m_leftRadiusShadow{ nullptr };
-    winrt::IInspectable m_rightRadiusShadow{ nullptr };
 };
