@@ -432,10 +432,9 @@
                                         <Setter Target="IconControl.Foreground" Value="{ThemeResource TabViewItemIconForegroundSelected}" />
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
-                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LayoutRoot.(Canvas.ZIndex)" Value="20"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -447,8 +446,8 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
 
@@ -460,8 +459,8 @@
                                         <Setter Target="CloseButton.Background" Value="{ThemeResource TabViewButtonBackgroundActiveTab}" />
                                         <Setter Target="CloseButton.Foreground" Value="{ThemeResource TabViewButtonForegroundActiveTab}" />
                                         <Setter Target="LayoutRoot.Background" Value="Transparent"/>
-                                        <Setter Target="LeftRadiusRender.Margin" Value="-4,0,0,0"/>
-                                        <Setter Target="RightRadiusRender.Margin" Value="0,0,-4,0"/>
+                                        <Setter Target="LeftRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.LeftInsetRadiusMargin}"/>
+                                        <Setter Target="RightRadiusRender.Margin" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TabViewTemplateSettings.RightInsetRadiusMargin}"/>
                                     </VisualState.Setters>
                                 </VisualState>
                             </VisualStateGroup>

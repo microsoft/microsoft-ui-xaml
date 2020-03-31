@@ -182,8 +182,12 @@ unsealed runtimeclass TabViewItemTemplateSettings : Windows.UI.Xaml.DependencyOb
     TabViewItemTemplateSettings();
 
     Windows.UI.Xaml.Controls.IconElement IconElement;
+    Windows.UI.Xaml.Thickness LeftInsetRadiusMargin;
+    Windows.UI.Xaml.Thickness RightInsetRadiusMargin;
 
     static Windows.UI.Xaml.DependencyProperty IconElementProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty LeftInsetRadiusMarginProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty RightInsetRadiusMarginProperty{ get; };
 }
 
 }

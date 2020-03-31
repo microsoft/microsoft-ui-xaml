@@ -72,4 +72,7 @@ public:
 
     void UpdateShadow();
     winrt::IInspectable m_shadow{ nullptr };
+
+    winrt::IInspectable TabViewItem::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key);
+
 };

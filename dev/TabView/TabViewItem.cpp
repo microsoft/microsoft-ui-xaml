@@ -9,6 +9,8 @@
 #include "ResourceAccessor.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_overlayCornerRadiusKey = L"OverlayCornerRadius"sv;
+
 TabViewItem::TabViewItem()
 {
     __RP_Marker_ClassById(RuntimeProfiler::ProfId_TabViewItem);
@@ -18,10 +20,17 @@ TabViewItem::TabViewItem()
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
+    
 }
 
 void TabViewItem::OnApplyTemplate()
 {
+    auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
+    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
+
+    templateSettings->LeftInsetRadiusMargin(winrt::Thickness({ -popupRadius.BottomLeft,0,0,0 }));
+    templateSettings->RightInsetRadiusMargin(winrt::Thickness({0,0,-popupRadius.BottomRight,0}));
+
     winrt::IControlProtected controlProtected{ *this };
 
     auto tabView = SharedHelpers::GetAncestorOfType<winrt::TabView>(winrt::VisualTreeHelper::GetParent(*this));
@@ -364,4 +373,9 @@ void TabViewItem::OnIconSourceChanged()
         templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
+}
+
+winrt::IInspectable TabViewItem::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
+{
+    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }
