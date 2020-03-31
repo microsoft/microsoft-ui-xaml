@@ -65,7 +65,7 @@ void ColorPicker::OnApplyTemplate()
 
     m_checkerColorBrush.set(GetTemplateChildT<winrt::SolidColorBrush>(L"CheckerColorBrush", thisAsControlProtected));
 
-    if (auto colorSpectrum = m_colorSpectrum.get())
+    if (auto&& colorSpectrum = m_colorSpectrum.get())
     {
         colorSpectrum.ColorChanged({ this, &ColorPicker::OnColorSpectrumColorChanged });
         colorSpectrum.SizeChanged({ this, &ColorPicker::OnColorSpectrumSizeChanged });
@@ -73,18 +73,18 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(colorSpectrum, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameColorSpectrum));
     }
 
-    if (auto colorPreviewRectangleGrid = m_colorPreviewRectangleGrid.get())
+    if (auto&& colorPreviewRectangleGrid = m_colorPreviewRectangleGrid.get())
     {
         colorPreviewRectangleGrid.SizeChanged({ this, &ColorPicker::OnColorPreviewRectangleGridSizeChanged });
     }
 
-    if (auto thirdDimensionSlider = m_thirdDimensionSlider.get())
+    if (auto&& thirdDimensionSlider = m_thirdDimensionSlider.get())
     {
         thirdDimensionSlider.ValueChanged({ this, &ColorPicker::OnThirdDimensionSliderValueChanged });
         SetThirdDimensionSliderChannel();
     }
 
-    if (auto alphaSlider = m_alphaSlider.get())
+    if (auto&& alphaSlider = m_alphaSlider.get())
     {
         alphaSlider.ValueChanged({ this, &ColorPicker::OnAlphaSliderValueChanged });
         alphaSlider.ColorChannel(winrt::ColorPickerHsvChannel::Alpha);
@@ -92,14 +92,14 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(alphaSlider, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameAlphaSlider));
     }
 
-    if (auto alphaSliderBackgroundRectangle = m_alphaSliderBackgroundRectangle.get())
+    if (auto&& alphaSliderBackgroundRectangle = m_alphaSliderBackgroundRectangle.get())
     {
         alphaSliderBackgroundRectangle.SizeChanged({ this, &ColorPicker::OnAlphaSliderBackgroundRectangleSizeChanged });
     }
 
-    if (auto moreButton = m_moreButton.get())
+    if (auto&& moreButton = m_moreButton.get())
     {
-        if (auto moreButtonAsToggleButton = moreButton.try_as<winrt::ToggleButton>())
+        if (const auto moreButtonAsToggleButton = moreButton.try_as<winrt::ToggleButton>())
         {
             moreButtonAsToggleButton.Checked({ this, &ColorPicker::OnMoreButtonChecked });
             moreButtonAsToggleButton.Unchecked({ this, &ColorPicker::OnMoreButtonUnchecked });
@@ -112,21 +112,21 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(moreButton, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameMoreButtonCollapsed));
         winrt::AutomationProperties::SetHelpText(moreButton, ResourceAccessor::GetLocalizedStringResource(SR_HelpTextMoreButton));
 
-        if (auto moreButtonLabel = GetTemplateChildT<winrt::TextBlock>(L"MoreButtonLabel", thisAsControlProtected))
+        if (const auto moreButtonLabel = GetTemplateChildT<winrt::TextBlock>(L"MoreButtonLabel", thisAsControlProtected))
         {
             m_moreButtonLabel.set(moreButtonLabel);
             moreButtonLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextMoreButtonLabelCollapsed));
         }
     }
 
-    if (auto colorRepresentationComboBox = m_colorRepresentationComboBox.get())
+    if (auto&& colorRepresentationComboBox = m_colorRepresentationComboBox.get())
     {
         colorRepresentationComboBox.SelectionChanged({ this, &ColorPicker::OnColorRepresentationComboBoxSelectionChanged });
 
         winrt::AutomationProperties::SetName(colorRepresentationComboBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameColorModelComboBox));
     }
 
-    if (auto redTextBox = m_redTextBox.get())
+    if (auto&& redTextBox = m_redTextBox.get())
     {
         redTextBox.TextChanging({ this, &ColorPicker::OnRgbTextChanging });
         redTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -135,7 +135,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(redTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameRedTextBox));
     }
 
-    if (auto greenTextBox = m_greenTextBox.get())
+    if (auto&& greenTextBox = m_greenTextBox.get())
     {
         greenTextBox.TextChanging({ this, &ColorPicker::OnRgbTextChanging });
         greenTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -144,7 +144,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(greenTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameGreenTextBox));
     }
 
-    if (auto blueTextBox = m_blueTextBox.get())
+    if (auto&& blueTextBox = m_blueTextBox.get())
     {
         blueTextBox.TextChanging({ this, &ColorPicker::OnRgbTextChanging });
         blueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -153,7 +153,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(blueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameBlueTextBox));
     }
 
-    if (auto hueTextBox = m_hueTextBox.get())
+    if (auto&& hueTextBox = m_hueTextBox.get())
     {
         hueTextBox.TextChanging({ this, &ColorPicker::OnHueTextChanging });
         hueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -162,7 +162,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(hueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameHueTextBox));
     }
 
-    if (auto saturationTextBox = m_saturationTextBox.get())
+    if (auto&& saturationTextBox = m_saturationTextBox.get())
     {
         saturationTextBox.TextChanging({ this, &ColorPicker::OnSaturationTextChanging });
         saturationTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -171,7 +171,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(saturationTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameSaturationTextBox));
     }
 
-    if (auto valueTextBox = m_valueTextBox.get())
+    if (auto&& valueTextBox = m_valueTextBox.get())
     {
         valueTextBox.TextChanging({ this, &ColorPicker::OnValueTextChanging });
         valueTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -180,7 +180,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(valueTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameValueTextBox));
     }
 
-    if (auto alphaTextBox = m_alphaTextBox.get())
+    if (auto&& alphaTextBox = m_alphaTextBox.get())
     {
         alphaTextBox.TextChanging({ this, &ColorPicker::OnAlphaTextChanging });
         alphaTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -189,7 +189,7 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(alphaTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameAlphaTextBox));
     }
 
-    if (auto hexTextBox = m_hexTextBox.get())
+    if (auto&& hexTextBox = m_hexTextBox.get())
     {
         hexTextBox.TextChanging({ this, &ColorPicker::OnHexTextChanging });
         hexTextBox.GotFocus({ this, &ColorPicker::OnTextBoxGotFocus });
@@ -198,52 +198,52 @@ void ColorPicker::OnApplyTemplate()
         winrt::AutomationProperties::SetName(hexTextBox, ResourceAccessor::GetLocalizedStringResource(SR_AutomationNameHexTextBox));
     }
 
-    if (auto rgbComboBoxItem = m_RgbComboBoxItem.get())
+    if (auto&& rgbComboBoxItem = m_RgbComboBoxItem.get())
     {
         rgbComboBoxItem.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_ContentRGBComboBoxItem)));
     }
 
-    if (auto hsvComboBoxItem = m_HsvComboBoxItem.get())
+    if (auto&& hsvComboBoxItem = m_HsvComboBoxItem.get())
     {
         hsvComboBoxItem.Content(box_value(ResourceAccessor::GetLocalizedStringResource(SR_ContentHSVComboBoxItem)));
     }
 
-    if (auto redLabel = m_redLabel.get())
+    if (auto&& redLabel = m_redLabel.get())
     {
         redLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextRedLabel));
     }
 
-    if (auto greenLabel = m_greenLabel.get())
+    if (auto&& greenLabel = m_greenLabel.get())
     {
         greenLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextGreenLabel));
     }
 
-    if (auto blueLabel = m_blueLabel.get())
+    if (auto&& blueLabel = m_blueLabel.get())
     {
         blueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextBlueLabel));
     }
 
-    if (auto hueLabel = m_hueLabel.get())
+    if (auto&& hueLabel = m_hueLabel.get())
     {
         hueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextHueLabel));
     }
 
-    if (auto saturationLabel = m_saturationLabel.get())
+    if (auto&& saturationLabel = m_saturationLabel.get())
     {
         saturationLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextSaturationLabel));
     }
 
-    if (auto valueLabel = m_valueLabel.get())
+    if (auto&& valueLabel = m_valueLabel.get())
     {
         valueLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextValueLabel));
     }
 
-    if (auto alphaLabel = m_alphaLabel.get())
+    if (auto&& alphaLabel = m_alphaLabel.get())
     {
         alphaLabel.Text(ResourceAccessor::GetLocalizedStringResource(SR_TextAlphaLabel));
     }
 
-    if (auto checkerColorBrush = m_checkerColorBrush.get())
+    if (auto&& checkerColorBrush = m_checkerColorBrush.get())
     {
         checkerColorBrush.RegisterPropertyChangedCallback(winrt::SolidColorBrush::ColorProperty(), { this, &ColorPicker::OnCheckerColorChanged });
     }
@@ -346,7 +346,7 @@ void ColorPicker::OnIsAlphaEnabledChanged(winrt::DependencyPropertyChangedEventA
 {
     m_currentHex = GetCurrentHexValue();
 
-    if (auto hexTextBox = m_hexTextBox.get())
+    if (auto&& hexTextBox = m_hexTextBox.get())
     {
         m_updatingControls = true;
         hexTextBox.Text(m_currentHex);
@@ -453,7 +453,7 @@ void ColorPicker::UpdateVisualState(bool useTransitions)
     winrt::VisualStateManager::GoToState(*this, IsMoreButtonVisible() ? L"MoreButtonVisible" : L"MoreButtonCollapsed", useTransitions);
     winrt::VisualStateManager::GoToState(*this, !IsMoreButtonVisible() || m_textEntryGridOpened ? L"TextEntryGridVisible" : L"TextEntryGridCollapsed", useTransitions);
 
-    if (auto colorRepresentationComboBox = m_colorRepresentationComboBox.get())
+    if (auto&& colorRepresentationComboBox = m_colorRepresentationComboBox.get())
     {
         winrt::VisualStateManager::GoToState(*this, colorRepresentationComboBox.SelectedIndex() == 0 ? L"RgbSelected" : L"HsvSelected", useTransitions);
     }
@@ -514,7 +514,7 @@ void ColorPicker::SetColorAndUpdateControls(ColorUpdateReason reason)
 
 void ColorPicker::UpdatePreviousColorRectangle()
 {
-    if (auto previousColorRectangle = m_previousColorRectangle.get())
+    if (auto&& previousColorRectangle = m_previousColorRectangle.get())
     {
         winrt::IReference<winrt::Color> previousColor = PreviousColor();
 
@@ -546,7 +546,7 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
         m_colorSpectrum.get().HsvColor(winrt::float4{ static_cast<float>(m_currentHsv.h), static_cast<float>(m_currentHsv.s), static_cast<float>(m_currentHsv.v), static_cast<float>(m_currentAlpha) });
     }
 
-    if (auto colorPreviewRectangle = m_colorPreviewRectangle.get())
+    if (auto&& colorPreviewRectangle = m_colorPreviewRectangle.get())
     {
         auto color = Color();
 
@@ -569,17 +569,17 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
     {
         if (reason != ColorUpdateReason::RgbTextBoxChanged)
         {
-            if (auto redTextBox = strongThis->m_redTextBox.get())
+            if (auto&& redTextBox = strongThis->m_redTextBox.get())
             {
                 redTextBox.Text(to_wstring(static_cast<::byte>(round(strongThis->m_currentRgb.r * 255))));
             }
 
-            if (auto greenTextBox = strongThis->m_greenTextBox.get())
+            if (auto&& greenTextBox = strongThis->m_greenTextBox.get())
             {
                 greenTextBox.Text(to_wstring(static_cast<::byte>(round(strongThis->m_currentRgb.g * 255))));
             }
 
-            if (auto blueTextBox = strongThis->m_blueTextBox.get())
+            if (auto&& blueTextBox = strongThis->m_blueTextBox.get())
             {
                 blueTextBox.Text(to_wstring(static_cast<::byte>(round(strongThis->m_currentRgb.b * 255))));
             }
@@ -587,17 +587,17 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
 
         if (reason != ColorUpdateReason::HsvTextBoxChanged)
         {
-            if (auto hueTextBox = strongThis->m_hueTextBox.get())
+            if (auto&& hueTextBox = strongThis->m_hueTextBox.get())
             {
                 hueTextBox.Text(to_wstring(static_cast<int>(round(strongThis->m_currentHsv.h))));
             }
 
-            if (auto saturationTextBox = strongThis->m_saturationTextBox.get())
+            if (auto&& saturationTextBox = strongThis->m_saturationTextBox.get())
             {
                 saturationTextBox.Text(to_wstring(static_cast<int>(round(strongThis->m_currentHsv.s * 100))));
             }
 
-            if (auto valueTextBox = strongThis->m_valueTextBox.get())
+            if (auto&& valueTextBox = strongThis->m_valueTextBox.get())
             {
                 valueTextBox.Text(to_wstring(static_cast<int>(round(strongThis->m_currentHsv.v * 100))));
             }
@@ -606,7 +606,7 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
 
         if (reason != ColorUpdateReason::AlphaTextBoxChanged)
         {
-            if (auto alphaTextBox = strongThis->m_alphaTextBox.get())
+            if (auto&& alphaTextBox = strongThis->m_alphaTextBox.get())
             {
                 alphaTextBox.Text(to_wstring(static_cast<int>(round(strongThis->m_currentAlpha * 100))) + wstring(L"%"));
             }
@@ -614,7 +614,7 @@ void ColorPicker::UpdateColorControls(ColorUpdateReason reason)
 
         if (reason != ColorUpdateReason::HexTextBoxChanged)
         {
-            if (auto hexTextBox = strongThis->m_hexTextBox.get())
+            if (auto&& hexTextBox = strongThis->m_hexTextBox.get())
             {
                 hexTextBox.Text(strongThis->m_currentHex);
             }
@@ -760,12 +760,12 @@ void ColorPicker::OnMoreButtonUnchecked(winrt::IInspectable const& /*sender*/, w
 
 void ColorPicker::UpdateMoreButton()
 {
-    if (auto moreButton = m_moreButton.get())
+    if (auto&& moreButton = m_moreButton.get())
     {
         winrt::AutomationProperties::SetName(moreButton, ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_AutomationNameMoreButtonExpanded : SR_AutomationNameMoreButtonCollapsed));
     }
 
-    if (auto moreButtonLabel = m_moreButtonLabel.get())
+    if (auto&& moreButtonLabel = m_moreButtonLabel.get())
     {
         moreButtonLabel.Text(ResourceAccessor::GetLocalizedStringResource(m_textEntryGridOpened ? SR_TextMoreButtonLabelExpanded : SR_TextMoreButtonLabelCollapsed));
     }
@@ -917,7 +917,7 @@ void ColorPicker::OnAlphaTextChanging(winrt::TextBox const& /*sender*/, winrt::T
         return;
     }
 
-    if (auto alphaTextBox = m_alphaTextBox.get())
+    if (auto&& alphaTextBox = m_alphaTextBox.get())
     {
         // If the user hasn't entered a %, we'll do that for them, keeping the cursor
         // where it was before.
@@ -1129,7 +1129,7 @@ void ColorPicker::UpdateThirdDimensionSlider()
 
 void ColorPicker::SetThirdDimensionSliderChannel()
 {
-    if (auto thirdDimensionSlider = m_thirdDimensionSlider.get())
+    if (auto&& thirdDimensionSlider = m_thirdDimensionSlider.get())
     {
         switch (ColorSpectrumComponents())
         {
@@ -1183,7 +1183,7 @@ void ColorPicker::CreateColorPreviewCheckeredBackground()
 {
     if (SharedHelpers::IsInDesignMode()) return;
 
-    if (auto colorPreviewRectangleGrid = m_colorPreviewRectangleGrid.get())
+    if (auto&& colorPreviewRectangleGrid = m_colorPreviewRectangleGrid.get())
     {
         if (m_colorPreviewRectangleCheckeredBackgroundImageBrush.get())
         {
@@ -1211,7 +1211,7 @@ void ColorPicker::CreateAlphaSliderCheckeredBackground()
 {
     if (SharedHelpers::IsInDesignMode()) return;
 
-    if (auto alphaSliderBackgroundRectangle = m_alphaSliderBackgroundRectangle.get())
+    if (auto&& alphaSliderBackgroundRectangle = m_alphaSliderBackgroundRectangle.get())
     {
         if (m_alphaSliderCheckeredBackgroundImageBrush.get())
         {
@@ -1255,7 +1255,7 @@ winrt::Color ColorPicker::GetCheckerColor()
 {
     winrt::Color checkerColor;
 
-    if (auto checkerColorBrush = m_checkerColorBrush.get())
+    if (auto&& checkerColorBrush = m_checkerColorBrush.get())
     {
         checkerColor = checkerColorBrush.Color();
     }

@@ -58,12 +58,12 @@ void ColorSpectrum::OnApplyTemplate()
     m_selectionEllipsePanel.set(GetTemplateChildT<winrt::Panel>(L"SelectionEllipsePanel", thisAsControlProtected));
     m_colorNameToolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ColorNameToolTip", thisAsControlProtected));
 
-    if (auto layoutRoot = m_layoutRoot.get())
+    if (auto&& layoutRoot = m_layoutRoot.get())
     {
         layoutRoot.SizeChanged({ this, &ColorSpectrum::OnLayoutRootSizeChanged });
     }
 
-    if (auto inputTarget = m_inputTarget.get())
+    if (auto&& inputTarget = m_inputTarget.get())
     {
         inputTarget.PointerEntered({ this, &ColorSpectrum::OnInputTargetPointerEntered });
         inputTarget.PointerExited({ this, &ColorSpectrum::OnInputTargetPointerExited });
@@ -74,13 +74,13 @@ void ColorSpectrum::OnApplyTemplate()
 
     if (DownlevelHelper::ToDisplayNameExists())
     {
-        if (auto colorNameToolTip = m_colorNameToolTip.get())
+        if (auto&& colorNameToolTip = m_colorNameToolTip.get())
         {
             colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(Color())));
         }
     }
 
-    if (auto selectionEllipsePanel = m_selectionEllipsePanel.get())
+    if (auto&& selectionEllipsePanel = m_selectionEllipsePanel.get())
     {
         selectionEllipsePanel.RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &ColorSpectrum::OnSelectionEllipseFlowDirectionChanged });
     }
@@ -193,7 +193,7 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 void ColorSpectrum::OnGotFocus(winrt::RoutedEventArgs const& /*e*/)
 {
     // We only want to bother with the color name tool tip if we can provide color names.
-    if (auto colorNameToolTip = m_colorNameToolTip.get())
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
     {
         if (DownlevelHelper::ToDisplayNameExists())
         {
@@ -207,7 +207,7 @@ void ColorSpectrum::OnGotFocus(winrt::RoutedEventArgs const& /*e*/)
 void ColorSpectrum::OnLostFocus(winrt::RoutedEventArgs const& /*e*/)
 {
     // We only want to bother with the color name tool tip if we can provide color names.
-    if (auto colorNameToolTip = m_colorNameToolTip.get())
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
     {
         if (DownlevelHelper::ToDisplayNameExists())
         {
@@ -319,7 +319,7 @@ void ColorSpectrum::RaiseColorChanged()
 
         if (DownlevelHelper::ToDisplayNameExists())
         {
-            if (auto colorNameToolTip = m_colorNameToolTip.get())
+            if (auto&& colorNameToolTip = m_colorNameToolTip.get())
             {
                 colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(newColor)));
             }
