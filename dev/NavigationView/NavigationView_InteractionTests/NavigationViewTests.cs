@@ -4255,7 +4255,7 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
                     Verify.IsNotNull(childItem, "Child item should be visible after expanding parent item.");
 
                     Log.Comment("Expand child of first menu item.");
-                    InputHelper.LeftClick(firstItem);
+                    InputHelper.LeftClick(childItem);
                     Wait.ForIdle();
 
                     Log.Comment("Verify that child of first menu item was expanded correctly.");

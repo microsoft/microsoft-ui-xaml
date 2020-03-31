@@ -2439,7 +2439,7 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
             if (auto const parentRepeater = GetParentItemsRepeaterForContainer(nvib))
             {
                 auto containerIndex = parentRepeater.GetElementIndex(nvib);
-                if (containerIndex)
+                if (containerIndex >= 0)
                 {
                     return GetItemFromIndex(parentRepeater, containerIndex);
                 }
