@@ -3,14 +3,15 @@
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Primitives.RangeBase
+unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 {
     ProgressRing();
 
     [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
-    Boolean IsIndeterminate{ get; set; };
+    [MUX_DEFAULT_VALUE("true")]
+    Boolean IsActive{ get; set; };
 
-    static Windows.UI.Xaml.DependencyProperty IsIndeterminateProperty{ get; };
+    static Windows.UI.Xaml.DependencyProperty IsActiveProperty{ get; };
 }
 
 }
@@ -20,7 +21,7 @@ namespace MU_XAP_NAMESPACE
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.RangeBaseAutomationPeer
+unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
     ProgressRingAutomationPeer(MU_XC_NAMESPACE.ProgressRing owner);
 }

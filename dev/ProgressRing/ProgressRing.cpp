@@ -9,19 +9,7 @@
 #include "ResourceAccessor.h"
 #include "math.h"
 
-float GetCircleRadius(double thickness, double actualWidth);
-winrt::float4 Color4(winrt::Color color);
-
-static constexpr wstring_view s_LayoutRootName{ L"LayoutRoot"sv };
-static constexpr wstring_view s_OutlinePathName{ L"OutlinePathPart"sv };
-static constexpr wstring_view s_OutlineFigureName{ L"OutlineFigurePart"sv };
-static constexpr wstring_view s_OutlineArcName{ L"OutlineArcPart"sv };
-static constexpr wstring_view s_RingPathName{ L"RingPathPart"sv };
-static constexpr wstring_view s_RingFigureName{ L"RingFigurePart"sv };
-static constexpr wstring_view s_RingArcName{ L"RingArcPart"sv };
-static constexpr wstring_view s_LottiePlayerName{ L"LottiePlayer"sv };
-static constexpr wstring_view s_DeterminateStateName{ L"Determinate"sv };
-static constexpr wstring_view s_IndeterminateStateName{ L"Indeterminate"sv };
+static constexpr wstring_view s_IndeterminateAnimatedVisualPlayerName{ L"IndeterminateAnimatedVisualPlayer"sv };
 static constexpr wstring_view s_DefaultForegroundThemeResourceName{ L"SystemControlHighlightAccentBrush"sv };
 static constexpr wstring_view s_DefaultBackgroundThemeResourceName{ L"SystemControlBackgroundBaseLowBrush"sv };
 static constexpr wstring_view s_ForegroundName{ L"Foreground"sv };
@@ -33,11 +21,8 @@ ProgressRing::ProgressRing()
 
     SetDefaultStyleKey(this);
 
-    RegisterPropertyChangedCallback(winrt::RangeBase::ValueProperty(), { this, &ProgressRing::OnRangeBasePropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::ForegroundProperty(), { this, &ProgressRing::OnForegroundPropertyChanged });
     RegisterPropertyChangedCallback(winrt::Control::BackgroundProperty(), { this, &ProgressRing::OnBackgroundPropertyChanged });
-
-    SizeChanged({ this, &ProgressRing::OnSizeChanged });
 }
 
 winrt::AutomationPeer ProgressRing::OnCreateAutomationPeer()
@@ -49,38 +34,15 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_outlinePath.set(GetTemplateChildT<winrt::Path>(s_OutlinePathName, controlProtected));
-    m_outlineFigure.set(GetTemplateChildT<winrt::PathFigure>(s_OutlineFigureName, controlProtected));
-    m_outlineArc.set(GetTemplateChildT<winrt::ArcSegment>(s_OutlineArcName, controlProtected));
-    m_ringPath.set(GetTemplateChildT<winrt::Path>(s_RingPathName, controlProtected));
-    m_ringFigure.set(GetTemplateChildT<winrt::PathFigure>(s_RingFigureName, controlProtected));
-    m_ringArc.set(GetTemplateChildT<winrt::ArcSegment>(s_RingArcName, controlProtected));
-
     m_player.set([this, controlProtected]()
     {
-        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_LottiePlayerName, controlProtected);
-        if (player)
-        {
-            player.RegisterPropertyChangedCallback(winrt::UIElement::OpacityProperty(), { this, &ProgressRing::OnOpacityPropertyChanged });
-        }
+        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateAnimatedVisualPlayerName, controlProtected);
+
         return player;
     }());
 
-    GetStrokeThickness();
-    ApplyLottieAnimation();
-    UpdateRing();
-    UpdateStates();
-}
-
-void ProgressRing::OnSizeChanged(const winrt::IInspectable&, const winrt::IInspectable&)
-{
-    ApplyLottieAnimation();
-    UpdateRing();
-}
-
-void ProgressRing::OnRangeBasePropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
-{
-    UpdateSegment();
+    SetAnimatedVisualPlayerSource();
+    ChangeVisualState();
 }
 
 void ProgressRing::OnForegroundPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
@@ -125,23 +87,12 @@ void ProgressRing::OnBackgroundColorPropertyChanged(const winrt::DependencyObjec
     }
 }
 
-void ProgressRing::OnOpacityPropertyChanged(const winrt::DependencyObject&, const winrt::DependencyProperty&)
+void ProgressRing::OnIsActivePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
-    if (auto&& player = m_player.get())
-    {
-        if (player.Opacity() == 0)
-        {
-            player.Stop();
-        }
-    }
+    ChangeVisualState();
 }
 
-void ProgressRing::OnIsIndeterminatePropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
-{
-    UpdateStates();
-}
-
-void ProgressRing::ApplyLottieAnimation()
+void ProgressRing::SetAnimatedVisualPlayerSource()
 {
     if (auto&& player = m_player.get())
     {
@@ -172,9 +123,7 @@ void ProgressRing::SetLottieForegroundColor(winrt::impl::com_ref<AnimatedVisuals
         }
     }();
 
-    const auto color = Color4(foregroundColor);
-
-    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, color);
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_ForegroundName, SharedHelpers::RgbaColor(foregroundColor));
 }
 
 void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals::ProgressRingIndeterminate> progressRingIndeterminate)
@@ -194,16 +143,14 @@ void ProgressRing::SetLottieBackgroundColor(winrt::impl::com_ref<AnimatedVisuals
         }
     }();
 
-    const auto color = Color4(backgroundColor);
-
-    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, color);
+    progressRingIndeterminate->GetThemeProperties(compositor).InsertVector4(s_BackgroundName, SharedHelpers::RgbaColor(backgroundColor));
 }
 
-void ProgressRing::UpdateStates()
+void ProgressRing::ChangeVisualState()
 {
-    if (IsIndeterminate())
+    if (IsActive())
     {
-        winrt::VisualStateManager::GoToState(*this, s_IndeterminateStateName, true);
+        winrt::VisualStateManager::GoToState(*this, L"Active", true);
 
         if (auto&& player = m_player.get())
         {
@@ -212,107 +159,11 @@ void ProgressRing::UpdateStates()
     }
     else
     {
-        winrt::VisualStateManager::GoToState(*this, s_DeterminateStateName, true);
-    }
-}
+        winrt::VisualStateManager::GoToState(*this, L"Inactive", true);
 
-void ProgressRing::UpdateSegment()
-{
-    if (auto&& ringArc = m_ringArc.get())
-    {
-        auto const angle = [this]()
+        if (auto&& player = m_player.get())
         {
-            auto const normalizedRange = [this]()
-            {
-                const double minimum = Minimum();
-                const double range = Maximum() - minimum;
-                const double delta = Value() - minimum;
-
-                const double normalizedRange = (range == 0.0) ? 0.0 : (delta / range);
-                // normalizedRange offsets calculation to display a full ring when value = 100%
-                // std::nextafter is set as a float as winrt::Point takes floats.
-                return std::min(normalizedRange, static_cast<double>(std::nextafterf(1.0, 0.0)));
-            }();
-            return 2 * M_PI * normalizedRange;
-        }();
-
-        const double thickness = GetStrokeThickness();
-
-        const auto size = GetCircleRadius(thickness, ActualWidth());
-        const double translationFactor = std::max(thickness / 2.0, 0.0);
-
-        const double x = (std::sin(angle) * size) + size + translationFactor;
-        const double y = (((std::cos(angle) * size) - size) * -1) + translationFactor;
-
-        ringArc.IsLargeArc(angle >= M_PI);
-        ringArc.Point(winrt::Point(static_cast<float>(x), static_cast<float>(y)));
-    }
-}
-
-void ProgressRing::UpdateRing()
-{
-    const double thickness = GetStrokeThickness();
-    const auto radius = GetCircleRadius(thickness, ActualWidth());
-    const float translationFactor = static_cast<float>(std::max(thickness / 2.0, 0.0));
-
-    if (auto&& outlineFigure = m_outlineFigure.get())
-    {
-        outlineFigure.StartPoint(winrt::Point(radius + translationFactor, translationFactor));
-    }
-
-    if (auto&& ringFigure = m_ringFigure.get())
-    {
-        ringFigure.StartPoint(winrt::Point(radius + translationFactor, translationFactor));
-    }
-
-    if (auto&& outlineArc = m_outlineArc.get())
-    {
-        outlineArc.Size(winrt::Size(radius, radius));
-        outlineArc.Point(winrt::Point(radius + translationFactor - 0.05f, translationFactor));
-    }
-
-    if (auto&& ringArc = m_ringArc.get())
-    {
-        ringArc.Size(winrt::Size(radius, radius));
-    }
-
-    UpdateSegment();
-}
-
-double ProgressRing::GetStrokeThickness()
-{
-    const auto ringPathStrokeThickness = [ringPath = m_ringPath.get()]()
-    {
-        if (ringPath)
-        {
-            return ringPath.StrokeThickness();
+            player.Stop();
         }
-        return 0.0;
-    }();
-    
-    const auto outlinePathStrokeThickness = [outlinePath = m_outlinePath.get()]()
-    {
-        if (outlinePath)
-        {
-            return outlinePath.StrokeThickness();
-        }
-        return 0.0;
-    }();
-
-    return std::max(ringPathStrokeThickness, outlinePathStrokeThickness);
-}
-
-float GetCircleRadius(double thickness, double actualWidth)
-{
-    const double safeThickness = std::max(thickness, static_cast<double>(0.0));
-
-    // ProgressRing only accounts for Width (rather than Width + Height) to ensure that it is always a circle and not an ellipse.
-    const double radius = std::max((actualWidth - safeThickness) / 2.0, 0.0);
-
-    return static_cast<float>(radius);
-}
-
-winrt::float4 Color4(winrt::Color color)
-{
-    return { static_cast<float>(color.R), static_cast<float>(color.G), static_cast<float>(color.B), static_cast<float>(color.A) };
+    }
 }

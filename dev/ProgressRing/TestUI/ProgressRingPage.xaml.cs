@@ -46,11 +46,11 @@ namespace MUXControlsTestApp
             IsPlayingText.Text = animatedVisualPlayer.IsPlaying.ToString();
         }
 
-        public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
-        {
-            TestProgressRing.Maximum = String.IsNullOrEmpty(MaximumInput.Text) ? Double.Parse(MaximumInput.PlaceholderText) : Double.Parse(MaximumInput.Text);
-            TestProgressRing.Minimum = String.IsNullOrEmpty(MinimumInput.Text) ? Double.Parse(MinimumInput.PlaceholderText) : Double.Parse(MinimumInput.Text);
-        }
+        //public void UpdateMinMax_Click(object sender, RoutedEventArgs e)
+        //{
+        //    TestProgressRing.Maximum = String.IsNullOrEmpty(MaximumInput.Text) ? Double.Parse(MaximumInput.PlaceholderText) : Double.Parse(MaximumInput.Text);
+        //    TestProgressRing.Minimum = String.IsNullOrEmpty(MinimumInput.Text) ? Double.Parse(MinimumInput.PlaceholderText) : Double.Parse(MinimumInput.Text);
+        //}
 
         public void UpdateWidth_Click(object sender, RoutedEventArgs e)
         {
@@ -58,20 +58,20 @@ namespace MUXControlsTestApp
             TestProgressRing.Height = String.IsNullOrEmpty(WidthInput.Text) ? Double.Parse(WidthInput.PlaceholderText) : Double.Parse(WidthInput.Text);
         }
 
-        public void UpdateValue_Click(object sender, RoutedEventArgs e)
-        {
-            TestProgressRing.Value = String.IsNullOrEmpty(ValueInput.Text) ? Double.Parse(ValueInput.PlaceholderText) : Double.Parse(ValueInput.Text);
-        }
-        public void ChangeValue_Click(object sender, RoutedEventArgs e)
-        {
-            if (TestProgressRing.Value + 1 > TestProgressRing.Maximum)
-            {
-                TestProgressRing.Value = (int)(TestProgressRing.Minimum + 0.5);
-            }
-            else
-            {
-                TestProgressRing.Value += 1;
-            }
-        }
+        //public void UpdateValue_Click(object sender, RoutedEventArgs e)
+        //{
+        //    TestProgressRing.Value = String.IsNullOrEmpty(ValueInput.Text) ? Double.Parse(ValueInput.PlaceholderText) : Double.Parse(ValueInput.Text);
+        //}
+        //public void ChangeValue_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (TestProgressRing.Value + 1 > TestProgressRing.Maximum)
+        //    {
+        //        TestProgressRing.Value = (int)(TestProgressRing.Minimum + 0.5);
+        //    }
+        //    else
+        //    {
+        //        TestProgressRing.Value += 1;
+        //    }
+        //}
     }
 }
