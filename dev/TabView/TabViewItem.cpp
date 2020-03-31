@@ -20,7 +20,6 @@ TabViewItem::TabViewItem()
     SetValue(s_TabViewTemplateSettingsProperty, winrt::make<TabViewItemTemplateSettings>());
 
     RegisterPropertyChangedCallback(winrt::SelectorItem::IsSelectedProperty(), { this, &TabViewItem::OnIsSelectedPropertyChanged });
-    
 }
 
 void TabViewItem::OnApplyTemplate()

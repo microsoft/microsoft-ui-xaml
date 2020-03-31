@@ -136,7 +136,6 @@
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
                         <ScrollViewer x:Name="ScrollViewer"
                             Grid.Column="1"
-                            Canvas.ZIndex="10"
                             AutomationProperties.AccessibilityView="Raw"
                             BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
                             HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
@@ -150,11 +149,10 @@
                             VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
                             VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
                             ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                            Margin="0,0,5,0"
                             Style="{StaticResource TabScrollViewerStyle}">
 
                             <ItemsPresenter x:Name="TabsItemsPresenter"
-                                    Padding="{TemplateBinding Padding}" />
+                                Padding="{TemplateBinding Padding}" />
 
                         </ScrollViewer>
                     </Border>
@@ -625,22 +623,22 @@
                             IsHitTestVisible="False"
                             Grid.Column="0"
                             Canvas.ZIndex="20"
-                            Stretch="Uniform"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
                             Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
-                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z">
-                        </Path>
-                            <Path x:Name="RightRadiusRender"
+                            Stretch="Uniform"
+                            Data="M4 0 L4 4 L0 4 A4,4 90 0 0 4 0 Z" />
+
+                        <Path x:Name="RightRadiusRender"
                             IsHitTestVisible="False"
                             Grid.Column="2"
                             Canvas.ZIndex="20"
                             Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
+                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}"
                             VerticalAlignment="Bottom"
                             Stretch="Uniform"
-                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z"
-                            Fill="{ThemeResource TabViewItemHeaderBackgroundSelected}">
-                        </Path>
+                            Data="M0 0 L0 4 L4 4 A4 4 90 0 1 0 0 Z" />
+
                         <Border x:Name="TabSeparator"
                             HorizontalAlignment="Right"
                             Width="1"
