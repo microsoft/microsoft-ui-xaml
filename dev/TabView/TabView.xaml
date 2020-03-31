@@ -134,53 +134,30 @@
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:TabViewListView">
                     <Border BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
-                        <StackPanel Orientation="Horizontal">
-                            <Path
-                                VerticalAlignment="Bottom"
-                                Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
-                                Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomLeft}"
-                                Margin="0,0,-10,0"
-                                Fill="{TemplateBinding Background}">
-                                    <Path.Data>
-                                        <RectangleGeometry Rect="0,0,100,100"/>
-                                    </Path.Data>
-                                </Path>
-                                <ScrollViewer x:Name="ScrollViewer"
-                                Grid.Column="1"
-                                Canvas.ZIndex="10"
-                                AutomationProperties.AccessibilityView="Raw"
-                                BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
-                                HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
-                                HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
-                                IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
-                                IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
-                                IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
-                                IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
-                                IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
-                                TabNavigation="{TemplateBinding TabNavigation}"
-                                VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
-                                VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
-                                ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
-                                Margin="0,0,5,0"
-                                Style="{StaticResource TabScrollViewerStyle}">
+                        <ScrollViewer x:Name="ScrollViewer"
+                            Grid.Column="1"
+                            Canvas.ZIndex="10"
+                            AutomationProperties.AccessibilityView="Raw"
+                            BringIntoViewOnFocusChange="{TemplateBinding ScrollViewer.BringIntoViewOnFocusChange}"
+                            HorizontalScrollBarVisibility="{TemplateBinding ScrollViewer.HorizontalScrollBarVisibility}"
+                            HorizontalScrollMode="{TemplateBinding ScrollViewer.HorizontalScrollMode}"
+                            IsDeferredScrollingEnabled="{TemplateBinding ScrollViewer.IsDeferredScrollingEnabled}"
+                            IsHorizontalRailEnabled="{TemplateBinding ScrollViewer.IsHorizontalRailEnabled}"
+                            IsHorizontalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsHorizontalScrollChainingEnabled}"
+                            IsVerticalRailEnabled="{TemplateBinding ScrollViewer.IsVerticalRailEnabled}"
+                            IsVerticalScrollChainingEnabled="{TemplateBinding ScrollViewer.IsVerticalScrollChainingEnabled}"
+                            TabNavigation="{TemplateBinding TabNavigation}"
+                            VerticalScrollBarVisibility="{TemplateBinding ScrollViewer.VerticalScrollBarVisibility}"
+                            VerticalScrollMode="{TemplateBinding ScrollViewer.VerticalScrollMode}"
+                            ZoomMode="{TemplateBinding ScrollViewer.ZoomMode}"
+                            Margin="0,0,5,0"
+                            Style="{StaticResource TabScrollViewerStyle}">
 
-                                <ItemsPresenter x:Name="TabsItemsPresenter"
+                            <ItemsPresenter x:Name="TabsItemsPresenter"
                                     Padding="{TemplateBinding Padding}" />
 
-                            </ScrollViewer>
-                            <Path
-                                Margin="-5,0,0,0"
-                                VerticalAlignment="Bottom"
-                                Width="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
-                                Height="{Binding Source={ThemeResource OverlayCornerRadius},Path=BottomRight}"
-                                Fill="{TemplateBinding Background}">
-                                <Path.Data>
-                                    <RectangleGeometry Rect="0,0,100,100"/>
-                                </Path.Data>
-                            </Path>
-                        </StackPanel>
+                        </ScrollViewer>
                     </Border>
-
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
