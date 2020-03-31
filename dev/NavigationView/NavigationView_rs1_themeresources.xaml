@@ -246,6 +246,7 @@
     <x:String x:Key="NavigationViewItemExpandedGlyph">&#xE70D;</x:String>
 
     <Thickness x:Key="NavigationViewItemSeparatorMargin">16,10</Thickness>
+    <Thickness x:Key="NavigationViewCompactItemSeparatorMargin">16,10</Thickness>
     <x:Double x:Key="NavigationViewItemSeparatorHeight">1</x:Double>
     <Thickness x:Key="TopNavigationViewItemSeparatorMargin">10,0</Thickness>
     <x:Double x:Key="TopNavigationViewItemSeparatorWidth">1</x:Double>

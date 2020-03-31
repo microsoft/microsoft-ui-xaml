@@ -716,6 +716,11 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="NavigationSeparatorLineStates">
                                 <VisualState x:Name="HorizontalLine" />
+                                <VisualState x:Name="HorizontalLineCompact">
+                                    <VisualState.Setters>
+                                        <Setter Target="SeparatorLine.Margin" Value="{ThemeResource NavigationViewCompactItemSeparatorMargin}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="VerticalLine">
                                     <VisualState.Setters>
                                         <Setter Target="SeparatorLine.Height" Value="20" />
@@ -731,7 +736,7 @@
                             x:Name="SeparatorLine"
                             Height="{ThemeResource NavigationViewItemSeparatorHeight}"
                             Margin="{ThemeResource NavigationViewItemSeparatorMargin}"
-                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}" />
+                            Fill="{ThemeResource NavigationViewItemSeparatorForeground}" /> 
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
