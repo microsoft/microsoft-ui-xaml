@@ -113,16 +113,18 @@ runtimeclass NavigationViewBackRequestedEventArgs
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass NavigationViewExpandingEventArgs
+runtimeclass NavigationViewItemExpandingEventArgs
 {
     NavigationViewItemBase ExpandingItemContainer { get; };
+    Object ExpandingItem{ get; };
 }
 
 [WUXC_VERSION_PREVIEW]
 [webhosthidden]
-runtimeclass NavigationViewCollapsedEventArgs
+runtimeclass NavigationViewItemCollapsedEventArgs
 {
     NavigationViewItemBase CollapsedItemContainer { get; };
+    Object CollapsedItem{ get; };
 }
 
 [WUXC_VERSION_RS5]
@@ -287,8 +289,8 @@ unsealed runtimeclass NavigationView : Windows.UI.Xaml.Controls.ContentControl
 
     [WUXC_VERSION_PREVIEW]
     {
-        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewExpandingEventArgs> Expanding;
-        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewCollapsedEventArgs> Collapsed;
+        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemExpandingEventArgs> Expanding;
+        event Windows.Foundation.TypedEventHandler<NavigationView, NavigationViewItemCollapsedEventArgs> Collapsed;
 
         void Expand(NavigationViewItem item);
         void Collapse(NavigationViewItem item);

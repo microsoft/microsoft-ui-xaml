@@ -27,8 +27,8 @@
 #include "ElementFactoryGetArgs.h"
 #include "ElementFactoryRecycleArgs.h"
 #include <ItemsRepeater.common.h>
-#include "NavigationViewExpandingEventArgs.h"
-#include "NavigationViewCollapsedEventArgs.h"
+#include "NavigationViewItemExpandingEventArgs.h"
+#include "NavigationViewItemCollapsedEventArgs.h"
 
 static constexpr auto c_togglePaneButtonName = L"TogglePaneButton"sv;
 static constexpr auto c_paneTitleHolderFrameworkElement = L"PaneTitleHolder"sv;
@@ -2434,44 +2434,14 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
 {
     if (container)
     {
-        if (IsTopNavigationView())
+        if (auto const nvib = container.try_as<winrt::NavigationViewItemBase>())
         {
-            // Search topnav first, if not found, search overflow
-            if (auto ir = m_topNavRepeater.get())
+            if (auto const parentRepeater = GetParentItemsRepeaterForContainer(nvib))
             {
-                if (auto element = container.try_as<winrt::UIElement>())
+                auto containerIndex = parentRepeater.GetElementIndex(nvib);
+                if (containerIndex)
                 {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-
-            if (auto ir = m_topNavRepeaterOverflowView.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    auto index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (auto ir = m_leftNavRepeater.get())
-            {
-                if (auto element = container.try_as<winrt::UIElement>())
-                {
-                    int index = ir.GetElementIndex(element);
-                    if (index != -1)
-                    {
-                        return GetItemFromIndex(ir, index);
-                    }
+                    return GetItemFromIndex(parentRepeater, containerIndex);
                 }
             }
         }
@@ -4840,15 +4810,17 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
 
 void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewExpandingEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemExpandingEventArgs>();
     eventArgs->ExpandingItemContainer(container);
+    eventArgs->NavigationView(*this);
     m_expandingEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewCollapsedEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemCollapsedEventArgs>();
     eventArgs->CollapsedItemContainer(container);
+    eventArgs->NavigationView(*this);
     m_collapsedEventSource(*this, *eventArgs);
 }
 

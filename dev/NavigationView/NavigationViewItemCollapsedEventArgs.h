@@ -3,16 +3,21 @@
 
 #pragma once
 
-#include "NavigationViewCollapsedEventArgs.g.h"
+#include "NavigationViewItemCollapsedEventArgs.g.h"
 #include "NavigationViewItemBase.h"
 
-class NavigationViewCollapsedEventArgs :
-    public ReferenceTracker<NavigationViewCollapsedEventArgs, winrt::implementation::NavigationViewCollapsedEventArgsT, winrt::composing, winrt::composable>
+class NavigationViewItemCollapsedEventArgs :
+    public ReferenceTracker<NavigationViewItemCollapsedEventArgs, winrt::implementation::NavigationViewItemCollapsedEventArgsT, winrt::composing, winrt::composable>
 {
 public:
     winrt::NavigationViewItemBase CollapsedItemContainer();
     void CollapsedItemContainer(winrt::NavigationViewItemBase const& value);
 
+    winrt::IInspectable CollapsedItem();
+
+    void NavigationView(const winrt::NavigationView& navigationView);
+
 private:
     tracker_ref<winrt::NavigationViewItemBase> m_collapsedItemContainer{ this };
+    tracker_ref<winrt::NavigationView> m_navigationView{ this };
 };
