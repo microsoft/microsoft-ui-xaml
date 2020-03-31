@@ -47,38 +47,37 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
         {
             using (var setup = new TestSetupHelper("ProgressRing Tests"))
             {
-                Log.Comment("Verify all properties are set to false by default for testing");
+                Log.Comment("Verify all IsActive property is set to true by default for testing");
 
-                ToggleButton isIndeterminateCheckBox = FindElement.ByName<ToggleButton>("ShowIsDeterminateCheckBox");
+                ToggleButton isActiveCheckBox = FindElement.ByName<ToggleButton>("ShowIsActiveCheckBox");
 
-                TextBlock isIndeterminateText = FindElement.ByName<TextBlock>("ShowIsDeterminateText");
+                TextBlock isActiveText = FindElement.ByName<TextBlock>("ShowIsActiveText");
                 TextBlock isPlayingText = FindElement.ByName<TextBlock>("IsPlayingText");
                 TextBlock visualStateText = FindElement.ByName<TextBlock>("VisualStateText");
 
-                Verify.IsFalse(Convert.ToBoolean(isIndeterminateText.DocumentText));
+                Verify.IsTrue(Convert.ToBoolean(isActiveText.DocumentText));
 
-                Log.Comment("All properties to false updates ProgressBar to Determinate");
+                Log.Comment("IsActive set to true updates ProgressRing to Active state");
 
-                Verify.AreEqual(visualStateText.DocumentText, "Determinate");
-
-                Log.Comment("Verify Lottie animation is inactive when in Determinate state (LottieRoot is hidden)");
-
-                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
-
-                Log.Comment("IsIndeterminate = true updates ProgressBar to Indeterminate visual state");
-
-                isIndeterminateCheckBox.ToggleAndWait();
-
-                Verify.IsTrue(Convert.ToBoolean(isIndeterminateText.DocumentText));
-                Verify.AreEqual(visualStateText.DocumentText, "Indeterminate");
+                Verify.AreEqual(visualStateText.DocumentText, "Active");
 
                 // Lottie animations only support Windows versions rs5 and above
                 if (PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone5))
                 {
-                    Log.Comment("Verify Lottie animation is active when in Indeterminate state");
+                    Log.Comment("Verify Lottie animation is playing when in Active state");
 
                     Verify.IsTrue(Convert.ToBoolean(isPlayingText.DocumentText));
                 }
+
+                isActiveCheckBox.ToggleAndWait();
+
+                Log.Comment("IsActive set to false updates ProgressRing to Inactive state");
+
+                Verify.AreEqual(visualStateText.DocumentText, "Inactive");
+
+                Log.Comment("Verify Lottie animation is not playing when in Inactive state");
+
+                Verify.IsFalse(Convert.ToBoolean(isPlayingText.DocumentText));
             }
         }
     }
