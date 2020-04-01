@@ -1,7 +1,7 @@
 ﻿namespace MU_XC_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 {
@@ -19,7 +19,7 @@ unsealed runtimeclass ProgressRing : Windows.UI.Xaml.Controls.Control
 namespace MU_XAP_NAMESPACE
 {
 
-[WUXC_VERSION_PREVIEW]
+[WUXC_VERSION_MUXONLY]
 [webhosthidden]
 unsealed runtimeclass ProgressRingAutomationPeer : Windows.UI.Xaml.Automation.Peers.FrameworkElementAutomationPeer
 {
