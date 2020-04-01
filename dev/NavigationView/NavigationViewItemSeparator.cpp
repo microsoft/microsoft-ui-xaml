@@ -92,7 +92,7 @@ void NavigationViewItemSeparator::UpdateIsClosedCompact(bool updateVisualState)
 
         if (updateVisualState)
         {
-            UpdateVisualState(false);
+            UpdateVisualState(false /*useTransition*/);
         }
     }
 }
