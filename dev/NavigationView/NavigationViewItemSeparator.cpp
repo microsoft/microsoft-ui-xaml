@@ -30,11 +30,6 @@ void NavigationViewItemSeparator::UpdateVisualState(bool useTransitions)
     }
 }
 
-void NavigationViewItemSeparator::OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args)
-{
-    UpdateIsClosedCompact(true);
-}
-
 void NavigationViewItemSeparator::OnApplyTemplate()
 {
     // Stop UpdateVisualState before template is applied. Otherwise the visual may not the same as we expect
@@ -71,6 +66,11 @@ void NavigationViewItemSeparator::OnNavigationViewItemBaseDepthChanged()
     UpdateItemIndentation();
 }
 
+void NavigationViewItemSeparator::OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/)
+{
+    UpdateIsClosedCompact(true);
+}
+
 void NavigationViewItemSeparator::UpdateItemIndentation()
 {
     // Update item indentation based on its depth
@@ -86,13 +86,13 @@ void NavigationViewItemSeparator::UpdateIsClosedCompact(bool updateVisualState)
 {
     if (auto splitView = GetSplitView())
     {
-        // Check if the pane is closed and if the splitview is in either compact mode.
+        // Check if the pane is closed and if the splitview is in either compact mode
         m_isClosedCompact = !splitView.IsPaneOpen()
             && (splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactOverlay || splitView.DisplayMode() == winrt::SplitViewDisplayMode::CompactInline);
 
         if (updateVisualState)
         {
-            UpdateVisualState(false /*useTransitions*/);
+            UpdateVisualState(false);
         }
     }
 }

@@ -21,7 +21,7 @@ private:
     void UpdateVisualState(bool useTransitions);
     void UpdateItemIndentation();
 
-    void OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& args);
+    void OnSplitViewPropertyChanged(const winrt::DependencyObject& /*sender*/, const winrt::DependencyProperty& /*args*/);
     void UpdateIsClosedCompact(bool updateVisualState);
 
     bool m_appliedTemplate{ false };
