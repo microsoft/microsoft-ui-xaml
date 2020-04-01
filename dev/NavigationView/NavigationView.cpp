@@ -1373,16 +1373,16 @@ void NavigationView::UpdatePaneButtonsWidths()
         return CompactPaneLength();
     }();
 
-    if (const auto backButton = m_backButton.get())
+    if (auto&& backButton = m_backButton.get())
     {
         backButton.Width(newButtonWidths);
     }
     if (auto&& paneToggleButton = m_paneToggleButton.get())
     {
         paneToggleButton.MinWidth(newButtonWidths);
-        if (const auto&& iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
+        if (auto&& iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
         {
-            if (const auto&& paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
+            if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
             {
                 auto width = paneToggleButtonIconColumn.Width();
                 width.Value = newButtonWidths;
