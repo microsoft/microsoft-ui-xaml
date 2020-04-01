@@ -25,9 +25,6 @@ namespace MUXControlsTestApp
     {
         public ScrollerPage()
         {
-            // Some pages we will navigate to will need the resources, so lets load them now!
-            App.AppendResourceDictionaryToMergedDictionaries(App.AdditionStylesXaml);
-            
             LogController.InitializeLogging();
 
             this.InitializeComponent();

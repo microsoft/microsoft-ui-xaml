@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License. See LICENSE in the project root for license information.
 
 using System;
@@ -31,15 +31,9 @@ namespace MUXControlsTestApp
 {
     /// <summary>
     /// Provides application-specific behavior to supplement the default Application class.
-    /// This is defined globally to be able to remove it later.
     /// </summary>
     sealed partial class App : Application
     {
-        /// <summary>
-        /// AdditionalStyles.xaml file for ScrollViewer tests
-        /// </summary>
-        public static ResourceDictionary AdditionStylesXaml = new ResourceDictionary();
-        
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -200,9 +194,9 @@ namespace MUXControlsTestApp
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
             _isRootCreated = false;
-            // Load the resource dictionary now
-            Application.LoadComponent(AdditionStylesXaml, new Uri(
-                            "ms-appx:///Themes/AdditionalStyles.xaml"), ComponentResourceLocation.Nested);
+#if FEATURE_SCROLLER_ENABLED // Tracked by Issue 1043
+            AppendResourceToMergedDictionaries("AdditionalStyles.xaml");
+#endif
 
             // For test purposes, add styles that disable long animations.
             DisableLongAnimations = true;
@@ -328,26 +322,6 @@ namespace MUXControlsTestApp
                 "ms-appx:///Themes/"
                 + resource), ComponentResourceLocation.Nested);
             (targetDictionary ?? Application.Current.Resources).MergedDictionaries.Add(resourceDictionary);
-        }
-
-        public static void AppendResourceDictionaryToMergedDictionaries(ResourceDictionary dictionary)
-        {
-            // Check for null and dictionary not present
-            if (!(dictionary is null) && 
-                !Application.Current.Resources.MergedDictionaries.Contains(dictionary))
-            {
-                Application.Current.Resources.MergedDictionaries.Add(dictionary);
-            }
-        }
-
-        public static void RemoveResourceDictionaryFromMergedDictionaries(ResourceDictionary dictionary)
-        {
-            // Check for null and dictionary is in list
-            if(!(dictionary is null) &&
-                Application.Current.Resources.MergedDictionaries.Contains(dictionary))
-            { 
-                Application.Current.Resources.MergedDictionaries.Remove(dictionary);
-            }
         }
     }
 }
