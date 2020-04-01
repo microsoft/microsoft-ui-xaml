@@ -26,6 +26,12 @@ foreach($procName in $processNamesToStop)
 Write-Host "All processes running after attempting to kill unwanted processes:"
 Get-Process
 
+$platform = $env:testbuildplatform
+if(!$platform)
+{
+    $platform = "x86"
+}
+
 function UninstallApps {
     Param([string[]]$appsToUninstall)
 
