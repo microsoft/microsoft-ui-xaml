@@ -23,8 +23,22 @@ public:
 
     winrt::UIElement GetSelectionIndicator();
 
+    void UpdateContentLeftIndentation(double leftIndentation);
+
+    void RotateExpandCollapseChevron(bool isExpanded);
+
 private:
     NavigationViewItem * GetNavigationViewItem();
+    void UpdateMargin();
 
     NavigationViewItemHelper<NavigationViewItemPresenter> m_helper{ this };
+    tracker_ref<winrt::Grid> m_contentGrid{ this };
+    tracker_ref<winrt::Grid> m_expandCollapseChevron{ this };
+
+    winrt::event_token m_expandCollapseChevronTappedToken{};
+
+    double m_leftIndentation{ 0 };
+
+    tracker_ref<winrt::Storyboard> m_chevronExpandedStoryboard{ this };
+    tracker_ref<winrt::Storyboard> m_chevronCollapsedStoryboard{ this };
 };

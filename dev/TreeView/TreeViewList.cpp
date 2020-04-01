@@ -100,7 +100,18 @@ void TreeViewList::OnContainerContentChanging(const winrt::IInspectable& /*sende
     {
         auto targetItem = args.ItemContainer().as<winrt::TreeViewItem>();
         auto targetNode = NodeFromContainer(targetItem);
+
         auto treeViewItem = winrt::get_self<TreeViewItem>(targetItem);
+        auto treeViewNode = winrt::get_self<TreeViewNode>(targetNode);
+
+        if (auto itemsSource = targetItem.ItemsSource())
+        {
+            if (treeViewNode->ItemsSource() == nullptr)
+            {
+                treeViewItem->SetItemsSource(targetNode, itemsSource);
+            }
+        }   
+
         treeViewItem->UpdateIndentation(targetNode.Depth());
         treeViewItem->UpdateSelectionVisual(winrt::get_self<TreeViewNode>(targetNode)->SelectionState());
     }

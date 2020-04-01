@@ -91,6 +91,7 @@ unsealed runtimeclass NumberBox : Windows.UI.Xaml.Controls.Control
     static Windows.UI.Xaml.DependencyProperty LargeChangeProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty TextProperty{ get; };
 
+    [MUX_PROPERTY_CHANGED_CALLBACK(TRUE)]
     static Windows.UI.Xaml.DependencyProperty HeaderProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty HeaderTemplateProperty{ get; };
     static Windows.UI.Xaml.DependencyProperty PlaceholderTextProperty{ get; };
