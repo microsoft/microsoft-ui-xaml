@@ -5,6 +5,11 @@
 #include "common.h"
 #include "NavigationViewItemExpandingEventArgs.h"
 
+NavigationViewItemExpandingEventArgs::NavigationViewItemExpandingEventArgs(const winrt::NavigationView& navigationView)
+{
+    m_navigationView.set(navigationView);
+}
+
 winrt::NavigationViewItemBase NavigationViewItemExpandingEventArgs::ExpandingItemContainer()
 {
     return m_expandingItemContainer.get();
@@ -17,15 +22,16 @@ void NavigationViewItemExpandingEventArgs::ExpandingItemContainer(winrt::Navigat
 
 winrt::IInspectable NavigationViewItemExpandingEventArgs::ExpandingItem()
 {
+    if (auto const expandingItem = m_expandingItem.get())
+    {
+        return expandingItem;
+    }
+
     if (auto const nv = m_navigationView.get())
     {
-        return nv.MenuItemFromContainer(m_expandingItemContainer.get());
+        m_expandingItem.set(nv.MenuItemFromContainer(m_expandingItemContainer.get()));
+        return m_expandingItem.get();
     }
+
     return nullptr;
 }
-
-void NavigationViewItemExpandingEventArgs::NavigationView(winrt::NavigationView const& navigationView)
-{
-    m_navigationView.set(navigationView);
-}
-

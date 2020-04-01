@@ -5,6 +5,11 @@
 #include "common.h"
 #include "NavigationViewItemCollapsedEventArgs.h"
 
+NavigationViewItemCollapsedEventArgs::NavigationViewItemCollapsedEventArgs(const winrt::NavigationView& navigationView)
+{
+    m_navigationView.set(navigationView);
+}
+
 winrt::NavigationViewItemBase NavigationViewItemCollapsedEventArgs::CollapsedItemContainer()
 {
     return m_collapsedItemContainer.get();
@@ -17,14 +22,16 @@ void NavigationViewItemCollapsedEventArgs::CollapsedItemContainer(winrt::Navigat
 
 winrt::IInspectable NavigationViewItemCollapsedEventArgs::CollapsedItem()
 {
+    if (auto const collapsedItem = m_collapsedItem.get())
+    {
+        return collapsedItem;
+    }
+
     if (auto const nv = m_navigationView.get())
     {
-        return nv.MenuItemFromContainer(m_collapsedItemContainer.get());
+        m_collapsedItem.set(nv.MenuItemFromContainer(m_collapsedItemContainer.get()));
+        return m_collapsedItem.get();
     }
-    return nullptr;
-}
 
-void NavigationViewItemCollapsedEventArgs::NavigationView(winrt::NavigationView const& navigationView)
-{
-    m_navigationView.set(navigationView);
+    return nullptr;
 }

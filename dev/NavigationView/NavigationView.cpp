@@ -2438,7 +2438,7 @@ winrt::IInspectable NavigationView::MenuItemFromContainer(winrt::DependencyObjec
         {
             if (auto const parentRepeater = GetParentItemsRepeaterForContainer(nvib))
             {
-                auto containerIndex = parentRepeater.GetElementIndex(nvib);
+                auto const containerIndex = parentRepeater.GetElementIndex(nvib);
                 if (containerIndex >= 0)
                 {
                     return GetItemFromIndex(parentRepeater, containerIndex);
@@ -4810,17 +4810,15 @@ void NavigationView::CollapseAllMenuItemsUnderRepeater(const winrt::ItemsRepeate
 
 void NavigationView::RaiseExpandingEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewItemExpandingEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemExpandingEventArgs>(*this);
     eventArgs->ExpandingItemContainer(container);
-    eventArgs->NavigationView(*this);
     m_expandingEventSource(*this, *eventArgs);
 }
 
 void NavigationView::RaiseCollapsedEvent(const winrt::NavigationViewItemBase& container)
 {
-    auto eventArgs = winrt::make_self<NavigationViewItemCollapsedEventArgs>();
+    auto eventArgs = winrt::make_self<NavigationViewItemCollapsedEventArgs>(*this);
     eventArgs->CollapsedItemContainer(container);
-    eventArgs->NavigationView(*this);
     m_collapsedEventSource(*this, *eventArgs);
 }
 
