@@ -136,13 +136,20 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
                 }
 
                 // Enumerabl.Range returns IEnumerable which does not provide IndexOf
-                var crashingDataSource = new ItemsSourceView(Enumerable.Range(0, 10));
+                var testingItemsSourceView = new ItemsSourceView(Enumerable.Range(0, 10));
                 var index = -1;
                 try
                 {
-                    index = crashingDataSource.IndexOf(0);
+                    index = testingItemsSourceView.IndexOf(0);
                 }catch(Exception){ }
                 Verify.AreEqual(-1, index);
+
+
+                var nullContainingEnumerable = new CustomEnumerable();
+                testingItemsSourceView = new ItemsSourceView(nullContainingEnumerable);
+
+                Verify.AreEqual(1,testingItemsSourceView.IndexOf(null));
+
             });
         }
 
@@ -409,6 +416,29 @@ namespace Windows.UI.Xaml.Tests.MUXControls.ApiTests.RepeaterTests
             public int IndexFromKey(string id)
             {
                 return int.Parse(id);
+            }
+        }
+
+        class CustomEnumerable : IEnumerable<object>
+        {
+            private List<string> myList = new List<string>();
+            
+            public CustomEnumerable()
+            {
+                myList.Add("text");
+                myList.Add(null);
+                myList.Add("foobar");
+                myList.Add("WinUI is awesome");
+            }
+
+            public IEnumerator<object> GetEnumerator()
+            {
+                return myList.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return myList.GetEnumerator();
             }
         }
     }

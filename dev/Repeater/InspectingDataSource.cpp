@@ -104,7 +104,7 @@ int InspectingDataSource::IndexFromKeyCore(winrt::hstring const& id)
 int InspectingDataSource::IndexOfCore(winrt::IInspectable const& value)
 {
     int index = -1;
-    if (m_vector && value)
+    if (m_vector)
     {
         auto v = static_cast<uint32_t>(-1);
         if (m_vector.get().IndexOf(value, v))
