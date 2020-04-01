@@ -46,7 +46,8 @@ winrt::hstring NavigationViewItemAutomationPeer::GetNameCore()
 winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::PatternInterface const& pattern)
 {
     if (pattern == winrt::PatternInterface::SelectionItem ||
-        pattern == winrt::PatternInterface::Invoke)
+        pattern == winrt::PatternInterface::Invoke ||
+        pattern == winrt::PatternInterface::ExpandCollapse)
     {
         return *this;
     }
@@ -54,6 +55,10 @@ winrt::IInspectable NavigationViewItemAutomationPeer::GetPatternCore(winrt::Patt
     return __super::GetPatternCore(pattern);
 }
 
+winrt::hstring  NavigationViewItemAutomationPeer::GetClassNameCore()
+{
+    return winrt::hstring_name_of<winrt::NavigationViewItem>();
+}
 
 winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationControlTypeCore()
 {
@@ -65,6 +70,8 @@ winrt::AutomationControlType NavigationViewItemAutomationPeer::GetAutomationCont
     }
     else
     {
+        // TODO: Should this be ListItem in minimal mode and
+        // TreeItem otherwise.
         return winrt::AutomationControlType::ListItem;
     }
 }
@@ -84,7 +91,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionInSetCore()
         if (auto navigationView = GetParentNavigationView())
         {
             auto topDataProvider = winrt::get_self<NavigationView>(navigationView)->GetTopDataProvider();
-            positionInSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow() 
+            positionInSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow()
                 ? topDataProvider.GetOverflowItems() : topDataProvider.GetPrimaryItems(), AutomationOutput::Position);
         }
     }
@@ -110,7 +117,7 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
         if (auto navview = GetParentNavigationView())
         {
             auto topNavDataProvider = winrt::get_self<NavigationView>(navview)->GetTopDataProvider();
-            sizeOfSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow() 
+            sizeOfSet = GetPositionOrSetCountInTopNavHelper(IsOnTopNavigationOverflow()
                 ? topNavDataProvider.GetOverflowItems() : topNavDataProvider.GetPrimaryItems(), AutomationOutput::Size);
 
         }
@@ -121,6 +128,17 @@ int32_t NavigationViewItemAutomationPeer::GetSizeOfSetCore()
     }
 
     return sizeOfSet;
+}
+
+int32_t NavigationViewItemAutomationPeer::GetLevelCore()
+{
+    int32_t level = 0;
+    if (winrt::NavigationViewItemBase navigationViewItem = Owner().try_as<winrt::NavigationViewItemBase>())
+    {
+        return winrt::get_self<NavigationViewItemBase>(navigationViewItem)->Depth();
+    }
+
+    return level;
 }
 
 void NavigationViewItemAutomationPeer::Invoke()
@@ -140,6 +158,61 @@ void NavigationViewItemAutomationPeer::Invoke()
         }
     }
 }
+
+// IExpandCollapseProvider 
+winrt::ExpandCollapseState NavigationViewItemAutomationPeer::ExpandCollapseState()
+{
+    auto state = winrt::ExpandCollapseState::LeafNode;
+    if (winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>())
+    {
+        state = winrt::get_self<NavigationViewItem>(navigationViewItem)->IsExpanded() ?
+            winrt::ExpandCollapseState::Expanded :
+            winrt::ExpandCollapseState::Collapsed;
+    }
+
+    return state;
+}
+
+void NavigationViewItemAutomationPeer::Collapse()
+{
+    if (auto const navView = GetParentNavigationView())
+    {
+        if (winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>())
+        {
+            navView.Collapse(navigationViewItem);
+            RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState::Collapsed);
+        }
+    }
+}
+
+void NavigationViewItemAutomationPeer::Expand()
+{
+    if (auto const navView = GetParentNavigationView())
+    {
+        if (winrt::NavigationViewItem navigationViewItem = Owner().try_as<winrt::NavigationViewItem>())
+        {
+            navView.Expand(navigationViewItem);
+            RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState::Expanded);
+        }
+    }
+}
+
+void NavigationViewItemAutomationPeer::RaiseExpandCollapseAutomationEvent(winrt::ExpandCollapseState newState)
+{
+    if (winrt::AutomationPeer::ListenerExists(winrt::AutomationEvents::PropertyChanged))
+    {
+        winrt::ExpandCollapseState oldState = (newState == winrt::ExpandCollapseState::Expanded) ?
+            winrt::ExpandCollapseState::Collapsed :
+            winrt::ExpandCollapseState::Expanded;
+
+        // box_value(oldState) doesn't work here, use ReferenceWithABIRuntimeClassName to make Narrator can unbox it.
+        RaisePropertyChangedEvent(winrt::ExpandCollapsePatternIdentifiers::ExpandCollapseStateProperty(),
+            box_value(oldState),
+            box_value(newState));
+    }
+}
+
+
 
 winrt::NavigationView NavigationViewItemAutomationPeer::GetParentNavigationView()
 {
@@ -213,7 +286,7 @@ NavigationViewRepeaterPosition NavigationViewItemAutomationPeer::GetNavigationVi
 int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(AutomationOutput automationOutput)
 {
     int returnValue = 0;
-    
+
     if (auto const navview = GetParentNavigationView())
     {
         if (auto const repeater = winrt::get_self<NavigationView>(navview)->LeftNavRepeater())
@@ -246,7 +319,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
                                 {
                                     returnValue++;
 
-                                    if (child.try_as<winrt::NavigationViewItemAutomationPeer>() == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
+                                    if (winrt::FrameworkElementAutomationPeer::FromElement(navviewItem) == static_cast<winrt::NavigationViewItemAutomationPeer>(*this))
                                     {
                                         if (automationOutput == AutomationOutput::Position)
                                         {
@@ -277,7 +350,7 @@ int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInLeftNavHelper(A
 int32_t NavigationViewItemAutomationPeer::GetPositionOrSetCountInTopNavHelper(winrt::IVector<winrt::IInspectable> navigationViewElements, AutomationOutput automationOutput)
 {
     int32_t returnValue = 0;
-    
+
     if (auto const navview = GetParentNavigationView())
     {
         bool itemFound = false;

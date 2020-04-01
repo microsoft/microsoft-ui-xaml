@@ -1,6 +1,10 @@
 setlocal ENABLEDELAYEDEXPANSION
 
+echo %TIME%
+
 robocopy %HELIX_CORRELATION_PAYLOAD% . /s /NP > NUL
+
+echo %TIME%
 
 reg add HKLM\Software\Policies\Microsoft\Windows\Appx /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
 
@@ -12,12 +16,17 @@ FOR %%A IN (MUXControlsTestApp.exe,IXMPTestApp.exe,NugetPackageTestApp.exe,Nuget
   %systemroot%\sysnative\cmd.exe /c reg add "HKLM\Software\Microsoft\Windows\Windows Error Reporting\LocalDumps\%%A" /v DumpCount /t REG_DWORD /d 10 /f
 )
 
+echo %TIME%
+
 :: kill dhandler, which is a tool designed to handle unexpected windows appearing. But since our tests are 
 :: expected to show UI we don't want it running.
 taskkill -f -im dhandler.exe
 
+echo %TIME%
 powershell -ExecutionPolicy Bypass .\EnsureMachineState.ps1
+echo %TIME%
 powershell -ExecutionPolicy Bypass .\InstallTestAppDependencies.ps1
+echo %TIME%
 
 set testBinaryCandidates=MUXControls.Test.dll MUXControlsTestApp.appx IXMPTestApp.appx MUXControls.ReleaseTest.dll
 set testBinaries=
@@ -27,7 +36,9 @@ for %%B in (%testBinaryCandidates%) do (
     )
 )
 
+echo %TIME%
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %*
+echo %TIME%
 
 move te.wtl te_original.wtl
 
@@ -45,7 +56,9 @@ rem The first time, we'll just re-run failed tests once.  In many cases, tests f
 rem a single re-run will be sufficient to detect many unreliable tests.
 if "%FailedTestQuery%" == "" goto :SkipReruns
 
+echo %TIME%
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
+echo %TIME%
 
 move te.wtl te_rerun.wtl
 
@@ -63,7 +76,9 @@ for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputF
 
 if "%FailedTestQuery%" == "" goto :SkipReruns
 
+echo %TIME%
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
+echo %TIME%
 
 move te.wtl te_rerun_multiple.wtl
 
@@ -73,9 +88,13 @@ powershell -ExecutionPolicy Bypass .\CopyVisualTreeMasters.ps1
 
 :SkipReruns
 
+echo %TIME%
 powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl %testnameprefix%
 powershell -ExecutionPolicy Bypass .\ConvertWttLogToXUnit.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl testResults.xml %testnameprefix%
+echo %TIME%
 
 copy /y *_subresults.json %HELIX_WORKITEM_UPLOAD_ROOT%
 
 type testResults.xml
+
+echo %TIME%

@@ -5,9 +5,11 @@
 
 #include "NavigationViewItemBase.g.h"
 #include "NavigationViewHelper.h"
+#include "NavigationViewItemBase.properties.h"
 
 class NavigationViewItemBase :
-    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>
+    public ReferenceTracker<NavigationViewItemBase, winrt::implementation::NavigationViewItemBaseT, winrt::composable>,
+    public NavigationViewItemBaseProperties
 {
 public:
 
@@ -41,18 +43,31 @@ public:
         __super::OnLostFocus(e);
     }
 
-    virtual void OnNavigationViewRepeaterPositionChanged() {}
-
     NavigationViewRepeaterPosition Position();
     void Position(NavigationViewRepeaterPosition value);
+    virtual void OnNavigationViewRepeaterPositionChanged() {}
+
+    void Depth(int depth);
+    int Depth();
+    virtual void OnNavigationViewItemBaseDepthChanged() {}
     
     winrt::NavigationView GetNavigationView();
     winrt::SplitView GetSplitView();
     void SetNavigationViewParent(winrt::NavigationView const& navigationView);
+
+    // TODO: Constant is a temporary mesure. Potentially expose using TemplateSettings.
+    static constexpr int c_itemIndentation = 25;
+
+    void IsTopLevelItem(bool isTopLevelItem) { m_isTopLevelItem = isTopLevelItem; };
+    bool IsTopLevelItem() { return m_isTopLevelItem; };
+
 protected:
+
     winrt::weak_ref<winrt::NavigationView> m_navigationView{ nullptr };
 
 private:
-    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
 
+    NavigationViewRepeaterPosition m_position{ NavigationViewRepeaterPosition::LeftNav };
+    int m_depth{ 0 };
+    bool m_isTopLevelItem{ false };
 };

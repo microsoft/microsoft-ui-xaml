@@ -7,6 +7,11 @@
 #include "NavigationViewItem.h"
 #include "SharedHelpers.h"
 
+static constexpr auto c_contentGrid = L"PresenterContentRootGrid"sv;
+static constexpr auto c_expandCollapseChevron = L"ExpandCollapseChevron"sv;
+static constexpr auto c_expandCollapseRotateExpandedStoryboard = L"ExpandCollapseRotateExpandedStoryboard"sv;
+static constexpr auto c_expandCollapseRotateCollapsedStoryboard = L"ExpandCollapseRotateCollapsedStoryboard"sv;
+
 NavigationViewItemPresenter::NavigationViewItemPresenter()
 {
     SetDefaultStyleKey(this);
@@ -16,9 +21,44 @@ void NavigationViewItemPresenter::OnApplyTemplate()
 {
     // Retrieve pointers to stable controls 
     m_helper.Init(*this);
+
+    if (auto contentGrid = GetTemplateChildT<winrt::Grid>(c_contentGrid, *this))
+    {
+        m_contentGrid.set(contentGrid);
+    }
+
     if (auto navigationViewItem = GetNavigationViewItem())
     {
+        if (auto const expandCollapseChevron = GetTemplateChildT<winrt::Grid>(c_expandCollapseChevron, *this))
+        {
+            m_expandCollapseChevron.set(expandCollapseChevron);
+            m_expandCollapseChevronTappedToken = expandCollapseChevron.Tapped({ navigationViewItem, &NavigationViewItem::OnExpandCollapseChevronTapped });
+        }
+
         navigationViewItem->UpdateVisualStateNoTransition();
+    }
+
+    m_chevronExpandedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateExpandedStoryboard, *this));
+    m_chevronCollapsedStoryboard.set(GetTemplateChildT<winrt::Storyboard>(c_expandCollapseRotateCollapsedStoryboard, *this));
+
+    UpdateMargin();
+}
+
+void NavigationViewItemPresenter::RotateExpandCollapseChevron(bool isExpanded)
+{
+    if (isExpanded)
+    {
+        if (auto const openStoryboard = m_chevronExpandedStoryboard.get())
+        {
+            openStoryboard.Begin();
+        }
+    }
+    else
+    {
+        if (auto const closedStoryboard = m_chevronCollapsedStoryboard.get())
+        {
+            closedStoryboard.Begin();
+        }
     }
 }
 
@@ -54,4 +94,19 @@ NavigationViewItem* NavigationViewItemPresenter::GetNavigationViewItem()
         navigationViewItem = winrt::get_self<NavigationViewItem>(item);
     }
     return navigationViewItem;
+}
+
+void NavigationViewItemPresenter::UpdateContentLeftIndentation(double leftIndentation)
+{
+    m_leftIndentation = leftIndentation;
+    UpdateMargin();
+}
+
+void NavigationViewItemPresenter::UpdateMargin()
+{
+    if (auto const grid = m_contentGrid.get())
+    {
+        auto const oldGridMargin = grid.Margin();
+        grid.Margin({ m_leftIndentation, oldGridMargin.Top, oldGridMargin.Right, oldGridMargin.Bottom });
+    }
 }
