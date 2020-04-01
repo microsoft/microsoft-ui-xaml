@@ -25,7 +25,7 @@ TabViewItem::TabViewItem()
 void TabViewItem::OnApplyTemplate()
 {
     auto const templateSettings = winrt::get_self<TabViewItemTemplateSettings>(TabViewTemplateSettings());
-    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
+    auto popupRadius = unbox_value<winrt::CornerRadius>(ResourceAccessor::ResourceLookup(*this, box_value(c_overlayCornerRadiusKey)));
 
     templateSettings->LeftInsetRadiusMargin(winrt::Thickness({ -popupRadius.BottomLeft,0,0,0 }));
     templateSettings->RightInsetRadiusMargin(winrt::Thickness({0,0,-popupRadius.BottomRight,0}));
@@ -372,9 +372,4 @@ void TabViewItem::OnIconSourceChanged()
         templateSettings->IconElement(nullptr);
         winrt::VisualStateManager::GoToState(*this, L"NoIcon"sv, false);
     }
-}
-
-winrt::IInspectable TabViewItem::ResourceLookup(const winrt::Control& control, const winrt::IInspectable& key)
-{
-    return control.Resources().HasKey(key) ? control.Resources().Lookup(key) : winrt::Application::Current().Resources().TryLookup(key);
 }
