@@ -5,10 +5,11 @@ steps:
   - powershell: |
       # MakeAllAppx.cmd creates all appx files
       # Default parameters
-      $env:BUILDOUTPUT_OVERRIDE = "${{parameters.buildOutputDir}}\release\x86"
+      $env:BUILDOUTPUT_OVERRIDE = "${{parameters.buildOutputDir}}\$env:BUILDCONFIGURATION\$env:BUILDPLATFORM"
       & $env:Build_SourcesDirectory\build\NuSpecs\MakeAllAppx.cmd -builddate_yymm $env:BUILDDATE_YYMM -builddate_dd $env:BUILDDATE_DD -subversion $env:BUILDREVISION -verbose
       if ($lastexitcode -ne 0) {
-          Write-Host ##vso[task.logissue type=error;] Make AppxHelper $platform $config failed with exit code $lastexitcode
+          Write-Host "##vso[task.logissue type=error;] Make AppxHelper $platform $config failed with exit code $lastexitcode"
+          Write-Host "##vso[task.complete result=Failed;]"
           Exit 1
       }
     displayName: 'Make FrameworkPackages'
