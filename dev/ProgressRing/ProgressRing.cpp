@@ -34,12 +34,7 @@ void ProgressRing::OnApplyTemplate()
 {
     winrt::IControlProtected controlProtected{ *this };
 
-    m_player.set([this, controlProtected]()
-    {
-        auto const player = GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateAnimatedVisualPlayerName, controlProtected);
-
-        return player;
-    }());
+    m_player.set(GetTemplateChildT<winrt::AnimatedVisualPlayer>(s_IndeterminateAnimatedVisualPlayerName, controlProtected));
 
     SetAnimatedVisualPlayerSource();
     ChangeVisualState();
