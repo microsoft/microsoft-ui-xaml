@@ -80,11 +80,11 @@ void RadialGradientBrush::OnEllipseRadiusPropertyChanged(const winrt::Dependency
     }
 }
 
-void RadialGradientBrush::OnGradientOriginOffsetPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
+void RadialGradientBrush::OnGradientOriginPropertyChanged(const winrt::DependencyPropertyChangedEventArgs& args)
 {
     if (SharedHelpers::IsCompositionRadialGradientBrushAvailable())
     {
-        UpdateCompositionGradientOriginOffset();
+        UpdateCompositionGradientOrigin();
     }
 }
 
@@ -138,7 +138,7 @@ void RadialGradientBrush::EnsureCompositionBrush()
 
             UpdateCompositionGradientEllipseCenter();
             UpdateCompositionGradientEllipseRadius();
-            UpdateCompositionGradientOriginOffset();
+            UpdateCompositionGradientOrigin();
             UpdateCompositionGradientStops();
             UpdateCompositionGradientMappingMode();
             UpdateCompositionInterpolationSpace();
@@ -197,14 +197,16 @@ void RadialGradientBrush::UpdateCompositionGradientMappingMode()
     }
 }
 
-void RadialGradientBrush::UpdateCompositionGradientOriginOffset()
+void RadialGradientBrush::UpdateCompositionGradientOrigin()
 {
     MUX_ASSERT(SharedHelpers::IsCompositionRadialGradientBrushAvailable());
 
     if (const auto compositionGradientBrush = m_brush.try_as<winrt::CompositionRadialGradientBrush>())
     {
-        const auto gradientOriginOffset = GradientOriginOffset();
-        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOriginOffset.X, gradientOriginOffset.Y));
+        const auto gradientOrigin = GradientOrigin();
+        // This sets the gradient offset center to the top left corner
+        // Top Left is (-0.5,-0.5), center is (0,0)
+        compositionGradientBrush.GradientOriginOffset(winrt::float2(gradientOrigin.X - 0.5f, gradientOrigin.Y - 0.5f));
     }
 }
 
