@@ -48,38 +48,41 @@ void ColorSpectrum::OnApplyTemplate()
 {
     winrt::IControlProtected thisAsControlProtected = *this;
 
-    m_layoutRoot = GetTemplateChildT<winrt::Grid>(L"LayoutRoot", thisAsControlProtected);
-    m_sizingGrid = GetTemplateChildT<winrt::Grid>(L"SizingGrid", thisAsControlProtected);
-    m_spectrumRectangle = GetTemplateChildT<winrt::Rectangle>(L"SpectrumRectangle", thisAsControlProtected);
-    m_spectrumEllipse = GetTemplateChildT<winrt::Ellipse>(L"SpectrumEllipse", thisAsControlProtected);
-    m_spectrumOverlayRectangle = GetTemplateChildT<winrt::Rectangle>(L"SpectrumOverlayRectangle", thisAsControlProtected);
-    m_spectrumOverlayEllipse = GetTemplateChildT<winrt::Ellipse>(L"SpectrumOverlayEllipse", thisAsControlProtected);
-    m_inputTarget = GetTemplateChildT<winrt::FrameworkElement>(L"InputTarget", thisAsControlProtected);
-    m_selectionEllipsePanel = GetTemplateChildT<winrt::Panel>(L"SelectionEllipsePanel", thisAsControlProtected);
-    m_colorNameToolTip = GetTemplateChildT<winrt::ToolTip>(L"ColorNameToolTip", thisAsControlProtected);
+    m_layoutRoot.set(GetTemplateChildT<winrt::Grid>(L"LayoutRoot", thisAsControlProtected));
+    m_sizingGrid.set(GetTemplateChildT<winrt::Grid>(L"SizingGrid", thisAsControlProtected));
+    m_spectrumRectangle.set(GetTemplateChildT<winrt::Rectangle>(L"SpectrumRectangle", thisAsControlProtected));
+    m_spectrumEllipse.set(GetTemplateChildT<winrt::Ellipse>(L"SpectrumEllipse", thisAsControlProtected));
+    m_spectrumOverlayRectangle.set(GetTemplateChildT<winrt::Rectangle>(L"SpectrumOverlayRectangle", thisAsControlProtected));
+    m_spectrumOverlayEllipse.set(GetTemplateChildT<winrt::Ellipse>(L"SpectrumOverlayEllipse", thisAsControlProtected));
+    m_inputTarget.set(GetTemplateChildT<winrt::FrameworkElement>(L"InputTarget", thisAsControlProtected));
+    m_selectionEllipsePanel.set(GetTemplateChildT<winrt::Panel>(L"SelectionEllipsePanel", thisAsControlProtected));
+    m_colorNameToolTip.set(GetTemplateChildT<winrt::ToolTip>(L"ColorNameToolTip", thisAsControlProtected));
 
-    if (m_layoutRoot)
+    if (auto&& layoutRoot = m_layoutRoot.get())
     {
-        m_layoutRoot.SizeChanged({ this, &ColorSpectrum::OnLayoutRootSizeChanged });
+        layoutRoot.SizeChanged({ this, &ColorSpectrum::OnLayoutRootSizeChanged });
     }
 
-    if (m_inputTarget)
+    if (auto&& inputTarget = m_inputTarget.get())
     {
-        m_inputTarget.PointerEntered({ this, &ColorSpectrum::OnInputTargetPointerEntered });
-        m_inputTarget.PointerExited({ this, &ColorSpectrum::OnInputTargetPointerExited });
-        m_inputTarget.PointerPressed({ this, &ColorSpectrum::OnInputTargetPointerPressed });
-        m_inputTarget.PointerMoved({ this, &ColorSpectrum::OnInputTargetPointerMoved });
-        m_inputTarget.PointerReleased({ this, &ColorSpectrum::OnInputTargetPointerReleased });
+        inputTarget.PointerEntered({ this, &ColorSpectrum::OnInputTargetPointerEntered });
+        inputTarget.PointerExited({ this, &ColorSpectrum::OnInputTargetPointerExited });
+        inputTarget.PointerPressed({ this, &ColorSpectrum::OnInputTargetPointerPressed });
+        inputTarget.PointerMoved({ this, &ColorSpectrum::OnInputTargetPointerMoved });
+        inputTarget.PointerReleased({ this, &ColorSpectrum::OnInputTargetPointerReleased });
     }
 
-    if (m_colorNameToolTip && DownlevelHelper::ToDisplayNameExists())
+    if (DownlevelHelper::ToDisplayNameExists())
     {
-        m_colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(Color())));
+        if (auto&& colorNameToolTip = m_colorNameToolTip.get())
+        {
+            colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(Color())));
+        }
     }
 
-    if (m_selectionEllipsePanel)
+    if (auto&& selectionEllipsePanel = m_selectionEllipsePanel.get())
     {
-        m_selectionEllipsePanel.RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &ColorSpectrum::OnSelectionEllipseFlowDirectionChanged });
+        selectionEllipsePanel.RegisterPropertyChangedCallback(winrt::FrameworkElement::FlowDirectionProperty(), { this, &ColorSpectrum::OnSelectionEllipseFlowDirectionChanged });
     }
 
     // If we haven't yet created our bitmaps, do so now.
@@ -190,9 +193,12 @@ void ColorSpectrum::OnKeyDown(winrt::KeyRoutedEventArgs const& args)
 void ColorSpectrum::OnGotFocus(winrt::RoutedEventArgs const& /*e*/)
 {
     // We only want to bother with the color name tool tip if we can provide color names.
-    if (m_colorNameToolTip && DownlevelHelper::ToDisplayNameExists())
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
     {
-        m_colorNameToolTip.IsOpen(true);
+        if (DownlevelHelper::ToDisplayNameExists())
+        {
+            colorNameToolTip.IsOpen(true);
+        }
     }
 
     UpdateVisualState(true /* useTransitions */);
@@ -201,9 +207,12 @@ void ColorSpectrum::OnGotFocus(winrt::RoutedEventArgs const& /*e*/)
 void ColorSpectrum::OnLostFocus(winrt::RoutedEventArgs const& /*e*/)
 {
     // We only want to bother with the color name tool tip if we can provide color names.
-    if (m_colorNameToolTip && DownlevelHelper::ToDisplayNameExists())
+    if (auto&& colorNameToolTip = m_colorNameToolTip.get())
     {
-        m_colorNameToolTip.IsOpen(false);
+        if (DownlevelHelper::ToDisplayNameExists())
+        {
+            colorNameToolTip.IsOpen(false);
+        }
     }
 
     UpdateVisualState(true /* useTransitions */);
@@ -308,9 +317,12 @@ void ColorSpectrum::RaiseColorChanged()
 
         m_colorChangedEventSource(*this, *colorChangedEventArgs);
 
-        if (m_colorNameToolTip && DownlevelHelper::ToDisplayNameExists())
+        if (DownlevelHelper::ToDisplayNameExists())
         {
-            m_colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(newColor)));
+            if (auto&& colorNameToolTip = m_colorNameToolTip.get())
+            {
+                colorNameToolTip.Content(box_value(winrt::ColorHelper::ToDisplayName(newColor)));
+            }
         }
 
         auto peer = winrt::FrameworkElementAutomationPeer::FromElement(*this);
@@ -419,10 +431,10 @@ winrt::Rect ColorSpectrum::GetBoundingRectangle()
 {
     winrt::Rect localRect{ 0, 0, 0, 0 };
 
-    if (m_inputTarget)
+    if (auto inputTarget = m_inputTarget.get())
     {
-        localRect.Width = static_cast<float>(m_inputTarget.ActualWidth());
-        localRect.Height = static_cast<float>(m_inputTarget.ActualHeight());
+        localRect.Width = static_cast<float>(inputTarget.ActualWidth());
+        localRect.Height = static_cast<float>(inputTarget.ActualHeight());
     }
 
     const auto globalBounds = TransformToVisual(nullptr).TransformBounds(localRect);
@@ -562,7 +574,8 @@ void ColorSpectrum::UpdateColorFromPoint(const winrt::PointerPoint& point)
 
 void ColorSpectrum::UpdateEllipse()
 {
-    if (!m_selectionEllipsePanel)
+    auto selectionEllipsePanel = m_selectionEllipsePanel.get();
+    if (!selectionEllipsePanel)
     {
         return;
     }
@@ -571,12 +584,12 @@ void ColorSpectrum::UpdateEllipse()
     if (m_imageWidthFromLastBitmapCreation == 0 ||
         m_imageHeightFromLastBitmapCreation == 0)
     {
-        m_selectionEllipsePanel.Visibility(winrt::Visibility::Collapsed);
+        selectionEllipsePanel.Visibility(winrt::Visibility::Collapsed);
         return;
     }
     else
     {
-        m_selectionEllipsePanel.Visibility(winrt::Visibility::Visible);
+        selectionEllipsePanel.Visibility(winrt::Visibility::Visible);
     }
 
     double xPosition;
@@ -727,16 +740,19 @@ void ColorSpectrum::UpdateEllipse()
         yPosition = (sin((thetaValue * M_PI / 180) + M_PI) * radius * rValue) + radius;
     }
 
-    winrt::Canvas::SetLeft(m_selectionEllipsePanel, xPosition - (m_selectionEllipsePanel.Width() / 2));
-    winrt::Canvas::SetTop(m_selectionEllipsePanel, yPosition - (m_selectionEllipsePanel.Height() / 2));
+    winrt::Canvas::SetLeft(selectionEllipsePanel, xPosition - (selectionEllipsePanel.Width() / 2));
+    winrt::Canvas::SetTop(selectionEllipsePanel, yPosition - (selectionEllipsePanel.Height() / 2));
 
     // We only want to bother with the color name tool tip if we can provide color names.
-    if (m_colorNameToolTip && DownlevelHelper::ToDisplayNameExists())
+    if (DownlevelHelper::ToDisplayNameExists())
     {
-        // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
-        // so toggling IsEnabled induces it to do that without incurring any visual glitches.
-        m_colorNameToolTip.IsEnabled(false);
-        m_colorNameToolTip.IsEnabled(true);
+        if (auto colorNameToolTip = m_colorNameToolTip.get())
+        {
+            // ToolTip doesn't currently provide any way to re-run its placement logic if its placement target moves,
+            // so toggling IsEnabled induces it to do that without incurring any visual glitches.
+            colorNameToolTip.IsEnabled(false);
+            colorNameToolTip.IsEnabled(true);
+        }
     }
 
     UpdateVisualState(true /* useTransitions */);
@@ -765,6 +781,8 @@ void ColorSpectrum::OnInputTargetPointerExited(winrt::IInspectable const& /*send
 
 void ColorSpectrum::OnInputTargetPointerPressed(winrt::IInspectable const& /*sender*/, winrt::PointerRoutedEventArgs const& args)
 {
+    auto inputTarget = m_inputTarget.get();
+
     Focus(winrt::FocusState::Pointer);
 
     m_isPointerPressed = true;
@@ -772,8 +790,8 @@ void ColorSpectrum::OnInputTargetPointerPressed(winrt::IInspectable const& /*sen
         args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Pen ||
         args.Pointer().PointerDeviceType() == winrt::PointerDeviceType::Touch;
 
-    m_inputTarget.CapturePointer(args.Pointer());
-    UpdateColorFromPoint(args.GetCurrentPoint(m_inputTarget));
+    inputTarget.CapturePointer(args.Pointer());
+    UpdateColorFromPoint(args.GetCurrentPoint(inputTarget));
     UpdateVisualState(true /* useTransitions*/);
     UpdateEllipse();
 
@@ -787,7 +805,7 @@ void ColorSpectrum::OnInputTargetPointerMoved(winrt::IInspectable const& /*sende
         return;
     }
 
-    UpdateColorFromPoint(args.GetCurrentPoint(m_inputTarget));
+    UpdateColorFromPoint(args.GetCurrentPoint(m_inputTarget.get()));
     args.Handled(true);
 }
 
@@ -796,7 +814,7 @@ void ColorSpectrum::OnInputTargetPointerReleased(winrt::IInspectable const& /*se
     m_isPointerPressed = false;
     m_shouldShowLargeSelection = false;
 
-    m_inputTarget.ReleasePointerCapture(args.Pointer());
+    m_inputTarget.get().ReleasePointerCapture(args.Pointer());
     UpdateVisualState(true /* useTransitions*/);
     UpdateEllipse();
 
@@ -810,6 +828,14 @@ void ColorSpectrum::OnSelectionEllipseFlowDirectionChanged(winrt::DependencyObje
 
 void ColorSpectrum::CreateBitmapsAndColorMap()
 {
+    auto layoutRoot = m_layoutRoot.get();
+    auto sizingGrid = m_sizingGrid.get();
+    auto inputTarget = m_inputTarget.get();
+    auto spectrumRectangle = m_spectrumRectangle.get();
+    auto spectrumEllipse = m_spectrumEllipse.get();
+    auto spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
+    auto spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
+
     if (!m_layoutRoot ||
         !m_sizingGrid ||
         !m_inputTarget ||
@@ -822,31 +848,31 @@ void ColorSpectrum::CreateBitmapsAndColorMap()
         return;
     }
 
-    double minDimension = min(m_layoutRoot.ActualWidth(), m_layoutRoot.ActualHeight());
+    double minDimension = min(layoutRoot.ActualWidth(), layoutRoot.ActualHeight());
 
     if (minDimension == 0)
     {
         return;
     }
 
-    m_sizingGrid.Width(minDimension);
-    m_sizingGrid.Height(minDimension);
+    sizingGrid.Width(minDimension);
+    sizingGrid.Height(minDimension);
 
-    if (m_sizingGrid.Clip())
+    if (sizingGrid.Clip())
     {
-        m_sizingGrid.Clip().Rect({ 0, 0, static_cast<float>(minDimension), static_cast<float>(minDimension) });
+        sizingGrid.Clip().Rect({ 0, 0, static_cast<float>(minDimension), static_cast<float>(minDimension) });
     }
 
-    m_inputTarget.Width(minDimension);
-    m_inputTarget.Height(minDimension);
-    m_spectrumRectangle.Width(minDimension);
-    m_spectrumRectangle.Height(minDimension);
-    m_spectrumEllipse.Width(minDimension);
-    m_spectrumEllipse.Height(minDimension);
-    m_spectrumOverlayRectangle.Width(minDimension);
-    m_spectrumOverlayRectangle.Height(minDimension);
-    m_spectrumOverlayEllipse.Width(minDimension);
-    m_spectrumOverlayEllipse.Height(minDimension);
+    inputTarget.Width(minDimension);
+    inputTarget.Height(minDimension);
+    spectrumRectangle.Width(minDimension);
+    spectrumRectangle.Height(minDimension);
+    spectrumEllipse.Width(minDimension);
+    spectrumEllipse.Height(minDimension);
+    spectrumOverlayRectangle.Width(minDimension);
+    spectrumOverlayRectangle.Height(minDimension);
+    spectrumOverlayEllipse.Width(minDimension);
+    spectrumOverlayEllipse.Height(minDimension);
 
     winrt::float4 hsvColor = HsvColor();
     int minHue = MinHue();
@@ -1409,11 +1435,17 @@ void ColorSpectrum::FillPixelForRing(
 
 void ColorSpectrum::UpdateBitmapSources()
 {
-    if (!m_spectrumOverlayRectangle ||
-        !m_spectrumOverlayEllipse)
+    auto spectrumOverlayRectangle = m_spectrumOverlayRectangle.get();
+    auto spectrumOverlayEllipse = m_spectrumOverlayEllipse.get();
+
+    if (!spectrumOverlayRectangle ||
+        !spectrumOverlayEllipse)
     {
         return;
     }
+
+    auto spectrumRectangle = m_spectrumRectangle.get();
+    auto spectrumEllipse = m_spectrumEllipse.get();
 
     winrt::float4 hsvColor = HsvColor();
     winrt::ColorSpectrumComponents components = Components();
@@ -1441,8 +1473,8 @@ void ColorSpectrum::UpdateBitmapSources()
             spectrumBrush.MinSurface(m_saturationMinimumSurface);
             spectrumBrush.MaxSurface(m_saturationMaximumSurface);
             spectrumBrush.MaxSurfaceOpacity(hsv::GetSaturation(hsvColor));
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
         }
         else
         {
@@ -1457,12 +1489,12 @@ void ColorSpectrum::UpdateBitmapSources()
 
             spectrumBrush.ImageSource(m_saturationMinimumBitmap);
             spectrumOverlayBrush.ImageSource(m_saturationMaximumBitmap);
-            m_spectrumOverlayRectangle.Opacity(hsv::GetSaturation(hsvColor));
-            m_spectrumOverlayEllipse.Opacity(hsv::GetSaturation(hsvColor));
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Opacity(hsv::GetSaturation(hsvColor));
+            spectrumOverlayEllipse.Opacity(hsv::GetSaturation(hsvColor));
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
         }
         break;
 
@@ -1480,8 +1512,8 @@ void ColorSpectrum::UpdateBitmapSources()
             spectrumBrush.MinSurface(m_valueSurface);
             spectrumBrush.MaxSurface(m_valueSurface);
             spectrumBrush.MaxSurfaceOpacity(1);
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
         }
         else
         {
@@ -1495,12 +1527,12 @@ void ColorSpectrum::UpdateBitmapSources()
 
             spectrumBrush.ImageSource(m_valueBitmap);
             spectrumOverlayBrush.ImageSource(m_valueBitmap);
-            m_spectrumOverlayRectangle.Opacity(1);
-            m_spectrumOverlayEllipse.Opacity(1);
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Opacity(1);
+            spectrumOverlayEllipse.Opacity(1);
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
         }
         break;
 
@@ -1554,8 +1586,8 @@ void ColorSpectrum::UpdateBitmapSources()
             }
 
             spectrumBrush.MaxSurfaceOpacity(sextant - static_cast<int>(sextant));
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
         }
         else
         {
@@ -1605,12 +1637,12 @@ void ColorSpectrum::UpdateBitmapSources()
                 spectrumOverlayBrush.ImageSource(m_hueRedBitmap);
             }
 
-            m_spectrumOverlayRectangle.Opacity(sextant - static_cast<int>(sextant));
-            m_spectrumOverlayEllipse.Opacity(sextant - static_cast<int>(sextant));
-            m_spectrumRectangle.Fill(spectrumBrush);
-            m_spectrumEllipse.Fill(spectrumBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
-            m_spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Opacity(sextant - static_cast<int>(sextant));
+            spectrumOverlayEllipse.Opacity(sextant - static_cast<int>(sextant));
+            spectrumRectangle.Fill(spectrumBrush);
+            spectrumEllipse.Fill(spectrumBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
+            spectrumOverlayRectangle.Fill(spectrumOverlayBrush);
         }
         break;
     }
