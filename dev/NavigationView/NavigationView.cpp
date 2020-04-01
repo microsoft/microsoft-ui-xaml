@@ -1380,7 +1380,7 @@ void NavigationView::UpdatePaneButtonsWidths()
     if (auto&& paneToggleButton = m_paneToggleButton.get())
     {
         paneToggleButton.MinWidth(newButtonWidths);
-        if (auto&& iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
+        if (const auto iconGridColumnElement = paneToggleButton.GetTemplateChild(c_paneToggleButtonIconGridColumnName))
         {
             if (const auto paneToggleButtonIconColumn = iconGridColumnElement.try_as<winrt::ColumnDefinition>())
             {
