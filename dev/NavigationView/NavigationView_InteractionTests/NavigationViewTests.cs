@@ -4358,6 +4358,77 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
             }
         }
 
+        [TestMethod]
+        [TestProperty("TestSuite", "D")]
+        public void VerifyCorrectVisualStateWhenClosingPaneInLeftDisplayMode()
+        {
+            using (var setup = new TestSetupHelper(new[] { "NavigationView Tests", "NavigationView Test" }))
+            {
+                // Test for explicit pane close
+
+                // make sure the NavigationView is in left mode with pane expanded
+                Log.Comment("Change display mode to left expanded");
+                var panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("Left");
+                Wait.ForIdle();
+
+                TextBlock displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                Verify.AreEqual(expanded, displayModeTextBox.DocumentText);
+
+                Button togglePaneButton = new Button(FindElement.ById("TogglePaneButton"));
+
+                // manually close pane
+                Log.Comment("Close NavView pane explicitly");
+                togglePaneButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Get NavView Active VisualStates");
+                var getNavViewActiveVisualStatesButton = new Button(FindElement.ByName("GetNavViewActiveVisualStates"));
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+
+                // check visual state
+                var visualStateName = "ListSizeCompact";
+                var result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
+
+                // Test for light dismiss pane close
+
+                Log.Comment("Change display mode to left compact");
+                panelDisplayModeComboBox = new ComboBox(FindElement.ByName("PaneDisplayModeCombobox"));
+                panelDisplayModeComboBox.SelectItemByName("LeftCompact");
+                Wait.ForIdle();
+
+                displayModeTextBox = new TextBlock(FindElement.ByName("DisplayModeTextBox"));
+                Verify.AreEqual(compact, displayModeTextBox.DocumentText);
+
+                // expand pane
+                Log.Comment("Expand NavView pane");
+                togglePaneButton.Invoke();
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Opened);
+
+                // light dismiss pane
+                Log.Comment("Light dismiss NavView pane");
+                getNavViewActiveVisualStatesButton.Click(); // NOTE: Must be Click because this is verifying that the mouse light dismiss behavior closes the nav view
+                Wait.ForIdle();
+
+                WaitAndAssertPaneStatus(PaneOpenStatus.Closed);
+
+                Log.Comment("Get NavView Active VisualStates");
+                getNavViewActiveVisualStatesButton.Invoke();
+                Wait.ForIdle();
+
+                // check visual state
+                result = new TextBlock(FindElement.ByName("NavViewActiveVisualStatesResult"));
+                Verify.IsTrue(result.GetText().Contains(visualStateName), "active VisualStates doesn't include " + visualStateName);
+            }
+        }
+
         private void EnsurePaneHeaderCanBeModifiedHelper(RegressionTestType navviewMode)
         {
             if (!PlatformConfiguration.IsOsVersionGreaterThanOrEqual(OSVersion.Redstone2))
