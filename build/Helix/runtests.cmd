@@ -37,7 +37,7 @@ for %%B in (%testBinaryCandidates%) do (
 )
 
 echo %TIME%
-te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:0:05 /screenCaptureOnError %*
+te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %*
 echo %TIME%
 
 powershell -ExecutionPolicy Bypass Get-Process
@@ -59,7 +59,7 @@ rem a single re-run will be sufficient to detect many unreliable tests.
 if "%FailedTestQuery%" == "" goto :SkipReruns
 
 echo %TIME%
-te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:0:05 /screenCaptureOnError /select:"%FailedTestQuery%"
+te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /select:"%FailedTestQuery%"
 echo %TIME%
 
 move te.wtl te_rerun.wtl
@@ -79,7 +79,7 @@ for /F "tokens=* usebackq" %%I IN (`powershell -ExecutionPolicy Bypass .\OutputF
 if "%FailedTestQuery%" == "" goto :SkipReruns
 
 echo %TIME%
-te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:0:05 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
+te.exe %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
 echo %TIME%
 
 powershell -ExecutionPolicy Bypass Get-Process
