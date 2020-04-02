@@ -196,7 +196,6 @@ private:
     void OnPaneSearchButtonClick(const winrt::IInspectable& sender, const winrt::RoutedEventArgs& args);
     void OnPaneTitleHolderSizeChanged(const winrt::IInspectable& sender, const winrt::SizeChangedEventArgs& args);
 
-    void OnOverflowItemSelectionChanged(const winrt::IInspectable& sender, const winrt::SelectionChangedEventArgs& args);
     void RaiseSelectionChangedEvent(winrt::IInspectable const& nextItem, 
         bool isSettingsItem,
         NavigationRecommendedTransitionDirection recommendedDirection = NavigationRecommendedTransitionDirection::Default);
@@ -384,8 +383,6 @@ private:
     bool m_shouldIgnoreNextSelectionChange{ false };
     // Used to disable raising selection change iff settings item gets restored because of displaymode change
     bool m_shouldIgnoreNextSelectionChangeBecauseSettingsRestore{ false };
-    // Used to prevent stackoverflow when settings item moved to bottom on collection change
-    bool m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition{ false };
     // A flag to track that the selectionchange is caused by selection a item in topnav overflow menu
     bool m_selectionChangeFromOverflowMenu{ false };
 

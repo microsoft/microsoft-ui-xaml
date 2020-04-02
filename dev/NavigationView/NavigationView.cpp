@@ -198,10 +198,7 @@ NavigationView::NavigationView()
 
 void NavigationView::OnFooterItemsVectorChanged(winrt::Collections::IObservableVector<winrt::IInspectable> const& sender, winrt::Collections::IVectorChangedEventArgs const& e)
 {
-    if (!m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition)
-    {
-        UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
-    }
+    UpdateFooterRepeaterItemsSource(true /*forceSelectionModelUpdate*/);
 }
 
 void NavigationView::OnSelectionModelSelectionChanged(const winrt::SelectionModel& selectionModel, const winrt::SelectionModelSelectionChangedEventArgs& e)
@@ -583,40 +580,36 @@ void NavigationView::UpdateItemsRepeaterItemsSource(const winrt::ItemsRepeater& 
 
 void NavigationView::UpdateFooterRepeaterItemsSource(bool forceSelectionModelUpdate)
 {
-    auto dataSource = FooterMenuItems();
+    if (!m_appliedTemplate)
+        return;
+
+    auto footerItems = FooterMenuItems();
+    auto dataSource = winrt::make<Vector<winrt::IInspectable>>();
 
     UpdateItemsRepeaterItemsSource(m_leftNavFooterMenuRepeater.get(), nullptr);
     UpdateItemsRepeaterItemsSource(m_topNavFooterMenuRepeater.get(), nullptr);
 
-    if (forceSelectionModelUpdate || !m_settingsItem)
+    if (!m_settingsItem)
     {
-        if (!m_settingsItem)
-        {
-            m_settingsItem.set(winrt::make < ::NavigationViewItem>());
-            m_settingsItem.get().Name(L"SettingsItem");
-        }
+        m_settingsItem.set(winrt::make < ::NavigationViewItem>());
+        m_settingsItem.get().Name(L"SettingsItem");
+    }
 
-        auto settingsItem = m_settingsItem.get();
+    auto settingsItem = m_settingsItem.get();
 
-        uint32_t index = 0;
+    auto size = footerItems.Size();
 
-        m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition = true;
+    for (uint32_t i = 0; i < size; i++)
+    {
+        auto item = footerItems.GetAt(i);
+        dataSource.Append(item);
+    }
 
-        if (dataSource.IndexOf(settingsItem, index))
-        {
-            // if settings item already there - remove it
-            dataSource.RemoveAt(index);
-        }
-
-        if (IsSettingsVisible() && m_appliedTemplate)
-        {
-            CreateAndHookEventsToSettings();
-            // add settings item to the end of footer
-            dataSource.Append(settingsItem);
-        }
-
-        m_shouldIgnoreNextFooterItemsVectorChangeBecauseSettingsReposition = false;
-
+    if (IsSettingsVisible())
+    {
+        CreateAndHookEventsToSettings();
+        // add settings item to the end of footer
+        dataSource.Append(settingsItem);
     }
 
     UpdateSelectionForMenuItems();
@@ -2133,6 +2126,11 @@ bool NavigationView::BumperNavigation(int offset)
 
             auto footerRepeater = m_topNavFooterMenuRepeater.get();
             auto footerItemsSize = FooterMenuItems().Size();
+
+            if (IsSettingsVisible())
+            {
+                footerItemsSize++;
+            }
 
             if (indexInMainList >= 0)
             {

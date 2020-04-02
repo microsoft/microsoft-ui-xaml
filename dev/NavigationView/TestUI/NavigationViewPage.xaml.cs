@@ -320,8 +320,7 @@ namespace MUXControlsTestApp
         {
             if (NavView.FooterMenuItems.Count > 0)
             {
-                // -2 because of SettingsItem
-                NavView.FooterMenuItems.RemoveAt(NavView.FooterMenuItems.Count - 2);
+                NavView.FooterMenuItems.RemoveAt(NavView.FooterMenuItems.Count - 1);
             }
         }
 

@@ -2564,6 +2564,21 @@ namespace Windows.UI.Xaml.Tests.MUXControls.InteractionTests
 
                     Verify.AreEqual(1, positionInSet, "Position in set");
                     Verify.AreEqual(1, sizeOfSet, "Size of set");
+
+                    var addButton = FindElement.ById<Button>("AddFooterItemButton");
+                    var removeButton = FindElement.ById<Button>("RemoveFooterItemButton");
+
+                    addButton.Invoke();
+                    addButton.Invoke();
+
+                    positionInSet = (int)ae.GetCurrentPropertyValue(AutomationElement.PositionInSetProperty);
+                    sizeOfSet = (int)ae.GetCurrentPropertyValue(AutomationElement.SizeOfSetProperty);
+
+                    Verify.AreEqual(3, positionInSet, "Position in set");
+                    Verify.AreEqual(3, sizeOfSet, "Size of set");
+
+                    removeButton.Invoke();
+                    removeButton.Invoke();
                 }
             }
         }
