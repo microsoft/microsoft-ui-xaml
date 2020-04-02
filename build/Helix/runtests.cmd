@@ -40,6 +40,8 @@ echo %TIME%
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError %*
 echo %TIME%
 
+Get-Process
+
 move te.wtl te_original.wtl
 
 copy /y te_original.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
@@ -80,6 +82,8 @@ echo %TIME%
 te %testBinaries% /enablewttlogging /unicodeOutput:false /sessionTimeout:0:15 /testtimeout:0:10 /screenCaptureOnError /testmode:Loop /LoopTest:8 /select:"%FailedTestQuery%"
 echo %TIME%
 
+Get-Process
+
 move te.wtl te_rerun_multiple.wtl
 
 copy /y te_rerun_multiple.wtl %HELIX_WORKITEM_UPLOAD_ROOT%
@@ -87,6 +91,8 @@ copy /y WexLogFileOutput\*.jpg %HELIX_WORKITEM_UPLOAD_ROOT%
 powershell -ExecutionPolicy Bypass .\CopyVisualTreeMasters.ps1
 
 :SkipReruns
+
+Get-Process
 
 echo %TIME%
 powershell -ExecutionPolicy Bypass .\OutputSubResultsJsonFiles.ps1 te_original.wtl te_rerun.wtl te_rerun_multiple.wtl %testnameprefix%

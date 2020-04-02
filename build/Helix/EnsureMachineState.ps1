@@ -1,6 +1,16 @@
-﻿# List all processes to aid debugging:
+﻿$scriptDirectory = $script:MyInvocation.MyCommand.Path | Split-Path -Parent
+
+# List all processes to aid debugging:
 Write-Host "All processes running:"
 Get-Process
+
+tasklist /svc
+
+# Add this test directory as an exclusion for Windows Defender
+Write-Host "Add $scriptDirectory as Exclusion Path"
+Add-MpPreference -ExclusionPath $scriptDirectory
+Get-MpPreference
+Get-MpComputerStatus
 
 
 # Minimize all windows:
@@ -17,14 +27,16 @@ foreach ($proc in $procs)
 }
 
 # Kill processes by name that are known to interfere with our tests:
-$processNamesToStop = @("Microsoft.Photos", "WinStore.App", "SkypeApp", "SkypeBackgroundHost")
+$processNamesToStop = @("Microsoft.Photos", "WinStore.App", "SkypeApp", "SkypeBackgroundHost", "OneDriveSetup", "OneDrive")
 foreach($procName in $processNamesToStop)
 {
     Write-Host "Attempting to kill $procName if it is running"
-    Stop-Process -ProcessName $procName -Verbose     
+    Stop-Process -ProcessName $procName -Verbose -ErrorAction Ignore   
 }
 Write-Host "All processes running after attempting to kill unwanted processes:"
 Get-Process
+
+tasklist /svc
 
 $platform = $env:testbuildplatform
 if(!$platform)
@@ -94,3 +106,5 @@ Write-Host "Uninstall MUX Framework package that may have been left over from pr
 $versionMajor = $versionData.GetElementsByTagName("MUXVersionMajor").'#text'
 $versionMinor = $versionData.GetElementsByTagName("MUXVersionMinor").'#text'
 UninstallApps("Microsoft.UI.Xaml.$versionMajor.$versionMinor")
+
+Get-Process
