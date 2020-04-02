@@ -9,6 +9,8 @@ tasklist /svc
 # Add this test directory as an exclusion for Windows Defender
 Write-Host "Add $scriptDirectory as Exclusion Path"
 Add-MpPreference -ExclusionPath $scriptDirectory
+Write-Host "Add $($env:HELIX_CORRELATION_PAYLOAD) as Exclusion Path"
+Add-MpPreference -ExclusionPath $env:HELIX_CORRELATION_PAYLOAD
 Get-MpPreference
 Get-MpComputerStatus
 
